@@ -33,3 +33,5 @@ The Everything Ecosystem methodology, packaged as one private repo (G-035). Five
 ## Tooling
 
 Every layer has `<layer>/tooling/integrations.json`: the tools and services it can use, each checked against `schema/integration.schema.json` (status in-use, candidate or rejected; interfaces such as files, MCP, API, SDK; credentials by variable name only). Agent runtimes (Claude Agent SDK, Cursor Agent SDK) are listed under `execution/tooling/`.
+
+Choosing tools is opt-in: when someone wants help, `operations/skills/tool-selection/SKILL.md` gives the principles for the questions and the scoring (Jev plus a reasoning model), and each layer's `tooling/questions.md` gives its dimensions and example questions. Knowledge has one so far.
