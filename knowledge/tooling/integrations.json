@@ -1,0 +1,61 @@
+[
+  {
+    "id": "obsidian",
+    "name": "Obsidian",
+    "layer": "knowledge",
+    "role": "the personal and company vaults (SAD in use)",
+    "interfaces": [
+      "files",
+      "app"
+    ],
+    "status": "in-use",
+    "reason": "Every vault is an Obsidian vault"
+  },
+  {
+    "id": "github",
+    "name": "GitHub",
+    "layer": "knowledge",
+    "role": "docs as code: specs and design docs in repos",
+    "interfaces": [
+      "files",
+      "mcp",
+      "api",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "G-020"
+  },
+  {
+    "id": "notion",
+    "name": "Notion",
+    "layer": "knowledge",
+    "role": "team-facing knowledge base",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists"
+  },
+  {
+    "id": "claude-docs",
+    "name": "Claude Docs",
+    "layer": "knowledge",
+    "role": "collaborative documents with comments",
+    "interfaces": [
+      "mcp"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "google-drive",
+    "name": "Google Drive",
+    "layer": "knowledge",
+    "role": "documents shared with outside parties",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate"
+  }
+]

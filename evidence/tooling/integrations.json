@@ -1,0 +1,45 @@
+[
+  {
+    "id": "ee-evals",
+    "name": "Repo evals",
+    "layer": "evidence",
+    "role": "skill and harness evals in evidence/evals",
+    "interfaces": [
+      "files"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "github-checks",
+    "name": "GitHub checks",
+    "layer": "evidence",
+    "role": "CI results as evidence",
+    "interfaces": [
+      "api"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "stripe",
+    "name": "Stripe",
+    "layer": "evidence",
+    "role": "per-product revenue for the P&L",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Lineup draft names it as the revenue source"
+  },
+  {
+    "id": "amplitude",
+    "name": "Amplitude",
+    "layer": "evidence",
+    "role": "product analytics",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Connector available, not signed in"
+  }
+]

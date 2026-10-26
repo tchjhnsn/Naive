@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starter Methodology for Operators</title>
+<style>
+  :root {
+    --bg: #fbf8f1;
+    --bg-elevated: #ffffff;
+    --bg-subtle: #f4efe3;
+    --ink: #1a1814;
+    --ink-soft: #4a443a;
+    --ink-faint: #807868;
+    --gold: #b8862b;
+    --gold-soft: #d4a94a;
+    --gold-pale: #f0e0b2;
+    --rule: #e3dccb;
+    --rule-soft: #ece6d5;
+    --shadow: 0 1px 2px rgba(28, 24, 16, 0.04), 0 4px 16px rgba(28, 24, 16, 0.05);
+    --serif: 'Iowan Old Style', 'Palatino', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+    --mono: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1814;
+      --bg-elevated: #221f1a;
+      --bg-subtle: #2a2620;
+      --ink: #f0ead8;
+      --ink-soft: #c4bda8;
+      --ink-faint: #8a836f;
+      --gold: #d4a94a;
+      --gold-soft: #e8c266;
+      --gold-pale: #3d3320;
+      --rule: #38332a;
+      --rule-soft: #2e2920;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────── */
+
+  header.doc-header {
+    margin-bottom: 56px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .kicker {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+  }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 21px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin: 0;
+    font-weight: 400;
+  }
+
+  /* ── Section headings ───────────────────────────────────────────── */
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    margin: 64px 0 20px;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 12px;
+    color: var(--ink);
+  }
+
+  h4 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 20px 0 8px;
+  }
+
+  p {
+    margin: 0 0 18px;
+    color: var(--ink-soft);
+  }
+
+  strong { color: var(--ink); font-weight: 600; }
+  em { font-style: italic; }
+
+  /* ── Intro block ────────────────────────────────────────────────── */
+
+  .intro {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 32px 0 48px;
+    box-shadow: var(--shadow);
+  }
+
+  .intro p { margin-bottom: 12px; }
+  .intro p:last-child { margin-bottom: 0; }
+
+  /* ── Pillar cards ───────────────────────────────────────────────── */
+
+  .pillars {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin: 24px 0 32px;
+  }
+
+  .pillar {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--gold);
+    border-radius: 10px;
+    padding: 22px 26px;
+  }
+
+  .pillar h3 {
+    margin: 0 0 8px;
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  .pillar p {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  /* ── Lifecycle table ────────────────────────────────────────────── */
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--bg-subtle);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  td {
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  tr:first-child td { border-top: none; }
+
+  td:first-child {
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ── Folder tree ────────────────────────────────────────────────── */
+
+  .tree {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 20px 0;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--ink);
+    overflow-x: auto;
+  }
+
+  .tree .comment { color: var(--ink-faint); font-style: italic; }
+
+  /* ── Code blocks ────────────────────────────────────────────────── */
+
+  pre {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin: 16px 0;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--bg-subtle);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--ink);
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+  }
+
+  /* ── Move list ──────────────────────────────────────────────────── */
+
+  .move {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 22px 26px;
+    margin: 14px 0;
+    position: relative;
+    padding-left: 76px;
+  }
+
+  .move-number {
+    position: absolute;
+    top: 22px;
+    left: 22px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .move h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+  }
+
+  .move p { margin: 0 0 8px; font-size: 15px; }
+  .move p:last-child { margin-bottom: 0; }
+
+  .move pre { margin: 12px 0 0; }
+
+  /* ── BASED / SMART blocks ───────────────────────────────────────── */
+
+  .framework {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 24px 0;
+    box-shadow: var(--shadow);
+  }
+
+  .framework h3 {
+    margin-top: 0;
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .framework ul {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+
+  .framework ul li {
+    padding: 10px 0 10px 50px;
+    position: relative;
+    border-bottom: 1px solid var(--rule-soft);
+    color: var(--ink-soft);
+    font-size: 15.5px;
+  }
+
+  .framework ul li:last-child { border-bottom: none; }
+
+  .framework ul li .letter {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--gold-pale);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 19px;
+  }
+
+  /* ── Quote ──────────────────────────────────────────────────────── */
+
+  blockquote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--ink);
+    border-left: 3px solid var(--gold);
+    padding: 8px 0 8px 24px;
+    margin: 24px 0;
+  }
+
+  /* ── Lists ──────────────────────────────────────────────────────── */
+
+  ul, ol { padding-left: 22px; color: var(--ink-soft); }
+  ul li, ol li { margin: 8px 0; }
+
+  ol.steps {
+    list-style: none;
+    padding-left: 0;
+    counter-reset: step;
+  }
+
+  ol.steps li {
+    counter-increment: step;
+    padding: 12px 0 12px 44px;
+    position: relative;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  ol.steps li:last-child { border-bottom: none; }
+
+  ol.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* ── Daily rhythm ───────────────────────────────────────────────── */
+
+  .rhythm {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+
+  .rhythm h4 {
+    margin: 0 0 8px;
+    color: var(--gold);
+  }
+
+  .rhythm h4:not(:first-child) { margin-top: 20px; }
+
+  .rhythm ul { padding-left: 20px; margin: 0; }
+
+  /* ── Callout ────────────────────────────────────────────────────── */
+
+  .callout {
+    border-left: 3px solid var(--gold);
+    background: var(--gold-pale);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 22px;
+    margin: 28px 0;
+    color: var(--ink);
+  }
+
+  .callout strong { color: var(--ink); }
+
+  /* ── Footer ─────────────────────────────────────────────────────── */
+
+  hr.divider {
+    border: none;
+    margin: 64px 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--rule), transparent);
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  /* ── Mobile ─────────────────────────────────────────────────────── */
+
+  @media (max-width: 640px) {
+    .page { padding: 40px 20px 80px; }
+    h1 { font-size: 36px; }
+    .subtitle { font-size: 18px; }
+    h2 { font-size: 24px; }
+    .move { padding-left: 60px; }
+    .move-number { width: 32px; height: 32px; left: 16px; font-size: 15px; }
+    .tree, pre { font-size: 12px; padding: 16px; }
+  }
+
+  @media print {
+    body { background: white; }
+    .page { padding: 0; }
+    .move, .framework, .pillar, .intro, .rhythm { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc-header">
+    <p class="kicker">Methodology · Starter Version · v0.1</p>
+    <h1>Starter Methodology<br>for Operators</h1>
+    <p class="subtitle">A stripped-down, generalized way to organize your business — designed for any kind of operator, any kind of work. Use it on day one. Graduate to the full methodology later as your work demands more structure.</p>
+  </header>
+
+  <section>
+    <h2>What this is</h2>
+    <div class="intro">
+      <p>A simple framework for thinking about your business and the work you do on it. It gives you:</p>
+      <ul>
+        <li>A <strong>vault structure</strong> — folders that match how your business actually works</li>
+        <li>A <strong>shared vocabulary</strong> — names for the things you're doing, so you can talk about them</li>
+        <li>A <strong>handful of moves</strong> — six small skills that, used together, keep ideas flowing and the business moving</li>
+        <li>Two <strong>thinking frameworks</strong> — one for ambition (BASED) and one for scope (SMART)</li>
+      </ul>
+      <p>The methodology doesn't tell you what to build. It tells you <em>how to think</em> about what you're building, in a way that compounds.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The three pillars</h2>
+    <p>Every business has three sides. Some businesses lean heavily on one or two; some balance all three. Your vault organizes around these:</p>
+    <div class="pillars">
+      <div class="pillar">
+        <h3>Product / Service</h3>
+        <p>What you actually do or sell. The offering itself. For a pet-sitter: the visits, the boarding, the walks. For a baker: the bread, the menu, the recipes.</p>
+      </div>
+      <div class="pillar">
+        <h3>Brand</h3>
+        <p>How the world experiences you. Name, voice, visual identity, story, reputation. The feeling someone gets when they think of your business.</p>
+      </div>
+      <div class="pillar">
+        <h3>Business</h3>
+        <p>The operational + financial + legal side. Pricing, contracts, taxes, insurance, hiring, supplier relationships, banking. The infrastructure that keeps everything running.</p>
+      </div>
+    </div>
+    <p>Not every pillar needs the same attention at every moment. Sometimes you're heads-down on the product; sometimes you're rebuilding the brand; sometimes you're sorting out legal. The pillars give you names for what you're working on so you don't lose track.</p>
+  </section>
+
+  <section>
+    <h2>The four lifecycle stages</h2>
+    <p>An entity (a business, a project, a service line, an idea) moves through stages over time. We keep this simple:</p>
+    <table>
+      <thead>
+        <tr><th style="width:30%">Stage</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Idea</td><td>Something noticed. A possibility. Lives in <code>_ideas/</code>. Not yet committed to.</td></tr>
+        <tr><td>Articulating</td><td>Worked on enough to write down what it actually is. Has an <code>entity-profile</code>. Still figuring it out.</td></tr>
+        <tr><td>Active</td><td>Running in the world. Doing the thing. Has real customers, users, or output.</td></tr>
+        <tr><td>Resting</td><td>Stable and not changing much (maintenance), or done / superseded (archived).</td></tr>
+      </tbody>
+    </table>
+    <p>Don't confuse "idea" with "articulating." Ideas are cheap; articulating them takes real time. The methodology helps you decide which ideas deserve articulation work.</p>
+  </section>
+
+  <section>
+    <h2>Your vault structure</h2>
+    <p>This is the folder layout you start with. It grows as you grow.</p>
+    <div class="tree">your-vault/
+├── _ideas/                       <span class="comment">← any idea, captured fast</span>
+├── _sessions/
+│   ├── SESSION_LOG.md            <span class="comment">← what you did and when</span>
+│   ├── raw/                      <span class="comment">← raw session notes</span>
+│   └── planned/                  <span class="comment">← sessions you've planned but not done</span>
+├── _meta/
+│   ├── templates/                <span class="comment">← templates for new notes</span>
+│   └── tooling-inventory.md      <span class="comment">← every tool you use</span>
+├── your-business/                <span class="comment">← your main entity</span>
+│   ├── entity-profile.md         <span class="comment">← who and what this business is</span>
+│   ├── _ideas/                   <span class="comment">← ideas for this business specifically</span>
+│   ├── product/                  <span class="comment">← service offering, pricing, delivery</span>
+│   ├── brand/                    <span class="comment">← identity, voice, visuals, story</span>
+│   └── business/                 <span class="comment">← operations, finance, legal</span>
+└── (later: other entities, side projects, future surfaces)</div>
+    <p>A few things about this structure:</p>
+    <ul>
+      <li><strong>Folders are flat under <code>_ideas/</code></strong> — ideas don't get filed into subfolders; they get tagged via frontmatter.</li>
+      <li><strong><code>_sessions/</code> is your memory</strong> — what happened, when, and what's planned next.</li>
+      <li><strong>Pillars are explicit</strong> — each pillar gets its own folder under the entity so you always know which side of the business a note belongs to.</li>
+      <li><strong><code>_meta/</code> is infrastructure</strong> — templates and tool inventories that support the rest of the vault.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The six core moves</h2>
+    <p>Six small skills. Each one is something you'll do regularly. Together they form the entire rhythm.</p>
+
+    <div class="move">
+      <div class="move-number">1</div>
+      <h3>Capture an idea</h3>
+      <p>Drop a markdown file into <code>_ideas/</code> whenever something occurs to you. Tiny. Don't refine it. Just get it captured.</p>
+<pre><code>---
+type: idea
+created: 2026-05-20T...
+tags: [whatever]
+---
+
+# Quick title
+
+What the idea is, in a sentence or three.</code></pre>
+    </div>
+
+    <div class="move">
+      <div class="move-number">2</div>
+      <h3>Articulate an entity</h3>
+      <p>When an idea graduates into something worth committing to, give it an <code>entity-profile.md</code> and a folder. Now it's an entity.</p>
+    </div>
+
+    <div class="move">
+      <div class="move-number">3</div>
+      <h3>BASED a vision</h3>
+      <p>For any entity you commit to, write down its <strong>uncensored</strong> ambition. The largest, most vivid, most honest version. (See <em>BASED</em> below.)</p>
+    </div>
+
+    <div class="move">
+      <div class="move-number">4</div>
+      <h3>SMART a scope</h3>
+      <p>Take the unbounded vision and carve a specific, time-bound slice you can actually do. (See <em>SMART</em> below.)</p>
+    </div>
+
+    <div class="move">
+      <div class="move-number">5</div>
+      <h3>End a session</h3>
+      <p>When you stop working, take five minutes. Add a brief entry to <code>SESSION_LOG.md</code>: what you did, what you touched, what came up. This is your memory.</p>
+    </div>
+
+    <div class="move">
+      <div class="move-number">6</div>
+      <h3>Plan a session</h3>
+      <p>Before stopping (or first thing next time), drop a note in <code>_sessions/planned/</code>. What's the next bounded chunk of work? What would moving the needle look like?</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Two thinking frameworks</h2>
+
+    <div class="framework">
+      <h3>BASED — for ambition</h3>
+      <p>When articulating what you actually want, refuse to pre-narrow it. Each letter is a check against self-censorship:</p>
+      <ul>
+        <li><span class="letter">B</span><strong>Broad</strong> — is the aperture wide enough?</li>
+        <li><span class="letter">A</span><strong>Audacious</strong> — would you be willing to say this out loud?</li>
+        <li><span class="letter">S</span><strong>Silly</strong> — is there a vivid, playful version of this?</li>
+        <li><span class="letter">E</span><strong>Egotistical</strong> — are you willing to put yourself at the center?</li>
+        <li><span class="letter">D</span><strong>Delusional</strong> — are you refusing current evidence long enough to imagine what isn't yet?</li>
+      </ul>
+      <p>The acronym spells <em>based</em> — confident, grounded in your own truth. BASED ambitions can be local or global, modest in scale or enormous. What matters is honesty about the fullest extent of what you actually want.</p>
+      <blockquote>A baker whose BASED ambition is to be the most beloved local baker in her city — with inventions crazier than Willy Wonka, smells so strong they lift people off their feet, and tastes so good her bakery becomes the most well-known establishment in the entire city. That's a fully BASED ambition. It's local. It's also maximally honest.</blockquote>
+    </div>
+
+    <div class="framework">
+      <h3>SMART — for scope</h3>
+      <p>Once you have the BASED vision, carve a piece of it you can actually do. Five-letter check:</p>
+      <ul>
+        <li><span class="letter">S</span><strong>Specific</strong> — what exactly is the thing?</li>
+        <li><span class="letter">M</span><strong>Measurable</strong> — how will you know it's done?</li>
+        <li><span class="letter">A</span><strong>Achievable</strong> — is it really doable with what you have?</li>
+        <li><span class="letter">R</span><strong>Relevant</strong> — does it move you toward the bigger vision?</li>
+        <li><span class="letter">T</span><strong>Time-bound</strong> — by when?</li>
+      </ul>
+      <p><strong>BASED keeps the dream big. SMART keeps the work real. You need both.</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Daily rhythm</h2>
+    <p>A typical day or week using the methodology looks like:</p>
+
+    <div class="rhythm">
+      <h4>Morning</h4>
+      <ul>
+        <li>Open your vault</li>
+        <li>Check <code>_sessions/planned/</code> — what did past-you queue up for now-you?</li>
+        <li>Do the work</li>
+      </ul>
+
+      <h4>As you go</h4>
+      <ul>
+        <li>Capture ideas into <code>_ideas/</code> the moment they arise (don't lose them)</li>
+        <li>Update entity profiles as the truth about your business shifts</li>
+      </ul>
+
+      <h4>End of session</h4>
+      <ul>
+        <li>Five minutes to log what happened in <code>SESSION_LOG.md</code></li>
+        <li>Plan the next session — what's the next bounded thing?</li>
+      </ul>
+
+      <h4>Weekly</h4>
+      <ul>
+        <li>Review what's in <code>_ideas/</code> — does anything want to graduate to an entity?</li>
+        <li>Glance over your entities — anything stuck? Anything ready to move stages?</li>
+      </ul>
+    </div>
+
+    <p>The whole thing should feel like <em>thinking on paper</em>. Not like a chore.</p>
+  </section>
+
+  <section>
+    <h2>Frontmatter cheat sheet</h2>
+    <p>Every note has frontmatter at the top. The minimum:</p>
+<pre><code>---
+type: &lt;note type&gt;
+created: &lt;ISO date&gt;
+tags: []
+---</code></pre>
+    <p>Types you'll use most:</p>
+    <table>
+      <thead><tr><th style="width:30%">Type</th><th>When to use</th></tr></thead>
+      <tbody>
+        <tr><td><code>idea</code></td><td>A note in <code>_ideas/</code></td></tr>
+        <tr><td><code>entity-profile</code></td><td>A note describing an entity</td></tr>
+        <tr><td><code>session-log</code></td><td>An entry in <code>SESSION_LOG.md</code></td></tr>
+        <tr><td><code>planned-session</code></td><td>A note in <code>_sessions/planned/</code></td></tr>
+        <tr><td><code>code-pointer</code></td><td>A note pointing to a code repo (later, if you have code)</td></tr>
+      </tbody>
+    </table>
+    <p>Entity profiles add a couple of fields:</p>
+<pre><code>type: entity-profile
+entity-class: business
+lifecycle-stage: articulating
+sector: pet-services         # whatever describes the industry</code></pre>
+    <p>That's it. The full methodology has more frontmatter, but you don't need it yet.</p>
+  </section>
+
+  <hr class="divider">
+
+  <section>
+    <h2>What's deliberately not in here</h2>
+    <p>The full methodology has more — phases (0A through 2), specific spec stacks, version categorization, provider catalogs, multiple skill bundles. <strong>You don't need any of it today.</strong> Graduate to it as your work demands more structure. The starter version above is what we know works on day one for any business.</p>
+  </section>
+
+  <section>
+    <h2>What to do right now</h2>
+    <p>If you're reading this for the first time and want to use it:</p>
+    <ol class="steps">
+      <li>Create the folder structure above in your vault</li>
+      <li>Pick the one entity that matters most (probably the business)</li>
+      <li>Create its <code>entity-profile.md</code></li>
+      <li>Spend 30 minutes on a BASED articulation of what you actually want this business to be</li>
+      <li>Spend 30 more minutes on a SMART version of what you'll do this season</li>
+      <li>Drop a few ideas into <code>_ideas/</code> as they come up</li>
+      <li>Plan tomorrow's first session</li>
+    </ol>
+    <div class="callout">
+      You don't have to do all of these alone. The consultant is here to help you do them together. But you can re-read this and run any of these steps on your own at any time.
+    </div>
+  </section>
+
+  <footer>
+    <p>Starter Methodology · v0.1 · 2026-05-19 · A living document</p>
+  </footer>
+
+</div>
+</body>
+</html>

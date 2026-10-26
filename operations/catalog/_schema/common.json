@@ -1,0 +1,19 @@
+{
+  "lifecycle": ["candidate", "listed", "evidenced", "deprecated", "re-check"],
+  "transitions": {
+    "candidate": ["listed", "deprecated", "re-check"],
+    "listed": ["evidenced", "deprecated", "re-check"],
+    "evidenced": ["deprecated", "re-check"],
+    "deprecated": ["re-check"],
+    "re-check": ["candidate", "listed", "evidenced", "deprecated"]
+  },
+  "assignment-status": ["proposed", "ratified", "in-force", "switched", "retired"],
+  "assignment-transitions": {
+    "proposed": ["ratified"],
+    "ratified": ["in-force", "switched", "retired"],
+    "in-force": ["switched", "retired"],
+    "switched": [],
+    "retired": []
+  },
+  "basis": ["tested", "assumed"]
+}

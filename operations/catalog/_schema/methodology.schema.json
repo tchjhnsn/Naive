@@ -1,0 +1,26 @@
+{
+  "title": "catalog-methodology",
+  "type": "object",
+  "required": ["type", "id", "name", "domain", "family", "lifecycle", "source-of-truth", "answers", "fits-when", "unfit-when", "artifact-types", "last-checked", "source", "created", "ai-model", "tags"],
+  "properties": {
+    "type": { "enum": ["catalog-methodology"] },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "name": { "type": "string" },
+    "domain": { "type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*$" },
+    "family": { "type": "string" },
+    "lifecycle": { "enum": ["candidate", "listed", "evidenced", "deprecated", "re-check"] },
+    "source-of-truth": { "type": "string" },
+    "answers": { "type": "object", "propertyNames": { "pattern": "^M([1-9]|1[0-2])$" }, "additionalProperties": { "type": "object", "required": ["value", "basis"], "properties": { "value": { "type": "string" }, "basis": { "enum": ["tested", "assumed"] } } } },
+    "fits-when": { "type": "array", "items": { "type": "string" } },
+    "unfit-when": { "type": "array", "items": { "type": "string" } },
+    "switch-when": { "type": "array", "items": { "type": "string" } },
+    "artifact-types": { "type": "array", "items": { "type": "string" } },
+    "bodies-of-knowledge": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string", "pattern": "^A-[0-9]{3}$" } },
+    "last-checked": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "source": { "enum": ["human", "machine", "hybrid"] },
+    "created": { "type": "string" },
+    "ai-model": { "type": "string" },
+    "tags": { "type": "array" }
+  }
+}

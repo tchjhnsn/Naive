@@ -1,0 +1,202 @@
+{
+  "register": "agent-roles",
+  "updated": "2026-10-14",
+  "governed_by": "ratified operating-model decisions",
+  "conformance": "Checks with objective criteria (tests, goldens, invariants, rebuilds) run as CI and scripts: no model and no reviewer (the conformance rule).",
+  "tiers": {
+    "person": "A human; holds accountability",
+    "frontier": "Strongest available model; high-leverage, novel, low-volume decisions",
+    "workhorse-coding": "Strong, cheaper coding model; high-volume, well-specified implementation",
+    "none": "Deterministic scripts and CI"
+  },
+  "roles": [
+    {
+      "id": "founder",
+      "name": "Founder",
+      "occupant": "person",
+      "tier": "person",
+      "functions": [
+        "F1 purpose and strategy",
+        "escalations",
+        "final say on F9"
+      ],
+      "decides": [
+        "strategy",
+        "constitutional changes",
+        "money",
+        "legal terms",
+        "public commitments",
+        "production ship (or a named delegate)",
+        "anything irreversible at company scale"
+      ],
+      "research": "any",
+      "reviews": "escalation classes only",
+      "escalates_to": null,
+      "template": "[[founder]]"
+    },
+    {
+      "id": "chief-of-staff",
+      "name": "Chief of Staff",
+      "occupant": "agent",
+      "tier": "frontier",
+      "functions": [
+        "F7 coordinate and remember"
+      ],
+      "decides": [
+        "intake and first-principles restatement",
+        "routing to roles",
+        "priorities within approved strategy",
+        "what to defer and to whom",
+        "register upkeep"
+      ],
+      "research": "rediscovery across ledgers and registers; light research to frame an idea",
+      "reviews": "none; it routes",
+      "escalates_to": "next level's chief-of-staff, then founder",
+      "template": "[[chief-of-staff]]",
+      "notes": "One position per level: umbrella (the founder's only interface) and one per ecosystem (the decision-level rule)."
+    },
+    {
+      "id": "domain-lead",
+      "name": "Domain Lead",
+      "occupant": "agent",
+      "tier": "frontier",
+      "functions": [
+        "F2 know the domain"
+      ],
+      "decides": [
+        "what the sources say and how reliable they are",
+        "domain design within decided strategy",
+        "which sources to add to the source register"
+      ],
+      "research": "primary sources, law, official records, academic and industry literature",
+      "reviews": "domain accuracy of others' work on request",
+      "escalates_to": "ecosystem chief-of-staff",
+      "template": null,
+      "notes": "New role; no human template yet. Core where data is the product."
+    },
+    {
+      "id": "architect",
+      "name": "Architect (architecture and infrastructure)",
+      "occupant": "agent",
+      "tier": "frontier",
+      "functions": [
+        "F3 systems design",
+        "F4 decomposition (Tech Lead folded in by a ratified role decision)",
+        "F6 fit-to-intent review",
+        "F8 operating rules"
+      ],
+      "decides": [
+        "ADRs inside decided strategy",
+        "repository, data stores, runtimes, formats",
+        "build handoffs and done-criteria",
+        "accepting work in classes marked for review",
+        "operating procedures (e.g. database branch procedure)"
+      ],
+      "research": "technology evaluation, vendor and library docs, prior art",
+      "reviews": "fit to intent, only for marked decision classes",
+      "escalates_to": "ecosystem chief-of-staff",
+      "template": "[[cto]]",
+      "notes": "Split out a Tech Lead when several Builders run in parallel."
+    },
+    {
+      "id": "product-design-lead",
+      "name": "Product and Design Lead",
+      "occupant": "agent",
+      "tier": "frontier",
+      "functions": [
+        "F3 domain, product, experience and interface layers"
+      ],
+      "decides": [
+        "experience and interface design within decided product lines",
+        "microcopy within brand voice"
+      ],
+      "research": "users, comparable products, design references, accessibility",
+      "reviews": "fit to experience intent for marked classes",
+      "escalates_to": "ecosystem chief-of-staff",
+      "template": null
+    },
+    {
+      "id": "builder",
+      "name": "Builder",
+      "occupant": "agent",
+      "tier": "workhorse-coding",
+      "functions": [
+        "F5 make",
+        "F8 execution under the Architect's rules"
+      ],
+      "decides": [
+        "how to implement within the handoff",
+        "implementation details, refactors within scope",
+        "shipping work that passes conformance (the reversible-work rule)"
+      ],
+      "research": "current docs, APIs, library versions, error messages, before and during coding",
+      "reviews": "never its own work",
+      "escalates_to": "architect",
+      "template": "[[forward-deployed-engineer]]"
+    },
+    {
+      "id": "business-lead",
+      "name": "Business Lead",
+      "occupant": "agent",
+      "tier": "frontier",
+      "functions": [
+        "F9 capture value: research and models"
+      ],
+      "decides": [
+        "market, pricing and financial research and models within strategy"
+      ],
+      "research": "markets, competitors, financial and regulatory sources",
+      "reviews": "commercial claims in others' work on request",
+      "escalates_to": "ecosystem chief-of-staff (money and legal go to founder)",
+      "template": "[[coo]]",
+      "notes": "On demand."
+    },
+    {
+      "id": "operations-finance-lead",
+      "name": "Operations and Finance Lead",
+      "occupant": "agent",
+      "tier": "frontier",
+      "functions": [
+        "F10 administer accounts, vendors, contracts, renewals and access",
+        "F9 spend tracking and budgets"
+      ],
+      "decides": [
+        "keeping the spend register current from statements",
+        "flagging renewals, duplicates and unused subscriptions",
+        "moving existing commitments to the business card or account",
+        "budget-versus-actual reports"
+      ],
+      "research": "vendor pricing, plans and terms; banking and expense tools",
+      "reviews": "cost and terms of proposed dependencies",
+      "escalates_to": "founder for any new expense, plan upgrade, cancellation of an in-use service, or terms",
+      "template": "[[coo]]",
+      "notes": "Never signs in to bank or billing accounts; works from exported statements. Business only; personal finances are separate."
+    }
+  ],
+  "model_chains": {
+    "note": "Ordered by capability; setup tools pick the first available and fall back on credit or quota errors (ratified model-tier rules). Names change with plans; detection is authoritative. Measured 2026-10-15 in Cursor: only Grok and Composer available until the plan resets on 2026-10-20.",
+    "frontier-judgment": {
+      "claude-code": [
+        "claude-opus-5-5",
+        "claude-fable-5-1"
+      ],
+      "cursor": [
+        "claude-fable-5-1-thinking-high",
+        "claude-sonnet-5-5-high",
+        "claude-opus-5-5-medium",
+        "gemini-4-argon-medium",
+        "auto"
+      ]
+    },
+    "workhorse-coding": {
+      "cursor": [
+        "grok-4.7-high-fast",
+        "cursor-grok-4.6-high-fast",
+        "composer-2.5-fast",
+        "claude-sonnet-5-5-high",
+        "auto"
+      ]
+    },
+    "review-panel": "two model families: first available frontier-judgment model plus grok-4.7-high-fast; gemini-4-argon-medium as the alternate second family"
+  }
+}

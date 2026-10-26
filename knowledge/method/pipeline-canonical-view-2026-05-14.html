@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SAD v3.3+ — Canonical Pipeline View (Project-Agnostic) — 2026-05-14</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-soft: #555;
+    --rule: #d8d8d4;
+    --rule-soft: #ececea;
+    --bg: #fafaf7;
+    --accent: #b6602e;
+    --accent-soft: #f3e6dc;
+    --good: #2e7d4e;
+    --pending: #b88b1a;
+    --tag: #5a5a55;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body {
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    margin: 0; padding: 36px clamp(20px, 6vw, 80px);
+    max-width: 1180px; margin-inline: auto;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 {
+    font-size: 16px; margin: 36px 0 10px;
+    padding-bottom: 4px; border-bottom: 1px solid var(--rule);
+    letter-spacing: 0.02em; text-transform: uppercase; font-weight: 600;
+  }
+  h3 { font-size: 14px; margin: 20px 0 6px; letter-spacing: 0.01em; }
+  h4 { font-size: 13px; margin: 14px 0 4px; color: var(--ink-soft); font-weight: 600; }
+  p, ul, ol { margin: 6px 0 10px; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 3px 0; }
+  code, .mono { font-family: var(--mono); font-size: 12.5px; }
+  .anchor {
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    padding: 10px 14px; margin: 14px 0 18px;
+  }
+  .anchor p { margin: 4px 0; }
+  .meta { color: var(--ink-soft); font-size: 12px; }
+  .lane {
+    border: 1px solid var(--rule); border-radius: 4px;
+    margin: 14px 0; padding: 12px 16px; background: white;
+  }
+  .lane-articulate { border-top: 3px solid #8e6cb8; }
+  .lane-build { border-top: 3px solid #2e7d4e; }
+  .lane-ship { border-top: 3px solid #b6602e; }
+  .lane-operate { border-top: 3px solid #5a5a55; }
+  .lane-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .lane-title { font-size: 15px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .lane-purpose { color: var(--ink-soft); font-size: 12px; }
+  .phase { padding: 6px 0; border-bottom: 1px dashed var(--rule-soft); }
+  .phase:last-child { border-bottom: none; }
+  .phase-id { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+  .phase-name { font-weight: 600; }
+  .phase-out { color: var(--ink-soft); font-size: 12.5px; }
+  .pillar-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+    margin: 10px 0;
+  }
+  .pillar-cell {
+    border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; background: white;
+  }
+  .pillar-cell h4 { margin-top: 0; color: var(--ink); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .matrix { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 12.5px; }
+  .matrix th, .matrix td {
+    border: 1px solid var(--rule); padding: 6px 9px; vertical-align: top; text-align: left;
+  }
+  .matrix th { background: var(--rule-soft); font-weight: 600; }
+  .matrix td.lane-cell { font-family: var(--mono); font-size: 11.5px; }
+  .ritual {
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: 10px 14px; margin: 8px 0; background: white;
+  }
+  .ritual-name { font-weight: 600; font-size: 13px; }
+  .ritual-trigger { color: var(--accent); font-family: var(--mono); font-size: 12px; }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px;
+    padding: 1px 6px; border-radius: 3px; margin-left: 6px;
+    background: var(--rule-soft); color: var(--tag); text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .badge-ratified { background: #e3f0e6; color: var(--good); }
+  .badge-proposed { background: #fbf2dc; color: var(--pending); }
+  .badge-amendment { background: #efe7f5; color: #6a4f8e; }
+  .cite { font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); }
+  .note { color: var(--ink-soft); font-size: 12.5px; font-style: italic; }
+  details summary { cursor: pointer; font-size: 13px; color: var(--accent); margin: 4px 0; }
+  details > div { padding: 6px 0 6px 14px; border-left: 2px solid var(--rule-soft); }
+</style>
+</head>
+<body>
+
+<h1>SAD v3.3+ — Canonical Pipeline View</h1>
+<p class="meta">Project-agnostic reference. Captured 2026-05-14. Last-reviewed 2026-05-14 (revised same day through §27–§39 refinements).<br/>
+Authored as Step 1a of the V1-next triage exercise — separate the methodology from any one project so we can map projects onto it. Revised across several iterations: enumeration is a mode of 0A (not a sub-phase); triage is the 0A→0B bridge; project ambition is declared before research; research is per-pillar, multi-mode, and runs in two passes; AI thought-partnership has two declared modes (friend / office hours); pillars are recursive; templates are explicit-on-what-to-consider but implicit-on-how-to-document; methodology produces role-filling artifacts when teams form; orchestration trajectory is HTML now and software later.</p>
+
+<div class="anchor">
+  <p><strong>What this is.</strong> A single-page view of the methodology as it stands today —
+  Articulate → Build → Ship → Operate, the three pillars that flow through every lane, the
+  sprint anatomy that bounds every unit of work, the rituals that prevent silent drift, and
+  the ratified-vs-proposed status of each amendment.</p>
+  <p><strong>What this is not.</strong> A re-derivation of SAD from first principles, or a
+  per-project application. The canonical document is <span class="cite">knowledge/method/SAD_SKILL_v3.md</span>.
+  This is its operational sketch — the shape you'd want in front of you at the start of any sprint.</p>
+  <p><strong>Two foundational principles to keep in mind (per §36–§37).</strong>
+  (1) The three-pillar structure is <em>recursive</em> — pillar products are themselves
+  companies-in-miniature with their own three pillars. (2) Templates are <em>explicit about
+  what to consider, implicit about how to document</em> — they encode principles,
+  recommendations, and examples; the actual deliverable shape is per project, per AI
+  conversation, per context.</p>
+</div>
+
+<h2>1. The four lanes</h2>
+
+<p>Every entity that gets shipped passes through the same four lanes in the same order.
+Lanes are recursive — a single version, a single surface, or a whole ecosystem all flow through them.
+Within a lane, phases are sequential; across lanes, work can run in parallel
+(e.g., V[N+1] Articulate often runs while V[N] is still in Operate).</p>
+
+<div class="lane lane-articulate">
+  <div class="lane-header">
+    <div class="lane-title">Articulate</div>
+    <div class="lane-purpose">Turn an idea into a spec stack + design substrate that an implementer can build from without inferring intent</div>
+  </div>
+  <div class="phase">
+    <span class="phase-id">0A</span> <span class="phase-name">Mind Dump + Thought Partnership.</span>
+    <span class="phase-out">→ IDEA_MAP.md + (optionally) an enumeration artifact. Runs in two modes: <strong>free-form</strong> (loose, exploratory) and <strong>enumeration</strong> (systematic, breadth-first). Enumeration is a <em>mode</em>, not a sub-phase. AI posture: <strong>friend mode</strong>. <span class="badge badge-proposed">v3.3+ §27</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">0A→0B bridge</span> <span class="phase-name">Triage.</span>
+    <span class="phase-out">→ Organize ideas (idea-dumps + enumeration artifact) into per-pillar categorization + prioritization + research-driving questions + row-level status (OPEN/TRIAGED/DEFERRED/etc.). Gate: research can proceed from triage outputs. <span class="badge badge-proposed">v3.3+ §28</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">0Δ</span> <span class="phase-name">Project Ambition Gate.</span>
+    <span class="phase-out">→ Declare ambition tier: <strong>hobby</strong> / <strong>side-project</strong> / <strong>open-source-tool</strong> / <strong>venture</strong> / <strong>enterprise</strong>. Tier determines depth + breadth of research that follows. Stored in entity profile frontmatter. <span class="badge badge-proposed">v3.3+ §29</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">0B</span> <span class="phase-name">Research (per-pillar, first pass).</span>
+    <span class="phase-out">→ Per-pillar RESEARCH_SYNTHESIS (product / brand / business). Web search + vault context, ambition-tier-calibrated depth. AI posture: <strong>friend mode</strong> — expand what's possible, broaden aperture. Output feeds 0C vision. <span class="badge badge-proposed">v3.3+ §30</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">0C</span> <span class="phase-name">Unconstrained Vision.</span>
+    <span class="phase-out">→ VISION_SPEC.md (permanent; never scoped down). Arrived at via friend-mode research; captures what's possible across the full aspiration.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">1A</span> <span class="phase-name">Version Scoping (office-hours mode).</span>
+    <span class="phase-out">→ VERSION_SPEC_v[N].md (subtractive cut of vision for this version). AI posture: <strong>office hours mode</strong> — sharp critique, demand evidence, kill weak claims. <span class="badge badge-proposed">v3.3+ §31</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">0B′</span> <span class="phase-name">Research (validate pass, post-1A).</span>
+    <span class="phase-out">→ Office-hours mode research that asks: are the versions tangible? Is the idea actually needed? May trigger regression to 1A or 0C. Output gates entry to 1B. <span class="badge badge-proposed">v3.3+ §30</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">1B</span> <span class="phase-name">Spec Stack.</span>
+    <span class="phase-out">→ PRODUCT_SPEC, DATA_MODEL_SPEC, IMPL_SPEC, BEHAVIORAL_SPEC, VERIFICATION_SPEC. Spec Convergence loop runs to threshold.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">1B.Final</span> <span class="phase-name">Cross-Spec Final Review.</span>
+    <span class="phase-out">→ PHASE_1B_FINAL_REVIEW.md. Consistency across all six specs at thresholds.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">1C</span> <span class="phase-name">Articulation Closure</span> <span class="badge badge-amendment">amendment</span>
+    <span class="phase-out">→ UX/UI deliverables inventory + cross-spec gap audit + Ralph Wiggum test. Gate before Build can start. <span class="cite">See §17 in build-roadmap idea-dump.</span></span>
+  </div>
+</div>
+
+<div class="lane lane-build">
+  <div class="lane-header">
+    <div class="lane-title">Build</div>
+    <div class="lane-purpose">Implement the spec stack against the verification gate — autonomously or with checkpoints</div>
+  </div>
+  <div class="phase">
+    <span class="phase-id">2.1</span> <span class="phase-name">Bootstrap.</span>
+    <span class="phase-out">→ Repo init, framework + runtime parity (local <code>preview</code> = production runtime), CI scaffold, env wiring. <span class="badge badge-proposed">v3.0.1 amendment — local-dev-parity-by-bootstrap</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">2.2</span> <span class="phase-name">Schema.</span>
+    <span class="phase-out">→ Data model → migrations → seed contract. Type-check clean before next phase.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">2.3</span> <span class="phase-name">Platform.</span>
+    <span class="phase-out">→ Hosting target, database connection, runtime bindings, observability scaffold.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">2.4</span> <span class="phase-name">F-flow Vertical Slice.</span>
+    <span class="phase-out">→ One end-to-end user path implemented all the way through. Real-Run Smoke gate. <span class="badge badge-proposed">v3.0.1 amendment — phase-closure-protocol</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">2.5</span> <span class="phase-name">Editorial / Content Seed.</span>
+    <span class="phase-out">→ Real content lands; not stub. Vintage stamps on every record per spec.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">2.x</span> <span class="phase-name">F-flow Expansion + Surface Buildout.</span>
+    <span class="phase-out">→ Remaining F-flows; remaining wiki surfaces; component library applied; design tokens consumed everywhere.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">2.Final</span> <span class="phase-name">Verification Gate.</span>
+    <span class="phase-out">→ VERIFICATION_SPEC §9 test plan executes; PASS / FAIL on every row; failing-must-be-zero condition. Functional, not structural. <span class="badge badge-amendment">amendment §12 — functional completion conditions</span></span>
+  </div>
+</div>
+
+<div class="lane lane-ship">
+  <div class="lane-header">
+    <div class="lane-title">Ship</div>
+    <div class="lane-purpose">Move the verified build to production and confirm the user-facing surface is intact</div>
+  </div>
+  <div class="phase">
+    <span class="phase-id">3.1</span> <span class="phase-name">Preflight.</span>
+    <span class="phase-out">→ Deploy checklist; lockfile + package.json paired; brand-load-bearing files surfaced; commit hygiene. <span class="badge badge-amendment">amendments §13–§16</span></span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">3.2</span> <span class="phase-name">Deploy.</span>
+    <span class="phase-out">→ Production deploy executed; deploy logs reviewed; rollback path documented.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">3.3</span> <span class="phase-name">Post-Ship Verification.</span>
+    <span class="phase-out">→ Sitemap crawl; visual sweep; production §9 + advisory tests. Surface drift relative to spec.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">3.4</span> <span class="phase-name">Ship Handoff Doc.</span>
+    <span class="phase-out">→ What shipped, what's known-broken, what's next, what's in V[N].x patch queue.</span>
+  </div>
+</div>
+
+<div class="lane lane-operate">
+  <div class="lane-header">
+    <div class="lane-title">Operate</div>
+    <div class="lane-purpose">Maintain the shipped surface, capture lessons, prepare the next articulation</div>
+  </div>
+  <div class="phase">
+    <span class="phase-id">4.1</span> <span class="phase-name">V[N].x Patch Queue.</span>
+    <span class="phase-out">→ Bug fixes, data corrections, micro-polish. Doesn't expand scope; doesn't move the next-version line.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">4.2</span> <span class="phase-name">Monitor + Triage.</span>
+    <span class="phase-out">→ Observability reviews; incident response; runbook execution.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">4.3</span> <span class="phase-name">V[N+1] Articulate (parallel).</span>
+    <span class="phase-out">→ Next-version Articulate lane runs concurrently with V[N] Operate. Sprint type determines which lane the current session belongs to.</span>
+  </div>
+  <div class="phase">
+    <span class="phase-id">4.4</span> <span class="phase-name">Methodology Amendments.</span>
+    <span class="phase-out">→ Lessons from Sprint N encoded as SAD v3.x+ amendment proposals. Captured in build-roadmap idea-dump, formalized in methodology repo.</span>
+  </div>
+</div>
+
+<h2>2. The three pillars</h2>
+
+<p>Every entity has at most three pillars (per the vault constitution): <strong>Product</strong> (what the entity does),
+<strong>Brand</strong> (identity / voice / source-of-truth-for-look-and-feel), <strong>Business</strong> (commercial surface).
+Each pillar contributes its own deliverables at each lane.</p>
+
+<p><strong>Each pillar can have products.</strong> Product pillar holds canonical company products (required); Brand and Business may have products as optional extensions (podcasts, brand campaigns, partnership programs, training certifications, etc.). The product-type taxonomy (software / content / service / hardware / hybrid / partnership / program) is orthogonal to which pillar holds the product. <span class="badge badge-proposed">§35</span></p>
+
+<p><strong>The pillars are recursive.</strong> Pillar products are themselves companies-in-miniature with their own three-pillar structure. A Brand-pillar podcast has its own Product (the show), its own Brand (the show's identity), and its own Business (operations, overhead, revenue). The methodology applies fractally — articulation closure, version-identity, deliverable templates work the same way at every recursion level. This is how companies organically birth other companies. <span class="badge badge-proposed">§36</span></p>
+
+<div class="pillar-grid">
+  <div class="pillar-cell">
+    <h4>Product pillar</h4>
+    <p class="meta">The spec stack + design substrate + code. SAD v3 was originally written here.</p>
+    <ul>
+      <li>IDEA_MAP, RESEARCH_SYNTHESIS</li>
+      <li>VISION, VERSION, PRODUCT, DATA_MODEL, IMPL, BEHAVIORAL, VERIFICATION specs</li>
+      <li>Sitemap, IA, audience, UX flows, microcopy, content models</li>
+      <li>Wireframes, component library, responsive breakpoints, a11y checklist</li>
+      <li>Repo code, migrations, tests, deploy workflow</li>
+      <li>SESSION_LOG (institutional memory)</li>
+    </ul>
+  </div>
+  <div class="pillar-cell">
+    <h4>Brand pillar</h4>
+    <p class="meta">Source of truth for identity. Imported by Product.design and Business — never copied.</p>
+    <ul>
+      <li>Brand identity (colors, typography, logo, imagery style)</li>
+      <li>Brand voice + tone + narrative + microcopy register</li>
+      <li>Wordmark, mark, favicon, OG image, asset library</li>
+      <li>Foreshadowing discipline + invariants (e.g., I1–I9 for the reference project)</li>
+      <li>Version-identities + persona-evolution (for products with persona discipline)</li>
+    </ul>
+  </div>
+  <div class="pillar-cell">
+    <h4>Business pillar</h4>
+    <p class="meta">Commercial / operational surface. Applies brand to commercial artifacts; never redefines brand.</p>
+    <ul>
+      <li>Marketing site copy (landing, about, privacy, terms)</li>
+      <li>App store listing, preview briefs, social copy</li>
+      <li>Pricing, partnership memos, anti-scraping / ToS clauses</li>
+      <li>Metrics framework, operational runbooks, incident response procedures</li>
+      <li>Pitch decks, investor materials, contracts</li>
+    </ul>
+  </div>
+</div>
+
+<h2>3. Phases × pillars — the deliverables matrix</h2>
+
+<p>What each pillar contributes at each lane. Empty cells mean the pillar typically has nothing
+to ship in that lane; doesn't mean it can't. Items in <em>italic</em> are amendments not yet
+ratified into <code>SAD_SKILL_v3.md</code>.</p>
+
+<table class="matrix">
+  <thead>
+    <tr><th style="width:90px;">Lane</th><th>Product</th><th>Brand</th><th>Business</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="lane-cell">Articulate 0A</td>
+      <td>Idea-dumps + (optional) enumeration artifact → IDEA_MAP</td>
+      <td>Brand idea-dumps; voice + identity hypothesis (free-form or enumerated)</td>
+      <td>Business idea-dumps; market thesis; commercial hypothesis (free-form or enumerated)</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Triage</td>
+      <td>Per-pillar categorization + prioritization + research-driving questions</td>
+      <td>Brand-specific research questions surfaced</td>
+      <td>Business-specific research questions surfaced</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">0Δ — Ambition Gate</td>
+      <td colspan="3" style="text-align:center;"><em>Ambition tier declared (hobby / side-project / open-source-tool / venture / enterprise). One declaration covers all three pillars; tier calibrates research depth.</em></td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Articulate 0B</td>
+      <td>Product RESEARCH_SYNTHESIS — prior art, technical feasibility, architectural patterns</td>
+      <td>Brand RESEARCH_SYNTHESIS — identity-space landscape, voice references, naming research</td>
+      <td>Business RESEARCH_SYNTHESIS — market analysis, competitor breakdowns, pricing landscape</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Articulate 0C</td>
+      <td>VISION_SPEC (permanent; arrived at via friend-mode synthesis across all three pillars' research)</td>
+      <td>Brand vision implicit in VISION_SPEC; identity invariants articulated</td>
+      <td>Business vision implicit in VISION_SPEC; commercial thesis articulated</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Articulate 1A</td>
+      <td>VERSION_SPEC_v[N] (office-hours mode cuts)</td>
+      <td>Brand version-identities for v[N] persona</td>
+      <td>Version-scoped business plan (if commercial)</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">0B′ — Validate</td>
+      <td>Office-hours research validates technical tangibility</td>
+      <td>Office-hours research validates brand positioning tangibility</td>
+      <td>Office-hours research validates market need / sizing tangibility</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Articulate 1B</td>
+      <td>PRODUCT, DATA_MODEL, IMPL, BEHAVIORAL, VERIFICATION specs</td>
+      <td>Brand identity Vol I, Brand voice Vol I/II, foreshadowing</td>
+      <td>Marketing copy + business profile (in parallel)</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Articulate 1C</td>
+      <td><em>Sitemap, IA, audience, UX flows, microcopy, content models, wireframes, component library catalogue, accessibility checklist, responsive breakpoints, district/map strategy, portrait standards, articulation-closure inventory</em></td>
+      <td>Wordmark final, OG image, asset library finalized, font loading decision</td>
+      <td>Anti-scraping plan, metrics framework, ops runbooks, app store copy</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Build 2.x</td>
+      <td>Repo code, migrations, ingestion, F-flow implementations, verification gate</td>
+      <td>Brand tokens consumed in code; assets shipped; voice in microcopy</td>
+      <td>Marketing site live; analytics wired; runbooks tested</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Ship 3.x</td>
+      <td>Deploy workflow, ship handoff doc, post-ship verification</td>
+      <td>Brand smoke test on production (typography, color, voice register)</td>
+      <td>Launch announcements, app store submission, partnership comms</td>
+    </tr>
+    <tr>
+      <td class="lane-cell">Operate 4.x</td>
+      <td>V[N].x patches, V[N+1] Articulate, methodology amendments</td>
+      <td>Brand corrections (e.g., font-revision-post-ship), brand evolution for v[N+1]</td>
+      <td>Stakeholder updates, metrics review, pricing iteration</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Sprint anatomy</h2>
+
+<p>A sprint is a bounded work unit within a phase or sub-phase that produces a defined
+deliverable and closes against a gate. The sprint-declaration ritual at session start
+makes scope deterministic. <span class="cite">See build-roadmap idea-dump §23.</span></p>
+
+<table class="matrix">
+  <thead>
+    <tr><th>Field</th><th>Values / Examples</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Type</strong></td>
+        <td>articulation · build · ship · operate · methodology</td></tr>
+    <tr><td><strong>Idea-state</strong></td>
+        <td>blank · articulated · built · shipped · re-articulating <span class="cite">(§22)</span></td></tr>
+    <tr><td><strong>Goal</strong></td>
+        <td>The deliverable. Named, bounded, attributable to a spec or amendment</td></tr>
+    <tr><td><strong>Gate</strong></td>
+        <td>Functional, not structural. "User can do X" beats "Y route renders." <span class="cite">(§12)</span></td></tr>
+    <tr><td><strong>Dependencies</strong></td>
+        <td>Predecessor sprints whose gates must close before this one starts</td></tr>
+    <tr><td><strong>Pillars touched</strong></td>
+        <td>Product / Brand / Business — one, two, or all three</td></tr>
+    <tr><td><strong>AI posture</strong></td>
+        <td>Friend (sympathetic expansion) · Office hours (sharp critique). Declared per sprint. <span class="cite">(§31)</span></td></tr>
+    <tr><td><strong>Relations</strong></td>
+        <td>Sequential · parallel (within lane) · recursive (nested sub-sprints) · cross-cutting (methodology sprint between any two)</td></tr>
+  </tbody>
+</table>
+
+<h3>AI thought-partnership modes <span class="badge badge-proposed">§31</span></h3>
+<p>The AI thought-partner operates in two modes. The mode is declared at sprint start
+as part of the sprint declaration ritual. Wrong-mode runs are themselves a methodology
+failure mode.</p>
+
+<table class="matrix">
+  <thead>
+    <tr><th style="width:130px;">Mode</th><th>Posture</th><th>Dominant in</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Friend mode</strong></td>
+      <td>Sympathetic expansion. "Yes, and." Help the operator broaden, see possibilities, articulate aspirations. Push back lightly when warranted but lean toward expansion over constraint.</td>
+      <td>0A (mind dump), 0B-initial (vision-expanding research), 0C (unconstrained vision), methodology brainstorming, any phase where the operator is exploring rather than converging.</td>
+    </tr>
+    <tr>
+      <td><strong>Office hours mode</strong></td>
+      <td>Sharp critique (Gary Tan's Office Hours format as canonical reference). Press hard, demand evidence, identify weakest claim first, run steel-mans, surface the inconvenient question. Push operator to defend the strongest version of their thinking.</td>
+      <td>1A (version scoping), 0B′-validate (testing version tangibility / need), 1B spec convergence reviews, phase closure reviews, any phase where weak claims need to die before they ship.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>5. Substrates</h2>
+
+<h3>Skill layer vs. Wiki layer <span class="cite">(SAD v3 PART 0)</span></h3>
+<p>SAD is both a <strong>Skill</strong> (capabilities the AI invokes — procedures, phase gates,
+session protocol, rituals) and a <strong>Wiki</strong> (knowledge the AI reads — spec
+artifacts, entity profiles, idea-dumps, methodology corpus). v2 over-developed Skill; v3
+treats them as co-equal.</p>
+
+<h3>Raw vs. Compiled <span class="cite">(SAD v3 PART 2)</span></h3>
+<p>Raw is immutable (only added; never edited). Compiled is re-buildable from raw.
+Five timestamp fields detect staleness: <code>created</code>, <code>ingested</code>,
+<code>updated</code>, <code>last-compiled</code>, <code>last-reviewed</code>. A compiled
+artifact whose upstream raw is newer than its <code>last-compiled</code> is stale.</p>
+
+<h3>Canonical-doc discipline <span class="badge badge-proposed">§26 (proposed)</span></h3>
+<p>Every concern has exactly one canonical document. The canonical doc declares itself
+canonical in a top-of-document banner. Related documents cross-reference the canonical
+doc and declare their relationship (derives-from, elaborates-on, supersedes).
+Canonicalization is itself a methodology sprint output.</p>
+
+<h3>Idea archive <span class="badge badge-proposed">§25 (proposed)</span></h3>
+<p>Every project at every level carries an idea-archive document. Archived rows record
+original framing, when tried, what happened, when/why rolled back, future notes. The
+Meta-rollback pattern — track your decisions about decisions.</p>
+
+<h2>6. The rituals</h2>
+
+<div class="ritual">
+  <div class="ritual-name">Session-start ritual <span class="ritual-trigger">at session start</span></div>
+  <ol>
+    <li><strong>Step 0 — Declare scope level.</strong> Global / Project / Local. If Project, name the entity.</li>
+    <li>Invoke time-awareness skill — record <code>session-start-time</code> (UTC ISO-8601).</li>
+    <li>Invoke session-capture skill — capture predecessor session tail to <code>_sessions/raw/</code>.</li>
+    <li>Read context: vault CLAUDE.md (or repo CLAUDE.md for code work), most-recent SESSION_LOG entry, entity profile + relevant specs.</li>
+    <li><strong>Declare sprint type + idea-state + goal + gate + dependencies.</strong> <span class="badge badge-proposed">v3.3+</span></li>
+    <li>Check unresolved staleness markers.</li>
+  </ol>
+</div>
+
+<div class="ritual">
+  <div class="ritual-name">Session-end ritual <span class="ritual-trigger">at session close</span></div>
+  <ol>
+    <li>Invoke time-awareness — record <code>session-end-time</code>.</li>
+    <li>Invoke session-capture — write the session's raw <code>_sessions/raw/&lt;date&gt;-&lt;slug&gt;.md</code>.</li>
+    <li>Append compiled entry to <code>_sessions/SESSION_LOG.md</code>.</li>
+    <li>Graduate any session-proposals that were executed; spawn new ones for follow-on work.</li>
+    <li><strong>Update status columns on enumeration / backlog rows touched this sprint.</strong> <span class="badge badge-proposed">§24</span></li>
+  </ol>
+</div>
+
+<div class="ritual">
+  <div class="ritual-name">Convergence loop <span class="ritual-trigger">at every ★ checkpoint</span></div>
+  <p>Spec Convergence (Phase 1B): &lt; 10% ambiguity on critical specs, &lt; 20% on others.
+  Implementation Convergence (Phase 3): ≥ 95% compliance. Passing convergence produces
+  handoff readiness — the artifact is intelligible to someone not in the room.</p>
+</div>
+
+<div class="ritual">
+  <div class="ritual-name">Cross-spec gap audit <span class="ritual-trigger">at Articulation Closure (1C)</span></div>
+  <p>Three-direction audit: forward (entities → UX), behavior (states → UX), flow
+  (PRODUCT_SPEC F-flows → UX flows). Until clean (no red entries), Phase 2 does not begin.</p>
+</div>
+
+<div class="ritual">
+  <div class="ritual-name">Real-Run Smoke <span class="ritual-trigger">at Phase 2.x closure</span></div>
+  <p>Before declaring any Phase 2.x complete with external integrations, run the slice
+  end-to-end against real services in a local preview environment. Surface surprises
+  before they surface in production. <span class="cite">v3.0.1 amendment.</span></p>
+</div>
+
+<div class="ritual">
+  <div class="ritual-name">Pre-commit ritual <span class="ritual-trigger">before every git commit</span></div>
+  <ol>
+    <li>Run <code>git diff --stat HEAD</code>; surface every file with its session-of-origin.</li>
+    <li>Brand- and scope-load-bearing files: explicit "yes, ship this" confirmation.</li>
+    <li>If <code>package.json</code> is staged, lockfile must also be staged. <span class="cite">(§16)</span></li>
+    <li>Only then draft the commit message.</li>
+  </ol>
+</div>
+
+<div class="ritual">
+  <div class="ritual-name">Ralph Wiggum test <span class="ritual-trigger">at Articulation Closure</span></div>
+  <p>Walk every articulation deliverable. For each line item, ask: "Could an earnest
+  follower-of-directions implement this without asking?" If yes, articulation is closed
+  for that item. If no, the gap is named and closed before autonomous-loop execution
+  can begin. The same bar applies to <code>/goal</code> conditions, Ralph loops, and
+  any agentic implementation pattern. <span class="cite">(§10)</span></p>
+</div>
+
+<h2>7. The status of the methodology</h2>
+
+<h3>Ratified into <code>SAD_SKILL_v3.md</code></h3>
+<ul>
+  <li>PART 0 — Skill-and-Wiki framing</li>
+  <li>PART 0.5 — Scope levels (Global / Project / Local)</li>
+  <li>PART 1 — Continuous vs. Episodic activities</li>
+  <li>PART 2 — Two-layer data model (raw / compiled)</li>
+  <li>PART 3 — Campaign / Session / Checkpoint hierarchy + session rituals</li>
+  <li>PART 4 — Session Opening Protocol (Phase 2+)</li>
+  <li>PART 5 — Pipeline (Phase 0A → 5) + lifecycle stages + surface nesting patterns</li>
+  <li>PART 6–11 — Spec structures, Convergence, capability-skills, session-proposal pattern, session-log format, supporting patterns</li>
+  <li>PART 12 — Known failure modes</li>
+  <li>PART 13 — Worked example</li>
+  <li>PART 14 — 16 critical reminders</li>
+</ul>
+
+<h3>Proposed amendments (authored, not yet ratified)</h3>
+<details>
+  <summary>v3.0.1 — Phase Closure Protocol + Real-Run Discipline <span class="badge badge-proposed">proposed 2026-05-05</span></summary>
+  <div>
+    <p>Adds: (1) Real-Run Smoke step to phase closure; (2) Local-Dev-Parity-by-Bootstrap to Phase 2.1; (3) External-Integration Smoke Tests pattern. Motivated by the reference project Census/Imperva WAF incident.</p>
+    <p class="cite">SAD_SKILL_v3_AMENDMENT_2026-05-05_phase-closure-protocol.md</p>
+  </div>
+</details>
+<details>
+  <summary>v3.0.2 — Spec Colocation (vault vs. code repo) <span class="badge badge-proposed">proposed 2026-05-06</span></summary>
+  <div>
+    <p>Allows version-and-below spec artifacts to colocate with the code repo when project has a dedicated repo and benefits from spec access in non-vault environments. Vault retains a spec-pointer note. Vision stays in vault.</p>
+    <p class="cite">SAD_SKILL_v3_AMENDMENT_2026-05-06_spec-colocation.md</p>
+  </div>
+</details>
+
+<h3>Idea-dump amendments queued for ratification</h3>
+<p>From <span class="cite">_ideas/build-roadmap-and-html-orchestration-2026-05-12.md</span>:</p>
+<ol start="1">
+  <li>§1–4 — Build Roadmap as required 1B→2 deliverable; the four-axis structure (what/order/sync/parallel)</li>
+  <li>§5–16 — Articulation Closure as named phase; UX/UI split; cross-spec gap audit; Ralph Wiggum test; implicit-vs-explicit articulation; functional completion conditions; bundled-commit hygiene; brand-load-bearing fonts; HTML vs. MD hygiene tension; lockfile-with-package.json rule</li>
+  <li>§17–18 — Articulation closure rows must verify against live deploy (post-ship verification finding)</li>
+  <li>§19 — Foreshadowing discipline as brand invariant</li>
+  <li>§20 — Persona evolution as brand discipline</li>
+  <li>§21 — Version identities: consumption / interaction / communication (project-driven; generalizable as one-persona-per-version pattern)</li>
+  <li>§22 — Idea-phase recognition: 5 idea-states</li>
+  <li>§23 — Sprint taxonomy: 5 sprint types + declaration ritual</li>
+  <li>§24 — Idea lifecycle tracking: ticket-like status semantics on every enumeration row</li>
+  <li>§25 — Idea archive at every project level (Meta-rollback pattern)</li>
+  <li>§26 — Canonical-doc discipline + cross-reference table</li>
+  <li>§27 — Enumeration is a <em>mode</em> of idea-dumping, not a sub-phase (corrects §22's drift)</li>
+  <li>§28 — Triage is the bridge between 0A and 0B; its purpose is to organize ideas for research</li>
+  <li>§29 — Project ambition declaration (hobby / side-project / open-source-tool / venture / enterprise) before research</li>
+  <li>§30 — Research is per-pillar, multi-mode, and runs in two passes (initial + validate)</li>
+  <li>§31 — AI thought-partnership modes: friend vs. office hours; declared per sprint</li>
+  <li>§32 — Per-project orchestration HTML — canonical surface integrating every artifact (template; not yet authored)</li>
+  <li>§33 — Three-layer formalization: methodology + company template + deliverable templates, glued by skills + hooks + selective commands</li>
+  <li>§34 — Skills vs. hooks vs. slash commands — three interaction surfaces, each for a different kind of mechanism (skills as primary always-on layer; hooks for lifecycle events; commands as the explicit-action layer, often surfaced as buttons in the orchestration HTML)</li>
+  <li>§35 — Each pillar can have products (multi-pillar product shape); Tier 2 deliverable templates apply per-product indexed by product-type taxonomy</li>
+  <li>§36 — Pillar recursion: pillar products are themselves companies-in-miniature with their own three pillars; methodology applies fractally; how companies birth other companies</li>
+  <li>§37 — Implicit-vs-explicit template fluidity: methodology is explicit about what to consider, implicit about how to document; templates carry principles + recommendations + examples, not rigid shapes</li>
+  <li>§38 — Role + candidate authoring as methodology output (role description + ideal candidate qualities + recommendations); the bridge from solo-operator to multi-person team methodology</li>
+  <li>§39 — Orchestration trajectory: HTML now for solo-operator + AI; real software later for multi-person + enterprise; methodology website is a separate concern</li>
+  <li>§40 — Industry-awareness as methodology mechanism — prevent reinventing the wheel due to lack of industry exposure; new skill <code>industry-awareness</code> maps operator terminology to industry standards + surfaces prior-art tooling + produces build-vs-adopt analyses</li>
+  <li>§41 — Entity classification rule: <code>project</code> (product ± brand, no business pillar) vs <code>business</code> (all three pillars articulated) vs <code>hobby</code> / <code>organization</code> / <code>association</code> / <code>brand</code> — captures the transitional state where an entity hasn't yet earned the "company" label</li>
+  <li>§42 — SAD is an expression of CI/CD with two extensions (Articulate as first-class lane + three pillars as cross-cutting); adopts industry tool-categorization vocabulary (infrastructure providers / developer tools / productivity tools / runtime services / data sources / monitoring services / critical-path vs soft dependencies)</li>
+  <li>§43 — Three phases, not four lanes — <strong>Articulate → Build → Deliver</strong> — with Ship + Operate + Monitor + Feedback as sub-phases of Deliver. Industry-aligned with Continuous Delivery terminology; outcome-focused; rhythmically clean</li>
+  <li>§44 — The harness is methodology-aware orchestration over existing industry tools via MCP integration; per-pillar dashboards; industry-awareness skill expands with a 4th use case (proactive stack-recommendation per pillar's needs) <em>[corrected by §45 — "MCP-first" was wrong; correct posture is CLI-first]</em></li>
+  <li>§45 — Cost-aware integration hierarchy (local file > CLI > MCP > API > scraping) + proactivity calibration for industry-awareness skill (default LOW; high triggers = explicit invocation, pain points, system-detected cost/time/quality threshold crossing); skill tracks operator's knowledge base to calibrate surfacing-intensity</li>
+</ol>
+
+<h3>Methodology TO-DOs</h3>
+<p>From <span class="cite">everything-ecosystem/methodology/_todo/</span>:</p>
+<ul>
+  <li>Part 5.5 — Classification taxonomy</li>
+  <li>Phase 0D — Vision wireframing</li>
+  <li>Entity lifecycle stage — intermediate states</li>
+  <li>New product discovery + spinout protocol</li>
+</ul>
+
+<h2>8. What this view deliberately omits</h2>
+
+<ul>
+  <li><strong>Per-project application.</strong> the reference project, another project, Reflect, Journey — none of them appear here. That's by design; this view is the substrate, not the application.</li>
+  <li><strong>The per-project orchestration HTML template.</strong> §32 establishes that every project will eventually receive a templated orchestration HTML that integrates every artifact into one navigable surface. Queued for authoring after methodology refinements settle and after the reference project Sprint 1 retrospective is complete. Per §39, the orchestration trajectory is HTML for solo-operator + AI; real software for multi-person + enterprise. The methodology website (publishing + onboarding + community) is a separate concern. <span class="badge badge-proposed">§32 + §39 — not yet authored</span></li>
+  <li><strong>Methodology family for other pillars.</strong> SAD v3 is Product-pillar / software product type. Brand variant and Business variant are tracked in <code>methodology-family</code> but not authored. The Sprint 1 retrospective will surface what these variants need to cover.</li>
+  <li><strong>The detailed spec templates.</strong> Each spec document has a structure; that lives in <code>SAD_SKILL_v3.md</code> PART 6 and in the templates folder. Out of scope for this single-page view.</li>
+  <li><strong>The decision protocols.</strong> Decision Boundary, Spec Change Classes 0–4, lifecycle regression protocol — referenced but not unpacked.</li>
+</ul>
+
+<p class="meta" style="margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--rule);">
+End. This doc is intended as a reference companion to <code>SAD_SKILL_v3.md</code> and the
+amendment proposals. It is canonical for the operational sketch of the methodology at a glance.
+When the methodology evolves, this view is re-compiled.
+</p>
+
+</body>
+</html>

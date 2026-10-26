@@ -1,0 +1,96 @@
+{
+  "_comment": "Reference Claude Code hooks configuration for the SAD methodology. Place at ~/.claude/settings.json (global) or <repo>/.claude/settings.json (project). Customize the helper script paths to match your environment. See hook-intentions-2026-05-14.md for the design intent each hook implements.",
+  "_version": "1.0-reference",
+  "_authored": "2026-05-14",
+  "_methodology": "SAD v3.3+",
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "_comment": "Methodology session-start ritual: time-awareness + session-capture + read context. Per SAD v3 PART 3 + PART 4 session-start ritual + the time-awareness/session-capture skills.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'session-start' > /dev/null && date -u +'%Y-%m-%dT%H:%M:%SZ' && echo 'Methodology session-start ritual: declare scope level (Global / Project / Local), read most-recent SESSION_LOG entry, read relevant CLAUDE.md.'"
+          }
+        ]
+      }
+    ],
+
+    "SessionEnd": [
+      {
+        "_comment": "Methodology session-end ritual: time-awareness + session-capture + draft SESSION_LOG entry. Per SAD v3 PART 3 session-end ritual.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "date -u +'%Y-%m-%dT%H:%M:%SZ' && echo 'Methodology session-end ritual: write _sessions/raw/<date>-<slug>.md if substantive; append compiled entry to _sessions/SESSION_LOG.md; update enumeration row statuses; update per-project orchestration HTML.'"
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "_comment": "Pre-commit ritual: when about to run git commit, surface every staged file, check lockfile pairing, check brand-load-bearing files. Per build-roadmap §13, §14, §16.",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'git commit'; then echo 'PRE-COMMIT RITUAL: Run git diff --stat HEAD; surface every file with its session-of-origin; confirm brand-load-bearing files explicitly; verify lockfile is staged if package.json is staged.'; fi"
+          }
+        ]
+      },
+      {
+        "_comment": "Pre-deploy ritual: when about to run deploy commands, check articulation closure verification. Per build-roadmap §17 + the v3.0.1 phase-closure-protocol amendment.",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '(wrangler deploy|vercel --prod|gh workflow run.*deploy|pnpm deploy|npm run deploy)'; then echo 'PRE-DEPLOY GATE: Verify articulation closure inventory is green. Verify brand-load-bearing assets are present in code. Verify lockfile in sync with package.json. Block deploy if any verification row is missing or partial.'; fi"
+          }
+        ]
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "_comment": "Post-tool-use stamp: when a Write or Edit modifies a compiled artifact (spec, entity profile, methodology doc), surface the option to update last-reviewed timestamp.",
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '(spec/|entity-profile.md|methodology/.*\\.md|company-template/.*\\.md|skills/.*/SKILL\\.md)'; then echo 'POST-EDIT REMINDER: This edit touched a compiled artifact. Consider updating last-reviewed timestamp + bumping version/checksum if applicable.'; fi"
+          }
+        ]
+      }
+    ],
+
+    "UserPromptSubmit": [
+      {
+        "_comment": "Recognize methodology lifecycle signals in user prompts: wrap up / commit / deploy / start session.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$CLAUDE_USER_PROMPT\" | grep -qiE '(wrap up|end session|save progress|let.?s deploy|let.?s ship|ready to commit|let.?s commit)' && echo 'LIFECYCLE SIGNAL detected. Consider invoking the appropriate session-end / pre-commit / pre-deploy ritual.'"
+          }
+        ]
+      }
+    ]
+  },
+
+  "_note_on_implementation": "These reference hooks use inline shell commands for portability. For substantial methodology workflows, the inline commands should call out to helper scripts at everything-ecosystem/methodology/scripts/ (TO-AUTHOR). The scripts would implement the full ritual rather than just printing a reminder. The current state: reminders surface the ritual; the AI (and operator) execute it. Future state: scripts execute it automatically.",
+
+  "_environment_compatibility": {
+    "claude-code": "Native support. This config goes at ~/.claude/settings.json or <repo>/.claude/settings.json.",
+    "cowork": "Hooks not native. Methodology compensates via skill behavior — skills detect lifecycle signals and run rituals proactively. See hook-intentions-2026-05-14.md.",
+    "api-direct": "Hooks not available. Methodology compensates via system prompt guidance + skill loading."
+  },
+
+  "_to-author": [
+    "everything-ecosystem/methodology/scripts/session-start.sh",
+    "everything-ecosystem/methodology/scripts/session-end.sh",
+    "everything-ecosystem/methodology/scripts/pre-commit-ritual.sh",
+    "everything-ecosystem/methodology/scripts/pre-deploy-gate.sh",
+    "everything-ecosystem/methodology/scripts/articulation-closure-verify.sh"
+  ]
+}

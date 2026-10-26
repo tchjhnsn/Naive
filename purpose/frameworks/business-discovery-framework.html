@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Discovery Framework</title>
+<style>
+  :root {
+    --bg: #fbf8f1;
+    --bg-elevated: #ffffff;
+    --bg-subtle: #f4efe3;
+    --ink: #1a1814;
+    --ink-soft: #4a443a;
+    --ink-faint: #807868;
+    --gold: #b8862b;
+    --gold-soft: #d4a94a;
+    --gold-pale: #f0e0b2;
+    --rule: #e3dccb;
+    --rule-soft: #ece6d5;
+    --shadow: 0 1px 2px rgba(28, 24, 16, 0.04), 0 4px 16px rgba(28, 24, 16, 0.05);
+    --shadow-strong: 0 2px 4px rgba(28, 24, 16, 0.06), 0 8px 32px rgba(28, 24, 16, 0.08);
+    --serif: 'Iowan Old Style', 'Palatino', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+    --mono: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1814;
+      --bg-elevated: #221f1a;
+      --bg-subtle: #2a2620;
+      --ink: #f0ead8;
+      --ink-soft: #c4bda8;
+      --ink-faint: #8a836f;
+      --gold: #d4a94a;
+      --gold-soft: #e8c266;
+      --gold-pale: #3d3320;
+      --rule: #38332a;
+      --rule-soft: #2e2920;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────── */
+
+  header.doc-header {
+    margin-bottom: 64px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .kicker {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+    color: var(--ink);
+  }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+    font-weight: 400;
+  }
+
+  .meta {
+    font-size: 14px;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  /* ── Table of contents ──────────────────────────────────────────── */
+
+  nav.toc {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 64px;
+    box-shadow: var(--shadow);
+  }
+
+  .toc-heading {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 12px;
+  }
+
+  nav.toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: section;
+  }
+
+  nav.toc > ol > li {
+    counter-increment: section;
+    padding: 4px 0;
+  }
+
+  nav.toc ol ol {
+    margin: 6px 0 6px 14px;
+    counter-reset: subsection;
+  }
+
+  nav.toc ol ol li {
+    counter-increment: subsection;
+    padding: 3px 0;
+  }
+
+  nav.toc a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 15px;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  nav.toc > ol > li > a {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  nav.toc a:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold-soft);
+  }
+
+  nav.toc > ol > li::before {
+    content: counter(section) ".";
+    display: inline-block;
+    width: 24px;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  nav.toc ol ol li::before {
+    content: counter(section) "." counter(subsection);
+    display: inline-block;
+    width: 36px;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+  }
+
+  /* ── Section headings ───────────────────────────────────────────── */
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    margin: 72px 0 24px;
+    color: var(--ink);
+    padding-top: 8px;
+  }
+
+  h2:first-child { margin-top: 0; }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 600;
+    margin: 36px 0 14px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+
+  h4 {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 24px 0 10px;
+  }
+
+  /* ── Body text ──────────────────────────────────────────────────── */
+
+  p {
+    margin: 0 0 18px;
+    color: var(--ink-soft);
+  }
+
+  strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  /* ── Layer cards ────────────────────────────────────────────────── */
+
+  .layer {
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 36px 36px 28px;
+    margin: 32px 0;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+
+  .layer-badge {
+    position: absolute;
+    top: -18px;
+    left: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--gold);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    box-shadow: var(--shadow);
+  }
+
+  .layer-badge .num {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: normal;
+  }
+
+  .layer h2 {
+    margin: 6px 0 16px;
+    font-size: 28px;
+  }
+
+  .layer .purpose {
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+
+  /* ── Magic prompts ──────────────────────────────────────────────── */
+
+  .magic-prompt {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 21px;
+    line-height: 1.4;
+    color: var(--ink);
+    border-left: 3px solid var(--gold);
+    padding: 6px 0 6px 24px;
+    margin: 20px 0 24px;
+  }
+
+  .magic-prompt::before {
+    content: '"';
+    font-family: var(--serif);
+    font-size: 48px;
+    line-height: 0;
+    vertical-align: -16px;
+    color: var(--gold-soft);
+    margin-right: 4px;
+  }
+
+  .magic-prompt::after {
+    content: '"';
+    font-family: var(--serif);
+    font-size: 48px;
+    line-height: 0;
+    vertical-align: -16px;
+    color: var(--gold-soft);
+    margin-left: 2px;
+  }
+
+  /* ── Prompt lists ───────────────────────────────────────────────── */
+
+  .prompts {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+  }
+
+  .prompts li {
+    padding: 10px 0 10px 28px;
+    position: relative;
+    color: var(--ink-soft);
+    border-bottom: 1px dashed var(--rule-soft);
+  }
+
+  .prompts li:last-child {
+    border-bottom: none;
+  }
+
+  .prompts li::before {
+    content: "›";
+    position: absolute;
+    left: 6px;
+    top: 9px;
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  /* ── Listen-for callout ─────────────────────────────────────────── */
+
+  .listen-for {
+    background: var(--bg-subtle);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0 0;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+
+  .listen-for strong {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+
+  /* ── Tables ─────────────────────────────────────────────────────── */
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 15px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--bg-subtle);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  td {
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  tr:first-child td { border-top: none; }
+
+  /* ── Lists ──────────────────────────────────────────────────────── */
+
+  ul, ol {
+    padding-left: 22px;
+    color: var(--ink-soft);
+  }
+
+  ul li, ol li {
+    margin: 8px 0;
+  }
+
+  ul.bare {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  ul.bare li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  ul.bare li:last-child {
+    border-bottom: none;
+  }
+
+  ul.checklist {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  ul.checklist li {
+    padding: 6px 0 6px 30px;
+    position: relative;
+  }
+
+  ul.checklist li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--ink-faint);
+    border-radius: 4px;
+    background: var(--bg-elevated);
+  }
+
+  /* ── Callouts ───────────────────────────────────────────────────── */
+
+  .callout {
+    border-left: 3px solid var(--gold);
+    background: var(--gold-pale);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 24px 0;
+    color: var(--ink-soft);
+  }
+
+  .callout-warn {
+    border-left-color: #c2773a;
+    background: rgba(194, 119, 58, 0.08);
+  }
+
+  .callout strong {
+    color: var(--ink);
+  }
+
+  /* ── Anti-patterns ──────────────────────────────────────────────── */
+
+  .anti-pattern {
+    padding: 10px 0 10px 36px;
+    position: relative;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .anti-pattern:last-child { border-bottom: none; }
+
+  .anti-pattern::before {
+    content: "✕";
+    position: absolute;
+    left: 8px;
+    top: 10px;
+    color: #c2773a;
+    font-weight: 700;
+  }
+
+  /* ── Section dividers ───────────────────────────────────────────── */
+
+  hr.divider {
+    border: none;
+    margin: 80px 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--rule), transparent);
+  }
+
+  /* ── Footer ─────────────────────────────────────────────────────── */
+
+  footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  footer p { color: var(--ink-faint); }
+
+  /* ── Print styles ───────────────────────────────────────────────── */
+
+  @media print {
+    body { background: white; }
+    .page { max-width: 100%; padding: 0; }
+    nav.toc { page-break-after: always; }
+    .layer { page-break-inside: avoid; box-shadow: none; }
+    h2 { page-break-after: avoid; }
+  }
+
+  /* ── Mobile ─────────────────────────────────────────────────────── */
+
+  @media (max-width: 640px) {
+    .page { padding: 40px 20px 80px; }
+    h1 { font-size: 36px; }
+    .subtitle { font-size: 19px; }
+    h2 { font-size: 26px; }
+    .layer { padding: 32px 20px 24px; }
+    .layer-badge { left: 16px; }
+    .magic-prompt { font-size: 18px; padding-left: 18px; }
+    table { font-size: 14px; }
+    th, td { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc-header">
+    <p class="kicker">Wonka · Methodology Consultancy · Framework</p>
+    <h1>Business Discovery Framework</h1>
+    <p class="subtitle">A conversation framework for understanding another operator's business comprehensively enough to build their vault and systems on top of it.</p>
+    <p class="meta">Industry-agnostic structure with industry-specific addenda. Open during a discovery / intake session. This is not a script — it is a structure that ensures the conversation surfaces what needs to be surfaced.</p>
+  </header>
+
+  <nav class="toc">
+    <p class="toc-heading">Contents</p>
+    <ol>
+      <li><a href="#how-to-use">How to use this</a></li>
+      <li><a href="#layers">The Seven Layers</a>
+        <ol>
+          <li><a href="#layer-1">Layer 1 — The Vivid Present</a></li>
+          <li><a href="#layer-2">Layer 2 — The Full Surface</a></li>
+          <li><a href="#layer-3">Layer 3 — The Pain &amp; Friction</a></li>
+          <li><a href="#layer-4">Layer 4 — The Dreams (apply BASED)</a></li>
+          <li><a href="#layer-5">Layer 5 — The Gap</a></li>
+          <li><a href="#layer-6">Layer 6 — The Next Step</a></li>
+          <li><a href="#layer-7">Layer 7 — Tooling Inventory</a></li>
+        </ol>
+      </li>
+      <li><a href="#capture">Capture protocol</a></li>
+      <li><a href="#outputs">Output artifacts</a></li>
+      <li><a href="#addenda">Industry-specific addenda</a></li>
+      <li><a href="#anti-patterns">Anti-patterns</a></li>
+      <li><a href="#variations">Variations by operator type</a></li>
+      <li><a href="#prep">Pre-session prep</a></li>
+      <li><a href="#after">After-session protocol</a></li>
+    </ol>
+  </nav>
+
+  <section id="how-to-use">
+    <h2>How to use this</h2>
+    <ul>
+      <li>Open this doc and the consultancy checklist <em>side-by-side</em> at the start of the session.</li>
+      <li>Run the layers in order for a first session; you can jump between them in later sessions.</li>
+      <li>Take notes <em>directly in the operator's vault</em> — they see capture happening; this enacts the data sovereignty principle.</li>
+      <li>Use the operator's own words wherever possible; don't translate to methodology vocabulary in real-time.</li>
+      <li>Don't fill silences too quickly — the best answers come after a pause.</li>
+    </ul>
+    <p>Expect 60-120 minutes for a first session covering all seven layers. If you have less time, prioritize Layers 1, 3, 4, and 7.</p>
+  </section>
+
+  <hr class="divider">
+
+  <section id="layers">
+    <h2>The Seven Layers</h2>
+    <p>Each layer is a conversational arc that surfaces a different dimension of the operator's business. They flow naturally from concrete (today) → emotional (pain &amp; dreams) → actionable (next step) → factual (tools). Don't force completion; sense the energy.</p>
+  </section>
+
+  <article class="layer" id="layer-1">
+    <span class="layer-badge"><span class="num">01</span> Layer One</span>
+    <h2>The Vivid Present</h2>
+    <p class="purpose">Get the operator talking comfortably. Surface ops, tools, customers, time-use, energy, frustrations, and joys — all in one pass.</p>
+
+    <h4>Magic prompt</h4>
+    <p class="magic-prompt">Walk me through what a typical Tuesday looks like — from when you wake up until you stop working.</p>
+
+    <h4>Follow-on prompts</h4>
+    <ul class="prompts">
+      <li>Walk me through what happens when a new client first contacts you — from their first message to their first visit.</li>
+      <li>What's the most recent thing you did for the business, in the last 24 hours?</li>
+      <li>What did this week look like? Last week?</li>
+    </ul>
+
+    <div class="listen-for">
+      <strong>What to listen for</strong>
+      Tools mentioned in passing, time of day they work, energy peaks and valleys, who else is involved, recurring frustrations they don't even name as frustrations.
+    </div>
+  </article>
+
+  <article class="layer" id="layer-2">
+    <span class="layer-badge"><span class="num">02</span> Layer Two</span>
+    <h2>The Full Surface</h2>
+    <p class="purpose">A factual picture of the business — what, who, when, where, how much, with whom.</p>
+
+    <h4>Prompts</h4>
+    <ul class="prompts">
+      <li><strong>What</strong> — What services do you offer, and what does each one cost?</li>
+      <li><strong>Who</strong> — How many active clients do you have right now? How many are recurring?</li>
+      <li><strong>When</strong> — What does your schedule look like? Are there busy days or seasons?</li>
+      <li><strong>Where</strong> — What geography do you serve? How far do you travel? Do you have a physical location?</li>
+      <li><strong>How much</strong> — Roughly, what's a good month vs. a tough month? <em>(Calibrate to relationship.)</em></li>
+      <li><strong>With whom</strong> — Are you the only person doing this, or do you have help? Contractors? Partners?</li>
+    </ul>
+
+    <h4>Optional deeper cuts</h4>
+    <ul class="prompts">
+      <li>What's your client mix — long-term recurring, one-time, mix?</li>
+      <li>How do new clients usually find you?</li>
+      <li>What's your booking lead time — same-day, week ahead, month ahead?</li>
+    </ul>
+
+    <div class="listen-for">
+      <strong>What to listen for</strong>
+      Revenue model (recurring vs. transactional), capacity constraints (solo vs. team), geographic scope, customer acquisition channels.
+    </div>
+  </article>
+
+  <article class="layer" id="layer-3">
+    <span class="layer-badge"><span class="num">03</span> Layer Three</span>
+    <h2>The Pain &amp; Friction</h2>
+    <p class="purpose">Surface where the vault and methodology will deliver immediate value. Pain points point to where to build first.</p>
+
+    <h4>Prompts</h4>
+    <ul class="prompts">
+      <li>What part of the business takes way more time than it should?</li>
+      <li>What's something that keeps slipping through the cracks?</li>
+      <li>If you could wave a wand and eliminate one part of your job, what would it be?</li>
+      <li>Tell me about the last time something went wrong — a missed visit, a billing issue, a lost client. What happened?</li>
+      <li>What's the Sunday-night feeling about the week ahead? <em>(Emotional temperature check.)</em></li>
+      <li>What part of running the business do you dread?</li>
+    </ul>
+
+    <div class="listen-for">
+      <strong>What to listen for</strong>
+      Repeated manual tasks (automation candidates), forgotten or dropped things (capture-system candidates), high-stakes errors (process candidates), emotional weight (coaching candidates).
+    </div>
+  </article>
+
+  <article class="layer" id="layer-4">
+    <span class="layer-badge"><span class="num">04</span> Layer Four</span>
+    <h2>The Dreams <span style="color: var(--ink-faint); font-size: 0.7em;">— apply BASED silently</span></h2>
+    <p class="purpose">Surface the operator's actual ambition, uncensored. This is the Phase 0C work — refuse premature narrowing.</p>
+
+    <h4>Prompts (deploy progressively)</h4>
+    <ul class="prompts">
+      <li>If you could design the business of your dreams, with zero constraints on money, time, or possibility — what does it look like in five years?</li>
+      <li>What would make you say "I made it"?</li>
+      <li>What's the most ambitious version of this you've ever imagined, even if you've never said it out loud?</li>
+      <li>If a customer wrote you a review you'd love to receive — what does it say?</li>
+      <li>What would you build if you knew you couldn't fail?</li>
+    </ul>
+
+    <h4>Watch for self-censorship</h4>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 30%">Cue</th>
+          <th style="width: 30%">What it usually means</th>
+          <th style="width: 40%">Gentle redirect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"I just want to..."</td>
+          <td>Pre-narrowed</td>
+          <td>"What if 'just' wasn't a limit — what would you actually want?"</td>
+        </tr>
+        <tr>
+          <td>"Realistically..."</td>
+          <td>Pre-narrowing</td>
+          <td>"Set realism aside for a sec — what's the dream?"</td>
+        </tr>
+        <tr>
+          <td>"I don't know if I could..."</td>
+          <td>Premature humility</td>
+          <td>"If you could, what would it be?"</td>
+        </tr>
+        <tr>
+          <td>"That's probably too..."</td>
+          <td>Premature dismissal</td>
+          <td>"Say it anyway — let's see what it sounds like."</td>
+        </tr>
+        <tr>
+          <td>"But the market is..."</td>
+          <td>Pre-defensiveness</td>
+          <td>"Forget the market for a moment — what's the version you'd build for yourself?"</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Apply each BASED letter as a check</h4>
+    <ul class="bare">
+      <li><strong>B — Broad.</strong> Is the aperture as wide as it could be?</li>
+      <li><strong>A — Audacious.</strong> Would they be willing to say this in public?</li>
+      <li><strong>S — Silly.</strong> Is there a playful, Willy-Wonka-tier vivid version of this?</li>
+      <li><strong>E — Egotistical.</strong> Are they willing to put themselves at the center?</li>
+      <li><strong>D — Delusional.</strong> Are they refusing current evidence long enough to imagine what isn't yet?</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Important:</strong> Don't say "BASED" or explain the framework to the operator. You're applying it as the consultant; the operator just experiences thoughtful, generative questions.
+    </div>
+  </article>
+
+  <article class="layer" id="layer-5">
+    <span class="layer-badge"><span class="num">05</span> Layer Five</span>
+    <h2>The Gap</h2>
+    <p class="purpose">Surface what stands between today (Layers 1-2) and the dream (Layer 4).</p>
+
+    <h4>Prompts</h4>
+    <ul class="prompts">
+      <li>What's standing between you and that dream version of the business?</li>
+      <li>What's one thing that, if solved, would make the biggest difference?</li>
+      <li>Is the bottleneck time, money, knowledge, energy, people, or something else?</li>
+      <li>What have you tried that didn't work?</li>
+      <li>What do you wish you knew that you don't?</li>
+    </ul>
+
+    <div class="listen-for">
+      <strong>What to listen for</strong>
+      The <em>specific</em> shape of the bottleneck. "I need more clients" is vague; "I lose every Friday to billing reconciliation" is specific. Specificity is the substrate of action.
+    </div>
+  </article>
+
+  <article class="layer" id="layer-6">
+    <span class="layer-badge"><span class="num">06</span> Layer Six</span>
+    <h2>The Next Step</h2>
+    <p class="purpose">Identify the smallest immediate action that moves the needle — so the operator walks away with momentum, not just structure.</p>
+
+    <h4>Prompts</h4>
+    <ul class="prompts">
+      <li>If we did ONE thing today that would make this week better, what would it be?</li>
+      <li>What's a small win that would feel disproportionately good?</li>
+      <li>What's something you've been meaning to do but haven't gotten around to?</li>
+      <li>What's the smallest version of the dream we could start on today?</li>
+    </ul>
+
+    <p>This conversation produces <strong>the first planned session</strong> for the operator's vault — concrete, scoped, actionable.</p>
+  </article>
+
+  <article class="layer" id="layer-7">
+    <span class="layer-badge"><span class="num">07</span> Layer Seven</span>
+    <h2>Tooling Inventory</h2>
+    <p class="purpose">Groundwork for connector setup; understand what already exists vs. what needs to be built.</p>
+
+    <h4>Prompts</h4>
+    <ul class="prompts">
+      <li>Walk me through every tool, app, or piece of software you use for the business.</li>
+      <li>Where do client records live? Schedules? Payments? Photos? Communications?</li>
+      <li>Phone setup — separate business line, or personal?</li>
+      <li>How do you take payment?</li>
+      <li>Business email? Social accounts? Website?</li>
+      <li>What tools do you wish you used but haven't set up?</li>
+    </ul>
+
+    <h4>Walk through systematically</h4>
+    <table>
+      <tbody>
+        <tr><td>Scheduling / calendar</td><td>Client intake / forms</td></tr>
+        <tr><td>Client database / CRM</td><td>Payment processing</td></tr>
+        <tr><td>Accounting / bookkeeping</td><td>Tax preparation</td></tr>
+        <tr><td>Communications (email, SMS, social DMs)</td><td>Photo / file storage</td></tr>
+        <tr><td>Marketing (social, email lists, ads)</td><td>Supplier portals / inventory</td></tr>
+        <tr><td>Insurance / licensing portals</td><td>Banking</td></tr>
+        <tr><td>Domain / website / hosting</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <p>For each tool, capture: what's used, who else has access, what data lives there, whether they're happy with it. This feeds Phase 5 of the consultancy checklist (external tool connections).</p>
+  </article>
+
+  <hr class="divider">
+
+  <section id="capture">
+    <h2>Capture Protocol</h2>
+    <p>During the session:</p>
+    <ol>
+      <li>Open her vault. Create a new file: <code>_sessions/raw/&lt;date&gt;-discovery-session.md</code></li>
+      <li>Take notes there in real time, in her own words.</li>
+      <li>Don't pre-categorize — capture raw; organize later.</li>
+      <li>Use timestamps for major shifts in topic (helpful when reviewing).</li>
+      <li>Don't try to be comprehensive in-line — flag for follow-up rather than chasing every thread.</li>
+    </ol>
+    <p>After the conversation, take a 10-15 minute break and synthesize. Pull observations into the entity-profile draft. Pull ideas into <code>_ideas/</code>. Pull next-steps into <code>_sessions/planned/</code>. Pull dreams into a draft VISION_SPEC.</p>
+  </section>
+
+  <section id="outputs">
+    <h2>Output Artifacts by End of Session</h2>
+    <p>By the time the operator leaves the first session, her vault should contain:</p>
+    <ul class="checklist">
+      <li><code>entity-profile.md</code> for the business (concept or scoped stage)</li>
+      <li>3-5 idea notes in <code>_ideas/</code> (captured from Layers 3, 4, 5)</li>
+      <li>1-2 planned sessions in <code>_sessions/planned/</code> (from Layer 6)</li>
+      <li>Session-log entry for today's discovery session</li>
+      <li>VISION_SPEC draft (rough — Phase 0C output from Layer 4)</li>
+      <li>Tooling inventory note at <code>_meta/tooling-inventory.md</code></li>
+      <li>Pain points / friction note for prioritization</li>
+      <li><code>code-pointer.md</code> placeholder if any tech work will follow</li>
+    </ul>
+    <div class="callout">
+      The vault should feel <strong>populated</strong>, not empty. She should be able to open it and see her business reflected back.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <section id="addenda">
+    <h2>Industry-Specific Addenda</h2>
+
+    <h3>Pet-care / pet-sitting</h3>
+    <p>Specific questions to surface pet-care nuance:</p>
+    <ul>
+      <li><strong>Pet types served</strong> — dogs only? Cats? Exotic? Special needs?</li>
+      <li><strong>Service types</strong> — boarding, drop-in visits, dog walks, overnight stays, transport, training, grooming?</li>
+      <li><strong>Visit cadence</strong> — daily for some clients? Weekly? Ad-hoc?</li>
+      <li><strong>Key handoff protocol</strong> — does she hold keys, use lockboxes, smart locks?</li>
+      <li><strong>Insurance + bonding</strong> — Pet Sitters International? Local liability? Bonded for key-holding?</li>
+      <li><strong>Vet partnerships</strong> — does she have go-to vets for emergencies? Referral relationships?</li>
+      <li><strong>Emergency protocols</strong> — what happens when a pet gets injured, loose, or sick during her visit?</li>
+      <li><strong>Vehicle / travel</strong> — does she travel between clients? Mileage tracked? Vehicle insured commercially?</li>
+      <li><strong>Equipment owned</strong> — leashes, treats, first aid, transport carriers, cleanup supplies?</li>
+      <li><strong>Background check / certifications</strong> — pet CPR? Pet first aid? Background check for client trust?</li>
+      <li><strong>Pet info storage</strong> — where do allergy, medication, behavior, vet info live today?</li>
+      <li><strong>Photo / update protocol</strong> — does she send daily photos? Update clients in real-time?</li>
+      <li><strong>Pricing structure</strong> — per-visit, per-day, monthly package, sliding by service?</li>
+      <li><strong>Geographic radius</strong> — how far does she travel? Strict limits?</li>
+      <li><strong>Seasonal patterns</strong> — summer or holiday peaks? Slow seasons?</li>
+    </ul>
+
+    <h3>Other industries (future)</h3>
+    <table>
+      <thead>
+        <tr><th>Industry</th><th>Focus areas</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Restaurant / food-service</td><td>Menu/recipe versioning · Vendor relationships · Health code · Shift scheduling · POS integration · Liquor license</td></tr>
+        <tr><td>Solo consulting</td><td>Service offerings/packaging · Client intake/contracts · Time tracking/invoicing · Knowledge management <em>is</em> the product</td></tr>
+        <tr><td>E-commerce / D2C</td><td>Product catalog · Inventory · Fulfillment · Customer support</td></tr>
+        <tr><td>Software / SaaS</td><td>Existing SAD applies directly · Code repo, CI/CD, deploy · Customer onboarding flows</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <section id="anti-patterns">
+    <h2>Anti-Patterns</h2>
+    <p>Things to avoid during the discovery session:</p>
+    <div class="anti-pattern">Don't lead with the methodology. Lead with her business. The methodology is invisible scaffolding.</div>
+    <div class="anti-pattern">Don't translate her vocabulary to yours. Capture in her language; harmonize later.</div>
+    <div class="anti-pattern">Don't fill silences too quickly. The best answers come after a pause.</div>
+    <div class="anti-pattern">Don't make it feel like an interview or audit. This is a generative conversation.</div>
+    <div class="anti-pattern">Don't commit to building anything mid-session. Capture, decide between sessions.</div>
+    <div class="anti-pattern">Don't pre-narrow her BASED ambition with "well, realistically..."</div>
+    <div class="anti-pattern">Don't pretend you have answers you don't have. "I don't know — let's figure it out" is a strong consultant move.</div>
+    <div class="anti-pattern">Don't try to cover all seven layers if it's killing the energy. A great Layer 1-4 + Layer 7 is better than a forced full pass.</div>
+    <div class="anti-pattern">Don't tell her the Wonka story today. The brand isn't ready; the methodology is doing the work.</div>
+  </section>
+
+  <section id="variations">
+    <h2>Variations by Operator Type</h2>
+    <table>
+      <thead>
+        <tr><th style="width: 35%">Operator type</th><th>Adjustments</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Solo founder</td><td>All layers as-is</td></tr>
+        <tr><td>Team-based</td><td>Add: "Walk me through your team — roles, who does what, who you trust with what."</td></tr>
+        <tr><td>Service business</td><td>Standard framework applies</td></tr>
+        <tr><td>Product business</td><td>Layer 2 emphasis on inventory / catalog / fulfillment</td></tr>
+        <tr><td>Pre-launch</td><td>Layer 1 → "what does a typical week look like <em>now</em>, even though the business isn't started yet?"</td></tr>
+        <tr><td>Running business</td><td>Standard framework</td></tr>
+        <tr><td>Local</td><td>Layer 2: emphasis on geographic constraints and community</td></tr>
+        <tr><td>Online / national</td><td>Layer 2: emphasis on channel mix and customer acquisition</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <section id="prep">
+    <h2>Pre-Session Prep <span style="color: var(--ink-faint); font-size: 0.65em; font-weight: 400;">— 30 minutes before</span></h2>
+    <ul class="checklist">
+      <li>Open this framework + the consultancy checklist</li>
+      <li>Confirm her machine has Obsidian (or be ready to install)</li>
+      <li>Confirm Claude Code / Cowork is reachable</li>
+      <li>Have a notebook ready (in case her vault isn't accessible at start)</li>
+      <li>Hydrate; restroom</li>
+      <li>Set time expectation with her ("This will probably take 2-3 hours; let me know when you need breaks")</li>
+      <li>Note your own energy — discovery work is dense; pace matters</li>
+      <li>Make sure no other Claude session has heavy state competing for your attention</li>
+    </ul>
+  </section>
+
+  <section id="after">
+    <h2>After-Session Protocol <span style="color: var(--ink-faint); font-size: 0.65em; font-weight: 400;">— within 24 hours</span></h2>
+    <ul class="checklist">
+      <li>Synthesize the raw session notes into the output artifacts</li>
+      <li>Send her the entity-profile draft + VISION_SPEC draft for review</li>
+      <li>Schedule the follow-up session (this is when actual setup work happens)</li>
+      <li>Add your retrospective notes to <code>a consulting practice/_ideas/</code>: what worked, what didn't, what's missing from this framework</li>
+    </ul>
+    <div class="callout">
+      The framework gets better every time you use it. <strong>Refine.</strong>
+    </div>
+  </section>
+
+  <footer>
+    <p>Business Discovery Framework · Methodology Consultancy (Wonka, working name) · v0.1 · 2026-05-19</p>
+  </footer>
+
+</div>
+</body>
+</html>

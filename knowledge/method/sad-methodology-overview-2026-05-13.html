@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAD Methodology — Articulation → Build → Ship · the reference project V1 position 2026-05-13</title>
+<style>
+  :root {
+    --paper:     #f6f2e8;
+    --paper-2:   #efeadb;
+    --paper-3:   #e7e0cd;
+    --ink:       #1a1612;
+    --ink-2:     #4a3f33;
+    --ink-3:     #8a7f6f;
+    --rule:      rgba(26, 22, 18, 0.45);
+    --rule-soft: rgba(26, 22, 18, 0.18);
+    --ink-blue:  #1A3A5E;
+    --sienna:    #7A3225;
+    --olive:     #4A7A3F;
+    --mustard:   #E8C547;
+    --hl-yellow: rgba(232, 197, 71, 0.35);
+    --hl-blue:   rgba(26, 58, 94, 0.14);
+    --hl-red:    rgba(122, 50, 37, 0.14);
+    --hl-green:  rgba(74, 122, 63, 0.16);
+    --font-clean: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono:  "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+    --font-edit:  Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-clean);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+  }
+  header.doc-head {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 24px;
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  h1 {
+    font-family: var(--font-edit);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1.1;
+    color: var(--ink);
+    margin: 8px 0 16px;
+  }
+  .lede {
+    max-width: 720px;
+    font-size: 17px;
+    color: var(--ink-2);
+    margin: 0;
+  }
+  .stamp {
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .stamp strong { color: var(--sienna); }
+
+  /* Phase ribbon — three big phases at the top */
+  .phase-ribbon {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    align-items: stretch;
+    gap: 0;
+    margin: 0 0 48px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+  }
+  .phase-block {
+    padding: 28px 24px;
+    position: relative;
+  }
+  .phase-block + .phase-arrow + .phase-block { border-left: 0; }
+  .phase-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 22px;
+  }
+  .phase-block.current {
+    background: var(--paper-2);
+    box-shadow: inset 6px 0 0 var(--sienna);
+  }
+  .phase-block .phase-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .phase-block.current .phase-label {
+    color: var(--sienna);
+  }
+  .phase-block .phase-name {
+    font-family: var(--font-edit);
+    font-size: 28px;
+    font-style: italic;
+    color: var(--ink);
+    margin-top: 4px;
+    line-height: 1.1;
+  }
+  .phase-block .phase-summary {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .phase-block .here-marker {
+    margin-top: 16px;
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--sienna);
+    color: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+
+  /* Phase detail columns */
+  .phase-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+  }
+  .phase-detail {
+    border-top: 1px solid var(--rule);
+    padding-top: 16px;
+  }
+  .phase-detail.current {
+    border-top: 2px solid var(--sienna);
+    padding-top: 15px;
+  }
+  .phase-detail h2 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 0 0 16px;
+  }
+  .phase-detail.current h2 {
+    color: var(--sienna);
+  }
+  .subphase {
+    margin-bottom: 24px;
+  }
+  .subphase-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .subphase-name {
+    font-family: var(--font-edit);
+    font-size: 16px;
+    font-style: italic;
+    color: var(--ink);
+    margin: 2px 0 8px;
+  }
+  .subphase-status {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: 2px;
+  }
+  .status-shipped {
+    background: var(--hl-green);
+    color: var(--olive);
+  }
+  .status-current {
+    background: var(--hl-red);
+    color: var(--sienna);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  .status-pending {
+    background: var(--hl-yellow);
+    color: var(--ink-2);
+  }
+  .status-future {
+    background: var(--paper-3);
+    color: var(--ink-3);
+  }
+  .artifact-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1.5px solid var(--rule-soft);
+  }
+  .artifact-list li {
+    font-size: 13px;
+    color: var(--ink-2);
+    padding: 6px 12px;
+    line-height: 1.45;
+    position: relative;
+  }
+  .artifact-list li::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    top: 13px;
+    width: 6px;
+    height: 6px;
+    background: var(--ink-3);
+    border-radius: 50%;
+  }
+  .artifact-list li.shipped::before { background: var(--olive); }
+  .artifact-list li.current::before { background: var(--sienna); }
+  .artifact-list li.pending::before { background: var(--mustard); }
+  .artifact-list li.future::before { background: var(--ink-3); opacity: 0.4; }
+  .artifact-list li.current {
+    background: var(--hl-red);
+    font-weight: 600;
+  }
+  .artifact-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-left: 6px;
+  }
+  .artifact-list li.shipped .artifact-tag { color: var(--olive); }
+  .artifact-list li.current .artifact-tag { color: var(--sienna); }
+
+  /* The "ladder" between articulation operationalization → ralph loop → ship */
+  .ladder {
+    margin: 64px 0 48px;
+    padding: 32px;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .ladder h2 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 0 0 8px;
+  }
+  .ladder h3 {
+    font-family: var(--font-edit);
+    font-style: italic;
+    font-size: 26px;
+    margin: 0 0 24px;
+    color: var(--ink);
+  }
+  .ladder p { margin: 0 0 16px; color: var(--ink-2); max-width: 880px; }
+  .ladder-flow {
+    display: grid;
+    grid-template-columns: 1fr 32px 1fr 32px 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin: 24px 0 8px;
+  }
+  .ladder-step {
+    padding: 16px;
+    background: var(--paper);
+    border: 1px solid var(--rule-soft);
+  }
+  .ladder-step .lstep-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .ladder-step .lstep-name {
+    font-family: var(--font-edit);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink);
+    margin: 4px 0 6px;
+  }
+  .ladder-step .lstep-body {
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .ladder-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 18px;
+  }
+
+  /* Legend */
+  .legend {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend-dot.shipped { background: var(--olive); }
+  .legend-dot.current { background: var(--sienna); }
+  .legend-dot.pending { background: var(--mustard); }
+  .legend-dot.future  { background: var(--ink-3); opacity: 0.4; }
+
+  /* Bottom annotation */
+  .annotation {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule-soft);
+    color: var(--ink-3);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    line-height: 1.6;
+  }
+  .annotation a { color: var(--sienna); }
+
+  @media (max-width: 1024px) {
+    .phase-ribbon { grid-template-columns: 1fr; }
+    .phase-arrow { display: none; }
+    .phase-detail-grid { grid-template-columns: 1fr; gap: 24px; }
+    .ladder-flow { grid-template-columns: 1fr; gap: 16px; }
+    .ladder-arrow { display: none; }
+    h1 { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="doc-head">
+    <div class="eyebrow">SAD Methodology · Articulation → Build → Ship</div>
+    <h1>Where we are, and where the Ralph Loop is going to run.</h1>
+    <p class="lede">
+      The Specification-Anchored Development methodology has three large phases — Articulation, Build, Ship.
+      This visual marks the reference project V1's current position within them and names every artifact between here
+      and the Ralph Loop's first iteration.
+    </p>
+    <p class="stamp">the reference project V1 · stamp <strong>2026-05-13</strong> · canonical methodology overview at this date.</p>
+  </header>
+
+  <!-- ─── The three big phases ─────────────────────────────── -->
+  <section class="phase-ribbon">
+    <div class="phase-block">
+      <div class="phase-label">Phase A</div>
+      <div class="phase-name">Articulation</div>
+      <div class="phase-summary">
+        Specify what V1 is, exhaustively, before any code that isn't a prototype.
+        Closes when an autonomous executor could implement V1 without asking a
+        question — the Ralph Wiggum test.
+      </div>
+      <div class="here-marker">You are here · sub-phase 7</div>
+    </div>
+    <div class="phase-arrow">→</div>
+    <div class="phase-block">
+      <div class="phase-label">Phase B</div>
+      <div class="phase-name">Build</div>
+      <div class="phase-summary">
+        Implementation. Executed by a Ralph Loop (Anthropic's claude-code <code>ralph-wiggum</code>
+        plugin) reading the pre-loop handoff document and iterating against the Verification
+        Test Plan.
+      </div>
+    </div>
+    <div class="phase-arrow">→</div>
+    <div class="phase-block">
+      <div class="phase-label">Phase C</div>
+      <div class="phase-name">Ship</div>
+      <div class="phase-summary">
+        Final preflight, public deploy, live monitoring. Surfaces V1.x candidates and
+        opens V2 articulation when scope demands.
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Phase detail — three columns ─────────────────────── -->
+  <section class="phase-detail-grid">
+
+    <!-- ─── Articulation ─── -->
+    <div class="phase-detail current">
+      <h2>Articulation · sub-phases</h2>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 1</div>
+        <div class="subphase-name">Concept · vision · raw research<span class="subphase-status status-shipped">shipped</span></div>
+        <ul class="artifact-list">
+          <li class="shipped">Vision doc <span class="artifact-tag">V0</span></li>
+          <li class="shipped">Idea-dumps + raw sources <span class="artifact-tag">_ideas/, _sources/</span></li>
+          <li class="shipped">Entity-profile <span class="artifact-tag">projects/<entity>/product/&lt;product&gt;/</span></li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 2</div>
+        <div class="subphase-name">Version spec (Phase 1A)<span class="subphase-status status-shipped">shipped</span></div>
+        <ul class="artifact-list">
+          <li class="shipped">VERSION_SPEC_v1.md <span class="artifact-tag">docs/specs/</span></li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 3</div>
+        <div class="subphase-name">Core spec stack (Phase 1B)<span class="subphase-status status-shipped">shipped</span></div>
+        <ul class="artifact-list">
+          <li class="shipped">PRODUCT_SPEC · F1–F11 flows</li>
+          <li class="shipped">DATA_MODEL_SPEC · 28 tables + invariants</li>
+          <li class="shipped">BEHAVIORAL_SPEC · state machines</li>
+          <li class="shipped">IMPL_SPEC · runtime + deploy</li>
+          <li class="shipped">VERIFICATION_SPEC · §1–§7</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phases 4 + 5</div>
+        <div class="subphase-name">1B.5 convergence + 1B-Final review<span class="subphase-status status-shipped">shipped</span></div>
+        <ul class="artifact-list">
+          <li class="shipped">1B.5 Checkpoint <span class="artifact-tag">2026-05-04</span></li>
+          <li class="shipped">PHASE_1B_FINAL_REVIEW.md</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 6</div>
+        <div class="subphase-name">Articulation Closure · deliverables inventory<span class="subphase-status status-shipped">shipped</span></div>
+        <ul class="artifact-list">
+          <li class="shipped">Articulation closure inventory <span class="artifact-tag">2026-05-12</span></li>
+          <li class="shipped">Sitemap v2 · 46 V1 routes enumerated</li>
+          <li class="shipped">Navigation map · 13 affordances · 8 journeys</li>
+          <li class="shipped">Information architecture · 3-tier taxonomy</li>
+          <li class="shipped">Audience persona · 3 working personas</li>
+          <li class="shipped">Version identities · I1–I9 brand invariants</li>
+          <li class="shipped">UX flows F2–F11 + supporting</li>
+          <li class="shipped">Content models · all wiki types</li>
+          <li class="shipped">Wireframes v2 + supplement · every page</li>
+          <li class="shipped">Component library catalogue · 51 components</li>
+          <li class="shipped">Brand Vol I / II / III + portrait + map specs</li>
+          <li class="shipped">Ops runbooks + accessibility + metrics</li>
+          <li class="shipped">Anti-scraping plan + SDK direction</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 7 · NOW</div>
+        <div class="subphase-name">Operationalization · pre-Ralph-Loop bridge<span class="subphase-status status-current">in progress</span></div>
+        <ul class="artifact-list">
+          <li class="shipped">Verification Test Plan <span class="artifact-tag">VERIFICATION_SPEC §9 · 2026-05-13</span></li>
+          <li class="current">Schema readiness audit <span class="artifact-tag">authoring now</span></li>
+          <li class="pending">Data ingestion specification <span class="artifact-tag">next</span></li>
+          <li class="pending">DB-backed query interface specification</li>
+          <li class="pending">Build roadmap update · Bar B work-streams</li>
+          <li class="pending">Articulation closure inventory · Bar B section</li>
+          <li class="pending">Pre-Ralph-Loop handoff document <span class="artifact-tag">closes articulation</span></li>
+        </ul>
+      </div>
+
+      <p style="margin-top: 16px; font-size: 12px; color: var(--ink-3); font-style: italic;">
+        When the pre-Ralph-Loop handoff document lands and the inventory's verification table reads
+        "every artifact ✓ shipped + Verification Test Plan exists + functional completion condition
+        derivable" — articulation is closed. The Ralph Loop can run.
+      </p>
+    </div>
+
+    <!-- ─── Build ─── -->
+    <div class="phase-detail">
+      <h2>Build · Ralph Loop iterations</h2>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 1</div>
+        <div class="subphase-name">Schema migrations + DB layer<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">Migrations from the schema audit (sub-phase 7 above)</li>
+          <li class="future">Indexes per query-interface spec</li>
+          <li class="future">Triggers for revisions-immutable + dag-invariant</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 2</div>
+        <div class="subphase-name">Data ingestion<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">theunitedstates.io · congress-legislators → Neon</li>
+          <li class="future">535 Congress members + POTUS + VPOTUS</li>
+          <li class="future">Position seeding · federal-wide + state-scoped + district-scoped</li>
+          <li class="future">Data-vintage stamp written on every ingest</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 3</div>
+        <div class="subphase-name">Stub → DB swap<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">officeholder-stub.ts → Drizzle query</li>
+          <li class="future">position-stub.ts → Drizzle query</li>
+          <li class="future">district-stub.ts → Drizzle query</li>
+          <li class="future">Page templates unchanged — only the data source</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 4</div>
+        <div class="subphase-name">Brand decision implementation<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">Cursive font load via <code>next/font/google</code></li>
+          <li class="future">Functional caps font (Architects Daughter?) confirmed</li>
+          <li class="future">Multi-browser specimen verification</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 5 · parallel</div>
+        <div class="subphase-name">V1.x deferral revisit<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">Bracket investigation panel (F4)</li>
+          <li class="future">Per-clause source fragments (F5.02)</li>
+          <li class="future">Four-section adversarial rendering (F10)</li>
+          <li class="future">Browse-index facets (UI-C-13)</li>
+          <li class="future">TIGER/Line district-map asset pipeline</li>
+        </ul>
+        <p style="margin-top: 8px; font-size: 12px; color: var(--ink-3); font-style: italic;">
+          Promotion to V1 scope decided during the Build phase as bandwidth allows. Each sees its own
+          Ralph Loop session.
+        </p>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Loop condition</div>
+        <div class="subphase-name">Iterate until Verification Test Plan passes<span class="subphase-status status-future">future</span></div>
+        <p style="font-size: 13px; color: var(--ink-2); margin: 0;">
+          Each iteration: read handoff doc → produce code change → run §9 tests → if Failing &gt; 0,
+          iterate. Until Failing === 0.
+        </p>
+      </div>
+    </div>
+
+    <!-- ─── Ship ─── -->
+    <div class="phase-detail">
+      <h2>Ship · public V1</h2>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 1</div>
+        <div class="subphase-name">Final preflight<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">Full §9 Verification Test Plan run on production</li>
+          <li class="future">Advisory manual tests (keyboard, multi-browser) signed off</li>
+          <li class="future">Anti-scraping operator-loop items (Cloudflare WAF) applied</li>
+          <li class="future">Data-vintage stamps fresh (≤14 days)</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 2</div>
+        <div class="subphase-name">Public deploy<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">Deploy commit pushed</li>
+          <li class="future">CI green</li>
+          <li class="future">Cloudflare Workers deploy live</li>
+          <li class="future">DNS + TLS confirmed</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 3</div>
+        <div class="subphase-name">Live verification<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">Smoke test on production · TST-F1-01 through TST-F1-15</li>
+          <li class="future">Public-facing acknowledgment (about page · launch note)</li>
+          <li class="future">V1 SESSION_LOG closure entry</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 4 · ongoing</div>
+        <div class="subphase-name">Monitor + V1.x triage<span class="subphase-status status-future">future</span></div>
+        <ul class="artifact-list">
+          <li class="future">Observability surface (errors, slow queries, rate limits)</li>
+          <li class="future">V1.x candidates surfaced → mini-articulation per item</li>
+          <li class="future">Quarterly anti-scraping list refresh</li>
+        </ul>
+      </div>
+
+      <div class="subphase">
+        <div class="subphase-label">Sub-phase 5 · trigger</div>
+        <div class="subphase-name">V2 articulation opens<span class="subphase-status status-future">future</span></div>
+        <p style="font-size: 13px; color: var(--ink-2); margin: 0;">
+          When V2 scope (accounts, attention model, verified pseudonymity) becomes the operator's
+          focus, a new articulation cycle begins for V2. The methodology re-enters Phase A at the
+          top. The V1 corpus stays live.
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── The ladder — the bridge between sub-phase 7 and the Ralph Loop ─── -->
+  <section class="ladder">
+    <h2>The bridge</h2>
+    <h3>How sub-phase 7 hands off to the Ralph Loop</h3>
+    <p>
+      The six remaining articulation artifacts pair to produce one downstream deliverable each: a
+      pre-loop handoff document. The handoff doc is the prompt the Ralph Loop reads at the start of
+      every iteration. It points at the canonical specs; it does not duplicate them.
+    </p>
+
+    <div class="ladder-flow">
+      <div class="ladder-step">
+        <div class="lstep-label">Input · articulation</div>
+        <div class="lstep-name">Six artifacts</div>
+        <div class="lstep-body">
+          VERIFICATION_SPEC §9 (test plan), schema audit, ingestion spec, query interface spec,
+          updated build roadmap, updated articulation closure inventory.
+        </div>
+      </div>
+      <div class="ladder-arrow">→</div>
+      <div class="ladder-step">
+        <div class="lstep-label">Pre-loop handoff</div>
+        <div class="lstep-name">One bridge document</div>
+        <div class="lstep-body">
+          Names the completion condition (§9.16). Points at each spec for detail.
+          Lists the per-iteration loop: read state, pick next failing test, fix, retest, commit.
+          References the brand-load-bearing decisions and the V1.x deferrals.
+        </div>
+      </div>
+      <div class="ladder-arrow">→</div>
+      <div class="ladder-step">
+        <div class="lstep-label">Output · build</div>
+        <div class="lstep-name">Ralph Loop iterations</div>
+        <div class="lstep-body">
+          Anthropic's <code>ralph-wiggum</code> plugin (Claude Code) reads the handoff,
+          executes one iteration, the stop-hook re-feeds the prompt. Repeat until §9 says
+          "every test passes."
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Legend ─── -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot shipped"></span>shipped</div>
+    <div class="legend-item"><span class="legend-dot current"></span>in progress · current</div>
+    <div class="legend-item"><span class="legend-dot pending"></span>pending · this sub-phase</div>
+    <div class="legend-item"><span class="legend-dot future"></span>future · next sub-phase</div>
+  </div>
+
+  <p class="annotation">
+    Authored 2026-05-13 by Claude on direction from the owner, as the methodology-overview visual that
+    pairs with the V1-deploy postmortem. Methodology home: <code>everything-ecosystem/methodology/</code>.
+    Reference implementation: <code>projects/&lt;entity&gt;/product/&lt;product&gt;/</code>. Adopted Ralph Loop execution layer:
+    Anthropic <code>ralph-wiggum</code> plugin. Articulation-closure skill:
+    <code>knowledge/skills/articulation-closure/SKILL.md</code>.
+    <br><br>
+    This visual is dated. Future versions: re-stamp at each phase transition (articulation → build,
+    build → ship, ship → V2 articulation). When sub-phase 7 closes, mark sub-phase 7 ✓ shipped and
+    activate the Build column's first sub-phase.
+  </p>
+
+</div>
+</body>
+</html>

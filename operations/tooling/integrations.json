@@ -1,0 +1,60 @@
+[
+  {
+    "id": "mad",
+    "name": "MAD",
+    "layer": "operations",
+    "role": "method choice, fit ranking, risk judgment",
+    "interfaces": [
+      "cli",
+      "files"
+    ],
+    "status": "in-use",
+    "reason": "The MAD repo"
+  },
+  {
+    "id": "linear",
+    "name": "Linear",
+    "layer": "operations",
+    "role": "issues, cycles and roadmaps",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Researched in operations/research; connector sign-in expired"
+  },
+  {
+    "id": "github-projects",
+    "name": "GitHub Projects",
+    "layer": "operations",
+    "role": "work tracking beside the code",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Researched in operations/research"
+  },
+  {
+    "id": "jev",
+    "name": "Jev (TypeSafe AI)",
+    "layer": "operations",
+    "role": "recommended MAD scorer",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "MAD README requirement 13; needs TYPESAFE_API_KEY"
+  },
+  {
+    "id": "calendar",
+    "name": "Calendar",
+    "layer": "operations",
+    "role": "cadence and time blocks",
+    "interfaces": [
+      "api",
+      "mcp"
+    ],
+    "status": "candidate",
+    "reason": "Researched in operations/research"
+  }
+]

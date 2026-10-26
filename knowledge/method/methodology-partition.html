@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>methodology-partition — The anatomy of the methodology</title>
+<style>
+:root {
+  --bg: #fbf8f1;
+  --bg-alt: #f3eedf;
+  --gold: #b8862b;
+  --gold-light: #d4a548;
+  --ink: #1a1814;
+  --ink-light: #3d3a35;
+  --ink-muted: #6b665e;
+  --border: #d8d1bc;
+  --code-bg: #efe8d3;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.65; color: var(--ink); background: var(--bg); }
+h1, h2, h3, h4 { font-family: Georgia, "Iowan Old Style", serif; color: var(--ink); margin-top: 2em; margin-bottom: 0.5em; line-height: 1.25; }
+h1 { font-size: 2.1em; border-bottom: 2px solid var(--gold); padding-bottom: 0.2em; margin-top: 0; }
+h2 { font-size: 1.55em; color: var(--gold); }
+h3 { font-size: 1.2em; }
+h4 { font-size: 1.02em; color: var(--ink-light); }
+p { margin: 0.8em 0; }
+a { color: var(--gold); text-decoration: none; border-bottom: 1px dotted var(--gold-light); }
+a:hover { border-bottom-style: solid; }
+code { background: var(--code-bg); padding: 0.1em 0.4em; border-radius: 3px; font-family: "SF Mono", Monaco, monospace; font-size: 0.9em; color: var(--ink); }
+blockquote { border-left: 3px solid var(--gold); margin: 1em 0 1em 0; padding: 0.4em 1.2em; color: var(--ink-light); font-style: italic; background: var(--bg-alt); }
+table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.95em; }
+th, td { padding: 0.55em 0.8em; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--bg-alt); font-weight: 600; color: var(--ink); border-bottom: 2px solid var(--gold); }
+tr:hover { background: var(--bg-alt); }
+ul, ol { padding-left: 1.4em; }
+li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+.wikilink { color: var(--gold); background: var(--bg-alt); padding: 0.05em 0.35em; border-radius: 3px; font-size: 0.92em; font-family: "SF Mono", Monaco, monospace; }
+.layout { display: grid; grid-template-columns: 260px 1fr; max-width: 1240px; margin: 0 auto; gap: 2.5em; padding: 2em; }
+.toc { position: sticky; top: 2em; align-self: start; max-height: calc(100vh - 4em); overflow-y: auto; padding-right: 1em; border-right: 1px solid var(--border); }
+.toc-title { font-size: 0.78em; text-transform: uppercase; color: var(--ink-muted); letter-spacing: 0.08em; margin: 0 0 0.6em 0; font-family: -apple-system, sans-serif; }
+.toc ul { list-style: none; padding-left: 0; margin: 0; }
+.toc li { font-size: 0.88em; margin: 0.45em 0; line-height: 1.3; }
+.toc a { border: none; color: var(--ink-light); display: block; padding: 0.2em 0; }
+.toc a:hover { color: var(--gold); }
+.toc .nested { padding-left: 0.9em; font-size: 0.82em; color: var(--ink-muted); margin: 0.25em 0; }
+.content { min-width: 0; }
+.header { margin-bottom: 2em; padding-bottom: 1em; border-bottom: 1px solid var(--border); }
+.subtitle { color: var(--ink-muted); font-style: italic; margin: 0.4em 0 1em 0; font-size: 1.05em; }
+.meta { display: flex; gap: 0.6em; flex-wrap: wrap; font-size: 0.78em; margin-top: 1em; }
+.badge { padding: 0.2em 0.6em; border-radius: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.badge.phase { background: var(--ink); color: var(--bg); }
+.badge.status { background: var(--gold); color: var(--bg); }
+.badge.tag { background: var(--bg-alt); color: var(--ink-light); border: 1px solid var(--border); }
+.callout { background: var(--bg-alt); border-left: 3px solid var(--gold); padding: 0.8em 1.2em; margin: 1.2em 0; }
+.tagline { font-style: italic; color: var(--ink-light); text-align: center; margin: 2.5em 0; font-size: 1.05em; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; padding: 1em; gap: 1em; }
+  .toc { position: static; border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 1em; margin-bottom: 1em; max-height: none; }
+}
+@media print {
+  .toc { display: none; }
+  .layout { grid-template-columns: 1fr; padding: 0; }
+  body { font-size: 10.5pt; }
+  h1, h2, h3 { page-break-after: avoid; }
+  a { color: var(--ink); border: none; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc">
+    <p class="toc-title">Contents</p>
+    <ul>
+      <li><a href="#why">Why this document exists</a></li>
+      <li><a href="#rings">The four rings</a></li>
+      <li class="nested"><a href="#ring1">Ring 1 — Practice</a></li>
+      <li class="nested"><a href="#ring2">Ring 2 — Memory</a></li>
+      <li class="nested"><a href="#ring3">Ring 3 — Abstraction</a></li>
+      <li class="nested"><a href="#ring4">Ring 4 — Agent</a></li>
+      <li><a href="#threads">The four threads</a></li>
+      <li><a href="#weave">The 4×4 weave</a></li>
+      <li><a href="#substrate">Substrate-invariance sub-practice</a></li>
+      <li><a href="#modality">Central coaching modality</a></li>
+      <li><a href="#presoft">Pre-software methodology</a></li>
+      <li><a href="#teaching">Implications for teaching</a></li>
+      <li><a href="#consultancy">Implications for the consultancy</a></li>
+      <li><a href="#sad">Relationship to SAD</a></li>
+      <li><a href="#open">Open questions</a></li>
+      <li><a href="#status">Status</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+    <header class="header">
+      <h1>methodology-partition — The anatomy of the methodology</h1>
+      <p class="subtitle">The methodology is not a tool stack. It is a four-ring weave of cognitive layers, each running through four cross-cutting disciplines. This document is the canonical reference for that anatomy.</p>
+      <div class="meta">
+        <span class="badge phase">Methodology reference</span>
+        <span class="badge status">Drafted v1</span>
+        <span class="badge tag">2026-05-21</span>
+      </div>
+    </header>
+
+    <section id="why">
+      <h2>Why this document exists</h2>
+      <p>The methodology has many layers — practice, memory, abstraction, agent — and many disciplines that thread through every layer — relational awareness, versioning, ritual, pillar decomposition. When the layers and the disciplines get conflated, the methodology becomes hard to explain and harder to teach.</p>
+      <p>This document partitions them.</p>
+      <p>It is referenced by <span class="wikilink">a consulting practice/product/VISION_SPEC</span>, <span class="wikilink">a consulting practice/business/strategy</span>, the Tier 1 (Practice Engagement) teaching frame, the Tier 2 (Implementation Engagement) install plan, and future industry-template authoring.</p>
+      <p>It is <em>not</em> the SAD methodology. SAD describes the operational lanes (Articulate, Build, Ship, Operate). This document describes the anatomical layers (rings) and the cross-cutting disciplines (threads). The two are orthogonal — every SAD lane uses every ring, and every ring honors every thread.</p>
+    </section>
+
+    <section id="rings">
+      <h2>The four rings</h2>
+      <p>Vertical structure. Where things live.</p>
+
+      <h3 id="ring1">Ring 1 — Practice</h3>
+      <p>The cognitive disciplines that make every other ring possible. Systems thinking is the umbrella practice; underneath it sit several recognizable sub-practices:</p>
+      <ul>
+        <li><strong>Composition awareness</strong> — systems contain subsystems and are contained by supersystems</li>
+        <li><strong>Coupling awareness</strong> — components affect each other (the thread we call relational awareness)</li>
+        <li><strong>Boundary awareness</strong> — knowing where one system ends and another begins</li>
+        <li><strong>Substrate-invariance awareness</strong> — function persists across substrate changes (paper-and-train letter → email → SMS; the function is "send a written message," the substrate keeps changing)</li>
+        <li><strong>Tradeoff awareness</strong> — seeing the cost-benefit of options at each decision point; recognizing that every decision has consequences in adjacent decisions</li>
+        <li><strong>Abstraction-layer awareness</strong> — knowing which layer a decision belongs at; recognizing when conversations conflate layers (e.g., debating tooling when the real disagreement is about the underlying practice)</li>
+      </ul>
+      <p>The Practice ring is <em>cognitive</em>. It runs in the operator's head. Every other ring depends on it.</p>
+
+      <h3 id="ring2">Ring 2 — Memory</h3>
+      <p>Externalized memory. Moving the practice off the operator's brain and onto a substrate that survives them.</p>
+      <p>The Memory ring has structure:</p>
+      <ul>
+        <li>A <strong>schema</strong> — every note declares its type, its date, its tags, its links</li>
+        <li>A <strong>relational layer</strong> — wikilinks (or footnotes, citations, red string on a corkboard)</li>
+        <li>A <strong>hierarchy</strong> — folders, filing cabinets, shelves</li>
+      </ul>
+      <p>The substrate can be paper, a whiteboard, Notion, Google Drive, or a vault of plain-text files. The schema and the relations are the constants; the medium is the variable.</p>
+      <p>The most important property of Ring 2 is <em>the relationship layer</em>. A spec without its coupling-to-other-specs is dead weight. The true memory is not the cards but the cards plus the strings between them.</p>
+
+      <h3 id="ring3">Ring 3 — Abstraction</h3>
+      <p>Tools that render the memory legible and operable.</p>
+      <p>Obsidian is one such tool. Dataview, Templater, Mermaid — also abstraction-ring tools. The SAD Command Center is an abstraction-ring tool under active development. Eventually, owned substrate software may sit at this ring.</p>
+      <p>Ring 3 is <em>instrumental</em>. It does not constitute the methodology; it operates on the memory layer. Swap Obsidian for VS Code + grep tomorrow and the methodology survives.</p>
+
+      <h3 id="ring4">Ring 4 — Agent</h3>
+      <p>Whoever acts. Human, team of humans, AI, hybrid.</p>
+      <p>A solo founder is Ring 4. A team of three humans is Ring 4. Claude Code is Ring 4. An owned model-agnostic agent harness is Ring 4. The agent ring consumes Rings 1–3 and produces action.</p>
+      <p>This ring is <em>operational</em>. It is the only ring that can be replaced wholesale (a different person or AI) without affecting the lower rings.</p>
+    </section>
+
+    <section id="threads">
+      <h2>The four threads</h2>
+      <p>Horizontal structure. Disciplines that run through every ring. Each thread expresses itself differently at each ring, but the underlying discipline is constant.</p>
+
+      <h3>Thread 1 — Relational awareness</h3>
+      <p>The discipline of naming couplings. When decision A constrains decision B, the coupling itself is a first-class artifact, not an implicit assumption. Tradeoffs notes, supersession links, lineage chains — all are relational-awareness artifacts.</p>
+
+      <h3>Thread 2 — Versioning discipline</h3>
+      <p>The discipline of distinguishing ambition (BASED) from scope (SMART), and tracking the evolution of versions (V1 → V1.5 → V2 → V∞). VISION_SPEC + VERSION_SPEC; baseline/mainline/frontier/future/legacy framing.</p>
+
+      <h3>Thread 3 — Ritual discipline</h3>
+      <p>The discipline of opening and closing every cycle. Session-start and session-end protocols. Gate-firing at phase transitions. Articulation closure before implementation.</p>
+
+      <h3>Thread 4 — Pillar discipline</h3>
+      <p>The discipline of decomposing every entity into Product, Brand, and Business pillars (recursively, where applicable). The three lenses through which every entity is examined.</p>
+    </section>
+
+    <section id="weave">
+      <h2>The 4×4 weave</h2>
+      <p>The methodology is the matrix produced when rings and threads cross.</p>
+      <table>
+        <thead>
+          <tr><th>Thread × Ring</th><th>Practice (think)</th><th>Memory (document)</th><th>Abstraction (tool)</th><th>Agent (operate)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Relational awareness</strong></td><td>systems thinking</td><td>wikilinks + tradeoffs notes</td><td>graph view, Dataview</td><td>follow citations to resolve coupling</td></tr>
+          <tr><td><strong>Versioning discipline</strong></td><td>BASED for ambition, SMART for scope</td><td>VISION_SPEC + VERSION_SPEC, V1/V1.5 notation</td><td>version-identity skill</td><td>use BASED for vision-drafts, SMART for ticket-writes</td></tr>
+          <tr><td><strong>Ritual discipline</strong></td><td>open/close cycles, gate thinking</td><td>session-log entries, raw captures</td><td>session-capture skill, hooks</td><td>run the gates; humans honor them too</td></tr>
+          <tr><td><strong>Pillar discipline</strong></td><td>three lenses on every entity</td><td>product/brand/business folder triplet</td><td>template-generation for pillar profiles</td><td>agent or human produces the three profiles</td></tr>
+        </tbody>
+      </table>
+      <p>Read across a row to see how one discipline expresses itself across all rings. Read down a column to see what disciplines a single ring honors. The cells are not exhaustive — they are examples. The matrix is the framing; the cells get richer as the methodology matures.</p>
+    </section>
+
+    <section id="substrate">
+      <h2>Substrate-invariance as a sub-practice</h2>
+      <p>Substrate-invariance awareness deserves separate treatment because it is the sub-practice that makes the methodology consultancy possible.</p>
+      <p>A function persists across substrate changes. The function "send a written message to a remote person" has been carried by paper-and-train, paper-and-truck, paper-and-plane, telegraph, telephone, email, SMS, web-comment, and chat-app. A systems thinker sees the invariant — "remote written communication." A non-systems-thinker sees only the current substrate — "we use email."</p>
+      <p>This sub-practice has structural consequences:</p>
+      <ul>
+        <li><strong>The methodology runs on any substrate</strong> — paper, whiteboard, Notion, vault-plus-agent. The Ring 2 (Memory) medium is replaceable.</li>
+        <li><strong>The methodology survives every tooling shift</strong> — Obsidian replaced tomorrow, Claude replaced tomorrow, the agent layer redesigned wholesale. The Practice and the Memory schema persist.</li>
+        <li><strong>A consultancy can sell the methodology separately from the implementation</strong> — Tier 1 teaches the substrate-invariant Practice; Tier 2 installs the current best Abstraction + Agent.</li>
+      </ul>
+      <p>Substrate-invariance is also the most powerful diagnostic for prospective clients. The question <em>"describe your business as if computers didn't exist"</em> reveals whether the prospect has the sub-practice. If they can describe their business in terms of function, they have it. If they can only describe it in terms of current tooling, they have conflated function with substrate — and that is the first thing to correct.</p>
+    </section>
+
+    <section id="modality">
+      <h2>Systems thinking as the central coaching modality</h2>
+      <p>The methodology consultancy coaches operators in systems thinking. That is the central modality.</p>
+      <p>Every Tier 1 session is a systems-thinking session expressed against the operator's actual life-domain. The six sub-practices — composition, coupling, boundary, substrate-invariance, tradeoff, abstraction-layer — are not separate offerings. They are the <em>modes</em> the coaching takes as the operator's particular situation requires.</p>
+      <p>When the operator is choosing between two implementations, tradeoff awareness is in the foreground. When the operator is debating tooling but the real disagreement is about practice, abstraction-layer awareness is in the foreground. When the operator can't see how decisions in one area constrain decisions in another, coupling awareness is in the foreground. The coaching adapts; the underlying discipline is constant.</p>
+      <p>This has two consequences for how Tier 1 engagements are structured:</p>
+      <ul>
+        <li><strong>The coach doesn't pick a sub-practice in advance.</strong> The sub-practice surfaces from the operator's situation. The coach's job is to recognize which sub-practice is needed and bring it into focus.</li>
+        <li><strong>A session isn't "about" a sub-practice.</strong> It's about the operator's actual decisions, with sub-practices in the background making the decisions legible.</li>
+      </ul>
+      <p>This is what differentiates this consultancy from generic systems-thinking education. We do not teach systems thinking as abstract content. We coach the operator's systems thinking as applied to their real life-domain.</p>
+    </section>
+
+    <section id="presoft">
+      <h2>The pre-software methodology</h2>
+      <p>The methodology existed before computers. It still works without them.</p>
+      <p>UPS ran systems thinking + relational memory + versioning discipline + ritual discipline + pillar decomposition long before computers. Brown trucks, stickers, conveyor belts, loading manifests — these are all <em>abstractions</em> over the practice of "deliver this thing from A to B with accountability." Today UPS has barcode scanners, route optimization, predictive ETAs. Replace every computer at UPS tomorrow with paper and clerks and the practice survives. Slower, more expensive, but coherent.</p>
+      <p>A team of three humans, sharing a Notion or a Google Doc, running daily standups, doing systems thinking + version-discipline + ritual-discipline + pillar-decomposition — is doing this methodology. Their substrate is digital but not AI-augmented.</p>
+      <p>A solo operator with a paper notebook, a wall of index cards with red string between them, and the discipline to open and close every working day with a written ritual — is doing this methodology. The substrate is fully analog.</p>
+      <p>The AI-augmented version is <em>one valid configuration</em> of the methodology. It is the most efficient configuration available in 2026. It is not the methodology itself.</p>
+    </section>
+
+    <section id="teaching">
+      <h2>Implications for teaching</h2>
+      <p>The 4×4 weave gives the methodology two natural teaching slices.</p>
+
+      <h3>Vertical slice — one thread across all rings</h3>
+      <p>Pick a single thread. Walk it from Ring 1 through Ring 4.</p>
+      <p>Example with relational awareness: "Think of a thing as a system." → "Write it down with explicit links." → "Render it as a graph." → "An agent (human or AI) follows the links to reason." That single vertical slice demonstrates the whole methodology with one consistent concept.</p>
+
+      <h3>Horizontal slice — one ring with all threads</h3>
+      <p>Pick a single ring. Show how each thread expresses itself at that ring.</p>
+      <p>Example with Memory (Ring 2): "Wikilinks express relational awareness. VISION_SPEC + VERSION_SPEC express versioning. Session logs express ritual. Pillar triplets express pillar decomposition." That horizontal slice shows what the Memory ring is <em>doing</em> — it is the substrate where every discipline becomes legible.</p>
+      <p>Both slicing strategies are pedagogically valid. The vertical slice is better for first-time teaching (one concept, full depth). The horizontal slice is better for filling in a ring the operator has already encountered.</p>
+    </section>
+
+    <section id="consultancy">
+      <h2>Implications for the methodology consultancy</h2>
+      <p>The 4×4 weave maps cleanly to the consultancy's offering tiers.</p>
+      <ul>
+        <li><strong>Tier 1 (Practice Engagement)</strong> primarily teaches Ring 1 (Practice), with all four threads expressed at Practice-level. The customer leaves with the methodology in their head, not in their tools.</li>
+        <li><strong>Tier 2 (Implementation)</strong> installs Rings 2, 3, and 4 (Memory, Abstraction, Agent). The threads now express themselves in the customer's vault, in their Obsidian setup, in their Claude Code configuration.</li>
+        <li><strong>Tier 3 (Operator Support)</strong> maintains the integrity of the weave over time. Some threads drift faster than others — ritual discipline drifts especially fast (sessions get skipped, gates get bypassed). Tier 3's quarterly cadence re-engages the threads.</li>
+      </ul>
+      <p>The substrate-invariance sub-practice is what allows Tier 1 and Tier 2 to be unbundled. Without it, the consultancy collapses into "we sell an Obsidian + Claude install" — which is a much weaker offering.</p>
+    </section>
+
+    <section id="sad">
+      <h2>Relationship to SAD methodology</h2>
+      <p>This partition is <em>orthogonal</em> to the SAD methodology lanes (Articulate, Build, Ship, Operate).</p>
+      <p>SAD describes <em>operational lanes</em> — what the operator is doing right now (articulating, building, shipping, operating). The four rings describe <em>anatomical layers</em> — what the methodology contains. Every SAD lane uses every ring.</p>
+      <p>Example: a SAD Articulate session (Phase 0A through 1C) uses:</p>
+      <ul>
+        <li>Ring 1 (Practice) — the operator's systems thinking is doing the articulation</li>
+        <li>Ring 2 (Memory) — the spec files getting authored</li>
+        <li>Ring 3 (Abstraction) — Obsidian rendering the wikilinks, Dataview running queries</li>
+        <li>Ring 4 (Agent) — Claude Code or the human doing the writing</li>
+      </ul>
+      <p>And it honors all four threads — relational awareness, versioning discipline, ritual discipline, pillar discipline.</p>
+      <p>The two views compose. The four rings tell you <em>what</em> the methodology contains. The SAD lanes tell you <em>when</em> the methodology is being run. The threads tell you <em>what disciplines</em> run through all of it.</p>
+    </section>
+
+    <section id="open">
+      <h2>Open questions</h2>
+      <p>Things this document does not yet resolve.</p>
+      <ul>
+        <li><strong>Are these the right four threads, or are there more?</strong> The current four — relational, versioning, ritual, pillar — emerged from the work done so far. Articulation-before-actuation might be a fifth thread, or it might be the meta-thread that makes the other four possible. Feedback (every layer feeds back to refine the layer above it) might be another candidate.</li>
+        <li><strong>Where do pipeline gates live?</strong> Gates (0Δ, 1B.F, 1C, 2.F, 3.1) might be best modeled as the intersection of ritual thread × abstraction ring — a <em>cell</em> in the matrix, not a residence in any single ring.</li>
+        <li><strong>Are there sub-practices of systems thinking we haven't named?</strong> Six named so far: composition, coupling, boundary, substrate-invariance, tradeoff, abstraction-layer. Analogy-awareness was proposed but not yet folded in. Each new sub-practice should be testable against real coaching sessions before being canonized.</li>
+        <li><strong>How does the agent ring handle hybrid composition?</strong> A solo founder with one AI cofounder is a 1+1 agent. A team of three humans with shared Claude Code access is 3+1. The methodology should be neutral to agent composition, but the operational consequences (who does what when) need a clearer framing.</li>
+        <li><strong>What is the <em>unit</em> of the methodology?</strong> Is it the entity? The session? The version? The thread-cell? Different units would lead to different teaching frames.</li>
+      </ul>
+      <p>These will be resolved through use, not through theorizing.</p>
+    </section>
+
+    <section id="status">
+      <h2>Status</h2>
+      <ul>
+        <li><strong>Phase:</strong> N/A — this is a methodology reference doc, not a SAD spec</li>
+        <li><strong>Drafted:</strong> 2026-05-21</li>
+        <li><strong>Authored alongside:</strong> the Methodology Consultancy VISION_SPEC and strategy doc</li>
+        <li><strong>Revision cadence:</strong> as the methodology evolves, this doc evolves. Expect revisions whenever a new thread is named, a new ring is debated, or a new sub-practice surfaces.</li>
+      </ul>
+    </section>
+
+    <p class="tagline">The methodology is a weave. The threads are constants. The substrate adapts.</p>
+  </main>
+</div>
+</body>
+</html>

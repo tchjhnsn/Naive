@@ -1,0 +1,71 @@
+<svg viewBox="0 0 1000 340" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#222"/>
+    </marker>
+    <marker id="arrow-dashed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#111">Specification-Anchored Development — Phase Pipeline (for software products)</text>
+
+  <!-- Feedback arrow: Phase 4 evolution -->
+  <path d="M 900 145 Q 900 70, 764 70 Q 628 70, 628 145" stroke="#888" stroke-width="1.5" stroke-dasharray="5,3" fill="none" marker-end="url(#arrow-dashed)"/>
+  <text x="764" y="60" text-anchor="middle" font-size="11" fill="#666" font-style="italic">Phase 4 — Spec Evolution (on verified gap)</text>
+
+  <!-- Phase boxes -->
+  <!-- 0A -->
+  <rect x="24" y="150" width="120" height="60" rx="6" fill="#f6f6f2" stroke="#333" stroke-width="1.2"/>
+  <text x="84" y="177" text-anchor="middle" font-size="13" font-weight="600" fill="#111">Phase 0A</text>
+  <text x="84" y="196" text-anchor="middle" font-size="12" fill="#333">Mind Dump</text>
+  <line x1="144" y1="180" x2="160" y2="180" stroke="#222" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 0B -->
+  <rect x="160" y="150" width="120" height="60" rx="6" fill="#f6f6f2" stroke="#333" stroke-width="1.2"/>
+  <text x="220" y="177" text-anchor="middle" font-size="13" font-weight="600" fill="#111">Phase 0B</text>
+  <text x="220" y="196" text-anchor="middle" font-size="12" fill="#333">Research</text>
+  <line x1="280" y1="180" x2="296" y2="180" stroke="#222" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 0C -->
+  <rect x="296" y="150" width="120" height="60" rx="6" fill="#f6f6f2" stroke="#333" stroke-width="1.2"/>
+  <text x="356" y="177" text-anchor="middle" font-size="13" font-weight="600" fill="#111">Phase 0C</text>
+  <text x="356" y="196" text-anchor="middle" font-size="12" fill="#333">Vision Spec</text>
+  <line x1="416" y1="180" x2="432" y2="180" stroke="#222" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 1A -->
+  <rect x="432" y="150" width="120" height="60" rx="6" fill="#f6f6f2" stroke="#333" stroke-width="1.2"/>
+  <text x="492" y="177" text-anchor="middle" font-size="13" font-weight="600" fill="#111">Phase 1A</text>
+  <text x="492" y="196" text-anchor="middle" font-size="12" fill="#333">Version Spec</text>
+  <line x1="552" y1="180" x2="568" y2="180" stroke="#222" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 1B — Convergence -->
+  <rect x="568" y="150" width="120" height="60" rx="6" fill="#e6efd8" stroke="#4a6b1f" stroke-width="2"/>
+  <text x="628" y="171" text-anchor="middle" font-size="13" font-weight="600" fill="#111">Phase 1B &#8635;</text>
+  <text x="628" y="187" text-anchor="middle" font-size="11" fill="#333">Spec Package</text>
+  <text x="628" y="202" text-anchor="middle" font-size="10" fill="#4a6b1f">Spec Convergence</text>
+  <line x1="688" y1="180" x2="704" y2="180" stroke="#222" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 2 -->
+  <rect x="704" y="150" width="120" height="60" rx="6" fill="#f6f6f2" stroke="#333" stroke-width="1.2"/>
+  <text x="764" y="177" text-anchor="middle" font-size="13" font-weight="600" fill="#111">Phase 2</text>
+  <text x="764" y="196" text-anchor="middle" font-size="12" fill="#333">Implementation</text>
+  <line x1="824" y1="180" x2="840" y2="180" stroke="#222" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 3 — Convergence -->
+  <rect x="840" y="150" width="120" height="60" rx="6" fill="#e6efd8" stroke="#4a6b1f" stroke-width="2"/>
+  <text x="900" y="171" text-anchor="middle" font-size="13" font-weight="600" fill="#111">Phase 3 &#8635;</text>
+  <text x="900" y="187" text-anchor="middle" font-size="11" fill="#333">Verification</text>
+  <text x="900" y="202" text-anchor="middle" font-size="10" fill="#4a6b1f">Impl. Convergence</text>
+
+  <!-- Legend row -->
+  <text x="500" y="245" text-anchor="middle" font-size="11" fill="#555">
+    <tspan font-weight="600" fill="#4a6b1f">&#8635;</tspan> = automated adversarial pressure-test before human review &#183; <tspan fill="#888">- - -</tspan> = feedback loop (spec evolution on verified gap)
+  </text>
+
+  <!-- Cross-cutting band -->
+  <rect x="24" y="275" width="936" height="45" rx="4" fill="#fafaf6" stroke="#d8d8d0" stroke-width="1"/>
+  <text x="40" y="293" font-size="11" font-weight="600" fill="#333">Cross-cutting disciplines:</text>
+  <text x="40" y="309" font-size="11" fill="#444">Raw / Compiled data model &#183; Global / Project / Local scope &#183; Session Log (institutional memory) &#183; Human &#9733; checkpoint at every phase gate</text>
+</svg>

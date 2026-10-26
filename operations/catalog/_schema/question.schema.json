@@ -1,0 +1,18 @@
+{
+  "title": "catalog-question",
+  "type": "object",
+  "required": ["type", "id", "set", "text", "version", "source", "created", "ai-model", "tags"],
+  "properties": {
+    "type": { "enum": ["catalog-question"] },
+    "id": { "type": "string", "pattern": "^(M|A|K)[0-9]+$" },
+    "set": { "enum": ["methodology", "artifact-type", "catalog"] },
+    "text": { "type": "string" },
+    "version": { "type": "integer" },
+    "refined-from": { "type": "string" },
+    "reason": { "type": "string" },
+    "source": { "enum": ["human", "machine", "hybrid"] },
+    "created": { "type": "string" },
+    "ai-model": { "type": "string" },
+    "tags": { "type": "array" }
+  }
+}

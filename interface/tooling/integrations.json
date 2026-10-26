@@ -1,0 +1,34 @@
+[
+  {
+    "id": "claude-artifacts",
+    "name": "Claude artifacts",
+    "layer": "interface",
+    "role": "dashboards and published pages",
+    "interfaces": [
+      "app"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "operator-console",
+    "name": "Operator console",
+    "layer": "interface",
+    "role": "local viewer over the records",
+    "interfaces": [
+      "app"
+    ],
+    "status": "candidate",
+    "reason": "interface/operator-console"
+  },
+  {
+    "id": "framer",
+    "name": "Framer",
+    "layer": "interface",
+    "role": "public site design",
+    "interfaces": [
+      "mcp"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists"
+  }
+]

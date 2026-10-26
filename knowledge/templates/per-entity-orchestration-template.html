@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{ENTITY_NAME}} — Orchestration</title>
+
+<!--
+  PER-ENTITY ORCHESTRATION HTML TEMPLATE
+  =======================================
+  Methodology version: SAD v3.3+
+  Authored: 2026-05-14
+  Location for instances: projects/<entity>/<entity>-orchestration.html
+
+  PURPOSE
+  This template is the per-entity orchestration surface — the visible dashboard
+  that integrates every methodology layer for one entity (a company, sub-company,
+  pillar product, or any recursive level per §36). It is the canonical place
+  the operator and AI come to see the entity's state.
+
+  RECURSION
+  Per §36, every entity at every recursion level can have its own orchestration
+  HTML. A parent entity's HTML cross-links to its children's HTML; a child's
+  HTML cross-links back to its parent. Each level is its own dashboard.
+
+  FLUIDITY
+  Per §37, this template is EXPLICIT about what to surface but IMPLICIT about
+  how to populate each section. Different entities at different lanes / pillars /
+  ambition tiers populate sections differently. Sections without relevant content
+  get a "not yet applicable" note rather than being removed.
+
+  TRAJECTORY
+  Per §39, this HTML is the current-state surface for solo-operator + AI. The
+  embedded <script type="application/json" id="entity-state"> block is the
+  structured-state surface that an eventual multi-user software port reads from.
+
+  TEMPLATE PLACEHOLDERS
+  Replace tokens like {{ENTITY_NAME}}, {{LIFECYCLE_STAGE}}, etc. with actual
+  values per entity. Anywhere a section says "EXAMPLE:" — replace with real
+  entity content.
+-->
+
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-soft: #555;
+    --ink-mute: #888;
+    --rule: #d8d8d4;
+    --rule-soft: #ececea;
+    --bg: #fafaf7;
+    --bg-section: #ffffff;
+    --accent: #b6602e;
+    --accent-soft: #f3e6dc;
+    --good: #2e7d4e;
+    --good-soft: #e3f0e6;
+    --pending: #b88b1a;
+    --pending-soft: #fbf2dc;
+    --bad: #b8341a;
+    --bad-soft: #f5dcd6;
+    --info: #2e5a8e;
+    --info-soft: #d8e4f0;
+    --tag: #5a5a55;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --lane-art: #8e6cb8;
+    --lane-build: #2e7d4e;
+    --lane-ship: #b6602e;
+    --lane-operate: #5a5a55;
+    --pillar-product: #2e5a8e;
+    --pillar-brand: #b6602e;
+    --pillar-business: #2e7d4e;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body {
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    margin: 0; padding: 28px clamp(16px, 4vw, 56px);
+    max-width: 1280px; margin-inline: auto;
+  }
+
+  /* ====== HEADER ====== */
+  header.entity-header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px; margin-bottom: 22px;
+  }
+  header.entity-header h1 {
+    font-size: 26px; margin: 0 0 6px; letter-spacing: -0.01em;
+    font-family: var(--mono); font-weight: 500;
+  }
+  .entity-tagline { color: var(--ink-soft); font-size: 14px; margin: 0 0 12px; }
+  .entity-meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 8px 0; font-family: var(--mono); font-size: 11.5px;
+  }
+  .entity-meta-item {
+    background: var(--rule-soft); padding: 3px 8px; border-radius: 3px;
+    color: var(--tag);
+  }
+  .entity-meta-item strong { color: var(--ink); font-weight: 600; }
+  .entity-relations {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    margin-top: 10px; font-size: 12.5px;
+  }
+  .entity-relations a { color: var(--accent); text-decoration: none; }
+  .entity-relations a:hover { text-decoration: underline; }
+
+  /* ====== SECTION ====== */
+  section.surface {
+    background: var(--bg-section);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 16px 20px; margin: 14px 0;
+  }
+  section.surface h2 {
+    font-size: 13px; margin: 0 0 10px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--rule-soft);
+    letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700;
+    color: var(--ink);
+  }
+  section.surface h2 .section-meta {
+    float: right; font-size: 11px; color: var(--ink-mute);
+    text-transform: none; letter-spacing: 0; font-weight: 400;
+  }
+  section.surface h3 { font-size: 13px; margin: 14px 0 6px; }
+
+  /* ====== LANE STATUS ====== */
+  .swimlane {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    margin: 8px 0;
+  }
+  .lane {
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 10px 12px; background: var(--bg);
+    position: relative;
+  }
+  .lane.active { border-width: 2px; }
+  .lane-articulate { border-top: 3px solid var(--lane-art); }
+  .lane-articulate.active { border-color: var(--lane-art); }
+  .lane-build { border-top: 3px solid var(--lane-build); }
+  .lane-build.active { border-color: var(--lane-build); }
+  .lane-ship { border-top: 3px solid var(--lane-ship); }
+  .lane-ship.active { border-color: var(--lane-ship); }
+  .lane-operate { border-top: 3px solid var(--lane-operate); }
+  .lane-operate.active { border-color: var(--lane-operate); }
+  .lane-title {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .lane-current {
+    font-size: 12.5px; margin: 4px 0;
+  }
+  .lane-current strong { font-weight: 600; }
+  .lane-status {
+    font-size: 11px; font-family: var(--mono);
+    color: var(--ink-soft); margin-top: 6px;
+  }
+  .position-marker {
+    position: absolute; top: -6px; right: -6px;
+    background: var(--accent); color: white;
+    font-size: 9px; font-weight: 700; padding: 2px 6px;
+    border-radius: 8px; letter-spacing: 0.06em;
+  }
+
+  /* ====== PILLARS ====== */
+  .pillar-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin: 8px 0;
+  }
+  .pillar-card {
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 12px 14px; background: var(--bg);
+    border-top: 3px solid var(--rule);
+  }
+  .pillar-card.pillar-product { border-top-color: var(--pillar-product); }
+  .pillar-card.pillar-brand { border-top-color: var(--pillar-brand); }
+  .pillar-card.pillar-business { border-top-color: var(--pillar-business); }
+  .pillar-card h3 {
+    font-family: var(--mono); font-size: 11px; margin: 0 0 6px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .pillar-card .pillar-lead { font-size: 12px; color: var(--ink-soft); margin: 4px 0; }
+  .pillar-card .pillar-products { margin: 8px 0 0; }
+  .pillar-card .pillar-products ul {
+    margin: 4px 0 0; padding-left: 18px; font-size: 12.5px;
+  }
+  .pillar-card .pillar-products li { margin: 2px 0; }
+  .pillar-card .pillar-empty {
+    font-size: 12px; color: var(--ink-mute); font-style: italic; margin: 4px 0;
+  }
+
+  /* ====== STATUS BADGES ====== */
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    padding: 1px 6px; border-radius: 3px; margin: 0 4px 0 0;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    background: var(--rule-soft); color: var(--tag);
+  }
+  .badge-good { background: var(--good-soft); color: var(--good); }
+  .badge-pending { background: var(--pending-soft); color: var(--pending); }
+  .badge-bad { background: var(--bad-soft); color: var(--bad); }
+  .badge-info { background: var(--info-soft); color: var(--info); }
+  .badge-stub { background: var(--rule-soft); color: var(--ink-mute); }
+
+  /* ====== TABLES ====== */
+  table.inventory {
+    width: 100%; border-collapse: collapse; margin: 8px 0;
+    font-size: 12.5px;
+  }
+  table.inventory th, table.inventory td {
+    border: 1px solid var(--rule); padding: 5px 8px; vertical-align: top;
+    text-align: left;
+  }
+  table.inventory th {
+    background: var(--rule-soft); font-weight: 700;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  table.inventory tr.tier-divider td {
+    background: var(--bg); font-weight: 600; padding: 8px;
+    text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em;
+    color: var(--ink-soft);
+  }
+
+  /* ====== MECHANISMS ====== */
+  .mechanism-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+    margin: 8px 0;
+  }
+  .mechanism-block {
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 10px 12px; background: var(--bg);
+  }
+  .mechanism-block h3 {
+    font-family: var(--mono); font-size: 11px; margin: 0 0 6px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .mechanism-block ul {
+    margin: 4px 0 0; padding-left: 18px; font-size: 12.5px;
+  }
+  .mechanism-block li { margin: 2px 0; }
+  .mechanism-block code { font-size: 11.5px; }
+
+  /* ====== BUTTONS ====== */
+  .action-buttons {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+  }
+  .action-button {
+    background: var(--bg); border: 1px solid var(--rule);
+    padding: 5px 12px; font-size: 12px; font-family: var(--mono);
+    border-radius: 3px; cursor: pointer; color: var(--ink);
+    text-decoration: none; display: inline-block;
+  }
+  .action-button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .action-button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .action-button.primary:hover { background: #95491f; }
+
+  /* ====== DECISIONS + ARCHIVE ====== */
+  .decision-row {
+    border-bottom: 1px dashed var(--rule-soft);
+    padding: 8px 0; font-size: 12.5px;
+  }
+  .decision-row:last-child { border-bottom: none; }
+  .decision-date { font-family: var(--mono); font-size: 11px; color: var(--ink-mute); }
+  .decision-title { font-weight: 600; margin: 2px 0; }
+  .decision-summary { color: var(--ink-soft); font-size: 12px; }
+
+  /* ====== CANONICAL DOCS ====== */
+  table.canonical {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+  }
+  table.canonical th, table.canonical td {
+    padding: 5px 8px; border-bottom: 1px solid var(--rule-soft);
+    text-align: left; vertical-align: top;
+  }
+  table.canonical th {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  /* ====== ROLES ====== */
+  .role-row {
+    display: grid; grid-template-columns: 1fr 1fr auto;
+    gap: 12px; padding: 8px 0; font-size: 12.5px;
+    border-bottom: 1px dashed var(--rule-soft);
+  }
+  .role-row:last-child { border-bottom: none; }
+
+  /* ====== FOOTER ====== */
+  footer.entity-footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 28px; padding-top: 12px;
+    font-size: 11.5px; color: var(--ink-mute); font-family: var(--mono);
+  }
+
+  /* ====== UTILITY ====== */
+  .empty-state {
+    font-size: 12.5px; color: var(--ink-mute); font-style: italic;
+    padding: 8px 0;
+  }
+  a { color: var(--accent); }
+  code { font-family: var(--mono); font-size: 12px; }
+  .mute { color: var(--ink-mute); }
+  .small { font-size: 11px; }
+
+  /* ====== FLUIDITY NOTE ====== */
+  .fluidity-note {
+    background: var(--info-soft); border-left: 3px solid var(--info);
+    padding: 8px 12px; margin: 8px 0; font-size: 12px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<!--
+  ====================================
+  SECTION 1 — ENTITY HEADER
+  ====================================
+  Identifies the entity: name, class, lifecycle stage, ambition tier, recursion
+  position (parent + children). The first thing the operator sees.
+-->
+<header class="entity-header">
+  <h1>{{ENTITY_NAME}}</h1>
+  <p class="entity-tagline">{{ENTITY_ONE_LINE_DESCRIPTION}}</p>
+  <div class="entity-meta">
+    <span class="entity-meta-item"><strong>class:</strong> {{ENTITY_CLASS}}</span>
+    <span class="entity-meta-item"><strong>lifecycle:</strong> {{LIFECYCLE_STAGE}}</span>
+    <span class="entity-meta-item"><strong>ambition:</strong> {{AMBITION_TIER}}</span>
+    <span class="entity-meta-item"><strong>version:</strong> {{CURRENT_VERSION}}</span>
+    <span class="entity-meta-item"><strong>methodology:</strong> SAD v3.3+</span>
+  </div>
+  <div class="entity-relations">
+    <div><strong class="mute">parent:</strong> {{PARENT_LINK_OR_NONE}}</div>
+    <div><strong class="mute">surfaces-of:</strong> {{SURFACES_OF_OR_NONE}}</div>
+    <div><strong class="mute">children:</strong> {{CHILDREN_LINKS_OR_NONE}}</div>
+  </div>
+</header>
+
+<!--
+  ====================================
+  SECTION 2 — LANE STATUS (Articulate → Build → Ship → Operate)
+  ====================================
+  Visual swim-lane showing which lane the entity is currently in, and which
+  phase within that lane. Active lane gets visually emphasized.
+-->
+<section class="surface" id="lane-status">
+  <h2>Lane Status <span class="section-meta">methodology Layer 1 · per <a href="../../sad/pipeline-canonical-view-2026-05-14.html">canonical pipeline view</a></span></h2>
+
+  <div class="swimlane">
+    <div class="lane lane-articulate {{ARTICULATE_ACTIVE_CLASS}}">
+      <div class="lane-title">Articulate</div>
+      <div class="lane-current"><strong>{{ARTICULATE_PHASE}}</strong></div>
+      <div class="lane-status">{{ARTICULATE_STATUS}}</div>
+      {{ARTICULATE_POSITION_MARKER}}
+    </div>
+    <div class="lane lane-build {{BUILD_ACTIVE_CLASS}}">
+      <div class="lane-title">Build</div>
+      <div class="lane-current"><strong>{{BUILD_PHASE}}</strong></div>
+      <div class="lane-status">{{BUILD_STATUS}}</div>
+      {{BUILD_POSITION_MARKER}}
+    </div>
+    <div class="lane lane-ship {{SHIP_ACTIVE_CLASS}}">
+      <div class="lane-title">Ship</div>
+      <div class="lane-current"><strong>{{SHIP_PHASE}}</strong></div>
+      <div class="lane-status">{{SHIP_STATUS}}</div>
+      {{SHIP_POSITION_MARKER}}
+    </div>
+    <div class="lane lane-operate {{OPERATE_ACTIVE_CLASS}}">
+      <div class="lane-title">Operate</div>
+      <div class="lane-current"><strong>{{OPERATE_PHASE}}</strong></div>
+      <div class="lane-status">{{OPERATE_STATUS}}</div>
+      {{OPERATE_POSITION_MARKER}}
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <a class="action-button" href="#deliverables">jump to deliverables</a>
+    <a class="action-button" href="#decisions">jump to decisions</a>
+    <a class="action-button" href="#roles">jump to roles</a>
+    <span class="action-button mute" title="Future: invokes /articulation-close skill">/articulation-close</span>
+    <span class="action-button mute" title="Future: invokes /triage skill">/triage</span>
+  </div>
+</section>
+
+<!--
+  ====================================
+  SECTION 3 — THREE PILLARS
+  ====================================
+  Per-pillar status with pillar products (per §35). Each pillar shows: lead,
+  pillar status, pillar products if any.
+-->
+<section class="surface" id="pillars">
+  <h2>Three Pillars <span class="section-meta">methodology Layer 2 · company template</span></h2>
+
+  <div class="pillar-grid">
+    <div class="pillar-card pillar-product">
+      <h3>Product</h3>
+      <div class="pillar-lead"><strong>lead:</strong> {{PRODUCT_LEAD_OR_VACANT}}</div>
+      <div class="pillar-lead"><strong>status:</strong> <span class="badge {{PRODUCT_STATUS_BADGE}}">{{PRODUCT_STATUS}}</span></div>
+      <div class="pillar-products">
+        <strong class="small">products:</strong>
+        <!-- EXAMPLE: if entity has multiple Product-pillar products, list them with cross-links to their own orchestration HTML (per §36 recursion). If single product, show single. If pre-product, show empty state. -->
+        <ul>
+          <li>{{PRODUCT_PRODUCT_1}}</li>
+          <li>{{PRODUCT_PRODUCT_2_OR_OMIT}}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pillar-card pillar-brand">
+      <h3>Brand</h3>
+      <div class="pillar-lead"><strong>lead:</strong> {{BRAND_LEAD_OR_VACANT}}</div>
+      <div class="pillar-lead"><strong>status:</strong> <span class="badge {{BRAND_STATUS_BADGE}}">{{BRAND_STATUS}}</span></div>
+      <div class="pillar-products">
+        <strong class="small">brand products:</strong>
+        <!-- Brand-pillar products are optional per §35. If none, show "none yet". If some (podcast, brand campaign, events, etc.), list with cross-links. -->
+        <div class="pillar-empty">{{BRAND_PRODUCTS_OR_NONE_NOTE}}</div>
+      </div>
+    </div>
+
+    <div class="pillar-card pillar-business">
+      <h3>Business</h3>
+      <div class="pillar-lead"><strong>lead:</strong> {{BUSINESS_LEAD_OR_VACANT}}</div>
+      <div class="pillar-lead"><strong>status:</strong> <span class="badge {{BUSINESS_STATUS_BADGE}}">{{BUSINESS_STATUS}}</span></div>
+      <div class="pillar-products">
+        <strong class="small">business products:</strong>
+        <!-- Business-pillar products are optional per §35. If none, show "none yet". -->
+        <div class="pillar-empty">{{BUSINESS_PRODUCTS_OR_NONE_NOTE}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fluidity-note">
+    <strong>Per §37 fluidity principle:</strong> these pillar surfaces are EXPLICIT about what to consider (pillar leads, status, products) but IMPLICIT about how to document. Sections without applicable content show empty states rather than being removed — the consideration remains visible even when the content is "not yet."
+  </div>
+</section>
+
+<!--
+  ====================================
+  SECTION 4 — DELIVERABLES INVENTORY
+  ====================================
+  Per-pillar, per-tier deliverable inventory with status. Tier 1 (pillar-wide),
+  Tier 2 (product-type-specific), Tier 3 (idea-derived). Status semantics per
+  §24: stub / authored / canonical / archived.
+-->
+<section class="surface" id="deliverables">
+  <h2>Deliverables Inventory <span class="section-meta">methodology Layer 3 · per pillar + product-type</span></h2>
+
+  <table class="inventory">
+    <thead>
+      <tr>
+        <th style="width:90px;">Tier</th>
+        <th>Deliverable</th>
+        <th style="width:90px;">Pillar</th>
+        <th style="width:90px;">Status</th>
+        <th>Location / Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Tier 1 — Pillar-wide deliverables. Every project at venture+ ambition has these. -->
+      <tr class="tier-divider"><td colspan="5">Tier 1 — Pillar-wide</td></tr>
+      <!-- EXAMPLE rows; each pillar contributes several Tier 1 deliverables -->
+      <tr>
+        <td>1</td>
+        <td>Product profile</td>
+        <td>Product</td>
+        <td><span class="badge badge-good">authored</span></td>
+        <td><code>{{PATH_TO_PRODUCT_PROFILE}}</code></td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Brand identity</td>
+        <td>Brand</td>
+        <td><span class="badge badge-good">authored</span></td>
+        <td><code>{{PATH_TO_BRAND_IDENTITY}}</code></td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Business model</td>
+        <td>Business</td>
+        <td><span class="badge badge-pending">stub</span></td>
+        <td><code>{{PATH_TO_BUSINESS_MODEL_OR_NOTE}}</code></td>
+      </tr>
+
+      <!-- Tier 2 — Product-type-specific deliverables. Depends on what product types this entity has. -->
+      <tr class="tier-divider"><td colspan="5">Tier 2 — Product-type-specific</td></tr>
+      <tr>
+        <td>2</td>
+        <td>VISION_SPEC</td>
+        <td>Product</td>
+        <td><span class="badge badge-good">authored</span></td>
+        <td><code>{{PATH_TO_VISION_SPEC}}</code></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>VERSION_SPEC_v[N]</td>
+        <td>Product</td>
+        <td><span class="badge badge-good">authored</span></td>
+        <td><code>{{PATH_TO_VERSION_SPEC}}</code></td>
+      </tr>
+      <!-- ...more Tier 2 deliverables based on product-type -->
+
+      <!-- Tier 3 — Idea-derived (surfaced by deliverable-discovery skill per §33) -->
+      <tr class="tier-divider"><td colspan="5">Tier 3 — Idea-derived (project-specific)</td></tr>
+      <!-- EXAMPLE -->
+      <tr>
+        <td>3</td>
+        <td>{{TIER_3_DELIVERABLE_1_NAME}}</td>
+        <td>{{TIER_3_PILLAR}}</td>
+        <td><span class="badge badge-good">canonical</span></td>
+        <td>{{TIER_3_NOTES}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="fluidity-note">
+    <strong>Per §37:</strong> not every Tier 1 / Tier 2 deliverable is required for every entity. Hobby-tier and side-project-tier entities skip most; venture-tier and enterprise-tier entities author the full set. Tier 3 deliverables are discovered per project via the <a href="../../sad/skills/deliverable-discovery/SKILL.md">deliverable-discovery skill</a>.
+  </div>
+</section>
+
+<!--
+  ====================================
+  SECTION 5 — METHODOLOGY MECHANISMS
+  ====================================
+  Active skills (auto-loaded based on current context), available slash commands
+  (selective invocation), and hook status (last fired).
+-->
+<section class="surface" id="mechanisms">
+  <h2>Methodology Mechanisms <span class="section-meta">skills + hooks + selective commands · per §34</span></h2>
+
+  <div class="mechanism-grid">
+    <div class="mechanism-block">
+      <h3>Active skills</h3>
+      <p class="small mute">Auto-loaded based on current phase. Per §34 — primary always-on layer.</p>
+      <ul>
+        <!-- EXAMPLE: skills currently in scope for this entity's lane/phase -->
+        <li><code>{{ACTIVE_SKILL_1}}</code></li>
+        <li><code>{{ACTIVE_SKILL_2}}</code></li>
+        <li><code>{{ACTIVE_SKILL_3}}</code></li>
+      </ul>
+    </div>
+
+    <div class="mechanism-block">
+      <h3>Available commands</h3>
+      <p class="small mute">Selective explicit invocation. Per §34 — buttons rather than memorized commands.</p>
+      <div class="action-buttons">
+        <span class="action-button">/orchestrate</span>
+        <span class="action-button">/triage</span>
+        <span class="action-button">/articulation-close</span>
+        <span class="action-button">/discover-deliverables</span>
+        <span class="action-button">/foreshadowing-audit</span>
+        <span class="action-button">/metrics-review</span>
+        <span class="action-button">/canonicalize</span>
+        <span class="action-button">/archive-idea</span>
+        <span class="action-button">/role-and-candidate-authoring</span>
+        <span class="action-button">/stakeholder-update</span>
+      </div>
+    </div>
+
+    <div class="mechanism-block">
+      <h3>Hook status</h3>
+      <p class="small mute">Lifecycle hooks. Per §34 — event-driven automation. See <a href="../../sad/hook-intentions-2026-05-14.md">hook intentions</a>.</p>
+      <ul>
+        <li><code>session-start</code> · last fired {{LAST_SESSION_START}}</li>
+        <li><code>session-end</code> · last fired {{LAST_SESSION_END}}</li>
+        <li><code>pre-commit</code> · last fired {{LAST_PRE_COMMIT}}</li>
+        <li><code>pre-deploy</code> · last fired {{LAST_PRE_DEPLOY}}</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!--
+  ====================================
+  SECTION 6 — DECISIONS + IDEA ARCHIVE
+  ====================================
+  Cross-pillar tradeoffs, significant decisions, and a window into the idea
+  archive (Meta-rollback pattern per §25).
+-->
+<section class="surface" id="decisions">
+  <h2>Decisions + Archive <span class="section-meta">cross-pillar tradeoffs · idea archive · per §25 + §38</span></h2>
+
+  <h3>Recent decisions</h3>
+  <div>
+    <!-- EXAMPLE: most recent decisions chronologically; cross-pillar tradeoffs flagged -->
+    <div class="decision-row">
+      <div class="decision-date">{{DECISION_DATE_1}}</div>
+      <div class="decision-title">{{DECISION_TITLE_1}}</div>
+      <div class="decision-summary">{{DECISION_SUMMARY_1}}</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-date">{{DECISION_DATE_2}}</div>
+      <div class="decision-title">{{DECISION_TITLE_2}}</div>
+      <div class="decision-summary">{{DECISION_SUMMARY_2}}</div>
+    </div>
+  </div>
+
+  <h3>Idea archive</h3>
+  <p class="small mute">Per §25 — the Meta-rollback pattern. Tried-and-rolled-back, decided-against, or parking-lot ideas. Full archive at <a href="{{PATH_TO_IDEA_ARCHIVE}}"><code>{{PATH_TO_IDEA_ARCHIVE}}</code></a>.</p>
+  <div>
+    <!-- EXAMPLE: most recent archive entries -->
+    <div class="decision-row">
+      <div class="decision-date">{{ARCHIVE_DATE_1}}</div>
+      <div class="decision-title">{{ARCHIVE_IDEA_1}}</div>
+      <div class="decision-summary">{{ARCHIVE_OUTCOME_1}}</div>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <span class="action-button">/archive-idea</span>
+    <span class="action-button">/cross-pillar-tradeoff</span>
+  </div>
+</section>
+
+<!--
+  ====================================
+  SECTION 7 — CANONICAL DOCS + CROSS-REFERENCE
+  ====================================
+  Per concern, the canonical doc + its relationship to related docs. Per §26
+  canonical-doc discipline.
+-->
+<section class="surface" id="canonical-docs">
+  <h2>Canonical Documents <span class="section-meta">per §26 canonical-doc discipline</span></h2>
+
+  <table class="canonical">
+    <thead>
+      <tr>
+        <th style="width:30%;">Concern</th>
+        <th style="width:35%;">Canonical document</th>
+        <th>Related docs</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{CONCERN_1}}</td>
+        <td><a href="{{CANONICAL_DOC_1_PATH}}"><code>{{CANONICAL_DOC_1_NAME}}</code></a></td>
+        <td class="small">{{RELATED_DOCS_1}}</td>
+      </tr>
+      <tr>
+        <td>{{CONCERN_2}}</td>
+        <td><a href="{{CANONICAL_DOC_2_PATH}}"><code>{{CANONICAL_DOC_2_NAME}}</code></a></td>
+        <td class="small">{{RELATED_DOCS_2}}</td>
+      </tr>
+      <!-- ...more canonical docs as accumulated -->
+    </tbody>
+  </table>
+
+  <div class="action-buttons">
+    <span class="action-button">/canonicalize</span>
+  </div>
+</section>
+
+<!--
+  ====================================
+  SECTION 8 — ROLES + OPEN POSITIONS
+  ====================================
+  Filled roles, vacant roles needing owners, sub-projects needing leads.
+  Per §38 — role-and-candidate-authoring as methodology output.
+-->
+<section class="surface" id="roles">
+  <h2>Roles + Open Positions <span class="section-meta">per §38 · role-filling artifacts</span></h2>
+
+  <h3>Filled roles</h3>
+  <div>
+    <!-- EXAMPLE rows -->
+    <div class="role-row">
+      <div><strong>{{ROLE_1_NAME}}</strong> · <span class="small mute">{{ROLE_1_PILLAR}}</span></div>
+      <div>{{ROLE_1_OCCUPANT}}</div>
+      <div><span class="badge badge-good">filled</span></div>
+    </div>
+  </div>
+
+  <h3>Open / needs owner</h3>
+  <div>
+    <!-- EXAMPLE: roles or sub-projects that need an owner -->
+    <div class="role-row">
+      <div><strong>{{OPEN_ROLE_1_NAME}}</strong> · <span class="small mute">{{OPEN_ROLE_1_PILLAR}}</span></div>
+      <div>{{OPEN_ROLE_1_NOTE}}</div>
+      <div><a class="action-button" href="#">draft profile</a></div>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <span class="action-button">/role-and-candidate-authoring</span>
+  </div>
+
+  <div class="fluidity-note">
+    <strong>Per §36 + §38:</strong> when a sub-project matures enough to warrant its own owner, surface it here as "needs owner" with a button to invoke <code>role-and-candidate-authoring</code>. This is the methodology's bridge from solo-operator to multi-person team.
+  </div>
+</section>
+
+<!--
+  ====================================
+  SECTION 9 — RECURSION SURFACES (child entities)
+  ====================================
+  Per §36 — each pillar product is a sub-company with its own orchestration
+  HTML. Cross-link to each child entity's orchestration here.
+-->
+<section class="surface" id="recursion">
+  <h2>Sub-Entities (Recursive) <span class="section-meta">per §36 pillar recursion</span></h2>
+
+  <p class="small mute">Each pillar product is itself a sub-company with its own three-pillar structure and its own orchestration HTML. Cross-links below.</p>
+
+  <table class="canonical">
+    <thead>
+      <tr>
+        <th style="width:25%;">Sub-entity</th>
+        <th style="width:15%;">Pillar (in parent)</th>
+        <th style="width:20%;">Status</th>
+        <th>Orchestration link</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- EXAMPLE: child entities, each with link to its own orchestration HTML -->
+      <tr>
+        <td>{{SUB_ENTITY_1_NAME}}</td>
+        <td>{{SUB_ENTITY_1_PILLAR}}</td>
+        <td><span class="badge {{SUB_ENTITY_1_STATUS_BADGE}}">{{SUB_ENTITY_1_STATUS}}</span></td>
+        <td><a href="{{SUB_ENTITY_1_ORCHESTRATION_PATH}}">→ orchestration</a></td>
+      </tr>
+      <!-- If this entity has no children yet, replace with empty state -->
+    </tbody>
+  </table>
+</section>
+
+<!--
+  ====================================
+  SECTION 10 — STRUCTURED STATE (for future software port)
+  ====================================
+  Per §39 — embedded JSON state block. The HTML is the current rendering surface;
+  the JSON is the data the eventual multi-user software port reads. Future
+  software lifts this state into a database; HTML re-renders from the same data.
+-->
+<section class="surface" id="structured-state">
+  <h2>Structured State <span class="section-meta">per §39 · ports-clean state for future software</span></h2>
+
+  <p class="small mute">The orchestration HTML is the current surface for solo-operator + AI. This JSON block is the structured state a future multi-user software port reads. Update this block when state changes; the HTML sections above are re-rendered from this.</p>
+
+  <script type="application/json" id="entity-state">
+{
+  "entity": {
+    "name": "{{ENTITY_NAME}}",
+    "class": "{{ENTITY_CLASS}}",
+    "lifecycle-stage": "{{LIFECYCLE_STAGE}}",
+    "ambition-tier": "{{AMBITION_TIER}}",
+    "current-version": "{{CURRENT_VERSION}}",
+    "methodology-version": "SAD v3.3+",
+    "parent": "{{PARENT_ENTITY_NAME_OR_NULL}}",
+    "surfaces-of": "{{SURFACES_OF_OR_NULL}}",
+    "children": []
+  },
+  "lane-status": {
+    "current-lane": "{{CURRENT_LANE}}",
+    "current-phase": "{{CURRENT_PHASE}}",
+    "current-sprint": "{{CURRENT_SPRINT}}",
+    "articulate": { "phase": "{{ARTICULATE_PHASE}}", "status": "{{ARTICULATE_STATUS}}" },
+    "build": { "phase": "{{BUILD_PHASE}}", "status": "{{BUILD_STATUS}}" },
+    "ship": { "phase": "{{SHIP_PHASE}}", "status": "{{SHIP_STATUS}}" },
+    "operate": { "phase": "{{OPERATE_PHASE}}", "status": "{{OPERATE_STATUS}}" }
+  },
+  "pillars": {
+    "product": {
+      "lead": "{{PRODUCT_LEAD_OR_VACANT}}",
+      "status": "{{PRODUCT_STATUS}}",
+      "products": []
+    },
+    "brand": {
+      "lead": "{{BRAND_LEAD_OR_VACANT}}",
+      "status": "{{BRAND_STATUS}}",
+      "products": []
+    },
+    "business": {
+      "lead": "{{BUSINESS_LEAD_OR_VACANT}}",
+      "status": "{{BUSINESS_STATUS}}",
+      "products": []
+    }
+  },
+  "deliverables": {
+    "tier-1": [],
+    "tier-2": [],
+    "tier-3": []
+  },
+  "mechanisms": {
+    "active-skills": [],
+    "available-commands": [
+      "/orchestrate", "/triage", "/articulation-close",
+      "/discover-deliverables", "/foreshadowing-audit",
+      "/metrics-review", "/canonicalize", "/archive-idea",
+      "/role-and-candidate-authoring", "/stakeholder-update"
+    ],
+    "hooks": {
+      "session-start": "{{LAST_SESSION_START}}",
+      "session-end": "{{LAST_SESSION_END}}",
+      "pre-commit": "{{LAST_PRE_COMMIT}}",
+      "pre-deploy": "{{LAST_PRE_DEPLOY}}"
+    }
+  },
+  "decisions": [],
+  "idea-archive-count": 0,
+  "canonical-docs": [],
+  "roles": {
+    "filled": [],
+    "open": []
+  },
+  "last-reviewed": "{{LAST_REVIEWED}}",
+  "last-updated": "{{LAST_UPDATED}}"
+}
+  </script>
+</section>
+
+<!--
+  ====================================
+  FOOTER
+  ====================================
+-->
+<footer class="entity-footer">
+  <div>This orchestration HTML conforms to SAD v3.3+ methodology · per <a href="../../sad/pipeline-canonical-view-2026-05-14.html">canonical pipeline view</a></div>
+  <div>Template: <code>knowledge/templates/per-entity-orchestration-template.html</code></div>
+  <div>Last-reviewed: {{LAST_REVIEWED}} · Last-updated: {{LAST_UPDATED}}</div>
+  <div>Recursion: this is one of {{RECURSION_COUNT}} orchestration HTMLs across the entity's full hierarchy</div>
+</footer>
+
+<!--
+  ====================================
+  USAGE NOTES
+  ====================================
+
+  How to use this template:
+
+  1. Copy this file to projects/<entity>/<entity>-orchestration.html
+  2. Replace every {{TOKEN}} with the entity's actual value
+  3. Remove "EXAMPLE:" rows that don't apply; add rows for actual content
+  4. Update the JSON structured-state block to match the rendered content
+  5. Save + view in browser
+  6. Update across sessions as state changes (skills, hooks, and slash commands
+     can all interact with this surface)
+
+  Recursive entities (per §36):
+  - The reference project has its own orchestration HTML at projects/&lt;entity&gt;/&lt;product&gt;
+  - The reference project has its own at projects/&lt;entity&gt;/product/&lt;product&gt;/orchestration.html
+  - The reference project links to its parent (the reference project) and the reference project links to its children
+    (all seven surfaces). Each is a complete dashboard for its level.
+
+  Fluidity (per §37):
+  - Sections you don't yet have content for: show empty state, don't remove
+  - Sections that don't apply to your entity type: show "N/A" with rationale
+  - Sections that need expansion: extend within the same structural frame
+  - The HTML is the FRAME; the project's specific content is what fills it
+
+  Trajectory (per §39):
+  - This template renders cleanly as HTML for solo-operator + AI use
+  - The structured-state JSON block is what a future multi-user software port
+    reads. Keep it in sync with the rendered content.
+  - When the methodology eventually ports to real software, this same JSON
+    schema goes into a database; the same rendering logic produces the UI.
+
+  Recommended approach for first authoring:
+  - Start with header + lane status + pillars sections
+  - Add deliverables inventory once articulation closure inventory is authored
+  - Add mechanisms section as skills + hooks start firing
+  - Add decisions / canonical-docs / roles sections as content accumulates
+  - The orchestration HTML grows with the project; it's not authored once-and-done
+-->
+
+</body>
+</html>

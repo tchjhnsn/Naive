@@ -1,0 +1,2896 @@
+{
+  "$schema_note": "Machine-readable registry of design documents for SAD v3 projects, in five layers: domain (DD), product (PA), experience (XD), interface (UI) and systems (SD). IDs are questions, not folders. Where each layer lives across the vault and the code repo: DOMAIN_AND_SYSTEMS_DESIGN_METHOD.md §4a. Companion to that method and the Canonical Asset Registry. Read by design-coverage/check.mjs.",
+  "version": "1.2.0",
+  "created": "2026-10-09",
+  "ai_model": "claude-opus-5.5",
+  "definitions": {
+    "domain_design": "Designing what the system means: the actors, concepts, rules, invariants, lifecycles and policies of the problem it serves, independent of technology. Answers 'what is true, what is allowed, what must never happen'. Output: domain documents (DD-*).",
+    "systems_design": "Designing how a running system implements the domain under real constraints: requirements and non-functional promises, components and boundaries, data storage, interfaces, behaviour under concurrency and failure, trust, operations, testing and cost. Answers 'what runs where, how it talks, how it stays correct and available'. Output: system documents (SD-*).",
+    "relationship": "Domain design comes first and constrains everything after it. Experience design follows the domain (and product architecture) and states what people must be able to do and understand. Interface design follows experience design. Systems design implements the domain for the interface: its API contracts (SD-08) answer the front-end contract (UI-06), consumer first, rather than the interface adapting to whatever the back end exposes. Every system choice must preserve the domain's invariants and be traceable to a domain concept (SD-22). Later layers may reveal gaps in earlier ones; those are fixed by amending the earlier documents, never by working around them.",
+    "trigger_for_systems_design": "Start a systems-design package for a scope when (1) its domain core is ratified or tested on real data (DD-10, DD-11) and (2) the next phase's outcome requires running software. Write the full package for the next phase, an outline (SD-04, SD-05, SD-21) for the phase after, and nothing for later phases. Exception: a domain decision with irreversible system consequences (e.g. an append-only log) is recorded early as an ADR (SD-21).",
+    "product_architecture": "How what is built is organised for the people who use and buy it: the levels (platform, edition, suite or equivalent), naming, who uses which part, how it is packaged and bought, and what it competes with. Output: product documents (PA-*). Built on the capability map (DD-12).",
+    "capability_map": "Capabilities grouped into categories by job. Each category has one job, its own vocabulary and the facts it mainly changes (a bounded context), and is sorted as core (differentiating: build), supporting (necessary: build simply) or generic (solved: buy or integrate). Categories organise architecture, investment, ownership and sequencing first; packaging and competitive comparison follow from them.",
+    "experience_design": "Designing what using the system is like: who the people are, what they are trying to get done, in what setting, which words and mental models they bring, the journeys they take, how they find things, what each state means to them, and how trust is earned and kept. Independent of screens and technology. Answers 'what must a person be able to do and understand, and how will we know they can'. Output: experience documents (XD-*). Built on the domain (actors DD-02, language DD-03, lifecycles DD-06) and the product structure (PA-01).",
+    "interface_design": "Designing the concrete means of use: the method chosen for exploring and then fixing the interface, wireframes and prototypes, object renderings (fidelity ladders), the design system, and the front-end contract the interface needs from the back end. Answers 'what does the person see and touch, and what must the system provide for it'. Output: interface documents (UI-*). Built on experience design; brand supplies identity.",
+    "trigger_for_interface_design": "Start interface design for a scope when its experience core (XD-01, XD-04, XD-05, XD-06) exists. Explore first (UI-02, UI-03: wireframes and a prototype on real data), then fix what exploration settles (UI-04 to UI-08). Spec-as-source and test-driven methods are unfit while interaction is being discovered (methodology catalog); they apply once the front-end contract and journey scenarios are written."
+  },
+  "status_vocabulary": {
+    "exists": "✓ authored: a document answers all of its questions",
+    "partial": "↺ partial: a document exists but some questions are unanswered",
+    "null": "✗ missing: no document found",
+    "deferred": "— deferred, with a trigger",
+    "not_applicable": "N/A, with the reason (required_when not met)"
+  },
+  "stages": {
+    "domain": [
+      "D1 Frame",
+      "D2 Model",
+      "D3 Vary",
+      "D4 Prove",
+      "D5 Ratify"
+    ],
+    "system": [
+      "S1 Requirements",
+      "S2 Architecture",
+      "S3 Data",
+      "S4 Interfaces",
+      "S5 Behaviour",
+      "S6 Trust",
+      "S7 Operations",
+      "S8 Plan"
+    ],
+    "product": [
+      "P1 Structure",
+      "P2 Market"
+    ],
+    "experience": [
+      "X1 Understand",
+      "X2 Structure",
+      "X3 Behave",
+      "X4 Prove"
+    ],
+    "interface": [
+      "U1 Method",
+      "U2 Explore",
+      "U3 Systematize",
+      "U4 Contract"
+    ]
+  },
+  "documents": [
+    {
+      "id": "DD-01",
+      "layer": "domain",
+      "stage": "D1 Frame",
+      "name": "Problem, goals and non-goals",
+      "aliases": [],
+      "purpose": "States what the system is for, who it serves, and what it will not do, so every later design choice can be traced to a purpose.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-01-Q1",
+          "text": "What problem does this solve, for whom, and why now?"
+        },
+        {
+          "id": "DD-01-Q2",
+          "text": "What are the goals, stated so that we could tell if they were met?"
+        },
+        {
+          "id": "DD-01-Q3",
+          "text": "What are the explicit non-goals, and why is each excluded?"
+        },
+        {
+          "id": "DD-01-Q4",
+          "text": "What would make this not worth building?"
+        },
+        {
+          "id": "DD-01-Q5",
+          "text": "Which decisions in this scope belong to the people who use it rather than to us?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "planning",
+          "spec"
+        ],
+        "title_patterns": [
+          "first principles",
+          "goals",
+          "non-goals",
+          "vision",
+          "problem statement",
+          "strategy"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-02",
+      "layer": "domain",
+      "stage": "D1 Frame",
+      "name": "Actors, roles and operations",
+      "aliases": [],
+      "purpose": "Names every kind of person or system that acts, what each may do, and the main operations, before any technology is chosen.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-02-Q1",
+          "text": "Who are the actors (people, institutions, systems), and which roles can one person hold?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "DD-02-Q2",
+          "text": "What are the main operations each role performs, from start to finish?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "DD-02-Q3",
+          "text": "What may each role do, and what must it never be able to do?"
+        },
+        {
+          "id": "DD-02-Q4",
+          "text": "Which operations are consequential (hard to reverse, affect other people, have legal effect)?"
+        },
+        {
+          "id": "DD-02-Q5",
+          "text": "Who checks or oversees each operation?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec"
+        ],
+        "title_patterns": [
+          "actors",
+          "roles",
+          "personas",
+          "segment",
+          "jobs"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-03",
+      "layer": "domain",
+      "stage": "D2 Model",
+      "name": "Ubiquitous language (glossary)",
+      "aliases": [],
+      "purpose": "Fixes one meaning per term, so documents, code and conversation use the same words for the same things.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-03-Q1",
+          "text": "What are the core terms, each with one definition?"
+        },
+        {
+          "id": "DD-03-Q2",
+          "text": "Which everyday words are ambiguous here, and which meaning do we use?"
+        },
+        {
+          "id": "DD-03-Q3",
+          "text": "Which terms must never be used interchangeably?"
+        },
+        {
+          "id": "DD-03-Q4",
+          "text": "Which terms are borrowed from a standard, and which are ours?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "reference",
+          "spec",
+          "knowledge"
+        ],
+        "title_patterns": [
+          "glossary",
+          "lexicon",
+          "definitions",
+          "vocabulary",
+          "terminology"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-04",
+      "layer": "domain",
+      "stage": "D2 Model",
+      "name": "Conceptual domain model",
+      "aliases": [],
+      "purpose": "Defines the things the domain is made of, how they relate, how each is identified, and how identity survives change.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-04-Q1",
+          "text": "What are the primitives (entities, events, values), and why is each one necessary?"
+        },
+        {
+          "id": "DD-04-Q2",
+          "text": "How do they relate, and with what cardinality?"
+        },
+        {
+          "id": "DD-04-Q3",
+          "text": "How is each thing identified, and does that identity survive renames, merges and versions?"
+        },
+        {
+          "id": "DD-04-Q4",
+          "text": "What is deliberately not a primitive, and why?"
+        },
+        {
+          "id": "DD-04-Q5",
+          "text": "Which existing standards or models does it map to?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "research"
+        ],
+        "title_patterns": [
+          "primitive",
+          "domain model",
+          "spec",
+          "ontology",
+          "entity"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-05",
+      "layer": "domain",
+      "stage": "D2 Model",
+      "name": "Rules, invariants and constraints",
+      "aliases": [],
+      "purpose": "Lists what must always be true and the rules that govern the domain, independent of how they will be enforced.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-05-Q1",
+          "text": "What must always be true, including when operations overlap, repeat or fail?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "DD-05-Q2",
+          "text": "Which data is authoritative, and which are only copies?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "DD-05-Q3",
+          "text": "What does the model forbid (impossible states or combinations)?"
+        },
+        {
+          "id": "DD-05-Q4",
+          "text": "Where do the rules come from (law, policy, physics, the business), and how are they cited?"
+        },
+        {
+          "id": "DD-05-Q5",
+          "text": "Which rules have exceptions, and how is priority between rules decided?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "invariant",
+          "forbid",
+          "rules",
+          "constraints",
+          "validity"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-06",
+      "layer": "domain",
+      "stage": "D2 Model",
+      "name": "States, events and lifecycles",
+      "aliases": [],
+      "purpose": "Describes how things come into being, change and end, and which events cause each change.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-06-Q1",
+          "text": "What is the lifecycle of each primary thing, from creation to end?"
+        },
+        {
+          "id": "DD-06-Q2",
+          "text": "Which events cause each transition, and who or what triggers them?"
+        },
+        {
+          "id": "DD-06-Q3",
+          "text": "Which changes happen with no actor (time passing, deadlines, deemed effects)?"
+        },
+        {
+          "id": "DD-06-Q4",
+          "text": "How is history kept: what was true when, and what was known when?"
+        },
+        {
+          "id": "DD-06-Q5",
+          "text": "How are mistakes corrected without erasing history?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "lifecycle",
+          "states",
+          "transitions",
+          "events",
+          "tenure",
+          "deadline",
+          "versioning"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-07",
+      "layer": "domain",
+      "stage": "D2 Model",
+      "name": "Domain policies",
+      "aliases": [],
+      "purpose": "Records the cross-cutting domain rules that shape every feature: provenance, trust, authority, correction, privacy at the level of meaning.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-07-Q1",
+          "text": "How does every fact record where it came from and how much to trust it?"
+        },
+        {
+          "id": "DD-07-Q2",
+          "text": "Who has authority to assert, change or correct each kind of fact?"
+        },
+        {
+          "id": "DD-07-Q3",
+          "text": "How are disagreements between sources represented?"
+        },
+        {
+          "id": "DD-07-Q4",
+          "text": "Which domain-level privacy and access rules apply (who may know what)?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "policy"
+        ],
+        "title_patterns": [
+          "provenance",
+          "policy",
+          "trust",
+          "correction",
+          "authority"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-08",
+      "layer": "domain",
+      "stage": "D3 Vary",
+      "name": "Variation points and layers",
+      "aliases": [],
+      "purpose": "Separates what is universal in the domain from what varies by jurisdiction, customer, market or version, so variation doesn't leak into the core.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-08-Q1",
+          "text": "Which assumptions are specific to one context (country, customer, market), and where do they live?"
+        },
+        {
+          "id": "DD-08-Q2",
+          "text": "What can be replaced without changing the core?"
+        },
+        {
+          "id": "DD-08-Q3",
+          "text": "Which variants are known now, and what is the first one to test?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "research"
+        ],
+        "title_patterns": [
+          "layer",
+          "jurisdiction",
+          "replaceable",
+          "variant",
+          "assumptions"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-09",
+      "layer": "domain",
+      "stage": "D4 Prove",
+      "name": "Worked examples and edge cases",
+      "aliases": [],
+      "purpose": "Shows the model expressing real and adversarial cases, so gaps appear before code.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-09-Q1",
+          "text": "Can each primary operation be expressed with the model, using real examples?"
+        },
+        {
+          "id": "DD-09-Q2",
+          "text": "Which edge cases are hardest (acting, contested, retroactive, partial evidence), and how are they expressed?"
+        },
+        {
+          "id": "DD-09-Q3",
+          "text": "Which cases could not be expressed, and what changed as a result?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "verification-log"
+        ],
+        "title_patterns": [
+          "worked example",
+          "test case",
+          "edge case",
+          "examples"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-10",
+      "layer": "domain",
+      "stage": "D4 Prove",
+      "name": "Domain acceptance test on real data",
+      "aliases": [],
+      "purpose": "Runs the model against real data and records what it could and couldn't decide.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-10-Q1",
+          "text": "Which real cases were encoded, and from which sources?"
+        },
+        {
+          "id": "DD-10-Q2",
+          "text": "Did every case fit the model without a new primitive?"
+        },
+        {
+          "id": "DD-10-Q3",
+          "text": "Which questions came out undecided, and why (missing evidence, silent rules, disagreement)?"
+        },
+        {
+          "id": "DD-10-Q4",
+          "text": "Which spec revisions did the test force?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "verification-log"
+        ],
+        "title_patterns": [
+          "acceptance test",
+          "test run",
+          "results"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-11",
+      "layer": "domain",
+      "stage": "D5 Ratify",
+      "name": "Domain decision record and ratification",
+      "aliases": [],
+      "purpose": "Records which domain decisions are binding, with conditions and holds, so systems design builds on settled ground.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "DD-11-Q1",
+          "text": "Which domain specs are ratified, and which are held, and why?"
+        },
+        {
+          "id": "DD-11-Q2",
+          "text": "Which decisions are hardest to reverse?"
+        },
+        {
+          "id": "DD-11-Q3",
+          "text": "What conditions remain on ratified specs?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "planning",
+          "architecture-decision"
+        ],
+        "title_patterns": [
+          "ratification",
+          "decision ledger",
+          "ratified",
+          "in-force"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "DD-12",
+      "layer": "domain",
+      "stage": "D2 Model",
+      "name": "Capability map (categories and subdomain types)",
+      "aliases": [
+        "capability categories",
+        "business capability map",
+        "subdomain map"
+      ],
+      "purpose": "Groups what the scope does into categories by job, sorts each as core, supporting or generic, and orders them by dependency, so architecture boundaries, investment, ownership, sequencing, packaging and comparison all rest on one map.",
+      "required_when": "always",
+      "depends_on": [
+        "DD-01",
+        "DD-02"
+      ],
+      "questions": [
+        {
+          "id": "DD-12-Q1",
+          "text": "What jobs does this do, grouped into categories where each has one job, its own vocabulary and the facts it mainly changes?",
+          "source": "Domain-driven design: bounded contexts (Evans, 2003)"
+        },
+        {
+          "id": "DD-12-Q2",
+          "text": "Which categories are core (differentiating: build), supporting (necessary: build simply) and generic (solved: buy or integrate), and why each?",
+          "source": "Domain-driven design: core, supporting and generic subdomains"
+        },
+        {
+          "id": "DD-12-Q3",
+          "text": "How do the categories depend on each other, and what order does that impose on the roadmap?"
+        },
+        {
+          "id": "DD-12-Q4",
+          "text": "What is deliberately not a category (integrated or excluded), and what decision would add one?"
+        },
+        {
+          "id": "DD-12-Q5",
+          "text": "How will we know each category works: one success measure per category?",
+          "source": "Business capability mapping (enterprise architecture)"
+        },
+        {
+          "id": "DD-12-Q6",
+          "text": "Who owns each category now, and who would own it as the team grows?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "planning",
+          "architecture-spec",
+          "research"
+        ],
+        "title_patterns": [
+          "capability map",
+          "capability categor",
+          "categories",
+          "subdomain",
+          "product architecture",
+          "core, supporting"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every category has a job, a subdomain type, a build-or-integrate decision, its dependencies, a success measure and an owner; exclusions are listed.",
+      "sources": [
+        "Evans, Domain-Driven Design (2003): subdomains and bounded contexts",
+        "Business capability mapping (BIZBOK, TOGAF)"
+      ]
+    },
+    {
+      "id": "PA-01",
+      "layer": "product",
+      "stage": "P1 Structure",
+      "name": "Product structure and naming",
+      "aliases": [
+        "product architecture",
+        "platform, editions and suites"
+      ],
+      "purpose": "Fixes the levels of the product (platform, edition, suite or equivalents), what each is named, which roles use which part, and what is never sold or named as a product.",
+      "required_when": "characteristics:C-19",
+      "depends_on": [
+        "DD-02",
+        "DD-12"
+      ],
+      "questions": [
+        {
+          "id": "PA-01-Q1",
+          "text": "What are the levels of the product (for example platform, edition, suite, capability), and which levels carry names?"
+        },
+        {
+          "id": "PA-01-Q2",
+          "text": "Which roles use which part, and which capability categories does each part draw on?"
+        },
+        {
+          "id": "PA-01-Q3",
+          "text": "How do permissions follow from roles or offices, and where is that specified?"
+        },
+        {
+          "id": "PA-01-Q4",
+          "text": "What is never sold or named as a product, and why?"
+        },
+        {
+          "id": "PA-01-Q5",
+          "text": "Which other editions or markets are recognised but deferred, and what triggers them?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "planning",
+          "spec"
+        ],
+        "title_patterns": [
+          "product architecture",
+          "product structure",
+          "editions",
+          "suites",
+          "naming"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Levels, names, role-to-part mapping, permission basis and exclusions are written and linked from the capability map.",
+      "sources": []
+    },
+    {
+      "id": "PA-02",
+      "layer": "product",
+      "stage": "P2 Market",
+      "name": "Packaging and buyer mapping",
+      "aliases": [
+        "packaging",
+        "go-to-market structure",
+        "buyer mapping"
+      ],
+      "purpose": "States what the buyer buys and who buys versus who uses, maps each capability category to the budget line or procurement category it is bought from, and how adoption expands.",
+      "required_when": "entity-class:business|hybrid",
+      "depends_on": [
+        "DD-12",
+        "PA-01"
+      ],
+      "questions": [
+        {
+          "id": "PA-02-Q1",
+          "text": "What unit does the buyer buy, and who buys versus who uses?"
+        },
+        {
+          "id": "PA-02-Q2",
+          "text": "Which budget line or procurement category does each capability category map to?"
+        },
+        {
+          "id": "PA-02-Q3",
+          "text": "How does adoption expand after the first purchase?"
+        },
+        {
+          "id": "PA-02-Q4",
+          "text": "What is included, what is integrated from others, and what is out of scope?"
+        },
+        {
+          "id": "PA-02-Q5",
+          "text": "Where is pricing decided, and on what value measure?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "planning",
+          "research"
+        ],
+        "title_patterns": [
+          "packaging",
+          "pricing",
+          "go-to-market",
+          "buyer",
+          "procurement",
+          "product architecture"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every capability category maps to a buyer category or is marked not sold; the buy/use split and expansion path are written.",
+      "sources": []
+    },
+    {
+      "id": "PA-03",
+      "layer": "product",
+      "stage": "P2 Market",
+      "name": "Competitive landscape by category",
+      "aliases": [
+        "competitive analysis",
+        "comparison charts",
+        "competitor landscape"
+      ],
+      "purpose": "Lists the alternatives buyers consider in each capability category, compares on verifiable dimensions with sourced and dated claims, and states which category is positioned as new.",
+      "required_when": "entity-class:business|hybrid",
+      "depends_on": [
+        "DD-12",
+        "PA-02"
+      ],
+      "questions": [
+        {
+          "id": "PA-03-Q1",
+          "text": "What alternatives does a buyer consider in each category, including doing nothing or doing it by hand?"
+        },
+        {
+          "id": "PA-03-Q2",
+          "text": "Which verifiable dimensions does each category's comparison use?"
+        },
+        {
+          "id": "PA-03-Q3",
+          "text": "Where are we weaker, per category?"
+        },
+        {
+          "id": "PA-03-Q4",
+          "text": "Is every competitor claim sourced and dated, and which are still unverified?"
+        },
+        {
+          "id": "PA-03-Q5",
+          "text": "Which category do we position as new rather than compete within, and why?",
+          "source": "Category design (Play Bigger, 2016)"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "planning"
+        ],
+        "title_patterns": [
+          "competitive",
+          "competitor",
+          "landscape",
+          "comparison"
+        ],
+        "path_globs": []
+      },
+      "done_when": "One comparison per category with sourced, dated cells (or 'not verified'), weaknesses stated, and the positioning decided.",
+      "sources": []
+    },
+    {
+      "id": "XD-01",
+      "layer": "experience",
+      "stage": "X1 Understand",
+      "name": "Users, contexts and jobs",
+      "aliases": [
+        "personas",
+        "user profiles",
+        "jobs to be done",
+        "job stories"
+      ],
+      "purpose": "Names the people who use the scope, the setting and constraints they work under, and the jobs they are trying to get done, so every later design choice serves a named person and job.",
+      "required_when": "always",
+      "depends_on": [
+        "DD-02",
+        "PA-01"
+      ],
+      "questions": [
+        {
+          "id": "XD-01-Q1",
+          "text": "Who uses this, grouped by what they are trying to get done rather than by demographics?",
+          "source": "Jobs to be done (Christensen; Ulwick); job stories (Klement)"
+        },
+        {
+          "id": "XD-01-Q2",
+          "text": "For each group: what jobs, how often, under what pressure (deadlines, legal exposure, interruptions), and with what tools today?"
+        },
+        {
+          "id": "XD-01-Q3",
+          "text": "What setting do they work in: device, connectivity, time available, skill with software, who helps them?"
+        },
+        {
+          "id": "XD-01-Q4",
+          "text": "What does success look like to them in their own terms, and what does failure cost them?"
+        },
+        {
+          "id": "XD-01-Q5",
+          "text": "Which of these are known from evidence and which are assumptions, and how will each assumption be checked?"
+        },
+        {
+          "id": "XD-01-Q6",
+          "text": "For each user group, which parts of their job does the scope not cover, and is each built, integrated (with its acts or data captured and a place in the product) or excluded with a reason? Measure the job from evidence (job descriptions, duties), not from the features planned.",
+          "source": "Founder direction 2026-10-11 (full-coverage rule); the reference system job coverage audit"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "users and jobs",
+          "personas",
+          "jobs to be done",
+          "job stories",
+          "user profiles"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every user group has its jobs, frequency, setting, success and failure in its own terms, with each claim marked evidenced or assumed; every component of every job has a home: built, integrated (acts captured, reachable from the product) or excluded with a reason.",
+      "sources": [
+        "Christensen et al., Competing Against Luck (2016)",
+        "Klement, When Coffee and Kale Compete (2016)"
+      ]
+    },
+    {
+      "id": "XD-02",
+      "layer": "experience",
+      "stage": "X1 Understand",
+      "name": "User research plan and evidence",
+      "aliases": [
+        "research plan",
+        "discovery research",
+        "usability research"
+      ],
+      "purpose": "States what must be learned about users, how (secondary research, observation, interviews, usability testing), under what constraints, and records what was found.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-01"
+      ],
+      "questions": [
+        {
+          "id": "XD-02-Q1",
+          "text": "What do we need to learn, and which design decisions does each question unblock?"
+        },
+        {
+          "id": "XD-02-Q2",
+          "text": "Which methods answer each question (secondary sources, observation, contextual inquiry, interviews, usability tests), and why those?",
+          "source": "Contextual inquiry (Beyer and Holtzblatt); Nielsen Norman Group method selection"
+        },
+        {
+          "id": "XD-02-Q3",
+          "text": "What constraints apply (contact, consent, privacy, cost), and what can be learned within them?"
+        },
+        {
+          "id": "XD-02-Q4",
+          "text": "What has been found so far, with sources, and which assumptions in XD-01 has it confirmed or overturned?"
+        },
+        {
+          "id": "XD-02-Q5",
+          "text": "When is research enough to proceed, and what would reopen it?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "user research",
+          "research plan",
+          "discovery research",
+          "usability research"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Each open question has a method, a constraint check and a status; findings are sourced and linked back to the assumptions they settle.",
+      "sources": [
+        "Beyer and Holtzblatt, Contextual Design (1998)"
+      ]
+    },
+    {
+      "id": "XD-03",
+      "layer": "experience",
+      "stage": "X1 Understand",
+      "name": "Users' vocabulary and mental models",
+      "aliases": [
+        "mental models",
+        "user language",
+        "terminology map"
+      ],
+      "purpose": "Maps the words and mental models users bring onto the domain's ubiquitous language, so the interface speaks their language without corrupting the model.",
+      "required_when": "always",
+      "depends_on": [
+        "DD-03",
+        "XD-01"
+      ],
+      "questions": [
+        {
+          "id": "XD-03-Q1",
+          "text": "What words do users use for each domain concept, and where do they differ from the glossary?"
+        },
+        {
+          "id": "XD-03-Q2",
+          "text": "What mental model does each user group hold of how the work happens, and where does it diverge from the domain model?",
+          "source": "Mental models (Young, 2008)"
+        },
+        {
+          "id": "XD-03-Q3",
+          "text": "Which domain terms must never be shown to users, and which user terms must never enter the model?"
+        },
+        {
+          "id": "XD-03-Q4",
+          "text": "Where will a user's existing model mislead them in this system, and how is that corrected?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "mental model",
+          "vocabulary map",
+          "terminology map",
+          "user language"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every domain concept a user meets has its user-facing term and any divergence of mental model, with the correction.",
+      "sources": [
+        "Young, Mental Models (2008)"
+      ]
+    },
+    {
+      "id": "XD-04",
+      "layer": "experience",
+      "stage": "X2 Structure",
+      "name": "Key journeys and service blueprint",
+      "aliases": [
+        "user journeys",
+        "journey map",
+        "service blueprint",
+        "user flows"
+      ],
+      "purpose": "Describes the journeys users take end to end, across people, time and systems, showing what the user does, what happens behind the scenes, and where the system helps, checks or waits.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-01",
+        "DD-06"
+      ],
+      "questions": [
+        {
+          "id": "XD-04-Q1",
+          "text": "Which journeys matter most (by frequency, consequence and job), and where does each begin and end?"
+        },
+        {
+          "id": "XD-04-Q2",
+          "text": "For each, what are the steps, who acts at each, what the user sees (frontstage) and what happens behind it (backstage)?",
+          "source": "Service blueprinting (Shostack, 1984; Bitner et al., 2008)"
+        },
+        {
+          "id": "XD-04-Q3",
+          "text": "Where are the deadlines, handoffs, waits and points of failure, and what must the user know at each?"
+        },
+        {
+          "id": "XD-04-Q4",
+          "text": "Where does the system check, remind or record, and where must it stay silent (decisions that belong to the user)?"
+        },
+        {
+          "id": "XD-04-Q5",
+          "text": "Which journeys cross into other institutions or other users, and how is the handoff experienced?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "journey map",
+          "user journey",
+          "service blueprint",
+          "user flow"
+        ],
+        "path_globs": []
+      },
+      "done_when": "The key journeys are mapped front and back stage, with actors, deadlines, failure points and the system's role at each step.",
+      "sources": [
+        "Shostack, Designing Services That Deliver (1984)",
+        "Bitner, Ostrom and Morgan, Service Blueprinting (2008)"
+      ]
+    },
+    {
+      "id": "XD-05",
+      "layer": "experience",
+      "stage": "X2 Structure",
+      "name": "Object model and information architecture",
+      "aliases": [
+        "information architecture",
+        "OOUX object map",
+        "navigation",
+        "sitemap"
+      ],
+      "purpose": "Derives the objects users work with from the domain model, their relationships and the actions on each, and from them the structure of places, navigation and search.",
+      "required_when": "always",
+      "depends_on": [
+        "DD-04",
+        "XD-04"
+      ],
+      "questions": [
+        {
+          "id": "XD-05-Q1",
+          "text": "Which domain objects do users see and act on, and how do they relate from the user's point of view?",
+          "source": "Object-oriented UX (Prater)"
+        },
+        {
+          "id": "XD-05-Q2",
+          "text": "What actions does each user group take on each object, and which actions are consequential?"
+        },
+        {
+          "id": "XD-05-Q3",
+          "text": "What are the places (views, routes) and how does a user move between them; what is always reachable?"
+        },
+        {
+          "id": "XD-05-Q4",
+          "text": "How do users find a specific thing (search, filters, browse), and by which attributes?"
+        },
+        {
+          "id": "XD-05-Q5",
+          "text": "Which structures are shared across user groups and which differ?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "information architecture",
+          "object map",
+          "ooux",
+          "sitemap",
+          "navigation model"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every user-facing object has its relationships, actions per user group and places; navigation and finding are specified.",
+      "sources": [
+        "Prater, Object-Oriented UX (2020)",
+        "Rosenfeld, Morville and Arango, Information Architecture (4th ed.)"
+      ]
+    },
+    {
+      "id": "XD-06",
+      "layer": "experience",
+      "stage": "X3 Behave",
+      "name": "State, feedback and trust semantics",
+      "aliases": [
+        "empty and error states",
+        "state table",
+        "trust design",
+        "uncertainty display"
+      ],
+      "purpose": "Fixes what every state means to the user and how it is shown: empty, loading, partial, error, permission and success, plus the domain's own states (uncertainty, disagreement, provenance), so the interface never implies more certainty than the system has.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-05",
+        "DD-07"
+      ],
+      "questions": [
+        {
+          "id": "XD-06-Q1",
+          "text": "For each object and view, what are its states (empty, loading, partial, error, no permission, success) and what does the user see and do in each?"
+        },
+        {
+          "id": "XD-06-Q2",
+          "text": "Which domain states must be shown (for example findings, uncertainty and its reasons, disagreement between sources, provenance), and how?"
+        },
+        {
+          "id": "XD-06-Q3",
+          "text": "How is the difference between what the system knows, infers and cannot know made visible?",
+          "source": "Uncertainty visualisation; provenance display"
+        },
+        {
+          "id": "XD-06-Q4",
+          "text": "What does the system promise, and how does the user see whether the promise was kept?"
+        },
+        {
+          "id": "XD-06-Q5",
+          "text": "How does a user recover from each error, and what is never silent?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "state table",
+          "empty and error",
+          "trust semantics",
+          "uncertainty display",
+          "states and feedback"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every view has its full state table; domain uncertainty and provenance have a specified presentation; recovery is defined for each error.",
+      "sources": []
+    },
+    {
+      "id": "XD-07",
+      "layer": "experience",
+      "stage": "X3 Behave",
+      "name": "Content and language rules",
+      "aliases": [
+        "content design",
+        "voice for product copy",
+        "microcopy rules"
+      ],
+      "purpose": "Sets the rules for what the product says: plain language, tone, required labels and disclaimers, forbidden phrasings, and how legal or sensitive findings are worded.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-03",
+        "XD-06"
+      ],
+      "questions": [
+        {
+          "id": "XD-07-Q1",
+          "text": "What reading level and tone does each user group need?"
+        },
+        {
+          "id": "XD-07-Q2",
+          "text": "Which labels, disclaimers or notices are required, where, and why?"
+        },
+        {
+          "id": "XD-07-Q3",
+          "text": "Which phrasings are forbidden (for example statements about people rather than records), and what replaces them?"
+        },
+        {
+          "id": "XD-07-Q4",
+          "text": "How are numbers, dates, deadlines, citations and uncertainty written?"
+        },
+        {
+          "id": "XD-07-Q5",
+          "text": "Who reviews sensitive content before it ships?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "content design",
+          "content rules",
+          "microcopy",
+          "copy rules",
+          "content and language"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Rules for tone, required notices, forbidden phrasings and formatting are written with examples; the review owner is named.",
+      "sources": [
+        "Plain language guidelines (plainlanguage.gov)"
+      ]
+    },
+    {
+      "id": "XD-08",
+      "layer": "experience",
+      "stage": "X3 Behave",
+      "name": "Accessibility and inclusion commitments",
+      "aliases": [
+        "accessibility",
+        "WCAG conformance",
+        "inclusive design"
+      ],
+      "purpose": "Commits to an accessibility standard and the inclusion needs of the actual users, including legal obligations, before interface work starts.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-01"
+      ],
+      "questions": [
+        {
+          "id": "XD-08-Q1",
+          "text": "Which standard and level is committed to (for example WCAG 2.2 AA), and which laws or procurement rules require it?",
+          "source": "W3C WCAG 2.2"
+        },
+        {
+          "id": "XD-08-Q2",
+          "text": "What assistive technologies, devices and conditions must be supported for these users?"
+        },
+        {
+          "id": "XD-08-Q3",
+          "text": "What inclusion needs follow from the users' settings (language, literacy, bandwidth, age)?"
+        },
+        {
+          "id": "XD-08-Q4",
+          "text": "How is conformance verified, and how often?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "accessibility",
+          "wcag",
+          "inclusive design"
+        ],
+        "path_globs": []
+      },
+      "done_when": "The standard, its legal basis, supported technologies, inclusion needs and verification method are written.",
+      "sources": [
+        "W3C, Web Content Accessibility Guidelines 2.2"
+      ]
+    },
+    {
+      "id": "XD-09",
+      "layer": "experience",
+      "stage": "X4 Prove",
+      "name": "Experience acceptance test",
+      "aliases": [
+        "usability test plan",
+        "task-based evaluation",
+        "experience test"
+      ],
+      "purpose": "Proves the experience design works: users (or, before contact, scenario walkthroughs) complete the key jobs on real data, with measures and pass criteria set in advance.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-04",
+        "XD-06"
+      ],
+      "questions": [
+        {
+          "id": "XD-09-Q1",
+          "text": "Which tasks are tested, drawn from the key journeys, and what counts as success for each?",
+          "source": "Task-based usability testing; ISO 9241-11 (effectiveness, efficiency, satisfaction)"
+        },
+        {
+          "id": "XD-09-Q2",
+          "text": "What is measured (task success, time, errors, recovery, comprehension of findings), and what are the pass thresholds?"
+        },
+        {
+          "id": "XD-09-Q3",
+          "text": "On what real data is it run, and with whom (users, proxies, expert walkthrough), given the research constraints?"
+        },
+        {
+          "id": "XD-09-Q4",
+          "text": "What did it find, and which documents did it revise?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "research",
+          "spec",
+          "design",
+          "planning"
+        ],
+        "title_patterns": [
+          "usability test",
+          "experience acceptance",
+          "task-based evaluation"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Tasks, measures, thresholds, participants and real data are fixed in advance; results and resulting revisions are recorded.",
+      "sources": [
+        "ISO 9241-11:2018",
+        "Nielsen, Usability Engineering (1993)"
+      ]
+    },
+    {
+      "id": "XD-10",
+      "layer": "experience",
+      "stage": "X4 Prove",
+      "name": "Experience decision record",
+      "aliases": [
+        "experience decisions",
+        "UX ratification"
+      ],
+      "purpose": "Records the binding experience decisions and their ratification, so later interface and systems work can rely on them.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-09"
+      ],
+      "questions": [
+        {
+          "id": "XD-10-Q1",
+          "text": "Which experience decisions are binding, and on what evidence?"
+        },
+        {
+          "id": "XD-10-Q2",
+          "text": "Which remain assumptions to be tested with real users, and when?"
+        },
+        {
+          "id": "XD-10-Q3",
+          "text": "Who ratified them, and under what conditions?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "planning",
+          "spec"
+        ],
+        "title_patterns": [
+          "experience decision",
+          "ux decision"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Binding decisions, open assumptions and ratification are recorded.",
+      "sources": []
+    },
+    {
+      "id": "UI-01",
+      "layer": "interface",
+      "stage": "U1 Method",
+      "name": "Interface method decision",
+      "aliases": [
+        "UI methodology",
+        "design method ADR"
+      ],
+      "purpose": "Chooses how the interface will be designed and built: what is explored and how, when designs are fixed, which artifacts become authoritative, and which tools are used.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-10"
+      ],
+      "questions": [
+        {
+          "id": "UI-01-Q1",
+          "text": "Which parts of the interface are still being discovered, and which are settled enough to specify?"
+        },
+        {
+          "id": "UI-01-Q2",
+          "text": "Which method fits each part (explore by prototype; specify by contract, scenarios or fidelity ladders), checked against the methodology catalog?",
+          "source": "Everything Ecosystem methodology catalog"
+        },
+        {
+          "id": "UI-01-Q3",
+          "text": "Which artifact is the source of truth for each part, and how is it kept current?"
+        },
+        {
+          "id": "UI-01-Q4",
+          "text": "What fidelity sequence is followed (sketch, wireframe, prototype, production), and what gates each step?"
+        },
+        {
+          "id": "UI-01-Q5",
+          "text": "Which tools are used, and what is the cost of iterating with them?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "planning",
+          "spec",
+          "architecture-spec"
+        ],
+        "title_patterns": [
+          "interface method",
+          "ui method",
+          "design method",
+          "front-end method"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Each part of the interface has a method, a source of truth and a fidelity sequence, chosen against the catalog.",
+      "sources": []
+    },
+    {
+      "id": "UI-02",
+      "layer": "interface",
+      "stage": "U2 Explore",
+      "name": "Wireframes and vision sketches",
+      "aliases": [
+        "wireframes",
+        "vision wireframing",
+        "Phase 0D"
+      ],
+      "purpose": "Sketches the key views at low fidelity to test the experience design by visualisation; surfaces ambiguity that prose missed and feeds it back to the specs.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-04",
+        "XD-05"
+      ],
+      "questions": [
+        {
+          "id": "UI-02-Q1",
+          "text": "Which views and journeys are sketched, and why those first?"
+        },
+        {
+          "id": "UI-02-Q2",
+          "text": "What ambiguity did sketching surface, and which documents did it revise?"
+        },
+        {
+          "id": "UI-02-Q3",
+          "text": "Which sketches are set aside, and which carry forward?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "design"
+        ],
+        "title_patterns": [
+          "wireframe",
+          "vision sketch"
+        ],
+        "path_globs": [
+          "**/design/**/wireframe*",
+          "**/design/vision/**"
+        ]
+      },
+      "done_when": "Key views are sketched; surfaced questions are recorded with the revisions they caused; set-aside sketches are marked.",
+      "sources": [
+        "SAD Phase 0D pilots (the reference project, 2026-04/05)"
+      ]
+    },
+    {
+      "id": "UI-03",
+      "layer": "interface",
+      "stage": "U2 Explore",
+      "name": "Interactive prototype on real data",
+      "aliases": [
+        "clickable prototype",
+        "spike prototype"
+      ],
+      "purpose": "Builds a working prototype of the key journeys over real data, to learn what static designs cannot show: flow, density, timing, and how real records look.",
+      "required_when": "always",
+      "depends_on": [
+        "UI-02"
+      ],
+      "questions": [
+        {
+          "id": "UI-03-Q1",
+          "text": "Which journeys does it cover, on which real data?"
+        },
+        {
+          "id": "UI-03-Q2",
+          "text": "What is it meant to teach, and what did it teach?"
+        },
+        {
+          "id": "UI-03-Q3",
+          "text": "What is thrown away and what is kept?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "design",
+          "research",
+          "planning"
+        ],
+        "title_patterns": [
+          "interactive prototype",
+          "clickable prototype",
+          "ui prototype"
+        ],
+        "path_globs": []
+      },
+      "done_when": "The prototype runs the key journeys on real data; its learning note records what was learned and what is kept.",
+      "sources": [
+        "Everything Ecosystem catalog: spike / prototype"
+      ]
+    },
+    {
+      "id": "UI-04",
+      "layer": "interface",
+      "stage": "U3 Systematize",
+      "name": "Fidelity ladders for core objects",
+      "aliases": [
+        "object renderings",
+        "projection matrix"
+      ],
+      "purpose": "For each core object, defines every rendering by fidelity, its kernel fields and its projection matrix, including machine renderings.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-05",
+        "UI-03"
+      ],
+      "questions": [
+        {
+          "id": "UI-04-Q1",
+          "text": "Which objects need ladders, and what are their rungs?"
+        },
+        {
+          "id": "UI-04-Q2",
+          "text": "What is each object's kernel, and how does each field project at each rung?",
+          "source": "Fidelity Ladders (Everything Ecosystem); OOUX"
+        },
+        {
+          "id": "UI-04-Q3",
+          "text": "Which machine renderings (API responses, exports) are rungs?"
+        },
+        {
+          "id": "UI-04-Q4",
+          "text": "Where do two renderings disagree about fields?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "design",
+          "spec"
+        ],
+        "title_patterns": [
+          "fidelity ladder",
+          "projection matrix"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every core object has a ladder with kernel and matrix, machine rungs included, and no conflicting renderings.",
+      "sources": [
+        "Fidelity Ladders (knowledge/method/FIDELITY_LADDERS.md)"
+      ]
+    },
+    {
+      "id": "UI-05",
+      "layer": "interface",
+      "stage": "U3 Systematize",
+      "name": "Design system: tokens and components",
+      "aliases": [
+        "component library",
+        "design tokens",
+        "UI kit"
+      ],
+      "purpose": "The shared vocabulary of the interface: tokens imported from brand, components keyed to objects and fidelity, and their states.",
+      "required_when": "always",
+      "depends_on": [
+        "UI-04",
+        "XD-08"
+      ],
+      "questions": [
+        {
+          "id": "UI-05-Q1",
+          "text": "Which tokens (color, type, spacing, elevation, motion) come from brand, and which are product-specific?"
+        },
+        {
+          "id": "UI-05-Q2",
+          "text": "Which components exist, keyed to which object and fidelity, with which states?"
+        },
+        {
+          "id": "UI-05-Q3",
+          "text": "How do components meet the accessibility commitment?"
+        },
+        {
+          "id": "UI-05-Q4",
+          "text": "How is the system versioned and its drift detected?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "design",
+          "spec"
+        ],
+        "title_patterns": [
+          "design system",
+          "component library",
+          "design tokens",
+          "ui kit"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Tokens trace to brand; components are keyed to objects and fidelity with full states; accessibility and versioning are defined.",
+      "sources": [
+        "UX/UI deliverables inventory (methodology/templates)"
+      ]
+    },
+    {
+      "id": "UI-06",
+      "layer": "interface",
+      "stage": "U4 Contract",
+      "name": "Front-end contract",
+      "aliases": [
+        "BFF contract",
+        "view model contract",
+        "front-end API needs"
+      ],
+      "purpose": "States, from the interface's side, exactly what each view needs from the back end and what each user action sends, so the back-end API is written to meet it (consumer-driven).",
+      "required_when": "always",
+      "depends_on": [
+        "UI-04",
+        "XD-06"
+      ],
+      "questions": [
+        {
+          "id": "UI-06-Q1",
+          "text": "For each view, what data does it need, in what shape and with what freshness?",
+          "source": "Consumer-driven contracts (Robinson, 2006)"
+        },
+        {
+          "id": "UI-06-Q2",
+          "text": "For each user action, what is sent, what can come back (including every error and permission outcome), and is it idempotent?"
+        },
+        {
+          "id": "UI-06-Q3",
+          "text": "How are domain states (uncertainty, provenance, claim versus record) carried so the interface can show them faithfully?"
+        },
+        {
+          "id": "UI-06-Q4",
+          "text": "Which contract tests prove the back end meets it?"
+        },
+        {
+          "id": "UI-06-Q5",
+          "text": "How is it versioned with the interface?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "front-end contract",
+          "frontend contract",
+          "view model",
+          "consumer contract",
+          "bff"
+        ],
+        "path_globs": [
+          "**/*front*end*contract*",
+          "**/view-models/**"
+        ]
+      },
+      "done_when": "Every view and action has its contract with errors and permissions; domain states are carried; contract tests exist; SD-08 answers it.",
+      "sources": [
+        "Robinson, Consumer-Driven Contracts (2006)",
+        "Everything Ecosystem: contract-first skill"
+      ]
+    },
+    {
+      "id": "UI-07",
+      "layer": "interface",
+      "stage": "U4 Contract",
+      "name": "Executable journey scenarios",
+      "aliases": [
+        "BDD scenarios",
+        "acceptance scenarios"
+      ],
+      "purpose": "Writes the key journeys as Given/When/Then scenarios in the users' language, runnable against the built interface.",
+      "required_when": "always",
+      "depends_on": [
+        "XD-04",
+        "UI-06"
+      ],
+      "questions": [
+        {
+          "id": "UI-07-Q1",
+          "text": "Which journeys and edge cases are written as scenarios?",
+          "source": "Behaviour-driven development (North)"
+        },
+        {
+          "id": "UI-07-Q2",
+          "text": "Do they use the users' vocabulary (XD-03)?"
+        },
+        {
+          "id": "UI-07-Q3",
+          "text": "Which run automatically, and against what?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "journey scenarios",
+          "gherkin",
+          "bdd scenarios",
+          "acceptance scenarios"
+        ],
+        "path_globs": [
+          "**/*.feature"
+        ]
+      },
+      "done_when": "Key journeys and edge cases are executable scenarios in user vocabulary, run in CI.",
+      "sources": [
+        "North, Introducing BDD (2006)"
+      ]
+    },
+    {
+      "id": "UI-08",
+      "layer": "interface",
+      "stage": "U4 Contract",
+      "name": "Interface verification",
+      "aliases": [
+        "accessibility testing",
+        "visual regression",
+        "UI test plan"
+      ],
+      "purpose": "Verifies the built interface: accessibility conformance, visual and state coverage, and performance on the users' devices.",
+      "required_when": "always",
+      "depends_on": [
+        "UI-05",
+        "UI-07"
+      ],
+      "questions": [
+        {
+          "id": "UI-08-Q1",
+          "text": "How is accessibility conformance tested (automated and manual)?"
+        },
+        {
+          "id": "UI-08-Q2",
+          "text": "How are visual regressions and state coverage checked?"
+        },
+        {
+          "id": "UI-08-Q3",
+          "text": "What performance budget applies on the users' devices and connections?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "verification-log",
+          "planning"
+        ],
+        "title_patterns": [
+          "accessibility test",
+          "visual regression",
+          "ui verification",
+          "interface verification"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Accessibility, visual/state coverage and performance are verified with stated tools and thresholds.",
+      "sources": []
+    },
+    {
+      "id": "SD-01",
+      "layer": "system",
+      "stage": "S1 Requirements",
+      "name": "Functional requirements brief",
+      "aliases": [],
+      "purpose": "Turns the domain and the phase's outcome into a bounded design problem: what this build must do, for whom, now.",
+      "required_when": "always",
+      "depends_on": [
+        "DD-02",
+        "DD-05"
+      ],
+      "questions": [
+        {
+          "id": "SD-01-Q1",
+          "text": "Which roles use this build, and which operations must it support in this phase?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "SD-01-Q2",
+          "text": "Which workflows are required now, and which are explicitly deferred?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "SD-01-Q3",
+          "text": "Which assumptions must the product owner confirm?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "SD-01-Q4",
+          "text": "What must finish before responding, and what can happen later?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "SD-01-Q5",
+          "text": "Which failure scenario proves the requirements are specific enough?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "planning"
+        ],
+        "title_patterns": [
+          "requirements",
+          "brief",
+          "system design",
+          "phase"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-02",
+      "layer": "system",
+      "stage": "S1 Requirements",
+      "name": "Non-functional requirements",
+      "aliases": [],
+      "purpose": "States measurable promises about speed, availability, durability, consistency, freshness, retention and privacy.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-01"
+      ],
+      "questions": [
+        {
+          "id": "SD-02-Q1",
+          "text": "What latency, throughput and availability are required, with a measurement and a time window?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.03"
+        },
+        {
+          "id": "SD-02-Q2",
+          "text": "Which operations may degrade under failure, and how fast must service and data recover?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "SD-02-Q3",
+          "text": "How fresh must each copy of data be (how long may a cache disagree with the source)?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "SD-02-Q4",
+          "text": "How long must each record be retained, and what growth should we plan for?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        },
+        {
+          "id": "SD-02-Q5",
+          "text": "Which consistency guarantee does each operation need?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.05"
+        },
+        {
+          "id": "SD-02-Q6",
+          "text": "Who may read each record, and which sensitive fields are actually needed?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.01"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "non-functional",
+          "NFR",
+          "SLO",
+          "availability",
+          "latency"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-03",
+      "layer": "system",
+      "stage": "S1 Requirements",
+      "name": "Capacity and cost estimate",
+      "aliases": [],
+      "purpose": "Converts planning assumptions into rates, storage and money, so the design is sized for reality.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-02"
+      ],
+      "questions": [
+        {
+          "id": "SD-03-Q1",
+          "text": "What are the planning assumptions (users, requests, records, growth), and which are measured vs assumed?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.06"
+        },
+        {
+          "id": "SD-03-Q2",
+          "text": "What do they imply for reads, writes, storage and bandwidth per second and per year?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.06"
+        },
+        {
+          "id": "SD-03-Q3",
+          "text": "What will it cost to run at this size, and what is the budget?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.12"
+        },
+        {
+          "id": "SD-03-Q4",
+          "text": "What infrastructure should we deliberately not add yet?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.13"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "planning"
+        ],
+        "title_patterns": [
+          "capacity",
+          "estimate",
+          "cost model",
+          "sizing"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-04",
+      "layer": "system",
+      "stage": "S2 Architecture",
+      "name": "System context (C4 level 1)",
+      "aliases": [],
+      "purpose": "Shows the system as one box among its users and the external systems it talks to.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-01"
+      ],
+      "questions": [
+        {
+          "id": "SD-04-Q1",
+          "text": "Who uses the system, and through which interfaces?"
+        },
+        {
+          "id": "SD-04-Q2",
+          "text": "Which external systems does it depend on or serve, and what flows each way?"
+        },
+        {
+          "id": "SD-04-Q3",
+          "text": "What is inside the system boundary, and what is explicitly outside?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "architecture-decision",
+          "spec"
+        ],
+        "title_patterns": [
+          "context diagram",
+          "C4",
+          "system context"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-05",
+      "layer": "system",
+      "stage": "S2 Architecture",
+      "name": "Containers and deployment units (C4 level 2)",
+      "aliases": [],
+      "purpose": "Names the deployable pieces (apps, services, databases, queues) and why each is separate.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-04"
+      ],
+      "questions": [
+        {
+          "id": "SD-05-Q1",
+          "text": "What are the deployable units, and what does each own?"
+        },
+        {
+          "id": "SD-05-Q2",
+          "text": "Monolith or services: which responsibilities need independent deployment, and why?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.09"
+        },
+        {
+          "id": "SD-05-Q3",
+          "text": "How does each unit communicate with the others (calls, events, shared storage)?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 02.02"
+        },
+        {
+          "id": "SD-05-Q4",
+          "text": "Where does each unit run, and what does it cost?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.12"
+        },
+        {
+          "id": "SD-05-Q5",
+          "text": "Which piece of infrastructure could we remove without breaking a requirement?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.13"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "architecture-decision",
+          "spec"
+        ],
+        "title_patterns": [
+          "containers",
+          "deployment",
+          "architecture",
+          "C4"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-06",
+      "layer": "system",
+      "stage": "S2 Architecture",
+      "name": "Logical design: components, boundaries and result contracts (C4 level 3)",
+      "aliases": [],
+      "purpose": "Assigns each rule an owner and defines the agreement at each boundary, including every result a caller must handle.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-05",
+        "DD-05"
+      ],
+      "questions": [
+        {
+          "id": "SD-06-Q1",
+          "text": "Which component owns each domain rule, so a change touches one place?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.02"
+        },
+        {
+          "id": "SD-06-Q2",
+          "text": "What does each boundary promise, including 'missing', 'refused' and 'unavailable' as distinct results?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.02"
+        },
+        {
+          "id": "SD-06-Q3",
+          "text": "How is each rule tested through its boundary without the real database or network?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.02"
+        },
+        {
+          "id": "SD-06-Q4",
+          "text": "Where would an added boundary be ceremony rather than protection?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.02"
+        },
+        {
+          "id": "SD-06-Q5",
+          "text": "How are external providers wrapped so their quirks stay in one place?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.10"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "architecture-decision"
+        ],
+        "title_patterns": [
+          "components",
+          "boundaries",
+          "logical design",
+          "modules"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-07",
+      "layer": "system",
+      "stage": "S3 Data",
+      "name": "Data architecture (logical and physical)",
+      "aliases": [],
+      "purpose": "Turns the conceptual domain model into storage: tables or documents, keys, indexes, history, migrations.",
+      "required_when": "always",
+      "depends_on": [
+        "DD-04",
+        "SD-02"
+      ],
+      "questions": [
+        {
+          "id": "SD-07-Q1",
+          "text": "How does each domain concept map to storage, and what is stored vs computed?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 03.01"
+        },
+        {
+          "id": "SD-07-Q2",
+          "text": "How are identifiers generated, and do they survive renames and merges?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 04.08"
+        },
+        {
+          "id": "SD-07-Q3",
+          "text": "Which queries must be fast, and which indexes serve them?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 03.03"
+        },
+        {
+          "id": "SD-07-Q4",
+          "text": "How is history kept (append-only, bitemporal), and how are deletions and corrections handled?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 03.13"
+        },
+        {
+          "id": "SD-07-Q5",
+          "text": "How will the schema evolve without downtime or data loss?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 03.12"
+        },
+        {
+          "id": "SD-07-Q6",
+          "text": "Which data store is right for each kind of data, and why not the alternatives?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 04.01"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "architecture-decision",
+          "spec"
+        ],
+        "title_patterns": [
+          "data architecture",
+          "schema",
+          "migration",
+          "storage",
+          "database"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-08",
+      "layer": "system",
+      "stage": "S4 Interfaces",
+      "name": "API and event contracts",
+      "aliases": [],
+      "purpose": "Publishes the machine contracts (OpenAPI, AsyncAPI, MCP, JSON Schema) before building, so clients and servers agree first.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-06",
+        "UI-06"
+      ],
+      "questions": [
+        {
+          "id": "SD-08-Q1",
+          "text": "What operations does each interface expose, with request, response and error shapes?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 02.01"
+        },
+        {
+          "id": "SD-08-Q2",
+          "text": "Which operations must be idempotent, and how are retries, timeouts and duplicates handled?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 02.09"
+        },
+        {
+          "id": "SD-08-Q3",
+          "text": "Which events are published, with what schema and delivery guarantee?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 02.08"
+        },
+        {
+          "id": "SD-08-Q4",
+          "text": "How are contracts versioned and deprecated?"
+        },
+        {
+          "id": "SD-08-Q5",
+          "text": "Where are the contract files and their fixtures?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "openapi",
+          "contract",
+          "asyncapi",
+          "json schema",
+          "MCP"
+        ],
+        "path_globs": [
+          "**/*.openapi.*",
+          "**/openapi*.y*ml",
+          "**/*.schema.json"
+        ]
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-09",
+      "layer": "system",
+      "stage": "S4 Interfaces",
+      "name": "Ingestion and integration design",
+      "aliases": [],
+      "purpose": "Specifies how external data and systems enter or are reached: sources, adapters, parsing, provenance stamping, failure handling.",
+      "required_when": "characteristics:C-03",
+      "depends_on": [
+        "SD-06",
+        "DD-07"
+      ],
+      "questions": [
+        {
+          "id": "SD-09-Q1",
+          "text": "Which external sources or providers are used, and what are their limits, licences and failure modes?"
+        },
+        {
+          "id": "SD-09-Q2",
+          "text": "How is each source fetched, parsed and validated (including scans and OCR)?"
+        },
+        {
+          "id": "SD-09-Q3",
+          "text": "How is provenance recorded on everything ingested?"
+        },
+        {
+          "id": "SD-09-Q4",
+          "text": "What happens when a source is down, rate-limited or changes format?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 06.10"
+        },
+        {
+          "id": "SD-09-Q5",
+          "text": "How is re-ingestion made idempotent?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 02.09"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "ingestion",
+          "integration",
+          "adapter",
+          "scraper",
+          "pipeline"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-10",
+      "layer": "system",
+      "stage": "S5 Behaviour",
+      "name": "Concurrency, consistency and ordering",
+      "aliases": [],
+      "purpose": "Shows how invariants hold when operations overlap, repeat, or arrive out of order.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-07",
+        "DD-05"
+      ],
+      "questions": [
+        {
+          "id": "SD-10-Q1",
+          "text": "Which operations can race, and how is each invariant protected (transactions, constraints, locks)?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 03.06"
+        },
+        {
+          "id": "SD-10-Q2",
+          "text": "Which isolation level does each transaction need?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 03.07"
+        },
+        {
+          "id": "SD-10-Q3",
+          "text": "How are events ordered, and what clock or sequence is trusted?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 06.05"
+        },
+        {
+          "id": "SD-10-Q4",
+          "text": "Which operations are retried, and are they safe to repeat?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 02.09"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "architecture-decision"
+        ],
+        "title_patterns": [
+          "concurrency",
+          "consistency",
+          "isolation",
+          "ordering",
+          "idempotency"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-11",
+      "layer": "system",
+      "stage": "S5 Behaviour",
+      "name": "Async work, scheduling and background jobs",
+      "aliases": [],
+      "purpose": "Defines work that happens off the request path: queues, schedulers, workflows, triggers.",
+      "required_when": "when the build has work off the request path",
+      "depends_on": [
+        "SD-06"
+      ],
+      "questions": [
+        {
+          "id": "SD-11-Q1",
+          "text": "Which work is done asynchronously, and what may be lost or delayed?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 08.01"
+        },
+        {
+          "id": "SD-11-Q2",
+          "text": "Queue or event stream, and why?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 08.02"
+        },
+        {
+          "id": "SD-11-Q3",
+          "text": "How are scheduled jobs and deadlines triggered and made exactly-once in effect?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 08.05"
+        },
+        {
+          "id": "SD-11-Q4",
+          "text": "How is lag measured and handled?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 08.04"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "queue",
+          "scheduler",
+          "background",
+          "async",
+          "workflow"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-12",
+      "layer": "system",
+      "stage": "S5 Behaviour",
+      "name": "Read path: caching and search",
+      "aliases": [],
+      "purpose": "Describes how reads are made fast without copies becoming a second authority.",
+      "required_when": "when reads need to be faster than the source store or search is required",
+      "depends_on": [
+        "SD-07"
+      ],
+      "questions": [
+        {
+          "id": "SD-12-Q1",
+          "text": "Which reads are hot, and where are they cached?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 05.01"
+        },
+        {
+          "id": "SD-12-Q2",
+          "text": "How are caches invalidated, and how stale may each be?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 05.04"
+        },
+        {
+          "id": "SD-12-Q3",
+          "text": "Is search or retrieval needed, and how is the index kept in sync with the source?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 09.10"
+        },
+        {
+          "id": "SD-12-Q4",
+          "text": "What happens when the cache or index is unavailable?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 05.06"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec"
+        ],
+        "title_patterns": [
+          "cache",
+          "search",
+          "index",
+          "read path"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-13",
+      "layer": "system",
+      "stage": "S6 Trust",
+      "name": "Identity, authentication, authorization and secrets",
+      "aliases": [],
+      "purpose": "Specifies who users and services are, how they prove it, what each may do, and how secrets are kept.",
+      "required_when": "characteristics:C-06|C-01",
+      "depends_on": [
+        "SD-06",
+        "DD-02"
+      ],
+      "questions": [
+        {
+          "id": "SD-13-Q1",
+          "text": "How do people and services authenticate?"
+        },
+        {
+          "id": "SD-13-Q2",
+          "text": "How is authorization decided, and where is it enforced?"
+        },
+        {
+          "id": "SD-13-Q3",
+          "text": "How are signing keys and secrets created, stored, rotated and revoked?"
+        },
+        {
+          "id": "SD-13-Q4",
+          "text": "How are privileged actions audited?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "architecture-decision"
+        ],
+        "title_patterns": [
+          "identity",
+          "authentication",
+          "authorization",
+          "keys",
+          "signing",
+          "secrets"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-14",
+      "layer": "system",
+      "stage": "S6 Trust",
+      "name": "Security and threat model",
+      "aliases": [],
+      "purpose": "Identifies threats, abuse cases and controls, sized to the system's risk.",
+      "required_when": "obligations:O-02",
+      "depends_on": [
+        "SD-05"
+      ],
+      "questions": [
+        {
+          "id": "SD-14-Q1",
+          "text": "Who might attack or abuse the system, and what would they want?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.10"
+        },
+        {
+          "id": "SD-14-Q2",
+          "text": "Which assets and operations are most valuable to protect?"
+        },
+        {
+          "id": "SD-14-Q3",
+          "text": "Which controls address each threat (validation, rate limits, isolation, encryption)?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.11"
+        },
+        {
+          "id": "SD-14-Q4",
+          "text": "Which compliance regime applies (e.g. GovRAMP, CJIS, SOC 2)?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "policy"
+        ],
+        "title_patterns": [
+          "threat model",
+          "security",
+          "abuse",
+          "rate limit"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-15",
+      "layer": "system",
+      "stage": "S6 Trust",
+      "name": "Privacy, retention and deletion enforcement",
+      "aliases": [],
+      "purpose": "Shows how the system enforces the domain's privacy and retention rules, including lawful deletion.",
+      "required_when": "obligations:O-01",
+      "depends_on": [
+        "SD-07",
+        "DD-07"
+      ],
+      "questions": [
+        {
+          "id": "SD-15-Q1",
+          "text": "Where does each category of personal or sensitive data live?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.09"
+        },
+        {
+          "id": "SD-15-Q2",
+          "text": "How are retention periods and holds enforced?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.09"
+        },
+        {
+          "id": "SD-15-Q3",
+          "text": "How is lawful deletion done without breaking audit or history?"
+        },
+        {
+          "id": "SD-15-Q4",
+          "text": "How are access requests and exports fulfilled?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "policy"
+        ],
+        "title_patterns": [
+          "retention",
+          "privacy",
+          "deletion",
+          "erasure"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-16",
+      "layer": "system",
+      "stage": "S7 Operations",
+      "name": "Reliability: failure modes, backups and recovery",
+      "aliases": [],
+      "purpose": "Lists how the system fails and recovers, with targets for recovery time and data loss.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-05",
+        "SD-02"
+      ],
+      "questions": [
+        {
+          "id": "SD-16-Q1",
+          "text": "What are the main failure modes, and what does the user see in each?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.08"
+        },
+        {
+          "id": "SD-16-Q2",
+          "text": "What are the recovery time and data-loss targets, and how are they met?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.07"
+        },
+        {
+          "id": "SD-16-Q3",
+          "text": "How are backups taken, and when was restore last tested?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.07"
+        },
+        {
+          "id": "SD-16-Q4",
+          "text": "Which dependencies can bring the system down, and how is that contained?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 06.10"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "runbook"
+        ],
+        "title_patterns": [
+          "reliability",
+          "backup",
+          "disaster recovery",
+          "failure modes"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-17",
+      "layer": "system",
+      "stage": "S7 Operations",
+      "name": "Observability, SLOs and incident response",
+      "aliases": [],
+      "purpose": "Defines how the team knows the system is healthy and what happens when it isn't.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-02"
+      ],
+      "questions": [
+        {
+          "id": "SD-17-Q1",
+          "text": "Which signals (logs, metrics, traces) show each requirement is met?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.01"
+        },
+        {
+          "id": "SD-17-Q2",
+          "text": "What are the SLOs and error budgets?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.02"
+        },
+        {
+          "id": "SD-17-Q3",
+          "text": "Who is alerted, for what, and what do they do?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.03"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "runbook"
+        ],
+        "title_patterns": [
+          "observability",
+          "SLO",
+          "monitoring",
+          "incident"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-18",
+      "layer": "system",
+      "stage": "S7 Operations",
+      "name": "Deployment, environments and migration safety",
+      "aliases": [],
+      "purpose": "Specifies how code and schema reach production safely and how changes are rolled back.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-05"
+      ],
+      "questions": [
+        {
+          "id": "SD-18-Q1",
+          "text": "Which environments exist, and how does each match production?"
+        },
+        {
+          "id": "SD-18-Q2",
+          "text": "How are deployments and database migrations made safe and reversible?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.04"
+        },
+        {
+          "id": "SD-18-Q3",
+          "text": "How are feature flags, data backfills and cutovers handled?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.06"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "runbook",
+          "architecture-decision"
+        ],
+        "title_patterns": [
+          "deployment",
+          "environments",
+          "CI",
+          "migration safety"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-19",
+      "layer": "system",
+      "stage": "S7 Operations",
+      "name": "Multi-tenancy and federation",
+      "aliases": [],
+      "purpose": "Defines how tenants or jurisdictions are isolated, configured and (if federated) connected.",
+      "required_when": "characteristics:C-14",
+      "depends_on": [
+        "SD-05",
+        "DD-08"
+      ],
+      "questions": [
+        {
+          "id": "SD-19-Q1",
+          "text": "What is a tenant, and how is its data isolated?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 14.13"
+        },
+        {
+          "id": "SD-19-Q2",
+          "text": "Which settings vary per tenant, and where are they stored?"
+        },
+        {
+          "id": "SD-19-Q3",
+          "text": "How do separate deployments exchange data, if at all?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "architecture-decision"
+        ],
+        "title_patterns": [
+          "multi-tenant",
+          "tenancy",
+          "federation",
+          "custody"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-20",
+      "layer": "system",
+      "stage": "S8 Plan",
+      "name": "Testing strategy",
+      "aliases": [],
+      "purpose": "States how correctness is shown at each level, including tests that come from the domain acceptance tests.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-06",
+        "DD-10"
+      ],
+      "questions": [
+        {
+          "id": "SD-20-Q1",
+          "text": "Which rules are unit-tested through their boundaries?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.02"
+        },
+        {
+          "id": "SD-20-Q2",
+          "text": "Which integration and contract tests run against real dependencies?"
+        },
+        {
+          "id": "SD-20-Q3",
+          "text": "Which golden tests come from the domain acceptance tests (expected outputs on real data)?"
+        },
+        {
+          "id": "SD-20-Q4",
+          "text": "How is performance or load tested against the non-functional requirements?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "planning"
+        ],
+        "title_patterns": [
+          "testing strategy",
+          "test plan",
+          "golden"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-21",
+      "layer": "system",
+      "stage": "S8 Plan",
+      "name": "Architecture decision records",
+      "aliases": [],
+      "purpose": "Keeps every hard-to-reverse system choice, its alternatives and its trade-offs.",
+      "required_when": "always",
+      "depends_on": [],
+      "questions": [
+        {
+          "id": "SD-21-Q1",
+          "text": "Which system decisions are hard to reverse, and is each recorded with alternatives considered?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.04"
+        },
+        {
+          "id": "SD-21-Q2",
+          "text": "Which trade-off did each decision accept (cost, consistency, availability, complexity)?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.04"
+        },
+        {
+          "id": "SD-21-Q3",
+          "text": "Which decisions are still open, and what would settle them?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "architecture-decision"
+        ],
+        "title_patterns": [
+          "ADR"
+        ],
+        "path_globs": [
+          "**/adrs/*.md"
+        ]
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-22",
+      "layer": "system",
+      "stage": "S8 Plan",
+      "name": "Domain-to-system traceability",
+      "aliases": [],
+      "purpose": "Maps every domain primitive, invariant and policy to the component, table, contract and test that implements it.",
+      "required_when": "always",
+      "depends_on": [
+        "DD-04",
+        "DD-05",
+        "SD-06",
+        "SD-07",
+        "SD-08"
+      ],
+      "questions": [
+        {
+          "id": "SD-22-Q1",
+          "text": "For each domain invariant, which component enforces it and which test proves it?"
+        },
+        {
+          "id": "SD-22-Q2",
+          "text": "For each domain primitive, where is it stored and which contract exposes it?"
+        },
+        {
+          "id": "SD-22-Q3",
+          "text": "Which domain rules have no implementation yet?"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "spec",
+          "planning"
+        ],
+        "title_patterns": [
+          "traceability",
+          "mapping"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    },
+    {
+      "id": "SD-23",
+      "layer": "system",
+      "stage": "S8 Plan",
+      "name": "Build plan and slices",
+      "aliases": [],
+      "purpose": "Orders the build into slices that each deliver a testable outcome toward the phase's completion criteria.",
+      "required_when": "always",
+      "depends_on": [
+        "SD-01",
+        "SD-20"
+      ],
+      "questions": [
+        {
+          "id": "SD-23-Q1",
+          "text": "What is the first slice that runs end to end?"
+        },
+        {
+          "id": "SD-23-Q2",
+          "text": "How does each slice map to the phase's completion criteria?"
+        },
+        {
+          "id": "SD-23-Q3",
+          "text": "What is deliberately left out of this build?",
+          "source": "Fanout system design curriculum (fanout.sh/system) 01.13"
+        }
+      ],
+      "evidence": {
+        "frontmatter_types": [
+          "planning"
+        ],
+        "title_patterns": [
+          "build plan",
+          "roadmap",
+          "slices",
+          "milestones"
+        ],
+        "path_globs": []
+      },
+      "done_when": "Every question has a written, specific answer (or an explicit 'not applicable, because …'), and the document is linked from the scope's design index.",
+      "sources": []
+    }
+  ],
+  "required_when_keys": {
+    "always": "every scope",
+    "characteristics:C-xx|C-yy": "any listed ARS characteristic declared",
+    "obligations:O-xx": "any listed ARS obligation declared",
+    "entity-class:a|b": "the entity profile's entity-class is one of the listed values",
+    "<prose>": "a stated condition, judged by the person running the check"
+  }
+}
