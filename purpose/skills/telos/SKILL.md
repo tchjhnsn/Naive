@@ -27,6 +27,10 @@ Purpose layer (EE-023). Writes `purpose/telos.json`; `node schema/check-telos.mj
 - At every phase gate, to write the next phase's exit criteria.
 - When the ambition changes, because the owner outcome may change with it.
 
+## Template
+
+The default is `purpose/templates/telos-based-smart.md`. Write the ambition first, uncensored (BASED: statement, end state, owner outcome), then scope it (SMART: measures and exit criteria). The owner may choose another template.
+
 ## Steps
 
 1. **Statement.** One sentence: what the venture is for when it has done its job. Draw on `venture.json` core (promise, promised to); the core is what the venture offers now, the telos is where that leads.

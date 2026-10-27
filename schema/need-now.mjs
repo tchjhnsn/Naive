@@ -4,7 +4,8 @@
 //   phase, ambition, funding, legal_form, offering (of any product), software (any product),
 //   path (go-to-market record), people, founders, agents, products (counts), publishes (a handoff
 //   under public-commitment).
-// Records that already exist are listed as held. Jev re-scores the priors per venture once the
+// Records that already exist are listed as held; a record in a layer the venture has turned off is
+// listed as layer off, not suggested. Jev re-scores the priors per venture once the
 // scorer runs; until then the priors are the default.
 //
 //   node schema/need-now.mjs <venture dir> [--json]
@@ -63,6 +64,7 @@ export function needNow(dir) {
   const N = load(join(root, "schema/need-now.json"));
   const model = load(join(root, "schema/data-model.json"));
   const f = factsOf(dir);
+  const v = load(join(dir, "venture.json"));
   const here = files(dir);
   const phase = PHASES.includes(f.phase) ? f.phase : "discovery";
   const next = PHASES[PHASES.indexOf(phase) + 1];
@@ -71,7 +73,8 @@ export function needNow(dir) {
     const rels = (rec?.paths ?? []).filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
     const held = rels.some((g) => here.some((x) => glob(g).test(x)));
     const now = probability(spec, phase, f), soon = next ? probability(spec, next, f) : now;
-    const status = held ? "held" : now >= N.suggest ? "suggest now" : soon >= N.suggest ? "coming soon" : "hold back";
+    const off = rec?.layer && v.layers?.[rec.layer] === false;
+    const status = held ? "held" : off ? "layer off" : now >= N.suggest ? "suggest now" : soon >= N.suggest ? "coming soon" : "hold back";
     return { type, layer: rec?.layer, now, next: soon, status, why: spec.why };
   });
   return { phase, next: next ?? null, facts: f, rows };
@@ -83,10 +86,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const r = needNow(dir);
   if (process.argv.includes("--json")) { console.log(JSON.stringify(r, null, 2)); process.exit(0); }
   console.log(`Phase ${r.phase}${r.next ? `, next ${r.next}` : ""}. Work on what is needed now; the rest waits until it is.`);
-  for (const status of ["suggest now", "coming soon", "held", "hold back"]) {
+  for (const status of ["suggest now", "coming soon", "held", "hold back", "layer off"]) {
     const rows = r.rows.filter((x) => x.status === status);
     if (!rows.length) continue;
     console.log(`\n${status} (${rows.length})`);
-    for (const x of rows.sort((a, b) => b.now - a.now)) console.log(`  ${x.type.padEnd(32)} now ${x.now.toFixed(2)}  next ${x.next.toFixed(2)}  ${status === "hold back" ? "" : x.why}`);
+    for (const x of rows.sort((a, b) => b.now - a.now)) console.log(`  ${x.type.padEnd(32)} now ${x.now.toFixed(2)}  next ${x.next.toFixed(2)}  ${["hold back", "layer off"].includes(status) ? "" : x.why}`);
   }
 }

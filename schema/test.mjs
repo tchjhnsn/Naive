@@ -205,6 +205,19 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.ev
   expect("need-now: a solo bootstrapped venture in Discovery holds back the cap table and board", srow("ownership").status === "hold back" && srow("board").status === "hold back");
 }
 
+// time-to-ready: running, and ready per layer and tier (the telos's Option B measure).
+{
+  const { timeToReady } = await import(join(root, "schema/time-to-ready.mjs"));
+  const r = timeToReady(tandem);
+  expect("time-to-ready: a venture with no live product is not running yet", !r.running.on && r.running.missing.includes("product_offered"));
+  expect("time-to-ready: layers the venture turned off are not asked for", !r.layers.some((l) => l.layer === "operations"));
+  const live = join(tmp, "live"); cpSync(tandem, live, { recursive: true });
+  edit(join(live, "products/shop-app.json"), (p) => { p.status = "live"; });
+  mkdirSync(join(live, "accounts/first-shop"), { recursive: true });
+  writeFileSync(join(live, "accounts/first-shop/account.json"), JSON.stringify({ id: "first-shop", name: "First shop", relationship: "customer" }));
+  expect("time-to-ready: a live product with an account and next-phase exit criteria is running", !!timeToReady(live).running.on);
+}
+
 // check-team: agents as teammates, with human loops where they are needed (EE-029).
 const eeVenture = join(root, "instance/ventures/everything-ecosystem");
 function teamBroken(name, change, pattern) {

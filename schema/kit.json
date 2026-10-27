@@ -31,7 +31,8 @@
     "schema/check-integrations.mjs",
     "schema/init-venture.mjs",
     "schema/test.mjs",
-    "schema/need-now.mjs"
+    "schema/need-now.mjs",
+    "schema/time-to-ready.mjs"
   ],
   "gaps": [
     "The orchestrator skill that routes work across every layer is filed under knowledge (knowledge/SKILL.md); it belongs here"
