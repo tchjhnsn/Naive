@@ -1,0 +1,397 @@
+{
+  "version": "0.3.0",
+  "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json.",
+  "check": [
+    "schema/",
+    "docs/ontology.md",
+    "docs/design/VENTURES_2026-10-27.md",
+    "purpose/frameworks/product-anatomy/",
+    "AGENTS.md",
+    "README.md"
+  ],
+  "nouns": [
+    {
+      "noun": "Everything Ecosystem",
+      "level": "system",
+      "meaning": "The name of the system",
+      "standard": "ours",
+      "status": "kept"
+    },
+    {
+      "noun": "the system",
+      "level": "system",
+      "meaning": "How files refer to the whole until its genus is settled (operating system, operating model) after the first venture runs end to end",
+      "standard": "EOS (Wickman) for 'operating system'",
+      "status": "kept"
+    },
+    {
+      "noun": "method",
+      "level": "system",
+      "meaning": "What to do: SAD, MAD, Product Anatomy, handoffs",
+      "standard": "common usage",
+      "status": "kept"
+    },
+    {
+      "noun": "schema",
+      "level": "system",
+      "meaning": "What to record: venture.json, products, decisions, references",
+      "standard": "JSON Schema",
+      "status": "kept"
+    },
+    {
+      "noun": "tooling",
+      "level": "system",
+      "meaning": "What helps do it: scripts, skills, agent rules",
+      "standard": "common usage",
+      "status": "kept"
+    },
+    {
+      "noun": "workspace",
+      "level": "system",
+      "meaning": "One builder's instance of the system, declared by workspace.json",
+      "standard": "common software usage",
+      "status": "kept"
+    },
+    {
+      "noun": "layer",
+      "level": "system",
+      "meaning": "One of the seven: purpose, knowledge, operations, execution, evidence, governance, interface",
+      "standard": "ours",
+      "status": "kept"
+    },
+    {
+      "noun": "venture",
+      "level": "venture",
+      "meaning": "The unit: anything a builder undertakes, from a hobby to a company. Ventures can hold ventures",
+      "standard": "common business usage",
+      "status": "new"
+    },
+    {
+      "noun": "phase",
+      "level": "venture",
+      "meaning": "How far a venture has come: discovery, validation, beachhead, scale, platform",
+      "standard": "Blank; Moore",
+      "status": "new",
+      "references": [
+        "blank-2005-four-steps",
+        "moore-1991-crossing-the-chasm",
+        "moore-1995-inside-the-tornado"
+      ]
+    },
+    {
+      "noun": "gate",
+      "level": "venture",
+      "meaning": "The test for leaving a phase: problem-solution fit, product-market fit (retention), repeatability, market leadership",
+      "standard": "Andreessen; Zook and Allen",
+      "status": "new",
+      "references": [
+        "andreessen-2007-only-thing-that-matters",
+        "zook-allen-2012-repeatability"
+      ]
+    },
+    {
+      "noun": "ambition",
+      "level": "venture",
+      "meaning": "Why the venture exists and how far it means to go: hobby, survival, lifestyle, managed growth, aggressive growth",
+      "standard": "IRS (hobby); venture-type literature",
+      "status": "new",
+      "references": [
+        "irs-treas-reg-1-183-2",
+        "elgar-what-do-entrepreneurs-create"
+      ]
+    },
+    {
+      "noun": "legal form",
+      "level": "venture",
+      "meaning": "none, sole-prop, partnership, llc, s-corp, c-corp, benefit-corp, nonprofit",
+      "standard": "US entity types",
+      "status": "kept"
+    },
+    {
+      "noun": "funding",
+      "level": "venture",
+      "meaning": "bootstrapped, grant, angel, venture capital, debt, mixed",
+      "standard": "common usage",
+      "status": "new"
+    },
+    {
+      "noun": "industry",
+      "level": "venture",
+      "meaning": "What the venture produces, by its current flagship",
+      "standard": "NAICS",
+      "status": "new",
+      "references": [
+        "naics-2022",
+        "gics-msci"
+      ]
+    },
+    {
+      "noun": "core product",
+      "level": "venture",
+      "meaning": "The promise, who it is made to, what it must not deliver, and the competence behind it",
+      "standard": "Kotler; Prahalad and Hamel",
+      "status": "kept",
+      "references": [
+        "kotler-core-product",
+        "prahalad-hamel-1990-core-competence"
+      ]
+    },
+    {
+      "noun": "client",
+      "level": "venture",
+      "meaning": "A record inside the venture that serves it; not a venture",
+      "standard": "common usage",
+      "status": "kept"
+    },
+    {
+      "noun": "link",
+      "level": "venture",
+      "meaning": "What crosses from one venture into another, one way, with a border",
+      "standard": "Clark's work/family border theory",
+      "status": "kept"
+    },
+    {
+      "noun": "venture profile",
+      "level": "venture",
+      "meaning": "The readable companion to venture.json: narrative, pillars, changelog",
+      "standard": "ours",
+      "status": "new"
+    },
+    {
+      "noun": "pillar",
+      "level": "venture",
+      "meaning": "Product, brand and business, in every venture",
+      "standard": "ours",
+      "status": "kept"
+    },
+    {
+      "noun": "venture template",
+      "level": "venture",
+      "meaning": "The scaffold for a venture: pillars, roles, decision rights",
+      "standard": "ours",
+      "status": "new"
+    },
+    {
+      "noun": "product",
+      "level": "purpose",
+      "meaning": "One thing a venture offers, stored as a card in products/",
+      "standard": "common usage",
+      "status": "kept"
+    },
+    {
+      "noun": "market",
+      "level": "purpose",
+      "meaning": "Who a product serves: customer type, segment, geography, vertical or horizontal",
+      "standard": "Abell (customer groups)",
+      "status": "new",
+      "references": [
+        "abell-1980-defining-the-business"
+      ]
+    },
+    {
+      "noun": "job",
+      "level": "purpose",
+      "meaning": "The need a product meets",
+      "standard": "Abell (customer functions); jobs to be done",
+      "status": "new",
+      "references": [
+        "abell-1980-defining-the-business"
+      ]
+    },
+    {
+      "noun": "technology",
+      "level": "purpose",
+      "meaning": "How a product meets the need",
+      "standard": "Abell (alternative technologies)",
+      "status": "new",
+      "references": [
+        "abell-1980-defining-the-business"
+      ]
+    },
+    {
+      "noun": "offering",
+      "level": "purpose",
+      "meaning": "product, service, platform, content, marketplace",
+      "standard": "common usage",
+      "status": "new"
+    },
+    {
+      "noun": "business model",
+      "level": "purpose",
+      "meaning": "How a product earns, by St. Gallen pattern names",
+      "standard": "St. Gallen Business Model Navigator",
+      "status": "new",
+      "references": [
+        "gassmann-2014-business-model-navigator"
+      ]
+    },
+    {
+      "noun": "portfolio role",
+      "level": "purpose",
+      "meaning": "A product's place in each phase: flagship, substrate, revenue engine, wedge, option, end product",
+      "standard": "portfolio strategy",
+      "status": "new"
+    },
+    {
+      "noun": "wedge",
+      "level": "purpose",
+      "meaning": "A portfolio role: the narrow product or segment used to enter a market",
+      "standard": "Dixon (2010)",
+      "status": "kept",
+      "references": [
+        "dixon-2010-thin-edge-of-the-wedge"
+      ]
+    },
+    {
+      "noun": "Product Anatomy",
+      "level": "purpose",
+      "meaning": "The method that judges products against the core product",
+      "standard": "ours",
+      "status": "kept"
+    },
+    {
+      "noun": "Succession Matrix",
+      "level": "purpose",
+      "meaning": "Part of Product Anatomy that assigns portfolio roles by phase",
+      "standard": "ours",
+      "status": "kept"
+    },
+    {
+      "noun": "decision",
+      "level": "knowledge",
+      "meaning": "A logged choice with an id (EE- or a venture's own prefix)",
+      "standard": "ADR practice",
+      "status": "kept"
+    },
+    {
+      "noun": "reference",
+      "level": "knowledge",
+      "meaning": "A source behind a default, recorded per layer with a stance",
+      "standard": "citation practice",
+      "status": "new"
+    },
+    {
+      "noun": "tier",
+      "level": "operations",
+      "meaning": "One of MAD's four levels: governance, delivery, software engineering, automation",
+      "standard": "architecture tiers",
+      "status": "new"
+    },
+    {
+      "noun": "handoff",
+      "level": "execution",
+      "meaning": "One unit of delegated work, with attempts and escalation",
+      "standard": "common operations usage",
+      "status": "kept"
+    },
+    {
+      "noun": "eval",
+      "level": "evidence",
+      "meaning": "A test of whether something worked",
+      "standard": "AI evals",
+      "status": "kept"
+    },
+    {
+      "noun": "role",
+      "level": "governance",
+      "meaning": "A person's or agent's job; never a product's place in the portfolio",
+      "standard": "decision rights (RACI, RAPID)",
+      "status": "kept"
+    },
+    {
+      "noun": "decision right",
+      "level": "governance",
+      "meaning": "Who may decide what",
+      "standard": "decision rights (RACI, RAPID)",
+      "status": "kept"
+    },
+    {
+      "noun": "console",
+      "level": "interface",
+      "meaning": "How people and agents see a venture",
+      "standard": "common software usage",
+      "status": "kept"
+    },
+    {
+      "noun": "sphere",
+      "level": "venture",
+      "meaning": "Old name for the unit",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "venture",
+      "retired_pattern": "\\bspheres?\\b"
+    },
+    {
+      "noun": "stage",
+      "level": "venture",
+      "meaning": "Old formation stage (hobby, venture, company)",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "phase, legal form and ambition",
+      "retired_pattern": "\"stage\"\\s*:"
+    },
+    {
+      "noun": "kind",
+      "level": "venture",
+      "meaning": "Old sphere kinds (venture, client)",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "venture, with clients as records",
+      "retired_pattern": "\"kind\"\\s*:\\s*\"(venture|client)\""
+    },
+    {
+      "noun": "Wedge (phase)",
+      "level": "venture",
+      "meaning": "Old first market phase",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "validation (wedge stays a portfolio role)",
+      "retired_pattern": "\"id\"\\s*:\\s*\"wedge\""
+    },
+    {
+      "noun": "Core Engine",
+      "level": "venture",
+      "meaning": "Old scale phase",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "scale",
+      "retired_pattern": "Core Engine|core-engine"
+    },
+    {
+      "noun": "Horizon (phase)",
+      "level": "venture",
+      "meaning": "Old last phase",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "platform (Three Horizons stays a lens)",
+      "retired_pattern": "\"id\"\\s*:\\s*\"horizon\""
+    },
+    {
+      "noun": "entity profile",
+      "level": "venture",
+      "meaning": "SAD's old name for the profile",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "venture profile",
+      "retired_pattern": "entity profile"
+    },
+    {
+      "noun": "company template",
+      "level": "venture",
+      "meaning": "Old name of the venture template",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "venture template",
+      "retired_pattern": "company[- ]template"
+    },
+    {
+      "noun": "orientation",
+      "level": "venture",
+      "meaning": "Proposed for-profit/nonprofit axis, dropped before use",
+      "standard": "none",
+      "status": "retired",
+      "replaced_by": "legal form",
+      "retired_pattern": "\"orientation\"\\s*:"
+    }
+  ]
+}

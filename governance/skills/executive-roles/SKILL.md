@@ -10,7 +10,7 @@ description: >
   and pillar leads (CTO, CMO, COO). Auto-loads when conversation surfaces
   executive-level concerns: strategic decisions, cross-pillar tradeoffs,
   board materials, exec hiring, fundraising, organizational design. References
-  the per-role files at company-template/roles/. Companion to the per-pillar
+  the per-role files at venture-template/roles/. Companion to the per-pillar
   skills (which cover pillar leads specifically when pillar work is happening).
   Per SAD v3.3+ amendment §33.
   MANDATORY TRIGGERS: CEO, founder, chief of staff, executive team, exec team,
@@ -26,12 +26,12 @@ The context-providing skill for executive-level work. Auto-loads when conversati
 
 References to all per-role files in the company template:
 
-- [[../../company-template/roles/ceo|CEO]] — cross-pillar lead; sets direction
-- [[../../company-template/roles/founder|Founder]] — pre-CEO state; multi-role
-- [[../../company-template/roles/chief-of-staff|Chief of Staff]] — CEO force multiplier
-- [[../../company-template/roles/cto|CTO]] — Product pillar lead
-- [[../../company-template/roles/cmo|CMO]] — Brand pillar lead
-- [[../../company-template/roles/coo|COO]] — Business pillar lead
+- [[../../venture-template/roles/ceo|CEO]] — cross-pillar lead; sets direction
+- [[../../venture-template/roles/founder|Founder]] — pre-CEO state; multi-role
+- [[../../venture-template/roles/chief-of-staff|Chief of Staff]] — CEO force multiplier
+- [[../../venture-template/roles/cto|CTO]] — Product pillar lead
+- [[../../venture-template/roles/cmo|CMO]] — Brand pillar lead
+- [[../../venture-template/roles/coo|COO]] — Business pillar lead
 
 When loaded, the AI can speak to executive-level concerns with reference to specific role contexts.
 
@@ -53,13 +53,13 @@ When loaded, the AI should keep in mind:
 
 1. **Roles have responsibilities + non-responsibilities.** Each per-role file has a "What this role is NOT" section. The non-responsibilities matter as much as the responsibilities — they're how the role stays focused.
 
-2. **Role transitions are methodology-relevant.** Founder → CEO is the most common; founder may also evolve into CTO / CPO / CMO. The methodology should support these transitions explicitly. See [[../../company-template/roles/founder|founder.md]] §"Founder transitions."
+2. **Role transitions are methodology-relevant.** Founder → CEO is the most common; founder may also evolve into CTO / CPO / CMO. The methodology should support these transitions explicitly. See [[../../venture-template/roles/founder|founder.md]] §"Founder transitions."
 
 3. **Pillar leads sit *under* their pillar; cross-pillar roles sit *above*.** CEO + Founder + Chief of Staff are cross-pillar. CTO + CMO + COO are pillar leads. Don't conflate.
 
 4. **Specialized C-level roles emerge from COO's scope.** CFO emerges from COO's Finance scope; GC emerges from Legal; CRO emerges from Sales; CPO emerges from People. Stage-dependent emergence; the methodology accommodates both COO-broad and specialized-narrow structures.
 
-5. **The CoS role is variable.** Per [[../../company-template/roles/chief-of-staff|chief-of-staff.md]], the role scope depends heavily on the CEO. Don't over-prescribe; meet the CEO where they are.
+5. **The CoS role is variable.** Per [[../../venture-template/roles/chief-of-staff|chief-of-staff.md]], the role scope depends heavily on the CEO. Don't over-prescribe; meet the CEO where they are.
 
 ## How role context affects the work
 

@@ -1,0 +1,8 @@
+{
+  "schema": "everything-ecosystem",
+  "schema_version": "0.3.0",
+  "ventures": [
+    "ventures/"
+  ],
+  "code": "code/"
+}

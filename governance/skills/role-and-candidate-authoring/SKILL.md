@@ -56,11 +56,11 @@ A 1-2 page document covering:
 - **Purpose** — one paragraph on what the role is for
 - **Primary + secondary pillars** the role touches
 - **Owns** — what the role is accountable for (deliverables, decisions, outcomes)
-- **Does not own** — explicit non-responsibilities (per the role-file pattern at company-template/roles/)
+- **Does not own** — explicit non-responsibilities (per the role-file pattern at venture-template/roles/)
 - **Reports to** + **collaborates with** + **reports to this role**
 - **Stage variation** — how the role differs by company stage; what version of the role this hire is filling
 
-For predefined roles (CEO, CTO, CMO, COO, Founder, Chief of Staff), this starts from the company-template/roles/ file and customizes for the specific project's context.
+For predefined roles (CEO, CTO, CMO, COO, Founder, Chief of Staff), this starts from the venture-template/roles/ file and customizes for the specific project's context.
 
 For custom roles (e.g., "Editor-in-Chief of the company podcast"), this synthesizes from the relevant pillar(s) + the role's specific scope.
 
@@ -104,7 +104,7 @@ Ask:
 
 ### Step 2 — Surface predefined context (if applicable)
 
-For predefined roles, read the company-template/roles/ file as the starting point. Surface the pre-authored role description as the baseline; customize from there.
+For predefined roles, read the venture-template/roles/ file as the starting point. Surface the pre-authored role description as the baseline; customize from there.
 
 ### Step 3 — Author the role description
 

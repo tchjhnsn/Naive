@@ -100,7 +100,7 @@ Every project carries a canonical orchestration HTML at the project root that in
 
 The methodology is formalized as three separable layers: (1) the methodology itself (four-lane pipeline + rituals), (2) the company template (three pillars + teams + roles), (3) deliverable templates (per-pillar, per-product-type, plus idea-discovered Tier 3). Skills + hooks + selective slash commands glue the layers together.
 
-**Spec change:** New top-level PART introducing the three-layer formalization. Company template at `governance/company-template/`. Tier 1/2/3 deliverable schema in each pillar file.
+**Spec change:** New top-level PART introducing the three-layer formalization. Company template at `governance/venture-template/`. Tier 1/2/3 deliverable schema in each pillar file.
 
 ### §34 — Three interaction surfaces (skills / hooks / commands)
 
@@ -128,7 +128,7 @@ The methodology distinguishes explicit recommendations (what to consider — pri
 
 ### §38 — Role + candidate authoring as methodology output
 
-The methodology produces three artifacts for any role-filling moment: (1) role description, (2) ideal candidate qualities, (3) explicit recommendations for finding and evaluating candidates. Applies to predefined roles (using company-template/roles/) and to custom roles (synthesized from pillar / lane / responsibilities). Sub-projects in the recursive structure each can produce their own role-filling artifacts.
+The methodology produces three artifacts for any role-filling moment: (1) role description, (2) ideal candidate qualities, (3) explicit recommendations for finding and evaluating candidates. Applies to predefined roles (using venture-template/roles/) and to custom roles (synthesized from pillar / lane / responsibilities). Sub-projects in the recursive structure each can produce their own role-filling artifacts.
 
 **Spec change:** New supporting pattern in PART 11. [[role-and-candidate-authoring]] skill authored. Bridge from solo-operator to multi-person team methodology.
 
@@ -162,12 +162,12 @@ Per §34 (skills as primary surface), the methodology formalization authored 20 
 
 ## 4. Company template authored
 
-Per §33, the new Layer 2 of the methodology stack. Lives at `governance/company-template/`:
+Per §33, the new Layer 2 of the methodology stack. Lives at `governance/venture-template/`:
 
-- [[company-template/README|README]] — folder overview
-- [[company-template/index|index]] — master reference for what a company is
-- Pillars: [[company-template/pillars/product|product]], [[company-template/pillars/brand|brand]], [[company-template/pillars/business|business]]
-- Roles: [[company-template/roles/ceo|CEO]], [[company-template/roles/cto|CTO]], [[company-template/roles/cmo|CMO]], [[company-template/roles/coo|COO]], [[company-template/roles/founder|Founder]], [[company-template/roles/chief-of-staff|Chief of Staff]]
+- [[venture-template/README|README]] — folder overview
+- [[venture-template/index|index]] — master reference for what a company is
+- Pillars: [[venture-template/pillars/product|product]], [[venture-template/pillars/brand|brand]], [[venture-template/pillars/business|business]]
+- Roles: [[venture-template/roles/ceo|CEO]], [[venture-template/roles/cto|CTO]], [[venture-template/roles/cmo|CMO]], [[venture-template/roles/coo|COO]], [[venture-template/roles/founder|Founder]], [[venture-template/roles/chief-of-staff|Chief of Staff]]
 
 ---
 

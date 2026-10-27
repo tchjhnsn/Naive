@@ -1,18 +1,21 @@
-// Product Anatomy Matrix runner, version 0.1.0 (unevaluated).
+// Product Anatomy Matrix runner, version 0.2.0 (unevaluated).
 //
-//   node anatomy.mjs request <input.json>                      print the Jev request; sends nothing
-//   node anatomy.mjs score   <input.json> <answers.json> --send ask Jev, write the answers file
-//   node anatomy.mjs matrix  <input.json> <answers.json>        deduce roles for every phase
+//   node anatomy.mjs request <venture>                      print the Jev request; sends nothing
+//   node anatomy.mjs score   <venture> <answers.json> --send ask Jev, write the answers file
+//   node anatomy.mjs matrix  <venture> <answers.json>        deduce portfolio roles for every phase
 //
-// Order matters: the input's `core` (promise, who it is made to, what it must
+// <venture> is a venture folder (venture.json plus products/*.json, EE-011) or a
+// single input file with `venture`, `core`, `products` and `flows`.
+//
+// Order matters: the venture's core product (promise, who it is made to, what it must
 // not deliver, the competence behind it) is fixed first, and every product is
 // judged against it. Jev answers the typed questions in questions.json, one per
-// product. Spillover comes from the input's `flows`. Must-holds are checked in
+// product. Spillover comes from each product's `flows_to` (or the input's `flows`). Must-holds are checked in
 // code, never by Jev. Weights live in phases.json, so re-weighting a phase never
 // needs re-scoring. Without TYPESAFE_API_KEY, a reasoning model fills the same
 // answers file by hand and says so in its `scorer` field.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,7 +24,24 @@ const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
 const MODEL = "jev-latest";
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const { questions } = load(join(here, "questions.json"));
-const { phases, must_hold, tie } = load(join(here, "phases.json"));
+const { phases: allPhases, must_hold, tie } = load(join(here, "phases.json"));
+// Discovery has no weights: no product is ranked before the core product exists.
+const phases = allPhases.filter((p) => p.weights);
+
+// A venture folder is read as one input: venture.json, products/*.json, flows from flows_to.
+function readVenture(path) {
+  if (!statSync(path).isDirectory()) {
+    const input = load(path);
+    input.venture ??= input.company;
+    return input;
+  }
+  const venture = load(join(path, "venture.json"));
+  const dir = join(path, "products");
+  const cards = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => load(join(dir, f))) : [];
+  const products = Object.fromEntries(cards.map((c) => [c.id, c]));
+  const flows = cards.flatMap((c) => (c.flows_to ?? []).map((to) => ({ from: c.id, to })));
+  return { venture, core: venture.core, products, flows };
+}
 
 function request(input) {
   const qs = {};
@@ -30,7 +50,7 @@ function request(input) {
       qs[`${qid}:${pid}`] = { ...q, instructions: `About the product in \`products.${pid}\`: ${q.instructions}` };
     }
   }
-  return { state: { company: input.company, core: input.core, products: input.products }, model: MODEL, questions: qs };
+  return { state: { venture: { ...input.venture, core: input.core }, products: input.products }, model: MODEL, questions: qs };
 }
 
 async function score(input, outPath) {
@@ -68,7 +88,7 @@ function deduce(input, answersFile) {
   for (const f of input.flows ?? []) out[f.from] += 1;
   const maxOut = Math.max(1, ...Object.values(out));
   const phaseIndex = Object.fromEntries(phases.map((p, i) => [p.id, i]));
-  const now = phaseIndex[input.company.phase];
+  const now = phaseIndex[input.venture.phase] ?? -1; // -1: still in discovery, every phase is a projection
 
   // Substrate: the product that is the core competence itself, phase-independent.
   const substrate = pids.filter((p) => A[p].competence_draw >= 2.5)
@@ -121,13 +141,13 @@ function deduce(input, answersFile) {
 
 function report(input, answersFile, d) {
   const name = (p) => input.products[p].name;
-  const lines = [`# Product Anatomy Matrix: ${input.company.name}`, "",
-    `Scored by: ${answersFile.scorer.replace(/\.$/, "")}. Current phase: ${input.company.phase}. Later phases are projections from today's answers; re-answer at each gate.`, "",
+  const lines = [`# Product Anatomy Matrix: ${input.venture.name}`, "",
+    `Scored by: ${answersFile.scorer.replace(/\.$/, "")}. Current phase: ${input.venture.phase}. Later phases are projections from today's answers; re-answer at each gate.`, "",
     `Core promise: ${input.core.promise}`, ""];
-  lines.push(`| Product | ${phases.map((p) => p.name).join(" | ")} |`, `| --- |${phases.map(() => " --- |").join("")}`);
+  lines.push("Portfolio role by phase:", "", `| Product | ${phases.map((p) => p.name).join(" | ")} |`, `| --- |${phases.map(() => " --- |").join("")}`);
   for (const p of Object.keys(input.products)) lines.push(`| ${name(p)} | ${d.byPhase.map((b) => b.role[p]).join(" | ")} |`);
   for (const b of d.byPhase) {
-    lines.push("", `## ${b.phase.name}${b.projection ? " (projection)" : ""}: ${b.phase.binding_constraint}`, "",
+    lines.push("", `## ${b.phase.name}${b.projection ? " (projection)" : ""}: ${b.phase.binding_constraint}. Gate: ${b.phase.gate}.`, "",
       "| Product | Phase score | Flagship must-holds |", "| --- | ---: | --- |");
     for (const r of b.rows) lines.push(`| ${name(r.p)} | ${r.score.toFixed(2)} | ${r.fails.length ? r.fails.join("; ") : "pass"} |`);
     lines.push("", `Flagship: ${b.flagship ? name(b.flagship) : "none passes the must-holds"}${b.tied.length ? ` (tie within ${tie} with ${b.tied.map(name).join(", ")})` : ""}.${b.successor ? ` Successor: ${name(b.successor)}.` : ""}`);
@@ -137,7 +157,8 @@ function report(input, answersFile, d) {
 
 const [cmd, inputPath, answersPath] = process.argv.slice(2).filter((a) => a !== "--send");
 if (!inputPath) { console.error("usage: node anatomy.mjs request|score|matrix <input.json> [answers.json] [--send]"); process.exit(2); }
-const input = load(inputPath);
+const input = readVenture(inputPath);
+if (!input.core) { console.error("This venture has no core product yet. State it before ranking products (it is required once the venture leaves discovery)."); process.exit(2); }
 if (cmd === "request") console.log(JSON.stringify(request(input), null, 2));
 else if (cmd === "score") {
   if (!process.argv.includes("--send")) { console.log(JSON.stringify(request(input), null, 2)); console.error("Printed only. Add --send to call TypeSafe."); }

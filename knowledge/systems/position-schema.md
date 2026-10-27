@@ -15,7 +15,7 @@ tags: [everything-ecosystem, systems, position-schema, org-structure, roles, age
 related:
   - "[[person-profile]]"
   - "[[entity-profile-schema]]"
-  - "[[company-template/roles/README]]"
+  - "[[venture-template/roles/README]]"
   - "[[executive-roles]]"
   - "[[role-and-candidate-authoring]]"
   - "[[idea-073-position-schema-separate-from-person]]"
@@ -31,7 +31,7 @@ This is an **everything-ecosystem / SAD** feature: org design, hiring, and agent
 
 | Object | Lives | Answers |
 |---|---|---|
-| **Role template** | `governance/company-template/roles/<slug>.md` | What is a CTO / HR manager / FDE *in general*? |
+| **Role template** | `governance/venture-template/roles/<slug>.md` | What is a CTO / HR manager / FDE *in general*? |
 | **Position instance** | `<entity>/business/org/positions/` (default); brand- or product-scoped seats may live under `brand/org/` or `product/org/` when the seat belongs to that org function | Which seats exist *here*, reporting lines, scope |
 | **Occupancy** | Frontmatter on the position | Who or what fills the seat right now |
 | **Assignments** | Body / frontmatter on the position | Teams, projects, portfolio entities this seat owns |
@@ -48,7 +48,7 @@ Role template  →  Position instance  →  Occupancy (human | agent | vacant | 
 ```yaml
 type: position
 entity: "a project note"                 # owning entity
-role-template: "[[cto]]"             # optional link into company-template/roles
+role-template: "[[cto]]"             # optional link into venture-template/roles
 org-function: product | brand | business | company-wide
 title: "Chief Technology Officer"
 reports-to: "a project note"         # other position instance, optional
@@ -66,7 +66,7 @@ Template: `_meta/templates/tpl-position.md`.
 - **Title** — formal seat name
 - **Entity** — which company / ecosystem this seat belongs to
 - **Org function** — `product` · `brand` · `business` · `company-wide` (maps to parent pillar homes without requiring recursive brand/business on every child product)
-- **Role template** — optional wikilink to company-template role file
+- **Role template** — optional wikilink to venture-template role file
 
 ### Authority
 - **Scope of authority** — what the seat can decide
@@ -163,4 +163,4 @@ An entity may keep `business/org/README.md` (or `org-index.md` with `type: org-c
 - Full fantasy headcount for every entity
 - Merging person into position
 - Unifying agent-role taxonomy with org positions
-- Treating company-template role files as filled seats
+- Treating venture-template role files as filled seats

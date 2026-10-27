@@ -18,4 +18,4 @@ The loop: Purpose is articulated into Knowledge, Operations picks how the work r
 
 ## Vault and repo
 
-Docs as code (EE-005): this repo holds the method, its design docs, schemas, skills and templates. Each instance keeps its own notes and decisions in its own spheres. The schema's decisions are in `docs/decisions/decisions.json`, and `schema/README.md` indexes every record type.
+Docs as code (EE-005): this repo holds the method, its design docs, schemas, skills and templates. Each instance keeps its own notes and decisions in its own ventures. The schema's decisions are in `docs/decisions/decisions.json`, and `schema/README.md` indexes every record type.

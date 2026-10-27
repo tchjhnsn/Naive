@@ -1,8 +1,0 @@
-{
-  "schema": "everything-ecosystem",
-  "schema_version": "0.2.0",
-  "spheres": [
-    "ventures/"
-  ],
-  "code": "code/"
-}

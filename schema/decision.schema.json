@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "decision.schema.json",
   "title": "Decision log",
-  "description": "A decision log: the schema's own (docs/decisions/decisions.json, ids EE-NNN), or any sphere's, with its own id prefix. Entries are appended, never rewritten; a changed decision is a new entry that supersedes the old one.",
+  "description": "A decision log: the schema's own (docs/decisions/decisions.json, ids EE-NNN), or any venture's, with its own id prefix. Entries are appended, never rewritten; a changed decision is a new entry that supersedes the old one.",
   "type": "object",
   "required": ["log", "prefix", "decisions"],
   "properties": {

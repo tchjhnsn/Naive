@@ -11,7 +11,7 @@ description: >
   legal posture), per-stage and per-business-model Tier 2 splits, and cross-
   pillar overlap zones. Auto-loads when working on commercial / operational /
   legal / financial / sales / partnership / customer success / trust & safety
-  concerns. References company-template/pillars/business.md as the canonical
+  concerns. References venture-template/pillars/business.md as the canonical
   reference. Per SAD v3.3+ amendment §33.
   MANDATORY TRIGGERS: business pillar, business work, business model, pricing,
   sales, COO, CFO, GC, legal, contracts, ops, operations, runbooks, metrics,
@@ -26,8 +26,8 @@ The context-providing skill for Business-pillar work. Auto-loads when business-p
 
 ## What this skill provides
 
-- **Business pillar reference** — [[../../company-template/pillars/business|company-template/pillars/business.md]] for the canonical Business pillar description
-- **COO role context** — [[../../company-template/roles/coo|company-template/roles/coo.md]]
+- **Business pillar reference** — [[../../venture-template/pillars/business|venture-template/pillars/business.md]] for the canonical Business pillar description
+- **COO role context** — [[../../venture-template/roles/coo|venture-template/roles/coo.md]]
 - **Per-stage Tier 2 awareness** — pre-revenue / early / growth / mature companies have different Business-pillar deliverable sets
 - **Per-business-model Tier 2 awareness** — subscription / transactional / advertising / OSS+commercial / free models have different deliverable sets
 - **Optional Business-pillar products** — when present (partnership programs, training certifications, sales kits, services tiers, etc.)
@@ -93,4 +93,4 @@ When work crosses pillars:
 
 ## Status
 
-- **2026-05-14:** Initial authoring. References company-template/pillars/business.md as the canonical Business pillar reference.
+- **2026-05-14:** Initial authoring. References venture-template/pillars/business.md as the canonical Business pillar reference.

@@ -112,7 +112,7 @@ Surface the concern explicitly:
 > "This document will be canonical for: <concern>. Examples:
 > - 'V1-next scope' (the enumeration HTML)
 > - 'Brand identity for <entity>' (the brand/identity.md)
-> - 'What a company is' (company-template/index.md)
+> - 'What a company is' (venture-template/index.md)
 > - 'Articulation closure inventory for V1' (the articulation closure HTML)"
 
 If the concern can't be stated cleanly, the doc may not be the right canonical — multiple concerns merged. Surface this; consider splitting.

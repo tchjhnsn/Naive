@@ -128,7 +128,7 @@ Wikipedia summary: a structured collection of related assets aiding production v
 | Standardized inputs | Spec hierarchy + IDEA_MAP / RESEARCH_SYNTHESIS | Partially covered |
 | Defined assembly path | Phase 0A→5 order mandatory | Methodology yes; automation optional |
 | Quality gates | Spec / Implementation Convergence; contract-first gate | Partially; CI/tests are repo-side |
-| Reusable assets / recipes | Templates, skills, company-template | Yes — expand as products |
+| Reusable assets / recipes | Templates, skills, venture-template | Yes — expand as products |
 | Replayability / audit | Session logs, ai-model provenance, amendments | Session logger / bitemporal work may **spin out** |
 | Shared human+agent room | Not prescribed (Cursor/Cowork today) | Buzz-class workspace |
 | Agent identity & authz | Parallel agent-role taxonomy; not factory ACL | Yes |

@@ -11,7 +11,7 @@ description: >
   cross-pillar overlap zones, and the import discipline (Brand is the source of
   truth; other pillars wikilink, never duplicate). Auto-loads when working on
   brand identity, voice, visual systems, marketing, community, PR, brand-led
-  products, or any Brand-pillar concern. References company-template/pillars/brand.md
+  products, or any Brand-pillar concern. References venture-template/pillars/brand.md
   as the canonical reference. Per SAD v3.3+ amendment §33.
   MANDATORY TRIGGERS: brand pillar, brand work, brand identity, voice, tone,
   logo, wordmark, OG image, typography, colors, marketing, content, community,
@@ -25,8 +25,8 @@ The context-providing skill for Brand-pillar work. Auto-loads when brand-pillar 
 
 ## What this skill provides
 
-- **Brand pillar reference** — [[../../company-template/pillars/brand|company-template/pillars/brand.md]] for the canonical Brand pillar description
-- **CMO role context** — [[../../company-template/roles/cmo|company-template/roles/cmo.md]]
+- **Brand pillar reference** — [[../../venture-template/pillars/brand|venture-template/pillars/brand.md]] for the canonical Brand pillar description
+- **CMO role context** — [[../../venture-template/roles/cmo|venture-template/roles/cmo.md]]
 - **The import discipline** — Brand is the source of truth for identity; other pillars wikilink to Brand, never duplicate
 - **Tier 1 deliverable awareness** — identity, voice, asset library, foreshadowing invariants, version-identities
 - **Optional Brand-pillar products** — when present (campaigns, brand-led podcasts, events, merchandise, brand books)
@@ -87,4 +87,4 @@ When work crosses pillars:
 
 ## Status
 
-- **2026-05-14:** Initial authoring. References company-template/pillars/brand.md as the canonical Brand pillar reference.
+- **2026-05-14:** Initial authoring. References venture-template/pillars/brand.md as the canonical Brand pillar reference.

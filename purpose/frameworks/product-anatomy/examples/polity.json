@@ -1,7 +1,7 @@
 {
-  "company": {
+  "venture": {
     "name": "Polity",
-    "phase": "wedge",
+    "phase": "validation",
     "team": "One founder working with AI agents; no employees.",
     "current_state": "Polity Social (the polity-app web app, with Polity Search on its home page) is in build and use. Polity OS has an observer-mode prototype that reads public records only. The other products are defined but not built.",
     "standing_decisions": [
@@ -45,13 +45,45 @@
     }
   },
   "flows": [
-    { "from": "data", "to": "social", "carries": "cited records" },
-    { "from": "data", "to": "docket", "carries": "cited sources for topics" },
-    { "from": "data", "to": "polity-os", "carries": "jurisdiction and procedure records" },
-    { "from": "data", "to": "nico", "carries": "positions and votes" },
-    { "from": "social", "to": "docket", "carries": "users and topics" },
-    { "from": "social", "to": "nico", "carries": "users" },
-    { "from": "docket", "to": "social", "carries": "groups who arrive through friends" },
-    { "from": "polity-os", "to": "data", "carries": "primary records created by tenants" }
+    {
+      "from": "data",
+      "to": "social",
+      "carries": "cited records"
+    },
+    {
+      "from": "data",
+      "to": "docket",
+      "carries": "cited sources for topics"
+    },
+    {
+      "from": "data",
+      "to": "polity-os",
+      "carries": "jurisdiction and procedure records"
+    },
+    {
+      "from": "data",
+      "to": "nico",
+      "carries": "positions and votes"
+    },
+    {
+      "from": "social",
+      "to": "docket",
+      "carries": "users and topics"
+    },
+    {
+      "from": "social",
+      "to": "nico",
+      "carries": "users"
+    },
+    {
+      "from": "docket",
+      "to": "social",
+      "carries": "groups who arrive through friends"
+    },
+    {
+      "from": "polity-os",
+      "to": "data",
+      "carries": "primary records created by tenants"
+    }
   ]
 }

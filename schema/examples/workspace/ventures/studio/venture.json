@@ -1,0 +1,46 @@
+{
+  "id": "studio",
+  "name": "Alex Studio",
+  "parent": null,
+  "phase": "beachhead",
+  "ambition": "managed-growth",
+  "form": {
+    "legal_form": "llc",
+    "funding": "bootstrapped"
+  },
+  "industry": {
+    "system": "naics",
+    "code": "541430",
+    "label": "Graphic Design Services"
+  },
+  "core": {
+    "promise": "A brand that looks established on day one",
+    "promised_to": "Independent restaurant owners",
+    "must_not": "Templates passed off as custom work",
+    "competence": "Fast brand systems built from a restaurant's own story"
+  },
+  "owner": "self",
+  "status": "active",
+  "opened": "2025-03-01",
+  "profile": "profile.md",
+  "layers": {
+    "purpose": {
+      "location": "purpose/"
+    },
+    "knowledge": {
+      "location": "knowledge/"
+    },
+    "operations": {
+      "location": "operations/"
+    },
+    "execution": {
+      "location": "execution/"
+    },
+    "evidence": {
+      "location": "evidence/"
+    },
+    "governance": {
+      "location": "governance/"
+    }
+  }
+}

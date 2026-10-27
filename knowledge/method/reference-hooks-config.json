@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '(spec/|entity-profile.md|methodology/.*\\.md|company-template/.*\\.md|skills/.*/SKILL\\.md)'; then echo 'POST-EDIT REMINDER: This edit touched a compiled artifact. Consider updating last-reviewed timestamp + bumping version/checksum if applicable.'; fi"
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '(spec/|entity-profile.md|methodology/.*\\.md|venture-template/.*\\.md|skills/.*/SKILL\\.md)'; then echo 'POST-EDIT REMINDER: This edit touched a compiled artifact. Consider updating last-reviewed timestamp + bumping version/checksum if applicable.'; fi"
           }
         ]
       }

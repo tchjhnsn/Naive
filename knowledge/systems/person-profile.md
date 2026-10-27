@@ -127,7 +127,7 @@ recommendations.
 
 A position is a structural seat in an organization. It exists whether or not anyone occupies it. Positions are separate from person profiles and entity profiles. **Occupancy** may be `human` · `agent` · `vacant` · `hybrid`. **Staffing posture** (`human-required` · `agent-capable` · `agent-preferred` · `undecided`) decides fill path before hiring or automation. **Assignments** bind seats to teams, projects, and portfolio entities.
 
-Role *templates* live in `company-template/roles/`. Position *instances* live on the entity (default `business/org/positions/`). Template: `_meta/templates/tpl-position.md`.
+Role *templates* live in `venture-template/roles/`. Position *instances* live on the entity (default `business/org/positions/`). Template: `_meta/templates/tpl-position.md`.
 
 ### Person-Position Relationship
 

@@ -10,7 +10,7 @@ description: >
   cross-pillar overlap zones — when working on product-pillar work. Auto-loads
   when the conversation involves product spec authoring, technical architecture,
   engineering work, UX / design, or any other Product-pillar concern.
-  References the canonical Product pillar file at company-template/pillars/product.md.
+  References the canonical Product pillar file at venture-template/pillars/product.md.
   Per SAD v3.3+ amendment §33.
   MANDATORY TRIGGERS: product pillar, product work, product spec, engineering,
   CTO, technical architecture, UX, design, sitemap, IA, wireframes, component
@@ -27,8 +27,8 @@ The context-providing skill for Product-pillar work. Auto-loads when product-pil
 
 When loaded, this skill makes available:
 
-- **Product pillar reference** — see [[../../company-template/pillars/product|company-template/pillars/product.md]] for the canonical Product pillar description
-- **CTO role context** — see [[../../company-template/roles/cto|company-template/roles/cto.md]]
+- **Product pillar reference** — see [[../../venture-template/pillars/product|venture-template/pillars/product.md]] for the canonical Product pillar description
+- **CTO role context** — see [[../../venture-template/roles/cto|venture-template/roles/cto.md]]
 - **Per-product-type guidance** — Tier 2 deliverables vary by product type (software / content / service / hardware / hybrid)
 - **Cross-pillar overlap awareness** — Product × Brand (design system, DevEx) and Product × Business (analytics, customer success, pricing-as-product, trust & safety)
 
@@ -78,4 +78,4 @@ When work crosses pillars:
 
 ## Status
 
-- **2026-05-14:** Initial authoring. References company-template/pillars/product.md as the canonical Product pillar reference.
+- **2026-05-14:** Initial authoring. References venture-template/pillars/product.md as the canonical Product pillar reference.
