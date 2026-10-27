@@ -148,6 +148,33 @@ pubBroken("content the channel has no rule for fails", (d) => publishing(d, { pu
 pubBroken("a publishing handoff with no policy fails", (d) => { rmSync(policyOf(d)); publishing(d, {}); }, /no governance\/publication-policy.json/);
 expect("a publishing handoff naming a known channel and rule passes", (() => { const d = join(tmp, `p${++n}`); cpSync(tandem, d, { recursive: true }); publishing(d, { publication: { channel: "website", content: "product pages" } }); return run("check-publication.mjs", [d]).status === 0; })());
 
+// check-validation: evidence grades (EE-026), adapted from GRADE.
+{
+  const { gradeItem, gradeRecord } = await import(join(root, "schema/check-validation.mjs"));
+  const today = new Date("2026-10-27");
+  const item = (o) => ({ id: "x", kind: "stated", summary: "s", source: { path: "a" }, audience: "target", sample: { n: 12 }, specificity: "specific", collected: "2026-09-01", ...o });
+  expect("validation: a claim with no evidence grades very low", gradeRecord({ evidence: [] }, today).level === "very low");
+  expect("validation: behavior from the target segment grades high", gradeItem(item({ kind: "behavior" }), today).level === "high");
+  expect("validation: the wrong audience drops two grades", gradeItem(item({ kind: "behavior", audience: "wrong" }), today).level === "low");
+  expect("validation: a sample under 5 drops a grade", gradeItem(item({ kind: "commitment", sample: { n: 3 } }), today).level === "low");
+  expect("validation: general answers drop stated evidence to very low", gradeItem(item({ specificity: "general" }), today).level === "very low");
+  expect("validation: evidence older than 18 months drops a grade", gradeItem(item({ kind: "behavior", collected: "2024-01-01" }), today).level === "moderate");
+  expect("validation: three agreeing sources raise a record one grade", gradeRecord({ evidence: [1, 2, 3].map((i) => item({ id: `s${i}`, source: { path: `p${i}` } })) }, today).level === "moderate");
+  expect("validation: evidence as strong against the claim lowers it", gradeRecord({ evidence: [item({ kind: "behavior" }), item({ id: "y", kind: "behavior", supports: false })] }, today).level === "moderate");
+}
+function valBroken(name, change, pattern) {
+  const dir = join(tmp, `v${++n}`);
+  cpSync(tandem, dir, { recursive: true });
+  change(dir);
+  const r = run("check-validation.mjs", [dir]);
+  expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+const problemOf = (d) => join(d, "purpose/validation/problem.json");
+expect("check-validation passes on the examples", run("check-validation.mjs", [join(root, "schema/examples/workspace")]).status === 0);
+valBroken("a source file that does not exist fails", (d) => edit(problemOf(d), (p) => { p.evidence[0].source.path = "knowledge/nope.md"; }), /source knowledge\/nope.md not found/);
+valBroken("a url with no checked date fails", (d) => edit(problemOf(d), (p) => { p.evidence[0].source = { url: "https://example.com/report" }; }), /cites a url with no checked date/);
+valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.evidence[1].id = p.evidence[0].id; }), /duplicate evidence ids/);
+
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules)(\/|$)/.test(s) });

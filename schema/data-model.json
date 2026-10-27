@@ -154,6 +154,24 @@
       "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023)"
     },
     {
+      "id": "validation-problem",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-problem.schema.json",
+      "paths": [
+        "instance/**/purpose/validation/problem.json",
+        "schema/examples/**/purpose/validation/problem.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares schema/validation-evidence.schema.json with every sub-score"
+    },
+    {
       "id": "anatomy-framework",
       "layer": "purpose",
       "level": "method",
@@ -222,9 +240,10 @@
       "level": "method",
       "schema": "schema/reference.schema.json",
       "paths": [
-        "*/references/references.json"
+        "*/references/references.json",
+        "*/kits/*/references/references.json"
       ],
-      "note": "Each layer keeps the sources behind its defaults; filled by knowledge/skills/find-reference"
+      "note": "Each layer keeps the sources behind its defaults; filled by knowledge/skills/find-reference; a kit inside a layer keeps its own at <layer>/kits/<kit>/references/references.json"
     },
     {
       "id": "integration",
@@ -282,7 +301,8 @@
       "level": "method",
       "schema": "schema/kit.schema.json",
       "paths": [
-        "*/kit.json"
+        "*/kit.json",
+        "*/kits/*/kit.json"
       ],
       "refs": [
         {
@@ -306,7 +326,7 @@
           "checked_by": "schema/check-data-model.mjs"
         }
       ],
-      "note": "What one kit holds: skills, record types it owns, record types it reads and writes, checks"
+      "note": "What one kit holds: skills, record types it owns, record types it reads and writes, checks. A layer may hold more kits under <layer>/kits/<kit>/ (EE-026)"
     },
     {
       "id": "methodology",

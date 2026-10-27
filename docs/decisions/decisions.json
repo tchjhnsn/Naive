@@ -270,6 +270,28 @@
         "EE-017",
         "EE-022"
       ]
+    },
+    {
+      "id": "EE-026",
+      "date": "2026-10-27",
+      "decision": "Validation is a probability built from cited evidence, not a declared phase. A validation kit in the purpose layer gives each sub-score (problem first; then solution, product-market fit, pricing, go-to-market, team, operations readiness per MAD tier) its own record type, template and references, all sharing one evidence item. schema/check-validation.mjs grades every item and record high, moderate, low or very low by adapting GRADE: the kind of signal sets the start (behavior high, commitment moderate, stated intent and desk research low, opinion very low), and the wrong audience, a small sample, general answers and age lower it; a claim with no evidence is very low. The grade weighs the sub-score's Jev probability in the validation score. A layer may hold more than one kit, under <layer>/kits/<kit>/.",
+      "why": "The owner: validation 'cannot be an arbitrary measure', must not be Boolean, must cite its evidence, and evidence from the wrong audience should count for less; 'a weak record would only state the problem; a strong record would also contain market research that proves the problem is there'.",
+      "status": "in-force",
+      "related": [
+        "EE-012",
+        "EE-023",
+        "EE-024"
+      ]
+    },
+    {
+      "id": "EE-027",
+      "date": "2026-10-27",
+      "decision": "Working name for the system: Mentura, from mentor and Ventura: a mentor that guides a venture into its future. Files keep 'Everything Ecosystem' until the name is checked (trademark, domains) and a rename is decided.",
+      "why": "The owner: 'We can go with the name Mentura for now.'",
+      "status": "proposed",
+      "related": [
+        "EE-024"
+      ]
     }
   ]
 }

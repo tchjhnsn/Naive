@@ -1,0 +1,27 @@
+{
+  "kit": "validation-kit",
+  "layer": "purpose",
+  "purpose": "Say how probable it is that the venture is validated, from cited evidence: one record type per validation sub-score, a shared evidence item graded like GRADE, templates for gathering the evidence, and the references behind each default (EE-026). Starts with the problem sub-score; solution, product-market fit, pricing, go-to-market, team and operations readiness follow the same pattern.",
+  "skills": [
+    {
+      "id": "problem-validation",
+      "path": "purpose/kits/validation/skills/problem-validation/SKILL.md"
+    }
+  ],
+  "records": [
+    "validation-problem"
+  ],
+  "reads": [
+    "venture",
+    "product"
+  ],
+  "writes": [],
+  "checks": [
+    "schema/check-validation.mjs"
+  ],
+  "gaps": [
+    "Only the problem sub-score exists; the other six follow the same evidence item and grading",
+    "The validation score itself (weighted average of p times evidence weight, with floors) is not computed yet; weights by venture type and go-to-market path are still to be set",
+    "Jev does not score the probability yet; the example uses an owner value"
+  ]
+}

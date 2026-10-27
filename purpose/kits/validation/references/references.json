@@ -1,0 +1,67 @@
+{
+  "layer": "purpose",
+  "references": [
+    {
+      "id": "grade-handbook",
+      "title": "GRADE Handbook",
+      "authors": [
+        "GRADE Working Group"
+      ],
+      "year": 2013,
+      "kind": "standard",
+      "summary": "Certainty of evidence rated high, moderate, low or very low. Randomized trials start high and observational studies low; certainty drops for risk of bias, inconsistency, indirectness, imprecision and publication bias, and rises for a large effect or a dose-response gradient.",
+      "url": "https://gdt.gradepro.org/app/handbook/handbook.html",
+      "checked": "2026-10-27",
+      "informs": [
+        "rule:evidence-grade",
+        "field:validation-evidence.kind",
+        "field:validation-evidence.audience",
+        "field:validation-evidence.sample"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The four levels and the start-then-downgrade method are kept; study design becomes the kind of signal (behavior starts high, stated intent low), indirectness becomes audience fit and imprecision becomes sample size."
+      }
+    },
+    {
+      "id": "fitzpatrick-2013-mom-test",
+      "title": "The Mom Test",
+      "authors": [
+        "Rob Fitzpatrick"
+      ],
+      "year": 2013,
+      "kind": "book",
+      "summary": "Ask about people's lives and past behavior, not about your idea; compliments, generalities and hypotheticals are not data, and commitment is the real signal.",
+      "url": "https://www.momtestbook.com/",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:validation-evidence.specificity",
+        "field:validation-evidence.kind",
+        "rule:evidence-grade"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Its ranking of signals (commitment over compliments, past facts over hypotheticals) sets the starting grades and the specificity downgrade; its method is the problem-interview template."
+      }
+    },
+    {
+      "id": "cb-insights-2026-startup-failure",
+      "title": "The top 9 reasons startups fail",
+      "authors": [
+        "CB Insights"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Analysis of startup post-mortems; poor product-market fit was cited in 43% of failures (causes overlap).",
+      "url": "https://www.cbinsights.com/research/report/startup-failure-reasons-top/",
+      "checked": "2026-10-27",
+      "informs": [
+        "rule:validation-fails-closed"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The most common cause of failure is building what the market does not need, so a validation claim with no evidence grades very low instead of passing."
+      }
+    }
+  ]
+}

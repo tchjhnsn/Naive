@@ -34,6 +34,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | kit manifest | The file (<layer>/kit.json) that lists what one kit holds: its skills, the record types it owns, those of other kits it reads and writes, and its checks. Layer relationships are derived from manifests | package manifest (common software usage) |  |
 | vault | The folder of documents (Markdown notes and JSON records) that holds a workspace's venture folders, their records and decisions. Every workspace has one; a venture outside software may need nothing else | Obsidian's name for a folder of notes; generically a knowledge base |  |
 | repository (repo) | A version-controlled store, normally Git, holding code and the documents that ship with it (docs-as-code). A venture that builds software needs at least one; repo is the short form | version control (Git: repository) |  |
+| template | A fill-in starting point for one record or document: the fields, what to write in each and what a strong one looks like. A kit holds templates; a template holds no rules and checks nothing | common usage (document template) |  |
 
 ### Venture
 
@@ -53,7 +54,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | venture profile | The readable companion to venture.json: narrative, pillars, changelog | ours |  |
 | pillar | Product, brand and business, in every venture | ours |  |
 | venture template | The scaffold for a venture: pillars, roles, decision rights | ours |  |
-| kit | A product that bundles other products (skills, schemas, checks) sold or used together. Scoped to the whole system, one layer, or one tier of the operations layer. A part can also be its own product | product bundling (Adams and Yellen 1976) |  |
+| kit | A package a layer offers: skills, record types (schemas), checks, templates and references, used together. Each layer has one at <layer>/kit.json and may hold more under <layer>/kits/ (EE-026). As an offering it is a bundle; a part can also be its own product | product bundling (Adams and Yellen 1976); package, as in a framework's packages |  |
 
 ### Purpose
 
@@ -71,6 +72,8 @@ The system is opinionated: it names one default for each choice, and every defau
 | Succession Matrix | Part of Product Anatomy that assigns portfolio roles by phase | ours |  |
 | telos | The end a venture exists to reach (purpose/telos.json): statement, end state, measures, the owners' intended outcome, and exit criteria for each phase. Start with the end: other layers derive from it | Aristotle (final cause); Covey, begin with the end in mind |  |
 | exit criterion | What must be true for a venture to leave a phase, written in its telos and tied to a telos measure; it refines that phase's generic gate. Not an owner's exit (governance) | Stage-Gate exit criteria (Cooper) |  |
+| validation score | The probability that a venture is validated: a weighted average of sub-scores (problem, solution, product-market fit, pricing, go-to-market, team, operations readiness), each a Jev probability times its evidence weight, with floors; replaces a declared phase gate (EE-026) | ours, after Blank's customer validation | blank-2005-four-steps |
+| evidence grade | How much a validation record's cited evidence can be trusted: high, moderate, low or very low, from the kind of signal, the audience, the sample, the specificity and the age; a claim with no evidence is very low | GRADE certainty of evidence | grade-handbook, fitzpatrick-2013-mom-test |
 
 ### Knowledge
 

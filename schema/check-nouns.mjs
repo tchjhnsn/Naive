@@ -38,8 +38,11 @@ for (const n of nouns.filter((x) => x.retired_pattern)) {
     if (re.test(line) && !/\(was|retired/i.test(line)) errors.push(`${f.slice(root.length)}:${i + 1}: retired noun "${n.noun}" (use ${n.replaced_by})`);
   });
 }
-const known = new Set(readdirSync(root).filter((d) => existsSync(join(root, d, "references/references.json")))
-  .flatMap((d) => JSON.parse(readFileSync(join(root, d, "references/references.json"), "utf8")).references.map((r) => r.id)));
+// Layer references, and those of any kit inside a layer (<layer>/kits/<kit>/references).
+const refFiles = readdirSync(root).flatMap((d) => [join(d, "references/references.json"),
+  ...(existsSync(join(root, d, "kits")) ? readdirSync(join(root, d, "kits")).map((k) => join(d, "kits", k, "references/references.json")) : [])]);
+const known = new Set(refFiles.filter((f) => existsSync(join(root, f)))
+  .flatMap((f) => JSON.parse(readFileSync(join(root, f), "utf8")).references.map((r) => r.id)));
 for (const n of nouns) for (const r of n.references ?? []) if (!known.has(r)) errors.push(`docs/ontology.json: ${n.noun} cites unknown reference ${r}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
