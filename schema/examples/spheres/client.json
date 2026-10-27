@@ -1,0 +1,24 @@
+{
+  "id": "studio-bakery",
+  "name": "Bakery website (client of Alex Studio)",
+  "kind": "client",
+  "parent": "studio",
+  "owner": "shared",
+  "members": [
+    "client"
+  ],
+  "governed_by": "Contract of 2026-09-01",
+  "status": "active",
+  "opened": "2026-09-01",
+  "layers": {
+    "purpose": false,
+    "knowledge": {
+      "location": "ventures/studio/clients/bakery/"
+    },
+    "operations": false,
+    "execution": {
+      "location": "ventures/studio/clients/bakery/handoffs/"
+    },
+    "evidence": false
+  }
+}

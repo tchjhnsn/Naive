@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sphere.schema.json",
+  "title": "Sphere",
+  "description": "One sphere: a venture (anything a builder undertakes, from a hobby to a company) or a client inside one. Each sphere keeps a sphere.json at its root, beside its human-readable profile (EE-008). Personal life is out of scope (EE-009). Cross-sphere rules are checked by schema/check-spheres.mjs.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "kind",
+    "parent",
+    "owner",
+    "status",
+    "layers"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "venture",
+        "client"
+      ],
+      "description": "venture: anything you undertake, at a stage from hobby to company; ventures can hold ventures (a brand house and its lines). client: work for one client, only inside the venture that serves it."
+    },
+    "parent": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The id of the sphere that holds this one. null for a top-level venture; a client always has one."
+    },
+    "stage": {
+      "enum": [
+        "hobby",
+        "venture",
+        "company"
+      ],
+      "description": "Ventures only. hobby: done for its own sake. venture: an undertaking with risk and intent, not yet a formed company. company: formalized and operating continuously, with a legal_form. A venture changes stage without moving folders (EE-004)."
+    },
+    "legal_form": {
+      "enum": [
+        "llc",
+        "s-corp",
+        "c-corp",
+        "sole-prop",
+        "partnership",
+        "nonprofit",
+        "none"
+      ],
+      "description": "Ventures at the company stage: the legal and tax structure."
+    },
+    "owner": {
+      "enum": [
+        "self",
+        "shared",
+        "other"
+      ],
+      "description": "self: the builder owns it. shared: owned with others (co-founders, a client contract). other: someone else owns it."
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Roles of the others in it (partner, co-founder, client, manager), not personal details"
+    },
+    "governed_by": {
+      "type": "string",
+      "description": "Whose rules apply: you, a shared agreement, the employer's policies, a contract, the group's bylaws"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "paused",
+        "closed",
+        "archived"
+      ]
+    },
+    "opened": {
+      "type": "string",
+      "format": "date"
+    },
+    "closed": {
+      "type": "string",
+      "format": "date"
+    },
+    "layers": {
+      "type": "object",
+      "description": "Every sphere has the same layers, at the depth it needs. A layer it does not use yet is false; one it uses gives where its records live.",
+      "required": [
+        "purpose",
+        "knowledge",
+        "operations",
+        "execution",
+        "evidence"
+      ],
+      "properties": {
+        "purpose": {
+          "$ref": "#/$defs/layer"
+        },
+        "knowledge": {
+          "$ref": "#/$defs/layer"
+        },
+        "operations": {
+          "$ref": "#/$defs/layer"
+        },
+        "execution": {
+          "$ref": "#/$defs/layer"
+        },
+        "evidence": {
+          "$ref": "#/$defs/layer"
+        },
+        "governance": {
+          "$ref": "#/$defs/layer"
+        },
+        "interface": {
+          "$ref": "#/$defs/layer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "links": {
+      "type": "array",
+      "description": "What crosses from this sphere into another, one way: shares-with sends the listed things; reads can see into the other.",
+      "items": {
+        "type": "object",
+        "required": [
+          "to",
+          "access",
+          "carries"
+        ],
+        "properties": {
+          "to": {
+            "type": "string",
+            "description": "The other sphere's id"
+          },
+          "access": {
+            "enum": [
+              "reads",
+              "shares-with"
+            ],
+            "description": "reads: this sphere can see into the other. shares-with: this sphere sends the listed things to the other."
+          },
+          "carries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What crosses: schedule, availability, finances summary, skills, notes"
+          },
+          "border": {
+            "enum": [
+              "closed",
+              "filtered",
+              "open"
+            ],
+            "default": "filtered"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "profile": {
+      "type": "string",
+      "description": "Path to the sphere's human-readable profile (Markdown), which holds its narrative, pillars and changelog"
+    }
+  },
+  "$defs": {
+    "layer": {
+      "oneOf": [
+        {
+          "const": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "location"
+          ],
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "Path or URL where this layer's records live"
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Integration ids from <layer>/tooling/integrations.json"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "venture"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "stage"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "client"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "parent": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "company"
+          }
+        },
+        "required": [
+          "stage"
+        ]
+      },
+      "then": {
+        "required": [
+          "legal_form"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

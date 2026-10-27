@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "note": "Which layers a new sphere starts with: by stage for ventures, and one set for clients. Every sphere has every layer; a layer not listed starts as false and is switched on when the sphere needs it. Folder names are the layer names. Every venture, at every stage, also gets the three pillars (EE-010).",
+  "layers": {
+    "venture:hobby": ["knowledge"],
+    "venture:venture": ["purpose", "knowledge", "operations", "execution", "evidence"],
+    "venture:company": ["purpose", "knowledge", "operations", "execution", "evidence", "governance"],
+    "client": ["knowledge", "execution"]
+  },
+  "pillars": {
+    "from": "governance/company-template/pillars/",
+    "files": ["product.md", "brand.md", "business.md"],
+    "applies_to": "venture"
+  },
+  "readme": {
+    "purpose": "Why this sphere exists: purpose, goals and vision.",
+    "knowledge": "What is known and intended: notes, specs and decisions (SAD).",
+    "operations": "How work is run here: the MAD record (.mad/) and chosen methods.",
+    "execution": "Who or what does the work: handoffs to people and agents.",
+    "evidence": "Did it work: reviews, evals and metrics.",
+    "governance": "Who may decide what: roles and decision rights.",
+    "interface": "How people and agents see this sphere: dashboards and consoles."
+  }
+}

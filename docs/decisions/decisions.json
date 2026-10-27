@@ -1,0 +1,98 @@
+{
+  "log": "Everything Ecosystem schema",
+  "prefix": "EE",
+  "decisions": [
+    {
+      "id": "EE-001",
+      "date": "2026-10-26",
+      "decision": "The methodology has five layers that form a loop (Purpose, Knowledge, Operations, Execution, Evidence) and two that cut across them (Governance, Interface). Knowledge is SAD; Operations is MAD.",
+      "status": "in-force"
+    },
+    {
+      "id": "EE-002",
+      "date": "2026-10-27",
+      "decision": "The Everything Ecosystem is a schema, described as the AI-Native OS for Builders. An instance is one person's workspace, declared by a workspace.json naming the schema version it follows. The schema does not depend on any instance.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-003",
+      "date": "2026-10-27",
+      "decision": "A workspace is made of spheres. Each person has one personal sphere as the root, holding their values. Every other sphere (household, employer, venture, client, community, learning) has a parent; clients exist only inside the venture that serves them. Every sphere has the same layers at the depth it needs, records its purpose as weights over the root's values, and links one way: no sphere reads the root.",
+      "why": "Named after sphere sovereignty (each sphere governs itself; borders are kept). \"Domain\" was rejected because it already means a subject area in domain design and in MAD.",
+      "status": "superseded",
+      "related": [
+        "EE-002"
+      ]
+    },
+    {
+      "id": "EE-004",
+      "date": "2026-10-27",
+      "decision": "Venture is the one kind for anything a person undertakes. Hobby, venture and company are stages of it: a hobby is done for its own sake, a venture is an undertaking with risk not yet formed into a company, and a company is formalized with a legal form (llc, s-corp, c-corp, sole-prop, partnership, nonprofit). A venture changes stage without moving folders. Grouping folders such as ventures/companies/ are for browsing only; sphere.json is the truth.",
+      "status": "in-force",
+      "related": [
+        "EE-003"
+      ]
+    },
+    {
+      "id": "EE-005",
+      "date": "2026-10-25",
+      "decision": "Docs as code: the method, design docs, schemas, skills and templates live in this repo. An instance keeps its own notes, philosophy and decisions in its own spheres.",
+      "status": "in-force"
+    },
+    {
+      "id": "EE-006",
+      "date": "2026-10-26",
+      "decision": "A handoff includes a self-proof step (the agent exercises its change for real), allows 3 attempts and a 2-hour run cap before escalating, and ends with a one-line lesson when something failed for a reason that could recur.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-007",
+      "date": "2026-10-26",
+      "decision": "Each layer lists its tools in <layer>/tooling/integrations.json. Choosing tools is opt-in: when someone wants help, the agent asks situation questions from the layer's principles and examples, and scores with Jev plus a reasoning model; people who name their tools just have them recorded.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-008",
+      "date": "2026-10-27",
+      "decision": "The sphere is the unit of an instance, and \"sphere\" is the name used in files and in conversation. Each sphere keeps a sphere.json (machine fields) beside a human-readable profile (narrative, pillars, changelog), named by sphere.json's profile field. Products and systems inside a venture are not spheres; product cards describe them.",
+      "why": "Sphere reads plainly to a person and avoids \"domain\", which already means a subject area in domain design and in MAD.",
+      "status": "in-force",
+      "related": [
+        "EE-003"
+      ]
+    },
+    {
+      "id": "EE-009",
+      "date": "2026-10-27",
+      "decision": "Personal life is out of scope. A sphere is a venture or a client inside a venture; there is no personal root, and household, employer, community and learning kinds are dropped, with values and purpose weights. Top-level spheres are ventures. Personal knowledge management will be a separate system, built on its own, that can later read from or share with an instance through links.",
+      "why": "Keeps the schema about what a builder builds. The personal system has different needs (values, axiology, life areas) and is better designed on its own, then joined.",
+      "status": "in-force",
+      "supersedes": [
+        "EE-003"
+      ],
+      "related": [
+        "EE-004",
+        "EE-008"
+      ]
+    },
+    {
+      "id": "EE-010",
+      "date": "2026-10-27",
+      "decision": "The company template (governance/company-template/) stays, as the venture template. Its three pillars (product, brand, business) are scaffolded into every venture at every stage, because even a venture that is not a legal entity has a product, a brand and a business side. Governance (roles and decision rights) still starts only at the company stage.",
+      "status": "in-force",
+      "related": [
+        "EE-004",
+        "EE-009"
+      ]
+    }
+  ]
+}

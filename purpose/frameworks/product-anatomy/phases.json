@@ -1,0 +1,38 @@
+{
+  "version": "0.1.0",
+  "note": "Succession Matrix phases and weights, version 0.x (unevaluated). Weights: 1 low, 2 medium, 3 high. Spillover is computed from the input's flows, not asked. Changing a weight never needs re-scoring.",
+  "phases": [
+    {
+      "id": "wedge",
+      "name": "Wedge",
+      "binding_constraint": "proof that a niche wants the thing badly",
+      "weights": { "promise_delivery": 3, "competence_draw": 2, "job_intensity": 3, "ready": 3, "spillover": 1, "revenue": 1, "reversibility": 2 }
+    },
+    {
+      "id": "beachhead",
+      "name": "Beachhead",
+      "binding_constraint": "winning one mainstream segment outright",
+      "weights": { "promise_delivery": 3, "competence_draw": 2, "job_intensity": 3, "ready": 2, "spillover": 2, "revenue": 2, "reversibility": 2 }
+    },
+    {
+      "id": "core-engine",
+      "name": "Core Engine",
+      "binding_constraint": "scale, revenue and margin",
+      "weights": { "promise_delivery": 3, "competence_draw": 3, "job_intensity": 2, "ready": 1, "spillover": 3, "revenue": 3, "reversibility": 1 }
+    },
+    {
+      "id": "horizon",
+      "name": "Horizon",
+      "binding_constraint": "becoming what others build on before the core goes stale",
+      "weights": { "promise_delivery": 3, "competence_draw": 3, "job_intensity": 1, "ready": 1, "spillover": 3, "revenue": 2, "reversibility": 3 }
+    }
+  ],
+  "must_hold": {
+    "flagship": {
+      "promise_delivery_at_least": 2,
+      "promise_breach_below": 0.5,
+      "allowed_in_phase": true
+    }
+  },
+  "tie": 0.1
+}

@@ -23,7 +23,7 @@
       "cli"
     ],
     "status": "in-use",
-    "reason": "G-020"
+    "reason": "Docs as code (EE-005)"
   },
   {
     "id": "notion",

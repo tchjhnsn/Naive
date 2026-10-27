@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workspace.schema.json",
+  "title": "Workspace",
+  "description": "A builder's workspace: the folder holding their ventures. A workspace.json at its top says which schema version it follows and where to find spheres (EE-002).",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "spheres"
+  ],
+  "properties": {
+    "schema": {
+      "const": "everything-ecosystem"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "The version in schema/VERSION that this workspace follows"
+    },
+    "spheres": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Folders to search for sphere.json files, relative to the workspace. Grouping folders inside them (for example ventures/companies/ or ventures/hobbies/) are for people to browse and carry no meaning; each sphere.json is the truth."
+    },
+    "code": {
+      "type": "string",
+      "description": "Optional folder holding code repos, mirroring the sphere folders so a repo sits under the same sphere as its notes"
+    }
+  },
+  "additionalProperties": false
+}
