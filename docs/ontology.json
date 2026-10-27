@@ -673,6 +673,13 @@
       "status": "new"
     },
     {
+      "noun": "need-now score",
+      "level": "purpose",
+      "meaning": "The probability that a venture needs a record type in its current phase and the next, from priors raised or lowered by facts about the venture; records below 0.5 are held back unless the builder asks, so builders don't overbuild (EE-028)",
+      "standard": "ours; just-in-time (lean manufacturing) and YAGNI (extreme programming) in spirit",
+      "status": "new"
+    },
+    {
       "noun": "derived answer",
       "level": "operations",
       "meaning": "A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from",

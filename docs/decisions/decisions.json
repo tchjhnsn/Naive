@@ -292,6 +292,17 @@
       "related": [
         "EE-024"
       ]
+    },
+    {
+      "id": "EE-028",
+      "date": "2026-10-27",
+      "decision": "The framework says what a venture needs now, what comes soon and what to hold back. schema/need-now.json gives each venture record type a prior probability per phase, raised or lowered by facts about the venture (people, founders, agents, funding, legal form, products, go-to-market path, publishing); schema/need-now.mjs lists records to suggest now (0.5 or more), coming soon (the next phase reaches 0.5), held, and held back. Jev re-scores the priors per venture once the scorer runs.",
+      "why": "The owner: early on 'there's a lot that you shouldn't spend time thinking about'; Jev should determine 'the records that they need at a particular moment and the probability of when they're going to need them later', and low-probability records are not suggested until needed or asked for.",
+      "status": "in-force",
+      "related": [
+        "EE-026",
+        "EE-018"
+      ]
     }
   ]
 }

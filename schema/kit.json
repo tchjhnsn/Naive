@@ -13,7 +13,8 @@
     "business-models",
     "scaffold",
     "data-model",
-    "kit-manifest"
+    "kit-manifest",
+    "need-now"
   ],
   "reads": [
     "product",
@@ -29,7 +30,8 @@
     "schema/check-nouns.mjs",
     "schema/check-integrations.mjs",
     "schema/init-venture.mjs",
-    "schema/test.mjs"
+    "schema/test.mjs",
+    "schema/need-now.mjs"
   ],
   "gaps": [
     "The orchestrator skill that routes work across every layer is filed under knowledge (knowledge/SKILL.md); it belongs here"

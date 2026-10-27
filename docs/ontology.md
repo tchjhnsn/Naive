@@ -74,6 +74,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | exit criterion | What must be true for a venture to leave a phase, written in its telos and tied to a telos measure; it refines that phase's generic gate. Not an owner's exit (governance) | Stage-Gate exit criteria (Cooper) |  |
 | validation score | The probability that a venture is validated: a weighted average of sub-scores (problem, solution, product-market fit, pricing, go-to-market, team, operations readiness), each a Jev probability times its evidence weight, with floors; replaces a declared phase gate (EE-026) | ours, after Blank's customer validation | blank-2005-four-steps |
 | evidence grade | How much a validation record's cited evidence can be trusted: high, moderate, low or very low, from the kind of signal, the audience, the sample, the specificity and the age; a claim with no evidence is very low | GRADE certainty of evidence | grade-handbook, fitzpatrick-2013-mom-test |
+| need-now score | The probability that a venture needs a record type in its current phase and the next, from priors raised or lowered by facts about the venture; records below 0.5 are held back unless the builder asks, so builders don't overbuild (EE-028) | ours; just-in-time (lean manufacturing) and YAGNI (extreme programming) in spirit |  |
 
 ### Knowledge
 

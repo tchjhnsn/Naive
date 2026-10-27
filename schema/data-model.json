@@ -830,6 +830,24 @@
         "publish.json"
       ],
       "note": "The method-site channel's configuration: what the publisher may consider (allowlist, private terms). The publication policy names it (EE-025)"
+    },
+    {
+      "id": "need-now",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/need-now.json"
+      ],
+      "refs": [
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/test.mjs"
+        }
+      ],
+      "note": "Need-now priors per venture record type and phase, with conditions that raise or lower them (EE-028)"
     }
   ],
   "ignore": []

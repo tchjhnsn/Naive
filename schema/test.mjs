@@ -188,6 +188,23 @@ valBroken("a file that is not a sub-score fails", (d) => writeFileSync(join(d, "
 valBroken("more very disappointed than asked fails", (d) => edit(join(d, "purpose/validation/product-market-fit.json"), (p) => { p.ellis.very_disappointed = 99; }), /more very disappointed than asked/);
 valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.evidence[1].id = p.evidence[0].id; }), /duplicate evidence ids/);
 
+// need-now: what a venture needs at this moment (EE-028).
+{
+  const { needNow } = await import(join(root, "schema/need-now.mjs"));
+  const N = JSON.parse(readFileSync(join(root, "schema/need-now.json"), "utf8"));
+  const model = JSON.parse(readFileSync(join(root, "schema/data-model.json"), "utf8"));
+  const venture = new Set(model.records.filter((r) => r.level === "venture" && r.id !== "venture").map((r) => r.id));
+  expect("need-now: every venture record type has a prior, and only those", [...venture].every((t) => N.records[t]) && Object.keys(N.records).every((t) => venture.has(t)));
+  const t = needNow(tandem), row = (id) => t.rows.find((r) => r.type === id);
+  expect("need-now: a venture-capital venture needs a board", row("board").now === 1);
+  expect("need-now: records that exist are held, not suggested", row("validation-problem").status === "held");
+  const solo = join(tmp, "solo"); cpSync(tandem, solo, { recursive: true });
+  edit(join(solo, "venture.json"), (v) => { v.phase = "discovery"; v.form = { legal_form: "none", funding: "bootstrapped" }; v.members = []; v.owner = "self"; });
+  for (const f of ["ownership.json", "board.json", "founder-agreement.json", "exit.json", "publication-policy.json"]) rmSync(join(solo, "governance", f));
+  const s = needNow(solo), srow = (id) => s.rows.find((r) => r.type === id);
+  expect("need-now: a solo bootstrapped venture in Discovery holds back the cap table and board", srow("ownership").status === "hold back" && srow("board").status === "hold back");
+}
+
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules)(\/|$)/.test(s) });
