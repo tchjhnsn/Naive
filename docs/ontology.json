@@ -706,6 +706,20 @@
       "meaning": "A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from",
       "standard": "ours",
       "status": "new"
+    },
+    {
+      "noun": "route",
+      "level": "interface",
+      "meaning": "The address of one record type or command in a venture, such as purpose/validation/problem: a layer, then a kit when the record sits in a nested kit, then the record. Generated from the data model and kits; the CLI, the MCP server and the HTTP API share one route table (EE-030)",
+      "standard": "routing in web frameworks (Next.js App Router, Rails routes)",
+      "status": "new"
+    },
+    {
+      "noun": "draft",
+      "level": "interface",
+      "meaning": "A gated record an agent wrote, held in <venture>/_drafts/ until a person accepts it; the decision class of the record says it is a person's to make (EE-030)",
+      "standard": "common usage (draft for approval)",
+      "status": "new"
     }
   ]
 }

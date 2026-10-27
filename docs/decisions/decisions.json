@@ -315,6 +315,21 @@
         "EE-022",
         "EE-025"
       ]
+    },
+    {
+      "id": "EE-030",
+      "date": "2026-10-27",
+      "decision": "The system has one route table, generated from schema/data-model.json and the kit manifests by interface/router.mjs, and three interfaces over it: a CLI (interface/cli/mentura.mjs), an MCP server (interface/mcp/server.mjs) and a local HTTP API (interface/api/server.mjs). A route is <layer>[/<kit>]/<record> with the actions read, write, check and template, or a command with run. Every write is validated against the record's schema; an agent's write to a record whose decision class escalates to a person (ownership, board, founder agreement, exit, telos, decision rights, publication policy) is held as a draft for a person to accept, and the MCP server and API always write as an agent. Adoption may be partial: a venture turns on only the layers it wants (init --layers), and a route needs only its own records. An install skill sets it up in Claude Code and Cursor.",
+      "why": "The owner: turn this into an MCP, set up APIs and a CLI, with a skill for installing it into a coding agent; builders do not have to use the entire system; consider a routing system like Next.js's. Generating routes from the kits keeps the three interfaces from drifting apart, and the draft gate carries EE-022, EE-023 and EE-025 (people decide escalate classes) into every interface.",
+      "status": "in-force",
+      "related": [
+        "EE-018",
+        "EE-022",
+        "EE-023",
+        "EE-024",
+        "EE-025",
+        "EE-026"
+      ]
     }
   ]
 }

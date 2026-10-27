@@ -16,7 +16,8 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 | `execution/` | Handoff v2, founder operating model |
 | `evidence/` | `evals/`, design-documents registry, audit and review skills |
 | `governance/` | Company vault template, roles, decision rights, pillar skills |
-| `interface/` | Interfaces: agent harnesses and the operator console |
+| `interface/` | Interfaces: the router (`router.mjs`) and the CLI, MCP server and HTTP API over it; the install skill; agent harnesses and the operator console |
+| `docs/reference/` | Generated reference: `ROUTES.md`, every route a venture has |
 | `docs/design/` | The ecosystem's own domain and systems design |
 
 ## Build and test
@@ -32,6 +33,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 - `node schema/check-publication.mjs <dir>` checks each venture's publication policy and every handoff that publishes: a named channel and content rule, and a person approving (EE-025).
 - `node schema/check-validation.mjs <dir> [--json]` grades each venture's validation records from their cited evidence (high to very low, adapted from GRADE). A layer may hold more kits under `<layer>/kits/` (EE-026).
 - `node schema/check-execution.mjs <venture dir>` checks handoffs, evidence and decision rights; `node schema/run-handoff.mjs <venture dir> <handoff id>` runs a handoff's done-criteria and writes evidence (EE-017).
+- `node interface/cli/mentura.mjs <route> <action> --venture <id>` reads, writes, checks or runs one route; `node interface/mcp/server.mjs` is the MCP server and `node interface/api/server.mjs` the local API, all over `interface/router.mjs` (EE-030). `node interface/test.mjs` tests them. `node schema/need-now.mjs <venture dir>` says what a venture needs now (EE-028); `node schema/time-to-ready.mjs <venture dir>` measures time to running and ready; `node schema/check-team.mjs <dir>` checks team plans against the agent capability register (EE-029).
 - `node purpose/frameworks/product-anatomy/test.mjs` tests the Product Anatomy runner's role rules.
 - `node schema/test.mjs` tests the checkers on broken copies; `python3 schema/validate.py` validates every record against its schema.
 

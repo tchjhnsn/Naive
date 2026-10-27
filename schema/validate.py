@@ -1,6 +1,7 @@
 """Validates every record in the repository against its JSON Schema (EE-017).
 
     python3 schema/validate.py
+    python3 schema/validate.py --schema <name>.schema.json --file <path>   one file (used by the interfaces before a write)
 
 Needs the jsonschema package (pip install jsonschema). Which files each schema governs comes from schema/data-model.json;
 schema/check-data-model.mjs makes sure no JSON file is left without a record type.
@@ -26,6 +27,12 @@ from referencing import Registry, Resource
 schemas = {p.name: json.loads(p.read_text()) for p in (root / "schema").glob("*.schema.json")}
 registry = Registry().with_resources((s.get("$id", n), Resource.from_contents(s)) for n, s in schemas.items())
 failed = checked = 0
+if "--file" in sys.argv:
+    one = json.loads(Path(sys.argv[sys.argv.index("--file") + 1]).read_text())
+    v = jsonschema.Draft202012Validator(schemas[sys.argv[sys.argv.index("--schema") + 1]], registry=registry, format_checker=jsonschema.FormatChecker())
+    errs = [f"{'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}" for e in v.iter_errors(one)]
+    print("\n".join(errs) if errs else "valid")
+    sys.exit(1 if errs else 0)
 for name, schema, is_list, globs in RULES:
     v = jsonschema.Draft202012Validator(schemas[Path(schema).name], registry=registry, format_checker=jsonschema.FormatChecker())
     for g in globs:

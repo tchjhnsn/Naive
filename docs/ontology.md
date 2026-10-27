@@ -138,6 +138,8 @@ The system is opinionated: it names one default for each choice, and every defau
 | AI harness | A product that is the software around a model: the person's work happens in exchanges with it, so without the model nothing is left. A chatbot is one. The model answers; the person acts | harness (industry usage) | anthropic-2024-building-effective-agents |
 | AI feature | A model used inside a product that does its job without it (summaries, search, drafting). Test: remove the model and the product still works. Most apps that implement AI are here, not harnesses | common product usage | anthropic-2024-building-effective-agents |
 | custom interface | An interface built for the system or a venture rather than bought, such as the operator console | common software usage |  |
+| route | The address of one record type or command in a venture, such as purpose/validation/problem: a layer, then a kit when the record sits in a nested kit, then the record. Generated from the data model and kits; the CLI, the MCP server and the HTTP API share one route table (EE-030) | routing in web frameworks (Next.js App Router, Rails routes) |  |
+| draft | A gated record an agent wrote, held in <venture>/_drafts/ until a person accepts it; the decision class of the record says it is a person's to make (EE-030) | common usage (draft for approval) |  |
 
 ### Retired
 
