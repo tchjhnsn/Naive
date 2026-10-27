@@ -848,6 +848,56 @@
         }
       ],
       "note": "Need-now priors per venture record type and phase, with conditions that raise or lower them (EE-028)"
+    },
+    {
+      "id": "team-plan",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/team-plan.schema.json",
+      "paths": [
+        "instance/**/operations/team-plan.json",
+        "schema/examples/**/operations/team-plan.json"
+      ],
+      "refs": [
+        {
+          "field": "roles.tasks.capability",
+          "to": "agent-capability",
+          "checked_by": "schema/check-team.mjs"
+        },
+        {
+          "field": "roles.authority",
+          "to": "decision-rights",
+          "checked_by": "schema/check-team.mjs"
+        },
+        {
+          "field": "roles.id",
+          "to": "role",
+          "checked_by": "schema/check-team.mjs"
+        }
+      ],
+      "note": "Who the venture needs, agent or person, when, with what authority, and where a human stays in the loop; recruiting briefs for open person roles (EE-029)"
+    },
+    {
+      "id": "agent-capability",
+      "layer": "evidence",
+      "level": "method",
+      "schema": "schema/agent-capability.schema.json",
+      "paths": [
+        "evidence/capabilities/agent-capabilities.json"
+      ],
+      "refs": [
+        {
+          "field": "capabilities.basis.eval",
+          "to": "evidence",
+          "checked_by": "schema/check-team.mjs"
+        },
+        {
+          "field": "capabilities.basis.decision_class",
+          "to": "decision-rights",
+          "checked_by": "schema/check-team.mjs"
+        }
+      ],
+      "note": "What agents can, cannot, may not or are not known to do, with sources and dates (EE-029)"
     }
   ],
   "ignore": []

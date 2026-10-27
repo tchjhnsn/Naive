@@ -353,6 +353,30 @@
         }
       ],
       "why": "Required before anything is published (EE-025)"
+    },
+    "team-plan": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.6
+        },
+        {
+          "if": "people>=2",
+          "at_least": 0.7
+        },
+        {
+          "if": "path:cofounder-first",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Who the venture needs and where a human stays in the loop, once agents or others work in it"
     }
   }
 }

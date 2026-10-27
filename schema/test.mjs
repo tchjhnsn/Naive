@@ -205,6 +205,24 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.ev
   expect("need-now: a solo bootstrapped venture in Discovery holds back the cap table and board", srow("ownership").status === "hold back" && srow("board").status === "hold back");
 }
 
+// check-team: agents as teammates, with human loops where they are needed (EE-029).
+const eeVenture = join(root, "instance/ventures/everything-ecosystem");
+function teamBroken(name, change, pattern) {
+  const dir = join(tmp, `team${++n}`);
+  cpSync(eeVenture, dir, { recursive: true });
+  change(dir);
+  const r = run("check-team.mjs", [dir]);
+  expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+const planOf = (d) => join(d, "operations/team-plan.json");
+expect("check-team passes on the instance", run("check-team.mjs", [join(root, "instance")]).status === 0);
+teamBroken("an agent holding an escalate class fails", (d) => edit(planOf(d), (p) => { p.roles[1].authority.push("spend-money"); }), /holds spend-money, which decision rights give to founder|an escalate class/);
+teamBroken("an agent doing an unknown task with no human loop fails", (d) => edit(planOf(d), (p) => { delete p.roles[3].tasks[0].human_loop; }), /names a human loop/);
+teamBroken("a human loop that is not a person role fails", (d) => edit(planOf(d), (p) => { p.roles[3].tasks[0].human_loop = "builder"; }), /is not a person role/);
+teamBroken("a task citing an unknown capability fails", (d) => edit(planOf(d), (p) => { p.roles[2].tasks[0].capability = "telepathy"; }), /unknown capability telepathy/);
+teamBroken("an open person role needed now with no recruiting entry fails", (d) => edit(planOf(d), (p) => { p.roles.push({ id: "sales-lead", name: "Sales lead", occupant: "person", needed_by: "discovery", status: "open" }); }), /needed now and open, but has no recruiting entry/);
+teamBroken("an agent in a person's registry role fails", (d) => edit(planOf(d), (p) => { p.roles[0].occupant = "agent"; }), /an agent cannot occupy it/);
+
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules)(\/|$)/.test(s) });

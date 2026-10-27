@@ -336,6 +336,27 @@
       "status": "kept"
     },
     {
+      "noun": "team plan",
+      "level": "governance",
+      "meaning": "Who the venture needs, agent or person, by phase, with the authority each holds and where a human stays in the loop; recruiting briefs for open person roles (operations/team-plan.json, EE-029)",
+      "standard": "workforce planning (common HR usage)",
+      "status": "new"
+    },
+    {
+      "noun": "human loop",
+      "level": "governance",
+      "meaning": "The person who decides, reviews or does the part of a task that agents cannot, may not, or are not known to do; named for every such agent task",
+      "standard": "human-in-the-loop (common AI usage)",
+      "status": "new"
+    },
+    {
+      "noun": "capability register",
+      "level": "evidence",
+      "meaning": "What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (evidence/capabilities/agent-capabilities.json, EE-029)",
+      "standard": "ours",
+      "status": "new"
+    },
+    {
       "noun": "decision right",
       "level": "governance",
       "meaning": "Who may decide what, at one of four levels: decide, decide-inform, recommend-approve, escalate. A venture may tighten the template, never loosen it without a named decision",

@@ -303,6 +303,18 @@
         "EE-026",
         "EE-018"
       ]
+    },
+    {
+      "id": "EE-029",
+      "date": "2026-10-27",
+      "decision": "The operations layer designs the team: operations/team-plan.json says which roles agents fill and which people fill, by phase, with the decision classes each holds and a named human loop for every agent task that the capability register marks can-with-review, cannot, not-allowed or unknown. Open person roles needed in the current phase are recruited now, from a brief; agents draft, search and screen, and a person makes contact and decides. The evidence layer keeps the capability register, dated and sourced, fed by new research and by our own evals; an unknown task keeps a person in the loop and becomes an eval.",
+      "why": "The owner: one-shotting a venture is possible 'because of agents who can act as team members'; the operations suite is also for 'developing the agents and teammates and delegating authority', deciding what agents and teammates you need, and recruiting real humans; and 'the literature on what can and cannot be done using agents is still very new', so we must keep reading new information or produce it ourselves.",
+      "status": "in-force",
+      "related": [
+        "EE-021",
+        "EE-022",
+        "EE-025"
+      ]
     }
   ]
 }

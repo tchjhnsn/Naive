@@ -103,12 +103,15 @@ The system is opinionated: it names one default for each choice, and every defau
 | --- | --- | --- | --- |
 | eval | A test of whether something worked; evals are grouped in eval suites (eval-suite.schema.json) | AI evals |  |
 | evidence | The recorded result of one run of a check or eval: subject and version, each criterion's outcome and its output, at <venture>/evidence/results/<id>.json. Append-only | common audit usage |  |
+| capability register | What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (evidence/capabilities/agent-capabilities.json, EE-029) | ours |  |
 
 ### Governance
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
 | role | A person's or agent's job; never a product's place in the portfolio | decision rights (RACI, RAPID) |  |
+| team plan | Who the venture needs, agent or person, by phase, with the authority each holds and where a human stays in the loop; recruiting briefs for open person roles (operations/team-plan.json, EE-029) | workforce planning (common HR usage) |  |
+| human loop | The person who decides, reviews or does the part of a task that agents cannot, may not, or are not known to do; named for every such agent task | human-in-the-loop (common AI usage) |  |
 | decision right | Who may decide what, at one of four levels: decide, decide-inform, recommend-approve, escalate. A venture may tighten the template, never loosen it without a named decision | decision rights (RAPID, DACI) |  |
 | cap table | The record of who owns the venture and on what terms: share classes, holders, grants with vesting, the option pool, SAFEs and notes (governance/ownership.json) | capitalization table (common startup and finance usage) |  |
 | share class | A kind of share (or LLC unit) with its own votes, price and rights: common, preferred, super-voting, non-voting | corporate law (classes of stock) |  |

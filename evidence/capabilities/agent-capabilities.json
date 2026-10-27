@@ -1,0 +1,86 @@
+{
+  "updated": "2026-10-27",
+  "note": "Starts small and honest: entries are 'unknown' until a source or our own eval says otherwise. Re-check entries with a url when they are older than six months; the research moves fast.",
+  "capabilities": [
+    {
+      "id": "implement-ready-handoff",
+      "task": "Implement a software change from a handoff that passed its readiness check, to its done criteria",
+      "area": "execution",
+      "status": "can-with-review",
+      "basis": [
+        {
+          "title": "Our own handoff runs (anatomy runner fixes, JSON output, site refresh)",
+          "eval": "instance/ventures/everything-ecosystem/evidence/results/anatomy-runner-fixes-20261027052719.json"
+        },
+        {
+          "title": "Measuring AI Ability to Complete Long Software Tasks (METR)",
+          "url": "https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/",
+          "checked": "2026-10-27"
+        }
+      ],
+      "checked": "2026-10-27",
+      "notes": "Reliability falls with task length; METR measures a 50% time horizon that has doubled about every seven months. Keep handoffs small and the conformance checks objective."
+    },
+    {
+      "id": "draft-records-from-sources",
+      "task": "Draft venture records (schemas, templates, references) from cited sources",
+      "area": "knowledge",
+      "status": "can-with-review",
+      "basis": [
+        {
+          "title": "Our own sessions building this repository",
+          "eval": "instance/ventures/everything-ecosystem/evidence/results/methodology-site-refresh-20261027054211.json"
+        }
+      ],
+      "checked": "2026-10-27",
+      "notes": "Every reference URL is fetched and dated before it is cited."
+    },
+    {
+      "id": "sign-or-commit-the-venture",
+      "task": "Sign, file or agree to legal terms, ownership changes, spending or public commitments",
+      "area": "governance",
+      "status": "not-allowed",
+      "basis": [
+        {
+          "decision_class": "ownership-or-control"
+        },
+        {
+          "decision_class": "legal-or-terms"
+        },
+        {
+          "decision_class": "spend-money"
+        },
+        {
+          "decision_class": "public-commitment"
+        }
+      ],
+      "checked": "2026-10-27"
+    },
+    {
+      "id": "customer-interviews",
+      "task": "Conduct problem interviews with people in the target segment",
+      "area": "purpose",
+      "status": "unknown",
+      "basis": [],
+      "checked": "2026-10-27",
+      "notes": "Agents can draft the script and synthesise notes; whether people talk to an agent as candidly as to a founder is untested here."
+    },
+    {
+      "id": "source-candidates",
+      "task": "Find and screen candidates for a role (cofounder, hire, contractor, investor)",
+      "area": "governance",
+      "status": "unknown",
+      "basis": [],
+      "checked": "2026-10-27",
+      "notes": "Agents can write the brief and search public profiles; outreach and judgement of fit stay with a person until an eval says otherwise."
+    },
+    {
+      "id": "sales-conversations",
+      "task": "Hold sales conversations with buyers",
+      "area": "purpose",
+      "status": "unknown",
+      "basis": [],
+      "checked": "2026-10-27"
+    }
+  ]
+}
