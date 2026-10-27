@@ -142,6 +142,11 @@ The system is opinionated: it names one default for each choice, and every defau
 | custom interface | An interface built for the system or a venture rather than bought, such as the operator console | common software usage |  |
 | route | The address of one record type or command in a venture, such as purpose/validation/problem: a layer, then a kit when the record sits in a nested kit, then the record. Generated from the data model and kits; the CLI, the MCP server and the HTTP API share one route table (EE-030) | routing in web frameworks (Next.js App Router, Rails routes) |  |
 | draft | A gated record an agent wrote, held in <venture>/_drafts/ until a person accepts it; the decision class of the record says it is a person's to make (EE-030) | common usage (draft for approval) |  |
+| layout | The context that wraps a route: the system, layer and kit purpose, skills and references, the template, the gate and what need-now says, given to an agent before it acts on the route (EE-032) | Next.js App Router (layout) |  |
+| view | A route rendered as a page for a person; the Markdown form of a record or command result. The operator console will render views (EE-032) | Next.js App Router (page); MVC view |  |
+| route group | A named set of routes that shares a layout without changing their paths; one per phase, (discovery) to (platform), holding the routes need-now suggests in that phase (EE-032) | Next.js App Router (route groups) |  |
+| slot | One part of a page that renders on its own beside others, such as @validation in the venture overview; a slot that fails shows its error while the rest render (EE-032) | Next.js App Router (parallel routes, @slot) |  |
+| route alias | An old route kept after a rename, which the router follows to the new one with a deprecation note (EE-032) | common API usage (deprecation, redirects) |  |
 
 ### Retired
 

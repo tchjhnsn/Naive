@@ -152,7 +152,8 @@
           "checked_by": "schema/validate.py"
         }
       ],
-      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023)"
+      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023)",
+      "decision_class": "strategy-or-constitution"
     },
     {
       "id": "validation-problem",
@@ -670,7 +671,8 @@
           "to": "role",
           "checked_by": "schema/check-execution.mjs"
         }
-      ]
+      ],
+      "decision_class": "strategy-or-constitution"
     },
     {
       "id": "role",
@@ -716,7 +718,8 @@
           "checked_by": "schema/check-governance.mjs"
         }
       ],
-      "note": "The cap table: share classes and their rights, holders, grants with vesting, option pool, SAFEs and notes (EE-022)"
+      "note": "The cap table: share classes and their rights, holders, grants with vesting, option pool, SAFEs and notes (EE-022)",
+      "decision_class": "ownership-or-control"
     },
     {
       "id": "board",
@@ -734,7 +737,8 @@
           "checked_by": "schema/check-governance.mjs"
         }
       ],
-      "note": "Formal and advisory boards, their seats and reserved matters"
+      "note": "Formal and advisory boards, their seats and reserved matters",
+      "decision_class": "ownership-or-control"
     },
     {
       "id": "founder-agreement",
@@ -757,7 +761,8 @@
           "checked_by": "schema/check-governance.mjs"
         }
       ],
-      "note": "What founders agreed: roles, commitment, IP, departure, deadlock; prose beside it"
+      "note": "What founders agreed: roles, commitment, IP, departure, deadlock; prose beside it",
+      "decision_class": "ownership-or-control"
     },
     {
       "id": "exit",
@@ -780,7 +785,8 @@
           "checked_by": "schema/check-telos.mjs"
         }
       ],
-      "note": "Exit paths kept open and sale values to model; payouts computed by payouts.mjs"
+      "note": "Exit paths kept open and sale values to model; payouts computed by payouts.mjs",
+      "decision_class": "ownership-or-control"
     },
     {
       "id": "publication-policy",
@@ -808,7 +814,8 @@
           "checked_by": "schema/check-publication.mjs"
         }
       ],
-      "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)"
+      "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
+      "decision_class": "strategy-or-constitution"
     },
     {
       "id": "harness-config",
@@ -918,6 +925,16 @@
         }
       ],
       "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031)"
+    },
+    {
+      "id": "route-aliases",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/route-aliases.schema.json",
+      "paths": [
+        "interface/route-aliases.json"
+      ],
+      "note": "Old routes kept as aliases of their new ones, so a rename does not break agents (EE-032)"
     }
   ],
   "ignore": []

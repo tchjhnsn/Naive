@@ -343,6 +343,19 @@
         "EE-029",
         "EE-030"
       ]
+    },
+    {
+      "id": "EE-032",
+      "date": "2026-10-27",
+      "decision": "Routes follow the Next.js App Router's conventions, with layers kept as route segments so a route is its record's folder path. Built: [id] item routes for collections (products, accounts, handoffs, evidence) beside their list routes; the venture as a catch-all segment, an id or a nested venture's folder path (studio/print); layout (the system, layer and kit context, skills, references, template, gate and need-now status an agent gets before acting); not-found (a missing record answers with its template, schema, skills and need-now status), loading (a waiting draft is reported on read) and error (a failed check or write answers with the kit's skills and template); views, Markdown pages for people (the page convention), and system/overview, a page of parallel slots where one failing slot does not stop the others; route groups by phase, (discovery) to (platform), which gather the routes need-now suggests in that phase without changing paths; robots, the routes a team-plan role may read and write, shown at system/robots; route aliases for renames (interface/route-aliases.json); and gates declared in the data model (decision_class on a record type), applied from the venture's decision rights instead of a list in code.",
+      "why": "The owner asked to study how Next.js uses routes and all their types, chose to keep layers as segments with groups for cross-cutting slices such as phases, and asked to build every route type we did not have.",
+      "status": "in-force",
+      "related": [
+        "EE-028",
+        "EE-029",
+        "EE-030",
+        "EE-031"
+      ]
     }
   ]
 }

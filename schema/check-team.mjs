@@ -8,6 +8,7 @@
 //     or unknown names a human loop, a person role in the plan; can-with-review names one too.
 //   recruiting: an open person role needed by the current phase is a role to recruit now; it needs
 //     a recruiting entry, and the entry's brief exists (paths relative to the venture folder).
+//   routes (robots, EE-032): each glob a role lists matches at least one route.
 // Also checks the register: ids unique; an entry with a url has a checked date; not-allowed cites
 // a decision class that exists; an eval file exists.
 //
@@ -27,6 +28,8 @@ const registry = new Map(load(join(repo, "governance/venture-template/roles/agen
 const template = load(join(repo, "governance/venture-template/decision-rights.json"));
 const caps = load(join(repo, "evidence/capabilities/agent-capabilities.json"));
 const errors = [], warnings = [], recruitNow = [];
+const { routes, glob: routeGlob } = await import("../interface/router.mjs");
+const routeList = routes().map((r) => r.route.replace("[id]", "x"));
 
 const capIds = caps.capabilities.map((c) => c.id);
 if (new Set(capIds).size !== capIds.length) errors.push("agent-capabilities.json: duplicate ids");
@@ -56,6 +59,7 @@ for (const root of walk(dir)) {
   for (const r of plan.roles) {
     const reg = registry.get(r.id);
     if (!reg && !r.name) errors.push(`${at}: ${r.id} is not in the role registry, so it needs a name`);
+    for (const g of [...(r.routes?.read ?? []), ...(r.routes?.write ?? [])]) if (!routeList.some((x) => routeGlob(g).test(x))) errors.push(`${at}: ${r.id} lists route ${g}, which matches no route`);
     if (reg && reg.occupant === "person" && r.occupant === "agent") errors.push(`${at}: ${r.id} is a person's role in the registry; an agent cannot occupy it`);
     for (const a of r.authority ?? []) {
       const c = classes.get(a);

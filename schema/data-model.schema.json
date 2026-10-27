@@ -78,6 +78,10 @@
             ],
             "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only"
           },
+          "decision_class": {
+            "type": "string",
+            "description": "The decision class (governance/venture-template/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032)"
+          },
           "paths": {
             "type": "array",
             "minItems": 1,
