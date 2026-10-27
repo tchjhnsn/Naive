@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 // The command line over the router (EE-030). Same routes and gates as the MCP server and the API.
 //
-//   mentura routes [--json]                         the route table
+//   mentura routes [--group <phase>] [--json]       the route table, or one route group
+//   mentura groups [--json]                         route groups: the routes each phase needs
 //   mentura ventures [--json]                       ventures in the workspace
 //   mentura init <dir> --id <id> [--phase <phase>] [--layers purpose,governance]
 //                                                   start a venture; --layers turns on only those
 //   mentura accept <route> --venture <id>          a person accepts an agent's draft of a gated record
-//   mentura <route> <action> --venture <id> [--input <file>|-] [--as person] [--value <n>] [--json]
+//   mentura <route> <action> --venture <id|path> [--input <file>|-] [--as person] [--value <n>] [--json]
+//          actions: read, write, check, template, layout, view (a page), run (commands)
+//          a collection item is <route>/<id> (purpose/product/kettle); a nested venture is its
+//          folder path (--venture studio/print); system/overview view shows the venture at a glance
 //          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
 //   mentura baseline --venture <id>                 adopt existing records into the provenance log
 //
@@ -17,7 +21,7 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { call, files, glob, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
+import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 
 const argv = process.argv.slice(2);
@@ -35,11 +39,18 @@ function usage(code = 2) {
 const [cmd, action] = positional;
 if (!cmd || cmd === "help" || flag("help")) usage(cmd ? 0 : 2);
 
-if (cmd === "routes") { out(flag("json") ? routes() : routesMd()); process.exit(0); }
+if (cmd === "routes") {
+  const g = opt("group")?.replace(/^\(|\)$/g, "");
+  const rs = g ? routes().filter((r) => r.groups.includes(`(${g})`)) : routes();
+  out(flag("json") || g ? (flag("json") ? rs : rs.map((r) => `${r.route.padEnd(44)} ${r.actions.join(", ")}`).join("\n")) : routesMd());
+  process.exit(0);
+}
+
+if (cmd === "groups") { out(flag("json") ? groups() : groups().map((g) => `${g.group.padEnd(14)} ${g.routes.length} routes  ${g.question}`).join("\n")); process.exit(0); }
 
 if (cmd === "ventures") {
   const vs = ventures(workspace);
-  out(flag("json") ? vs : vs.map((v) => `${v.id.padEnd(24)} ${String(v.phase).padEnd(12)} ${v.dir}`).join("\n") || "no ventures");
+  out(flag("json") ? vs : vs.map((v) => `${v.id.padEnd(24)} ${String(v.phase).padEnd(12)} ${v.path}`).join("\n") || "no ventures");
   process.exit(0);
 }
 
@@ -58,13 +69,12 @@ if (cmd === "accept") {
   // person merges) remains the gate that holds; this makes the person's step explicit.
   const venture = opt("venture"), rt = action;
   if (!venture || !rt) usage();
-  const r = routes().find((x) => x.route === rt);
-  const dir = r && ventureDir(venture, workspace);
-  if (!r?.gate || !dir) { console.error(`${rt} is not a gated record route, or no venture ${venture}`); process.exit(1); }
-  const draft = join(dir, "_drafts", `${r.files[0].replace(/\//g, "__")}.draft`);
-  if (!existsSync(draft)) { console.error(`no draft of ${rt} in ${venture}`); process.exit(1); }
-  const w = call({ venture, route: rt, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
-    provenance: { activity: "accept", derived_from: [relative(dir, draft)], note: opt("note") } });
+  const d = draftOf(rt, venture, workspace);
+  if (!d?.gate) { console.error(`${rt} is not a gated record route, or no venture ${venture}`); process.exit(1); }
+  const draft = join(d.dir, d.draft);
+  if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
+  const w = call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
+    provenance: { activity: "accept", derived_from: [d.draft], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
   rmSync(draft);
   out(`accepted: ${w.result.written}`);
@@ -78,12 +88,13 @@ if (cmd === "baseline") {
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
   const logged = new Set(entries(dir).map((e) => e.entity));
-  const globs = routes().filter((r) => r.kind === "record" && r.form === "json").flatMap((r) => r.files.map((g) => [r.route, g]));
+  const globs = routes().filter((r) => r.kind === "record" && r.form === "json" && r.collection !== "list").flatMap((r) => r.files.map((g) => [r.route, g]));
+  const routeOf = (rt, g, f) => rt.endsWith("/[id]") ? rt.replace("[id]", f.match(new RegExp("^" + g.split("*").map((x) => x.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$"))[1]) : rt;
   let n = 0;
   for (const f of files(dir).filter((f) => !f.startsWith("_drafts/"))) {
     const hit = globs.find(([, g]) => glob(g).test(f));
     if (!hit || logged.has(f)) continue;
-    record(dir, { entity: f, route: hit[0], activity: "baseline", agent: agentFromEnv(opt("as") === "person" ? "person" : "agent", "cli"), note: "existed before the provenance log; its history before this is in git" });
+    record(dir, { entity: f, route: routeOf(hit[0], hit[1], f), activity: "baseline", agent: agentFromEnv(opt("as") === "person" ? "person" : "agent", "cli"), note: "existed before the provenance log; its history before this is in git" });
     n++;
   }
   out(`baseline: ${n} records added to ${venture}'s provenance log`);
@@ -92,7 +103,7 @@ if (cmd === "baseline") {
 
 if (!action) usage();
 const venture = opt("venture");
-if (!venture && action !== "template") usage();
+if (!venture && !["template", "layout"].includes(action)) usage();
 let input;
 const src = opt("input");
 if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
@@ -100,4 +111,6 @@ if (opt("value")) input = { ...(input ?? {}), value: Number(opt("value")) };
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
 const r = call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
-out(flag("json") || typeof r.result !== "string" ? (r.note ? { ...r } : r.result) : r.result);
+if (r.deprecated) console.error(`note: ${r.deprecated}`);
+const extra = ["not_found", "pending_draft", "fix"].some((k) => r[k]);
+out(flag("json") || extra ? r : r.result);

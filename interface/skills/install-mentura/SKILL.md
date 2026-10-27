@@ -68,7 +68,7 @@ claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="C
 
 **Any other harness or script:** use the CLI (`node interface/cli/mentura.mjs help`). You can also run `node interface/api/server.mjs`. It listens only on 127.0.0.1:4330 and has no authentication, so keep it on the builder's own machine.
 
-Use absolute paths in both configs. Check the connection by asking the agent to call `mentura_ventures`, then `mentura_run` on `system/need-now`.
+Use absolute paths in both configs. Check the connection by asking the agent to call `mentura_ventures`, then `mentura_view` on `system/overview`. Before an agent acts on a route, it should call `mentura_layout` for that route: it returns the kit's skills, references, template and gate.
 
 ## 5. Tell the builder how gates work
 

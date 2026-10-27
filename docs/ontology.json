@@ -734,6 +734,41 @@
       "meaning": "A venture's append-only record of writes, <venture>/provenance.jsonl: one line per write naming the file, the activity (write, draft, accept, baseline), the person or agent and the interface, what it was derived from and the decision; each line carries the previous line's hash (EE-031)",
       "standard": "W3C PROV; hash-chained append-only log (common audit usage)",
       "status": "new"
+    },
+    {
+      "noun": "layout",
+      "level": "interface",
+      "meaning": "The context that wraps a route: the system, layer and kit purpose, skills and references, the template, the gate and what need-now says, given to an agent before it acts on the route (EE-032)",
+      "standard": "Next.js App Router (layout)",
+      "status": "new"
+    },
+    {
+      "noun": "view",
+      "level": "interface",
+      "meaning": "A route rendered as a page for a person; the Markdown form of a record or command result. The operator console will render views (EE-032)",
+      "standard": "Next.js App Router (page); MVC view",
+      "status": "new"
+    },
+    {
+      "noun": "route group",
+      "level": "interface",
+      "meaning": "A named set of routes that shares a layout without changing their paths; one per phase, (discovery) to (platform), holding the routes need-now suggests in that phase (EE-032)",
+      "standard": "Next.js App Router (route groups)",
+      "status": "new"
+    },
+    {
+      "noun": "slot",
+      "level": "interface",
+      "meaning": "One part of a page that renders on its own beside others, such as @validation in the venture overview; a slot that fails shows its error while the rest render (EE-032)",
+      "standard": "Next.js App Router (parallel routes, @slot)",
+      "status": "new"
+    },
+    {
+      "noun": "route alias",
+      "level": "interface",
+      "meaning": "An old route kept after a rename, which the router follows to the new one with a deprecation note (EE-032)",
+      "standard": "common API usage (deprecation, redirects)",
+      "status": "new"
     }
   ]
 }

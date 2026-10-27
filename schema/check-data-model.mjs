@@ -56,6 +56,10 @@ for (const f of all.filter((f) => f.endsWith(".json"))) {
   if (!claimed.has(f) && !ignored.has(f)) errors.push(`${f}: no record type in schema/data-model.json covers this file`);
 }
 
+// Decision classes a record type names must exist in the decision-rights template (EE-032).
+const classIds = new Set(load("governance/venture-template/decision-rights.json").classes.map((c) => c.id));
+for (const r of types.values()) if (r.decision_class && !classIds.has(r.decision_class)) errors.push(`${r.id}: unknown decision class ${r.decision_class}`);
+
 // Kits.
 // Each layer has one kit at <layer>/kit.json and may hold more at <layer>/kits/<kit>/kit.json (EE-026).
 const kitFiles = [...model.layers.map((l) => `${l}/kit.json`), "schema/kit.json", ...all.filter((f) => /^[a-z]+\/kits\/[^/]+\/kit\.json$/.test(f))];

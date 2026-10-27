@@ -10,7 +10,8 @@
     }
   ],
   "records": [
-    "harness-config"
+    "harness-config",
+    "route-aliases"
   ],
   "reads": [
     "integration"
@@ -24,6 +25,8 @@
     "The operator console is a folder, not part of the kit yet",
     "Cannot yet run roles in separate sessions, so one agent can play builder and reviewer",
     "The CLI cannot tell a person from an agent; the pull request a person merges is the gate that holds",
-    "The HTTP API has no authentication and binds to 127.0.0.1 only"
+    "The HTTP API has no authentication and binds to 127.0.0.1 only",
+    "Views are Markdown; the operator console does not render them yet",
+    "Route groups cover phases only; MAD tiers become groups once record types declare a tier"
   ]
 }

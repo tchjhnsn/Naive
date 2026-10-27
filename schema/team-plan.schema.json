@@ -91,6 +91,25 @@
                 }
               }
             }
+          },
+          "routes": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "The routes this role may reach (robots, EE-032), as globs over routes such as purpose/** or purpose/product/*. Left out, the role may reach every route; gates still apply. When given, read defaults to every route and write to none.",
+            "properties": {
+              "read": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "write": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
