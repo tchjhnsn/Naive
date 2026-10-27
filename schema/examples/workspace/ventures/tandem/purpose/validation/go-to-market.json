@@ -1,0 +1,35 @@
+{
+  "venture": "tandem",
+  "updated": "2026-10-27",
+  "path": "build-first",
+  "motion": "sales-led",
+  "channels": [
+    {
+      "id": "directory-outreach",
+      "kind": "outbound",
+      "conversion": 0.12
+    }
+  ],
+  "evidence": [
+    {
+      "id": "outreach",
+      "kind": "commitment",
+      "summary": "Outreach through local business directories booked 12 interviews from 100 shops contacted",
+      "source": {
+        "title": "Problem interviews, September 2026",
+        "path": "knowledge/research/problem-interviews-2026-09.md"
+      },
+      "audience": "target",
+      "sample": {
+        "n": 100
+      },
+      "collected": "2026-09-01"
+    }
+  ],
+  "probability": {
+    "p": 0.4,
+    "by": "owner",
+    "scored": "2026-10-27",
+    "note": "Example value; no paid channel tested yet"
+  }
+}

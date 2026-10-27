@@ -172,6 +172,125 @@
       "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares schema/validation-evidence.schema.json with every sub-score"
     },
     {
+      "id": "validation-solution",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-solution.schema.json",
+      "paths": [
+        "instance/**/purpose/validation/solution.json",
+        "schema/examples/**/purpose/validation/solution.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: how it solves the problem and the evidence people choose it (EE-026)"
+    },
+    {
+      "id": "validation-product-market-fit",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-product-market-fit.schema.json",
+      "paths": [
+        "instance/**/purpose/validation/product-market-fit.json",
+        "schema/examples/**/purpose/validation/product-market-fit.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: retention cohorts, Ellis survey and evidence that a segment keeps using it (EE-026)"
+    },
+    {
+      "id": "validation-pricing",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-pricing.schema.json",
+      "paths": [
+        "instance/**/purpose/validation/pricing.json",
+        "schema/examples/**/purpose/validation/pricing.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: price model, points, buyer and evidence they pay (EE-026)"
+    },
+    {
+      "id": "validation-go-to-market",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-go-to-market.schema.json",
+      "paths": [
+        "instance/**/purpose/validation/go-to-market.json",
+        "schema/examples/**/purpose/validation/go-to-market.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: path, motion, channels and evidence a channel works; the path sets the weights (EE-026)"
+    },
+    {
+      "id": "validation-team",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-team.schema.json",
+      "paths": [
+        "instance/**/purpose/validation/team.json",
+        "schema/examples/**/purpose/validation/team.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: skills needed, held and the gaps; cofounder sought (EE-026)"
+    },
+    {
+      "id": "validation-operations-readiness",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-operations-readiness.schema.json",
+      "paths": [
+        "instance/**/purpose/validation/operations-readiness.json",
+        "schema/examples/**/purpose/validation/operations-readiness.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: per MAD tier evidence; grades as the weakest tier (EE-026)"
+    },
+    {
+      "id": "validation-weights",
+      "layer": "purpose",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "purpose/kits/validation/weights.json"
+      ],
+      "note": "Validation score weights and floors by go-to-market path and venture kind (EE-026), version 0.x"
+    },
+    {
       "id": "anatomy-framework",
       "layer": "purpose",
       "level": "method",

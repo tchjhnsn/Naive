@@ -28,7 +28,7 @@ const steps = [
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
   ["publication: examples", "node", ["schema/check-publication.mjs", "schema/examples/workspace"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
-  ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace"]],
+  ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace", "--score"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "execution"))).map((v) =>
     [`execution: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],

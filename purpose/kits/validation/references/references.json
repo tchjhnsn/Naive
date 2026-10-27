@@ -62,6 +62,61 @@
         "is": "adopted",
         "why": "The most common cause of failure is building what the market does not need, so a validation claim with no evidence grades very low instead of passing."
       }
+    },
+    {
+      "id": "vohra-2018-superhuman-pmf-engine",
+      "title": "How Superhuman Built an Engine to Find Product Market Fit",
+      "authors": [
+        "Rahul Vohra"
+      ],
+      "year": 2018,
+      "kind": "article",
+      "summary": "Applies Sean Ellis's leading indicator: ask active users how they would feel if they could no longer use the product; 40% or more answering 'very disappointed' marks product-market fit. Segment the answers and work on the users who almost said very disappointed.",
+      "url": "https://review.firstround.com/how-superhuman-built-an-engine-to-find-product-market-fit/",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:validation-product-market-fit.ellis",
+        "rule:ellis-share"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The Ellis share is recorded as data and reported beside the grade; 40% is the usual bar."
+      }
+    },
+    {
+      "id": "van-westendorp-1976-price-sensitivity",
+      "title": "NSS Price Sensitivity Meter: a new approach to study consumer perception of prices",
+      "authors": [
+        "Peter H. van Westendorp"
+      ],
+      "year": 1976,
+      "kind": "paper",
+      "summary": "Four questions (too cheap, cheap, expensive, too expensive) give an acceptable price range from stated responses.",
+      "informs": [
+        "field:validation-pricing.points"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The pricing template uses its four questions; the answers are stated evidence and grade below real payments."
+      }
+    },
+    {
+      "id": "wasserman-2012-founders-dilemmas",
+      "title": "The Founder's Dilemmas",
+      "authors": [
+        "Noam Wasserman"
+      ],
+      "year": 2012,
+      "kind": "book",
+      "summary": "Evidence on founding teams: when to add cofounders, the costs of founding with friends and family, splitting roles and equity.",
+      "informs": [
+        "field:validation-team.cofounder_sought",
+        "field:validation-team.needed"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The team template asks which skills the coming phases need and which a cofounder should bring, before choosing people."
+      }
     }
   ]
 }

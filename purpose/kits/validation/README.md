@@ -4,10 +4,11 @@ Purpose layer, second kit (EE-026). How probable it is that a venture is validat
 
 | Part | Where |
 | --- | --- |
-| Record types | `schema/validation-problem.schema.json` at `<venture>/purpose/validation/problem.json`; every sub-score shares `schema/validation-evidence.schema.json` |
-| Grading | `node schema/check-validation.mjs <dir> [--json]`: GRADE levels (high, moderate, low, very low) per evidence item and per record |
-| Skills | `skills/problem-validation/` |
-| Templates | `templates/problem.md` (the record, weak versus strong), `templates/problem-interview.md` (gathering the evidence) |
+| Record types | One per sub-score: `schema/validation-<sub-score>.schema.json` at `<venture>/purpose/validation/<sub-score>.json`; all share `schema/validation-evidence.schema.json` |
+| Weights | `weights.json`: weights and floors by go-to-market path and venture kind (version 0.x, unevaluated) |
+| Grading and score | `node schema/check-validation.mjs <dir> [--json] [--score]`: GRADE levels per evidence item and record, data facts (Ellis share, retention levelling off, team gaps), and the validation score |
+| Skills | `skills/problem-validation/`, `skills/validation-score/` |
+| Templates | `templates/<sub-score>.md` for each record, plus `templates/problem-interview.md` |
 | References | `references/references.json` |
 
-Sub-scores: problem (built), solution, product-market fit, pricing, go-to-market, team, operations readiness per MAD tier (to build, same pattern).
+Sub-scores: problem, solution, product-market fit, pricing, go-to-market, team, operations readiness per MAD tier.

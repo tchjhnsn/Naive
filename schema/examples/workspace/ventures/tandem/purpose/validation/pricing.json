@@ -1,0 +1,37 @@
+{
+  "venture": "tandem",
+  "updated": "2026-10-27",
+  "product": "shop-app",
+  "model": "subscription",
+  "buyer": "The shop owner",
+  "points": [
+    {
+      "name": "Shop",
+      "amount": 49,
+      "currency": "USD",
+      "period": "month"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "pilot-paid",
+      "kind": "behavior",
+      "summary": "11 shops paid $49 a month through the pilot; the 2 that cancelled over price were one-person shops outside the segment",
+      "source": {
+        "title": "Pilot, July to October 2026",
+        "path": "knowledge/research/pilot-2026-10.md"
+      },
+      "audience": "target",
+      "sample": {
+        "n": 11
+      },
+      "collected": "2026-10-20"
+    }
+  ],
+  "probability": {
+    "p": 0.55,
+    "by": "owner",
+    "scored": "2026-10-27",
+    "note": "Example value"
+  }
+}

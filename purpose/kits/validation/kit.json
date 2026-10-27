@@ -6,10 +6,21 @@
     {
       "id": "problem-validation",
       "path": "purpose/kits/validation/skills/problem-validation/SKILL.md"
+    },
+    {
+      "id": "validation-score",
+      "path": "purpose/kits/validation/skills/validation-score/SKILL.md"
     }
   ],
   "records": [
-    "validation-problem"
+    "validation-problem",
+    "validation-solution",
+    "validation-product-market-fit",
+    "validation-pricing",
+    "validation-go-to-market",
+    "validation-team",
+    "validation-operations-readiness",
+    "validation-weights"
   ],
   "reads": [
     "venture",
@@ -20,8 +31,7 @@
     "schema/check-validation.mjs"
   ],
   "gaps": [
-    "Only the problem sub-score exists; the other six follow the same evidence item and grading",
-    "The validation score itself (weighted average of p times evidence weight, with floors) is not computed yet; weights by venture type and go-to-market path are still to be set",
-    "Jev does not score the probability yet; the example uses an owner value"
+    "Jev does not score the probability yet; the example uses an owner value",
+    "Validation weights and floors are ours and unevaluated (version 0.x)"
   ]
 }
