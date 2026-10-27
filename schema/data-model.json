@@ -442,6 +442,11 @@
           "field": "evidence",
           "to": "evidence",
           "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "publication.channel",
+          "to": "publication-policy",
+          "checked_by": "schema/check-publication.mjs"
         }
       ]
     },
@@ -638,6 +643,34 @@
       "note": "Exit paths kept open and sale values to model; payouts computed by payouts.mjs"
     },
     {
+      "id": "publication-policy",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/publication-policy.schema.json",
+      "paths": [
+        "instance/**/governance/publication-policy.json",
+        "schema/examples/**/governance/publication-policy.json"
+      ],
+      "refs": [
+        {
+          "field": "channels.rules.approvers",
+          "to": "role",
+          "checked_by": "schema/check-publication.mjs"
+        },
+        {
+          "field": "channels.guidelines",
+          "to": "publication-policy",
+          "checked_by": "schema/check-publication.mjs"
+        },
+        {
+          "field": "channels.config",
+          "to": "publish-config",
+          "checked_by": "schema/check-publication.mjs"
+        }
+      ],
+      "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)"
+    },
+    {
       "id": "harness-config",
       "layer": "interface",
       "level": "method",
@@ -650,14 +683,14 @@
     },
     {
       "id": "publish-config",
-      "layer": "operations",
+      "layer": "governance",
       "level": "method",
       "schema": null,
       "form": "json",
       "paths": [
         "publish.json"
       ],
-      "note": "What the MAD publisher may make public (refusal rules)"
+      "note": "The method-site channel's configuration: what the publisher may consider (allowlist, private terms). The publication policy names it (EE-025)"
     }
   ],
   "ignore": []

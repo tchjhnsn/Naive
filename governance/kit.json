@@ -1,7 +1,7 @@
 {
   "kit": "governance-kit",
   "layer": "governance",
-  "purpose": "Say who owns and controls the venture and who may decide what: ownership (cap table), founders, boards, investor rights and exits, roles, decision rights, the venture template and its pillars, and escalation to the owner.",
+  "purpose": "Say who owns and controls the venture and who may decide what: ownership (cap table), founders, boards, investor rights and exits, roles, decision rights, where it publishes and who may publish what (the publication gate), the venture template and its pillars, and escalation to the owner.",
   "skills": [
     {
       "id": "brand-pillar",
@@ -58,6 +58,10 @@
     {
       "id": "exit-planning",
       "path": "governance/skills/exit-planning/SKILL.md"
+    },
+    {
+      "id": "publication-policy",
+      "path": "governance/skills/publication-policy/SKILL.md"
     }
   ],
   "records": [
@@ -67,7 +71,9 @@
     "ownership",
     "board",
     "founder-agreement",
-    "exit"
+    "exit",
+    "publication-policy",
+    "publish-config"
   ],
   "reads": [
     "handoff",
@@ -81,7 +87,8 @@
   ],
   "checks": [
     "schema/check-governance.mjs",
-    "schema/payouts.mjs"
+    "schema/payouts.mjs",
+    "schema/check-publication.mjs"
   ],
   "gaps": [
     "Roles have no schema",

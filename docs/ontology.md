@@ -16,7 +16,6 @@ The system is opinionated: it names one default for each choice, and every defau
 - References are ids in `<layer>/references/references.json`.
 - The genus of the whole is open: files say "the system" until the first venture runs end to end, then it is settled as an operating system or an operating model.
 - Phases and gates: Discovery, Validation, Beachhead, Scale, Platform (EE-012). Three Horizons, VC funding stages and Blank's customer development are lenses onto them, mapped in the ontology research doc (https://claude.ai/artifact/6LcDgsc8SA9ybY5ddTfsMn).
-
 ### System
 
 | Noun | Meaning | Standard | References |
@@ -116,6 +115,11 @@ The system is opinionated: it names one default for each choice, and every defau
 | investor right | A right an investor gets with a class or instrument: board seat, information, pro-rata, protective provisions, anti-dilution, drag-along, tag-along, right of first refusal and others | NVCA model legal documents |  |
 | exit | How owners realize value or the venture ends: acquisition, IPO, secondary sale, merger, management buyout, wind-down, or hold (governance/exit.json) | venture finance usage |  |
 | preference stack | The order and amounts in which a sale's proceeds reach each owner, preferences first by seniority, then common; computed from the cap table by schema/payouts.mjs, never typed | venture finance usage (pref stack; Feld and Mendelson, Venture Deals) |  |
+| publication policy | Where a venture publishes and who may publish what there: its channels, the guidelines each follows, the checks and preview every publication passes, and who drafts and approves by role or team (governance/publication-policy.json, EE-025) | content governance; communications or disclosure policy (corporate usage) |  |
+| channel | A place the venture publishes to (website, docs site, social account, newsletter, app store, press, investor update, regulatory filing); its destination decides which guidelines apply | marketing channel (Kotler, Marketing Management) |  |
+| publication | One act of making something public on a channel; always a handoff under the public-commitment decision class, previewed, checked and approved by a person | common usage |  |
+| brand guidelines | The rules for using the venture's visual and verbal identity, kept by the brand pillar | brand guidelines or brand book (common marketing usage) |  |
+| editorial guidelines | What content covers and how it is written, separate from brand voice; a style guide is one part | editorial guidelines and style guide (publishing usage) |  |
 
 ### Interface
 

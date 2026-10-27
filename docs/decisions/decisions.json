@@ -259,6 +259,17 @@
         "EE-014",
         "EE-018"
       ]
+    },
+    {
+      "id": "EE-025",
+      "date": "2026-10-27",
+      "decision": "Publishing is a governance matter. Each venture keeps a publication policy (governance/publication-policy.json) that lists its channels, the guidelines each follows (brand and editorial from the pillars, plus outside rules such as platform or advertising law), the checks and preview every publication passes, and who drafts and who approves by role or team. Every publication passes this gate: it runs as a handoff under public-commitment and names its channel and content; agents may draft, check and preview, and a person approves. A channel on a third-party platform (Substack, X, Facebook and others) names the platform and cites its rules; social, newsletter and blog channels say whether replies and comments are gated, delegated to named people, or not made. publish.json moves from operations to governance as the method site's channel configuration. Publisher rule R1 now refuses only files outside the repository (an absolute path, a path through .., or a link resolving outside the root); inside it, publish.json decides.",
+      "why": "The owner: 'anything being published should go through a sort of gate, especially when it's being published by an AI... It also gives us a gate to be able to test what gets published before it is actually published.' Where something is published decides which guidelines it must follow, and ventures assign publishing rights to different teams. R1 was a vault-era boundary that refused 80 of 82 allowlisted files after the method moved into its own repository; the owner approved the change.",
+      "status": "in-force",
+      "related": [
+        "EE-017",
+        "EE-022"
+      ]
     }
   ]
 }

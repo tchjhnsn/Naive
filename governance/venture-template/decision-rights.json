@@ -102,7 +102,7 @@
     },
     {
       "id": "public-commitment",
-      "description": "Publishing, announcing, or sending anything outside on the company's behalf",
+      "description": "Publishing, announcing, or sending anything outside on the company's behalf. Every publication passes the venture's publication policy: named channel and content, the channel's checks and preview, a person approves (EE-025)",
       "owner": "founder",
       "level": "escalate"
     },

@@ -596,6 +596,41 @@
       "status": "new"
     },
     {
+      "noun": "publication policy",
+      "level": "governance",
+      "meaning": "Where a venture publishes and who may publish what there: its channels, the guidelines each follows, the checks and preview every publication passes, and who drafts and approves by role or team (governance/publication-policy.json, EE-025)",
+      "standard": "content governance; communications or disclosure policy (corporate usage)",
+      "status": "new"
+    },
+    {
+      "noun": "channel",
+      "level": "governance",
+      "meaning": "A place the venture publishes to (website, docs site, social account, newsletter, app store, press, investor update, regulatory filing); its destination decides which guidelines apply",
+      "standard": "marketing channel (Kotler, Marketing Management)",
+      "status": "new"
+    },
+    {
+      "noun": "publication",
+      "level": "governance",
+      "meaning": "One act of making something public on a channel; always a handoff under the public-commitment decision class, previewed, checked and approved by a person",
+      "standard": "common usage",
+      "status": "new"
+    },
+    {
+      "noun": "brand guidelines",
+      "level": "governance",
+      "meaning": "The rules for using the venture's visual and verbal identity, kept by the brand pillar",
+      "standard": "brand guidelines or brand book (common marketing usage)",
+      "status": "new"
+    },
+    {
+      "noun": "editorial guidelines",
+      "level": "governance",
+      "meaning": "What content covers and how it is written, separate from brand voice; a style guide is one part",
+      "standard": "editorial guidelines and style guide (publishing usage)",
+      "status": "new"
+    },
+    {
       "noun": "telos",
       "level": "purpose",
       "meaning": "The end a venture exists to reach (purpose/telos.json): statement, end state, measures, the owners' intended outcome, and exit criteria for each phase. Start with the end: other layers derive from it",

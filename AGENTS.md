@@ -29,6 +29,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 - `node schema/check-ready.mjs <venture dir> <handoff id>` checks a handoff is ready before anyone executes it (EE-019); `--record --by <who>` records it.
 - `node schema/check-governance.mjs <dir>` checks ownership, boards, founder agreements and exits; `node schema/payouts.mjs <venture dir> [value]` computes who gets what in a sale (EE-022).
 - `node schema/check-telos.mjs <dir>` checks each venture's telos (start with the end: every phase exit criterion traces to a measure); `node operations/skills/methodology-selection/derive-answers.mjs <venture dir>` gives MAD the answers the venture's records already settle (EE-023).
+- `node schema/check-publication.mjs <dir>` checks each venture's publication policy and every handoff that publishes: a named channel and content rule, and a person approving (EE-025).
 - `node schema/check-execution.mjs <venture dir>` checks handoffs, evidence and decision rights; `node schema/run-handoff.mjs <venture dir> <handoff id>` runs a handoff's done-criteria and writes evidence (EE-017).
 - `node purpose/frameworks/product-anatomy/test.mjs` tests the Product Anatomy runner's role rules.
 - `node schema/test.mjs` tests the checkers on broken copies; `python3 schema/validate.py` validates every record against its schema.

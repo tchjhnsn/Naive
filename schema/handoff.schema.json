@@ -216,6 +216,23 @@
     "lesson": {
       "type": "string",
       "description": "A failure that could recur, and the check one rung higher that would catch it (prose, skill, rule, static analysis, code)"
+    },
+    "publication": {
+      "type": "object",
+      "description": "Required when the handoff publishes (public-commitment in decision_classes or escalations): the channel and content rule in the venture's publication policy (EE-025)",
+      "required": [
+        "channel",
+        "content"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
     }
   },
   "additionalProperties": false

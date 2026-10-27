@@ -123,6 +123,31 @@ telosBroken("exit.json ruling out the telos path fails", (d) => edit(gov(d, "exi
   expect("MAD reads its success measure from the telos", out.derived["governance.success_measure"]?.answer === "usage_or_adoption");
 }
 
+// check-publication: every publication passes the gate (EE-025).
+function pubBroken(name, change, pattern) {
+  const dir = join(tmp, `p${++n}`);
+  cpSync(tandem, dir, { recursive: true });
+  change(dir);
+  const r = run("check-publication.mjs", [dir]);
+  expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+const policyOf = (d) => gov(d, "publication-policy.json");
+const publishing = (d, h) => { mkdirSync(join(d, "execution/handoffs"), { recursive: true }); writeFileSync(join(d, "execution/handoffs/post.json"), JSON.stringify({ id: "post", decision_classes: ["public-commitment"], ...h })); };
+expect("check-publication passes on the examples", run("check-publication.mjs", [join(root, "schema/examples/workspace")]).status === 0);
+pubBroken("an agent role as approver fails", (d) => edit(policyOf(d), (p) => { p.channels[0].rules[0].approvers = ["builder"]; }), /builder is an agent role/);
+pubBroken("a team with no person cannot approve", (d) => edit(policyOf(d), (p) => { p.teams[0].members = ["builder"]; }), /team founders has no person/);
+pubBroken("a channel following an unknown guideline fails", (d) => edit(policyOf(d), (p) => { p.channels[0].guidelines.push("nope"); }), /follows unknown guideline nope/);
+pubBroken("a guideline with a missing file fails", (d) => edit(policyOf(d), (p) => { p.guidelines[0].path = "pillars/nope.md"; }), /guideline brand not found/);
+pubBroken("a newsletter that names no platform fails", (d) => edit(policyOf(d), (p) => { delete p.channels[1].platform; }), /is newsletter, so it names its platform/);
+pubBroken("a platform channel citing none of the platform's rules fails", (d) => edit(policyOf(d), (p) => { p.channels[1].guidelines = ["brand"]; }), /runs on substack but cites none of its rules/);
+pubBroken("a social channel silent on replies fails", (d) => edit(policyOf(d), (p) => { delete p.channels[1].replies; }), /says how replies and comments are handled/);
+pubBroken("replies delegated to agents only fail", (d) => edit(policyOf(d), (p) => { p.channels[1].replies.delegates = ["builder"]; }), /delegates replies to agents only/);
+pubBroken("a publishing handoff with no channel fails", (d) => publishing(d, {}), /names its channel and content/);
+pubBroken("a publishing handoff on an unknown channel fails", (d) => publishing(d, { publication: { channel: "billboard", content: "product pages" } }), /unknown channel billboard/);
+pubBroken("content the channel has no rule for fails", (d) => publishing(d, { publication: { channel: "website", content: "memes" } }), /no rule for "memes"/);
+pubBroken("a publishing handoff with no policy fails", (d) => { rmSync(policyOf(d)); publishing(d, {}); }, /no governance\/publication-policy.json/);
+expect("a publishing handoff naming a known channel and rule passes", (() => { const d = join(tmp, `p${++n}`); cpSync(tandem, d, { recursive: true }); publishing(d, { publication: { channel: "website", content: "product pages" } }); return run("check-publication.mjs", [d]).status === 0; })());
+
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules)(\/|$)/.test(s) });

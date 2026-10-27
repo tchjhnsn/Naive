@@ -25,6 +25,8 @@ const steps = [
   ["governance: examples", "node", ["schema/check-governance.mjs", "schema/examples/workspace"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
+  ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
+  ["publication: examples", "node", ["schema/check-publication.mjs", "schema/examples/workspace"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "execution"))).map((v) =>
     [`execution: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],
