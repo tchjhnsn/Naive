@@ -270,6 +270,79 @@
         "EE-017",
         "EE-022"
       ]
+    },
+    {
+      "id": "EE-026",
+      "date": "2026-10-27",
+      "decision": "Validation is a probability built from cited evidence, not a declared phase. A validation kit in the purpose layer gives each sub-score (problem first; then solution, product-market fit, pricing, go-to-market, team, operations readiness per MAD tier) its own record type, template and references, all sharing one evidence item. schema/check-validation.mjs grades every item and record high, moderate, low or very low by adapting GRADE: the kind of signal sets the start (behavior high, commitment moderate, stated intent and desk research low, opinion very low), and the wrong audience, a small sample, general answers and age lower it; a claim with no evidence is very low. The grade weighs the sub-score's Jev probability in the validation score. A layer may hold more than one kit, under <layer>/kits/<kit>/.",
+      "why": "The owner: validation 'cannot be an arbitrary measure', must not be Boolean, must cite its evidence, and evidence from the wrong audience should count for less; 'a weak record would only state the problem; a strong record would also contain market research that proves the problem is there'.",
+      "status": "in-force",
+      "related": [
+        "EE-012",
+        "EE-023",
+        "EE-024"
+      ]
+    },
+    {
+      "id": "EE-027",
+      "date": "2026-10-27",
+      "decision": "Working name for the system: Mentura, from mentor and Ventura: a mentor that guides a venture into its future. Files keep 'Everything Ecosystem' until the name is checked (trademark, domains) and a rename is decided.",
+      "why": "The owner: 'We can go with the name Mentura for now.'",
+      "status": "proposed",
+      "related": [
+        "EE-024"
+      ]
+    },
+    {
+      "id": "EE-028",
+      "date": "2026-10-27",
+      "decision": "The framework says what a venture needs now, what comes soon and what to hold back. schema/need-now.json gives each venture record type a prior probability per phase, raised or lowered by facts about the venture (people, founders, agents, funding, legal form, products, go-to-market path, publishing); schema/need-now.mjs lists records to suggest now (0.5 or more), coming soon (the next phase reaches 0.5), held, and held back. Jev re-scores the priors per venture once the scorer runs.",
+      "why": "The owner: early on 'there's a lot that you shouldn't spend time thinking about'; Jev should determine 'the records that they need at a particular moment and the probability of when they're going to need them later', and low-probability records are not suggested until needed or asked for.",
+      "status": "in-force",
+      "related": [
+        "EE-026",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-029",
+      "date": "2026-10-27",
+      "decision": "The operations layer designs the team: operations/team-plan.json says which roles agents fill and which people fill, by phase, with the decision classes each holds and a named human loop for every agent task that the capability register marks can-with-review, cannot, not-allowed or unknown. Open person roles needed in the current phase are recruited now, from a brief; agents draft, search and screen, and a person makes contact and decides. The evidence layer keeps the capability register, dated and sourced, fed by new research and by our own evals; an unknown task keeps a person in the loop and becomes an eval.",
+      "why": "The owner: one-shotting a venture is possible 'because of agents who can act as team members'; the operations suite is also for 'developing the agents and teammates and delegating authority', deciding what agents and teammates you need, and recruiting real humans; and 'the literature on what can and cannot be done using agents is still very new', so we must keep reading new information or produce it ourselves.",
+      "status": "in-force",
+      "related": [
+        "EE-021",
+        "EE-022",
+        "EE-025"
+      ]
+    },
+    {
+      "id": "EE-030",
+      "date": "2026-10-27",
+      "decision": "The system has one route table, generated from schema/data-model.json and the kit manifests by interface/router.mjs, and three interfaces over it: a CLI (interface/cli/mentura.mjs), an MCP server (interface/mcp/server.mjs) and a local HTTP API (interface/api/server.mjs). A route is <layer>[/<kit>]/<record> with the actions read, write, check and template, or a command with run. Every write is validated against the record's schema; an agent's write to a record whose decision class escalates to a person (ownership, board, founder agreement, exit, telos, decision rights, publication policy) is held as a draft for a person to accept, and the MCP server and API always write as an agent. Adoption may be partial: a venture turns on only the layers it wants (init --layers), and a route needs only its own records. An install skill sets it up in Claude Code and Cursor.",
+      "why": "The owner: turn this into an MCP, set up APIs and a CLI, with a skill for installing it into a coding agent; builders do not have to use the entire system; consider a routing system like Next.js's. Generating routes from the kits keeps the three interfaces from drifting apart, and the draft gate carries EE-022, EE-023 and EE-025 (people decide escalate classes) into every interface.",
+      "status": "in-force",
+      "related": [
+        "EE-018",
+        "EE-022",
+        "EE-023",
+        "EE-024",
+        "EE-025",
+        "EE-026"
+      ]
+    },
+    {
+      "id": "EE-031",
+      "date": "2026-10-27",
+      "decision": "Provenance is built in two ways. Explicitly: every write through the router (CLI, MCP server, HTTP API) appends one line to the venture's provenance log, <venture>/provenance.jsonl, after W3C PROV: the entity (file) written, the activity (write, draft, accept, or baseline for a record adopted as it stood), the agent (person or AI agent, with id, model, session and harness where known, and the interface), what the content was derived from (paths, URLs, decision ids) and the decision or decision class it acted under, with a hash of the content. Each line carries the previous line's hash, so schema/check-provenance.mjs fails when a line is edited, removed or reordered, and warns when a logged file has changed outside the router. Implicitly: git history covers everything written outside the router. The log is a system record, on whatever layers a venture uses; record schemas carry no provenance fields. Existing provenance stays where it is: evidence items and references cite sources with checked dates, and notes carry source and ai-model.",
+      "why": "The owner asked to make sure provenance is built in, explicitly or implicitly, and chose the recommendation of a separate append-only log backed by git over a provenance block inside every record, which would add noise to every schema.",
+      "status": "in-force",
+      "related": [
+        "EE-025",
+        "EE-026",
+        "EE-029",
+        "EE-030"
+      ]
     }
   ]
 }

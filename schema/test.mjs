@@ -148,6 +148,94 @@ pubBroken("content the channel has no rule for fails", (d) => publishing(d, { pu
 pubBroken("a publishing handoff with no policy fails", (d) => { rmSync(policyOf(d)); publishing(d, {}); }, /no governance\/publication-policy.json/);
 expect("a publishing handoff naming a known channel and rule passes", (() => { const d = join(tmp, `p${++n}`); cpSync(tandem, d, { recursive: true }); publishing(d, { publication: { channel: "website", content: "product pages" } }); return run("check-publication.mjs", [d]).status === 0; })());
 
+// check-validation: evidence grades (EE-026), adapted from GRADE.
+{
+  const { gradeItem, gradeRecord } = await import(join(root, "schema/check-validation.mjs"));
+  const today = new Date("2026-10-27");
+  const item = (o) => ({ id: "x", kind: "stated", summary: "s", source: { path: "a" }, audience: "target", sample: { n: 12 }, specificity: "specific", collected: "2026-09-01", ...o });
+  expect("validation: a claim with no evidence grades very low", gradeRecord({ evidence: [] }, today).level === "very low");
+  expect("validation: behavior from the target segment grades high", gradeItem(item({ kind: "behavior" }), today).level === "high");
+  expect("validation: the wrong audience drops two grades", gradeItem(item({ kind: "behavior", audience: "wrong" }), today).level === "low");
+  expect("validation: a sample under 5 drops a grade", gradeItem(item({ kind: "commitment", sample: { n: 3 } }), today).level === "low");
+  expect("validation: general answers drop stated evidence to very low", gradeItem(item({ specificity: "general" }), today).level === "very low");
+  expect("validation: evidence older than 18 months drops a grade", gradeItem(item({ kind: "behavior", collected: "2024-01-01" }), today).level === "moderate");
+  expect("validation: three agreeing sources raise a record one grade", gradeRecord({ evidence: [1, 2, 3].map((i) => item({ id: `s${i}`, source: { path: `p${i}` } })) }, today).level === "moderate");
+  expect("validation: evidence as strong against the claim lowers it", gradeRecord({ evidence: [item({ kind: "behavior" }), item({ id: "y", kind: "behavior", supports: false })] }, today).level === "moderate");
+}
+function valBroken(name, change, pattern) {
+  const dir = join(tmp, `v${++n}`);
+  cpSync(tandem, dir, { recursive: true });
+  change(dir);
+  const r = run("check-validation.mjs", [dir]);
+  expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+const problemOf = (d) => join(d, "purpose/validation/problem.json");
+{
+  const { score, facts } = await import(join(root, "schema/check-validation.mjs"));
+  const W = JSON.parse(readFileSync(join(root, "purpose/kits/validation/weights.json"), "utf8"));
+  const all = (p, e = 1) => Object.fromEntries(["problem", "solution", "product-market-fit", "pricing", "go-to-market", "team", "operations-readiness"].map((k) => [k, { probability: p, weight: e }]));
+  expect("score: strong evidence on every sub-score recommends Validation", score(all(0.9), W).recommends_validated);
+  expect("score: a problem below its floor holds the venture back", (() => { const r = all(0.9); r.problem = { probability: 0.9, weight: 0.1 }; const s = score(r, W); return !s.recommends_validated && s.below_floor.includes("problem"); })());
+  expect("score: cofounder-first weighs team over product-market fit", (() => { const s = score(all(0.5), W, { path: "cofounder-first" }); const w = (id) => s.parts.find((x) => x.id === id).w; return w("team") > w("product-market-fit"); })());
+  expect("score: a missing sub-score counts zero and is listed", score({ problem: { probability: 1, weight: 1 } }, W).not_stated.length === 6);
+  expect("facts: Ellis share and flat retention are read from the data", (() => { const f = facts("product-market-fit", { ellis: { asked: 10, very_disappointed: 4 }, retention: { cohorts: [{ size: 10, active: [10, 8, 7, 7, 7] }] } }); return f.ellis_share === 0.4 && f.retention_levels_off === true; })());
+  expect("facts: team gaps are skills needed with no holder", facts("team", { needed: [{ skill: "sales", by_phase: "validation" }], held: [] }).gaps.length === 1);
+}
+expect("check-validation passes on the examples", run("check-validation.mjs", [join(root, "schema/examples/workspace")]).status === 0);
+valBroken("a source file that does not exist fails", (d) => edit(problemOf(d), (p) => { p.evidence[0].source.path = "knowledge/nope.md"; }), /source knowledge\/nope.md not found/);
+valBroken("a url with no checked date fails", (d) => edit(problemOf(d), (p) => { p.evidence[0].source = { url: "https://example.com/report" }; }), /cites a url with no checked date/);
+valBroken("a file that is not a sub-score fails", (d) => writeFileSync(join(d, "purpose/validation/vibes.json"), "{}"), /not a validation sub-score/);
+valBroken("more very disappointed than asked fails", (d) => edit(join(d, "purpose/validation/product-market-fit.json"), (p) => { p.ellis.very_disappointed = 99; }), /more very disappointed than asked/);
+valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.evidence[1].id = p.evidence[0].id; }), /duplicate evidence ids/);
+
+// need-now: what a venture needs at this moment (EE-028).
+{
+  const { needNow } = await import(join(root, "schema/need-now.mjs"));
+  const N = JSON.parse(readFileSync(join(root, "schema/need-now.json"), "utf8"));
+  const model = JSON.parse(readFileSync(join(root, "schema/data-model.json"), "utf8"));
+  const venture = new Set(model.records.filter((r) => r.level === "venture" && r.id !== "venture").map((r) => r.id));
+  expect("need-now: every venture record type has a prior, and only those", [...venture].every((t) => N.records[t]) && Object.keys(N.records).every((t) => venture.has(t)));
+  const t = needNow(tandem), row = (id) => t.rows.find((r) => r.type === id);
+  expect("need-now: a venture-capital venture needs a board", row("board").now === 1);
+  expect("need-now: records that exist are held, not suggested", row("validation-problem").status === "held");
+  const solo = join(tmp, "solo"); cpSync(tandem, solo, { recursive: true });
+  edit(join(solo, "venture.json"), (v) => { v.phase = "discovery"; v.form = { legal_form: "none", funding: "bootstrapped" }; v.members = []; v.owner = "self"; });
+  for (const f of ["ownership.json", "board.json", "founder-agreement.json", "exit.json", "publication-policy.json"]) rmSync(join(solo, "governance", f));
+  const s = needNow(solo), srow = (id) => s.rows.find((r) => r.type === id);
+  expect("need-now: a solo bootstrapped venture in Discovery holds back the cap table and board", srow("ownership").status === "hold back" && srow("board").status === "hold back");
+}
+
+// time-to-ready: running, and ready per layer and tier (the telos's Option B measure).
+{
+  const { timeToReady } = await import(join(root, "schema/time-to-ready.mjs"));
+  const r = timeToReady(tandem);
+  expect("time-to-ready: a venture with no live product is not running yet", !r.running.on && r.running.missing.includes("product_offered"));
+  expect("time-to-ready: layers the venture turned off are not asked for", !r.layers.some((l) => l.layer === "operations"));
+  const live = join(tmp, "live"); cpSync(tandem, live, { recursive: true });
+  edit(join(live, "products/shop-app.json"), (p) => { p.status = "live"; });
+  mkdirSync(join(live, "accounts/first-shop"), { recursive: true });
+  writeFileSync(join(live, "accounts/first-shop/account.json"), JSON.stringify({ id: "first-shop", name: "First shop", relationship: "customer" }));
+  expect("time-to-ready: a live product with an account and next-phase exit criteria is running", !!timeToReady(live).running.on);
+}
+
+// check-team: agents as teammates, with human loops where they are needed (EE-029).
+const eeVenture = join(root, "instance/ventures/everything-ecosystem");
+function teamBroken(name, change, pattern) {
+  const dir = join(tmp, `team${++n}`);
+  cpSync(eeVenture, dir, { recursive: true });
+  change(dir);
+  const r = run("check-team.mjs", [dir]);
+  expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+const planOf = (d) => join(d, "operations/team-plan.json");
+expect("check-team passes on the instance", run("check-team.mjs", [join(root, "instance")]).status === 0);
+teamBroken("an agent holding an escalate class fails", (d) => edit(planOf(d), (p) => { p.roles[1].authority.push("spend-money"); }), /holds spend-money, which decision rights give to founder|an escalate class/);
+teamBroken("an agent doing an unknown task with no human loop fails", (d) => edit(planOf(d), (p) => { delete p.roles[3].tasks[0].human_loop; }), /names a human loop/);
+teamBroken("a human loop that is not a person role fails", (d) => edit(planOf(d), (p) => { p.roles[3].tasks[0].human_loop = "builder"; }), /is not a person role/);
+teamBroken("a task citing an unknown capability fails", (d) => edit(planOf(d), (p) => { p.roles[2].tasks[0].capability = "telepathy"; }), /unknown capability telepathy/);
+teamBroken("an open person role needed now with no recruiting entry fails", (d) => edit(planOf(d), (p) => { p.roles.push({ id: "sales-lead", name: "Sales lead", occupant: "person", needed_by: "discovery", status: "open" }); }), /needed now and open, but has no recruiting entry/);
+teamBroken("an agent in a person's registry role fails", (d) => edit(planOf(d), (p) => { p.roles[0].occupant = "agent"; }), /an agent cannot occupy it/);
+
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules)(\/|$)/.test(s) });

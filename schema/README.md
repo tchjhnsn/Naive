@@ -37,6 +37,7 @@ Status:
 | Purpose | Core product | `core` in `venture.json` | defined |
 | Purpose | Telos (start with the end) | `schema/telos.schema.json` at `<venture>/purpose/telos.json`; `check-telos.mjs` (EE-023) | defined |
 | Governance | Publication policy (the publication gate) | `schema/publication-policy.schema.json` at `<venture>/governance/publication-policy.json`; `check-publication.mjs` (EE-025) | defined |
+| Purpose | Validation (validation kit): problem record, shared evidence item, GRADE-adapted grading | `schema/validation-problem.schema.json` and `schema/validation-evidence.schema.json` at `<venture>/purpose/validation/`; `check-validation.mjs`; kit at `purpose/kits/validation/` (EE-026) | problem built; six sub-scores to build |
 | Purpose | Goals and vision | `purpose/frameworks/business-discovery-framework.md` | prose |
 | Purpose | Product Anatomy and Succession Matrix | `purpose/frameworks/product-anatomy/` (phases, gates, questions as JSON) | defined, draft |
 | Knowledge | Venture profile | the file `venture.json` names in `profile`; older guidance in `knowledge/references/entity-profile-schema.md` (retired name, to be folded in) | prose |

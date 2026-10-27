@@ -2,7 +2,10 @@
 // accounts/, the three pillars as stubs pointing to their guides (EE-010), a venture profile and a venture.json to fill in
 // (EE-011). Starting layers come from scaffold/defaults.json, by phase (EE-012).
 //
-//   node schema/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc]
+//   node schema/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
+//
+// --layers turns on only the layers named, for a builder adopting part of the system (EE-030);
+// without it the phase's defaults apply.
 //
 // Writes nothing over an existing venture.json.
 
@@ -15,20 +18,23 @@ const repo = join(here, "..");
 const { layers, formalized, pillars, readme } = JSON.parse(readFileSync(join(here, "scaffold/defaults.json"), "utf8"));
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };
-const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form");
+const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form"), only = flag("layers");
 const [dir, id] = args;
 if (!dir || !id) { console.error("usage: node schema/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
 if (existsSync(join(dir, "venture.json"))) { console.error(`${dir}/venture.json already exists`); process.exit(1); }
 
-const on = [...layers[phase], ...(legalForm && legalForm !== "none" ? formalized : [])];
+const ALL = ["purpose", "knowledge", "operations", "execution", "evidence", "governance", "interface"];
+const on = only !== null ? only.split(",").filter(Boolean) : [...layers[phase], ...(legalForm && legalForm !== "none" ? formalized : [])];
+const unknown = on.filter((l) => !ALL.includes(l));
+if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
 mkdirSync(dir, { recursive: true });
 const venture = { id, name: id, parent: parent ?? null, phase };
 if (legalForm) venture.form = { legal_form: legalForm };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
 Object.assign(venture, { owner: "self", status: "active", profile: "profile.md", layers: {} });
-for (const layer of ["purpose", "knowledge", "operations", "execution", "evidence", "governance", "interface"]) {
-  if (!on.includes(layer)) { if (!["governance", "interface"].includes(layer)) venture.layers[layer] = false; continue; }
+for (const layer of ALL) {
+  if (!on.includes(layer)) { if (only !== null || !["governance", "interface"].includes(layer)) venture.layers[layer] = false; continue; }
   mkdirSync(join(dir, layer), { recursive: true });
   writeFileSync(join(dir, layer, "README.md"), `# ${layer}\n\n${readme[layer]}\n`);
   venture.layers[layer] = { location: `${layer}/` };
@@ -41,4 +47,4 @@ for (const [name, what] of Object.entries(pillars.stubs)) {
 }
 writeFileSync(join(dir, "profile.md"), `# ${id}\n\nWhat this venture is, in a few sentences. Its machine fields are in venture.json (EE-011).\n\n## Changelog\n`);
 writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
-console.log(`created venture ${id} (${phase}) in ${dir} with ${on.join(", ")}, products/, accounts/ and the three pillars.${venture.core ? " Fill in the core product before ranking products." : ""}`);
+console.log(`created venture ${id} (${phase}) in ${dir} with ${on.join(", ") || "no layers"}, products/, accounts/ and the three pillars.${venture.core ? " Fill in the core product before ranking products." : ""}`);

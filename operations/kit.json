@@ -28,6 +28,16 @@
       "id": "tool-selection",
       "path": "operations/skills/tool-selection/SKILL.md",
       "tier": "delivery"
+    },
+    {
+      "id": "team-design",
+      "path": "operations/skills/team-design/SKILL.md",
+      "tier": "governance"
+    },
+    {
+      "id": "recruiting",
+      "path": "operations/skills/recruiting/SKILL.md",
+      "tier": "governance"
     }
   ],
   "records": [
@@ -37,7 +47,8 @@
     "assignment",
     "catalog-common",
     "recommendation",
-    "mad-answers"
+    "mad-answers",
+    "team-plan"
   ],
   "reads": [
     "design-document",
@@ -47,14 +58,18 @@
     "ownership",
     "board",
     "venture",
-    "publish-config"
+    "publish-config",
+    "agent-capability",
+    "decision-rights",
+    "role"
   ],
   "writes": [],
   "checks": [
     "operations/skills/methodology-selection/ee.mjs",
     "operations/skills/methodology-selection/test.mjs",
     "operations/skills/methodology-selection/test-publish.mjs",
-    "operations/skills/methodology-selection/derive-answers.mjs"
+    "operations/skills/methodology-selection/derive-answers.mjs",
+    "schema/check-team.mjs"
   ],
   "gaps": [
     "Assignments live in this repo's register, not inside each venture's operations layer"

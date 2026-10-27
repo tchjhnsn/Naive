@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "team-plan.schema.json",
+  "title": "Team plan",
+  "description": "Who the venture needs, agent or person, when, with what authority, and where a human stays in the loop (EE-029), at <venture>/operations/team-plan.json. Tasks cite the agent capability register; recruiting briefs say what each open person role is for.",
+  "type": "object",
+  "required": [
+    "venture",
+    "roles"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "note": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "occupant",
+          "needed_by",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A role id from the role registry, or the venture's own"
+          },
+          "name": {
+            "type": "string",
+            "description": "Required for a role not in the registry"
+          },
+          "occupant": {
+            "enum": [
+              "agent",
+              "person"
+            ]
+          },
+          "needed_by": {
+            "enum": [
+              "discovery",
+              "validation",
+              "beachhead",
+              "scale",
+              "platform"
+            ]
+          },
+          "status": {
+            "enum": [
+              "filled",
+              "open",
+              "planned"
+            ]
+          },
+          "why": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Decision classes delegated to this role"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "capability"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "capability": {
+                  "type": "string"
+                },
+                "human_loop": {
+                  "type": "string",
+                  "description": "The person role that decides, reviews or does the part agents cannot"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "recruiting": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "brief"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "cofounder",
+              "hire",
+              "contractor",
+              "advisor",
+              "investor"
+            ]
+          },
+          "brief": {
+            "type": "string",
+            "description": "A recruiting brief, relative to the venture folder"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "assisted_by": {
+            "type": "string",
+            "description": "The agent role that drafts, searches and screens"
+          }
+        }
+      }
+    }
+  }
+}

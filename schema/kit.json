@@ -1,7 +1,7 @@
 {
   "kit": "system-kit",
   "layer": "system",
-  "purpose": "Hold the records every layer shares (workspace, venture, nouns, references, tooling, the data model and kit manifests) and the checks that tie the layers together.",
+  "purpose": "Hold the records every layer shares (workspace, venture, nouns, references, tooling, the data model and kit manifests, the provenance log) and the checks that tie the layers together.",
   "product": "everything-ecosystem/kit",
   "skills": [],
   "records": [
@@ -13,7 +13,9 @@
     "business-models",
     "scaffold",
     "data-model",
-    "kit-manifest"
+    "kit-manifest",
+    "need-now",
+    "provenance"
   ],
   "reads": [
     "product",
@@ -29,7 +31,10 @@
     "schema/check-nouns.mjs",
     "schema/check-integrations.mjs",
     "schema/init-venture.mjs",
-    "schema/test.mjs"
+    "schema/test.mjs",
+    "schema/need-now.mjs",
+    "schema/time-to-ready.mjs",
+    "schema/check-provenance.mjs"
   ],
   "gaps": [
     "The orchestrator skill that routes work across every layer is filed under knowledge (knowledge/SKILL.md); it belongs here"

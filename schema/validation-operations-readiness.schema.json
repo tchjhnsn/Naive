@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-operations-readiness.schema.json",
+  "title": "Validation: operations readiness",
+  "description": "The operations-readiness sub-score (EE-026), at <venture>/purpose/validation/operations-readiness.json: one entry per MAD tier (governance, delivery, software engineering, automation), each with its own evidence; the record grades as its weakest tier.",
+  "type": "object",
+  "required": [
+    "venture",
+    "tiers",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "tiers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tier",
+          "evidence"
+        ],
+        "properties": {
+          "tier": {
+            "enum": [
+              "governance",
+              "delivery",
+              "software-engineering",
+              "automation"
+            ]
+          },
+          "ready_on": {
+            "type": "string",
+            "format": "date",
+            "description": "When the tier's records and checks first held for the phase's work"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "validation-evidence.schema.json"
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "validation-evidence.schema.json"
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p",
+        "by",
+        "scored"
+      ],
+      "description": "The Jev probability for this sub-score; the evidence grade weighs it in the validation score",
+      "properties": {
+        "p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "by": {
+          "enum": [
+            "jev",
+            "owner"
+          ]
+        },
+        "scored": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

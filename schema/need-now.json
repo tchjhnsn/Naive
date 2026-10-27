@@ -1,0 +1,392 @@
+{
+  "version": "0.1.0",
+  "note": "Need-now priors (EE-028): for each venture record type, the probability a venture needs it in each phase, raised or lowered by facts about the venture. Version 0.x: ours and unevaluated; Jev re-scores them per venture once the scorer runs. A record suggested at 0.5 or more in the current phase; mentioned as coming soon when the next phase reaches 0.5; otherwise held back unless the builder asks.",
+  "suggest": 0.5,
+  "records": {
+    "venture-profile": {
+      "base": {
+        "discovery": 0.9,
+        "validation": 0.9,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "A few sentences on what the venture is; cheap and always useful"
+    },
+    "product": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.95,
+        "beachhead": 0.95,
+        "scale": 0.95,
+        "platform": 0.95
+      },
+      "why": "A product card once there is something to offer; in Discovery only if a product idea exists"
+    },
+    "account": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "offering:service",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Named customers, clients or members; needed once specific accounts matter"
+    },
+    "telos": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.2
+        }
+      ],
+      "why": "Start with the end once past Discovery (check-telos warns from then)"
+    },
+    "validation-problem": {
+      "base": {
+        "discovery": 0.9,
+        "validation": 0.9,
+        "beachhead": 0.5,
+        "scale": 0.2,
+        "platform": 0.1
+      },
+      "why": "The first thing to show with evidence"
+    },
+    "validation-solution": {
+      "base": {
+        "discovery": 0.4,
+        "validation": 0.9,
+        "beachhead": 0.5,
+        "scale": 0.2,
+        "platform": 0.1
+      },
+      "why": "Once a solution is being tested"
+    },
+    "validation-product-market-fit": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.9,
+        "beachhead": 0.6,
+        "scale": 0.3,
+        "platform": 0.2
+      },
+      "when": [
+        {
+          "if": "path:cofounder-first",
+          "at_most": 0.3,
+          "phase": "validation"
+        }
+      ],
+      "why": "The Validation gate itself"
+    },
+    "validation-pricing": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.8,
+        "beachhead": 0.8,
+        "scale": 0.5,
+        "platform": 0.3
+      },
+      "when": [
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.2
+        }
+      ],
+      "why": "Once someone is asked to pay"
+    },
+    "validation-go-to-market": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.6,
+        "platform": 0.4
+      },
+      "when": [
+        {
+          "if": "path:market-first",
+          "at_least": 0.9
+        }
+      ],
+      "why": "Choose the path early; channels matter from Validation"
+    },
+    "validation-team": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.8,
+        "scale": 0.6,
+        "platform": 0.4
+      },
+      "when": [
+        {
+          "if": "path:cofounder-first",
+          "at_least": 0.9
+        }
+      ],
+      "why": "Skills needed versus held; first for a cofounder-first venture"
+    },
+    "validation-operations-readiness": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.4,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "people>=3",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Matters once others work in the venture"
+    },
+    "anatomy-answers": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "products>=2",
+          "at_least": 0.7
+        }
+      ],
+      "why": "Product roles only matter with more than one product"
+    },
+    "mad-answers": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "software",
+          "at_least": 0.6
+        }
+      ],
+      "why": "How work is run; earlier for software ventures"
+    },
+    "handoff": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Work handed to agents or people"
+    },
+    "evidence": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Results of checks on handed-off work"
+    },
+    "decision-rights": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.95,
+        "platform": 0.95
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        },
+        {
+          "if": "people>=2",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Who may decide what, once anyone but the owner acts"
+    },
+    "pillar": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.9
+      },
+      "why": "Product, brand and business pillar notes as the venture grows"
+    },
+    "ownership": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.3,
+        "scale": 0.5,
+        "platform": 0.6
+      },
+      "when": [
+        {
+          "if": "people>=2",
+          "at_least": 0.9
+        },
+        {
+          "if": "funding:venture-capital",
+          "at_least": 1
+        },
+        {
+          "if": "funding:angel",
+          "at_least": 1
+        },
+        {
+          "if": "legal_form:llc",
+          "at_least": 0.6
+        },
+        {
+          "if": "legal_form:c-corp",
+          "at_least": 0.8
+        }
+      ],
+      "why": "The cap table, once anyone else owns or will own a share"
+    },
+    "founder-agreement": {
+      "base": {
+        "discovery": 0,
+        "validation": 0,
+        "beachhead": 0,
+        "scale": 0,
+        "platform": 0
+      },
+      "when": [
+        {
+          "if": "founders>=2",
+          "at_least": 1
+        }
+      ],
+      "why": "Required once two or more founders share ownership"
+    },
+    "board": {
+      "base": {
+        "discovery": 0,
+        "validation": 0,
+        "beachhead": 0.1,
+        "scale": 0.4,
+        "platform": 0.6
+      },
+      "when": [
+        {
+          "if": "funding:venture-capital",
+          "at_least": 1
+        },
+        {
+          "if": "legal_form:c-corp",
+          "at_least": 0.4
+        }
+      ],
+      "why": "A formal board comes with a priced round; an advisory board is optional"
+    },
+    "exit": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.05,
+        "beachhead": 0.2,
+        "scale": 0.5,
+        "platform": 0.6
+      },
+      "when": [
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.7
+        },
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.05
+        }
+      ],
+      "why": "Exit paths matter once investors expect one, or the owners plan one"
+    },
+    "publication-policy": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.95,
+        "platform": 0.95
+      },
+      "when": [
+        {
+          "if": "publishes",
+          "at_least": 1
+        }
+      ],
+      "why": "Required before anything is published (EE-025)"
+    },
+    "team-plan": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.6
+        },
+        {
+          "if": "people>=2",
+          "at_least": 0.7
+        },
+        {
+          "if": "path:cofounder-first",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Who the venture needs and where a human stays in the loop, once agents or others work in it"
+    },
+    "provenance": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.6,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Written by the interfaces on every write, so it costs nothing; run mentura baseline once to adopt records written before it (EE-031)"
+    }
+  }
+}

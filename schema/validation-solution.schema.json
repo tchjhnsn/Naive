@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-solution.schema.json",
+  "title": "Validation: solution",
+  "description": "The solution sub-score (EE-026), at <venture>/purpose/validation/solution.json: how the venture solves the problem, what people use instead, and cited evidence that people in the segment choose it over their current way.",
+  "type": "object",
+  "required": [
+    "venture",
+    "statement",
+    "alternatives",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "statement": {
+      "type": "string",
+      "description": "How it solves the problem, in one or two sentences"
+    },
+    "product": {
+      "type": "string",
+      "description": "Product id, if one product carries the solution"
+    },
+    "alternatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "description": "What people use instead today, including doing nothing"
+    },
+    "difference": {
+      "type": "string",
+      "description": "Why someone would switch"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "validation-evidence.schema.json"
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p",
+        "by",
+        "scored"
+      ],
+      "description": "The Jev probability for this sub-score; the evidence grade weighs it in the validation score",
+      "properties": {
+        "p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "by": {
+          "enum": [
+            "jev",
+            "owner"
+          ]
+        },
+        "scored": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

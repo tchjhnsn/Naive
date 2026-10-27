@@ -22,13 +22,18 @@
     {
       "id": "metrics-review",
       "path": "evidence/skills/metrics-review/SKILL.md"
+    },
+    {
+      "id": "agent-capabilities",
+      "path": "evidence/skills/agent-capabilities/SKILL.md"
     }
   ],
   "records": [
     "evidence",
     "eval-suite",
     "design-documents-registry",
-    "benchmark"
+    "benchmark",
+    "agent-capability"
   ],
   "reads": [
     "handoff",

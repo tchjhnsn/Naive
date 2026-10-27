@@ -1,0 +1,38 @@
+// The provenance log (EE-031): one append-only JSON line per write, after W3C PROV (entity,
+// activity, agent, derived from). Each line carries the previous line's hash, so an edited or
+// deleted line breaks the chain. Lives at <venture>/provenance.jsonl, in the system layer, so it
+// is on whatever layers a venture uses. Git history stays the implicit provenance for anything
+// written outside the router.
+
+import { createHash } from "node:crypto";
+import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+export const LOG = "provenance.jsonl";
+const sha = (s) => createHash("sha256").update(s).digest("hex");
+const sorted = (x) => Array.isArray(x) ? x.map(sorted) : x && typeof x === "object" ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, sorted(x[k])])) : x;
+export const lineHash = (prev, entry) => { const { hash, ...rest } = entry; return sha(prev + JSON.stringify(sorted(rest))); };
+export const contentHash = (file) => sha(readFileSync(file));
+
+export function entries(dir) {
+  const f = join(dir, LOG);
+  return existsSync(f) ? readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : [];
+}
+
+/** The agent behind this process: MENTURA_ACTOR (person or agent), MENTURA_ACTOR_ID, MENTURA_MODEL, MENTURA_SESSION, MENTURA_HARNESS. */
+export function agentFromEnv(kind, via, extra = {}) {
+  const e = process.env;
+  const a = { kind, via, id: e.MENTURA_ACTOR_ID, model: kind === "agent" ? e.MENTURA_MODEL : undefined, session: e.MENTURA_SESSION, harness: e.MENTURA_HARNESS, ...extra };
+  return Object.fromEntries(Object.entries(a).filter(([, v]) => v));
+}
+
+/** Appends one entry for a file just written (path relative to the venture folder). */
+export function record(dir, { entity, route, activity, agent, derived_from, decision, note }) {
+  const prior = entries(dir);
+  const prev = prior.length ? prior.at(-1).hash : "genesis";
+  const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
+    derived_from: derived_from?.length ? derived_from : undefined, decision, note, sha256: contentHash(join(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+  entry.hash = lineHash(prev, entry);
+  appendFileSync(join(dir, LOG), JSON.stringify(entry) + "\n");
+  return entry;
+}

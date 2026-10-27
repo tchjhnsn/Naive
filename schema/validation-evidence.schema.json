@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-evidence.schema.json",
+  "title": "Validation evidence item",
+  "description": "One piece of cited evidence behind a validation record (EE-026), shared by every validation sub-score. schema/check-validation.mjs grades each item from its kind, audience, sample, specificity and age (adapted from GRADE), and grades the record from its items. A claim with no evidence grades very low.",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "summary",
+    "source",
+    "audience",
+    "collected"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "kind": {
+      "enum": [
+        "behavior",
+        "commitment",
+        "stated",
+        "desk-research",
+        "opinion"
+      ],
+      "description": "behavior: what people did (retention, payments, repeat use, money or time already spent on workarounds); commitment: what they put at stake (deposit, pre-order, letter of intent, time booked); stated: what they said when asked (interview, survey); desk-research: published data or reports; opinion: unprompted praise, advice or compliments"
+    },
+    "summary": {
+      "type": "string",
+      "description": "What the evidence shows, specific enough to check"
+    },
+    "supports": {
+      "type": "boolean",
+      "default": true,
+      "description": "false when the evidence contradicts the claim"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "Where to see it: a URL with the date it was checked, or a file relative to the venture folder (interview notes, a data export), or both",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "checked": {
+          "type": "string",
+          "format": "date"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "audience": {
+      "enum": [
+        "target",
+        "adjacent",
+        "wrong",
+        "unknown"
+      ],
+      "description": "Whether the people behind it are the venture's target segment for this claim (for pricing, the buyer)"
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "specificity": {
+      "enum": [
+        "specific",
+        "general"
+      ],
+      "description": "specific: past facts, numbers, named instances; general: hypotheticals, generalities, opinions about the future (The Mom Test)"
+    },
+    "collected": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

@@ -336,6 +336,27 @@
       "status": "kept"
     },
     {
+      "noun": "team plan",
+      "level": "governance",
+      "meaning": "Who the venture needs, agent or person, by phase, with the authority each holds and where a human stays in the loop; recruiting briefs for open person roles (operations/team-plan.json, EE-029)",
+      "standard": "workforce planning (common HR usage)",
+      "status": "new"
+    },
+    {
+      "noun": "human loop",
+      "level": "governance",
+      "meaning": "The person who decides, reviews or does the part of a task that agents cannot, may not, or are not known to do; named for every such agent task",
+      "standard": "human-in-the-loop (common AI usage)",
+      "status": "new"
+    },
+    {
+      "noun": "capability register",
+      "level": "evidence",
+      "meaning": "What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (evidence/capabilities/agent-capabilities.json, EE-029)",
+      "standard": "ours",
+      "status": "new"
+    },
+    {
       "noun": "decision right",
       "level": "governance",
       "meaning": "Who may decide what, at one of four levels: decide, decide-inform, recommend-approve, escalate. A venture may tighten the template, never loosen it without a named decision",
@@ -403,8 +424,8 @@
     {
       "noun": "kit",
       "level": "venture",
-      "meaning": "A product that bundles other products (skills, schemas, checks) sold or used together. Scoped to the whole system, one layer, or one tier of the operations layer. A part can also be its own product",
-      "standard": "product bundling (Adams and Yellen 1976)",
+      "meaning": "A package a layer offers: skills, record types (schemas), checks, templates and references, used together. Each layer has one at <layer>/kit.json and may hold more under <layer>/kits/ (EE-026). As an offering it is a bundle; a part can also be its own product",
+      "standard": "product bundling (Adams and Yellen 1976); package, as in a framework's packages",
       "status": "new"
     },
     {
@@ -645,10 +666,73 @@
       "status": "new"
     },
     {
+      "noun": "template",
+      "level": "system",
+      "meaning": "A fill-in starting point for one record or document: the fields, what to write in each and what a strong one looks like. A kit holds templates; a template holds no rules and checks nothing",
+      "standard": "common usage (document template)",
+      "status": "new"
+    },
+    {
+      "noun": "validation score",
+      "level": "purpose",
+      "meaning": "The probability that a venture is validated: a weighted average of sub-scores (problem, solution, product-market fit, pricing, go-to-market, team, operations readiness), each a Jev probability times its evidence weight, with floors; replaces a declared phase gate (EE-026)",
+      "standard": "ours, after Blank's customer validation",
+      "references": [
+        "blank-2005-four-steps"
+      ],
+      "status": "new"
+    },
+    {
+      "noun": "evidence grade",
+      "level": "purpose",
+      "meaning": "How much a validation record's cited evidence can be trusted: high, moderate, low or very low, from the kind of signal, the audience, the sample, the specificity and the age; a claim with no evidence is very low",
+      "standard": "GRADE certainty of evidence",
+      "references": [
+        "grade-handbook",
+        "fitzpatrick-2013-mom-test"
+      ],
+      "status": "new"
+    },
+    {
+      "noun": "need-now score",
+      "level": "purpose",
+      "meaning": "The probability that a venture needs a record type in its current phase and the next, from priors raised or lowered by facts about the venture; records below 0.5 are held back unless the builder asks, so builders don't overbuild (EE-028)",
+      "standard": "ours; just-in-time (lean manufacturing) and YAGNI (extreme programming) in spirit",
+      "status": "new"
+    },
+    {
       "noun": "derived answer",
       "level": "operations",
       "meaning": "A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from",
       "standard": "ours",
+      "status": "new"
+    },
+    {
+      "noun": "route",
+      "level": "interface",
+      "meaning": "The address of one record type or command in a venture, such as purpose/validation/problem: a layer, then a kit when the record sits in a nested kit, then the record. Generated from the data model and kits; the CLI, the MCP server and the HTTP API share one route table (EE-030)",
+      "standard": "routing in web frameworks (Next.js App Router, Rails routes)",
+      "status": "new"
+    },
+    {
+      "noun": "draft",
+      "level": "interface",
+      "meaning": "A gated record an agent wrote, held in <venture>/_drafts/ until a person accepts it; the decision class of the record says it is a person's to make (EE-030)",
+      "standard": "common usage (draft for approval)",
+      "status": "new"
+    },
+    {
+      "noun": "provenance",
+      "level": "system",
+      "meaning": "Who or what produced a record, by which activity, from what, and under which decision: explicit in the provenance log for writes through the router, implicit in git history for everything else (EE-031)",
+      "standard": "W3C PROV (PROV-DM: entity, activity, agent)",
+      "status": "new"
+    },
+    {
+      "noun": "provenance log",
+      "level": "system",
+      "meaning": "A venture's append-only record of writes, <venture>/provenance.jsonl: one line per write naming the file, the activity (write, draft, accept, baseline), the person or agent and the interface, what it was derived from and the decision; each line carries the previous line's hash (EE-031)",
+      "standard": "W3C PROV; hash-chained append-only log (common audit usage)",
       "status": "new"
     }
   ]

@@ -27,12 +27,18 @@ const steps = [
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
   ["publication: examples", "node", ["schema/check-publication.mjs", "schema/examples/workspace"]],
+  ["team: instance", "node", ["schema/check-team.mjs", "instance"]],
+  ["provenance: instance", "node", ["schema/check-provenance.mjs", "instance"]],
+  ["provenance: examples", "node", ["schema/check-provenance.mjs", "schema/examples/workspace"]],
+  ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
+  ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace", "--score"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "execution"))).map((v) =>
     [`execution: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],
   ["MAD catalog and register", "node", ["operations/skills/methodology-selection/ee.mjs", "validate"]],
   ["MAD tests", "node", ["operations/skills/methodology-selection/test.mjs"]],
   ["MAD publisher tests", "node", ["operations/skills/methodology-selection/test-publish.mjs"]],
+  ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
 ];
 
 // Generated files: the committed copy must equal a fresh render.
@@ -46,6 +52,12 @@ const layerGraph = () => {
   const md = spawnSync("node", ["schema/check-data-model.mjs", "--md"], { cwd: root, encoding: "utf8" }).stdout;
   const doc = readFileSync(join(root, "docs/design/LAYERS_AND_KITS_2026-10-27.md"), "utf8");
   return doc.slice(doc.indexOf("### Layer relationships")).trim() === md.trim();
+};
+
+const routeTable = () => {
+  const md = spawnSync("node", ["interface/router.mjs", "--md"], { cwd: root, encoding: "utf8" }).stdout;
+  const doc = readFileSync(join(root, "docs/reference/ROUTES.md"), "utf8");
+  return doc.slice(doc.indexOf("## Routes")).trim() === md.trim();
 };
 
 let failed = 0;
@@ -62,5 +74,8 @@ console.log(`${fresh ? "pass" : "FAIL"}  docs/ontology.md matches docs/ontology.
 const graph = layerGraph();
 if (!graph) failed++;
 console.log(`${graph ? "pass" : "FAIL"}  layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node schema/check-data-model.mjs --md)`);
+const table = routeTable();
+if (!table) failed++;
+console.log(`${table ? "pass" : "FAIL"}  docs/reference/ROUTES.md matches the kits (regenerate with node interface/router.mjs --md)`);
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);

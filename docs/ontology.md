@@ -34,6 +34,9 @@ The system is opinionated: it names one default for each choice, and every defau
 | kit manifest | The file (<layer>/kit.json) that lists what one kit holds: its skills, the record types it owns, those of other kits it reads and writes, and its checks. Layer relationships are derived from manifests | package manifest (common software usage) |  |
 | vault | The folder of documents (Markdown notes and JSON records) that holds a workspace's venture folders, their records and decisions. Every workspace has one; a venture outside software may need nothing else | Obsidian's name for a folder of notes; generically a knowledge base |  |
 | repository (repo) | A version-controlled store, normally Git, holding code and the documents that ship with it (docs-as-code). A venture that builds software needs at least one; repo is the short form | version control (Git: repository) |  |
+| template | A fill-in starting point for one record or document: the fields, what to write in each and what a strong one looks like. A kit holds templates; a template holds no rules and checks nothing | common usage (document template) |  |
+| provenance | Who or what produced a record, by which activity, from what, and under which decision: explicit in the provenance log for writes through the router, implicit in git history for everything else (EE-031) | W3C PROV (PROV-DM: entity, activity, agent) |  |
+| provenance log | A venture's append-only record of writes, <venture>/provenance.jsonl: one line per write naming the file, the activity (write, draft, accept, baseline), the person or agent and the interface, what it was derived from and the decision; each line carries the previous line's hash (EE-031) | W3C PROV; hash-chained append-only log (common audit usage) |  |
 
 ### Venture
 
@@ -53,7 +56,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | venture profile | The readable companion to venture.json: narrative, pillars, changelog | ours |  |
 | pillar | Product, brand and business, in every venture | ours |  |
 | venture template | The scaffold for a venture: pillars, roles, decision rights | ours |  |
-| kit | A product that bundles other products (skills, schemas, checks) sold or used together. Scoped to the whole system, one layer, or one tier of the operations layer. A part can also be its own product | product bundling (Adams and Yellen 1976) |  |
+| kit | A package a layer offers: skills, record types (schemas), checks, templates and references, used together. Each layer has one at <layer>/kit.json and may hold more under <layer>/kits/ (EE-026). As an offering it is a bundle; a part can also be its own product | product bundling (Adams and Yellen 1976); package, as in a framework's packages |  |
 
 ### Purpose
 
@@ -71,6 +74,9 @@ The system is opinionated: it names one default for each choice, and every defau
 | Succession Matrix | Part of Product Anatomy that assigns portfolio roles by phase | ours |  |
 | telos | The end a venture exists to reach (purpose/telos.json): statement, end state, measures, the owners' intended outcome, and exit criteria for each phase. Start with the end: other layers derive from it | Aristotle (final cause); Covey, begin with the end in mind |  |
 | exit criterion | What must be true for a venture to leave a phase, written in its telos and tied to a telos measure; it refines that phase's generic gate. Not an owner's exit (governance) | Stage-Gate exit criteria (Cooper) |  |
+| validation score | The probability that a venture is validated: a weighted average of sub-scores (problem, solution, product-market fit, pricing, go-to-market, team, operations readiness), each a Jev probability times its evidence weight, with floors; replaces a declared phase gate (EE-026) | ours, after Blank's customer validation | blank-2005-four-steps |
+| evidence grade | How much a validation record's cited evidence can be trusted: high, moderate, low or very low, from the kind of signal, the audience, the sample, the specificity and the age; a claim with no evidence is very low | GRADE certainty of evidence | grade-handbook, fitzpatrick-2013-mom-test |
+| need-now score | The probability that a venture needs a record type in its current phase and the next, from priors raised or lowered by facts about the venture; records below 0.5 are held back unless the builder asks, so builders don't overbuild (EE-028) | ours; just-in-time (lean manufacturing) and YAGNI (extreme programming) in spirit |  |
 
 ### Knowledge
 
@@ -99,12 +105,15 @@ The system is opinionated: it names one default for each choice, and every defau
 | --- | --- | --- | --- |
 | eval | A test of whether something worked; evals are grouped in eval suites (eval-suite.schema.json) | AI evals |  |
 | evidence | The recorded result of one run of a check or eval: subject and version, each criterion's outcome and its output, at <venture>/evidence/results/<id>.json. Append-only | common audit usage |  |
+| capability register | What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (evidence/capabilities/agent-capabilities.json, EE-029) | ours |  |
 
 ### Governance
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
 | role | A person's or agent's job; never a product's place in the portfolio | decision rights (RACI, RAPID) |  |
+| team plan | Who the venture needs, agent or person, by phase, with the authority each holds and where a human stays in the loop; recruiting briefs for open person roles (operations/team-plan.json, EE-029) | workforce planning (common HR usage) |  |
+| human loop | The person who decides, reviews or does the part of a task that agents cannot, may not, or are not known to do; named for every such agent task | human-in-the-loop (common AI usage) |  |
 | decision right | Who may decide what, at one of four levels: decide, decide-inform, recommend-approve, escalate. A venture may tighten the template, never loosen it without a named decision | decision rights (RAPID, DACI) |  |
 | cap table | The record of who owns the venture and on what terms: share classes, holders, grants with vesting, the option pool, SAFEs and notes (governance/ownership.json) | capitalization table (common startup and finance usage) |  |
 | share class | A kind of share (or LLC unit) with its own votes, price and rights: common, preferred, super-voting, non-voting | corporate law (classes of stock) |  |
@@ -131,6 +140,8 @@ The system is opinionated: it names one default for each choice, and every defau
 | AI harness | A product that is the software around a model: the person's work happens in exchanges with it, so without the model nothing is left. A chatbot is one. The model answers; the person acts | harness (industry usage) | anthropic-2024-building-effective-agents |
 | AI feature | A model used inside a product that does its job without it (summaries, search, drafting). Test: remove the model and the product still works. Most apps that implement AI are here, not harnesses | common product usage | anthropic-2024-building-effective-agents |
 | custom interface | An interface built for the system or a venture rather than bought, such as the operator console | common software usage |  |
+| route | The address of one record type or command in a venture, such as purpose/validation/problem: a layer, then a kit when the record sits in a nested kit, then the record. Generated from the data model and kits; the CLI, the MCP server and the HTTP API share one route table (EE-030) | routing in web frameworks (Next.js App Router, Rails routes) |  |
+| draft | A gated record an agent wrote, held in <venture>/_drafts/ until a person accepts it; the decision class of the record says it is a person's to make (EE-030) | common usage (draft for approval) |  |
 
 ### Retired
 

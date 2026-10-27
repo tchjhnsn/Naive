@@ -1,8 +1,8 @@
 // Checks the data model (schema/data-model.json) and the kit manifests against the
 // repository (EE-018). Rules: record type ids are unique and owned by a known layer;
 // every JSON file in the repo is a record of some type (or ignored with a reason), and
-// every schema file governs one; each reference names a known record type and a check
-// that exists, or says that nothing checks it yet; every layer has one kit; each record
+// every schema file governs one (or is a part one $refs); each reference names a known record type and a check
+// that exists, or says that nothing checks it yet; every layer has a kit at <layer>/kit.json and may hold more under <layer>/kits/; each record
 // type is owned by exactly one kit, of its own layer; kits read and write only known
 // types owned by other kits; every SKILL.md belongs to exactly one kit.
 //
@@ -49,13 +49,16 @@ for (const c of model.records.filter((r) => r.contains)) for (const t of c.conta
 const claimed = new Set([...types.values()].flatMap((r) => r.files));
 const ignored = new Set(model.ignore.map((i) => i.path));
 const schemas = new Set([...types.values()].map((r) => r.schema).filter(Boolean));
+// A schema that a named schema $refs (a shared part, such as the validation evidence item) counts as named.
+for (const s of [...schemas]) for (const m of readFileSync(join(root, s), "utf8").matchAll(/"\$ref":\s*"([a-z0-9-]+\.schema\.json)/g)) schemas.add(`schema/${m[1]}`);
 for (const f of all.filter((f) => f.endsWith(".json"))) {
   if (f.endsWith(".schema.json")) { if (!schemas.has(f)) errors.push(`${f}: a schema no record type names`); continue; }
   if (!claimed.has(f) && !ignored.has(f)) errors.push(`${f}: no record type in schema/data-model.json covers this file`);
 }
 
 // Kits.
-const kitFiles = [...model.layers.map((l) => `${l}/kit.json`), "schema/kit.json"];
+// Each layer has one kit at <layer>/kit.json and may hold more at <layer>/kits/<kit>/kit.json (EE-026).
+const kitFiles = [...model.layers.map((l) => `${l}/kit.json`), "schema/kit.json", ...all.filter((f) => /^[a-z]+\/kits\/[^/]+\/kit\.json$/.test(f))];
 const kits = new Map();
 const owner = new Map();
 for (const p of kitFiles) {
