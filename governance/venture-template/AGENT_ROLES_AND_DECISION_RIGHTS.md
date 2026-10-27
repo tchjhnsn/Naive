@@ -43,10 +43,11 @@ Checks with objective criteria (tests, goldens, invariants, rebuilds) run as CI 
 | Adopting a free, open-licence dependency | architect | **decide-inform** | Add to the dependency register |
 | Any paid service, plan change or purchase | founder | **escalate** |  |
 | Accepting terms, licences with obligations, legal positions | founder | **escalate** |  |
+| Who owns or controls the venture: admitting or removing a cofounder, issuing, granting or reclassifying shares or units, signing a SAFE, note or priced round, granting investor rights, forming a board or changing its powers, agreeing to sell or wind down. Founder decisions made with counsel (EE-022); agents prepare options and documents only | founder | **escalate** |  |
 | Publishing, announcing, or sending anything outside on the company's behalf | founder | **escalate** |  |
 | Release to production users | founder | **recommend-approve** | Founder or a named delegate |
 | Strategy, product lineup, entity structure, methodology amendments | founder | **escalate** |  |
-| A decision touching two ecosystems or companies | umbrella chief-of-staff | **recommend-approve** | Founder approves |
+| A decision touching two ventures | chief-of-staff | **recommend-approve** | The chief of staff of the workspace (umbrella) position recommends; the founder approves |
 | What a source says; whether a record is official | domain-lead | **decide-inform** |  |
 | Experience and interface design within decided product lines | product-design-lead | **decide-inform** |  |
 | Whether an idea is worked now or deferred, and to which role | chief-of-staff | **decide-inform** |  |

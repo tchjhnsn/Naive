@@ -1,6 +1,6 @@
 ---
 type: knowledge
-tags: [everything-ecosystem, skills, contract-first, api-first, sad-v3, software]
+tags: [everything-ecosystem, skills, operations, software-engineering-tier, contract-first, api-first, sad-v3, software]
 ai-model: gpt-5.6-sol
 created: 2026-07-26
 source: hybrid
@@ -21,6 +21,8 @@ description: >
 ---
 
 # Contract-First Skill
+
+> **Layer and tier:** operations layer, software engineering tier (EE-020). Moved from `knowledge/skills/` on 2026-10-27: contract-first is a development methodology (catalog entry `operations/catalog/methodologies/contract-first.md`), chosen per system by MAD, not a record of what is known.
 
 The methodology ritual that requires a **published communication contract**
 between providers (backend, services, agents) and consumers (web UI, SDK, MCP,
@@ -143,7 +145,7 @@ over prose-only IMPL sections.
 
 ## Backfill / missing assets (mid-build recovery)
 
-Follow [[../_patterns/gate-backfill|gate-backfill]] (detect → triage → order →
+Follow [[../../../knowledge/skills/_patterns/gate-backfill|gate-backfill]] (detect → triage → order →
 freeze → exit). Skill-specific notes:
 
 ### Detect

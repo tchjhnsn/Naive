@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evidence.schema.json",
+  "title": "Evidence",
+  "description": "The result of one run of a check or eval, stored at <venture>/evidence/results/<id>.json (EE-017). It names what was checked, at which version, each assertion's outcome and the output that shows it. Results are append-only: a new run writes a new file. Handoffs point at results to prove their done-criteria.",
+  "type": "object",
+  "required": [
+    "id",
+    "subject",
+    "ran_at",
+    "runner",
+    "results",
+    "passed"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "handoff",
+            "product",
+            "skill",
+            "venture",
+            "suite"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "description": "Commit, tag or version the run checked"
+        }
+      },
+      "additionalProperties": false
+    },
+    "suite": {
+      "type": "string",
+      "description": "Path to the eval suite, when the run came from one"
+    },
+    "ran_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runner": {
+      "type": "string",
+      "description": "Who or what ran it: a CI job, a session id, a role"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "criterion",
+          "kind",
+          "passed"
+        ],
+        "properties": {
+          "criterion": {
+            "type": "string",
+            "description": "A handoff done-criterion id, or an eval assertion name"
+          },
+          "kind": {
+            "enum": [
+              "conformance",
+              "self-proof",
+              "review",
+              "judged"
+            ],
+            "description": "judged: scored by a model against a rubric, which counts as evidence only for review and evals, never conformance"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "command": {
+            "type": "string"
+          },
+          "output": {
+            "type": "string",
+            "description": "The output, trimmed to what shows the outcome"
+          },
+          "artifact": {
+            "type": "string",
+            "description": "Path or link to a screenshot, log or report"
+          },
+          "by": {
+            "type": "string",
+            "description": "For review results: the role that judged it, which must be the criterion's reviewer and not the handoff's holder"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "passed": {
+      "type": "boolean",
+      "description": "True only when every result passed"
+    }
+  },
+  "additionalProperties": false
+}

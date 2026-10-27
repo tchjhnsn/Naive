@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kit.schema.json",
+  "title": "Kit manifest",
+  "description": "What one kit holds, at <layer>/kit.json for a layer kit and schema/kit.json for the system kit (EE-018): its skills, the record types it owns, the record types it reads and writes, and the checks that run on them. A kit offered as a product points at its product card. Layer relationships are derived from reads and writes, never written by hand. schema/check-data-model.mjs checks it.",
+  "type": "object",
+  "required": [
+    "kit",
+    "layer",
+    "purpose",
+    "skills",
+    "records",
+    "reads",
+    "writes",
+    "checks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kit": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "layer": {
+      "enum": [
+        "system",
+        "purpose",
+        "knowledge",
+        "operations",
+        "execution",
+        "evidence",
+        "governance",
+        "interface"
+      ]
+    },
+    "purpose": {
+      "type": "string",
+      "description": "What the layer is for, in one sentence"
+    },
+    "product": {
+      "type": "string",
+      "description": "The product card that offers this kit, as <venture id>/<product id>"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "path"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "The SKILL.md, from the repo root"
+          },
+          "tier": {
+            "enum": [
+              "governance",
+              "delivery",
+              "software-engineering",
+              "automation"
+            ],
+            "description": "For an operations-kit skill: the MAD tier it serves. Required there, not allowed elsewhere"
+          },
+          "standalone": {
+            "type": "boolean",
+            "description": "Useful without the rest of the kit"
+          },
+          "move_to": {
+            "type": "string",
+            "description": "A proposed owning kit, when the skill is filed in the wrong layer"
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Record types this kit owns (data-model ids)"
+    },
+    "reads": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Record types of other kits its skills and checks read today"
+    },
+    "writes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Record types of other kits its skills write today"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Scripts that check or run this kit's records, from the repo root"
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Known missing parts"
+    }
+  }
+}

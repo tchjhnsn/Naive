@@ -1,0 +1,51 @@
+{
+  "updated": "2026-10-01",
+  "boards": [
+    {
+      "id": "directors",
+      "kind": "formal",
+      "formed": "2026-09-15",
+      "meets": "every-6-weeks",
+      "seats": [
+        {
+          "id": "seat-common-1",
+          "person": "Ana Reyes",
+          "type": "founder",
+          "appointed_by": "common"
+        },
+        {
+          "id": "seat-preferred",
+          "person": "Jo Lark",
+          "type": "investor",
+          "appointed_by": "series-seed"
+        },
+        {
+          "id": "seat-independent",
+          "person": null,
+          "type": "independent",
+          "appointed_by": "board"
+        }
+      ],
+      "reserved_matters": [
+        "issue or reclassify shares",
+        "approve the annual budget",
+        "hire or remove the CEO",
+        "sell, merge or wind down the company",
+        "take on debt over 100,000 USD"
+      ]
+    },
+    {
+      "id": "advisors",
+      "kind": "advisory",
+      "meets": "quarterly",
+      "seats": [
+        {
+          "id": "seat-dee",
+          "person": "Dee Park",
+          "type": "advisor",
+          "appointed_by": "board"
+        }
+      ]
+    }
+  ]
+}

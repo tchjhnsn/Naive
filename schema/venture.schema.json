@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "venture.schema.json",
   "title": "Venture",
-  "description": "One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, its clients are records in clients/, and ventures can hold ventures. Cross-venture rules are checked by schema/check-ventures.mjs. Nouns follow docs/ontology.md (EE-014).",
+  "description": "One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, the parties it keeps records for are accounts in accounts/ (optional, EE-021), and ventures can hold ventures. Cross-venture rules are checked by schema/check-ventures.mjs. Nouns follow docs/ontology.md (EE-014).",
   "type": "object",
   "required": [
     "id",
@@ -137,10 +137,41 @@
     },
     "members": {
       "type": "array",
+      "description": "The others who work in the venture, by role, people and agents alike: a string role (co-founder, partner, investor) or an object naming the kind. No personal details. Any member switches on governance, since agents need decision rights too.",
       "items": {
-        "type": "string"
-      },
-      "description": "Roles of the others in it (co-founder, partner, investor), not personal details. A second member switches on governance."
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "required": [
+              "role",
+              "kind"
+            ],
+            "properties": {
+              "role": {
+                "type": "string",
+                "description": "A role id from the roles register (builder, architect) or a plain role"
+              },
+              "kind": {
+                "enum": [
+                  "person",
+                  "agent"
+                ]
+              },
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "For agents: the interfaces or runtimes it runs in (integration ids)"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
     },
     "governed_by": {
       "type": "string"
@@ -243,6 +274,38 @@
       "items": {
         "type": "string"
       }
+    },
+    "repos": {
+      "type": "array",
+      "description": "The venture's repositories (repo is short for repository): version-controlled stores, normally Git, holding code and the documents that ship with it (docs-as-code). The venture folder itself lives in the vault. A venture that builds software needs at least one; ventures in other industries may need none (EE-020)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9.-]+$"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "location": {
+            "type": "string",
+            "description": "Path relative to the workspace's code folder"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Product ids whose code it holds"
+          }
+        }
+      }
     }
   },
   "$defs": {
@@ -258,7 +321,8 @@
           ],
           "properties": {
             "location": {
-              "type": "string"
+              "type": "string",
+              "description": "Folder path, relative to the folder that holds venture.json"
             },
             "tools": {
               "type": "array",

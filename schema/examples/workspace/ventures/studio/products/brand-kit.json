@@ -12,7 +12,7 @@
   "technology": "design service plus templates",
   "offering": "service",
   "business_model": [
-    "fixed-fee",
+    "fee-for-service",
     "add-on"
   ],
   "allowed_from": "validation",

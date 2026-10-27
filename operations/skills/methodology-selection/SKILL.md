@@ -16,6 +16,8 @@ Domain: [[EVERYTHING_ECOSYSTEM_DOMAIN_DESIGN_2026-10-10]]. System: [[EVERYTHING_
 EE=<ecosystem-root>/skills/methodology-selection/ee.mjs
 ```
 
+
+**Read before asking (EE-023).** Run `node operations/skills/methodology-selection/derive-answers.mjs <venture dir>` first. It answers the governance-tier questions the venture's records already settle (who decides, funding, agent autonomy, success measure from the telos) and names each source. Ask only what it lists under still ask.
 ## Principles to keep in mind
 
 - **The quality of the question determines the quality of the answer (P1).** When a recommendation looks wrong, look first for a poor or missing decision question, and refine it with a new version.
@@ -40,6 +42,7 @@ node $EE validate                       # schemas, references, lifecycle, ratifi
 node $EE list --kind methodology --domain software [--family spec-driven] [--lifecycle listed] [--json]
 node $EE report                         # research triggers, mostly-assumed entries, assignments without evidence, stale, candidates
 node --env-file=<env file that sets TYPESAFE_API_KEY> $EE recommend --system <system-description.md> [--repeat 3]
+node $EE recommend --system <system-description.md> --answers <answers.json>   # no Jev: a reasoning model fills the answers; its scorer is recorded
 node $EE propose --from register/_recommendations/<run>.json [--methodology a,b,c]
 node $EE evidence A-NNN --title "…" --note "…" [--source "…"] [--methodology a,b] [--tested tdd:M7]
 node $EE index

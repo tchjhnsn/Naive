@@ -79,7 +79,7 @@ Articulation closure produces a defined set of artifacts. They build on each oth
     - Data-field × UI-element mapping.
 
 12. **Communication contracts (software, networked slices)** — Tier A API-first
-    assets per [[../contract-first/SKILL|contract-first]]: OpenAPI and/or
+    assets per [[../../../operations/skills/contract-first/SKILL|contract-first]]: OpenAPI and/or
     AsyncAPI and/or MCP schemas, auth model, error/incomplete conventions,
     versioning policy, fixtures, and IMPL_SPEC pointer. Required before Phase 2
     coding of each client–server or client–agent boundary, or recorded as

@@ -1,0 +1,33 @@
+{
+  "paths": [
+    {
+      "kind": "acquisition",
+      "stance": "preferred",
+      "note": "Vertical software buyers consolidate small-business tools"
+    },
+    {
+      "kind": "ipo",
+      "stance": "open"
+    },
+    {
+      "kind": "wind-down",
+      "stance": "open",
+      "note": "If the seed runs out without traction"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "soft-landing",
+      "value": 3000000,
+      "note": "Acqui-hire"
+    },
+    {
+      "id": "base",
+      "value": 40000000
+    },
+    {
+      "id": "strong",
+      "value": 150000000
+    }
+  ]
+}

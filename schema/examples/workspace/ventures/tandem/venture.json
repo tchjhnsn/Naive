@@ -1,0 +1,70 @@
+{
+  "id": "tandem",
+  "name": "Tandem",
+  "parent": null,
+  "phase": "validation",
+  "form": {
+    "legal_form": "c-corp",
+    "funding": "venture-capital"
+  },
+  "core": {
+    "promise": "Two people can run a shop's bookings, stock and payroll from one phone",
+    "promised_to": "Owners of two-to-ten-person service shops",
+    "must_not": "Lock a shop's records into a format it cannot export",
+    "competence": "Turning small-shop paperwork into one mobile workflow"
+  },
+  "owner": "shared",
+  "status": "active",
+  "profile": "profile.md",
+  "layers": {
+    "purpose": {
+      "location": "purpose/"
+    },
+    "knowledge": {
+      "location": "knowledge/"
+    },
+    "operations": false,
+    "execution": {
+      "location": "execution/"
+    },
+    "evidence": {
+      "location": "evidence/"
+    },
+    "governance": {
+      "location": "governance/"
+    }
+  },
+  "repos": [
+    {
+      "id": "tandem-app",
+      "url": "https://example.com/tandem/tandem-app",
+      "products": [
+        "shop-app"
+      ]
+    }
+  ],
+  "ambition": "aggressive-growth",
+  "industry": {
+    "system": "naics",
+    "code": "513210",
+    "label": "Software Publishers"
+  },
+  "opened": "2026-03-02",
+  "members": [
+    {
+      "role": "founder",
+      "kind": "person"
+    },
+    {
+      "role": "founder",
+      "kind": "person"
+    },
+    {
+      "role": "builder",
+      "kind": "agent",
+      "tools": [
+        "claude-code"
+      ]
+    }
+  ]
+}

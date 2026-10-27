@@ -1,0 +1,21 @@
+{
+  "kit": "interface-kit",
+  "layer": "interface",
+  "purpose": "Let a person, with agents, work across at least four layers in one session: agent harnesses (Claude Code, Cursor) and custom interfaces (the operator console).",
+  "product": "everything-ecosystem/console",
+  "skills": [],
+  "records": [
+    "harness-config"
+  ],
+  "reads": [
+    "integration"
+  ],
+  "writes": [],
+  "checks": [
+    "schema/check-integrations.mjs"
+  ],
+  "gaps": [
+    "Holds no skills; the operator console is a folder, not a kit yet",
+    "Cannot yet run roles in separate sessions, so one agent can play builder and reviewer"
+  ]
+}

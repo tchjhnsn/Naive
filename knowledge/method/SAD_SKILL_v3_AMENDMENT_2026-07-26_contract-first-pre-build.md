@@ -33,7 +33,7 @@ design-first) — typically OpenAPI, AsyncAPI, and/or MCP tool schemas — plus
 auth, error, versioning, and fixture assets. Backend-leading implementation is
 allowed; backend-without-contract is not.
 
-**Capability skill:** [[skills/contract-first/SKILL|contract-first]]
+**Capability skill:** [[../../operations/skills/contract-first/SKILL|contract-first]]
 
 ---
 
@@ -139,7 +139,7 @@ contract. Drift is a defect. Contract changes follow Phase 4 class discipline.
 ```
 - **contract-first** — at Phase 1B → Phase 2 and whenever a new client-facing
   or agent-facing boundary is planned; requires published API/event/tool
-  contracts before slice coding. Lives at `knowledge/skills/contract-first/`.
+  contracts before slice coding. Lives at `operations/skills/contract-first/` (moved from knowledge 2026-10-27, EE-020).
 ```
 
 ### Patch 3.4 — PART 11 (new supporting pattern)
@@ -153,7 +153,7 @@ Publish the consumer–provider contract before building either side of a
 networked slice. Prefer OpenAPI 3.x for HTTP, AsyncAPI for events, and explicit
 schemas for MCP tools/resources/prompts. Keep fixtures shared. Optionally add
 consumer-driven contract tests (Pact) when consumers and providers move at
-different tempos. See skills/contract-first/SKILL.md.
+different tempos. See operations/skills/contract-first/SKILL.md.
 ```
 
 ---

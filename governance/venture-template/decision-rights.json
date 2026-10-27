@@ -95,6 +95,12 @@
       "level": "escalate"
     },
     {
+      "id": "ownership-or-control",
+      "description": "Who owns or controls the venture: admitting or removing a cofounder, issuing, granting or reclassifying shares or units, signing a SAFE, note or priced round, granting investor rights, forming a board or changing its powers, agreeing to sell or wind down. Founder decisions made with counsel (EE-022); agents prepare options and documents only",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
       "id": "public-commitment",
       "description": "Publishing, announcing, or sending anything outside on the company's behalf",
       "owner": "founder",
@@ -115,10 +121,10 @@
     },
     {
       "id": "cross-entity",
-      "description": "A decision touching two ecosystems or companies",
-      "owner": "umbrella chief-of-staff",
+      "description": "A decision touching two ventures",
+      "owner": "chief-of-staff",
       "level": "recommend-approve",
-      "condition": "Founder approves"
+      "condition": "The chief of staff of the workspace (umbrella) position recommends; the founder approves"
     },
     {
       "id": "domain-fact",

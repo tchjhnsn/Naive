@@ -4,7 +4,7 @@ The map of this repo, loaded by every agent.
 
 ## What this is
 
-The Everything Ecosystem methodology, packaged as one private repo (EE-001). Five layers (purpose, knowledge, operations, execution, evidence) plus governance and interface. SAD is the knowledge layer; MAD is the operations layer.
+The Everything Ecosystem methodology, packaged as one private repo (EE-001). Proposed genus: a venture development framework, in the same genus as web development frameworks (EE-024). Five layers (purpose, knowledge, operations, execution, evidence) plus governance and interface. SAD is the knowledge layer; MAD is the operations layer.
 
 ## Where things are
 
@@ -21,8 +21,17 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Fiv
 
 ## Build and test
 
+- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs python3 with `jsonschema` for `schema/validate.py`.
 - `node operations/skills/methodology-selection/ee.mjs validate` checks the methodology catalog.
 - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
+- `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules.
+- `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
+- `node schema/check-ready.mjs <venture dir> <handoff id>` checks a handoff is ready before anyone executes it (EE-019); `--record --by <who>` records it.
+- `node schema/check-governance.mjs <dir>` checks ownership, boards, founder agreements and exits; `node schema/payouts.mjs <venture dir> [value]` computes who gets what in a sale (EE-022).
+- `node schema/check-telos.mjs <dir>` checks each venture's telos (start with the end: every phase exit criterion traces to a measure); `node operations/skills/methodology-selection/derive-answers.mjs <venture dir>` gives MAD the answers the venture's records already settle (EE-023).
+- `node schema/check-execution.mjs <venture dir>` checks handoffs, evidence and decision rights; `node schema/run-handoff.mjs <venture dir> <handoff id>` runs a handoff's done-criteria and writes evidence (EE-017).
+- `node purpose/frameworks/product-anatomy/test.mjs` tests the Product Anatomy runner's role rules.
+- `node schema/test.mjs` tests the checkers on broken copies; `python3 schema/validate.py` validates every record against its schema.
 
 ## Rules
 
@@ -38,7 +47,7 @@ Choosing tools is opt-in: when someone wants help, `operations/skills/tool-selec
 
 ## Ventures
 
-The ecosystem is a schema; a workspace is an instance made of ventures (EE-002, EE-011). A venture is anything a builder undertakes, at a phase from Discovery to Platform (EE-012); personal life is out of scope (EE-009). Each venture has a `venture.json` (`schema/venture.schema.json`), product cards in `products/`, client records in `clients/`, and the three pillars. Create one with `node schema/init-venture.mjs`; check a workspace with `node schema/check-ventures.mjs <dir>`. Every record type is indexed in `schema/README.md`. Design: `docs/design/VENTURES_2026-10-27.md`.
+The ecosystem is a schema; a workspace is an instance made of ventures (EE-002, EE-011). A venture is anything a builder undertakes, at a phase from Discovery to Platform (EE-012); personal life is out of scope (EE-009). Each venture has a `venture.json` (`schema/venture.schema.json`), product cards in `products/`, account records in `accounts/` where it keeps them (EE-021), and the three pillars. Create one with `node schema/init-venture.mjs`; check a workspace with `node schema/check-ventures.mjs <dir>`. Work in a venture runs as handoffs (`execution/handoffs/`), proved by evidence (`evidence/results/`), under its decision rights (`governance/decision-rights.json`). The repo's own first venture is `instance/ventures/everything-ecosystem/`. Every record type is indexed in `schema/README.md` and listed, with its owning layer, in `schema/data-model.json`. Each layer's kit (skills, owned records, reads and writes) is in `<layer>/kit.json`; see `docs/design/LAYERS_AND_KITS_2026-10-27.md`. Design: `docs/design/VENTURES_2026-10-27.md`.
 
 ## Nouns and references
 

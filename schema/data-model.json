@@ -1,0 +1,664 @@
+{
+  "version": "0.5.0",
+  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. schema/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. schema/validate.py reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder).",
+  "layers": [
+    "purpose",
+    "knowledge",
+    "operations",
+    "execution",
+    "evidence",
+    "governance",
+    "interface"
+  ],
+  "records": [
+    {
+      "id": "workspace",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/workspace.schema.json",
+      "paths": [
+        "instance/workspace.json",
+        "schema/examples/workspace/workspace.json"
+      ],
+      "contains": [
+        "venture"
+      ]
+    },
+    {
+      "id": "venture",
+      "layer": "system",
+      "level": "venture",
+      "schema": "schema/venture.schema.json",
+      "paths": [
+        "instance/**/venture.json",
+        "schema/examples/**/venture.json"
+      ],
+      "contains": [
+        "venture",
+        "venture-profile",
+        "product",
+        "account",
+        "anatomy-answers",
+        "mad-answers",
+        "handoff",
+        "evidence",
+        "decision-rights",
+        "pillar",
+        "ownership",
+        "board",
+        "founder-agreement",
+        "exit",
+        "telos"
+      ],
+      "refs": [
+        {
+          "field": "parent",
+          "to": "venture",
+          "checked_by": "schema/check-ventures.mjs"
+        },
+        {
+          "field": "profile",
+          "to": "venture-profile",
+          "checked_by": null
+        },
+        {
+          "field": "governed_by",
+          "to": "decision",
+          "checked_by": null
+        }
+      ],
+      "note": "The root record of a venture. It names the profile but does not contain it"
+    },
+    {
+      "id": "venture-profile",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": null,
+      "form": "prose",
+      "paths": [
+        "instance/**/profile.md"
+      ],
+      "note": "The venture's story and thesis in prose. Guidance still in knowledge/references/entity-profile-schema.md (retired name)"
+    },
+    {
+      "id": "product",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/product.schema.json",
+      "paths": [
+        "instance/**/products/*.json",
+        "schema/examples/**/products/*.json"
+      ],
+      "refs": [
+        {
+          "field": "part_of",
+          "to": "product",
+          "checked_by": "schema/check-ventures.mjs"
+        },
+        {
+          "field": "flows_to",
+          "to": "product",
+          "checked_by": "schema/check-ventures.mjs"
+        },
+        {
+          "field": "business_model",
+          "to": "business-models",
+          "checked_by": "schema/check-ventures.mjs"
+        }
+      ]
+    },
+    {
+      "id": "account",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/account.schema.json",
+      "paths": [
+        "instance/**/accounts/*/account.json",
+        "schema/examples/**/accounts/*/account.json"
+      ],
+      "refs": [
+        {
+          "field": "products",
+          "to": "product",
+          "checked_by": "schema/check-ventures.mjs"
+        }
+      ],
+      "note": "A named party the venture keeps a record for: client, customer, user, member or partner (EE-021). Optional"
+    },
+    {
+      "id": "telos",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/telos.schema.json",
+      "paths": [
+        "instance/**/purpose/telos.json",
+        "schema/examples/**/purpose/telos.json"
+      ],
+      "refs": [
+        {
+          "field": "phases.exit_criteria.serves",
+          "to": "telos",
+          "checked_by": "schema/check-telos.mjs"
+        },
+        {
+          "field": "owner_outcome.path",
+          "to": "exit",
+          "checked_by": "schema/check-telos.mjs"
+        },
+        {
+          "field": "phases.phase",
+          "to": "anatomy-framework",
+          "checked_by": "schema/validate.py"
+        }
+      ],
+      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023)"
+    },
+    {
+      "id": "anatomy-framework",
+      "layer": "purpose",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/product-anatomy/phases.json",
+        "purpose/frameworks/product-anatomy/questions.json"
+      ],
+      "note": "Phases, gates and questions of Product Anatomy; self-describing, checked by its runner's tests"
+    },
+    {
+      "id": "anatomy-answers",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/purpose/anatomy.answers*.json",
+        "purpose/frameworks/product-anatomy/examples/*.json"
+      ],
+      "refs": [
+        {
+          "field": "(keys)",
+          "to": "product",
+          "checked_by": "purpose/frameworks/product-anatomy/anatomy.mjs"
+        }
+      ],
+      "note": "Scores per product per question; the matrix is rendered from them"
+    },
+    {
+      "id": "decision",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/decision.schema.json",
+      "paths": [
+        "docs/decisions/decisions.json"
+      ],
+      "note": "A decision log. The schema's own is EE-NNN; a venture keeps its own log under its knowledge layer"
+    },
+    {
+      "id": "design-document",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "docs/design/*.md"
+      ],
+      "note": "Domain, product, experience, interface and systems design documents; which ones a venture needs is in the design-documents registry"
+    },
+    {
+      "id": "ontology",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "docs/ontology.json"
+      ],
+      "note": "Canonical nouns; checked by schema/check-nouns.mjs, rendered to docs/ontology.md"
+    },
+    {
+      "id": "reference",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/reference.schema.json",
+      "paths": [
+        "*/references/references.json"
+      ],
+      "note": "Each layer keeps the sources behind its defaults; filled by knowledge/skills/find-reference"
+    },
+    {
+      "id": "integration",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/integration.schema.json",
+      "form": "json-list",
+      "paths": [
+        "*/tooling/integrations.json"
+      ],
+      "refs": [
+        {
+          "field": "reach",
+          "to": "(layers)",
+          "checked_by": "schema/check-integrations.mjs"
+        }
+      ],
+      "note": "Each layer's tools; interfaces must reach at least four layers"
+    },
+    {
+      "id": "business-models",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/vocab/business-models.json"
+      ],
+      "note": "Vocabulary: St. Gallen 55 plus named extras"
+    },
+    {
+      "id": "scaffold",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/scaffold/defaults.json"
+      ],
+      "note": "Starting layers by phase, read by init-venture"
+    },
+    {
+      "id": "data-model",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/data-model.schema.json",
+      "paths": [
+        "schema/data-model.json"
+      ],
+      "note": "This file"
+    },
+    {
+      "id": "kit-manifest",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/kit.schema.json",
+      "paths": [
+        "*/kit.json"
+      ],
+      "refs": [
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/check-data-model.mjs"
+        },
+        {
+          "field": "reads",
+          "to": "(record types)",
+          "checked_by": "schema/check-data-model.mjs"
+        },
+        {
+          "field": "writes",
+          "to": "(record types)",
+          "checked_by": "schema/check-data-model.mjs"
+        },
+        {
+          "field": "product",
+          "to": "product",
+          "checked_by": "schema/check-data-model.mjs"
+        }
+      ],
+      "note": "What one kit holds: skills, record types it owns, record types it reads and writes, checks"
+    },
+    {
+      "id": "methodology",
+      "layer": "operations",
+      "level": "method",
+      "schema": "operations/catalog/_schema/methodology.schema.json",
+      "form": "markdown",
+      "paths": [
+        "operations/catalog/methodologies/*.md"
+      ],
+      "note": "Frontmatter checked by ee.mjs validate"
+    },
+    {
+      "id": "question",
+      "layer": "operations",
+      "level": "method",
+      "schema": "operations/catalog/_schema/question.schema.json",
+      "form": "markdown",
+      "paths": [
+        "operations/catalog/questions/*.md"
+      ]
+    },
+    {
+      "id": "artifact-type",
+      "layer": "operations",
+      "level": "method",
+      "schema": "operations/catalog/_schema/artifact-type.schema.json",
+      "form": "markdown",
+      "paths": [
+        "operations/catalog/artifact-types/*.md"
+      ]
+    },
+    {
+      "id": "assignment",
+      "layer": "operations",
+      "level": "method",
+      "schema": "operations/catalog/_schema/assignment.schema.json",
+      "form": "markdown",
+      "paths": [
+        "operations/register/A-*.md"
+      ],
+      "refs": [
+        {
+          "field": "methodology",
+          "to": "methodology",
+          "checked_by": "operations/skills/methodology-selection/ee.mjs"
+        }
+      ],
+      "note": "Which methodology builds a system. Lives in the method repo for now; belongs inside each venture's operations layer"
+    },
+    {
+      "id": "catalog-common",
+      "layer": "operations",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "operations/catalog/_schema/common.json"
+      ],
+      "note": "Shared definitions the catalog schemas $ref"
+    },
+    {
+      "id": "recommendation",
+      "layer": "operations",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "operations/register/_recommendations/*.json"
+      ],
+      "refs": [
+        {
+          "field": "ranked",
+          "to": "methodology",
+          "checked_by": "operations/skills/methodology-selection/ee.mjs"
+        }
+      ],
+      "note": "A scored ranking from ee recommend (Jev or a reasoning model); written once, never edited"
+    },
+    {
+      "id": "mad-answers",
+      "layer": "operations",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/operations/systems/*.answers.json"
+      ],
+      "refs": [
+        {
+          "field": "(keys)",
+          "to": "question",
+          "checked_by": "operations/skills/methodology-selection/ee.mjs"
+        }
+      ],
+      "note": "Answers to the MAD questions for one system; MAD repo has record.schema.json, not yet folded in"
+    },
+    {
+      "id": "handoff",
+      "layer": "execution",
+      "level": "venture",
+      "schema": "schema/handoff.schema.json",
+      "paths": [
+        "instance/**/execution/handoffs/*.json"
+      ],
+      "refs": [
+        {
+          "field": "products",
+          "to": "product",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "governed_by",
+          "to": "decision",
+          "checked_by": "schema/check-ready.mjs"
+        },
+        {
+          "field": "assignment",
+          "to": "assignment",
+          "checked_by": "schema/check-ready.mjs"
+        },
+        {
+          "field": "role",
+          "to": "role",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "decision_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "evidence",
+          "to": "evidence",
+          "checked_by": "schema/check-execution.mjs"
+        }
+      ]
+    },
+    {
+      "id": "evidence",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/evidence.schema.json",
+      "paths": [
+        "instance/**/evidence/results/*.json"
+      ],
+      "refs": [
+        {
+          "field": "subject",
+          "to": "handoff",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "suite",
+          "to": "eval-suite",
+          "checked_by": null
+        }
+      ],
+      "note": "Append-only results of running checks"
+    },
+    {
+      "id": "eval-suite",
+      "layer": "evidence",
+      "level": "method",
+      "schema": "schema/eval-suite.schema.json",
+      "paths": [
+        "evidence/evals/*.json"
+      ]
+    },
+    {
+      "id": "design-documents-registry",
+      "layer": "evidence",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "evidence/design-documents.registry.json"
+      ],
+      "refs": [
+        {
+          "field": "documents",
+          "to": "design-document",
+          "checked_by": "evidence/skills/design-coverage/check.mjs"
+        }
+      ],
+      "note": "Self-describing; which design documents a venture needs at which phase"
+    },
+    {
+      "id": "benchmark",
+      "layer": "evidence",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "evidence/benchmarks/*.json"
+      ],
+      "note": "Raw outputs kept as evidence for a benchmark write-up beside them"
+    },
+    {
+      "id": "decision-rights",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-rights.schema.json",
+      "paths": [
+        "governance/venture-template/decision-rights.json",
+        "instance/**/governance/decision-rights.json"
+      ],
+      "refs": [
+        {
+          "field": "extends",
+          "to": "decision-rights",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "classes.owner",
+          "to": "role",
+          "checked_by": "schema/check-execution.mjs"
+        }
+      ]
+    },
+    {
+      "id": "role",
+      "layer": "governance",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "governance/venture-template/roles/agent-roles.json"
+      ],
+      "note": "Roles and their tiers; shape used, no schema yet"
+    },
+    {
+      "id": "pillar",
+      "layer": "governance",
+      "level": "venture",
+      "schema": null,
+      "form": "prose",
+      "paths": [
+        "governance/venture-template/pillars/*.md",
+        "instance/**/pillars/*.md"
+      ],
+      "note": "The product, brand and business pillars: teams, roles and deliverables. The template holds the guides; a venture holds one-line stubs that link to them"
+    },
+    {
+      "id": "ownership",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/ownership.schema.json",
+      "paths": [
+        "instance/**/governance/ownership.json",
+        "schema/examples/**/governance/ownership.json"
+      ],
+      "refs": [
+        {
+          "field": "grants.holder",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        },
+        {
+          "field": "grants.class",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        }
+      ],
+      "note": "The cap table: share classes and their rights, holders, grants with vesting, option pool, SAFEs and notes (EE-022)"
+    },
+    {
+      "id": "board",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/board.schema.json",
+      "paths": [
+        "instance/**/governance/board.json",
+        "schema/examples/**/governance/board.json"
+      ],
+      "refs": [
+        {
+          "field": "seats.appointed_by",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        }
+      ],
+      "note": "Formal and advisory boards, their seats and reserved matters"
+    },
+    {
+      "id": "founder-agreement",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/founder-agreement.schema.json",
+      "paths": [
+        "instance/**/governance/founder-agreement.json",
+        "schema/examples/**/governance/founder-agreement.json"
+      ],
+      "refs": [
+        {
+          "field": "founders.holder",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        },
+        {
+          "field": "document",
+          "to": "(file)",
+          "checked_by": "schema/check-governance.mjs"
+        }
+      ],
+      "note": "What founders agreed: roles, commitment, IP, departure, deadlock; prose beside it"
+    },
+    {
+      "id": "exit",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/exit.schema.json",
+      "paths": [
+        "instance/**/governance/exit.json",
+        "schema/examples/**/governance/exit.json"
+      ],
+      "refs": [
+        {
+          "field": "scenarios",
+          "to": "ownership",
+          "checked_by": "schema/payouts.mjs"
+        },
+        {
+          "field": "paths",
+          "to": "telos",
+          "checked_by": "schema/check-telos.mjs"
+        }
+      ],
+      "note": "Exit paths kept open and sale values to model; payouts computed by payouts.mjs"
+    },
+    {
+      "id": "harness-config",
+      "layer": "interface",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "knowledge/method/reference-hooks-config.json"
+      ],
+      "note": "Reference hooks for an agent harness. An interface record filed under knowledge; see the move list in docs/design/LAYERS_AND_KITS_2026-10-27.md"
+    },
+    {
+      "id": "publish-config",
+      "layer": "operations",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "publish.json"
+      ],
+      "note": "What the MAD publisher may make public (refusal rules)"
+    }
+  ],
+  "ignore": []
+}

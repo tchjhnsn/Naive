@@ -219,7 +219,7 @@ Gate skills verify against the ARS, not against memory or a generic checklist:
 
 - [[skills/articulation-closure/SKILL|articulation-closure]] — every ARS row due
   by 1B-Final is ✓ or — deferred with trigger.
-- [[skills/contract-first/SKILL|contract-first]] — every networked slice has its
+- [[../../operations/skills/contract-first/SKILL|contract-first]] — every networked slice has its
   Tier A contract rows satisfied.
 - [[skills/build-roadmap/SKILL|build-roadmap]] — every ✗ row appears as a line item.
 

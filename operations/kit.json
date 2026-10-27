@@ -1,0 +1,62 @@
+{
+  "kit": "operations-kit",
+  "layer": "operations",
+  "purpose": "Decide how work is run (MAD): which methodology builds each system, which artifacts it needs, which tools each layer uses, and the build roadmap.",
+  "product": "everything-ecosystem/mad",
+  "skills": [
+    {
+      "id": "build-roadmap",
+      "path": "operations/skills/build-roadmap/SKILL.md",
+      "tier": "delivery"
+    },
+    {
+      "id": "contract-first",
+      "path": "operations/skills/contract-first/SKILL.md",
+      "tier": "software-engineering"
+    },
+    {
+      "id": "linear-workflow",
+      "path": "operations/skills/linear-workflow/SKILL.md",
+      "tier": "delivery"
+    },
+    {
+      "id": "methodology-selection",
+      "path": "operations/skills/methodology-selection/SKILL.md",
+      "tier": "delivery"
+    },
+    {
+      "id": "tool-selection",
+      "path": "operations/skills/tool-selection/SKILL.md",
+      "tier": "delivery"
+    }
+  ],
+  "records": [
+    "methodology",
+    "question",
+    "artifact-type",
+    "assignment",
+    "catalog-common",
+    "recommendation",
+    "mad-answers",
+    "publish-config"
+  ],
+  "reads": [
+    "design-document",
+    "product",
+    "integration",
+    "telos",
+    "ownership",
+    "board",
+    "venture"
+  ],
+  "writes": [],
+  "checks": [
+    "operations/skills/methodology-selection/ee.mjs",
+    "operations/skills/methodology-selection/test.mjs",
+    "operations/skills/methodology-selection/test-publish.mjs",
+    "operations/skills/methodology-selection/derive-answers.mjs"
+  ],
+  "gaps": [
+    "Assignments live in this repo's register, not inside each venture's operations layer"
+  ]
+}

@@ -21,29 +21,78 @@
       "type": "string"
     },
     "market": {
-      "type": "object",
-      "description": "Who is served (Abell: customer groups).",
-      "properties": {
-        "customer": {
-          "enum": [
-            "b2c",
-            "b2b",
-            "b2g",
-            "b2b2c"
-          ]
+      "description": "Who is served (Abell: customer groups). One market, or several with one marked primary.",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Who is served (Abell: customer groups).",
+          "properties": {
+            "customer": {
+              "enum": [
+                "b2c",
+                "b2b",
+                "b2g",
+                "b2b2c"
+              ]
+            },
+            "relationship": {
+              "enum": [
+                "customer",
+                "client",
+                "user",
+                "member",
+                "audience",
+                "partner"
+              ],
+              "description": "How the people in this market stand to the product (EE-021): customer buys, client is served under a professional relationship, user uses (may not pay), member belongs, audience reads, watches or listens, partner works with the venture"
+            },
+            "segment": {
+              "type": "string"
+            },
+            "geography": {
+              "type": "string"
+            },
+            "vertical": {
+              "type": "boolean",
+              "description": "true: one industry; false: across many (horizontal)"
+            }
+          },
+          "additionalProperties": false
         },
-        "segment": {
-          "type": "string"
-        },
-        "geography": {
-          "type": "string"
-        },
-        "vertical": {
-          "type": "boolean",
-          "description": "true: one industry; false: across many (horizontal)"
+        {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "description": "Who is served (Abell: customer groups).",
+            "properties": {
+              "customer": {
+                "enum": [
+                  "b2c",
+                  "b2b",
+                  "b2g",
+                  "b2b2c"
+                ]
+              },
+              "segment": {
+                "type": "string"
+              },
+              "geography": {
+                "type": "string"
+              },
+              "vertical": {
+                "type": "boolean",
+                "description": "true: one industry; false: across many (horizontal)"
+              },
+              "primary": {
+                "type": "boolean",
+                "description": "The market the product is mainly built for; exactly one when several are listed"
+              }
+            },
+            "additionalProperties": false
+          }
         }
-      },
-      "additionalProperties": false
+      ]
     },
     "job": {
       "type": "string",
@@ -119,9 +168,10 @@
     "business_model": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
       },
-      "description": "St. Gallen Business Model Navigator pattern names, e.g. subscription, freemium, add-on"
+      "description": "Pattern ids from schema/vocab/business-models.json: the St. Gallen Business Model Navigator's 55 (subscription, freemium, add-on and so on) plus named extras such as open-core"
     },
     "allowed_from": {
       "enum": [
@@ -146,6 +196,14 @@
         "live",
         "retired"
       ]
+    },
+    "software": {
+      "type": "boolean",
+      "description": "The product is, or contains, software the venture builds. Such a product needs a repository, so its venture (or a parent) lists one in repos (EE-020)"
+    },
+    "repo": {
+      "type": "string",
+      "description": "The id of the repository in the venture's (or a parent's) repos that holds its code"
     }
   },
   "additionalProperties": false

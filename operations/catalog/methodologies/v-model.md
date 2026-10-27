@@ -16,13 +16,14 @@ unfit-when:
   - "Requirements are expected to change often, or will be discovered by building"
   - "Early shipping and user feedback matter more than traceability (strong time-to-market pressure)"
   - "No test specification can be written before the thing exists, as in exploratory or research-heavy work"
+  - "Small, low-risk or easily reversed changes, where a test specification at every level costs more than it saves (low cost of being wrong)"
 switch-when:
   - "Requirements begin to churn after the specifications are signed off: keep the paired verification for the stable core and run the changing parts iteratively"
   - "The test specifications are being written after the fact just to fill the matrix: the pairing has lost its purpose, reconsider the method"
 artifact-types: [verification-matrix]
-bodies-of-knowledge: []
+bodies-of-knowledge: ["Boehm, B. and Turner, R., Balancing Agility and Discipline: A Guide for the Perplexed, Addison-Wesley, 2003 (home grounds: size and criticality)"]
 evidence: []
-last-checked: 2026-10-18
+last-checked: 2026-10-27
 source: hybrid
 created: 2026-10-10
 ai-model: grok-bot
@@ -35,6 +36,8 @@ A sequential process bent into a V. The left side goes down through requirements
 
 It suits systems where being wrong is costly and the intent is stable enough to specify up front. Like [[waterfall]] it is slow to absorb late change.
 
-No primary source is cited yet: none was identified that could be cited with certainty, so `bodies-of-knowledge` is left empty rather than guessed.
+No primary source for the V-model itself is cited yet: none was identified that could be cited with certainty. `bodies-of-knowledge` names Boehm and Turner only for the proportion condition.
 
 Status: candidate. This entry is written from secondary summaries. The primary sources listed in `bodies-of-knowledge` have not yet been read, and the `fits-when` and `unfit-when` lines are working judgments that no recorded system has tested (no answers are recorded).
+
+Proportion (added 2026-10-27, after Jev ranked this method first for a one-flag CLI change): Boehm and Turner place plan-driven methods in a home ground of large, critical systems; for small, low-criticality work their overhead outweighs what they prevent.

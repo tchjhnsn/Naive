@@ -1,0 +1,109 @@
+{
+  "kit": "knowledge-kit",
+  "layer": "knowledge",
+  "purpose": "Record what is known and intended (SAD): the venture profile, specs and design documents, decisions, references, and the phase rituals that keep them current.",
+  "product": "everything-ecosystem/knowledge-kit",
+  "skills": [
+    {
+      "id": "orchestrator",
+      "path": "knowledge/SKILL.md",
+      "move_to": "system-kit",
+      "why": "It routes work across every layer, not within knowledge"
+    },
+    {
+      "id": "articulation-closure",
+      "path": "knowledge/skills/articulation-closure/SKILL.md"
+    },
+    {
+      "id": "asset-requirements",
+      "path": "knowledge/skills/asset-requirements/SKILL.md"
+    },
+    {
+      "id": "canonicalize",
+      "path": "knowledge/skills/canonicalize/SKILL.md"
+    },
+    {
+      "id": "content-product",
+      "path": "knowledge/skills/content-product/SKILL.md"
+    },
+    {
+      "id": "deliverable-discovery",
+      "path": "knowledge/skills/deliverable-discovery/SKILL.md"
+    },
+    {
+      "id": "enumeration-mode",
+      "path": "knowledge/skills/enumeration-mode/SKILL.md"
+    },
+    {
+      "id": "find-reference",
+      "path": "knowledge/skills/find-reference/SKILL.md",
+      "standalone": true
+    },
+    {
+      "id": "hardware-product",
+      "path": "knowledge/skills/hardware-product/SKILL.md"
+    },
+    {
+      "id": "idea-archive",
+      "path": "knowledge/skills/idea-archive/SKILL.md"
+    },
+    {
+      "id": "industry-awareness",
+      "path": "knowledge/skills/industry-awareness/SKILL.md"
+    },
+    {
+      "id": "recover",
+      "path": "knowledge/skills/recover/SKILL.md"
+    },
+    {
+      "id": "service-product",
+      "path": "knowledge/skills/service-product/SKILL.md"
+    },
+    {
+      "id": "session-capture",
+      "path": "knowledge/skills/session-capture/SKILL.md"
+    },
+    {
+      "id": "software-product",
+      "path": "knowledge/skills/software-product/SKILL.md"
+    },
+    {
+      "id": "systems-literacy-for-founders",
+      "path": "knowledge/skills/systems-literacy-for-founders/SKILL.md"
+    },
+    {
+      "id": "template-generation",
+      "path": "knowledge/skills/template-generation/SKILL.md"
+    },
+    {
+      "id": "time-awareness",
+      "path": "knowledge/skills/time-awareness/SKILL.md",
+      "standalone": true
+    },
+    {
+      "id": "triage",
+      "path": "knowledge/skills/triage/SKILL.md"
+    },
+    {
+      "id": "version-identity",
+      "path": "knowledge/skills/version-identity/SKILL.md"
+    }
+  ],
+  "records": [
+    "venture-profile",
+    "decision",
+    "design-document"
+  ],
+  "reads": [
+    "venture",
+    "product"
+  ],
+  "writes": [
+    "reference"
+  ],
+  "checks": [],
+  "gaps": [
+    "No check on the venture profile or design documents of its own; design-coverage (evidence) is the only one",
+    "The harness hooks file knowledge/method/reference-hooks-config.json is an interface record"
+  ]
+}

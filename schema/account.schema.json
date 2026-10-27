@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "account.schema.json",
+  "title": "Account",
+  "description": "One named party the venture keeps a record for, at accounts/<id>/account.json inside the venture that serves it (EE-011, EE-021). Optional: only ventures that work per party need accounts; who a product serves in general is its market. Account follows CRM usage (an organization or person you have a relationship with). Not a venture: it has no phase or core.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "relationship",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "relationship": {
+      "enum": [
+        "client",
+        "customer",
+        "user",
+        "member",
+        "partner",
+        "other"
+      ],
+      "description": "How the venture stands to this party (EE-021). client: served under a professional relationship; customer: buys; user: uses, may not pay; member: belongs (a club, community or cooperative); partner: works with the venture; other: say which in the note"
+    },
+    "status": {
+      "enum": [
+        "prospect",
+        "active",
+        "paused",
+        "closed"
+      ]
+    },
+    "opened": {
+      "type": "string",
+      "format": "date"
+    },
+    "closed": {
+      "type": "string",
+      "format": "date"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of the venture's products this account buys or uses"
+    },
+    "profile": {
+      "type": "string"
+    },
+    "layers": {
+      "type": "object",
+      "description": "Optional: where this account's knowledge and execution records live",
+      "properties": {
+        "knowledge": {
+          "$ref": "venture.schema.json#/$defs/layer"
+        },
+        "execution": {
+          "$ref": "venture.schema.json#/$defs/layer"
+        },
+        "evidence": {
+          "$ref": "venture.schema.json#/$defs/layer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
