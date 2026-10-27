@@ -238,7 +238,7 @@ teamBroken("an agent in a person's registry role fails", (d) => edit(planOf(d), 
 
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
-cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules)(\/|$)/.test(s) });
+cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/generated(\/|$)/.test(s) });
 expect("check-integrations passes on the repository", run("check-integrations.mjs", [], { EE_ROOT: repo }).status === 0);
 edit(join(repo, "interface/tooling/integrations.json"), (list) => { list.push({ id: "obsidian", name: "Obsidian", layer: "interface", role: "notes", interfaces: ["app"], reach: ["knowledge"], interface_kind: "custom", status: "in-use" }); });
 { const r = run("check-integrations.mjs", [], { EE_ROOT: repo }); expect("a single-layer tool listed as an interface fails", r.status !== 0 && /reaches 1 layers/.test(r.stderr)); }
@@ -247,7 +247,7 @@ writeFileSync(join(repo, "schema/README.md"), readFileSync(join(repo, "schema/RE
 { const r = run("check-nouns.mjs", [], { EE_ROOT: repo }); expect("a retired noun in a checked file fails", r.status !== 0 && /retired noun "sphere"/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
-const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules)(\/|$)/.test(s) }); return d; };
+const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/generated(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
 for (const [name, change, pattern] of [
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],

@@ -4,7 +4,7 @@ The map of this repo, loaded by every agent.
 
 ## What this is
 
-The Everything Ecosystem methodology, packaged as one private repo (EE-001). Proposed genus: a venture development framework, in the same genus as web development frameworks (EE-024). Five layers (purpose, knowledge, operations, execution, evidence) plus governance and interface. SAD is the knowledge layer; MAD is the operations layer.
+The Everything Ecosystem methodology, packaged as one private repo (EE-001). Proposed genus: a venture development framework, in the same genus as web development frameworks (EE-024). Five layers (purpose, knowledge, operations, execution, evidence) plus governance and interface. SAD is the knowledge layer, as Mentura's own version of SAD that no longer tracks the separate SAD project (EE-035); MAD is the operations layer.
 
 ## Where things are
 
@@ -17,6 +17,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 | `evidence/` | `evals/`, design-documents registry, audit and review skills |
 | `governance/` | Company vault template, roles, decision rights, pillar skills |
 | `interface/` | Interfaces: the router (`router.mjs`) and the CLI, MCP server and HTTP API over it; the install skill; agent harnesses and the operator console |
+| `site/` | Developer docs: a Nextra site on Next.js, unpublished (EE-034); see `site/AGENTS.md` |
 | `docs/reference/` | Generated reference: `ROUTES.md`, every route a venture has |
 | `docs/design/` | The ecosystem's own domain and systems design |
 

@@ -28,7 +28,7 @@ if (process.argv.includes("--md")) {
 
 const walk = (p) => statSync(p).isDirectory()
   ? readdirSync(p).flatMap((e) => walk(join(p, e)))
-  : /\.(md|json|mjs)$/.test(p) ? [p] : [];
+  : /\.(mdx?|json|mjs)$/.test(p) ? [p] : [];
 const files = check.map((c) => join(root, c)).filter(existsSync).flatMap(walk)
   .filter((f) => !f.endsWith("docs/ontology.json") && !f.endsWith("check-nouns.mjs"));
 const errors = [];

@@ -356,6 +356,42 @@
         "EE-030",
         "EE-031"
       ]
+    },
+    {
+      "id": "EE-033",
+      "date": "2026-10-27",
+      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI).",
+      "why": "The owner wants MDX preferred over Markdown and asked for a convention for when to use MDX versus JSON or other formats. Generated pages in MDX render the repository's data at build time instead of being copied, so they cannot go stale.",
+      "status": "proposed",
+      "related": [
+        "EE-005",
+        "EE-031",
+        "EE-034"
+      ]
+    },
+    {
+      "id": "EE-034",
+      "date": "2026-10-27",
+      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props.",
+      "why": "The owner chose Nextra's documentation starter for the developer docs, on the latest Next.js, and asked whether the site belongs in a separate repo; the starter kit itself pins Next.js 13 and the Pages Router, which Nextra 4 no longer supports.",
+      "status": "in-force",
+      "related": [
+        "EE-025",
+        "EE-032",
+        "EE-033"
+      ]
+    },
+    {
+      "id": "EE-035",
+      "date": "2026-10-27",
+      "decision": "Mentura replaces SAD as the builder's methodology, and SAD is one of its layers (knowledge). SAD also continues as its own project (the sad-methodology repository and site), developed independently. From here on Mentura's knowledge layer is its own version of SAD: it starts from SAD v3 and its amendments as they stand in knowledge/method/, changes only by Mentura's decisions, and neither inherits from nor syncs with the separate SAD project. A change worth sharing is ported by hand, in either direction.",
+      "why": "The owner said the system being built replaces the SAD methodology and that SAD is a layer within Mentura, and chose to keep the two as separate projects, with the SAD inside Mentura being its own version from here on.",
+      "status": "in-force",
+      "related": [
+        "EE-001",
+        "EE-027",
+        "EE-034"
+      ]
     }
   ]
 }
