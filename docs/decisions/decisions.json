@@ -330,6 +330,19 @@
         "EE-025",
         "EE-026"
       ]
+    },
+    {
+      "id": "EE-031",
+      "date": "2026-10-27",
+      "decision": "Provenance is built in two ways. Explicitly: every write through the router (CLI, MCP server, HTTP API) appends one line to the venture's provenance log, <venture>/provenance.jsonl, after W3C PROV: the entity (file) written, the activity (write, draft, accept, or baseline for a record adopted as it stood), the agent (person or AI agent, with id, model, session and harness where known, and the interface), what the content was derived from (paths, URLs, decision ids) and the decision or decision class it acted under, with a hash of the content. Each line carries the previous line's hash, so schema/check-provenance.mjs fails when a line is edited, removed or reordered, and warns when a logged file has changed outside the router. Implicitly: git history covers everything written outside the router. The log is a system record, on whatever layers a venture uses; record schemas carry no provenance fields. Existing provenance stays where it is: evidence items and references cite sources with checked dates, and notes carry source and ai-model.",
+      "why": "The owner asked to make sure provenance is built in, explicitly or implicitly, and chose the recommendation of a separate append-only log backed by git over a provenance block inside every record, which would add noise to every schema.",
+      "status": "in-force",
+      "related": [
+        "EE-025",
+        "EE-026",
+        "EE-029",
+        "EE-030"
+      ]
     }
   ]
 }

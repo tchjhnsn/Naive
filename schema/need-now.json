@@ -377,6 +377,16 @@
         }
       ],
       "why": "Who the venture needs and where a human stays in the loop, once agents or others work in it"
+    },
+    "provenance": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.6,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Written by the interfaces on every write, so it costs nothing; run mentura baseline once to adopt records written before it (EE-031)"
     }
   }
 }

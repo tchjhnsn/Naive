@@ -7,15 +7,18 @@
 //                                                   start a venture; --layers turns on only those
 //   mentura accept <route> --venture <id>          a person accepts an agent's draft of a gated record
 //   mentura <route> <action> --venture <id> [--input <file>|-] [--as person] [--value <n>] [--json]
+//          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
+//   mentura baseline --venture <id>                 adopt existing records into the provenance log
 //
 // The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
 // record written by an agent lands in <venture>/_drafts/ for a person to accept.
 
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { call, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
+import { call, files, glob, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
+import { agentFromEnv, entries, record } from "../provenance.mjs";
 
 const argv = process.argv.slice(2);
 const opt = (name) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : undefined; };
@@ -60,10 +63,30 @@ if (cmd === "accept") {
   if (!r?.gate || !dir) { console.error(`${rt} is not a gated record route, or no venture ${venture}`); process.exit(1); }
   const draft = join(dir, "_drafts", `${r.files[0].replace(/\//g, "__")}.draft`);
   if (!existsSync(draft)) { console.error(`no draft of ${rt} in ${venture}`); process.exit(1); }
-  const w = call({ venture, route: rt, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace });
+  const w = call({ venture, route: rt, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
+    provenance: { activity: "accept", derived_from: [relative(dir, draft)], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
   rmSync(draft);
   out(`accepted: ${w.result.written}`);
+  process.exit(0);
+}
+
+if (cmd === "baseline") {
+  // A venture that existed before the log: record each record file as it is now, once, so later
+  // writes have a starting point. Files already in the log are left alone.
+  const venture = opt("venture");
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const logged = new Set(entries(dir).map((e) => e.entity));
+  const globs = routes().filter((r) => r.kind === "record" && r.form === "json").flatMap((r) => r.files.map((g) => [r.route, g]));
+  let n = 0;
+  for (const f of files(dir).filter((f) => !f.startsWith("_drafts/"))) {
+    const hit = globs.find(([, g]) => glob(g).test(f));
+    if (!hit || logged.has(f)) continue;
+    record(dir, { entity: f, route: hit[0], activity: "baseline", agent: agentFromEnv(opt("as") === "person" ? "person" : "agent", "cli"), note: "existed before the provenance log; its history before this is in git" });
+    n++;
+  }
+  out(`baseline: ${n} records added to ${venture}'s provenance log`);
   process.exit(0);
 }
 
@@ -74,6 +97,7 @@ let input;
 const src = opt("input");
 if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
 if (opt("value")) input = { ...(input ?? {}), value: Number(opt("value")) };
-const r = call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace });
+const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
+const r = call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 out(flag("json") || typeof r.result !== "string" ? (r.note ? { ...r } : r.result) : r.result);

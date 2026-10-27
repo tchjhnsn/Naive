@@ -28,6 +28,8 @@ const steps = [
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
   ["publication: examples", "node", ["schema/check-publication.mjs", "schema/examples/workspace"]],
   ["team: instance", "node", ["schema/check-team.mjs", "instance"]],
+  ["provenance: instance", "node", ["schema/check-provenance.mjs", "instance"]],
+  ["provenance: examples", "node", ["schema/check-provenance.mjs", "schema/examples/workspace"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
   ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace", "--score"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "execution"))).map((v) =>

@@ -49,7 +49,7 @@ To use the whole system, leave out `--layers`. The workspace is the folder that 
 **Claude Code** (one command; add `--scope project` to share it in the venture's repo through `.mcp.json`):
 
 ```sh
-claude mcp add mentura --env MENTURA_WORKSPACE=<folder> -- node <mentura>/interface/mcp/server.mjs
+claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="Claude Code" -- node <mentura>/interface/mcp/server.mjs
 ```
 
 **Cursor** (`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json` for every project):
@@ -60,7 +60,7 @@ claude mcp add mentura --env MENTURA_WORKSPACE=<folder> -- node <mentura>/interf
     "mentura": {
       "command": "node",
       "args": ["<mentura>/interface/mcp/server.mjs"],
-      "env": { "MENTURA_WORKSPACE": "<folder>" }
+      "env": { "MENTURA_WORKSPACE": "<folder>", "MENTURA_HARNESS": "Cursor" }
     }
   }
 }
@@ -75,10 +75,12 @@ Use absolute paths in both configs. Check the connection by asking the agent to 
 - An agent's write to a gated record becomes a draft in `<venture>/_drafts/`. The gated records are ownership, board, founder agreement, exit, telos, decision rights and publication policy. Writes through the MCP server and the API always count as an agent's.
 - A person accepts a draft with `mentura accept <route> --venture <id>`.
 - The CLI cannot tell whether a person or an agent is typing. The real gate is the repository's review: a person merges the pull request.
+- Every write is logged in `<venture>/provenance.jsonl` (EE-031): who wrote it, through which interface, what it came from and the decision it acted under. Set `MENTURA_ACTOR_ID`, `MENTURA_MODEL`, `MENTURA_SESSION` and `MENTURA_HARNESS` in the harness config so that each line names the agent. The MCP server also records the harness name that the client reports. For a venture that existed before the log, run `mentura baseline --venture <id>` once.
 - Every write is checked against the record's schema first. A record that does not match is refused, and nothing changes.
 
 ## Sources
 
+- W3C PROV-DM, the provenance data model: https://www.w3.org/TR/prov-dm/ (checked 2026-10-27).
 - Model Context Protocol specification: https://modelcontextprotocol.io/specification/2025-06-18 (checked 2026-10-27).
 - Claude Code MCP setup (`claude mcp add`, scopes): https://docs.claude.com/en/docs/claude-code/mcp (checked 2026-10-27).
 - Cursor MCP configuration (`.cursor/mcp.json`): https://docs.cursor.com/context/model-context-protocol (checked 2026-10-27).

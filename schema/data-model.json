@@ -48,7 +48,8 @@
         "board",
         "founder-agreement",
         "exit",
-        "telos"
+        "telos",
+        "provenance"
       ],
       "refs": [
         {
@@ -898,6 +899,25 @@
         }
       ],
       "note": "What agents can, cannot, may not or are not known to do, with sources and dates (EE-029)"
+    },
+    {
+      "id": "provenance",
+      "layer": "system",
+      "level": "venture",
+      "schema": "schema/provenance-entry.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/provenance.jsonl",
+        "schema/examples/**/provenance.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "entity",
+          "to": "(venture file)",
+          "checked_by": "schema/check-provenance.mjs"
+        }
+      ],
+      "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031)"
     }
   ],
   "ignore": []

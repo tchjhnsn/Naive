@@ -4,45 +4,146 @@
   "title": "Data model",
   "description": "The shape of schema/data-model.json (EE-018): every record type of the ecosystem, the layer that owns it, its schema, where its records live and what each references. schema/check-data-model.mjs checks it against the repository.",
   "type": "object",
-  "required": ["version", "layers", "records", "ignore"],
+  "required": [
+    "version",
+    "layers",
+    "records",
+    "ignore"
+  ],
   "properties": {
-    "version": { "type": "string" },
-    "note": { "type": "string" },
-    "layers": { "type": "array", "items": { "type": "string" } },
+    "version": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "records": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "layer", "level", "schema", "paths"],
+        "required": [
+          "id",
+          "layer",
+          "level",
+          "schema",
+          "paths"
+        ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-          "layer": { "description": "The owning layer, or system for records every layer shares", "enum": ["system", "purpose", "knowledge", "operations", "execution", "evidence", "governance", "interface"] },
-          "level": { "description": "method: this repo's own records; workspace: one per builder; venture: inside a venture folder", "enum": ["method", "workspace", "venture"] },
-          "schema": { "type": ["string", "null"], "description": "Path to the schema that governs it, or null when it has none yet" },
-          "form": { "enum": ["json", "json-list", "markdown", "prose"], "description": "Default json. json-list: the file holds a list of records" },
-          "paths": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Globs from the repo root" },
-          "contains": { "type": "array", "items": { "type": "string" }, "description": "Record types that live inside this one's folder" },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "layer": {
+            "description": "The owning layer, or system for records every layer shares",
+            "enum": [
+              "system",
+              "purpose",
+              "knowledge",
+              "operations",
+              "execution",
+              "evidence",
+              "governance",
+              "interface"
+            ]
+          },
+          "level": {
+            "description": "method: this repo's own records; workspace: one per builder; venture: inside a venture folder",
+            "enum": [
+              "method",
+              "workspace",
+              "venture"
+            ]
+          },
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Path to the schema that governs it, or null when it has none yet"
+          },
+          "form": {
+            "enum": [
+              "json",
+              "json-list",
+              "markdown",
+              "prose",
+              "json-lines"
+            ],
+            "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only"
+          },
+          "paths": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "description": "Globs from the repo root"
+          },
+          "contains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Record types that live inside this one's folder"
+          },
           "refs": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["field", "to", "checked_by"],
+              "required": [
+                "field",
+                "to",
+                "checked_by"
+              ],
               "additionalProperties": false,
               "properties": {
-                "field": { "type": "string" },
-                "to": { "type": "string", "description": "A record type id, or a parenthesised name for a non-record target" },
-                "checked_by": { "type": ["string", "null"], "description": "The check that resolves this reference, or null when nothing does yet" }
+                "field": {
+                  "type": "string"
+                },
+                "to": {
+                  "type": "string",
+                  "description": "A record type id, or a parenthesised name for a non-record target"
+                },
+                "checked_by": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "The check that resolves this reference, or null when nothing does yet"
+                }
               }
             }
           },
-          "note": { "type": "string" }
+          "note": {
+            "type": "string"
+          }
         }
       }
     },
     "ignore": {
       "type": "array",
-      "items": { "type": "object", "required": ["path", "reason"], "properties": { "path": { "type": "string" }, "reason": { "type": "string" } } }
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "reason"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

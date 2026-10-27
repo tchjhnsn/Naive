@@ -110,7 +110,7 @@ Each arrow is a record type one layer owns and another reads, or one layer write
 | evidence | 6 | evidence, eval-suite, design-documents-registry, benchmark, agent-capability | execution (evidence, handoff); knowledge (design-document, venture-profile, decision) | operations (agent-capability); governance (evidence) |
 | governance | 15 | decision-rights, role, pillar, ownership, board, founder-agreement, exit, publication-policy, publish-config | execution (handoff); evidence (evidence); system (venture); purpose (telos) | purpose (exit); operations (ownership, board, publish-config, decision-rights, role); execution (decision-rights, role, publication-policy, handoff); knowledge (decision) |
 | interface | 1 | harness-config | system (integration) | none |
-| system | 0 | workspace, venture, ontology, reference, integration, business-models, scaffold, data-model, kit-manifest, need-now | knowledge (reference, decision); purpose (product, account) | purpose (venture); knowledge (venture); operations (integration, venture); governance (venture); interface (integration) |
+| system | 0 | workspace, venture, ontology, reference, integration, business-models, scaffold, data-model, kit-manifest, need-now, provenance | knowledge (reference, decision); purpose (product, account) | purpose (venture); knowledge (venture); operations (integration, venture); governance (venture); interface (integration) |
 
 ```mermaid
 flowchart LR

@@ -11,12 +11,15 @@
 //
 // Gates on write: the record must match its schema (schema/validate.py --file); a record whose
 // decision class escalates to a person is written as a draft (<venture>/_drafts/<file>.draft) when
-// the actor is an agent, for a person to accept. Partial adoption: a route needs only its own
+// the actor is an agent, for a person to accept. Every write appends a line to the venture's
+// provenance log (EE-031): who wrote it, through which interface, from what, under which decision.
+// The log itself is append-only, so it has no write action. Partial adoption: a route needs only its own
 // record and what its kit reads; nothing else about the system is required.
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
+import { agentFromEnv, record as prov } from "./provenance.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -52,8 +55,8 @@ export function routes() {
     const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && c.startsWith("schema/check-") && c !== "schema/check-data-model.mjs"))];
     out.push({
       route: [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/"),
-      kind: "record", record: r.id, kit: k?.kit ?? null, files, schema: r.schema,
-      actions: ["read", ...(r.schema && files.length === 1 && !files[0].includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template && existsSync(join(repo, template)) ? ["template"] : [])],
+      kind: "record", record: r.id, kit: k?.kit ?? null, files, schema: r.schema, form: r.form ?? "json",
+      actions: ["read", ...(r.schema && (r.form ?? "json") === "json" && files.length === 1 && !files[0].includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template && existsSync(join(repo, template)) ? ["template"] : [])],
       checks, template: template && existsSync(join(repo, template)) ? template : null, gate: GATED[r.id] ?? null, note: r.note ?? "",
     });
   }
@@ -74,15 +77,18 @@ export function ventureDir(id, workspace = process.env.MENTURA_WORKSPACE ?? join
   return null;
 }
 
-const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
-const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
-  e.isDirectory() ? files(join(d, e.name), base) : [join(d, e.name).slice(base.length + 1)]) : [];
+export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
+// A venture's files, stopping at a nested venture (which has its own records) and skipping dot folders.
+export const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+  e.name.startsWith(".") ? [] : e.isDirectory() ? (existsSync(join(d, e.name, "venture.json")) ? [] : files(join(d, e.name), base)) : [join(d, e.name).slice(base.length + 1)]) : [];
 
 /**
  * Runs one action on one route for one venture. Returns { ok, result } or { ok: false, error }.
- * input: the record to write (write); actor: "person" or "agent" (write; default agent).
+ * input: the record to write (write); actor: "person" or "agent" (write; default agent);
+ * via: the interface (cli, mcp, api; default router); provenance: { derived_from, decision, note,
+ * agent } for the log, where agent adds fields such as harness or model.
  */
-export function call({ venture, route, action, input, actor = "agent", workspace }) {
+export function call({ venture, route, action, input, actor = "agent", workspace, via = "router", provenance = {} }) {
   const r = routes().find((x) => x.route === route);
   if (!r) return { ok: false, error: `no route ${route}` };
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
@@ -101,7 +107,8 @@ export function call({ venture, route, action, input, actor = "agent", workspace
   if (action === "read") {
     const found = files(dir).filter((f) => r.files.some((g) => glob(g).test(f)));
     if (!found.length) return { ok: true, result: null, note: `no ${r.record} record yet` };
-    const data = Object.fromEntries(found.map((f) => [f, f.endsWith(".json") ? load(join(dir, f)) : readFileSync(join(dir, f), "utf8")]));
+    const parse = (f) => f.endsWith(".json") ? load(join(dir, f)) : f.endsWith(".jsonl") ? readFileSync(join(dir, f), "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : readFileSync(join(dir, f), "utf8");
+    const data = Object.fromEntries(found.map((f) => [f, parse(f)]));
     return { ok: true, result: found.length === 1 ? data[found[0]] : data };
   }
   if (action === "check") {
@@ -119,7 +126,10 @@ export function call({ venture, route, action, input, actor = "agent", workspace
     const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", tmp], { encoding: "utf8" });
     if (v.status !== 0) { spawnSync("rm", ["-f", tmp]); return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}` }; }
     execFileSync("mv", [tmp, dest]);
-    return { ok: true, result: { written: relative(dir, dest), draft, gate: r.gate, note: draft ? `${r.record} is a ${r.gate} decision: written as a draft for a person to accept` : "written" } };
+    const entry = prov(dir, { entity: relative(dir, dest), route, activity: draft ? "draft" : provenance.activity ?? "write",
+      agent: agentFromEnv(actor === "person" ? "person" : "agent", via, provenance.agent), derived_from: provenance.derived_from,
+      decision: provenance.decision ?? r.gate ?? undefined, note: provenance.note });
+    return { ok: true, result: { written: relative(dir, dest), draft, gate: r.gate, provenance: entry.hash, note: draft ? `${r.record} is a ${r.gate} decision: written as a draft for a person to accept` : "written" } };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }

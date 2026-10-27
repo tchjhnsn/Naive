@@ -720,6 +720,20 @@
       "meaning": "A gated record an agent wrote, held in <venture>/_drafts/ until a person accepts it; the decision class of the record says it is a person's to make (EE-030)",
       "standard": "common usage (draft for approval)",
       "status": "new"
+    },
+    {
+      "noun": "provenance",
+      "level": "system",
+      "meaning": "Who or what produced a record, by which activity, from what, and under which decision: explicit in the provenance log for writes through the router, implicit in git history for everything else (EE-031)",
+      "standard": "W3C PROV (PROV-DM: entity, activity, agent)",
+      "status": "new"
+    },
+    {
+      "noun": "provenance log",
+      "level": "system",
+      "meaning": "A venture's append-only record of writes, <venture>/provenance.jsonl: one line per write naming the file, the activity (write, draft, accept, baseline), the person or agent and the interface, what it was derived from and the decision; each line carries the previous line's hash (EE-031)",
+      "standard": "W3C PROV; hash-chained append-only log (common audit usage)",
+      "status": "new"
     }
   ]
 }

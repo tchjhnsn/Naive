@@ -47,4 +47,5 @@ Every route works on one venture. Record routes read, write, check or show the t
 | `purpose/validation/solution` | record | read, write, check, template | `purpose/validation/solution.json` |  | Validation sub-score: how it solves the problem and the evidence people choose it (EE-026) |
 | `purpose/validation/team` | record | read, write, check, template | `purpose/validation/team.json` |  | Validation sub-score: skills needed, held and the gaps; cofounder sought (EE-026) |
 | `system/need-now` | command | run | `schema/need-now.mjs` |  | What the venture needs now, soon, or should hold back (EE-028) |
+| `system/provenance` | record | read, check | `provenance.jsonl` |  | Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031) |
 | `system/time-to-ready` | command | run | `schema/time-to-ready.mjs` |  | Time to running, and to ready per layer and MAD tier |

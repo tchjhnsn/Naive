@@ -4,12 +4,13 @@
 //   node interface/test.mjs
 
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "./router.mjs";
 import { handle, TOOLS } from "./mcp/server.mjs";
 import { route as http } from "./api/server.mjs";
+import { entries } from "./provenance.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const ws = join(mkdtempSync(join(tmpdir(), "mentura-test-")), "workspace");
@@ -80,6 +81,27 @@ const fresh = join(ws, "ventures/fresh");
 expect("CLI init with --layers turns on only those layers", cli("init", fresh, "--id", "fresh", "--layers", "purpose").status === 0
   && JSON.parse(readFileSync(join(fresh, "venture.json"), "utf8")).layers.governance === false);
 expect("a part-adopted venture's need-now marks other layers off", call({ venture: "fresh", route: "system/need-now", action: "run" }).result.rows.find((r) => r.type === "ownership").status === "layer off");
+
+// Provenance (EE-031).
+const log = entries(tandem);
+const by = (pred) => log.filter(pred).at(-1);
+expect("the log route reads and checks the log, and has no write", table.find((r) => r.route === "system/provenance")?.actions.join() === "read,check"
+  && Array.isArray(call({ venture: "tandem", route: "system/provenance", action: "read" }).result));
+expect("a router write is logged with its gate as the decision", by((e) => e.activity === "draft" && e.agent.via === "router")?.decision === "ownership-or-control");
+expect("an MCP write logs the harness that connected", handle({ jsonrpc: "2.0", id: 9, method: "initialize", params: { clientInfo: { name: "test-harness", version: "1" } } })
+  && !handle({ jsonrpc: "2.0", id: 10, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "purpose/validation/problem",
+    record: call({ venture: "tandem", route: "purpose/validation/problem", action: "read" }).result, derived_from: ["purpose/validation/problem.json"], decision: "EE-026", model: "m" } } }).result.isError
+  && (() => { const e = entries(tandem).at(-1); return e.agent.harness === "test-harness 1" && e.agent.model === "m" && e.decision === "EE-026" && e.derived_from[0] === "purpose/validation/problem.json"; })());
+http("PUT", "/ventures/tandem/purpose/validation/problem", call({ venture: "tandem", route: "purpose/validation/problem", action: "read" }).result, { "x-mentura-derived-from": "https://example.com/a, EE-026" });
+expect("an API write logs derived_from from its header", entries(tandem).at(-1).derived_from?.join() === "https://example.com/a,EE-026" && entries(tandem).at(-1).agent.via === "api");
+expect("an accepted draft is logged as a person's accept", log.some((e) => e.activity === "accept" && e.agent.kind === "person" && e.entity === "governance/ownership.json"));
+const check = () => spawnSync("node", [join(root, "schema/check-provenance.mjs"), ws], { encoding: "utf8" });
+expect("check-provenance passes on the logs the tests wrote", check().status === 0);
+const lf = join(tandem, "provenance.jsonl"), logLines = readFileSync(lf, "utf8").split("\n");
+writeFileSync(lf, logLines.filter((_, i) => i !== 1).join("\n"));
+expect("check-provenance fails when a line is removed", /chain broken/.test(check().stderr));
+writeFileSync(lf, logLines.map((l, i) => i === 1 ? l.replace('"at":"2', '"at":"1') : l).join("\n"));
+expect("check-provenance fails when a line is edited", /hash does not match/.test(check().stderr));
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);
