@@ -1,0 +1,148 @@
+{
+  "log": "Everything Ecosystem schema",
+  "prefix": "EE",
+  "decisions": [
+    {
+      "id": "EE-001",
+      "date": "2026-10-26",
+      "decision": "The methodology has five layers that form a loop (Purpose, Knowledge, Operations, Execution, Evidence) and two that cut across them (Governance, Interface). Knowledge is SAD; Operations is MAD.",
+      "status": "in-force"
+    },
+    {
+      "id": "EE-002",
+      "date": "2026-10-27",
+      "decision": "The Everything Ecosystem is a schema, described as the AI-Native OS for Builders. An instance is one person's workspace, declared by a workspace.json naming the schema version it follows. The schema does not depend on any instance.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-003",
+      "date": "2026-10-27",
+      "decision": "A workspace is made of spheres. Each person has one personal sphere as the root, holding their values. Every other sphere (household, employer, venture, client, community, learning) has a parent; clients exist only inside the venture that serves them. Every sphere has the same layers at the depth it needs, records its purpose as weights over the root's values, and links one way: no sphere reads the root.",
+      "why": "Named after sphere sovereignty (each sphere governs itself; borders are kept). \"Domain\" was rejected because it already means a subject area in domain design and in MAD.",
+      "status": "superseded",
+      "related": [
+        "EE-002"
+      ]
+    },
+    {
+      "id": "EE-004",
+      "date": "2026-10-27",
+      "decision": "Venture is the one kind for anything a person undertakes. Hobby, venture and company are stages of it: a hobby is done for its own sake, a venture is an undertaking with risk not yet formed into a company, and a company is formalized with a legal form (llc, s-corp, c-corp, sole-prop, partnership, nonprofit). A venture changes stage without moving folders. Grouping folders such as ventures/companies/ are for browsing only; sphere.json is the truth.",
+      "status": "superseded",
+      "related": [
+        "EE-003"
+      ]
+    },
+    {
+      "id": "EE-005",
+      "date": "2026-10-25",
+      "decision": "Docs as code: the method, design docs, schemas, skills and templates live in this repo. An instance keeps its own notes, philosophy and decisions in its own spheres.",
+      "status": "in-force"
+    },
+    {
+      "id": "EE-006",
+      "date": "2026-10-26",
+      "decision": "A handoff includes a self-proof step (the agent exercises its change for real), allows 3 attempts and a 2-hour run cap before escalating, and ends with a one-line lesson when something failed for a reason that could recur.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-007",
+      "date": "2026-10-26",
+      "decision": "Each layer lists its tools in <layer>/tooling/integrations.json. Choosing tools is opt-in: when someone wants help, the agent asks situation questions from the layer's principles and examples, and scores with Jev plus a reasoning model; people who name their tools just have them recorded.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-008",
+      "date": "2026-10-27",
+      "decision": "The sphere is the unit of an instance, and \"sphere\" is the name used in files and in conversation. Each sphere keeps a sphere.json (machine fields) beside a human-readable profile (narrative, pillars, changelog), named by sphere.json's profile field. Products and systems inside a venture are not spheres; product cards describe them.",
+      "why": "Sphere reads plainly to a person and avoids \"domain\", which already means a subject area in domain design and in MAD.",
+      "status": "superseded",
+      "related": [
+        "EE-003"
+      ]
+    },
+    {
+      "id": "EE-009",
+      "date": "2026-10-27",
+      "decision": "Personal life is out of scope. A sphere is a venture or a client inside a venture; there is no personal root, and household, employer, community and learning kinds are dropped, with values and purpose weights. Top-level spheres are ventures. Personal knowledge management will be a separate system, built on its own, that can later read from or share with an instance through links.",
+      "why": "Keeps the schema about what a builder builds. The personal system has different needs (values, axiology, life areas) and is better designed on its own, then joined.",
+      "status": "in-force",
+      "supersedes": [
+        "EE-003"
+      ],
+      "related": [
+        "EE-004",
+        "EE-008"
+      ]
+    },
+    {
+      "id": "EE-010",
+      "date": "2026-10-27",
+      "decision": "The company template (governance/company-template/) stays, as the venture template. Its three pillars (product, brand, business) are scaffolded into every venture at every stage, because even a venture that is not a legal entity has a product, a brand and a business side. Governance (roles and decision rights) still starts only at the company stage.",
+      "status": "in-force",
+      "related": [
+        "EE-004",
+        "EE-009"
+      ]
+    },
+    {
+      "id": "EE-011",
+      "date": "2026-10-27",
+      "decision": "The venture is the unit of an instance, replacing the sphere. A venture is anything a builder undertakes, from a hobby to a company, and ventures can hold ventures. Each keeps a venture.json beside its venture profile (the readable companion, replacing the entity profile). Products are cards in products/, holding their own market, job, technology, offering and business model; venture.json keeps only what is true of the whole venture (phase, ambition, form, industry, core product). Clients are records in clients/ inside the venture that serves them, no longer units. The company template is renamed the venture template.",
+      "why": "\"A venture is a venture\": the plain word needs no new noun. Product-level fields were checked against Product Anatomy, where markets, jobs and business models already vary by product and phase.",
+      "status": "in-force",
+      "supersedes": [
+        "EE-008"
+      ],
+      "related": [
+        "EE-009",
+        "EE-010"
+      ]
+    },
+    {
+      "id": "EE-012",
+      "date": "2026-10-27",
+      "decision": "Phase replaces stage. A venture's phases are Discovery, Validation, Beachhead, Scale and Platform, each with a gate for leaving it: problem-solution fit, product-market fit (retention holds), repeatability, market leadership with healthy margins, and others building on it. Formalization is form.legal_form; intent is ambition (hobby, survival, lifestyle, managed growth, aggressive growth). The core product is required once a venture leaves Discovery. Starting layers come from the phase; governance switches on when the venture is formalized.",
+      "why": "Stage and phase meant the same thing. Names follow Blank (Discovery, Validation) and Moore (Beachhead, Scale); retention and repeatability, from a six-phase model the founder shared, became gates so the Succession Matrix keeps its weights. Horizon became Platform because McKinsey's horizons are concurrent, not sequential.",
+      "status": "in-force",
+      "supersedes": [
+        "EE-004"
+      ],
+      "related": [
+        "EE-011",
+        "EE-014"
+      ]
+    },
+    {
+      "id": "EE-013",
+      "date": "2026-10-27",
+      "decision": "Nouns that meant two things are split. Layer means only the system's seven layers; MAD's four become tiers. A product's place in the portfolio is its portfolio role; a bare role is a person's or agent's job. Wedge keeps its business meaning, a portfolio role (the narrow product used to enter a market), and is not a phase. The proposed for-profit/nonprofit axis is dropped: legal form carries it, with benefit-corp added.",
+      "why": "Founder rejected renaming wedge to on-ramp: in business those are different things.",
+      "status": "in-force",
+      "related": [
+        "EE-012",
+        "EE-014"
+      ]
+    },
+    {
+      "id": "EE-014",
+      "date": "2026-10-27",
+      "decision": "The system is highly opinionated, with references at every layer. Standards first: a noun uses an established term with its standard meaning and is coined only when none exists. docs/ontology.json is canonical for nouns (docs/ontology.md is generated from it); schema/check-nouns.mjs fails when a retired noun reappears. Each layer records the sources behind its defaults, and the alternatives weighed, in <layer>/references/references.json with title, authors, year, summary, a URL when one exists and a stance; the find-reference skill fills and re-checks them. The genus of the whole (operating system or operating model) stays open until the first venture runs end to end; files say \"the system\".",
+      "why": "A loosely opinionated system is hard to build; references keep the defaults discoverable. URLs rot, so titles are always recorded too.",
+      "status": "in-force",
+      "related": [
+        "EE-002",
+        "EE-012"
+      ]
+    }
+  ]
+}

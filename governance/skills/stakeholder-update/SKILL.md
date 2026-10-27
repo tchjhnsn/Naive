@@ -22,7 +22,7 @@ The Chief-of-Staff-sponsored skill for composing updates tailored to specific au
 
 ## Why stakeholder-update exists
 
-Per [[../../company-template/roles/chief-of-staff|Chief of Staff role]], CoS owns the rhythm of stakeholder communications — all-hands, board updates, investor updates, customer comms. These updates draw from project state but need translation: an engineering team's progress reads differently to engineers vs. the board vs. customers. The skill handles the translation.
+Per [[../../venture-template/roles/chief-of-staff|Chief of Staff role]], CoS owns the rhythm of stakeholder communications — all-hands, board updates, investor updates, customer comms. These updates draw from project state but need translation: an engineering team's progress reads differently to engineers vs. the board vs. customers. The skill handles the translation.
 
 ## When to invoke
 

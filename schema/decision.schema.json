@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decision.schema.json",
+  "title": "Decision log",
+  "description": "A decision log: the schema's own (docs/decisions/decisions.json, ids EE-NNN), or any venture's, with its own id prefix. Entries are appended, never rewritten; a changed decision is a new entry that supersedes the old one.",
+  "type": "object",
+  "required": ["log", "prefix", "decisions"],
+  "properties": {
+    "log": { "type": "string", "description": "Whose decisions these are" },
+    "prefix": { "type": "string", "pattern": "^[A-Z]+$", "description": "Id prefix, e.g. EE for the schema itself" },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "date", "decision", "status"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Z]+-\\d{3}$" },
+          "date": { "type": "string", "format": "date" },
+          "decision": { "type": "string" },
+          "why": { "type": "string" },
+          "status": { "enum": ["proposed", "in-force", "superseded", "withdrawn"] },
+          "supersedes": { "type": "array", "items": { "type": "string" } },
+          "related": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

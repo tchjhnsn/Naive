@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "product.schema.json",
+  "title": "Product",
+  "description": "One product of a venture, stored as a card at products/<id>.json (EE-011). It holds the product's own market, job, technology, offering and business model; Product Anatomy judges it against the venture's core and assigns its portfolio role per phase.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "market": {
+      "type": "object",
+      "description": "Who is served (Abell: customer groups).",
+      "properties": {
+        "customer": {
+          "enum": [
+            "b2c",
+            "b2b",
+            "b2g",
+            "b2b2c"
+          ]
+        },
+        "segment": {
+          "type": "string"
+        },
+        "geography": {
+          "type": "string"
+        },
+        "vertical": {
+          "type": "boolean",
+          "description": "true: one industry; false: across many (horizontal)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "job": {
+      "type": "string",
+      "description": "The need it meets (Abell: customer function; jobs to be done)"
+    },
+    "technology": {
+      "type": "string",
+      "description": "How it meets the need (Abell: alternative technologies)"
+    },
+    "offering": {
+      "enum": [
+        "product",
+        "service",
+        "platform",
+        "content",
+        "marketplace"
+      ]
+    },
+    "business_model": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "St. Gallen Business Model Navigator pattern names, e.g. subscription, freemium, add-on"
+    },
+    "allowed_from": {
+      "enum": [
+        "validation",
+        "beachhead",
+        "scale",
+        "platform"
+      ],
+      "description": "The first phase in which it may lead (a standing decision can hold a product back)"
+    },
+    "flows_to": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Products this one sends users, data or revenue to; Product Anatomy computes spillover from these"
+    },
+    "status": {
+      "enum": [
+        "idea",
+        "building",
+        "live",
+        "retired"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

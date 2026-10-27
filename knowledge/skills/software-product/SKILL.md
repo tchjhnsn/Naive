@@ -10,7 +10,7 @@ description: >
   apply specifically to software products (web app, mobile app, API/SDK, CLI,
   library, platform). Most developed product-type in SAD because the methodology
   was originally authored here. Auto-loads when a project's product-type is
-  software (any sub-type). References company-template/pillars/product.md.
+  software (any sub-type). References venture-template/pillars/product.md.
   Per SAD v3.3+ amendment §33 + product pillar's Tier 2 inventory.
   MANDATORY TRIGGERS: software product, web app, mobile app, API, SDK, CLI,
   library, platform, code, schema, data model, spec stack, deploy workflow,

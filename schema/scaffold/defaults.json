@@ -1,0 +1,25 @@
+{
+  "version": "0.3.0",
+  "note": "Which layers a new venture starts with, by phase (EE-012). Every venture has every layer; a layer not listed starts as false and is switched on when the venture needs it. Folder names are the layer names. Every venture also gets the three pillars and a venture profile (EE-010, EE-011). Governance is added when the venture is formalized: a legal form other than none, or other members.",
+  "layers": {
+    "discovery": ["knowledge"],
+    "validation": ["purpose", "knowledge", "execution", "evidence"],
+    "beachhead": ["purpose", "knowledge", "operations", "execution", "evidence"],
+    "scale": ["purpose", "knowledge", "operations", "execution", "evidence", "interface"],
+    "platform": ["purpose", "knowledge", "operations", "execution", "evidence", "interface"]
+  },
+  "formalized": ["governance"],
+  "pillars": {
+    "from": "governance/venture-template/pillars/",
+    "files": ["product.md", "brand.md", "business.md"]
+  },
+  "readme": {
+    "purpose": "Why this venture exists: its core product, products and the Product Anatomy matrix.",
+    "knowledge": "What is known and intended: notes, specs, decisions and references (SAD).",
+    "operations": "How work is run here: the MAD record (.mad/) and chosen methods.",
+    "execution": "Who or what does the work: handoffs to people and agents.",
+    "evidence": "Did it work: reviews, evals and metrics.",
+    "governance": "Who may decide what: roles and decision rights.",
+    "interface": "How people and agents see this venture: consoles and dashboards."
+  }
+}

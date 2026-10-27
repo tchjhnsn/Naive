@@ -64,7 +64,7 @@ If any input is missing, surface to the operator before scaffolding.
 ### Step 2 — Walk the known inventory (including characteristic packs)
 
 1. Declare or refresh the system profile (characteristics C-01…C-18) per [[../asset-requirements/SKILL|asset-requirements]].
-2. For each active pillar, look up the Tier 1 deliverable list from the company template ([[../../company-template/pillars/product|product]] / [[../../company-template/pillars/brand|brand]] / [[../../company-template/pillars/business|business]]).
+2. For each active pillar, look up the Tier 1 deliverable list from the company template ([[../../venture-template/pillars/product|product]] / [[../../venture-template/pillars/brand|brand]] / [[../../venture-template/pillars/business|business]]).
 3. For each product, look up Tier 2 deliverables from the product-type-specific skill:
    - Software product → [[../software-product/SKILL|software-product skill]]
    - Content product → [[../content-product/SKILL|content-product skill]]

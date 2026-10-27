@@ -24,7 +24,7 @@ The CEO-level decision framing skill for tradeoffs that span pillars. Surfaces w
 
 ## Why cross-pillar-tradeoff exists
 
-Per [[../../company-template/roles/ceo|CEO role]] + [[../../company-template/roles/chief-of-staff|Chief of Staff role]], the CEO owns cross-pillar tradeoffs and the Chief of Staff often surfaces them. Without an explicit skill for this, tradeoffs get resolved inside individual pillars based on the pillar lead's view — which often produces local optimums but cross-pillar suboptimality.
+Per [[../../venture-template/roles/ceo|CEO role]] + [[../../venture-template/roles/chief-of-staff|Chief of Staff role]], the CEO owns cross-pillar tradeoffs and the Chief of Staff often surfaces them. Without an explicit skill for this, tradeoffs get resolved inside individual pillars based on the pillar lead's view — which often produces local optimums but cross-pillar suboptimality.
 
 The discipline: when a decision affects multiple pillars, it gets escalated and framed as a cross-pillar tradeoff explicitly, not resolved silently within one pillar's scope.
 

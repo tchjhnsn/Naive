@@ -1,6 +1,6 @@
 # Everything Ecosystem
 
-An agent-native operating model: one methodology for running a person's or a company's work with AI agents, in five layers that form a loop, plus two that cut across them. Private for now (G-035); which parts become public is decided later.
+**The AI-Native OS for Builders.** One methodology for running what a builder builds, from a hobby to a company, with AI agents, in five layers that form a loop, plus two that cut across them. It is a schema: a builder's workspace is an instance of it (EE-002). Private for now (G-035); which parts become public is decided later.
 
 | Layer | Question | Folder | Today |
 |---|---|---|---|
@@ -18,4 +18,4 @@ The loop: Purpose is articulated into Knowledge, Operations picks how the work r
 
 ## Vault and repo
 
-Docs as code (G-020): this repo holds the method, its design docs, schemas, skills and templates. The vault holds philosophy, guiding principles, business documents and ideas: `vault/Torian/everything-ecosystem/` (the entity, its philosophy and ideas), `vault/sad/` and `vault/mad/` (principles and pointers).
+Docs as code (EE-005): this repo holds the method, its design docs, schemas, skills and templates. Each instance keeps its own notes and decisions in its own ventures. The schema's decisions are in `docs/decisions/decisions.json`, and `schema/README.md` indexes every record type.

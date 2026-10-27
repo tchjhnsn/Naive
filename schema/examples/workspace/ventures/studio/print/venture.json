@@ -1,0 +1,38 @@
+{
+  "id": "studio-print",
+  "name": "Alex Studio print line",
+  "parent": "studio",
+  "phase": "validation",
+  "ambition": "lifestyle",
+  "core": {
+    "promise": "Restaurant print that matches the brand, delivered in two days",
+    "promised_to": "Alex Studio's restaurant clients",
+    "must_not": "Print that drifts from the brand system",
+    "competence": "Print-ready files from the brand system"
+  },
+  "owner": "self",
+  "status": "active",
+  "profile": "profile.md",
+  "layers": {
+    "purpose": {
+      "location": "purpose/"
+    },
+    "knowledge": {
+      "location": "knowledge/"
+    },
+    "operations": false,
+    "execution": false,
+    "evidence": false
+  },
+  "links": [
+    {
+      "to": "studio",
+      "access": "shares-with",
+      "carries": [
+        "sales",
+        "costs"
+      ],
+      "border": "open"
+    }
+  ]
+}

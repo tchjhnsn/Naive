@@ -1,0 +1,17 @@
+{
+  "id": "bakery",
+  "name": "Corner Bakery",
+  "status": "active",
+  "opened": "2026-09-01",
+  "products": [
+    "brand-kit"
+  ],
+  "layers": {
+    "knowledge": {
+      "location": "knowledge/"
+    },
+    "execution": {
+      "location": "handoffs/"
+    }
+  }
+}
