@@ -16,13 +16,14 @@ unfit-when:
   - "Neither the milestones nor the feature list is fixed: use an agile method outright"
   - "The plan allows no change at all: a sequential method is the honest choice"
   - "Nobody owns the boundary between the milestone plan and the teams, so milestones and sprints contradict each other"
+  - "A single small change with no milestone plan around it: use small change"
 switch-when:
   - "The milestone plan is rewritten every cycle: drop the fixed plan and run an agile method"
   - "The iterations inside the plan never change anything: run it as a sequential process"
 artifact-types: []
-bodies-of-knowledge: []
+bodies-of-knowledge: ["Boehm, B. and Turner, R., Balancing Agility and Discipline: A Guide for the Perplexed, Addison-Wesley, 2003 (home grounds: size and criticality)"]
 evidence: []
-last-checked: 2026-10-18
+last-checked: 2026-10-27
 source: hybrid
 created: 2026-10-18
 ai-model: grok-bot
@@ -36,3 +37,5 @@ High-level sequential milestones, with agile execution by the teams inside them.
 This is a pattern rather than a single published method, so no primary source is cited and `bodies-of-knowledge` is left empty. Related: [[waterfall]], [[scrum]].
 
 Status: candidate. This entry is written from secondary summaries. The primary sources listed in `bodies-of-knowledge` have not yet been read, and the `fits-when` and `unfit-when` lines are working judgments that no recorded system has tested (no answers are recorded).
+
+Proportion (added 2026-10-27, after Jev ranked this method first for a one-flag CLI change): Boehm and Turner place plan-driven methods in a home ground of large, critical systems; for small, low-criticality work their overhead outweighs what they prevent.

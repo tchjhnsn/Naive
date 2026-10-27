@@ -1,13 +1,13 @@
 // Creates an empty venture: its folder, one folder per starting layer, products/,
-// clients/, the three pillars (EE-010), a venture profile and a venture.json to fill in
+// accounts/, the three pillars as stubs pointing to their guides (EE-010), a venture profile and a venture.json to fill in
 // (EE-011). Starting layers come from scaffold/defaults.json, by phase (EE-012).
 //
 //   node schema/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc]
 //
 // Writes nothing over an existing venture.json.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -33,9 +33,12 @@ for (const layer of ["purpose", "knowledge", "operations", "execution", "evidenc
   writeFileSync(join(dir, layer, "README.md"), `# ${layer}\n\n${readme[layer]}\n`);
   venture.layers[layer] = { location: `${layer}/` };
 }
-for (const sub of ["products", "clients"]) mkdirSync(join(dir, sub), { recursive: true });
+for (const sub of ["products", "accounts"]) { mkdirSync(join(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
 mkdirSync(join(dir, "pillars"), { recursive: true });
-for (const f of pillars.files) copyFileSync(join(repo, pillars.from, f), join(dir, "pillars", f));
+for (const [name, what] of Object.entries(pillars.stubs)) {
+  const guide = relative(join(dir, "pillars"), join(repo, pillars.guides, `${name}.md`));
+  writeFileSync(join(dir, "pillars", `${name}.md`), `# ${name[0].toUpperCase() + name.slice(1)} pillar\n\n${what}\n\nGuide: [${name} pillar](${guide})\n`);
+}
 writeFileSync(join(dir, "profile.md"), `# ${id}\n\nWhat this venture is, in a few sentences. Its machine fields are in venture.json (EE-011).\n\n## Changelog\n`);
 writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
-console.log(`created venture ${id} (${phase}) in ${dir} with ${on.join(", ")}, products/, clients/ and the three pillars.${venture.core ? " Fill in the core product before ranking products." : ""}`);
+console.log(`created venture ${id} (${phase}) in ${dir} with ${on.join(", ")}, products/, accounts/ and the three pillars.${venture.core ? " Fill in the core product before ranking products." : ""}`);

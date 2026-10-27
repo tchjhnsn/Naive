@@ -35,7 +35,7 @@ Software is the most-developed product-type in SAD. The Tier 2 deliverable set i
   schemas for every client–server or client–agent boundary in the next build
   slice; auth, errors, versioning, fixtures. Industry: API-first / contract-first.
   Mandatory Tier A assets before Phase 2 coding of that slice (or recorded
-  deferral). See [[../contract-first/SKILL|contract-first]]. Lives at
+  deferral). See [[../../../operations/skills/contract-first/SKILL|contract-first]]. Lives at
   `docs/api/` or `packages/api-contract/` after bootstrap; vault
   `<entity>/product/spec/api/` pre-repo.
 - **Feature × Implementation matrix** — feature-first inventory mapping each feature to build-vs-buy + the implementing technology/vendor (industry: a *feature matrix* with a *tech-stack* column). The product-facing cross-cut of IMPL_SPEC §stack/§endpoints; lives in PRODUCT_SPEC or IMPL_SPEC.
@@ -125,7 +125,7 @@ When loaded, the AI should keep in mind:
 
 1. **The spec stack is non-optional for software at venture or enterprise ambition tier.** Hobby + side-project tiers can skip parts; the spec stack is the discipline.
 2. **Articulation closure is non-optional before Phase 2 begins.** Per [[../articulation-closure/SKILL|articulation-closure skill]], the closure inventory + cross-spec gap audit gate Phase 2.
-3. **Communication contracts are non-optional for networked slices.** Per [[../contract-first/SKILL|contract-first]], Tier A OpenAPI/AsyncAPI/MCP assets (or recorded deferrals) gate Phase 2 coding of client–server boundaries. Backend-leading implementation is fine; backend-without-contract is not. Mid-build projects use [[../_patterns/gate-backfill|gate-backfill]] via contract-first.
+3. **Communication contracts are non-optional for networked slices.** Per [[../../../operations/skills/contract-first/SKILL|contract-first]], Tier A OpenAPI/AsyncAPI/MCP assets (or recorded deferrals) gate Phase 2 coding of client–server boundaries. Backend-leading implementation is fine; backend-without-contract is not. Mid-build projects use [[../_patterns/gate-backfill|gate-backfill]] via contract-first.
 4. **The deploy workflow is bootstrap-phase (Phase 2.1), not afterthought.** Per the v3.0.1 amendment (real-run discipline + local-dev-parity-by-bootstrap), the deploy workflow + local preview environment go up at bootstrap, not at first deploy. If preview/smoke is missing mid-project, backfill before the next external-integration change (see phase-closure amendment).
 5. **Brand assets are imported, not duplicated.** Design system imports from Brand pillar. Watch for drift.
 6. **Missing Tier 2 assets mid-build** — inventory against this skill's list *and* the entity's Asset Requirement Set; apply [[../_patterns/gate-backfill|gate-backfill]]; put lines on the build roadmap; do not silently expand scope while foundational stubs are absent.
@@ -135,7 +135,7 @@ When loaded, the AI should keep in mind:
 
 - [[../product-pillar/SKILL|product-pillar]] — auto-loads alongside this skill
 - [[../articulation-closure/SKILL|articulation-closure]] — software products run articulation closure rigorously
-- [[../contract-first/SKILL|contract-first]] — API/communication contracts before networked slice coding
+- [[../../../operations/skills/contract-first/SKILL|contract-first]] — API/communication contracts before networked slice coding
 - [[../asset-requirements/SKILL|asset-requirements]] — derives the full required set from system characteristics
 - [[../_patterns/gate-backfill|gate-backfill]] — shared mid-build recovery pattern for gate skills
 - [[../build-roadmap/SKILL|build-roadmap]] — software's build roadmap is the most-developed pattern

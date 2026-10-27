@@ -5,7 +5,7 @@ id: tdd
 name: Test-driven development
 domain: software
 family: test-first
-lifecycle: re-check
+lifecycle: listed
 source-of-truth: "Tests"
 answers:
   M1: { value: "the test suite", basis: assumed }
@@ -23,9 +23,9 @@ unfit-when:
 switch-when:
   - "Behaviour is still being discovered: move to a spike, return to TDD when it stabilises"
 artifact-types: [adr-madr]
-bodies-of-knowledge: []
+bodies-of-knowledge: ["Beck, K., Test-Driven Development: By Example, Addison-Wesley, 2002", "Anthropic, Best practices for Claude Code (code.claude.com/docs/en/best-practices), checked 2026-10-27: give the agent a failing test to turn green"]
 evidence: []
-last-checked: 2026-10-11
+last-checked: 2026-10-27
 source: hybrid
 created: 2026-10-10
 ai-model: claude-opus-5.5
@@ -35,3 +35,5 @@ tags: [catalog, methodology, test-first]
 # Test-driven development
 
 Write a failing test, make it pass, refactor. Tests are themselves a form of specification, and often a better anchor than prose because they are checked on every run ([[sdd-cousins-pros-cons-api-first-2026-08-11]] §4.1).
+
+Re-check (2026-10-27): current against practice. Beck's red-green-refactor is unchanged, and agent guidance still recommends handing an agent a failing test as its definition of done, which supports the second fits-when line. Returned to `listed`.

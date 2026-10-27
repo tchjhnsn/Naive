@@ -19,7 +19,7 @@ related:
   - "[[ASSET_REQUIREMENTS_METHOD]]"
   - "[[CANONICAL_ASSET_REGISTRY]]"
   - "[[skills/design-coverage/SKILL|design-coverage]]"
-  - "[[skills/contract-first/SKILL|contract-first]]"
+  - "[[../../operations/skills/contract-first/SKILL|contract-first]]"
 tags: [methodology, sad-v3, domain-design, systems-design, registry, typesafe, design-coverage]
 description: "Defines domain design and systems design, how they relate, when systems design starts, the stages and document families of each, where each layer lives across the vault and the code repo, and how a machine-readable registry (design-documents.registry.json) plus a TypeSafe checker (design-coverage) determine which documents exist for any scope. Extends the Asset Requirements Method; questions informed by the Fanout system design curriculum."
 ---

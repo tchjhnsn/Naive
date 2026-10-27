@@ -41,3 +41,23 @@ node anatomy.mjs matrix examples/polity.json examples/polity.answers.reasoned.js
 ```
 
 Without a key, a reasoning model fills the answers file by hand and names itself in `scorer`. `examples/polity.answers.reasoned.json` is that kind of draft.
+
+## JSON output
+
+`node anatomy.mjs matrix <venture> <answers.json> --json` prints the same matrix as data (assignment A-001), for tests and agents:
+
+```json
+{
+  "venture": "id", "phase": "discovery", "scorer": "who filled the answers",
+  "substrate": "product id or null",
+  "phases": [
+    { "id": "validation", "name": "Validation", "projection": true,
+      "flagship": "product id or null", "tied": ["product id"], "successor": "product id or null",
+      "roles": { "product id": { "roles": ["flagship", "substrate"] }, "other id": { "roles": ["option"], "allowed_from": "beachhead" } },
+      "role_text": { "product id": "flagship + substrate" },
+      "scores": { "product id": { "score": 0.84, "flagship_fails": [] } } }
+  ]
+}
+```
+
+`roles` holds role ids (flagship, substrate, revenue-engine, wedge, end-product, option, unassigned), with `revenue_engine_tied` and `allowed_from` where they apply; `role_text` holds the words the Markdown shows. `test.mjs` checks that the two agree.

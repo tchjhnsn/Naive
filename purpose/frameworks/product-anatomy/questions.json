@@ -42,7 +42,7 @@
     },
     "ready": {
       "type": "score",
-      "instructions": "Given `venture.members`, `venture.phase` and this product's `status`, how close is this product to being usable by real users?",
+      "instructions": "Given `venture.members` (people and agents, each with a role), `venture.phase` and this product's `status`, how close is this product to being usable by real users? Agents count as team for work they can do under the venture's decision rights.",
       "criteria": [
         "It is an idea; most of it would need building with people the venture does not have",
         "Parts exist, but it needs major work or people the venture does not have",

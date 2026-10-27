@@ -310,6 +310,22 @@ export function score(whole, part, fitPs, unfitPs) {
   return +(base * support * (1 - certainty)).toFixed(2);
 }
 /** Ranks listed and evidenced methodologies for one system. `ask` is injectable for tests. */
+/** An `ask` that reads answers a reasoning model wrote by hand, when Jev is not available.
+ *  The file maps methodology name to {whole, part, fit0.., unfit0..} probabilities and names its `scorer`. */
+export function answersFile(path) {
+  const f = JSON.parse(readFileSync(path, "utf8"));
+  const ask = async (state, qs) => {
+    const name = qs.whole.instructions.match(/Methodology "([^"]+)"/)[1];
+    const a = f.answers[name];
+    if (!a) throw new Error(`answers file has no entry for "${name}"`);
+    return { answers: Object.fromEntries(Object.keys(qs).map((k) => {
+      if (a[k] === undefined) throw new Error(`answers file: "${name}" has no ${k}`);
+      return [k, { noul: a[k] }];
+    })) };
+  };
+  ask.scorer = f.scorer;
+  return ask;
+}
 export async function recommend(root, systemFile, ask = typesafe, repeat = 1) {
   const { recs } = load(root, disk);
   const sys = parseFrontmatter(readFileSync(systemFile, "utf8"));
@@ -352,14 +368,15 @@ export async function recommend(root, systemFile, ask = typesafe, repeat = 1) {
   const m4 = sys.answers?.M4;
   const researchTriggers = m4 && /high/i.test(String(m4.value)) ? sa.filter(([, v]) => v.basis === "assumed").map(([k, v]) => ({ question: k, answer: v.value })) : [];
   const unresearched = ranked.length > 0 && ranked.every((r) => r.candidate);
-  return { created: new Date().toISOString(), model: ask === typesafe ? MODEL : "injected", scoring: SCORING, repeat, domain: sysDomain, unresearched, catalog_version: catalogVersion(root, recs),
+  return { created: new Date().toISOString(), model: ask === typesafe ? MODEL : ask.scorer ?? "injected", scoring: SCORING, repeat, domain: sysDomain, unresearched, catalog_version: catalogVersion(root, recs),
     system_file: relative(root, resolve(systemFile)), entity: sys.entity, system: sys.system, inputs: state, ranked, research_triggers: researchTriggers,
     usd: +((tokens / 1e6) * 0.042).toFixed(4), note: "A recommendation only. The founder ratifies (I2)." };
 }
 const slug = (t) => String(t).toLowerCase().replace(/\[\[|\]\]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 export function saveRecommendation(root, rec) {
   const dir = join(root, "register/_recommendations"); mkdirSync(dir, { recursive: true });
-  const base = `R-${rec.created.slice(0, 16).replace(/[:T]/g, "-")}-${slug(rec.system)}-scoring-${rec.scoring}`;
+  // Seconds in the name: two recommendations in the same minute must not overwrite each other.
+  const base = `R-${rec.created.slice(0, 19).replace(/[:T]/g, "-")}-${slug(rec.system)}-scoring-${rec.scoring}`;
   writeFileSync(join(dir, `${base}.json`), JSON.stringify(rec, null, 2));
   return join("register/_recommendations", `${base}.json`);
 }
@@ -474,8 +491,11 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.
     process.exit(0);
   }
   if (cmd === "recommend") {
-    if (!process.env.TYPESAFE_API_KEY) { console.error("recommend needs TYPESAFE_API_KEY (run node with --env-file)"); process.exit(2); }
-    const rec = await recommend(root, resolve(opt("--system")), typesafe, Number(opt("--repeat", 3)));
+    // --answers <file>: answers written by a reasoning model when Jev is unavailable; the file's scorer is recorded.
+    const manual = opt("--answers");
+    if (!manual && !process.env.TYPESAFE_API_KEY) { console.error("recommend needs TYPESAFE_API_KEY (run node with --env-file), or --answers <file>"); process.exit(2); }
+    const rec = manual ? await recommend(root, resolve(opt("--system")), answersFile(resolve(manual)), 1)
+      : await recommend(root, resolve(opt("--system")), typesafe, Number(opt("--repeat", 3)));
     const saved = saveRecommendation(root, rec);
     console.log(flag("--json") ? JSON.stringify({ saved, ...rec }, null, 2) : `${printRecommendation(rec)}\nSaved: ${saved}`);
     process.exit(0);
@@ -498,8 +518,10 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.
   if (cmd === "publish") {
     const { plan, report: publishReport, write } = await import("./publish.mjs");
     // publish.private.json (local, not committed) appends private term lists to the committed manifest.
-    const manifest = JSON.parse(readFileSync(join(root, "publish.json"), "utf8"));
-    const privPath = join(root, "publish.private.json");
+    // publish.json sits at the repository root, one level above the operations layer that holds the catalog.
+    const home = existsSync(join(root, "publish.json")) ? root : resolve(root, "..");
+    const manifest = JSON.parse(readFileSync(join(home, "publish.json"), "utf8"));
+    const privPath = join(home, "publish.private.json");
     if (existsSync(privPath)) for (const [k, v] of Object.entries(JSON.parse(readFileSync(privPath, "utf8")))) if (Array.isArray(v)) manifest[k] = [...(manifest[k] ?? []), ...v];
     const res = plan(resolve(root, ".."), manifest, parseFrontmatter);
     if (flag("--dry-run")) { console.log(flag("--json") ? JSON.stringify(res, null, 2) : publishReport(res)); process.exit(res.ok ? 0 : 1); }

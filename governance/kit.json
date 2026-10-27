@@ -1,0 +1,97 @@
+{
+  "kit": "governance-kit",
+  "layer": "governance",
+  "purpose": "Say who owns and controls the venture and who may decide what: ownership (cap table), founders, boards, investor rights and exits, roles, decision rights, where it publishes and who may publish what (the publication gate), the venture template and its pillars, and escalation to the owner.",
+  "skills": [
+    {
+      "id": "brand-pillar",
+      "path": "governance/skills/brand-pillar/SKILL.md"
+    },
+    {
+      "id": "business-pillar",
+      "path": "governance/skills/business-pillar/SKILL.md"
+    },
+    {
+      "id": "chief-of-staff",
+      "path": "governance/skills/chief-of-staff/SKILL.md"
+    },
+    {
+      "id": "cross-pillar-tradeoff",
+      "path": "governance/skills/cross-pillar-tradeoff/SKILL.md"
+    },
+    {
+      "id": "executive-roles",
+      "path": "governance/skills/executive-roles/SKILL.md"
+    },
+    {
+      "id": "office-hours-mode",
+      "path": "governance/skills/office-hours-mode/SKILL.md"
+    },
+    {
+      "id": "product-pillar",
+      "path": "governance/skills/product-pillar/SKILL.md"
+    },
+    {
+      "id": "role-and-candidate-authoring",
+      "path": "governance/skills/role-and-candidate-authoring/SKILL.md"
+    },
+    {
+      "id": "stakeholder-update",
+      "path": "governance/skills/stakeholder-update/SKILL.md"
+    },
+    {
+      "id": "cofounder-structure",
+      "path": "governance/skills/cofounder-structure/SKILL.md"
+    },
+    {
+      "id": "board-design",
+      "path": "governance/skills/board-design/SKILL.md"
+    },
+    {
+      "id": "equity-and-share-classes",
+      "path": "governance/skills/equity-and-share-classes/SKILL.md"
+    },
+    {
+      "id": "financing-and-investor-rights",
+      "path": "governance/skills/financing-and-investor-rights/SKILL.md"
+    },
+    {
+      "id": "exit-planning",
+      "path": "governance/skills/exit-planning/SKILL.md"
+    },
+    {
+      "id": "publication-policy",
+      "path": "governance/skills/publication-policy/SKILL.md"
+    }
+  ],
+  "records": [
+    "decision-rights",
+    "role",
+    "pillar",
+    "ownership",
+    "board",
+    "founder-agreement",
+    "exit",
+    "publication-policy",
+    "publish-config"
+  ],
+  "reads": [
+    "handoff",
+    "evidence",
+    "venture",
+    "telos"
+  ],
+  "writes": [
+    "decision",
+    "handoff"
+  ],
+  "checks": [
+    "schema/check-governance.mjs",
+    "schema/payouts.mjs",
+    "schema/check-publication.mjs"
+  ],
+  "gaps": [
+    "Roles have no schema",
+    "Escalations land in handoffs; nothing collects open escalations for the owner"
+  ]
+}

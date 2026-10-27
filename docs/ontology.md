@@ -16,18 +16,24 @@ The system is opinionated: it names one default for each choice, and every defau
 - References are ids in `<layer>/references/references.json`.
 - The genus of the whole is open: files say "the system" until the first venture runs end to end, then it is settled as an operating system or an operating model.
 - Phases and gates: Discovery, Validation, Beachhead, Scale, Platform (EE-012). Three Horizons, VC funding stages and Blank's customer development are lenses onto them, mapped in the ontology research doc (https://claude.ai/artifact/6LcDgsc8SA9ybY5ddTfsMn).
-
 ### System
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
 | Everything Ecosystem | The name of the system | ours |  |
-| the system | How files refer to the whole until its genus is settled (operating system, operating model) after the first venture runs end to end | EOS (Wickman) for 'operating system' |  |
+| the system | How files refer to the whole. Proposed genus (EE-024): a venture development framework; operating system and operating model are set aside | EOS (Wickman) for 'operating system' |  |
+| venture development framework | Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages that plug in (kits). The builder's venture calls on it, and its checks call back on the venture's records | software framework (Johnson and Foote 1988; Rails' convention over configuration) applied to venture development (venture building, venture studios) |  |
 | method | What to do: SAD, MAD, Product Anatomy, handoffs | common usage |  |
 | schema | What to record: venture.json, products, decisions, references | JSON Schema |  |
 | tooling | What helps do it: scripts, skills, agent rules | common usage |  |
 | workspace | One builder's instance of the system, declared by workspace.json | common software usage |  |
 | layer | One of the seven: purpose, knowledge, operations, execution, evidence, governance, interface | ours |  |
+| integration | A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). An interface reaches integrations; it is not one | systems integration |  |
+| data model | The list of every record type in the ecosystem, the layer that owns it, its schema, where its records live and what it references (schema/data-model.json). It is the master map; no single schema contains everything | data model (ANSI/SPARC; entity-relationship modelling, Chen 1976) |  |
+| record type | One kind of record in the data model, such as venture, product, handoff or evidence, owned by exactly one layer or by the system | record type (database usage) |  |
+| kit manifest | The file (<layer>/kit.json) that lists what one kit holds: its skills, the record types it owns, those of other kits it reads and writes, and its checks. Layer relationships are derived from manifests | package manifest (common software usage) |  |
+| vault | The folder of documents (Markdown notes and JSON records) that holds a workspace's venture folders, their records and decisions. Every workspace has one; a venture outside software may need nothing else | Obsidian's name for a folder of notes; generically a knowledge base |  |
+| repository (repo) | A version-controlled store, normally Git, holding code and the documents that ship with it (docs-as-code). A venture that builds software needs at least one; repo is the short form | version control (Git: repository) |  |
 
 ### Venture
 
@@ -41,11 +47,13 @@ The system is opinionated: it names one default for each choice, and every defau
 | funding | bootstrapped, grant, angel, venture capital, debt, mixed | common usage |  |
 | industry | What the venture produces, by its current flagship | NAICS | naics-2022, gics-msci |
 | core product | The promise, who it is made to, what it must not deliver, and the competence behind it | Kotler; Prahalad and Hamel | kotler-core-product, prahalad-hamel-1990-core-competence |
-| client | A record inside the venture that serves it; not a venture | common usage |  |
+| account | A named party a venture keeps a record for, at accounts/<id>/account.json, with a relationship: client, customer, user, member, partner or other. Optional; who a product serves in general is its market | CRM usage (Salesforce, HubSpot: account) |  |
+| relationship | How a party or market stands to the venture: customer (buys), client (served under a professional relationship), user (uses, may not pay), member (belongs), audience (reads, watches or listens; markets only), partner | common business usage; client as a customer of professional services |  |
 | link | What crosses from one venture into another, one way, with a border | Clark's work/family border theory |  |
 | venture profile | The readable companion to venture.json: narrative, pillars, changelog | ours |  |
 | pillar | Product, brand and business, in every venture | ours |  |
 | venture template | The scaffold for a venture: pillars, roles, decision rights | ours |  |
+| kit | A product that bundles other products (skills, schemas, checks) sold or used together. Scoped to the whole system, one layer, or one tier of the operations layer. A part can also be its own product | product bundling (Adams and Yellen 1976) |  |
 
 ### Purpose
 
@@ -61,6 +69,8 @@ The system is opinionated: it names one default for each choice, and every defau
 | wedge | A portfolio role: the narrow product or segment used to enter a market | Dixon (2010) | dixon-2010-thin-edge-of-the-wedge |
 | Product Anatomy | The method that judges products against the core product | ours |  |
 | Succession Matrix | Part of Product Anatomy that assigns portfolio roles by phase | ours |  |
+| telos | The end a venture exists to reach (purpose/telos.json): statement, end state, measures, the owners' intended outcome, and exit criteria for each phase. Start with the end: other layers derive from it | Aristotle (final cause); Covey, begin with the end in mind |  |
+| exit criterion | What must be true for a venture to leave a phase, written in its telos and tied to a telos measure; it refines that phase's generic gate. Not an owner's exit (governance) | Stage-Gate exit criteria (Cooper) |  |
 
 ### Knowledge
 
@@ -74,42 +84,66 @@ The system is opinionated: it names one default for each choice, and every defau
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
 | tier | One of MAD's four levels: governance, delivery, software engineering, automation | architecture tiers |  |
+| derived answer | A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from | ours |  |
 
 ### Execution
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
-| handoff | One unit of delegated work, with attempts and escalation | common operations usage |  |
+| handoff | One unit of delegated work: a JSON record (role, decision classes, done-criteria, status, attempts) at <venture>/execution/handoffs/<id>.json with a Markdown brief beside it | common operations usage |  |
+| done-criterion | One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role) | definition of done (Scrum) |  |
 
 ### Evidence
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
-| eval | A test of whether something worked | AI evals |  |
+| eval | A test of whether something worked; evals are grouped in eval suites (eval-suite.schema.json) | AI evals |  |
+| evidence | The recorded result of one run of a check or eval: subject and version, each criterion's outcome and its output, at <venture>/evidence/results/<id>.json. Append-only | common audit usage |  |
 
 ### Governance
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
 | role | A person's or agent's job; never a product's place in the portfolio | decision rights (RACI, RAPID) |  |
-| decision right | Who may decide what | decision rights (RACI, RAPID) |  |
+| decision right | Who may decide what, at one of four levels: decide, decide-inform, recommend-approve, escalate. A venture may tighten the template, never loosen it without a named decision | decision rights (RAPID, DACI) |  |
+| cap table | The record of who owns the venture and on what terms: share classes, holders, grants with vesting, the option pool, SAFEs and notes (governance/ownership.json) | capitalization table (common startup and finance usage) |  |
+| share class | A kind of share (or LLC unit) with its own votes, price and rights: common, preferred, super-voting, non-voting | corporate law (classes of stock) |  |
+| vesting | Earning granted shares over time, commonly four years with a one-year cliff, so that someone who leaves early keeps only what they earned | common startup usage |  |
+| founder agreement | What founders agreed with each other: roles, commitment, IP assignment, departure and deadlock terms; required once two or more founders share ownership | common startup usage |  |
+| board | A formal board of directors (or managers, or trustees), which holds legal authority, or an advisory board, which advises and decides nothing (governance/board.json) | corporate law; Feld and Ramsinghani, Startup Boards |  |
+| reserved matter | A decision only the formal board may make, such as issuing shares or selling the company | corporate governance usage |  |
+| investor right | A right an investor gets with a class or instrument: board seat, information, pro-rata, protective provisions, anti-dilution, drag-along, tag-along, right of first refusal and others | NVCA model legal documents |  |
+| exit | How owners realize value or the venture ends: acquisition, IPO, secondary sale, merger, management buyout, wind-down, or hold (governance/exit.json) | venture finance usage |  |
+| preference stack | The order and amounts in which a sale's proceeds reach each owner, preferences first by seniority, then common; computed from the cap table by schema/payouts.mjs, never typed | venture finance usage (pref stack; Feld and Mendelson, Venture Deals) |  |
+| publication policy | Where a venture publishes and who may publish what there: its channels, the guidelines each follows, the checks and preview every publication passes, and who drafts and approves by role or team (governance/publication-policy.json, EE-025) | content governance; communications or disclosure policy (corporate usage) |  |
+| channel | A place the venture publishes to (website, docs site, social account, newsletter, app store, press, investor update, regulatory filing); its destination decides which guidelines apply | marketing channel (Kotler, Marketing Management) |  |
+| publication | One act of making something public on a channel; always a handoff under the public-commitment decision class, previewed, checked and approved by a person | common usage |  |
+| brand guidelines | The rules for using the venture's visual and verbal identity, kept by the brand pillar | brand guidelines or brand book (common marketing usage) |  |
+| editorial guidelines | What content covers and how it is written, separate from brand voice; a style guide is one part | editorial guidelines and style guide (publishing usage) |  |
 
 ### Interface
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
-| console | How people and agents see a venture | common software usage |  |
+| console | A custom interface built for the system: a viewer over a venture's records | common software usage |  |
+| interface | A tool through which a person, with agents, works across all or most other layers at once in one session (reaches at least four of the six). A tool that serves one or two layers is an integration of those layers, however good its screen is | ours, a narrowed sense of user interface |  |
+| agent harness | An AI harness in which the model directs its own steps and tool use in a loop toward a goal, acting on files, tools and systems between the person's turns, under permissions (Claude Code, Cursor, Codex, Hermes Agent). The default kind of interface. Every agent harness is an AI harness; a chatbot is not an agent harness | agent harness (industry usage) | anthropic-2024-building-effective-agents |
+| AI harness | A product that is the software around a model: the person's work happens in exchanges with it, so without the model nothing is left. A chatbot is one. The model answers; the person acts | harness (industry usage) | anthropic-2024-building-effective-agents |
+| AI feature | A model used inside a product that does its job without it (summaries, search, drafting). Test: remove the model and the product still works. Most apps that implement AI are here, not harnesses | common product usage | anthropic-2024-building-effective-agents |
+| custom interface | An interface built for the system or a venture rather than bought, such as the operator console | common software usage |  |
 
 ### Retired
 
 | Noun | Status |
 | --- | --- |
+| client | retired; use account (relationship: client) |
 | sphere | retired; use venture |
 | stage | retired; use phase, legal form and ambition |
-| kind | retired; use venture, with clients as records |
+| kind | retired; use venture, with accounts as records |
 | Wedge (phase) | retired; use validation (wedge stays a portfolio role) |
 | Core Engine | retired; use scale |
 | Horizon (phase) | retired; use platform (Three Horizons stays a lens) |
 | entity profile | retired; use venture profile |
 | company template | retired; use venture template |
 | orientation | retired; use legal form |
+| liquidation waterfall | retired; use preference stack |

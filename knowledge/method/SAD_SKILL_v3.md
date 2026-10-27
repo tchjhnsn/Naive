@@ -502,11 +502,11 @@ Carries from v2 unchanged. The Convergence Layer (Spec Convergence loop) carries
 
 ### Phase 1B → Phase 2 gate — Communication contracts (v3.0.8)
 
-For software products, articulation closure and the core spec stack are necessary but not sufficient when the next implementation slice crosses a client–server or client–agent boundary. Before Phase 2 coding of that slice begins, publish Tier A communication-contract assets (OpenAPI / AsyncAPI / MCP schemas, auth, errors, versioning, fixtures) per the [[skills/contract-first/SKILL|contract-first]] skill, or record an explicit deferral with version trigger.
+For software products, articulation closure and the core spec stack are necessary but not sufficient when the next implementation slice crosses a client–server or client–agent boundary. Before Phase 2 coding of that slice begins, publish Tier A communication-contract assets (OpenAPI / AsyncAPI / MCP schemas, auth, errors, versioning, fixtures) per the [[../../operations/skills/contract-first/SKILL|contract-first]] skill, or record an explicit deferral with version trigger.
 
 Industry name: API-first / contract-first / design-first. Backend-leading implementation is fine; implementation without a published contract is not. Canonical amendment: `SAD_SKILL_v3_AMENDMENT_2026-07-26_contract-first-pre-build.md`.
 
-**Backfill mode:** If Phase 2 already began without Tier A contracts, follow [[skills/contract-first/SKILL|contract-first]] and the shared [[skills/_patterns/gate-backfill|gate-backfill]] pattern (detect → triage → order → freeze → exit). The same pattern applies to other gate skills (articulation-closure, build-roadmap, ambition-tier, triage, etc.).
+**Backfill mode:** If Phase 2 already began without Tier A contracts, follow [[../../operations/skills/contract-first/SKILL|contract-first]] and the shared [[skills/_patterns/gate-backfill|gate-backfill]] pattern (detect → triage → order → freeze → exit). The same pattern applies to other gate skills (articulation-closure, build-roadmap, ambition-tier, triage, etc.).
 
 ### Phase 2: Implementation
 
@@ -550,7 +550,7 @@ SAD v3 names two capability-skills as load-bearing rituals. They live under `sad
 
 - **[[skills/time-awareness/SKILL|time-awareness]]** — grounds every session in real-world time via `date`. Used at session-start, session-end, and any time a `created` / `ingested` / `captured-at` / `last-compiled` / `last-reviewed` field is being authored.
 - **[[skills/session-capture/SKILL|session-capture]]** — at session-start, captures the predecessor Cowork session's tail to `_sessions/raw/`. At session-end, drafts the compiled `_sessions/SESSION_LOG.md` entry for human confirmation.
-- **[[skills/contract-first/SKILL|contract-first]]** — *(v3.0.8 proposed 2026-07-26; see `SAD_SKILL_v3_AMENDMENT_2026-07-26_contract-first-pre-build.md`)* at Phase 1B → Phase 2 and whenever a new client–server or client–agent boundary is planned; requires published OpenAPI/AsyncAPI/MCP contracts (Tier A) before slice coding.
+- **[[../../operations/skills/contract-first/SKILL|contract-first]]** — *(v3.0.8 proposed 2026-07-26; see `SAD_SKILL_v3_AMENDMENT_2026-07-26_contract-first-pre-build.md`)* at Phase 1B → Phase 2 and whenever a new client–server or client–agent boundary is planned; requires published OpenAPI/AsyncAPI/MCP contracts (Tier A) before slice coding.
 - **[[skills/asset-requirements/SKILL|asset-requirements]]** — *(v3.0.9 proposed 2026-07-26; see `SAD_SKILL_v3_AMENDMENT_2026-07-26_asset-requirements-method.md`)* at Phase 0C, at version boundaries, and whenever a new system characteristic appears; derives the required asset set from characteristics and obligations and records it as an ARS.
 
 If either skill is unavailable, fall back as that skill's own SKILL.md describes; do not silently skip the corresponding ritual.

@@ -33,5 +33,16 @@
     ],
     "status": "candidate",
     "reason": "Connector exists; not yet chosen for this layer"
+  },
+  {
+    "id": "framer",
+    "name": "Framer",
+    "layer": "purpose",
+    "role": "public site design for the brand pillar",
+    "interfaces": [
+      "mcp"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists"
   }
 ]

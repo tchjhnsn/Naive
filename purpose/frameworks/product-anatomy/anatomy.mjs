@@ -1,8 +1,8 @@
-// Product Anatomy Matrix runner, version 0.2.0 (unevaluated).
+// Product Anatomy Matrix runner, version 0.3.0 (unevaluated).
 //
 //   node anatomy.mjs request <venture>                      print the Jev request; sends nothing
 //   node anatomy.mjs score   <venture> <answers.json> --send ask Jev, write the answers file
-//   node anatomy.mjs matrix  <venture> <answers.json>        deduce portfolio roles for every phase
+//   node anatomy.mjs matrix  <venture> <answers.json> [--json] deduce portfolio roles for every phase (Markdown, or JSON)
 //
 // <venture> is a venture folder (venture.json plus products/*.json, EE-011) or a
 // single input file with `venture`, `core`, `products` and `flows`.
@@ -10,7 +10,9 @@
 // Order matters: the venture's core product (promise, who it is made to, what it must
 // not deliver, the competence behind it) is fixed first, and every product is
 // judged against it. Jev answers the typed questions in questions.json, one per
-// product. Spillover comes from each product's `flows_to` (or the input's `flows`). Must-holds are checked in
+// product. Spillover comes from each product's `flows_to` (or the input's `flows`). A wedge flows into the
+// flagship or is a standalone part of it (`part_of`); a revenue engine needs a revenue score of at least
+// must_hold.revenue_engine. Must-holds are checked in
 // code, never by Jev. Weights live in phases.json, so re-weighting a phase never
 // needs re-scoring. Without TYPESAFE_API_KEY, a reasoning model fills the same
 // answers file by hand and says so in its `scorer` field.
@@ -113,23 +115,32 @@ function deduce(input, answersFile) {
     const eligible = rows.filter((r) => !r.fails.length);
     const flagship = eligible[0]?.p ?? null;
     const tied = eligible.filter((r) => r.p !== flagship && eligible[0].score - r.score < tie).map((r) => r.p);
+    // A revenue engine needs real revenue, not merely the most of very little.
     const topRevenue = Math.max(...pids.filter(allowed).map((p) => A[p].revenue));
-    const revenue = pids.filter((p) => allowed(p) && A[p].revenue === topRevenue);
-    const role = {};
+    const revenue = topRevenue < must_hold.revenue_engine.revenue_at_least ? []
+      : pids.filter((p) => allowed(p) && A[p].revenue === topRevenue);
+    // A wedge leads users into the flagship: it flows into it, or it is a part of the
+    // flagship kit that also stands alone (part_of, EE-015).
+    const leadsIn = (p) => (input.flows ?? []).some((f) => f.from === p && f.to === flagship)
+      || (input.products[p].part_of ?? []).includes(flagship);
+    // Each role is kept as an id (for data) and as the words the Markdown shows.
+    const role = {}, roleIds = {};
     for (const p of pids) {
-      const r = [];
-      if (p === flagship) r.push("flagship");
-      if (p === substrate) r.push("substrate");
-      if (revenue.includes(p)) r.push(revenue.length > 1 ? "revenue engine (tied)" : "revenue engine");
+      const r = [], ids = [];
+      const add = (id, text) => { ids.push(id); r.push(text); };
+      if (p === flagship) add("flagship", "flagship");
+      if (p === substrate) add("substrate", "substrate");
+      if (revenue.includes(p)) add("revenue-engine", revenue.length > 1 ? "revenue engine (tied)" : "revenue engine");
       if (!r.length) {
-        if (!allowed(p)) r.push(`option (allowed from ${input.products[p].allowed_from})`);
-        else if ((input.flows ?? []).some((f) => f.from === p && f.to === flagship) && A[p].ready >= 2) r.push("wedge");
-        else if (A[p].promise_delivery <= 1 && A[p].competence_draw <= 1) r.push("unassigned: weak tie to the core");
-        else r.push("end product");
+        if (!allowed(p)) add("option", `option (allowed from ${input.products[p].allowed_from})`);
+        else if (leadsIn(p) && A[p].ready >= 2) add("wedge", "wedge");
+        else if (A[p].promise_delivery <= 1 && A[p].competence_draw <= 1) add("unassigned", "unassigned: weak tie to the core");
+        else add("end-product", "end product");
       }
       role[p] = r.join(" + ");
+      roleIds[p] = { roles: ids, ...(revenue.includes(p) && revenue.length > 1 ? { revenue_engine_tied: true } : {}), ...(!allowed(p) ? { allowed_from: input.products[p].allowed_from } : {}) };
     }
-    return { phase: ph, rows, flagship, tied, role, projection: i > now };
+    return { phase: ph, rows, flagship, tied, role, roleIds, projection: i > now };
   });
 
   byPhase.forEach((b, i) => {
@@ -137,6 +148,20 @@ function deduce(input, answersFile) {
     if (next && next.flagship && next.flagship !== b.flagship) b.successor = next.flagship;
   });
   return { substrate, byPhase, out };
+}
+
+// The matrix as data (A-001): what the Markdown report shows, for tests and agents to read.
+function toJson(input, answersFile, d) {
+  return {
+    venture: input.venture.id ?? input.venture.name, phase: input.venture.phase, scorer: answersFile.scorer,
+    substrate: d.substrate,
+    phases: d.byPhase.map((b) => ({
+      id: b.phase.id, name: b.phase.name, projection: b.projection, flagship: b.flagship, tied: b.tied, successor: b.successor ?? null,
+      roles: b.roleIds,
+      role_text: b.role,
+      scores: Object.fromEntries(b.rows.map((r) => [r.p, { score: +r.score.toFixed(2), flagship_fails: r.fails }])),
+    })),
+  };
 }
 
 function report(input, answersFile, d) {
@@ -155,7 +180,7 @@ function report(input, answersFile, d) {
   return lines.join("\n");
 }
 
-const [cmd, inputPath, answersPath] = process.argv.slice(2).filter((a) => a !== "--send");
+const [cmd, inputPath, answersPath] = process.argv.slice(2).filter((a) => a !== "--send" && a !== "--json");
 if (!inputPath) { console.error("usage: node anatomy.mjs request|score|matrix <input.json> [answers.json] [--send]"); process.exit(2); }
 const input = readVenture(inputPath);
 if (!input.core) { console.error("This venture has no core product yet. State it before ranking products (it is required once the venture leaves discovery)."); process.exit(2); }
@@ -165,5 +190,6 @@ else if (cmd === "score") {
   else await score(input, answersPath);
 } else if (cmd === "matrix") {
   const answers = load(answersPath);
-  console.log(report(input, answers, deduce(input, answers)));
+  const d = deduce(input, answers);
+  console.log(process.argv.includes("--json") ? JSON.stringify(toJson(input, answers, d), null, 2) : report(input, answers, d));
 } else { console.error(`unknown command ${cmd}`); process.exit(2); }

@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "handoff.schema.json",
+  "title": "Handoff",
+  "description": "One unit of delegated work, stored at <venture>/execution/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (execution/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "venture",
+    "role",
+    "brief",
+    "decision_classes",
+    "done_criteria",
+    "status",
+    "attempts",
+    "max_attempts",
+    "run_cap"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "venture": {
+      "type": "string",
+      "description": "Venture id"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Product ids the work serves"
+    },
+    "governed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Decision ids this executes (EE-NNN, G-NNN, D-NNN or an ADR path)"
+    },
+    "assignment": {
+      "type": "string",
+      "pattern": "^(A-[0-9]{3}|none)$",
+      "description": "The methodology assignment (operations/register/A-NNN) the work runs under, or none for a change too small to need one. This is how Operations reaches Execution (EE-019)"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Files the work needs before it can start, from the repo root; check-ready.mjs makes sure they exist"
+    },
+    "role": {
+      "type": "string",
+      "description": "Role id from the roles register that holds it (builder, architect and so on)"
+    },
+    "brief": {
+      "type": "string",
+      "description": "Path to the Markdown brief, relative to this file"
+    },
+    "decision_classes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      },
+      "description": "Decision-rights class ids the holder may use without reporting back. Anything outside them is escalated."
+    },
+    "done_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "check"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "kind": {
+            "enum": [
+              "conformance",
+              "self-proof",
+              "review"
+            ],
+            "description": "conformance: an objective check run as a command, with no model and no reviewer. self-proof: the change exercised for real, with evidence attached (EE-006). review: fit to intent, judged by the named role."
+          },
+          "check": {
+            "type": "string",
+            "description": "The command to run, or for review the question the reviewer answers"
+          },
+          "reviewer": {
+            "type": "string",
+            "description": "Role id, for review criteria"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "ready",
+        "in-progress",
+        "escalated",
+        "done"
+      ],
+      "description": "draft until schema/check-ready.mjs passes and is recorded; then ready, in-progress, escalated or done"
+    },
+    "ready_check": {
+      "type": "object",
+      "required": [
+        "at",
+        "by",
+        "version",
+        "items"
+      ],
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "by": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "items": {
+          "type": "integer"
+        }
+      },
+      "description": "Written by check-ready.mjs --record when every readiness item passed, before execution started"
+    },
+    "claimed_by": {
+      "type": "string",
+      "description": "Session or run id of the holder"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Session that wrote the handoff"
+    },
+    "parent_session_id": {
+      "type": "string",
+      "description": "Session that assigned it, for lineage"
+    },
+    "attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 3
+    },
+    "run_cap": {
+      "type": "string",
+      "pattern": "^([0-9]+(m|h)|\\$[0-9]+)$",
+      "description": "Wall-clock or spend cap per run, such as 2h or $20"
+    },
+    "pr": {
+      "type": "string",
+      "description": "Pull request link once opened"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Paths to eval or check results (evidence.schema.json) that prove the done-criteria"
+    },
+    "escalations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "class",
+          "question",
+          "to"
+        ],
+        "properties": {
+          "class": {
+            "type": "string",
+            "description": "The decision-rights class, or attempts or run-cap"
+          },
+          "question": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string",
+            "description": "Role id"
+          },
+          "blocks": {
+            "type": "string"
+          },
+          "continued": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "lesson": {
+      "type": "string",
+      "description": "A failure that could recur, and the check one rung higher that would catch it (prose, skill, rule, static analysis, code)"
+    },
+    "publication": {
+      "type": "object",
+      "description": "Required when the handoff publishes (public-commitment in decision_classes or escalations): the channel and content rule in the venture's publication policy (EE-025)",
+      "required": [
+        "channel",
+        "content"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

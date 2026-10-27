@@ -11,7 +11,8 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const root = new URL("..", import.meta.url).pathname;
+// EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
+const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
 const { check, nouns } = JSON.parse(readFileSync(join(root, "docs/ontology.json"), "utf8"));
 
 if (process.argv.includes("--md")) {

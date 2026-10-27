@@ -5,7 +5,7 @@ id: spec-as-source
 name: Spec-as-source
 domain: software
 family: spec-driven
-lifecycle: re-check
+lifecycle: listed
 source-of-truth: "Spec; code is generated from it and not edited by hand"
 answers:
   M1: { value: "the spec", basis: assumed }
@@ -24,9 +24,9 @@ unfit-when:
 switch-when:
   - "The spec cannot be made precise: fall back to spec-anchored with tests as the anchor"
 artifact-types: [adr-madr]
-bodies-of-knowledge: []
+bodies-of-knowledge: ["Böckeler, B., Understanding Spec-Driven-Development: Kiro, spec-kit, and Tessl, martinfowler.com, 2025 (spec-first, spec-anchored, spec-as-source)"]
 evidence: []
-last-checked: 2026-10-11
+last-checked: 2026-10-27
 source: hybrid
 created: 2026-10-10
 ai-model: claude-opus-5.5
@@ -38,3 +38,5 @@ tags: [catalog, methodology, spec-driven]
 The spec is the only thing people edit; code is derived from it. The third and strictest level in Böckeler's spec-first / spec-anchored / spec-as-source framing.
 
 Evidence so far ([[specs-as-source-survey-2026-10-10]]): feasible in narrow formal domains (Scania spec2code); regeneration from prose is non-deterministic (Böckeler on Tessl). The strongest empirical result found (Tufano et al.) supports specs as a reasoning step, not as the source. It also applies in a narrow sense wherever rules can be stored as data that a generic engine interprets: the records are the spec.
+
+Re-check (2026-10-27): the framing still holds; Böckeler's article (checked today) defines the three levels this catalog uses, and notes that the maintenance strategy for specs is often left vague, which the third unfit-when line already guards against. Returned to `listed`.

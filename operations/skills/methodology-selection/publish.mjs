@@ -3,7 +3,9 @@
 //
 // A file is published only if (a) the manifest's allowlist matches it and (b) no refusal rule fires.
 // Refusal rules:
-//   R1 outside everything-ecosystem/, unless the manifest names that single file exactly (and R3 still applies)
+//   R1 outside the repository: an absolute path, a path through .., or a link that resolves outside the root.
+//      Inside the root, publish.json's allowlist decides (R1 changed 2026-10-27, founder-approved: the method
+//      moved from a vault folder into its own repository, so the old everything-ecosystem/ prefix no longer applies)
 //   R2 ip-sensitivity: high, or under an _archive/ folder
 //   R3 publish: absent or not true
 //   R4 an assignment without visibility: public
@@ -11,8 +13,8 @@
 //   R6 the text names a term the manifest lists as private (private-terms), e.g. an entity with no public presence
 //   R7 the text names one of the owner's own use cases (use-case-terms); the site stands alone (decided 2026-10-11)
 // The run fails if a published file embeds (![[...]]) a file that is not published.
-import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
-import { join, relative, basename, dirname as dirOf } from "node:path";
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync, rmSync, realpathSync } from "node:fs";
+import { join, relative, basename, dirname as dirOf, isAbsolute, sep } from "node:path";
 
 // Glob to regex: `**/` matches zero or more folders, `**` anything, `*` anything within one path segment.
 const esc = (x) => x.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
@@ -29,20 +31,22 @@ function walk(dir, root, out = []) {
   return out;
 }
 
-/** Decides what may be published. `vault` is the vault root; paths in the manifest are vault-relative. */
+/** Decides what may be published. `vault` is the repository root; paths in the manifest are relative to it. */
 export function plan(vault, manifest, parseFrontmatter) {
   const include = (manifest.include ?? []).map(globRe), exclude = (manifest.exclude ?? []).map(globRe);
   const explicit = new Set((manifest.include ?? []).filter((g) => !g.includes("*")));
-  // Walk only the folders the allowlist points at, so files outside everything-ecosystem/ that a glob reaches
-  // are listed as refused (visible in the report) rather than silently skipped.
+  // Walk only the folders the allowlist points at; a file that escapes the root is listed as refused (R1),
+  // visible in the report, rather than silently skipped.
   const bases = new Set((manifest.include ?? []).filter((g) => g.includes("*")).map((g) => g.slice(0, g.indexOf("*")).replace(/\/[^/]*$/, "")));
   const files = [...bases].filter((b) => existsSync(join(vault, b))).flatMap((b) => walk(join(vault, b), vault));
   const candidates = new Set([...files, ...[...explicit].filter((f) => existsSync(join(vault, f)))]);
+  const realRoot = realpathSync(vault);
+  const outside = (f) => isAbsolute(f) || f.split(/[\\/]/).includes("..") || !(realpathSync(join(vault, f)) + sep).startsWith(realRoot + sep);
   const published = [], refused = [];
   for (const file of [...candidates].sort()) {
     if (!include.some((r) => r.test(file)) || exclude.some((r) => r.test(file))) continue;
     const why = [];
-    if (!file.startsWith("everything-ecosystem/") && !explicit.has(file)) why.push("R1 outside everything-ecosystem/");
+    if (outside(file)) { refused.push({ file, why: ["R1 outside the repository"] }); continue; }
     let fm = {};
     try { fm = parseFrontmatter(readFileSync(join(vault, file), "utf8")); } catch { why.push("no readable frontmatter"); }
     if (fm["ip-sensitivity"] === "high" || /(^|\/)_archive\//.test(file)) why.push("R2 archived or ip-sensitivity high");

@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "note": "Succession Matrix phases, gates and weights, version 0.x (unevaluated). The five phases are the venture phases of EE-012. Discovery has no weights: no product is ranked before the core product exists. Weights: 1 low, 2 medium, 3 high. Spillover is computed from flows_to, not asked. Changing a weight never needs re-scoring. Sources: purpose/references/references.json.",
   "phases": [
     {
@@ -98,6 +98,9 @@
       "promise_delivery_at_least": 2,
       "promise_breach_below": 0.5,
       "allowed_in_phase": true
+    },
+    "revenue_engine": {
+      "revenue_at_least": 2
     }
   },
   "tie": 0.1

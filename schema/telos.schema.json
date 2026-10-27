@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telos.schema.json",
+  "title": "Telos",
+  "description": "The end a venture exists to reach, at <venture>/purpose/telos.json (EE-023): start with the end. It states the end state, how anyone would know it was reached (measures), what the owners intend to happen when it is reached (owner outcome), and, for each phase of the Succession Matrix, the exit criteria that must be true to leave it, each serving at least one measure. Other layers read it instead of asking again: the governance layer's exit.json prefers the owner outcome's path, and MAD's governance tier takes its success measure from the primary measure. schema/check-telos.mjs checks it. Written by the owner; an agent may draft it but not settle it.",
+  "type": "object",
+  "required": [
+    "statement",
+    "end_state",
+    "measures",
+    "owner_outcome"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "statement": {
+      "type": "string",
+      "description": "The end, in one sentence: what the venture is for when it has done its job"
+    },
+    "end_state": {
+      "type": "string",
+      "description": "What is true in the world when the end is reached"
+    },
+    "horizon": {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "description": "The year the end should be reached by, or 'open'"
+    },
+    "measures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "kind"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "revenue",
+              "usage_or_adoption",
+              "cost_or_time_saved",
+              "compliance_met",
+              "learning",
+              "flow_and_lead_time",
+              "impact"
+            ],
+            "description": "The kind of measure; the first six match MAD's success_measure answers, impact is a change in the world beyond the venture"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Exactly one measure is primary"
+          }
+        }
+      }
+    },
+    "owner_outcome": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "enum": [
+            "acquisition",
+            "ipo",
+            "secondary-sale",
+            "merger",
+            "management-buyout",
+            "wind-down",
+            "hold"
+          ],
+          "description": "What the owners intend to happen once the end is reached; hold means they keep it"
+        },
+        "why": {
+          "type": "string"
+        }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "phase",
+          "exit_criteria"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "phase": {
+            "enum": [
+              "discovery",
+              "validation",
+              "beachhead",
+              "scale",
+              "platform"
+            ]
+          },
+          "exit_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "statement",
+                "serves"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "statement": {
+                  "type": "string"
+                },
+                "serves": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Measure ids this criterion moves the venture toward"
+                },
+                "evidence": {
+                  "type": "string",
+                  "description": "How it is shown: a check command, an evidence record, or a metric"
+                }
+              }
+            }
+          }
+        }
+      },
+      "description": "Per phase, what must be true to leave it; refines that phase's generic gate in purpose/frameworks/product-anatomy/phases.json for this venture"
+    }
+  }
+}

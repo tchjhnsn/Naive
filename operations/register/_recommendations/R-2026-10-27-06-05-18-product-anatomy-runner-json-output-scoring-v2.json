@@ -1,0 +1,552 @@
+{
+  "created": "2026-10-27T06:05:18.671Z",
+  "model": "jev-1.13.0",
+  "scoring": "v2",
+  "repeat": 3,
+  "domain": "software",
+  "unresearched": false,
+  "catalog_version": "f42b6d01d922",
+  "system_file": "../instance/ventures/everything-ecosystem/operations/systems/anatomy-json-output.md",
+  "entity": "everything-ecosystem",
+  "system": "Product Anatomy runner JSON output",
+  "inputs": {
+    "system": "Product Anatomy runner JSON output",
+    "description": "Add a JSON output mode to the Product Anatomy runner (purpose/frameworks/product-anatomy/anatomy.mjs matrix --json): the substrate, and for each phase the flagship, ties, successor and every product's portfolio role, as one JSON document. Today the runner prints Markdown only, so its tests parse the table; the first handoff's lesson was that a parser read the wrong rows. Consumers: the runner's own test.mjs, run-handoff self-proofs, and agents that read the matrix. The Markdown output stays and is rendered from the same data. Node only, no dependencies, one file plus tests.",
+    "decision_question_answers": "M1 Source of truth. Which artifact should win when artifacts disagree, what form can it take (prose, structured data, executable tests, a formal contract or model, or running code), and who or what changes it?\n  Answer: the role rules in code, checked by test.mjs; the JSON shape is stated in the README (tested)\nM2 Knowability. Can correct behaviour be stated before building, or only discovered by building?\n  Answer: knowable before building: the fields are those the Markdown already shows (tested)\nM3 Requirements stability. How often will intent change, and is the change driven by learning or by outside rules?\n  Answer: stable; the roles change only when Product Anatomy's rules change (assumed)\nM4 Cost of being wrong and reversibility. What happens if it is built wrong, and how hard is it to undo?\n  Answer: low; an internal tool, reversible in one commit (tested)\nM5 Verifiability. How will we know it is correct: test, proof, inspection, measurement, use?\n  Answer: high; tests compare JSON to the Markdown and to known fixtures (tested)\nM6 Accountability. Must intent be provable later to a regulator, auditor, client or public?\n  Answer: low; no outside party (tested)\nM7 Builder. Who or what does the building, and what inputs can that builder reliably use?\n  Answer: AI agents, gated by tests (tested)\nM8 Lifespan. How long will this system live and be maintained?\n  Answer: long enough to matter: every venture's matrix runs through it (assumed)\nM9 Neighbours. What does it meet, which methodologies do those neighbours use, and what boundary contract is needed?\n  Answer: one module; its boundary is the CLI and the JSON shape (tested)\nM10 Switch conditions. What would make us change methodology?\n  Answer: if other tools come to depend on the shape, treat it as a contract and version it (assumed)\nM11 Evidence. Have we used this methodology on a similar system, and what happened?\n  Answer: the previous handoff on the same file (anatomy-runner-fixes) ran as a small change with tests (tested)\nM12 Time-to-market pressure. How strongly does the system need early user feedback and incremental shipping?\n  Answer: low; nobody waits on it (tested)"
+  },
+  "ranked": [
+    {
+      "id": "tdd",
+      "name": "Test-driven development",
+      "candidate": false,
+      "whole": 0.8,
+      "part": 0.93,
+      "score": 0.79,
+      "fits_met": [
+        {
+          "c": "Pure functions and services with checkable outputs: date arithmetic, rules, parsing",
+          "p": 0.79
+        },
+        {
+          "c": "Agents building with little oversight, gated by a red-green loop",
+          "p": 0.9
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.78,
+        0.79,
+        0.79
+      ],
+      "spread": 0.01,
+      "band": 1
+    },
+    {
+      "id": "spec-anchored",
+      "name": "Spec-anchored (SAD)",
+      "candidate": false,
+      "whole": 0.36,
+      "part": 0.76,
+      "score": 0.45,
+      "fits_met": [
+        {
+          "c": "Behaviour must stay coherent across many sessions and readers",
+          "p": 0.72
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.46,
+        0.44,
+        0.44
+      ],
+      "spread": 0.02,
+      "band": 2
+    },
+    {
+      "id": "extreme-programming",
+      "name": "Extreme Programming (XP)",
+      "candidate": true,
+      "whole": 0.53,
+      "part": 0.79,
+      "score": 0.43,
+      "fits_met": [
+        {
+          "c": "High reliability is needed and behaviour can be stated as automated tests (high verifiability)",
+          "p": 0.64
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.44,
+        0.41,
+        0.43
+      ],
+      "spread": 0.03,
+      "band": 2
+    },
+    {
+      "id": "design-by-contract",
+      "name": "Design by contract",
+      "candidate": false,
+      "whole": 0.42,
+      "part": 0.81,
+      "score": 0.4,
+      "fits_met": [
+        {
+          "c": "Core invariants that must never break",
+          "p": 0.71
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "Types plus tests express the same thing more cheaply",
+          "p": 0.54
+        }
+      ],
+      "runs": [
+        0.4,
+        0.41,
+        0.39
+      ],
+      "spread": 0.02,
+      "band": 2
+    },
+    {
+      "id": "small-change",
+      "name": "Small change",
+      "candidate": false,
+      "whole": 0.84,
+      "part": 0.93,
+      "score": 0.33,
+      "fits_met": [
+        {
+          "c": "Bugs, copy, styling, an obvious one-endpoint tweak",
+          "p": 0.52
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "New module behaviour or a new public endpoint",
+          "p": 0.75
+        }
+      ],
+      "runs": [
+        0.32,
+        0.33,
+        0.34
+      ],
+      "spread": 0.02,
+      "band": 3
+    },
+    {
+      "id": "contract-first",
+      "name": "Contract-first / API-first",
+      "candidate": false,
+      "whole": 0.23,
+      "part": 0.71,
+      "score": 0.31,
+      "fits_met": [
+        {
+          "c": "Any boundary between two systems or two agents",
+          "p": 0.65
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.31,
+        0.31,
+        0.31
+      ],
+      "spread": 0,
+      "band": 3
+    },
+    {
+      "id": "spec-as-source",
+      "name": "Spec-as-source",
+      "candidate": false,
+      "whole": 0.22,
+      "part": 0.51,
+      "score": 0.31,
+      "fits_met": [
+        {
+          "c": "Correct behaviour can be stated before building and written formally or in a structured form",
+          "p": 0.95
+        },
+        {
+          "c": "Narrow, schema-shaped domains: validators, protocol code, SDK clients, clocks or rules as data",
+          "p": 0.79
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.3,
+        0.31,
+        0.33
+      ],
+      "spread": 0.03,
+      "band": 3
+    },
+    {
+      "id": "v-model",
+      "name": "V-model",
+      "candidate": true,
+      "whole": 0.76,
+      "part": 0.87,
+      "score": 0.31,
+      "fits_met": [
+        {
+          "c": "Requirements are stable enough to write a test specification for each level before building (unit, integration, system, acceptance)",
+          "p": 0.86
+        },
+        {
+          "c": "A verification phase can be planned in parallel with each design stage, so every specification has a test that checks it",
+          "p": 0.75
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "Small, low-risk or easily reversed changes, where a test specification at every level costs more than it saves (low cost of being wrong)",
+          "p": 0.75
+        }
+      ],
+      "runs": [
+        0.34,
+        0.31,
+        0.28
+      ],
+      "spread": 0.06,
+      "band": 3
+    },
+    {
+      "id": "consumer-driven-contracts",
+      "name": "Consumer-driven contracts",
+      "candidate": false,
+      "whole": 0.19,
+      "part": 0.48,
+      "score": 0.24,
+      "fits_met": [
+        {
+          "c": "Several internal consumers whose needs diverge",
+          "p": 0.57
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.24,
+        0.24,
+        0.24
+      ],
+      "spread": 0,
+      "band": 3
+    },
+    {
+      "id": "bdd",
+      "name": "Behaviour-driven development",
+      "candidate": false,
+      "whole": 0.4,
+      "part": 0.77,
+      "score": 0.23,
+      "fits_met": [],
+      "unfit_met": [
+        {
+          "c": "Internal library code",
+          "p": 0.68
+        }
+      ],
+      "runs": [
+        0.24,
+        0.2,
+        0.24
+      ],
+      "spread": 0.04,
+      "band": 3
+    },
+    {
+      "id": "model-driven",
+      "name": "Model-driven development",
+      "candidate": false,
+      "whole": 0.22,
+      "part": 0.49,
+      "score": 0.2,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.19,
+        0.2,
+        0.19
+      ],
+      "spread": 0.01,
+      "band": 4
+    },
+    {
+      "id": "kanban",
+      "name": "Kanban",
+      "candidate": true,
+      "whole": 0.18,
+      "part": 0.32,
+      "score": 0.13,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.13,
+        0.13,
+        0.13
+      ],
+      "spread": 0,
+      "band": 4
+    },
+    {
+      "id": "lean-software-development",
+      "name": "Lean software development",
+      "candidate": true,
+      "whole": 0.26,
+      "part": 0.46,
+      "score": 0.13,
+      "fits_met": [
+        {
+          "c": "The team can see its value stream end to end and has the authority to change how it works",
+          "p": 0.67
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "A fixed, well-understood specification must be delivered exactly, so there is little waste to remove",
+          "p": 0.72
+        }
+      ],
+      "runs": [
+        0.12,
+        0.13,
+        0.13
+      ],
+      "spread": 0.01,
+      "band": 4
+    },
+    {
+      "id": "spec-first",
+      "name": "Spec-first",
+      "candidate": false,
+      "whole": 0.24,
+      "part": 0.43,
+      "score": 0.13,
+      "fits_met": [
+        {
+          "c": "A slice with known acceptance criteria, done in one agent session",
+          "p": 0.82
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "Tiny changes",
+          "p": 0.64
+        },
+        {
+          "c": "Intent that must stay true for months",
+          "p": 0.77
+        }
+      ],
+      "runs": [
+        0.13,
+        0.14,
+        0.13
+      ],
+      "spread": 0.01,
+      "band": 4
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "candidate": true,
+      "whole": 0.13,
+      "part": 0.29,
+      "score": 0.12,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "spread": 0,
+      "band": 4
+    },
+    {
+      "id": "spiral",
+      "name": "Spiral model",
+      "candidate": true,
+      "whole": 0.14,
+      "part": 0.23,
+      "score": 0.11,
+      "fits_met": [
+        {
+          "c": "Prototypes or experiments can retire a risk before the next commitment is made",
+          "p": 0.71
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "Small, low-risk work where the risk analysis costs more than it saves",
+          "p": 0.54
+        }
+      ],
+      "runs": [
+        0.11,
+        0.1,
+        0.1
+      ],
+      "spread": 0.01,
+      "band": 4
+    },
+    {
+      "id": "rapid-application-development",
+      "name": "Rapid application development (RAD)",
+      "candidate": true,
+      "whole": 0.14,
+      "part": 0.25,
+      "score": 0.1,
+      "fits_met": [
+        {
+          "c": "The system is small or modular enough to build within a short timebox",
+          "p": 0.93
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "Users cannot be available during development",
+          "p": 0.58
+        }
+      ],
+      "runs": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "spread": 0,
+      "band": 4
+    },
+    {
+      "id": "user-centred-design",
+      "name": "User-centred design (iterative, evaluation-led)",
+      "candidate": true,
+      "whole": 0.09,
+      "part": 0.16,
+      "score": 0.08,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.08,
+        0.07,
+        0.07
+      ],
+      "spread": 0.01,
+      "band": 5
+    },
+    {
+      "id": "spike-prototype",
+      "name": "Spike / prototype",
+      "candidate": false,
+      "whole": 0.13,
+      "part": 0.29,
+      "score": 0.07,
+      "fits_met": [
+        {
+          "c": "Killing bad ideas cheaply",
+          "p": 0.69
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "Multiple consumers already depend on it",
+          "p": 0.72
+        }
+      ],
+      "runs": [
+        0.07,
+        0.08,
+        0.07
+      ],
+      "spread": 0.01,
+      "band": 5
+    },
+    {
+      "id": "waterfall",
+      "name": "Waterfall",
+      "candidate": true,
+      "whole": 0.24,
+      "part": 0.44,
+      "score": 0.07,
+      "fits_met": [
+        {
+          "c": "Requirements are fixed and well understood before building starts (high knowability, low expected change)",
+          "p": 0.9
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "A small, low-risk change that fits in one short piece of work: phase-by-phase sign-off costs more than the change",
+          "p": 0.84
+        }
+      ],
+      "runs": [
+        0.07,
+        0.07,
+        0.07
+      ],
+      "spread": 0,
+      "band": 5
+    },
+    {
+      "id": "agile-waterfall-hybrid",
+      "name": "Agile-waterfall hybrid",
+      "candidate": true,
+      "whole": 0.17,
+      "part": 0.26,
+      "score": 0.04,
+      "fits_met": [],
+      "unfit_met": [
+        {
+          "c": "A single small change with no milestone plan around it: use small change",
+          "p": 0.84
+        }
+      ],
+      "runs": [
+        0.03,
+        0.03,
+        0.04
+      ],
+      "spread": 0.01,
+      "band": 5
+    },
+    {
+      "id": "scrum",
+      "name": "Scrum",
+      "candidate": true,
+      "whole": 0.16,
+      "part": 0.24,
+      "score": 0.02,
+      "fits_met": [
+        {
+          "c": "Work can be cut into fixed-length sprints that each produce something a user can see or use",
+          "p": 0.53
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "A single small change that needs no sprint, backlog or product owner: use small change",
+          "p": 0.91
+        }
+      ],
+      "runs": [
+        0.02,
+        0.02,
+        0.02
+      ],
+      "spread": 0,
+      "band": 5
+    }
+  ],
+  "research_triggers": [],
+  "usd": 0.0038,
+  "note": "A recommendation only. The founder ratifies (I2)."
+}

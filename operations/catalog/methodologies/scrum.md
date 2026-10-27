@@ -17,13 +17,14 @@ unfit-when:
   - "Work arrives as a continuous stream of unplanned requests that cannot wait for a sprint boundary: use a flow method"
   - "Nobody can act as product owner and decide priority"
   - "Scope and price are fixed by contract with no room to reorder the backlog"
+  - "A single small change that needs no sprint, backlog or product owner: use small change"
 switch-when:
   - "Sprints keep being broken by urgent unplanned work: move to a flow-based board such as Kanban"
   - "Delivery has become routine and the sprint events add no learning: consider Kanban for the maintenance phase"
 artifact-types: []
-bodies-of-knowledge: ["Schwaber, K. and Sutherland, J., The Scrum Guide (current edition 2020)"]
+bodies-of-knowledge: ["Schwaber, K. and Sutherland, J., The Scrum Guide (current edition 2020)", "Schwaber, K. and Sutherland, J., The Scrum Guide, 2020 (scrumguides.org)"]
 evidence: []
-last-checked: 2026-10-18
+last-checked: 2026-10-27
 source: hybrid
 created: 2026-10-18
 ai-model: grok-bot
@@ -39,3 +40,5 @@ The source of truth is the backlog for what is next and the increment for what e
 Related: [[kanban]] drops the fixed sprint and manages flow instead.
 
 Status: candidate. This entry is written from secondary summaries. The primary sources listed in `bodies-of-knowledge` have not yet been read, and the `fits-when` and `unfit-when` lines are working judgments that no recorded system has tested (no answers are recorded).
+
+Proportion (added 2026-10-27): the Scrum Guide frames Scrum for complex work by a team over a series of sprints; one small change does not need the framework.

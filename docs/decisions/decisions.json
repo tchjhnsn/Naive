@@ -143,6 +143,133 @@
         "EE-002",
         "EE-012"
       ]
+    },
+    {
+      "id": "EE-015",
+      "date": "2026-10-27",
+      "decision": "Kits have a scope. A product card may name its scope (the whole system, one layer, or one tier of the operations layer) and the kits it is part of (part_of); a part can still be its own product. The Everything Ecosystem's own schema and method skills are one offering, the system kit; some skills, such as the five-step algorithm skill, are also products by themselves.",
+      "why": "Found by the first venture run: skills and schema tied as flagship, and the owner confirmed they are one offering while some skills stand alone and some kits serve one layer or tier.",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-013"
+      ]
+    },
+    {
+      "id": "EE-016",
+      "date": "2026-10-27",
+      "decision": "The interface layer holds interfaces only: tools through which a person, with agents, works across at least four of the six other layers in one session. Agent harnesses (Claude Code, Cursor, Codex) are the default kind and the operator console is a custom one. A tool that serves one or two layers is an integration of those layers (Obsidian under knowledge), checked by schema/check-integrations.mjs. Three AI levels, recorded as a product's ai field: AI feature (the product works without the model), AI harness (the product is the software around a model; a chatbot), agent harness (an AI harness where the model directs its own steps and tool use toward a goal). Every agent harness is an AI harness; a chatbot is not an agent harness.",
+      "why": "The owner wanted a clear interface layer that does not count every integration as an interface, and a clear line between apps that use AI and products that are harnesses. Harness takes its industry meaning (workspace decision G-039).",
+      "status": "in-force",
+      "related": [
+        "EE-014",
+        "EE-015"
+      ]
+    },
+    {
+      "id": "EE-017",
+      "date": "2026-10-27",
+      "decision": "Execution, evidence and governance get machine-checkable records, so a venture can run end to end. A handoff is JSON at <venture>/execution/handoffs/<id>.json (handoff.schema.json) beside its Markdown brief: role, decision classes, done-criteria (conformance, self-proof, review), status, attempts, run cap, PR, evidence, escalations and lesson. Evidence is the append-only result of one run at <venture>/evidence/results/<id>.json (evidence.schema.json); eval suites follow eval-suite.schema.json. Decision rights follow decision-rights.schema.json; a venture's file tightens the template and may loosen a class only by naming a decision. schema/run-handoff.mjs runs a handoff's criteria and writes evidence; schema/check-execution.mjs holds handoffs to their role's classes, EE-006's conformance and self-proof, attempts, and passing evidence before done. Layer locations are relative to the venture folder; venture members may be agents; business models use schema/vocab/business-models.json; a product may list several markets with one primary; the Product Anatomy runner needs a revenue score of 2 for a revenue engine and counts a standalone part of the flagship kit as a wedge.",
+      "why": "The first venture run (docs/design/FIRST_VENTURE_RUN_2026-10-27.md) stopped at Purpose: handoffs, evals and decision rights were prose or unchecked JSON, so the system could not run a venture end to end or settle its genus.",
+      "status": "in-force",
+      "related": [
+        "EE-006",
+        "EE-012",
+        "EE-015",
+        "EE-016"
+      ]
+    },
+    {
+      "id": "EE-018",
+      "date": "2026-10-27",
+      "decision": "The ecosystem has no single master schema; it has a data model. schema/data-model.json names every record type, the layer that owns it (or system, for records every layer shares), its schema, where its records live and what each references, with the check that resolves each reference. Containment runs workspace, venture, then the venture's layer records; the method's own records (catalog, ontology, decisions, evals) sit at method level outside any venture. The venture profile is one prose record inside a venture, not the master. Each layer has a kit manifest (<layer>/kit.json, kit.schema.json; the system kit at schema/kit.json) listing its skills, the record types it owns, and those of other kits it reads and writes. Layer relationships are derived from those reads and writes by schema/check-data-model.mjs, never drawn by hand. The check fails when a JSON file has no record type, a schema governs none, a record type has no owning kit or one of another layer, or a skill belongs to no kit or two. schema/validate.py takes its file-to-schema map from the data model.",
+      "why": "The owner asked how the layers relate, which skills and schemas (kits) belong to which layer, and whether a master schema, perhaps the profile, contains everything. Nothing recorded the answer, so placements had drifted (a methodology skill under knowledge, a harness hooks file under knowledge, execution and interface with no skills) without any check noticing.",
+      "status": "proposed",
+      "related": [
+        "EE-011",
+        "EE-015",
+        "EE-016",
+        "EE-017"
+      ]
+    },
+    {
+      "id": "EE-019",
+      "date": "2026-10-27",
+      "decision": "Execution checks a handoff before executing it: its definition of ready. schema/check-ready.mjs fails unless the brief has an Outcome and a Work section with no placeholders (TBD, TODO, template markers); every product, governing decision, input file and criterion script it names exists; it names the methodology assignment it runs under (an A-NNN, ratified) or says none; its role exists and owns every decision class it carries; no escalation is open; attempts remain; and it has conformance and self-proof criteria and reviewers other than the holder. A handoff starts as draft; check-ready --record writes ready_check and moves it to ready. check-execution refuses an in-progress handoff without ready_check. Handoffs gain assignment and inputs, which is how Operations (MAD's choice) reaches Execution.",
+      "why": "The owner: a handoff that reaches execution with something missing produces ambiguity, and its execution fails. Gaps must surface as questions to the author before work starts. Running the check on the three existing handoffs found one real defect: anatomy-json-output cited its methodology assignment as a governing decision.",
+      "status": "proposed",
+      "related": [
+        "EE-006",
+        "EE-017",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-020",
+      "date": "2026-10-27",
+      "decision": "Vault and repository are universal parts of a workspace. A workspace always has a vault, the folder of documents holding venture folders and records; it has a code folder of repositories (repo, short for repository: a version-controlled store, normally Git) once any venture builds software. venture.json gains repos; a product card gains software (true when the venture builds software for it) and repo. check-ventures fails when a software product's venture, or a parent, lists no repository. Ventures in other industries may have only a vault. Operations skills name the MAD tier they serve in their kit manifest; contract-first moves from knowledge to operations, software engineering tier, beside its catalog entry.",
+      "why": "The owner's workspace already splits vault and code (docs-as-code); the method should say so for every builder, and say when a repo is needed. Contract-first is a development methodology, not knowledge.",
+      "status": "proposed",
+      "related": [
+        "EE-011",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-021",
+      "date": "2026-10-27",
+      "decision": "The client record becomes the account record: accounts/<id>/account.json (account.schema.json), optional, for ventures that keep records per named party. Each account has a relationship: client, customer, user, member, partner or other. Who a product serves in general stays its market, which gains the same relationship (plus audience). 'client' is retired as a record name and kept as one relationship value.",
+      "why": "The owner: clients are not universal; many ventures have customers, users or an audience instead. The record came from a services example. Account is the CRM-standard name for any named party; customer would sit badly over users and audiences who do not pay.",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-014"
+      ]
+    },
+    {
+      "id": "EE-022",
+      "date": "2026-10-27",
+      "decision": "The governance layer owns ownership and control. A venture's governance folder may hold ownership.json (the cap table: share classes with votes, price, liquidation terms and investor rights; holders; grants with vesting; SAFEs and notes), board.json (at most one formal board and any advisory boards: seats, who appoints them, reserved matters), founder-agreement.json with prose beside it, and exit.json (exit paths and sale values to model). Payouts are computed by schema/payouts.mjs, never typed. schema/check-governance.mjs requires a cap table and a formal board with venture-capital funding, a cap table with angel funding, and a founder agreement listing exactly the founder holders once two or more share ownership; it checks grants, classes, vesting, S-corporation single class, seats against appointing holders' board-seat rights, and that payouts add up. Five skills: cofounder-structure, board-design (formal and advisory, advisors), equity-and-share-classes, financing-and-investor-rights, exit-planning. A new decision class, ownership-or-control, is founder-owned at escalate: agents prepare options and documents and never decide. MAD's governance tier keeps governing one project; it should read who decides and funding from these records rather than ask again (to settle with the tier's name).",
+      "why": "The owner: a founder needs tools for whether and how to have cofounders, boards and their powers, share types, advisors, investor rights and exits, and nothing in the system covered ownership and control. It is about the venture, not one system, so it belongs to the layer, not MAD's tier. Comparison: docs/design/GOVERNANCE_LAYER_VS_TIER_2026-10-27.md.",
+      "status": "proposed",
+      "related": [
+        "EE-017",
+        "EE-018",
+        "EE-021"
+      ]
+    },
+    {
+      "id": "EE-023",
+      "date": "2026-10-27",
+      "decision": "Start with the end. A venture's purpose layer holds purpose/telos.json (telos.schema.json): the end it exists to reach, its end state and horizon, measures with one primary, the owners' intended outcome (hold, acquisition, IPO and so on) and, per Succession Matrix phase, exit criteria that each serve a measure. schema/check-telos.mjs requires every criterion to trace to a measure, governance/exit.json to prefer the telos path and not rule it out, and warns when a venture past Discovery with more than a hobby ambition has none. Other layers read rather than ask: operations/skills/methodology-selection/derive-answers.mjs derives MAD's governance-tier answers (who decides, funding, agent autonomy, success measure) from the telos, ownership, board, form and decision rights, naming each source, and lists what it cannot derive. The payout script is renamed payouts.mjs and the noun liquidation waterfall is retired for preference stack, because waterfall is a delivery methodology in MAD.",
+      "why": "The owner: MAD should read the layers instead of asking again; that follows from a start-with-the-end principle, a telos record in purpose, and each phase can develop its exit from it. waterfall.mjs collided with the waterfall method in MAD's delivery tier.",
+      "status": "proposed",
+      "related": [
+        "EE-012",
+        "EE-022"
+      ]
+    },
+    {
+      "id": "EE-024",
+      "date": "2026-10-27",
+      "decision": "The genus of the Everything Ecosystem is proposed as a venture development framework, in the same genus as web development frameworks, instead of operating system or operating model (left open by EE-014). The likeness is structural: conventions over configuration (one opinionated default per choice, each with references), a fixed project structure (workspace, venture folders, layers, record types in schema/data-model.json), generators (init-venture), checks run like a test suite (node test.mjs), packages that plug in (kits, by layer and tier), and inversion of control (the framework's checks and runners call on the venture's records, as a web framework calls the application's code). An operating model describes how one organization runs; a framework is reused by many builders to build their own.",
+      "why": "The owner, after the first ventures ran end to end through handoffs, evidence, governance and telos: 'I would like to consider this as a venture development framework. It would put it in a close genus with web development frameworks.'",
+      "status": "proposed",
+      "related": [
+        "EE-014",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-025",
+      "date": "2026-10-27",
+      "decision": "Publishing is a governance matter. Each venture keeps a publication policy (governance/publication-policy.json) that lists its channels, the guidelines each follows (brand and editorial from the pillars, plus outside rules such as platform or advertising law), the checks and preview every publication passes, and who drafts and who approves by role or team. Every publication passes this gate: it runs as a handoff under public-commitment and names its channel and content; agents may draft, check and preview, and a person approves. A channel on a third-party platform (Substack, X, Facebook and others) names the platform and cites its rules; social, newsletter and blog channels say whether replies and comments are gated, delegated to named people, or not made. publish.json moves from operations to governance as the method site's channel configuration. Publisher rule R1 now refuses only files outside the repository (an absolute path, a path through .., or a link resolving outside the root); inside it, publish.json decides.",
+      "why": "The owner: 'anything being published should go through a sort of gate, especially when it's being published by an AI... It also gives us a gate to be able to test what gets published before it is actually published.' Where something is published decides which guidelines it must follow, and ventures assign publishing rights to different teams. R1 was a vault-era boundary that refused 80 of 82 allowlisted files after the method moved into its own repository; the owner approved the change.",
+      "status": "in-force",
+      "related": [
+        "EE-017",
+        "EE-022"
+      ]
     }
   ]
 }

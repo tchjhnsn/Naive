@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0",
+  "version": "0.5.0",
   "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json.",
   "check": [
     "schema/",
@@ -20,9 +20,16 @@
     {
       "noun": "the system",
       "level": "system",
-      "meaning": "How files refer to the whole until its genus is settled (operating system, operating model) after the first venture runs end to end",
+      "meaning": "How files refer to the whole. Proposed genus (EE-024): a venture development framework; operating system and operating model are set aside",
       "standard": "EOS (Wickman) for 'operating system'",
       "status": "kept"
+    },
+    {
+      "noun": "venture development framework",
+      "level": "system",
+      "meaning": "Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages that plug in (kits). The builder's venture calls on it, and its checks call back on the venture's records",
+      "standard": "software framework (Johnson and Foote 1988; Rails' convention over configuration) applied to venture development (venture building, venture studios)",
+      "status": "new"
     },
     {
       "noun": "method",
@@ -139,9 +146,25 @@
     {
       "noun": "client",
       "level": "venture",
-      "meaning": "A record inside the venture that serves it; not a venture",
+      "meaning": "Was the record for a party a venture serves; not universal, since many ventures have customers, users, members or an audience instead. Now a value of an account's relationship (served under a professional relationship)",
       "standard": "common usage",
-      "status": "kept"
+      "status": "retired",
+      "replaced_by": "account (relationship: client)",
+      "retired_pattern": "clients/|client\\.json|client\\.schema"
+    },
+    {
+      "noun": "account",
+      "level": "venture",
+      "meaning": "A named party a venture keeps a record for, at accounts/<id>/account.json, with a relationship: client, customer, user, member, partner or other. Optional; who a product serves in general is its market",
+      "standard": "CRM usage (Salesforce, HubSpot: account)",
+      "status": "new"
+    },
+    {
+      "noun": "relationship",
+      "level": "venture",
+      "meaning": "How a party or market stands to the venture: customer (buys), client (served under a professional relationship), user (uses, may not pay), member (belongs), audience (reads, watches or listens; markets only), partner",
+      "standard": "common business usage; client as a customer of professional services",
+      "status": "new"
     },
     {
       "noun": "link",
@@ -280,16 +303,30 @@
     {
       "noun": "handoff",
       "level": "execution",
-      "meaning": "One unit of delegated work, with attempts and escalation",
+      "meaning": "One unit of delegated work: a JSON record (role, decision classes, done-criteria, status, attempts) at <venture>/execution/handoffs/<id>.json with a Markdown brief beside it",
       "standard": "common operations usage",
       "status": "kept"
     },
     {
+      "noun": "done-criterion",
+      "level": "execution",
+      "meaning": "One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role)",
+      "standard": "definition of done (Scrum)",
+      "status": "new"
+    },
+    {
       "noun": "eval",
       "level": "evidence",
-      "meaning": "A test of whether something worked",
+      "meaning": "A test of whether something worked; evals are grouped in eval suites (eval-suite.schema.json)",
       "standard": "AI evals",
       "status": "kept"
+    },
+    {
+      "noun": "evidence",
+      "level": "evidence",
+      "meaning": "The recorded result of one run of a check or eval: subject and version, each criterion's outcome and its output, at <venture>/evidence/results/<id>.json. Append-only",
+      "standard": "common audit usage",
+      "status": "new"
     },
     {
       "noun": "role",
@@ -301,16 +338,74 @@
     {
       "noun": "decision right",
       "level": "governance",
-      "meaning": "Who may decide what",
-      "standard": "decision rights (RACI, RAPID)",
+      "meaning": "Who may decide what, at one of four levels: decide, decide-inform, recommend-approve, escalate. A venture may tighten the template, never loosen it without a named decision",
+      "standard": "decision rights (RAPID, DACI)",
       "status": "kept"
     },
     {
       "noun": "console",
       "level": "interface",
-      "meaning": "How people and agents see a venture",
+      "meaning": "A custom interface built for the system: a viewer over a venture's records",
       "standard": "common software usage",
       "status": "kept"
+    },
+    {
+      "noun": "interface",
+      "level": "interface",
+      "meaning": "A tool through which a person, with agents, works across all or most other layers at once in one session (reaches at least four of the six). A tool that serves one or two layers is an integration of those layers, however good its screen is",
+      "standard": "ours, a narrowed sense of user interface",
+      "status": "new"
+    },
+    {
+      "noun": "agent harness",
+      "level": "interface",
+      "meaning": "An AI harness in which the model directs its own steps and tool use in a loop toward a goal, acting on files, tools and systems between the person's turns, under permissions (Claude Code, Cursor, Codex, Hermes Agent). The default kind of interface. Every agent harness is an AI harness; a chatbot is not an agent harness",
+      "standard": "agent harness (industry usage)",
+      "status": "new",
+      "references": [
+        "anthropic-2024-building-effective-agents"
+      ]
+    },
+    {
+      "noun": "AI harness",
+      "level": "interface",
+      "meaning": "A product that is the software around a model: the person's work happens in exchanges with it, so without the model nothing is left. A chatbot is one. The model answers; the person acts",
+      "standard": "harness (industry usage)",
+      "references": [
+        "anthropic-2024-building-effective-agents"
+      ],
+      "status": "new"
+    },
+    {
+      "noun": "AI feature",
+      "level": "interface",
+      "meaning": "A model used inside a product that does its job without it (summaries, search, drafting). Test: remove the model and the product still works. Most apps that implement AI are here, not harnesses",
+      "standard": "common product usage",
+      "references": [
+        "anthropic-2024-building-effective-agents"
+      ],
+      "status": "new"
+    },
+    {
+      "noun": "custom interface",
+      "level": "interface",
+      "meaning": "An interface built for the system or a venture rather than bought, such as the operator console",
+      "standard": "common software usage",
+      "status": "new"
+    },
+    {
+      "noun": "integration",
+      "level": "system",
+      "meaning": "A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). An interface reaches integrations; it is not one",
+      "standard": "systems integration",
+      "status": "kept"
+    },
+    {
+      "noun": "kit",
+      "level": "venture",
+      "meaning": "A product that bundles other products (skills, schemas, checks) sold or used together. Scoped to the whole system, one layer, or one tier of the operations layer. A part can also be its own product",
+      "standard": "product bundling (Adams and Yellen 1976)",
+      "status": "new"
     },
     {
       "noun": "sphere",
@@ -336,7 +431,7 @@
       "meaning": "Old sphere kinds (venture, client)",
       "standard": "none",
       "status": "retired",
-      "replaced_by": "venture, with clients as records",
+      "replaced_by": "venture, with accounts as records",
       "retired_pattern": "\"kind\"\\s*:\\s*\"(venture|client)\""
     },
     {
@@ -392,6 +487,169 @@
       "status": "retired",
       "replaced_by": "legal form",
       "retired_pattern": "\"orientation\"\\s*:"
+    },
+    {
+      "noun": "data model",
+      "level": "system",
+      "meaning": "The list of every record type in the ecosystem, the layer that owns it, its schema, where its records live and what it references (schema/data-model.json). It is the master map; no single schema contains everything",
+      "standard": "data model (ANSI/SPARC; entity-relationship modelling, Chen 1976)",
+      "status": "new"
+    },
+    {
+      "noun": "record type",
+      "level": "system",
+      "meaning": "One kind of record in the data model, such as venture, product, handoff or evidence, owned by exactly one layer or by the system",
+      "standard": "record type (database usage)",
+      "status": "new"
+    },
+    {
+      "noun": "kit manifest",
+      "level": "system",
+      "meaning": "The file (<layer>/kit.json) that lists what one kit holds: its skills, the record types it owns, those of other kits it reads and writes, and its checks. Layer relationships are derived from manifests",
+      "standard": "package manifest (common software usage)",
+      "status": "new"
+    },
+    {
+      "noun": "vault",
+      "level": "system",
+      "meaning": "The folder of documents (Markdown notes and JSON records) that holds a workspace's venture folders, their records and decisions. Every workspace has one; a venture outside software may need nothing else",
+      "standard": "Obsidian's name for a folder of notes; generically a knowledge base",
+      "status": "new"
+    },
+    {
+      "noun": "repository (repo)",
+      "level": "system",
+      "meaning": "A version-controlled store, normally Git, holding code and the documents that ship with it (docs-as-code). A venture that builds software needs at least one; repo is the short form",
+      "standard": "version control (Git: repository)",
+      "status": "new"
+    },
+    {
+      "noun": "cap table",
+      "level": "governance",
+      "meaning": "The record of who owns the venture and on what terms: share classes, holders, grants with vesting, the option pool, SAFEs and notes (governance/ownership.json)",
+      "standard": "capitalization table (common startup and finance usage)",
+      "status": "new"
+    },
+    {
+      "noun": "share class",
+      "level": "governance",
+      "meaning": "A kind of share (or LLC unit) with its own votes, price and rights: common, preferred, super-voting, non-voting",
+      "standard": "corporate law (classes of stock)",
+      "status": "new"
+    },
+    {
+      "noun": "vesting",
+      "level": "governance",
+      "meaning": "Earning granted shares over time, commonly four years with a one-year cliff, so that someone who leaves early keeps only what they earned",
+      "standard": "common startup usage",
+      "status": "new"
+    },
+    {
+      "noun": "founder agreement",
+      "level": "governance",
+      "meaning": "What founders agreed with each other: roles, commitment, IP assignment, departure and deadlock terms; required once two or more founders share ownership",
+      "standard": "common startup usage",
+      "status": "new"
+    },
+    {
+      "noun": "board",
+      "level": "governance",
+      "meaning": "A formal board of directors (or managers, or trustees), which holds legal authority, or an advisory board, which advises and decides nothing (governance/board.json)",
+      "standard": "corporate law; Feld and Ramsinghani, Startup Boards",
+      "status": "new"
+    },
+    {
+      "noun": "reserved matter",
+      "level": "governance",
+      "meaning": "A decision only the formal board may make, such as issuing shares or selling the company",
+      "standard": "corporate governance usage",
+      "status": "new"
+    },
+    {
+      "noun": "investor right",
+      "level": "governance",
+      "meaning": "A right an investor gets with a class or instrument: board seat, information, pro-rata, protective provisions, anti-dilution, drag-along, tag-along, right of first refusal and others",
+      "standard": "NVCA model legal documents",
+      "status": "new"
+    },
+    {
+      "noun": "liquidation waterfall",
+      "level": "governance",
+      "meaning": "The order and amounts in which sale proceeds reach each owner. Retired here because waterfall is a delivery methodology in MAD's delivery tier",
+      "standard": "venture finance usage",
+      "status": "retired",
+      "replaced_by": "preference stack",
+      "retired_pattern": "liquidation waterfall|waterfall\\.mjs"
+    },
+    {
+      "noun": "exit",
+      "level": "governance",
+      "meaning": "How owners realize value or the venture ends: acquisition, IPO, secondary sale, merger, management buyout, wind-down, or hold (governance/exit.json)",
+      "standard": "venture finance usage",
+      "status": "new"
+    },
+    {
+      "noun": "preference stack",
+      "level": "governance",
+      "meaning": "The order and amounts in which a sale's proceeds reach each owner, preferences first by seniority, then common; computed from the cap table by schema/payouts.mjs, never typed",
+      "standard": "venture finance usage (pref stack; Feld and Mendelson, Venture Deals)",
+      "status": "new"
+    },
+    {
+      "noun": "publication policy",
+      "level": "governance",
+      "meaning": "Where a venture publishes and who may publish what there: its channels, the guidelines each follows, the checks and preview every publication passes, and who drafts and approves by role or team (governance/publication-policy.json, EE-025)",
+      "standard": "content governance; communications or disclosure policy (corporate usage)",
+      "status": "new"
+    },
+    {
+      "noun": "channel",
+      "level": "governance",
+      "meaning": "A place the venture publishes to (website, docs site, social account, newsletter, app store, press, investor update, regulatory filing); its destination decides which guidelines apply",
+      "standard": "marketing channel (Kotler, Marketing Management)",
+      "status": "new"
+    },
+    {
+      "noun": "publication",
+      "level": "governance",
+      "meaning": "One act of making something public on a channel; always a handoff under the public-commitment decision class, previewed, checked and approved by a person",
+      "standard": "common usage",
+      "status": "new"
+    },
+    {
+      "noun": "brand guidelines",
+      "level": "governance",
+      "meaning": "The rules for using the venture's visual and verbal identity, kept by the brand pillar",
+      "standard": "brand guidelines or brand book (common marketing usage)",
+      "status": "new"
+    },
+    {
+      "noun": "editorial guidelines",
+      "level": "governance",
+      "meaning": "What content covers and how it is written, separate from brand voice; a style guide is one part",
+      "standard": "editorial guidelines and style guide (publishing usage)",
+      "status": "new"
+    },
+    {
+      "noun": "telos",
+      "level": "purpose",
+      "meaning": "The end a venture exists to reach (purpose/telos.json): statement, end state, measures, the owners' intended outcome, and exit criteria for each phase. Start with the end: other layers derive from it",
+      "standard": "Aristotle (final cause); Covey, begin with the end in mind",
+      "status": "new"
+    },
+    {
+      "noun": "exit criterion",
+      "level": "purpose",
+      "meaning": "What must be true for a venture to leave a phase, written in its telos and tied to a telos measure; it refines that phase's generic gate. Not an owner's exit (governance)",
+      "standard": "Stage-Gate exit criteria (Cooper)",
+      "status": "new"
+    },
+    {
+      "noun": "derived answer",
+      "level": "operations",
+      "meaning": "A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from",
+      "standard": "ours",
+      "status": "new"
     }
   ]
 }

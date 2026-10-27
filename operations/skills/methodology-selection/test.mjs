@@ -1,5 +1,5 @@
 // Fixture tests for `ee validate` (slice 1). Run: node test.mjs
-import { validate, list, report, recommend, saveRecommendation, propose, evidence } from "./ee.mjs";
+import { validate, list, report, recommend, saveRecommendation, propose, evidence, answersFile } from "./ee.mjs";
 import { rmSync, existsSync, readFileSync, writeFileSync, cpSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
@@ -77,4 +77,18 @@ ok("recommend flags a domain with only candidates as unresearched", recP.unresea
 const recS = await recommend(W5, join(V, "register/_systems/example-system.md"), fake);
 ok("a system with no domain defaults to software", !recS.ranked.some((r) => r.id === "mbse"));
 for (const d of [W, W2, W3, W4, W5]) rmSync(d, { recursive: true });
+// --answers: a hand-written answers file stands in for Jev and is named as the scorer
+{
+  const names = [];
+  await recommend(V, join(V, "register/_systems/example-system.md"), async (st, qs) => { names.push([qs.whole.instructions.match(/Methodology "([^"]+)"/)[1], Object.keys(qs)]); return { answers: Object.fromEntries(Object.keys(qs).map((k) => [k, { noul: 0.5 }])) }; });
+  const tmp = mkdtempSync(join(tmpdir(), "ee-answers-"));
+  const file = join(tmp, "a.json");
+  writeFileSync(file, JSON.stringify({ scorer: "reasoning model (test)", answers: Object.fromEntries(names.map(([n, ks]) => [n, Object.fromEntries(ks.map((k) => [k, k.startsWith("unfit") ? 0.1 : n.includes("Test-driven") ? 0.9 : 0.3]))])) }));
+  const recA = await recommend(V, join(V, "register/_systems/example-system.md"), answersFile(file));
+  ok("answers file: its scorer is recorded as the model", recA.model === "reasoning model (test)");
+  ok("answers file: its answers decide the ranking", recA.ranked[0].id === "tdd");
+  writeFileSync(file, JSON.stringify({ scorer: "x", answers: {} }));
+  ok("answers file: a missing methodology fails loudly", await recommend(V, join(V, "register/_systems/example-system.md"), answersFile(file)).then(() => false, (e) => /no entry/.test(e.message)));
+  rmSync(tmp, { recursive: true, force: true });
+}
 process.exit(failed ? 1 : 0);
