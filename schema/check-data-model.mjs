@@ -11,6 +11,7 @@
 //
 // Layer relationships are never written by hand: they come from each kit's reads and writes.
 
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 
@@ -23,7 +24,10 @@ const warnings = [];
 
 const files = (dir) => readdirSync(join(root, dir), { withFileTypes: true }).flatMap((e) =>
   [".git", "node_modules"].includes(e.name) ? [] : e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
-const all = files(".").map((f) => relative(".", f));
+// The files git would track (so build output and installed packages under .gitignore are left out); a
+// copy outside git, as the tests use, is walked instead.
+const tracked = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" });
+const all = tracked.status === 0 && tracked.stdout.trim() && !process.env.EE_ROOT ? tracked.stdout.trim().split("\n").filter((f) => existsSync(join(root, f))) : files(".").map((f) => relative(".", f));
 const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
 const matches = (g) => all.filter((f) => glob(g).test(f));
 
