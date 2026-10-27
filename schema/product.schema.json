@@ -53,6 +53,15 @@
       "type": "string",
       "description": "How it meets the need (Abell: alternative technologies)"
     },
+    "ai": {
+      "enum": [
+        "none",
+        "feature",
+        "ai-harness",
+        "agent-harness"
+      ],
+      "description": "What AI is to the product. feature: the product works without the model. ai-harness: the product is the software around a model (a chatbot); remove the model and nothing is left. agent-harness: an AI harness where the model directs its own steps and tool use toward a goal. Tests in docs/ontology.md."
+    },
     "offering": {
       "enum": [
         "product",
@@ -61,6 +70,51 @@
         "content",
         "marketplace"
       ]
+    },
+    "scope": {
+      "type": "object",
+      "description": "Where in the system the product works: the whole system, one layer, or one tier of the operations layer. Kits use it most (a knowledge-layer kit, a delivery-tier kit).",
+      "required": [
+        "level"
+      ],
+      "properties": {
+        "level": {
+          "enum": [
+            "system",
+            "layer",
+            "tier"
+          ]
+        },
+        "layer": {
+          "enum": [
+            "purpose",
+            "knowledge",
+            "operations",
+            "execution",
+            "evidence",
+            "governance",
+            "interface"
+          ]
+        },
+        "tier": {
+          "enum": [
+            "governance",
+            "delivery",
+            "software-engineering",
+            "automation"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "part_of": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "description": "Kits this product is bundled into, by product id in the same venture. A part can still be its own product with its own market and portfolio role."
     },
     "business_model": {
       "type": "array",

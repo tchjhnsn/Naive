@@ -308,9 +308,67 @@
     {
       "noun": "console",
       "level": "interface",
-      "meaning": "How people and agents see a venture",
+      "meaning": "A custom interface built for the system: a viewer over a venture's records",
       "standard": "common software usage",
       "status": "kept"
+    },
+    {
+      "noun": "interface",
+      "level": "interface",
+      "meaning": "A tool through which a person, with agents, works across all or most other layers at once in one session (reaches at least four of the six). A tool that serves one or two layers is an integration of those layers, however good its screen is",
+      "standard": "ours, a narrowed sense of user interface",
+      "status": "new"
+    },
+    {
+      "noun": "agent harness",
+      "level": "interface",
+      "meaning": "An AI harness in which the model directs its own steps and tool use in a loop toward a goal, acting on files, tools and systems between the person's turns, under permissions (Claude Code, Cursor, Codex, Hermes Agent). The default kind of interface. Every agent harness is an AI harness; a chatbot is not an agent harness",
+      "standard": "agent harness (industry usage)",
+      "status": "new",
+      "references": [
+        "anthropic-2024-building-effective-agents"
+      ]
+    },
+    {
+      "noun": "AI harness",
+      "level": "interface",
+      "meaning": "A product that is the software around a model: the person's work happens in exchanges with it, so without the model nothing is left. A chatbot is one. The model answers; the person acts",
+      "standard": "harness (industry usage)",
+      "references": [
+        "anthropic-2024-building-effective-agents"
+      ],
+      "status": "new"
+    },
+    {
+      "noun": "AI feature",
+      "level": "interface",
+      "meaning": "A model used inside a product that does its job without it (summaries, search, drafting). Test: remove the model and the product still works. Most apps that implement AI are here, not harnesses",
+      "standard": "common product usage",
+      "references": [
+        "anthropic-2024-building-effective-agents"
+      ],
+      "status": "new"
+    },
+    {
+      "noun": "custom interface",
+      "level": "interface",
+      "meaning": "An interface built for the system or a venture rather than bought, such as the operator console",
+      "standard": "common software usage",
+      "status": "new"
+    },
+    {
+      "noun": "integration",
+      "level": "system",
+      "meaning": "A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). An interface reaches integrations; it is not one",
+      "standard": "systems integration",
+      "status": "kept"
+    },
+    {
+      "noun": "kit",
+      "level": "venture",
+      "meaning": "A product that bundles other products (skills, schemas, checks) sold or used together. Scoped to the whole system, one layer, or one tier of the operations layer. A part can also be its own product",
+      "standard": "product bundling (Adams and Yellen 1976)",
+      "status": "new"
     },
     {
       "noun": "sphere",

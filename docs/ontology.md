@@ -28,6 +28,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | tooling | What helps do it: scripts, skills, agent rules | common usage |  |
 | workspace | One builder's instance of the system, declared by workspace.json | common software usage |  |
 | layer | One of the seven: purpose, knowledge, operations, execution, evidence, governance, interface | ours |  |
+| integration | A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). An interface reaches integrations; it is not one | systems integration |  |
 
 ### Venture
 
@@ -46,6 +47,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | venture profile | The readable companion to venture.json: narrative, pillars, changelog | ours |  |
 | pillar | Product, brand and business, in every venture | ours |  |
 | venture template | The scaffold for a venture: pillars, roles, decision rights | ours |  |
+| kit | A product that bundles other products (skills, schemas, checks) sold or used together. Scoped to the whole system, one layer, or one tier of the operations layer. A part can also be its own product | product bundling (Adams and Yellen 1976) |  |
 
 ### Purpose
 
@@ -98,7 +100,12 @@ The system is opinionated: it names one default for each choice, and every defau
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
-| console | How people and agents see a venture | common software usage |  |
+| console | A custom interface built for the system: a viewer over a venture's records | common software usage |  |
+| interface | A tool through which a person, with agents, works across all or most other layers at once in one session (reaches at least four of the six). A tool that serves one or two layers is an integration of those layers, however good its screen is | ours, a narrowed sense of user interface |  |
+| agent harness | An AI harness in which the model directs its own steps and tool use in a loop toward a goal, acting on files, tools and systems between the person's turns, under permissions (Claude Code, Cursor, Codex, Hermes Agent). The default kind of interface. Every agent harness is an AI harness; a chatbot is not an agent harness | agent harness (industry usage) | anthropic-2024-building-effective-agents |
+| AI harness | A product that is the software around a model: the person's work happens in exchanges with it, so without the model nothing is left. A chatbot is one. The model answers; the person acts | harness (industry usage) | anthropic-2024-building-effective-agents |
+| AI feature | A model used inside a product that does its job without it (summaries, search, drafting). Test: remove the model and the product still works. Most apps that implement AI are here, not harnesses | common product usage | anthropic-2024-building-effective-agents |
+| custom interface | An interface built for the system or a venture rather than bought, such as the operator console | common software usage |  |
 
 ### Retired
 

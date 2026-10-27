@@ -143,6 +143,28 @@
         "EE-002",
         "EE-012"
       ]
+    },
+    {
+      "id": "EE-015",
+      "date": "2026-10-27",
+      "decision": "Kits have a scope. A product card may name its scope (the whole system, one layer, or one tier of the operations layer) and the kits it is part of (part_of); a part can still be its own product. The Everything Ecosystem's own schema and method skills are one offering, the system kit; some skills, such as the five-step algorithm skill, are also products by themselves.",
+      "why": "Found by the first venture run: skills and schema tied as flagship, and the owner confirmed they are one offering while some skills stand alone and some kits serve one layer or tier.",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-013"
+      ]
+    },
+    {
+      "id": "EE-016",
+      "date": "2026-10-27",
+      "decision": "The interface layer holds interfaces only: tools through which a person, with agents, works across at least four of the six other layers in one session. Agent harnesses (Claude Code, Cursor, Codex) are the default kind and the operator console is a custom one. A tool that serves one or two layers is an integration of those layers (Obsidian under knowledge), checked by schema/check-integrations.mjs. Three AI levels, recorded as a product's ai field: AI feature (the product works without the model), AI harness (the product is the software around a model; a chatbot), agent harness (an AI harness where the model directs its own steps and tool use toward a goal). Every agent harness is an AI harness; a chatbot is not an agent harness.",
+      "why": "The owner wanted a clear interface layer that does not count every integration as an interface, and a clear line between apps that use AI and products that are harnesses. Harness takes its industry meaning (workspace decision G-039).",
+      "status": "in-force",
+      "related": [
+        "EE-014",
+        "EE-015"
+      ]
     }
   ]
 }

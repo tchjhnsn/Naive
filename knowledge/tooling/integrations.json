@@ -57,5 +57,15 @@
       "api"
     ],
     "status": "candidate"
+  },
+  {
+    "id": "claude-artifacts",
+    "name": "Claude artifacts",
+    "layer": "knowledge",
+    "role": "published pages and dashboards over the records",
+    "interfaces": [
+      "app"
+    ],
+    "status": "in-use"
   }
 ]

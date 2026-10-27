@@ -2,24 +2,104 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "integration.schema.json",
   "title": "Layer tooling integration",
-  "description": "One tool or service a layer can use. Each layer lists its integrations in <layer>/tooling/integrations.json. Credentials are named, never stored.",
+  "description": "One tool or service a layer can use. Each layer lists its integrations in <layer>/tooling/integrations.json. Credentials are named, never stored. Entries under interface/ are interfaces, not integrations: they must reach at least four of the six other layers (schema/check-integrations.mjs).",
   "type": "object",
-  "required": ["id", "name", "layer", "role", "interfaces", "status"],
+  "required": [
+    "id",
+    "name",
+    "layer",
+    "role",
+    "interfaces",
+    "status"
+  ],
   "properties": {
-    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-    "name": { "type": "string" },
-    "layer": { "enum": ["purpose", "knowledge", "operations", "execution", "evidence", "governance", "interface"] },
-    "role": { "type": "string", "description": "What the layer uses it for, in a few words" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "layer": {
+      "enum": [
+        "purpose",
+        "knowledge",
+        "operations",
+        "execution",
+        "evidence",
+        "governance",
+        "interface"
+      ]
+    },
+    "role": {
+      "type": "string",
+      "description": "What the layer uses it for, in a few words"
+    },
     "interfaces": {
       "type": "array",
-      "items": { "enum": ["files", "mcp", "api", "sdk", "cli", "webhook", "app"] },
+      "items": {
+        "enum": [
+          "files",
+          "mcp",
+          "api",
+          "sdk",
+          "cli",
+          "webhook",
+          "app"
+        ]
+      },
       "description": "How agents and code reach it"
     },
-    "status": { "enum": ["in-use", "candidate", "rejected"] },
-    "reason": { "type": "string", "description": "Why it is in use, a candidate, or rejected" },
-    "credentials": { "type": "array", "items": { "type": "string" }, "description": "Environment variable names only" },
-    "adapter": { "type": "string", "description": "Path to the skill, MCP config or script that wires it in, when one exists" },
-    "links": { "type": "array", "items": { "type": "string" } }
+    "reach": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "purpose",
+          "knowledge",
+          "operations",
+          "execution",
+          "evidence",
+          "governance"
+        ]
+      },
+      "description": "Interface layer only: the other layers a person can work in through it, in one session. At least four."
+    },
+    "interface_kind": {
+      "enum": [
+        "agent-harness",
+        "custom"
+      ],
+      "description": "Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom interface built for the system or a venture."
+    },
+    "status": {
+      "enum": [
+        "in-use",
+        "candidate",
+        "rejected"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why it is in use, a candidate, or rejected"
+    },
+    "credentials": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Environment variable names only"
+    },
+    "adapter": {
+      "type": "string",
+      "description": "Path to the skill, MCP config or script that wires it in, when one exists"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
   },
   "additionalProperties": false
 }

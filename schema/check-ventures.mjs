@@ -5,7 +5,8 @@
 //
 // Rules: venture ids are unique; every parent exists; no venture is its own ancestor;
 // links point at known ventures; within a venture, product ids are unique, flows_to and
-// a client's products name that venture's own products. Warns when a formalized venture
+// a client's products and a product's part_of name that venture's own products, and a
+// product's scope names its layer or tier. Warns when a formalized venture
 // (a legal form, or other members) has no governance layer.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -45,6 +46,12 @@ for (const v of ventures.values()) {
     ids.add(p.id);
   }
   for (const p of v.products) for (const t of p.flows_to ?? []) if (!ids.has(t)) errors.push(`${v.id}/${p.id}: flows_to unknown product ${t}`);
+  for (const p of v.products) for (const k of p.part_of ?? []) if (!ids.has(k)) errors.push(`${v.id}/${p.id}: part_of unknown product ${k}`);
+  for (const p of v.products) {
+    const sc = p.scope;
+    if (sc?.level === "layer" && !sc.layer) errors.push(`${v.id}/${p.id}: a layer-scoped product names its layer`);
+    if (sc?.level === "tier" && (!sc.tier || (sc.layer && sc.layer !== "operations"))) errors.push(`${v.id}/${p.id}: a tier-scoped product names its tier, which sits in the operations layer`);
+  }
   for (const c of v.clients) for (const t of c.products ?? []) if (!ids.has(t)) errors.push(`${v.id}/clients/${c.id}: buys unknown product ${t}`);
   const formal = (v.form?.legal_form && v.form.legal_form !== "none") || (v.members?.length ?? 0) > 0;
   if (formal && !v.layers.governance) warnings.push(`${v.id}: formalized (legal form or members) but has no governance layer`);

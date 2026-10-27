@@ -16,7 +16,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Fiv
 | `execution/` | Handoff v2, founder operating model |
 | `evidence/` | `evals/`, design-documents registry, audit and review skills |
 | `governance/` | Company vault template, roles, decision rights, pillar skills |
-| `interface/` | Operator console |
+| `interface/` | Interfaces: agent harnesses and the operator console |
 | `docs/design/` | The ecosystem's own domain and systems design |
 
 ## Build and test
@@ -32,7 +32,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Fiv
 
 ## Tooling
 
-Every layer has `<layer>/tooling/integrations.json`: the tools and services it can use, each checked against `schema/integration.schema.json` (status in-use, candidate or rejected; interfaces such as files, MCP, API, SDK; credentials by variable name only). Agent runtimes (Claude Agent SDK, Cursor Agent SDK) are listed under `execution/tooling/`.
+Every layer has `<layer>/tooling/integrations.json`: the tools and services it can use, each checked against `schema/integration.schema.json` (status in-use, candidate or rejected; interfaces such as files, MCP, API, SDK; credentials by variable name only). Agent runtimes (Claude Agent SDK, Cursor Agent SDK) are listed under `execution/tooling/`. The interface layer is narrower: an interface lets a person, with agents, work across at least four of the six other layers in one session. Agent harnesses (Claude Code, Cursor, Codex) are the default kind; the operator console is a custom one. A tool serving one or two layers (Obsidian, Linear) is an integration of those layers. `node schema/check-integrations.mjs` enforces this.
 
 Choosing tools is opt-in: when someone wants help, `operations/skills/tool-selection/SKILL.md` gives the principles for the questions and the scoring (Jev plus a reasoning model), and each layer's `tooling/questions.md` gives its dimensions and example questions. Knowledge has one so far.
 

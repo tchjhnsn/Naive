@@ -44,7 +44,7 @@ Status:
 | Evidence | Evals | `evidence/evals/*.json` | shape used, no schema |
 | Evidence | Design-documents registry | `evidence/design-documents.registry.json` | self-describing, no schema |
 | Governance | Roles and decision rights | `governance/venture-template/decision-rights.json` | shape used, no schema; switches on when a venture is formalized |
-| Every layer | Tool integrations | `schema/integration.schema.json`, `<layer>/tooling/integrations.json` | defined |
+| Every layer | Tool integrations | `schema/integration.schema.json`, `<layer>/tooling/integrations.json`, `check-integrations.mjs` (interfaces reach at least four layers) | defined |
 
 ## Open reconciliations
 

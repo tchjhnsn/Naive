@@ -10,7 +10,7 @@
 | Execution | Who or what does the work | `execution/` | Handoff v2, founder operating model |
 | Evidence | Did it work | `evidence/` | Evals, design-coverage registry and checks, metrics review |
 | Governance (cross-cutting) | Who may decide | `governance/` | Company vault template, roles, decision rights, pillar skills |
-| Interface (cross-cutting) | How you see it | `interface/` | Operator console |
+| Interface (cross-cutting) | How you work across the layers at once | `interface/` | Agent harnesses (Claude Code, Cursor), operator console |
 
 `docs/design/` holds the ecosystem's own domain and systems design. Each layer has a `tooling/integrations.json` listing the tools it can plug into (Obsidian, Notion, Linear, the Claude and Cursor agent SDKs and so on), checked against `schema/integration.schema.json`. `publish.json` is the allowlist for a future public site.
 

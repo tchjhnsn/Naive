@@ -1,17 +1,50 @@
 {
   "version": "0.3.0",
-  "note": "Which layers a new venture starts with, by phase (EE-012). Every venture has every layer; a layer not listed starts as false and is switched on when the venture needs it. Folder names are the layer names. Every venture also gets the three pillars and a venture profile (EE-010, EE-011). Governance is added when the venture is formalized: a legal form other than none, or other members.",
+  "note": "Which layers a new venture starts with, by phase (EE-012). Every venture has every layer; a layer not listed starts as false and is switched on when the venture needs it. Folder names are the layer names. Every venture also gets the three pillars, as short stubs that point to the full guides, and a venture profile (EE-010, EE-011). Governance is added when the venture is formalized: a legal form other than none, or other members.",
   "layers": {
-    "discovery": ["knowledge"],
-    "validation": ["purpose", "knowledge", "execution", "evidence"],
-    "beachhead": ["purpose", "knowledge", "operations", "execution", "evidence"],
-    "scale": ["purpose", "knowledge", "operations", "execution", "evidence", "interface"],
-    "platform": ["purpose", "knowledge", "operations", "execution", "evidence", "interface"]
+    "discovery": [
+      "knowledge"
+    ],
+    "validation": [
+      "purpose",
+      "knowledge",
+      "execution",
+      "evidence"
+    ],
+    "beachhead": [
+      "purpose",
+      "knowledge",
+      "operations",
+      "execution",
+      "evidence"
+    ],
+    "scale": [
+      "purpose",
+      "knowledge",
+      "operations",
+      "execution",
+      "evidence",
+      "interface"
+    ],
+    "platform": [
+      "purpose",
+      "knowledge",
+      "operations",
+      "execution",
+      "evidence",
+      "interface"
+    ]
   },
-  "formalized": ["governance"],
+  "formalized": [
+    "governance"
+  ],
   "pillars": {
-    "from": "governance/venture-template/pillars/",
-    "files": ["product.md", "brand.md", "business.md"]
+    "guides": "governance/venture-template/pillars/",
+    "stubs": {
+      "product": "What the venture makes: its core product (in venture.json), its products (in products/), and what each needs to be specified, built, shipped and operated.",
+      "brand": "How the venture is known: its name, voice, promise wording and visual identity.",
+      "business": "How the venture sustains itself: business models, pricing, costs, legal form and funding."
+    }
   },
   "readme": {
     "purpose": "Why this venture exists: its core product, products and the Product Anatomy matrix.",
