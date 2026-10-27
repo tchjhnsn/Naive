@@ -362,7 +362,7 @@
       "date": "2026-10-27",
       "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI).",
       "why": "The owner wants MDX preferred over Markdown and asked for a convention for when to use MDX versus JSON or other formats. Generated pages in MDX render the repository's data at build time instead of being copied, so they cannot go stale.",
-      "status": "proposed",
+      "status": "in-force",
       "related": [
         "EE-005",
         "EE-031",
