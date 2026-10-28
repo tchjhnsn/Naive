@@ -4,7 +4,7 @@
 //   node schema/test.mjs
 
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -248,6 +248,15 @@ knowBroken("a matrix rule for a pinned record type fails", "check-sources.mjs", 
 knowBroken("a live child that no longer shows its parent's value is drift", "check-where-used.mjs", (d) => edit(join(d, "products/shop-app.json"), (p) => { p.name = "Tandem for shops"; }), /does not show "Tandem for shops"/);
 knowBroken("a parent pointer with no value fails", "check-where-used.mjs", (d) => edit(used(d), (w) => { w.facts[0].parent.pointer = "/price"; }), /has no value at \/price/);
 knowBroken("a child in an unknown source fails", "check-where-used.mjs", (d) => edit(used(d), (w) => { w.facts[0].children[0].source = "website"; }), /website is not one of the venture's sources/);
+
+// Departments (EE-047): imported only when needed, tagged in their own folders, grouping optional.
+const dept = (d, ...p) => join(d, "operations/departments", ...p, "department.json");
+expect("check-departments passes on the examples", run("check-departments.mjs", [join(root, "schema/examples/workspace")]).status === 0);
+knowBroken("a listed department with no folder fails", "check-departments.mjs", (d) => edit(join(d, "venture.json"), (v) => { v.departments.push("human-capital"); }), /human-capital is listed but has no folder/);
+knowBroken("a department folder not in venture.json fails", "check-departments.mjs", (d) => edit(join(d, "venture.json"), (v) => { v.departments = ["marketing-and-sales"]; }), /finance is not in venture.json departments/);
+knowBroken("a value-chain tag that disagrees with the catalog fails", "check-departments.mjs", (d) => edit(dept(d, "finance"), (t) => { t.value_chain = "primary"; }), /value_chain primary, the catalog says support/);
+knowBroken("a department grouped under the wrong value-chain folder fails", "check-departments.mjs", (d) => { const s = join(d, "operations/departments"); mkdirSync(join(s, "primary"), { recursive: true }); renameSync(join(s, "finance"), join(s, "primary/finance")); }, /grouped under primary\/ but finance is a support activity/);
+knowBroken("a department folder without its tag fails", "check-departments.mjs", (d) => rmSync(dept(d, "finance")), /has no department.json/);
 {
   const dir = join(tmp, `k${++n}`);
   cpSync(tandem, dir, { recursive: true });

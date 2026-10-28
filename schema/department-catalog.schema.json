@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "department-catalog.schema.json",
+  "title": "Department catalog",
+  "description": "The departments a venture can import (EE-047): APQC Process Classification Framework categories, each tagged with its place in Porter's value chain and given need-now priors (EE-028). The framework's copy is operations/departments.json.",
+  "type": "object",
+  "required": ["version", "departments"],
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "apqc", "value_chain", "porter", "governance", "operations", "base", "why"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "label": { "type": "string" },
+          "apqc": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": { "id": { "type": "string", "pattern": "^\\d+\\.0$" }, "name": { "type": "string" } },
+            "additionalProperties": false
+          },
+          "value_chain": { "enum": ["primary", "support"] },
+          "porter": { "type": "string", "description": "The value-chain activity it falls under (Porter 1985)" },
+          "governance": { "type": "string", "description": "What its folder in the governance layer holds" },
+          "operations": { "type": "string", "description": "What its folder in the operations layer holds" },
+          "base": {
+            "type": "object",
+            "description": "Probability a venture needs it, per phase",
+            "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "when": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["if"],
+              "properties": {
+                "if": { "type": "string" },
+                "phase": { "type": "string" },
+                "at_least": { "type": "number", "minimum": 0, "maximum": 1 },
+                "at_most": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "why": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

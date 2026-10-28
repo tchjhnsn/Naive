@@ -34,6 +34,8 @@ const steps = [
   ["sources: examples", "node", ["schema/check-sources.mjs", "schema/examples/workspace"]],
   ["where-used: instance", "node", ["schema/check-where-used.mjs", "instance"]],
   ["where-used: examples", "node", ["schema/check-where-used.mjs", "schema/examples/workspace"]],
+  ["departments: instance", "node", ["schema/check-departments.mjs", "instance"]],
+  ["departments: examples", "node", ["schema/check-departments.mjs", "schema/examples/workspace"]],
   ["framework/platform boundary", "node", ["schema/check-boundary.mjs"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],

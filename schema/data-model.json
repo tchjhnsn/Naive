@@ -390,6 +390,36 @@
       "note": "For each fact kept once in its system of record, every place that repeats it; live children must show the parent's value (EE-042)"
     },
     {
+      "id": "department-catalog",
+      "layer": "operations",
+      "level": "method",
+      "schema": "schema/department-catalog.schema.json",
+      "paths": [
+        "operations/departments.json"
+      ],
+      "note": "The departments a venture can import: APQC categories tagged with Porter's value chain, with need-now priors (EE-047)"
+    },
+    {
+      "id": "department",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/department.schema.json",
+      "paths": [
+        "instance/**/departments/*/department.json",
+        "instance/**/departments/*/*/department.json",
+        "schema/examples/**/departments/*/department.json",
+        "schema/examples/**/departments/*/*/department.json"
+      ],
+      "refs": [
+        {
+          "field": "department",
+          "to": "department-catalog",
+          "checked_by": "schema/check-departments.mjs"
+        }
+      ],
+      "note": "The tag in each department folder, in the governance or operations layer; an optional primary/ or support/ grouping folder is for looking at only (EE-047)"
+    },
+    {
       "id": "ontology",
       "layer": "system",
       "level": "method",

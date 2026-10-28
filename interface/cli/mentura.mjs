@@ -6,6 +6,8 @@
 //   mentura ventures [--json]                       ventures in the workspace
 //   mentura init <dir> --id <id> [--phase <phase>] [--layers purpose,governance]
 //                                                   start a venture; --layers turns on only those
+//   mentura add <department> --venture <id> [--group]
+//                                                   import a department: list it and create its folders
 //   mentura accept <route> --venture <id>          a person accepts an agent's draft of a gated record
 //   mentura <route> <action> --venture <id|path> [--input <file>|-] [--as person] [--value <n>] [--json]
 //          actions: read, write, check, template, layout, view (a page), run (commands)
@@ -54,6 +56,14 @@ if (cmd === "ventures") {
   const vs = ventures(workspace);
   out(flag("json") ? vs : vs.map((v) => `${v.id.padEnd(24)} ${String(v.phase).padEnd(12)} ${v.path}`).join("\n") || "no ventures");
   process.exit(0);
+}
+
+if (cmd === "add") {
+  // Imports one department into a venture (EE-047, EE-048): schema/add-department.mjs.
+  const v = opt("venture");
+  if (!action || !v) usage();
+  const p = spawnSync("node", [join(repo, "schema/add-department.mjs"), ventureDir(v, workspace), action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
 }
 
 if (cmd === "init") {

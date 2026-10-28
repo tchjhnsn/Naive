@@ -128,6 +128,12 @@
       },
       "additionalProperties": false
     },
+    "departments": {
+      "type": "array",
+      "description": "The departments this venture imports, by id from operations/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048).",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "uniqueItems": true
+    },
     "brand": {
       "type": "object",
       "description": "The venture's verbal brand elements, owned by the brand pillar. Visual identity (tokens, logos) is a separate record.",

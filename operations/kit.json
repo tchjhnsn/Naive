@@ -18,7 +18,9 @@
   ],
   "records": [
     "team-plan",
-    "handoff"
+    "handoff",
+    "department-catalog",
+    "department"
   ],
   "reads": [
     "agent-capability",
@@ -40,7 +42,8 @@
     "schema/check-team.mjs",
     "schema/check-ready.mjs",
     "schema/run-handoff.mjs",
-    "schema/check-execution.mjs"
+    "schema/check-execution.mjs",
+    "schema/check-departments.mjs"
   ],
   "gaps": [
     "No run-handoff skill: the handoff contract is prose (operations/handoff-v2.md) beside three scripts in schema/ (check-ready, run-handoff, check-execution)",
