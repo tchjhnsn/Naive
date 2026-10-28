@@ -1,0 +1,80 @@
+# The behaviors decisions as a file type must keep (EE-054, EE-057): where a decision lives, what
+# holds it, and when it renders. Run: node schema/bdd.mjs governance/features/decisions.feature
+
+Feature: Decisions
+  Every decision a venture owes sits beside what it decides. A venture fails closed, so open
+  decisions above hold the ones below; a product fails open. A decision renders when it is
+  needed, not before, and while the venture is in Discovery a decided one is still a working draft.
+
+  Rule: A boundary holds everything under it
+
+    Scenario: Under an open fail-closed decision, a child waits
+      Given the example venture "tandem"
+      And an open decision "pricing-model" that fails closed
+      And an open decision "launch-price" under "pricing-model"
+      When the founder asks for the decisions
+      Then "launch-price" renders "waiting"
+      And "pricing-model" renders "now"
+
+    Scenario: A decision about a product fails open
+      Given the example venture "tandem"
+      And an open decision "shop-app-scope" about the product "shop-app"
+      And an open decision "shop-app-icon" under "shop-app-scope"
+      When the founder asks for the decisions
+      Then "shop-app-scope" fails open
+      And "shop-app-icon" renders "now"
+
+    Scenario: A product without a venture fails open
+      Given the example venture "tandem"
+      And the workspace is a product without a venture
+      When the founder asks for the decisions
+      Then "foundation" fails open
+
+    Scenario: An agent's write under an open fail-closed decision is a draft
+      Given the example venture "tandem"
+      And an open decision "shop-app-scope" about the product "shop-app" that fails closed
+      When an agent writes the product "shop-app"
+      Then the product write is a draft held by "shop-app-scope"
+
+  Rule: A decision renders when it is needed
+
+    Scenario: A decision needed in a later phase is held back
+      Given the example venture "tandem"
+      And an open decision "series-a" needed in "scale"
+      When the founder asks for the decisions
+      Then "series-a" renders "later"
+
+    Scenario: A decision made before its parent changed is stale
+      Given the example venture "tandem"
+      And a decision "pricing-model" decided at "2026-10-20T00:00:00Z"
+      And a decision "launch-price" under "pricing-model" decided at "2026-10-01T00:00:00Z"
+      When the founder asks for the decisions
+      Then "launch-price" renders "stale"
+
+    Scenario: In Discovery a decided decision is still a working draft
+      Given the example venture "tandem"
+      And the venture is in "discovery"
+      And a decision "pricing-model" decided at "2026-10-20T00:00:00Z"
+      When the founder asks for the decisions
+      Then "pricing-model" is "working"
+
+  Rule: The foundation and the matrix stay consistent
+
+    Scenario: A decision record that settles a foundation statement stands in for it
+      Given the example venture "tandem"
+      And a deferred decision "vision" for the statement "vision"
+      When the founder asks for the decisions
+      Then "vision" renders "deferred"
+      And there is no decision "foundation-vision"
+
+    Scenario: A decision under an unknown parent fails the check
+      Given the example venture "tandem"
+      And an open decision "launch-price" under "nowhere"
+      When the decisions are checked
+      Then the check fails naming "unknown parent nowhere"
+
+    Scenario: A decided decision names who decided
+      Given the example venture "tandem"
+      And a decision "pricing-model" decided at "2026-10-20T00:00:00Z" by nobody
+      When the decisions are checked
+      Then the check fails naming "names no one who decided"

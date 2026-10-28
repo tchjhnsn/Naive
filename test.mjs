@@ -45,6 +45,9 @@ const steps = [
   ["strategic foundation: instance", "node", ["schema/foundation.mjs", "instance"]],
   ["strategic foundation: examples", "node", ["schema/foundation.mjs", "schema/examples/workspace"]],
   ["foundation statement behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/features/strategic-foundation.feature"]],
+  ["decisions: instance", "node", ["schema/decisions.mjs", "instance"]],
+  ["decisions: examples", "node", ["schema/decisions.mjs", "schema/examples/workspace"]],
+  ["decision behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "governance/features/decisions.feature"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "operations/handoffs"))).map((v) =>
     [`handoffs: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],

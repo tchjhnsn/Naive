@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decision-record.schema.json",
+  "title": "Decision record",
+  "description": "One decision a venture has to make, in a decisions/ folder beside the record it decides (EE-054), like a Next.js file beside its route: decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/. The decision log (decision.schema.json) stays the append-only history; this is the live decision. node schema/decisions.mjs gathers them into the decision matrix.",
+  "type": "object",
+  "required": [
+    "id",
+    "question",
+    "status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Unique within the venture. The roots venture and foundation are reserved."
+    },
+    "question": {
+      "type": "string",
+      "description": "What has to be decided, as a question"
+    },
+    "decides": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the decision settles: a record type, a venture-relative file, or both. Defaults to the record its file name names.",
+      "properties": {
+        "record": {
+          "type": "string",
+          "description": "A record type in schema/data-model.json"
+        },
+        "path": {
+          "type": "string",
+          "description": "A venture-relative file, such as purpose/icp.json"
+        }
+      }
+    },
+    "statement": {
+      "type": "string",
+      "description": "The strategic-foundation statement this decision settles (purpose/strategic-foundation.json), if any. It then stands in for that statement in the matrix and is part of the foundation."
+    },
+    "layer": {
+      "enum": [
+        "purpose",
+        "knowledge",
+        "operations",
+        "evidence",
+        "governance",
+        "interface",
+        "system"
+      ],
+      "description": "The layer it belongs to; defaults to the decided record's layer"
+    },
+    "parent": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The decision this one depends on. Defaults to foundation for a foundation record, else venture."
+    },
+    "boundary": {
+      "enum": [
+        "fail-closed",
+        "fail-open",
+        "inherit"
+      ],
+      "default": "inherit",
+      "description": "fail-closed: while this decision is open, decisions under it wait and agents only draft. fail-open: work under it goes on. inherit: the parent's boundary. The venture root and the foundation fail closed; a product fails open (EE-054)."
+    },
+    "needed_in": {
+      "enum": [
+        "discovery",
+        "validation",
+        "beachhead",
+        "scale",
+        "platform"
+      ],
+      "description": "The phase in which it must be made. One needed in a later phase than the venture's is speculative and held back (EE-057)."
+    },
+    "status": {
+      "enum": [
+        "open",
+        "decided",
+        "deferred",
+        "withdrawn"
+      ]
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "answer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "decided_by": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Who decided: a person's name. An agent never decides a fail-closed decision."
+    },
+    "decided_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "logged_as": {
+      "type": "string",
+      "description": "The decision log entry that records it, such as D-012 or EE-054"
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

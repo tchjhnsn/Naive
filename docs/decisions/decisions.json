@@ -555,6 +555,50 @@
         "EE-051",
         "EE-052"
       ]
+    },
+    {
+      "id": "EE-054",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-052",
+        "EE-053",
+        "EE-028"
+      ],
+      "decision": "Decisions are a core file type. A decision lives in a *.decision.json file beside the record it decides (file-based routing); the EE/D ledger stays the append-only history. Each decision has a boundary: fail closed or fail open. The venture root and the strategic foundation fail closed; products fail open; any other decision inherits its parent's boundary and may override it. Under an open fail-closed parent, child decisions wait and agents only draft. When a parent changes, its children are marked stale and shown to the owner again. A workspace that is a product without a venture fails open. One decisions route renders every open decision as a matrix of layer by phase, with parent links.",
+      "why": "Torian, 2026-10-28: decisions across a venture's layers affect each other like a matrix, some have parent-child links that need fail-closed or fail-open behavior, and a venture (fail closed) is not a product (fail open). He chose every recommended option in the Decision Docket (file beside what it decides; boundaries inherited; children wait and agents draft; mark children stale and show them; product-only fails open)."
+    },
+    {
+      "id": "EE-055",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054"
+      ],
+      "decision": "Compliance scope: record and connect. Naive records which compliance frameworks apply to a venture and when; Mentura connects vendors such as Drata or Vanta. Neither audits nor monitors controls itself.",
+      "why": "Torian chose \"Record and connect\" in the Decision Docket, 2026-10-28. This settles the discovery exit criterion scope-decided for compliance."
+    },
+    {
+      "id": "EE-056",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054"
+      ],
+      "decision": "Forecasts (the whether statement's weather-like outlook) use both our own priors and optional integrations, such as letsfrank.ai. In a later phase we lean toward building our own forecasting agent.",
+      "why": "Torian, Decision Docket 2026-10-28: both, plus optional integrations or our own agent, leaning toward our own agent later \"because we would better be able to determine its behavior and features.\""
+    },
+    {
+      "id": "EE-057",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-028",
+        "EE-052"
+      ],
+      "decision": "Firmness depends on the phase. In Discovery, a confirmed foundation statement, core promises included, is still a working draft, reviewed at the Discovery exit gate and tested again at each later phase. Every decision names the phase it is needed in (needed_in); a decision needed in a later phase than the venture's is speculative and is held back, the way React renders a component only when it is needed.",
+      "why": "Torian, Decision Docket 2026-10-28: core promises should stay drafts until the venture has truly exited Discovery; a venture goes through its own hero's journey; decide for the current phase and only speculate on later ones; knowing when a decision must be made and when it can wait is the signal-to-noise ratio. He also asked for a set of per-phase guidelines and the study of earlier startups (not yet built)."
     }
   ]
 }

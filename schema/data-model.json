@@ -345,6 +345,17 @@
       "note": "A decision log. The schema's own is EE-NNN; a venture keeps its own log under its knowledge layer"
     },
     {
+      "id": "decision-record",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-record.schema.json",
+      "paths": [
+        "instance/**/decisions/*.decision.json",
+        "schema/examples/**/decisions/*.decision.json"
+      ],
+      "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node schema/decisions.mjs renders the matrix. The decision log keeps the history"
+    },
+    {
       "id": "design-document",
       "layer": "knowledge",
       "level": "method",

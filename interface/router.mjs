@@ -38,6 +38,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
+import { holding } from "../schema/decisions.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
@@ -101,6 +102,7 @@ export function routes() {
     cmd("system/need-now", "schema/need-now.mjs", "What the venture needs now, soon, or should hold back (EE-028)"),
     cmd("system/time-to-ready", "schema/time-to-ready.mjs", "Time to running, and to ready per layer and MAD tier"),
     cmd("purpose/validation/assess", "schema/assess-problem.mjs", "What the problem's evidence is strong enough for: each assumption labelled demonstrated, inferred, assumed, unknown or contradicted, the commitment it supports and the next test (EE-050). Asks first when the record is incomplete; input as_is runs it anyway", { as_is: true }),
+    cmd("governance/decisions", "schema/decisions.mjs", "The decision matrix: every decision the venture owes by layer and phase, with its parent and boundary, and whether it renders now, waits, comes later, is stale or deferred (EE-054, EE-057)"),
     cmd("purpose/foundation", "schema/foundation.mjs", "The venture's strategic foundation by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051)"),
     cmd("purpose/validation/score", "schema/check-validation.mjs", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
     cmd("governance/payouts", "schema/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
@@ -347,7 +349,10 @@ export async function call({ venture, route, action, input, actor = "agent", act
     // the fact lives in one place. The whole record was checked against its schema above. A gated
     // agent write stays whole, as a draft, until a person accepts it.
     const split = attrs.filter((a) => a.attribute in input);
-    const gatedDraft = !remote && !!gate?.drafts && actor !== "person";
+    // A decision record that is open and fails closed, or waits on one that is, holds the record
+    // (EE-054): an agent's write becomes a draft, as for a gated record.
+    const held = !remote && actor !== "person" ? holding(dir, file) : null;
+    const gatedDraft = !remote && (!!gate?.drafts || !!held) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
       for (const a of split) {
@@ -390,7 +395,7 @@ export async function call({ venture, route, action, input, actor = "agent", act
       writeFileSync(dest, text);
     } else await store.write(file, recordText);
     const entry = log(draft ? draftPath(file) : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "written", ...attributesOut }, ...deprecated };
+    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : `decision ${held.id} ${held.why}: written as a draft for a person to accept`) : "written", ...(held ? { held_by: held.id } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
