@@ -387,6 +387,16 @@
         "platform": 0.9
       },
       "why": "Written by the interfaces on every write, so it costs nothing; run mentura baseline once to adopt records written before it (EE-031)"
+    },
+    "knowledge-sources": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.3,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "Only once some records live outside the venture folder (a team repository, a CRM, a wiki); until then the folder is the whole knowledge layer"
     }
   }
 }

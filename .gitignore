@@ -3,3 +3,4 @@ publish.private.json
 _publish/
 .DS_Store
 node_modules/
+_catalog/

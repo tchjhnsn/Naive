@@ -26,12 +26,12 @@ import { call, groups, resolve, routes, ventureDir, ventures } from "../router.m
 const status = (r) => r.ok ? 200 : /^no (route|venture)/.test(r.error ?? "") ? 404 : /has no action/.test(r.error ?? "") ? 405 : / may not /.test(r.error ?? "") ? 403 : 422;
 const VERBS = { check: "POST", run: "POST", view: "GET", layout: "GET" };
 
-export function route(method, url, body, headers = {}) {
+export async function route(method, url, body, headers = {}) {
   const path = decodeURIComponent(new URL(url, "http://x").pathname).replace(/\/+$/, "");
   if (method === "GET" && path === "/routes") return [200, routes()];
   if (method === "GET" && path === "/ventures") return [200, ventures().map(({ id, name, phase }) => ({ id, name, phase }))];
   let m = path.match(/^\/templates\/(.+)$/);
-  if (method === "GET" && m) { const r = call({ route: m[1], action: "template" }); return [status(r), r]; }
+  if (method === "GET" && m) { const r = await call({ route: m[1], action: "template" }); return [status(r), r]; }
   if (method === "GET" && path === "/groups") return [200, groups()];
   m = path.match(/^\/ventures\/(.+)$/);
   if (!m) return [404, { ok: false, error: `no endpoint ${method} ${path}` }];
@@ -40,13 +40,13 @@ export function route(method, url, body, headers = {}) {
   let venture, rest;
   for (let i = parts.length; i >= 1; i--) if (ventureDir(parts.slice(0, i).join("/"))) { venture = parts.slice(0, i).join("/"); rest = parts.slice(i); break; }
   if (!venture) return [404, { ok: false, error: `no venture in ${path}` }];
-  if (!rest.length) { if (method !== "GET") return [405, { ok: false, error: `${method} is not allowed on ${path}` }]; const r = call({ venture, route: "system/overview", action: "run", via: "api" }); return [status(r), r]; }
+  if (!rest.length) { if (method !== "GET") return [405, { ok: false, error: `${method} is not allowed on ${path}` }]; const r = await call({ venture, route: "system/overview", action: "run", via: "api" }); return [status(r), r]; }
   let verb = VERBS[rest.at(-1)] && resolve(rest.slice(0, -1).join("/")).r ? rest.pop() : null;
   const rt = rest.join("/");
   const action = verb ?? (method === "GET" ? "read" : method === "PUT" ? "write" : null);
   if (!action || (verb && VERBS[verb] !== method)) return [405, { ok: false, error: `${method} is not allowed on ${path}` }];
   const h = (k) => headers[k] || undefined;
-  const r = call({ venture, route: rt, action, input: body, actor: "agent", actor_id: h("x-mentura-actor"), via: "api",
+  const r = await call({ venture, route: rt, action, input: body, actor: "agent", actor_id: h("x-mentura-actor"), via: "api",
     provenance: { derived_from: h("x-mentura-derived-from")?.split(",").map((x) => x.trim()).filter(Boolean), decision: h("x-mentura-decision"),
       agent: Object.fromEntries(Object.entries({ model: h("x-mentura-model"), harness: h("user-agent") }).filter(([, v]) => v)) } });
   return [status(r), r];
@@ -58,10 +58,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => { raw += c; if (raw.length > 1e6) req.destroy(); });
-    req.on("end", () => {
+    req.on("end", async () => {
       let body;
       try { body = raw ? JSON.parse(raw) : undefined; } catch { res.writeHead(400, { "content-type": "application/json" }); res.end(JSON.stringify({ ok: false, error: "body is not JSON" })); return; }
-      const [code, out] = route(req.method, req.url, body, req.headers);
+      const [code, out] = await route(req.method, req.url, body, req.headers);
       res.writeHead(code, { "content-type": "application/json" });
       res.end(JSON.stringify(out, null, 2));
     });

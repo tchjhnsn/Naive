@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "integration.schema.json",
   "title": "Layer tooling integration",
-  "description": "One tool or service a layer can use. Each layer lists its integrations in <layer>/tooling/integrations.json. Credentials are named, never stored. Entries under interface/ are interfaces, not integrations: they must reach at least four of the six other layers (schema/check-integrations.mjs).",
+  "description": "One tool or service a layer can use. Each layer lists its integrations in <layer>/tooling/integrations.json. Credentials are named, never stored. Entries under interface/ are interfaces, not integrations: they must reach at least four of the six other layers (schema/check-integrations.mjs). Knowledge integrations with a connector are the connector registry (EE-037): a venture's knowledge/sources.json names them by id.",
   "type": "object",
   "required": [
     "id",
@@ -98,6 +98,46 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "connector": {
+      "type": "object",
+      "required": [
+        "module",
+        "writes"
+      ],
+      "additionalProperties": false,
+      "description": "Knowledge layer only: the module that implements the connector contract (knowledge/connectors/contract.mjs) for this integration, so a venture's knowledge/sources.json can keep records in it (EE-037)",
+      "properties": {
+        "module": {
+          "type": "string",
+          "pattern": "^knowledge/connectors/[a-z0-9-]+\\.mjs$",
+          "description": "Path from the repository root; it exports connect(options)"
+        },
+        "writes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "direct",
+              "pull-request",
+              "none"
+            ]
+          },
+          "description": "The write modes it supports; the first is its default"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The source options it takes, besides id and writes"
+        },
+        "eval": {
+          "type": "string",
+          "description": "The command that runs the contract evals against it"
+        }
       }
     }
   },

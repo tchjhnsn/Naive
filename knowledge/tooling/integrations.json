@@ -1,9 +1,32 @@
 [
   {
+    "id": "filesystem",
+    "name": "File system and git",
+    "layer": "knowledge",
+    "role": "the default source: a venture's own folder, or any folder or git repository on the machine",
+    "interfaces": [
+      "files",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "Every venture starts with its records in its own folder (EE-037)",
+    "connector": {
+      "module": "knowledge/connectors/filesystem.mjs",
+      "writes": [
+        "direct",
+        "none"
+      ],
+      "options": [
+        "root"
+      ],
+      "eval": "node knowledge/connectors/eval.mjs"
+    }
+  },
+  {
     "id": "obsidian",
     "name": "Obsidian",
     "layer": "knowledge",
-    "role": "the personal and company vaults",
+    "role": "the personal and company vaults; a vault is a folder, so the filesystem connector reaches it",
     "interfaces": [
       "files",
       "app"
@@ -15,7 +38,7 @@
     "id": "github",
     "name": "GitHub",
     "layer": "knowledge",
-    "role": "docs as code: specs and design docs in repos",
+    "role": "records and docs as code in a repository: read from a branch, written by draft pull request",
     "interfaces": [
       "files",
       "mcp",
@@ -23,7 +46,26 @@
       "cli"
     ],
     "status": "in-use",
-    "reason": "Docs as code (EE-005)"
+    "reason": "Docs as code (EE-005); the second connector (EE-037)",
+    "credentials": [
+      "GITHUB_TOKEN"
+    ],
+    "connector": {
+      "module": "knowledge/connectors/github.mjs",
+      "writes": [
+        "pull-request",
+        "none"
+      ],
+      "options": [
+        "repo",
+        "ref",
+        "root",
+        "token",
+        "api",
+        "search"
+      ],
+      "eval": "node knowledge/connectors/eval.mjs (live: MENTURA_EVAL_GITHUB_REPO=owner/name)"
+    }
   },
   {
     "id": "notion",

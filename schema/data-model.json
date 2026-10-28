@@ -49,7 +49,8 @@
         "founder-agreement",
         "exit",
         "telos",
-        "provenance"
+        "provenance",
+        "knowledge-sources"
       ],
       "refs": [
         {
@@ -343,6 +344,29 @@
         "docs/design/*.md"
       ],
       "note": "Domain, product, experience, interface and systems design documents; which ones a venture needs is in the design-documents registry"
+    },
+    {
+      "id": "knowledge-sources",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/knowledge-sources.schema.json",
+      "paths": [
+        "instance/**/knowledge/sources.json",
+        "schema/examples/**/knowledge/sources.json"
+      ],
+      "refs": [
+        {
+          "field": "sources[].connector",
+          "to": "integration",
+          "checked_by": "schema/check-sources.mjs"
+        },
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/check-sources.mjs"
+        }
+      ],
+      "note": "Which source each record type lives in: the venture's own folder by default, or a connected source such as a GitHub repository (EE-037)"
     },
     {
       "id": "ontology",
