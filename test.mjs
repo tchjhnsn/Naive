@@ -55,6 +55,7 @@ const steps = [
   ["idea map (ideas verbatim, tags within the conventions)", "node", ["purpose/frameworks/idea-map/test.mjs"]],
   ["site presence (weights, prominence, score)", "node", ["operations/marketing/site/test.mjs"]],
   ["venture packages (fit by phase, question matrix, completeness)", "node", ["schema/packages-test.mjs"]],
+  ["decision analytics (by function and type, wording, outcomes)", "node", ["schema/decision-analytics-test.mjs"]],
   ["site reader (links and text, offline)", "node", ["platform/integrations/site-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.

@@ -90,7 +90,7 @@ function stateOf(dir, type) {
   return { status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", files, drafts };
 }
 
-const TITLES = { "venture-profile": "Venture profile", "validation-product-market-fit": "Product-market fit", "validation-operations-readiness": "Operations readiness", "marketing-sitemap": "The planned site (sitemap)",
+export const TITLES = { "venture-profile": "Venture profile", "validation-product-market-fit": "Product-market fit", "validation-operations-readiness": "Operations readiness", "marketing-sitemap": "The planned site (sitemap)",
   "marketing-content": "Public content variants", "site-presence": "Site presence", "team-plan": "Team plan", "decision-rights": "Decision rights", "founder-agreement": "Founder agreement", "publication-policy": "Publication policy",
   department: "Departments", handoff: "Handoffs", evidence: "Evidence", ownership: "Ownership", board: "Board", exit: "Exit", account: "Accounts" };
 const STATUS = { confirmed: 1, agent: 0.5, draft: 0.5, missing: 0 };
