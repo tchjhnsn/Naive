@@ -412,6 +412,16 @@
         "platform": 0.8
       },
       "why": "Who you serve is a foundation statement: say it early and keep it in front of you (EE-051)"
+    },
+    "alignment": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "How your products and agents must behave is a foundation statement; say it before you delegate to agents (EE-053)"
     }
   }
 }

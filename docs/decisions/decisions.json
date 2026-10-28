@@ -544,6 +544,17 @@
         "EE-014",
         "EE-051"
       ]
+    },
+    {
+      "id": "EE-053",
+      "date": "2026-10-28",
+      "decision": "Alignment is its own record (purpose/alignment.json, schema/alignment.schema.json): the principles the venture's products and agents must keep, each with a source and the check that holds it. It is gated and a foundation statement under whether, replacing must-not in the frame; venture core.must_not stays as a one-line summary.",
+      "why": "Torian, 2026-10-28: must-not was describing how the framework and platform behave, which is alignment, and alignment could be much longer than one line. He chose a new alignment record on a decision card.",
+      "status": "proposed",
+      "related": [
+        "EE-051",
+        "EE-052"
+      ]
     }
   ]
 }

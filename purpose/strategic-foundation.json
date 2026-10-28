@@ -105,9 +105,10 @@
       "ask": "Whether to do it, given what is true now?",
       "statements": [
         {
-          "id": "must-not",
-          "record": "venture",
-          "attribute": "core.must_not"
+          "id": "alignment",
+          "record": "alignment",
+          "attribute": "principles",
+          "note": "Replaces must-not (Torian, 2026-10-28): must-not described how the framework and platform behave, which is alignment, and alignment is longer than one line (EE-053). venture core.must_not stays as a one-line summary"
         },
         {
           "id": "whether-review",

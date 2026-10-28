@@ -905,6 +905,18 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "alignment",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/alignment.schema.json",
+      "paths": [
+        "instance/**/purpose/alignment.json",
+        "schema/examples/**/purpose/alignment.json"
+      ],
+      "note": "How the venture's products and agents must behave: principles with a source and a check (EE-053); a foundation statement, gated",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
       "id": "strategic-foundation",
       "layer": "purpose",
       "level": "method",
