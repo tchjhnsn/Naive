@@ -14,6 +14,9 @@ const decide = (w, id, d) => put(w, `governance/decisions/${id}.decision.json`, 
 const venture = (w, f) => { const p = join(w.dir, "venture.json"); const v = JSON.parse(readFileSync(p, "utf8")); f(v); writeFileSync(p, JSON.stringify(v, null, 2)); };
 const find = (w, id) => (w.report ??= JSON.parse(node(w, "schema/decisions.mjs", w.dir, "--json").stdout)).decisions.find((d) => d.id === id);
 
+const cli = (w, ...a) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
+const proposeAs = (w, d) => { const f = join(w.ws, "proposal.json"); writeFileSync(f, JSON.stringify(d)); w.p = cli(w, "propose", "--venture", w.venture, "--input", f, "--as", "builder"); w.report = null; };
+
 export const steps = [
   [/^the example venture "([a-z-]+)"$/, (w, id) => {
     const d = mkdtempSync(join(tmpdir(), "decisions-"));
@@ -45,6 +48,14 @@ export const steps = [
   [/^"([a-z-]+)" is "([a-z]+)"$/, (w, id, f) => ok(find(w, id)?.firmness === f, `${id} is ${find(w, id)?.firmness}, not ${f}`)],
   [/^there is no decision "([a-z-]+)"$/, (w, id) => ok(!find(w, id), `${id} is listed`)],
   [/^the check fails naming "([^"]+)"$/, (w, s) => ok(w.p.status === 1 && w.p.stderr.includes(s), `check: ${w.p.status} ${w.p.stderr}`)],
+  [/^an agent proposes the decision "([a-z-]+)" with the answer "([^"]+)"$/, (w, id, answer) => proposeAs(w, { id, question: `What about ${id}?`, answer, at: "operations" })],
+  [/^an agent proposes the decision "([a-z-]+)" as decided$/, (w, id) => proposeAs(w, { id, question: `What about ${id}?`, answer: "yes", status: "decided", at: "operations" })],
+  [/^an agent proposes the decision "([a-z-]+)" that unlocks "([^"]+)"$/, (w, id, g) => proposeAs(w, { id, question: `What about ${id}?`, answer: "yes", at: "operations", unlocks: [{ activity: "Change products", routes: [g] }] })],
+  [/^the proposal is accepted$/, (w) => ok(w.p.status === 0 && JSON.parse(w.p.stdout).awaiting === "approval", `propose: ${w.p.stdout}${w.p.stderr}`)],
+  [/^the proposal is refused$/, (w) => ok(w.p.status !== 0, `propose was not refused: ${w.p.stdout}`)],
+  [/^"([A-Za-z]+)" decides "([a-z-]+)" by typing "([a-z-]+)"$/, (w, by, id, typed) => { const p = cli(w, "decide", id, "--venture", w.venture, "--by", by, "--confirm", typed); ok(p.status === 0, `decide: ${p.stdout}${p.stderr}`); w.report = null; }],
+  [/^the product write is refused as locked by "([a-z-]+)"$/, (w, id) => ok(w.p.status !== 0 && w.p.stderr.includes(`locked until decision ${id}`), `write: ${w.p.status} ${w.p.stdout}${w.p.stderr}`)],
+  [/^the product write goes through$/, (w) => ok(w.p.status === 0, `write: ${w.p.stdout}${w.p.stderr}`)],
   [/^an agent writes the product "([a-z-]+)"$/, (w, id) => {
     const f = join(w.ws, "product.json");
     writeFileSync(f, readFileSync(join(w.dir, "products", `${id}.json`)));

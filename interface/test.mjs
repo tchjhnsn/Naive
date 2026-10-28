@@ -101,7 +101,14 @@ expect("gates: a venture's decision rights decide; ownership drafts under the te
 // MCP server.
 const init = (await handle({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }));
 expect("MCP initialize names the server and its tools capability", init.result.serverInfo.name === "mentura" && init.result.capabilities.tools);
-expect("MCP lists its nine tools", (await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 9);
+expect("MCP lists its eleven tools", (await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 11);
+const mcp = async (name, args) => (await handle({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name, arguments: args } })).result;
+const pd = await mcp("mentura_propose_decision", { venture: "tandem", decision: { id: "mcp-demo", question: "Demo?", answer: "Yes", at: "operations" }, agent_id: "builder" });
+expect("MCP: an agent proposes a decision and it awaits approval (EE-058)", !pd.isError && /"awaiting": "approval"/.test(pd.content[0].text));
+const pdd = await mcp("mentura_propose_decision", { venture: "tandem", decision: { id: "mcp-demo-2", question: "Demo?", status: "decided" } });
+expect("MCP: an agent cannot propose a decision as decided", pdd.isError);
+const dl = await mcp("mentura_decisions", { venture: "tandem", render: ["now"] });
+expect("MCP: the decisions tool lists what renders now", !dl.isError && JSON.parse(dl.content[0].text).decisions.some((d) => d.id === "mcp-demo"));
 const w = (await handle({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "governance/ownership", record: own } } }));
 expect("MCP writes are always an agent's, so a gated record becomes a draft", !w.result.isError && /"draft": true/.test(w.result.content[0].text));
 expect("MCP tool errors come back as isError", (await handle({ jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "mentura_read", arguments: { venture: "nobody", route: "purpose/telos" } } })).result.isError);

@@ -265,6 +265,13 @@
               "type": "string"
             },
             "description": "Roles, people or agents it opens for; empty means everyone"
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The routes the activity uses, as globs such as operations/** (robots syntax). Until the decision is made, the router refuses agents those routes (for the actors in for, or every agent)."
           }
         }
       }

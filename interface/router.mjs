@@ -38,7 +38,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
-import { holding } from "../schema/decisions.mjs";
+import { holding, locked } from "../schema/decisions.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
@@ -246,6 +246,9 @@ export async function call({ venture, route, action, input, actor = "agent", act
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
   if (!allowed(dir, actor_id, action === "write" ? "write" : "read", route)) return { ok: false, error: `${actor_id} may not ${action === "write" ? "write" : "read"} ${route} (team plan routes)` };
+  // An activity a decision unlocks stays closed to agents until a person makes that decision (EE-058).
+  const lock = actor !== "person" && (action === "write" || action === "run") ? locked(dir, route, actor_id) : null;
+  if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id };
 
   if (action === "view") {
     const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance });

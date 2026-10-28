@@ -88,6 +88,36 @@ Feature: Decisions
       When the decisions are checked
       Then the check fails naming "records no actual outcome"
 
+  Rule: Agents propose decisions; people make them (EE-058)
+
+    Scenario: An agent proposes a decision and it waits for a person
+      Given the example venture "tandem"
+      When an agent proposes the decision "launch-date" with the answer "Launch on Friday"
+      Then the proposal is accepted
+      And "launch-date" awaits approval
+
+    Scenario: An agent cannot propose a decision as already decided
+      Given the example venture "tandem"
+      When an agent proposes the decision "launch-date" as decided
+      Then the proposal is refused
+
+    Scenario: A person decides it, and provenance says who, how and in which phase
+      Given the example venture "tandem"
+      And an agent proposes the decision "launch-date" with the answer "Launch on Friday"
+      When "Founder" decides "launch-date" by typing "launch-date"
+      And the founder asks for the decisions
+      Then "launch-date" renders "done"
+      And "launch-date" was approved by "Founder" in "validation"
+
+    Scenario: A route a pending decision unlocks is closed to agents until it is decided
+      Given the example venture "tandem"
+      And an agent proposes the decision "ship-app" that unlocks "purpose/product/*"
+      When an agent writes the product "shop-app"
+      Then the product write is refused as locked by "ship-app"
+      When "Founder" decides "ship-app" by typing "ship-app"
+      And an agent writes the product "shop-app"
+      Then the product write goes through
+
   Rule: The foundation and the matrix stay consistent
 
     Scenario: A decision record that settles a foundation statement stands in for it

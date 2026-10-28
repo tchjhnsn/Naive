@@ -11,6 +11,10 @@
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route
+//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--confirm <decision>]
+//                                                   a person makes a decision: approves its wording or gives their own (EE-058)
+//   mentura propose --venture <id> --input <file.json> [--as <role>]
+//                                                   an agent proposes a decision; it stays open until a person decides
 //   mentura confirm <statement> --venture <id> [--confirm <statement>]
 //                                                   a person confirms one foundation statement as theirs (EE-051)
 //   mentura <route> <action> --venture <id|path> [--input <file>|-] [--as person] [--value <n>] [--json]
@@ -34,12 +38,13 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
+import { approve, decisions, propose } from "../../schema/decisions.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
-async function typed(name, what) {
+async function typed(name, what, why = "This is a foundation statement: changing it changes the venture.") {
   if (opt("confirm") !== undefined) return opt("confirm") === name;
-  console.log(`${what}\nThis is a foundation statement: changing it changes the venture. Type ${name} to confirm.`);
+  console.log(`${what}\n${why} Type ${name} to confirm.`);
   if (!process.stdin.isTTY) { console.log(`(not at a terminal: pass --confirm ${name})`); return false; }
   const { createInterface } = await import("node:readline/promises");
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -120,6 +125,31 @@ if (cmd === "accept") {
   if (!w.ok) { console.error(w.error); process.exit(1); }
   rmSync(draft);
   out(`accepted: ${w.result.written}`);
+  process.exit(0);
+}
+
+if (cmd === "decide") {
+  // A person makes a decision (EE-058): approves the drafted wording, or gives their own with
+  // --answer. Typing the decision's id confirms it. Provenance records who, when and in which phase.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const d = decisions(dir).decisions.find((x) => x.id === id);
+  if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+  if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
+  const r = approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "propose") {
+  // An agent proposes a decision from a JSON file; it stays open until a person decides it.
+  const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
+  if (!dir || !opt("input")) usage();
+  const r = propose(dir, JSON.parse(readFileSync(resolve(opt("input")), "utf8")), { agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID, via: "cli" });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
   process.exit(0);
 }
 
