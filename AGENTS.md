@@ -4,14 +4,14 @@ The map of this repo, loaded by every agent.
 
 ## What this is
 
-The Everything Ecosystem methodology, packaged as one private repo (EE-001). Proposed genus: a venture development framework, in the same genus as web development frameworks (EE-024). Five layers (purpose, knowledge, operations, execution, evidence) plus governance and interface. SAD is the knowledge layer, as Mentura's own version of SAD that no longer tracks the separate SAD project (EE-035); MAD is the operations layer.
+The Everything Ecosystem methodology, packaged as one private repo (EE-001). Proposed genus: a venture development framework, in the same genus as web development frameworks (EE-024). Five layers (purpose, knowledge, operations, execution, evidence) plus governance and interface. Knowledge is the memory layer where every record is stored, and the other layers define the records they write to it; SAD is no longer part of the system (EE-036). MAD is the operations layer.
 
 ## Where things are
 
 | Path | Holds |
 |---|---|
 | `purpose/` | Frameworks and skills for articulating why |
-| `knowledge/` | SAD: `method/SAD_SKILL_v3.md` and amendments, `references/`, `systems/`, `templates/`, `skills/` |
+| `knowledge/` | The memory layer: `kit.json`, storage `tooling/`, and two skills (`find-reference`, `industry-awareness`) |
 | `operations/` | MAD concepts: `catalog/`, `methodology/`, `register/`, `research/`, `skills/methodology-selection/` |
 | `execution/` | Handoff v2, founder operating model |
 | `evidence/` | `evals/`, design-documents registry, audit and review skills |

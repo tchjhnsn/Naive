@@ -1550,7 +1550,7 @@
       },
       "done_when": "Every core object has a ladder with kernel and matrix, machine rungs included, and no conflicting renderings.",
       "sources": [
-        "Fidelity Ladders (knowledge/method/FIDELITY_LADDERS.md)"
+        "Fidelity Ladders (a SAD method document, removed by EE-036; in git history)"
       ]
     },
     {

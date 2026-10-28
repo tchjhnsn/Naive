@@ -23,7 +23,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | Everything Ecosystem | The name of the system | ours |  |
 | the system | How files refer to the whole. Proposed genus (EE-024): a venture development framework; operating system and operating model are set aside | EOS (Wickman) for 'operating system' |  |
 | venture development framework | Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages that plug in (kits). The builder's venture calls on it, and its checks call back on the venture's records | software framework (Johnson and Foote 1988; Rails' convention over configuration) applied to venture development (venture building, venture studios) |  |
-| method | What to do: SAD, MAD, Product Anatomy, handoffs | common usage |  |
+| method | What to do: MAD, Product Anatomy, handoffs | common usage |  |
 | schema | What to record: venture.json, products, decisions, references | JSON Schema |  |
 | tooling | What helps do it: scripts, skills, agent rules | common usage |  |
 | workspace | One builder's instance of the system, declared by workspace.json | common software usage |  |

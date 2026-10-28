@@ -10,7 +10,6 @@
     }
   ],
   "records": [
-    "harness-config",
     "route-aliases"
   ],
   "reads": [

@@ -88,7 +88,7 @@ Read the entity's metrics framework deliverable (typically at `<entity>/business
 - Where the current data lives
 
 If no metrics framework exists, surface the gap and enter backfill per
-[[../_patterns/gate-backfill|gate-backfill]]. Skill-specific notes:
+`operations/skills/_patterns/gate-backfill.md`. Skill-specific notes:
 
 ## Backfill / missing assets
 

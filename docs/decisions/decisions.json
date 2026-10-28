@@ -386,11 +386,24 @@
       "date": "2026-10-27",
       "decision": "Mentura replaces SAD as the builder's methodology, and SAD is one of its layers (knowledge). SAD also continues as its own project (the sad-methodology repository and site), developed independently. From here on Mentura's knowledge layer is its own version of SAD: it starts from SAD v3 and its amendments as they stand in knowledge/method/, changes only by Mentura's decisions, and neither inherits from nor syncs with the separate SAD project. A change worth sharing is ported by hand, in either direction.",
       "why": "The owner said the system being built replaces the SAD methodology and that SAD is a layer within Mentura, and chose to keep the two as separate projects, with the SAD inside Mentura being its own version from here on.",
-      "status": "in-force",
+      "status": "superseded",
       "related": [
         "EE-001",
         "EE-027",
         "EE-034"
+      ]
+    },
+    {
+      "id": "EE-036",
+      "date": "2026-10-28",
+      "decision": "SAD is removed from Mentura. The knowledge layer is the memory layer: where every record is stored and found (route, schema, provenance), holding the decision log, venture profile, design documents and references. Every other layer defines the records it writes to memory and their conventions; operations (MAD) is the one layer that is a method rather than record conventions. Storage is not fixed: files today, a database possible later. The SAD method documents, systems, references, artifacts, templates and seventeen SAD skills are deleted (git keeps them); the layer keeps two skills, find-reference and industry-awareness. SAD's surviving rules become checks and skills in the layers that need them. SAD continues as its own separate project.",
+      "why": "The owner judged that with routing, schemas and provenance in place SAD was no longer necessary: a database or a file system could be the knowledge layer, and the other layers' conventions are what get written to it. He asked to run the five-step algorithm on the knowledge layer and start nearly from scratch.",
+      "status": "in-force",
+      "related": [
+        "EE-001",
+        "EE-030",
+        "EE-031",
+        "EE-035"
       ]
     }
   ]

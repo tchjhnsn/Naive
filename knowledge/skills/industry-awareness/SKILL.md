@@ -144,7 +144,7 @@ The skill doesn't always recommend adopt. Sometimes building custom is right. Th
 
 **Hybrid (most common):**
 - Adopt off-the-shelf for the operational layer (PM, ticketing, dashboards)
-- Build custom for the methodology-specific layer (the SAD framework, the company template, the brand discipline)
+- Build custom for the methodology-specific layer (the record conventions, the venture template, the brand discipline)
 - Connect them via integrations (MCPs, APIs, exports)
 
 In one past case: Linear handles the operational layer; Obsidian handles the methodology + knowledge layer; the operator console (eventually) handles the methodology-specific orchestration if Linear genuinely doesn't fit.
@@ -239,7 +239,7 @@ The operator console (then called the harness) was a 4-hour mockup that demonstr
 1. **Mapped the terminology:** "project view," "agent panel," "decisions log," "roadmap" → these are all standard PM tool features.
 2. **Run prior-art check:** Linear, Jira, ClickUp, Asana, Notion, Productboard — all surface this exact shape.
 3. **Surfaced specific tools:** Linear's project view ≈ what was being mocked up.
-4. **Produced the build-vs-adopt frame:** "Build = 4-hour mockup + months to feature parity. Adopt = sign-up + import in an afternoon. Methodology fit: 80% Linear, 20% needs custom (the SAD-specific framing)."
+4. **Produced the build-vs-adopt frame:** "Build = 4-hour mockup + months to feature parity. Adopt = sign-up + import in an afternoon. Methodology fit: 80% Linear, 20% needs custom."
 5. **Recommended hybrid:** "Use Linear for operational layer; defer the operator console; revisit if Linear genuinely doesn't fit after real use."
 
 The operator console mockup is still useful — as design substrate, as the eventual "what we'd build if we ever need to differentiate from Linear." But it wasn't urgent and shouldn't have consumed primary attention until the alternative was understood.

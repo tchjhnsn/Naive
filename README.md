@@ -5,7 +5,7 @@
 | Layer | Question | Folder | Today |
 |---|---|---|---|
 | Purpose | Why | `purpose/` | Discovery frameworks (BASED goals), ambition tiers |
-| Knowledge (SAD) | What is known and intended | `knowledge/` | SAD v3 and amendments, references, systems, templates, skills |
+| Knowledge | Memory: where every record is stored; the other layers define what they write here (EE-036) | `knowledge/` | storage tooling, the find-reference and industry-awareness skills |
 | Operations (MAD) | How work is run | `operations/` | Methodology catalog, registers, research, methodology-selection; the MAD tool is in its own repo for now |
 | Execution | Who or what does the work | `execution/` | Handoff v2, founder operating model |
 | Evidence | Did it work | `evidence/` | Evals, design-coverage registry and checks, metrics review |

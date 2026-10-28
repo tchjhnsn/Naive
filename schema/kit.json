@@ -36,7 +36,5 @@
     "schema/time-to-ready.mjs",
     "schema/check-provenance.mjs"
   ],
-  "gaps": [
-    "The orchestrator skill that routes work across every layer is filed under knowledge (knowledge/SKILL.md); it belongs here"
-  ]
+  "gaps": []
 }

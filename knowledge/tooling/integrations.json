@@ -3,7 +3,7 @@
     "id": "obsidian",
     "name": "Obsidian",
     "layer": "knowledge",
-    "role": "the personal and company vaults (SAD in use)",
+    "role": "the personal and company vaults",
     "interfaces": [
       "files",
       "app"

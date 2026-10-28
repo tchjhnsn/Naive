@@ -40,7 +40,7 @@ Status:
 | Purpose | Validation (validation kit): problem record, shared evidence item, GRADE-adapted grading | `schema/validation-problem.schema.json` and `schema/validation-evidence.schema.json` at `<venture>/purpose/validation/`; `check-validation.mjs`; kit at `purpose/kits/validation/` (EE-026) | problem built; six sub-scores to build |
 | Purpose | Goals and vision | `purpose/frameworks/business-discovery-framework.md` | prose |
 | Purpose | Product Anatomy and Succession Matrix | `purpose/frameworks/product-anatomy/` (phases, gates, questions as JSON) | defined, draft |
-| Knowledge | Venture profile | the file `venture.json` names in `profile`; older guidance in `knowledge/references/entity-profile-schema.md` (retired name, to be folded in) | prose |
+| Knowledge | Venture profile | the file `venture.json` names in `profile` | prose |
 | Knowledge | Decision log | `schema/decision.schema.json`; the schema's own log is `docs/decisions/decisions.json` (EE-NNN) | defined |
 | Operations | Methodology catalog, questions, artifact types, assignments | `operations/catalog/_schema/` | defined |
 | Operations | MAD record (answers per tier, templates, risk) | MAD repo `schema/record.schema.json` | defined, outside this repo until MAD folds in |
@@ -56,8 +56,8 @@ Status:
 
 ## Open reconciliations
 
-1. **Venture profile guidance.** Fold `knowledge/references/entity-profile-schema.md` (retired name) into the venture profile, mapping its `entity-class` onto phase, ambition and legal form.
+1. **Venture profile guidance.** The profile has no guidance of its own since the SAD documents were removed (EE-036); write a short template when a venture first needs one.
 2. **MAD's tiers.** EE-013 renames MAD's four layers to tiers; the MAD repo and older method documents still say layers.
-3. **Decisions.** The schema keeps its own log (EE-001 to EE-017). Older method documents under `knowledge/method/` and `operations/` still cite workspace ids.
+3. **Decisions.** The schema keeps its own log (EE-001 to EE-017). Older documents under `operations/` still cite workspace ids.
 4. **Personal references.** About twelve files still name one person or their paths. They need to be made generic or moved out.
 5. **Personal system.** Out of scope (EE-009). Built separately and joined later through links.
