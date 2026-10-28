@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "knowledge-sources.schema.json",
   "title": "Knowledge sources",
-  "description": "A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Each source names a connector from the registry (an integration with a `connector` in knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored.",
+  "description": "A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored.",
   "type": "object",
   "required": ["sources", "records"],
   "additionalProperties": false,
@@ -31,6 +31,99 @@
       "type": "object",
       "description": "Record type id (from schema/data-model.json) -> source id. Unnamed record types stay in the venture folder.",
       "additionalProperties": { "type": "string" }
+    },
+    "rules": {
+      "type": "array",
+      "description": "The source-of-truth matrix (EE-042). Each rule is one cell: for one record type in one context, its system of record and owner. Every field is present and \"*\" means any, so a fast model reads a rule without inferring anything. The rule with the most fields that are not \"*\" wins; two that tie fail the check. `records` is shorthand for rules that match anything.",
+      "items": {
+        "type": "object",
+        "required": [
+          "record",
+          "attribute",
+          "phase",
+          "product",
+          "account",
+          "actor",
+          "system_of_record",
+          "owner"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "record": {
+            "type": "string",
+            "description": "A venture record type id from schema/data-model.json"
+          },
+          "attribute": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z_][a-z0-9_]*)$",
+            "description": "\"*\" for the whole record, or one top-level field mastered elsewhere (such as price). The router reads the field from that source and writes it there, kept at the record's own path as a JSON object holding only that field; the record's own file does not keep a copy."
+          },
+          "phase": {
+            "enum": [
+              "*",
+              "discovery",
+              "validation",
+              "beachhead",
+              "scale",
+              "platform"
+            ],
+            "description": "The venture's phase this rule holds in"
+          },
+          "product": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z0-9][a-z0-9-]*)$",
+            "description": "A product id, or \"*\""
+          },
+          "account": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z0-9][a-z0-9-]*)$",
+            "description": "An account id, or \"*\""
+          },
+          "actor": {
+            "enum": [
+              "*",
+              "person",
+              "agent"
+            ],
+            "description": "Who is reading or writing"
+          },
+          "system_of_record": {
+            "type": "string",
+            "description": "A source id from `sources`, or venture for the venture's own folder"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The role accountable for this cell's data (the MDM data owner), a role id from governance decision rights or the team plan"
+          },
+          "survivorship": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "also_in",
+              "winner"
+            ],
+            "description": "When the same record also lives in other sources, which value wins. Running these rules across vendors is the platform's; the framework only states and checks them.",
+            "properties": {
+              "also_in": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "winner": {
+                "enum": [
+                  "system-of-record",
+                  "most-recent"
+                ]
+              }
+            }
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
     },
     "note": { "type": "string" }
   }

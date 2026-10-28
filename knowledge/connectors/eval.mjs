@@ -118,4 +118,59 @@ write(shared, { "notes/later.md": "# Later\n\nAdded after the first build.\n" })
 const changed = (await build(tandem)).stats;
 expect("catalog: after a change, a rebuild reads only the new item", changed.read === 1 && load(tandem).items.some((x) => x.address === "shared://notes/later.md"), JSON.stringify(changed));
 
+// ---- Matrix (EE-042) ------------------------------------------------------------------------------
+console.log("\n# source-of-truth matrix");
+const { resolve: resolveRule } = await import("./resolve.mjs");
+const { sourceFor } = await import("./index.mjs");
+const rule = (o) => ({ record: "product", attribute: "*", phase: "*", product: "*", account: "*", actor: "*", owner: "founder", ...o });
+const matrix = { sources: map.sources, records: {}, rules: [
+  rule({ system_of_record: "venture" }),
+  rule({ phase: "validation", system_of_record: "shared" }),
+  rule({ product: "kettle", phase: "validation", system_of_record: "venture", note: "the kettle stays in the folder" }),
+  rule({ attribute: "price", system_of_record: "shared" }),
+] };
+expect("matrix: the most specific rule wins", resolveRule(matrix, { record: "product", phase: "validation", product: "kettle" }).rule.note === "the kettle stays in the folder");
+expect("matrix: a rule narrowed to a phase holds only in that phase", resolveRule(matrix, { record: "product", phase: "validation" }).rule.system_of_record === "shared" && resolveRule(matrix, { record: "product", phase: "scale" }).rule.system_of_record === "venture");
+expect("matrix: a field the query leaves out matches only \"*\"", resolveRule(matrix, { record: "product" }).rule.system_of_record === "venture");
+expect("matrix: an attribute rule answers for that attribute, not for whole-record reads", resolveRule(matrix, { record: "product", attribute: "price" }).rule.attribute === "price" && resolveRule(matrix, { record: "product" }).rule.attribute === "*");
+expect("matrix: a record type no rule names falls back to the records shorthand, then to nothing", resolveRule({ records: { account: "shared" } }, { record: "account" }).rule.system_of_record === "shared" && resolveRule(matrix, { record: "telos" }) === null);
+expect("matrix: two rules that hold at once at the same specificity tie", resolveRule({ rules: [rule({ phase: "validation", system_of_record: "a" }), rule({ actor: "agent", system_of_record: "b" })] }, { record: "product", phase: "validation", actor: "agent" }).ties.length === 2);
+write(tandem, { "knowledge/sources.json": JSON.stringify(matrix, null, 2) + "\n" });
+expect("matrix: sourceFor reads the venture's phase from venture.json (tandem is in validation)", sourceFor(tandem, "product").id === "shared" && sourceFor(tandem, "product", { product: "kettle" }).id === "venture");
+const viaRouter = await call({ venture: "tandem", route: "purpose/product/teapot", action: "read" });
+const kettleWrite = await call({ venture: "tandem", route: "purpose/product/kettle", action: "write", input: { ...kettle, name: "Kettle (kept in the folder)" }, actor: "person" });
+expect("matrix: the router routes each read and write by its context", viaRouter.source?.source === "shared" && kettleWrite.ok && existsSync(join(tandem, "products/kettle.json")) && JSON.parse(readFileSync(join(shared, "products/kettle.json"), "utf8")).name === "Kettle (in the shared folder)", JSON.stringify([viaRouter.source, kettleWrite]));
+expect("matrix: check-sources accepts the matrix", srcCheck(ws).status === 0, srcCheck(ws).stderr);
+write(tandem, { "knowledge/sources.json": JSON.stringify({ ...matrix, rules: [...matrix.rules, rule({ actor: "agent", system_of_record: "venture" })] }, null, 2) + "\n" });
+const tie = srcCheck(ws);
+expect("matrix: check-sources refuses two rules that can tie", tie.status === 1 && /tie at the same specificity/.test(tie.stderr), tie.stderr);
+const tieRead = await call({ venture: "tandem", route: "purpose/product", action: "read", actor: "agent" });
+expect("matrix: a read that two rules tie on fails and says so", !tieRead.ok && /tie at the same specificity/.test(tieRead.error), tieRead.error);
+
+// Attributes mastered elsewhere: the product's description lives in the shared folder, the rest
+// of the product in the venture folder.
+const byAttr = { sources: map.sources, records: {}, rules: [rule({ system_of_record: "venture" }), rule({ attribute: "description", system_of_record: "shared" })] };
+write(tandem, { "knowledge/sources.json": JSON.stringify(byAttr, null, 2) + "\n" });
+write(shared, { "products/shop-app.json": JSON.stringify({ description: "Mastered in the shared folder" }, null, 2) + "\n" });
+const shop = await call({ venture: "tandem", route: "purpose/product/shop-app", action: "read" });
+expect("attributes: a read fills each attribute from its own system of record and cites it", shop.result?.description === "Mastered in the shared folder" && shop.source?.source === "venture" && shop.source.attributes?.description?.address === "shared://products/shop-app.json", JSON.stringify(shop.source));
+const shopList = await call({ venture: "tandem", route: "purpose/product", action: "read" });
+expect("attributes: list reads overlay too", shopList.result?.["shop-app"]?.description === "Mastered in the shared folder");
+write(shared, { "products/kettle.json": "{}\n" });
+const noFrag = await call({ venture: "tandem", route: "purpose/product/kettle", action: "read" });
+expect("attributes: a source holding nothing for the attribute leaves the record's own value and says so", noFrag.result?.name === "Kettle (kept in the folder)" && noFrag.result?.description === kettle.description && noFrag.source.attributes?.description?.missing === true, JSON.stringify(noFrag.source));
+const shopWrite = await call({ venture: "tandem", route: "purpose/product/shop-app", action: "write", input: { ...shop.result, description: "Changed once, in one place" }, actor: "person", provenance: { note: "new description" } });
+const own = JSON.parse(readFileSync(join(tandem, "products/shop-app.json"), "utf8"));
+const frag = JSON.parse(readFileSync(join(shared, "products/shop-app.json"), "utf8"));
+expect("attributes: a write sends the attribute to its system of record and leaves it out of the record's own file", shopWrite.ok && frag.description === "Changed once, in one place" && !("description" in own) && shopWrite.result.attributes?.[0]?.written === "shared://products/shop-app.json", JSON.stringify(shopWrite));
+expect("attributes: the attribute write is logged by address and attribute", entries(tandem).some((x) => x.entity === "shared://products/shop-app.json#description"));
+const after = await call({ venture: "tandem", route: "purpose/product/shop-app", action: "read" });
+expect("attributes: the next read shows the one value", after.result?.description === "Changed once, in one place");
+const badAttr = await call({ venture: "tandem", route: "purpose/product/shop-app", action: "write", input: { id: "shop-app" }, actor: "person" });
+expect("attributes: a record that fails its schema writes nothing anywhere", !badAttr.ok && JSON.parse(readFileSync(join(shared, "products/shop-app.json"), "utf8")).description === "Changed once, in one place");
+write(tandem, { "knowledge/sources.json": JSON.stringify({ ...byAttr, sources: [{ ...map.sources[0], writes: "none" }] }, null, 2) + "\n" });
+const roAttr = await call({ venture: "tandem", route: "purpose/product/shop-app", action: "write", input: after.result, actor: "person" });
+expect("attributes: a write whose attribute is mastered in a read-only source is refused before anything lands", !roAttr.ok && /read-only/.test(roAttr.error));
+write(tandem, { "knowledge/sources.json": JSON.stringify(map, null, 2) + "\n" });
+
 finish();

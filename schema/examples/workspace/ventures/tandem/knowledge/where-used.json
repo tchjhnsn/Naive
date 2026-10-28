@@ -1,0 +1,13 @@
+{
+  "facts": [
+    {
+      "id": "shop-app-name",
+      "parent": { "route": "purpose/product/shop-app", "pointer": "/name" },
+      "children": [
+        { "source": "venture", "path": "profile.md", "match": { "kind": "text", "template": "{value}" }, "status": "live", "deliver": "agent", "note": "The profile names the product" },
+        { "source": "venture", "path": "evidence/README.md", "match": { "kind": "text", "template": "{value}" }, "status": "frozen", "deliver": "person", "note": "Example of history: never checked or changed" }
+      ]
+    }
+  ],
+  "note": "Example where-used list (EE-042): a price would work the same way, with the pricing page, newsletters and the payment provider as children."
+}

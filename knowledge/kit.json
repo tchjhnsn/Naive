@@ -18,7 +18,8 @@
     "venture-profile",
     "decision",
     "design-document",
-    "knowledge-sources"
+    "knowledge-sources",
+    "where-used"
   ],
   "reads": [
     "venture",
@@ -27,7 +28,10 @@
   "writes": [
     "reference"
   ],
-  "checks": [],
+  "checks": [
+    "schema/check-sources.mjs",
+    "schema/check-where-used.mjs"
+  ],
   "gaps": [
     "No check on the venture profile or design documents of its own; design-coverage (evidence) is the only one",
     "Two connectors so far (filesystem and GitHub); a database, Notion, Slack or Salesforce each need their own module meeting the same contract",

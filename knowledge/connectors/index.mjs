@@ -16,6 +16,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { conformance } from "./contract.mjs";
+import { ANY, resolve as resolveRule } from "./resolve.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -34,16 +35,46 @@ export function registry() {
 /** A venture's source map, with the implicit venture source first. */
 export function sourcesOf(dir) {
   const own = existsSync(join(dir, MAP)) ? load(join(dir, MAP)) : { sources: [], records: {} };
-  return { sources: [{ id: LOCAL, connector: "filesystem", root: ".", writes: "direct", implicit: true }, ...(own.sources ?? [])], records: own.records ?? {}, mapped: existsSync(join(dir, MAP)) };
+  return { sources: [{ id: LOCAL, connector: "filesystem", root: ".", writes: "direct", implicit: true }, ...(own.sources ?? [])], records: own.records ?? {}, rules: own.rules ?? [], mapped: existsSync(join(dir, MAP)) };
 }
 
-/** The source a record type lives in. */
-export function sourceFor(dir, recordType) {
+/**
+ * The source a record type lives in, for a context (EE-042): the system of record of the most
+ * specific rule that holds (resolve.mjs). The venture's phase comes from venture.json; product,
+ * account and actor come from the caller. With no rule, the venture's own folder.
+ */
+export function sourceFor(dir, recordType, context = {}) {
   const m = sourcesOf(dir);
-  const id = m.records[recordType] ?? LOCAL;
+  let phase;
+  try { phase = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase; } catch {}
+  const hit = resolveRule(m, { record: recordType, ...(phase ? { phase } : {}), ...context });
+  if (hit?.ties.length) throw new Error(`${MAP}: ${hit.ties.length} rules for ${recordType} tie at the same specificity; make one more specific`);
+  const id = hit?.rule.system_of_record ?? LOCAL;
   const s = m.sources.find((x) => x.id === id);
   if (!s) throw new Error(`${MAP} puts ${recordType} in ${id}, which is not one of its sources`);
   return s;
+}
+
+/**
+ * The attributes of a record type mastered somewhere other than the record itself, for a context
+ * (EE-042): [{ attribute, source }]. Such an attribute is kept in its source at the record's own
+ * path, as a JSON object holding only that attribute ({ "price": 12 }); a vendor's connector maps
+ * that onto its own system. The router reads each one from there and writes it there.
+ */
+export function attributeSources(dir, recordType, context = {}) {
+  const m = sourcesOf(dir);
+  const whole = sourceFor(dir, recordType, context);
+  let phase;
+  try { phase = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase; } catch {}
+  const names = [...new Set((m.rules ?? []).filter((r) => r.record === recordType && r.attribute !== ANY).map((r) => r.attribute))];
+  return names.flatMap((attribute) => {
+    const hit = resolveRule(m, { record: recordType, attribute, ...(phase ? { phase } : {}), ...context });
+    if (!hit || hit.rule.attribute === ANY) return [];
+    if (hit.ties.length) throw new Error(`${MAP}: ${hit.ties.length} rules for ${recordType}.${attribute} tie at the same specificity; make one more specific`);
+    const source = m.sources.find((x) => x.id === hit.rule.system_of_record);
+    if (!source) throw new Error(`${MAP} masters ${recordType}.${attribute} in ${hit.rule.system_of_record}, which is not one of its sources`);
+    return source.id === whole.id ? [] : [{ attribute, source }];
+  });
 }
 
 const cache = new Map();

@@ -439,6 +439,18 @@
       "date": "2026-10-28",
       "decision": "Mentura has two sides, as Next.js and Vercel do. The framework is the conventions: anything that works offline, with no account and without naming a vendor (record schemas and the data model, kits, the router with its CLI, MCP server and local API, routes, provenance, checks, need-now priors, validation scoring, init-venture and templates, the connector contract and the filesystem connector, the docs). The platform hosts, connects and integrates: connectors that reach a vendor (GitHub first), the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console and a template gallery. Both stay in this repository (Torian's choice, 2026-10-28) with a hard boundary: platform code lives in platform/, nothing outside it imports from it, and a framework connector reaches no network and names no credentials; schema/check-boundary.mjs enforces this. The framework may load a platform connector by the module path the registry names, as Next.js loads a deployment adapter. Each layer's tooling/integrations.json stays framework while its entries are data only. The framework is the open core and the platform is what is sold. Which side carries the name Mentura is open.",
       "status": "proposed"
+    },
+    {
+      "id": "EE-042",
+      "date": "2026-10-28",
+      "decision": "The knowledge layer's source map becomes a source-of-truth matrix, after master data management (DAMA-DMBOK's reference and master data). Each rule is one cell: for a record type, an attribute ('*' for the whole record) and a context (phase, product, account, actor), it names the system of record and the owner, with optional survivorship rules when the same record also lives elsewhere. Rules are written for a fast (System 1) model such as Jev to read: flat, every field present, '*' for any. Resolution is deterministic and needs no model: the matching rule with the most narrowing fields wins, and two rules that can hold at once at the same specificity are an error (schema/check-sources.mjs, knowledge/connectors/resolve.mjs). The router resolves each read and write by its context. `records` stays as shorthand for rules that match anything. A where-used list (knowledge/where-used.json) names, for each fact kept once in its system of record, every place that repeats it, each live or frozen and delivered by an agent, a person or the platform; schema/check-where-used.mjs reports drift offline. This is registry-style MDM and is framework; delivering a change into vendors' systems (coexistence or centralized style), running survivorship across vendors and a managed store for a whole venture are platform (EE-041). An attribute mastered elsewhere is read from and written to its own system of record, kept at the record's path as a JSON object holding only that attribute, and left out of the record's own file, so it lives in one place (a gated agent write stays whole as a draft until a person accepts it); a vendor's connector maps that onto its system, which is the platform's. Renaming the layer to 'source of truth' is open.",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-043",
+      "date": "2026-10-28",
+      "decision": "Working name for the framework: Memento (Torian). The framework is the conventions side of EE-041; the platform side has no name of its own yet, and Mentura (EE-027) stays the working name for the whole system until it does. Files keep 'Everything Ecosystem' until the names are settled; a trademark and name-collision check is pending.",
+      "status": "proposed"
     }
   ]
 }
