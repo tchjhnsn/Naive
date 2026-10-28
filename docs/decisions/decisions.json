@@ -435,6 +435,32 @@
       ]
     },
     {
+      "id": "EE-039",
+      "date": "2026-10-28",
+      "decision": "Validation evidence comes from how audiences receive a product, irrespective of the repository: website and product analytics (Vercel, Cloudflare, Netlify, Google Analytics, PostHog, Amplitude, or whoever the venture deploys with or keeps its analytics in) and customer research (Listen Labs) are evidence-layer integrations and sources of truth for validation, beside revenue (Stripe). Business operations reads these, not code quality or build speed, which are MAD's. Jev (TypeSafe AI) routes each venture to the connectors that fit its use cases, and also scores validation sub-scores. All are candidates until a connector is built and evaluated against the contract (EE-037). Under EE-041 this is platform: the entries stay as candidate data in the integrations lists, and any connector to these services, and Jev's routing, lives in platform/.",
+      "why": "The owner, 2026-10-28: business operations doesn't need to know how good the code is or how fast it is built; it needs to know how different audiences are receiving it. Separating MAD from Mentura (EE-038) lets Mentura focus on sources of truth that are irrespective of the repo.",
+      "status": "proposed",
+      "related": [
+        "EE-026",
+        "EE-028",
+        "EE-037",
+        "EE-038"
+      ]
+    },
+    {
+      "id": "EE-040",
+      "date": "2026-10-28",
+      "decision": "MAD's governance and delivery questions that are about the business, not the build, are answered by Mentura records, and MAD reads them there (EE-038). Most already had a home: problem validated and evidence method (purpose/validation), customer reachable (validation-go-to-market), who decides (ownership, board), funding (venture form.funding), success measure and goal setting (telos measures and exit criteria), teams to align and agent share (team plan), agent autonomy and gates (decision rights, handoffs), unattended runs (handoff run caps), source of truth (knowledge/sources.json). The rest get homes: telos.steering (go decision, review cadence, change of direction), venture.regulation (regulatory exposure), and three decision classes in the template (continue-or-stop, change-direction, set-priorities). Questions about how software is built (requirements stability, sequencing, verification timing, cost of failure, flow, size and the like) stay MAD's. Map: docs/design/MAD_QUESTIONS_REHOMED_2026-10-28.md.",
+      "why": "EE-038 left MAD's business questions without a home in Mentura; the owner asked to re-home them (2026-10-28) so that every venture, with or without a repository, can answer them.",
+      "status": "proposed",
+      "related": [
+        "EE-022",
+        "EE-023",
+        "EE-026",
+        "EE-038"
+      ]
+    },
+    {
       "id": "EE-041",
       "date": "2026-10-28",
       "decision": "Mentura has two sides, as Next.js and Vercel do. The framework is the conventions: anything that works offline, with no account and without naming a vendor (record schemas and the data model, kits, the router with its CLI, MCP server and local API, routes, provenance, checks, need-now priors, validation scoring, init-venture and templates, the connector contract and the filesystem connector, the docs). The platform hosts, connects and integrates: connectors that reach a vendor (GitHub first), the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console and a template gallery. Both stay in this repository (Torian's choice, 2026-10-28) with a hard boundary: platform code lives in platform/, nothing outside it imports from it, and a framework connector reaches no network and names no credentials; schema/check-boundary.mjs enforces this. The framework may load a platform connector by the module path the registry names, as Next.js loads a deployment adapter. Each layer's tooling/integrations.json stays framework while its entries are data only. The framework is the open core and the platform is what is sold. Which side carries the name Mentura is open.",
@@ -450,6 +476,18 @@
       "id": "EE-043",
       "date": "2026-10-28",
       "decision": "Working name for the framework: Memento (Torian). The framework is the conventions side of EE-041; the platform side has no name of its own yet, and Mentura (EE-027) stays the working name for the whole system until it does. Files keep 'Everything Ecosystem' until the names are settled; a trademark and name-collision check is pending.",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-044",
+      "date": "2026-10-28",
+      "decision": "A marketing website is business operations (the marketing function), not engineering: it belongs to neither MAD nor a software engineering suite. Many tools build websites; Mentura is opinionated: the site's source lives in GitHub, it deploys from a host the venture chooses with Vercel the default, and it starts from a Vercel template (operations/tooling/integrations.json). These defaults are framework data; deploying through a host's API is platform (EE-041). Its pages are MDX, edited by agents, with skills that define how the site is designed; no CMS by default, since a CMS is an editor for people and Mentura is opinionated towards AI-native building, in business operations too (Torian, 2026-10-28). An MDX page may read facts from their system of record at build (a price component), so it never drifts (EE-042). Research on MDX for marketing pages is pending.",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-045",
+      "date": "2026-10-28",
+      "decision": "Mentura's ideal customer profile: solo entrepreneurs, low- to no-code founders and small teams in the early phases of business development (Discovery and Validation, not yet scaling), who build AI-native with agents as their editors and team members. Defaults are chosen for them first: agents over people as editors, files and skills over hosted tools, one opinionated choice per decision. A choice that only pays off at scale waits until need-now raises it (EE-028).",
       "status": "proposed"
     }
   ]

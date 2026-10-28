@@ -109,5 +109,19 @@
       "app"
     ],
     "status": "in-use"
+  },
+  {
+    "id": "jev",
+    "name": "Jev (TypeSafe AI)",
+    "layer": "knowledge",
+    "role": "routes a venture to the connectors that fit its use cases: given what the venture keeps and where, it ranks the registry's connectors and integrations, and `mentura connect` asks it first",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): Mentura uses Jev to route users to the proper or best connectors",
+    "credentials": [
+      "TYPESAFE_API_KEY"
+    ]
   }
 ]
