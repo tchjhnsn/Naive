@@ -324,6 +324,17 @@
       "note": "Scores per product per question; the matrix is rendered from them"
     },
     {
+      "id": "anatomy-input",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/purpose/anatomy/*.json"
+      ],
+      "note": "Product Anatomy input for one product with parts (venture, core, products, flows), such as Naive or Mentura; read by purpose/frameworks/product-anatomy/anatomy.mjs"
+    },
+    {
       "id": "decision",
       "layer": "knowledge",
       "level": "method",

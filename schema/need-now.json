@@ -422,6 +422,22 @@
         "platform": 0.9
       },
       "why": "How your products and agents must behave is a foundation statement; say it before you delegate to agents (EE-053)"
+    },
+    "anatomy-input": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "products>=2",
+          "at_least": 0.7
+        }
+      ],
+      "why": "Only when one product has parts that need their own roles, as Naive and Mentura do; follows the anatomy answers prior"
     }
   }
 }
