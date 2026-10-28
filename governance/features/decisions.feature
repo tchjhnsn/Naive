@@ -174,3 +174,22 @@ Feature: Decisions
       Then "product-exists" was approved by "Founder" in "discovery"
       And "product-exists" was worded by the founder
       And "core-product" renders "now"
+
+    Scenario: A founding team gets the founder-agreement kit in Discovery, below validating the idea
+      Given a new venture "kept"
+      When "Founder" answers "founding-team" with "Cofounders: Sam and I"
+      Then need-now suggests "founder-agreement" at 0.6
+      And need-now rates "validation-problem" at 0.9
+
+    Scenario: A solo founder is not handed a founder agreement
+      Given a new venture "kept"
+      When "Founder" answers "founding-team" with "Solo: just me for now"
+      Then need-now holds back "founder-agreement"
+
+    Scenario: The team question can move on its own, beside validation
+      Given a new venture "kept"
+      When the founder asks for the decisions
+      Then "founding-team" renders "now"
+      And "founding-team" can move on its own
+      And "product-exists" moves in order
+      And "product-exists" ranks above "founding-team" because "settles the strategic foundation"

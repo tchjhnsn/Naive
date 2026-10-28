@@ -24,7 +24,8 @@
     "strategic-foundation",
     "idea-dump",
     "idea-map",
-    "idea-map-conventions"
+    "idea-map-conventions",
+    "idea-graph"
   ],
   "reads": [
     "venture",
@@ -36,7 +37,8 @@
     "purpose/frameworks/product-anatomy/test.mjs",
     "schema/check-telos.mjs",
     "schema/foundation.mjs",
-    "purpose/frameworks/idea-map/ideamap.mjs"
+    "purpose/frameworks/idea-map/ideamap.mjs",
+    "purpose/frameworks/idea-map/graph.mjs"
   ],
   "gaps": [
     "ambition-tier still uses the old tiers (hobby, side-project, open-source-tool, venture, enterprise); venture.json uses hobby, survival, lifestyle, managed-growth, aggressive-growth",

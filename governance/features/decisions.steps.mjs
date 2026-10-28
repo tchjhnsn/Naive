@@ -79,4 +79,9 @@ export const steps = [
   [/^"([a-z-]+)" says to "([^"]+)"$/, (w, id, cmd) => ok(find(w, id)?.action?.command?.startsWith(cmd), `${id}: ${JSON.stringify(find(w, id)?.action)}`)],
   [/^"([A-Za-z]+)" answers "([a-z-]+)" with "([^"]+)"$/, (w, by, id, answer) => { const p = cli(w, "decide", id, "--venture", w.venture, "--by", by, "--answer", answer, "--confirm", id); ok(p.status === 0, `decide: ${p.stdout}${p.stderr}`); w.report = null; }],
   [/^"([a-z-]+)" was worded by the founder$/, (w, id) => ok(find(w, id)?.provenance?.wording === "own", `${id}: ${JSON.stringify(find(w, id)?.provenance)}`)],
+  [/^need-now suggests "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "schema/need-now.mjs", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "suggest now" && r.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
+  [/^need-now holds back "([a-z-]+)"$/, (w, type) => { const r = JSON.parse(node(w, "schema/need-now.mjs", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "hold back", `${type}: ${JSON.stringify(r)}`); }],
+  [/^"([a-z-]+)" can move on its own$/, (w, id) => ok(find(w, id)?.lane === "async", `${id}: ${find(w, id)?.lane}`)],
+  [/^"([a-z-]+)" moves in order$/, (w, id) => ok(find(w, id)?.lane === "sync", `${id}: ${find(w, id)?.lane}`)],
+  [/^need-now rates "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "schema/need-now.mjs", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
 ];

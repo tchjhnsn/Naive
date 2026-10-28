@@ -15,6 +15,7 @@ import { spawnSync } from "node:child_process";
 import { routes, ventureDir, ventures } from "../router.mjs";
 import { decisions } from "../../schema/decisions.mjs";
 import { CONVENTIONS, MAP, parse, summary } from "../../purpose/frameworks/idea-map/ideamap.mjs";
+import { GRAPH } from "../../purpose/frameworks/idea-map/graph.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));
@@ -104,7 +105,7 @@ function side(s){
   '<h2>Departments with no ideas</h2><div class="meta">'+Object.entries(sm.by_department).filter(([,n])=>!n).map(([d])=>esc(d.replace(/-/g," "))).join(", ")+'</div>'+
   (sm.gaps.length?'<h2>Needed this phase, not in the dump</h2><ul>'+sm.gaps.map((g)=>'<li>'+esc(g.department)+'</li>').join("")+'</ul>':'')+
   '<h2>Does a product exist?</h2><div>'+esc(sm.product.reading)+'</div><ul>'+sm.product.exists.map((x)=>'<li>'+esc(x.id)+': '+esc(x.text)+'</li>').join("")+'</ul>'+
-  '<h2>Next</h2><div><a href="/'+location.search+'">The decision board</a> ranks what the founder decides first.</div>';
+  '<h2>Next</h2><div><a href="/graph'+location.search+'">The idea graph</a> orders the ideas by what builds on what. <a href="/'+location.search+'">The decision board</a> ranks what the founder decides first.</div>';
 }
 let last="";
 function App(){
@@ -116,6 +117,59 @@ function App(){
 }
 ReactDOM.createRoot(document.getElementById("flow")).render(h(App));
 </script></body></html>`;
+
+// The idea graph (EE-060): the structured form of the map, left to right by dependency, lanes and
+// ideas top down by signal.
+function graph(id) {
+  const dir = ventureDir(id);
+  if (!dir) return { error: `no venture ${id}` };
+  if (!existsSync(join(dir, GRAPH))) return { venture: id, waiting: "no idea graph yet" };
+  return { venture: id, name: JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).name, ...JSON.parse(readFileSync(join(dir, GRAPH), "utf8")) };
+}
+
+const GRAPH_PAGE = MAP_PAGE.replace("<title>Idea map</title>", "<title>Idea graph</title>").replace(/<script>\nconst h=React[\s\S]*<\/script><\/body>/, `<script>
+const h=React.createElement, RF=window.ReactFlow, Flow=RF.default||RF.ReactFlow;
+const esc=(s)=>String(s??"").replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const COLW=300,ROWH=118,GAP=46;
+function layout(g){
+  const nodes=[],edges=[],at={};let y=0;
+  const byId=Object.fromEntries(g.nodes.map((n)=>[n.id,n]));
+  g.lanes.forEach((l)=>{
+    const cols={};l.ideas.map((i)=>byId[i]).sort((a,b)=>b.signal-a.signal).forEach((n)=>{(cols[n.depth]=cols[n.depth]||[]).push(n);});
+    const rows=Math.max(...Object.values(cols).map((c)=>c.length));
+    nodes.push({id:l.id,position:{x:-250,y:y},data:{label:h("div",{className:"node lane "+l.mode},h("b",null,l.mode==="sync"?"In order":"On its own"),h("span",{className:"t"},(l.department||"").replace(/-/g," ")+" · signal "+l.signal))},style:{border:"none",background:"transparent",padding:0,width:"auto"},draggable:false,selectable:false});
+    Object.entries(cols).forEach(([d,ns])=>ns.forEach((n,k)=>{at[n.id]=1;
+      const col=getComputedStyle(document.documentElement).getPropertyValue("--"+(n.pillar||"business")).trim();
+      nodes.push({id:n.id,position:{x:d*COLW,y:y+k*ROWH},data:{label:h("div",{className:"node idea",style:{borderColor:col},title:n.text+"\\nhash "+n.hash},
+        h("span",{className:"sig",style:{width:Math.round(n.signal*100)+"%",background:col}}),
+        h("span",{className:"t"},n.text.length>100?n.text.slice(0,97)+"...":n.text),
+        h("span",{className:"chip"},n.id+" · "+n.signal),h("span",{className:"chip mono"},n.hash.slice(0,7)),n.exists?h("span",{className:"chip ex"},"exists"):null)},
+        sourcePosition:"right",targetPosition:"left",style:{border:"none",background:"transparent",padding:0,width:"auto"}});
+    }));
+    y+=rows*ROWH+GAP;
+  });
+  g.edges.forEach((e)=>edges.push({id:e.from+">"+e.to,source:e.from,target:e.to,type:"smoothstep",animated:false,markerEnd:{type:"arrowclosed"},style:{strokeWidth:1+2*e.p}}));
+  return {nodes,edges};
+}
+function side(g){
+  const top=g.nodes.slice(0,5);
+  return '<h1>'+esc(g.name)+': idea graph</h1><div class="meta">'+g.nodes.length+' ideas · '+g.edges.length+' dependencies judged by '+esc(g.judged_by)+' · Merkle root <code>'+esc(g.root)+'</code></div>'+
+  '<h2>Develop next (highest signal, nothing before it)</h2><ul>'+g.next.map((id)=>{const n=g.nodes.find((x)=>x.id===id);return '<li>'+esc(id)+' <span class="n">'+n.signal+'</span>: '+esc(n.text)+'</li>';}).join("")+'</ul>'+
+  '<h2>Lanes</h2><ul>'+g.lanes.map((l)=>'<li><b>'+(l.mode==="sync"?"In order":"On its own")+'</b> '+esc((l.department||"").replace(/-/g," "))+' <span class="n">'+l.ideas.length+' ideas, signal '+l.signal+'</span></li>').join("")+'</ul>'+
+  '<h2>Highest signal</h2><ul>'+top.map((n)=>'<li>'+esc(n.id)+' <span class="n">'+n.signal+' = need '+n.parts.need+', unblocks '+n.parts.unblocks+', concrete '+n.parts.concrete+', emphasis '+n.parts.emphasis+'</span></li>').join("")+'</ul>'+
+  '<h2>How to read it</h2><div class="meta">Left to right: an idea builds on the ideas to its left. Top down: higher signal first. A lane in order moves step by step; a lane on its own can move any time, beside the others. Each idea\\'s hash covers its text and everything it builds on.</div>'+
+  '<h2>Next</h2><div><a href="/map'+location.search+'">The idea map</a> · <a href="/'+location.search+'">The decision board</a></div>';
+}
+let last="";
+function App(){
+  const [g,setG]=React.useState({nodes:[],edges:[]});
+  React.useEffect(()=>{const tick=async()=>{try{const s=await (await fetch("graph.json"+location.search,{cache:"no-store"})).json();
+    if(s.waiting||s.error){document.querySelector("#side .meta").textContent=s.waiting||s.error;return;}
+    if(s.root===last)return;last=s.root;document.getElementById("side").innerHTML=side(s);setG(layout(s));}catch(e){}};tick();const t=setInterval(tick,2000);return()=>clearInterval(t);},[]);
+  return h(Flow,{nodes:g.nodes,edges:g.edges,fitView:true,minZoom:.1,key:g.nodes.length},h(RF.Background,{gap:24,size:1}),h(RF.Controls,null));
+}
+ReactDOM.createRoot(document.getElementById("flow")).render(h(App));
+</script></body>`).replace(".react-flow__attribution{display:none}", ".react-flow__attribution{display:none}.node.idea{width:240px}.sig{display:block;height:3px;border-radius:2px;margin-bottom:6px}.chip.mono{font-family:ui-monospace,monospace}.node.lane{width:200px;border-style:dashed}.node.lane b{display:block}.node.lane.sync{border-color:var(--product)}.node.lane .t{color:var(--muted);font-size:11px}");
 
 const PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Decision board</title><style>
@@ -134,7 +188,7 @@ section h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:va
 .kit{padding:0 24px 8px}.kit ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}.kit li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;max-width:320px}
 .kit li b{display:block;margin-bottom:2px}.tag.start{border-color:var(--now);color:var(--now);font-weight:600}.tag.soon{opacity:.6}.tag.has{color:var(--done);border-color:var(--done)}
 .log{padding:0 24px 24px}.log table{width:100%;border-collapse:collapse;font-size:13px}.log td{padding:4px 8px;border-top:1px solid var(--line)}.log td:first-child{color:var(--muted);white-space:nowrap}
-</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a></header><div class="kit"><section><h2>The kit for this phase (from need-now)</h2><ul id="kit"></ul></section></div><main id="cols"></main>
+</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a></header><div class="kit"><section><h2>The kit for this phase (from need-now)</h2><ul id="kit"></ul></section></div><main id="cols"></main>
 <div class="log"><section><h2>Provenance, latest first</h2><table id="log"></table></section></div>
 <script>
 const COLS=[["overdue","Overdue"],["now","Now"],["waiting","Waiting"],["stale","Stale"],["later","Later"],["deferred","Deferred"],["done","Done"]];
@@ -153,6 +207,7 @@ async function tick(){
     document.getElementById("cols").innerHTML=COLS.map(([k,label])=>{const xs=ds.filter((d)=>d.render===k);return xs.length?'<section><h2>'+label+' ('+xs.length+')</h2>'+xs.map((d)=>
       '<div class="card '+k+'">'+(d.rank!=null?'<span class="rank">#'+(ranked.indexOf(d.id)+1)+'</span>':'')+'<div class="q">'+esc(d.question)+'</div><div class="id">'+esc(d.id)+' · '+esc(d.layer)+' · '+esc(d.boundary)+'</div>'+
       (d.awaiting?'<span class="tag ask">agent wording, awaiting approval</span>':'')+
+      (d.lane==="async"&&k!=="done"?'<span class="tag">can move on its own</span>':'')+
       (d.held_by?'<span class="tag lock">held by '+esc(d.held_by)+'</span>':'')+
       (d.due&&k!=="done"?'<span class="tag">due '+esc(d.due)+' ('+d.due_in_hours+'h)</span>':'')+
       (d.provenance&&d.provenance.approved_by?'<span class="tag">approved by '+esc(d.provenance.approved_by)+' in '+esc(d.provenance.phase)+'</span>':'')+
@@ -191,6 +246,8 @@ export function serve(p = port, id = venture) {
     }
     if (u.pathname === "/state.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(state(u.searchParams.get("venture") ?? id))); return; }
     if (u.pathname === "/ideas.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(ideas(u.searchParams.get("venture") ?? id))); return; }
+    if (u.pathname === "/graph.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(graph(u.searchParams.get("venture") ?? id))); return; }
+    if (u.pathname === "/graph") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(GRAPH_PAGE); return; }
     if (u.pathname === "/map") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(MAP_PAGE); return; }
     if (u.pathname === "/") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(PAGE); return; }
     res.writeHead(404); res.end();

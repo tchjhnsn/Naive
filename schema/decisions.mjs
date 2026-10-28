@@ -152,7 +152,10 @@ export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "")
     const render = d.status === "withdrawn" ? "withdrawn" : d.status === "deferred" ? "deferred" : stale ? "stale" : overdue ? "overdue"
       : d.status === "decided" ? "done" : later ? "later" : holder ? "waiting" : "now";
     const firmness = d.status !== "decided" ? "open" : venture.phase === "discovery" ? "working" : "firm";
-    return { id: d.id, question: d.question, source: d.source, layer: d.layer, parent: d.parent, boundary, needed_in: d.needed_in ?? null, status: d.status, render, firmness,
+    // Lane (EE-060): a fail-closed decision is on the venture's ordered path, so what is under it waits;
+    // a fail-open one can move on its own, beside the rest, at whatever priority it ranks.
+    const lane = boundary === "fail-open" ? "async" : "sync";
+    return { id: d.id, question: d.question, source: d.source, layer: d.layer, parent: d.parent, boundary, lane, needed_in: d.needed_in ?? null, status: d.status, render, firmness,
       ...(render === "waiting" || (overdue && holder) ? { held_by: holder.id } : {}),
       ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}),
       ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),

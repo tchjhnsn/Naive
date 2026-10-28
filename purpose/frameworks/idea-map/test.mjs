@@ -2,6 +2,7 @@
 // Tests for the idea map (EE-059): ideas stay verbatim, tags stay within the conventions, and the
 // .mdx round-trips. No network: Jev's answers are a fixture.
 import { split, render, parse, clean, fromAnswers, summary, request, CONVENTIONS } from "./ideamap.mjs";
+import { build, diff } from "./graph.mjs";
 
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
@@ -56,6 +57,46 @@ t("the request asks every department, every record and exists, for every idea", 
 t("the summary says what exists and which founder records the dump never mentions", () => {
   const s = summary({ ideas: [{ id: "i-01", text: "built it", pillar: "product", departments: ["products"], records: ["product"], exists: true }] });
   ok(s.product.exists.length === 1 && s.unasked.some((u) => u.record === "icp"), JSON.stringify(s));
+});
+
+const ideas = [
+  { id: "i-01", text: "no-shows cost the clinic money", departments: ["strategy"], records: ["validation-problem"] },
+  { id: "i-02", text: "a deposit when patients book", departments: ["products"], records: ["product"] },
+  { id: "i-03", text: "charge $49 a month", departments: ["finance"], records: ["validation-pricing"] },
+  { id: "i-04", text: "never sell patient data", departments: ["risk-and-compliance"], records: ["alignment"] },
+];
+const dep = (a, b, p) => ({ [`dep:${a}>${b}`]: { type: "noul", noul: p } });
+const answers = { ...dep("i-01", "i-02", 0.9), ...dep("i-02", "i-03", 0.8), ...dep("i-01", "i-03", 0.7), ...dep("i-03", "i-01", 0.6), ...dep("i-01", "i-04", 0.2) };
+
+t("the graph is a DAG: a dependency that closes a cycle is dropped, and implied ones are reduced", () => {
+  const g = build(ideas, { answers });
+  const e = g.edges.map((x) => `${x.from}>${x.to}`).sort();
+  ok(JSON.stringify(e) === JSON.stringify(["i-01>i-02", "i-02>i-03"]), `edges ${e}`);
+  ok(g.dropped.some((x) => x.from === "i-03" && x.to === "i-01"), JSON.stringify(g.dropped));
+});
+
+t("ideas tied by dependencies move in order; an idea tied to nothing moves on its own", () => {
+  const g = build(ideas, { answers });
+  const sync = g.lanes.find((l) => l.mode === "sync"), lone = g.lanes.find((l) => l.ideas.includes("i-04"));
+  ok(sync && JSON.stringify(sync.ideas) === JSON.stringify(["i-01", "i-02", "i-03"]) && lone.mode === "async", JSON.stringify(g.lanes));
+  ok(g.nodes.find((n) => n.id === "i-03").depth === 2, "depth");
+});
+
+t("the hash is Merkle: changing an idea changes its hash and every hash that builds on it, and nothing else", () => {
+  const a = build(ideas, { answers });
+  const b = build(ideas.map((i) => i.id === "i-02" ? { ...i, text: "a $25 deposit when patients book" } : i), { answers });
+  const d = diff(a, b);
+  ok(JSON.stringify(d.changed.sort()) === JSON.stringify(["i-02", "i-03"]) && a.root !== b.root, JSON.stringify(d));
+});
+
+t("signal favours what the phase needs and what others build on", () => {
+  const g = build(ideas, { answers });
+  ok(g.nodes[0].id === "i-01" && g.next[0] === "i-01", JSON.stringify(g.nodes.map((n) => [n.id, n.signal])));
+});
+
+t("without a judge, Naive's record order supplies the dependencies", () => {
+  const g = build([{ ...ideas[0], departments: ["products"] }, ideas[1]]);
+  ok(g.judged_by === "convention" && g.edges.length === 1 && g.edges[0].from === "i-01", JSON.stringify(g.edges));
 });
 
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }

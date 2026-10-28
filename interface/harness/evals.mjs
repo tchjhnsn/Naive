@@ -8,6 +8,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { decisions } from "../../schema/decisions.mjs";
 import { DUMP, MAP, parse } from "../../purpose/frameworks/idea-map/ideamap.mjs";
+import { GRAPH } from "../../purpose/frameworks/idea-map/graph.mjs";
+import { createHash } from "node:crypto";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const norm = (s) => s.replace(/\s+/g, " ").trim();
@@ -23,6 +25,14 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
   const changed = ideas.filter((i) => !dump.includes(norm(i.text)));
   add("ideas_verbatim", ideas.length ? frac(ideas.length - changed.length, ideas.length) : 0, changed.length ? `rewritten: ${changed.map((i) => i.id).join(", ")}` : `${ideas.length} ideas, all verbatim`);
   add("ideas_tagged", frac(ideas.filter((i) => i.departments?.length).length, ideas.length), `${ideas.filter((i) => !i.departments?.length).length} ideas without a department`);
+
+  // The idea graph is a Merkle DAG: every hash recomputes from the idea's text and what it builds on.
+  if (existsSync(join(dir, GRAPH))) {
+    const g = load(join(dir, GRAPH));
+    const byId = Object.fromEntries(g.nodes.map((n) => [n.id, n]));
+    const bad = g.nodes.filter((n) => createHash("sha256").update(JSON.stringify({ text: n.text, parents: n.builds_on.map((p) => byId[p]?.hash).sort() })).digest("hex").slice(0, 16) !== n.hash);
+    add("graph_merkle", bad.length ? 0 : 1, bad.length ? `hashes that do not recompute: ${bad.map((n) => n.id).join(", ")}` : `${g.nodes.length} hashes recompute; root ${g.root}`);
+  }
 
   // Agents propose; people decide. No accept, confirm or decision is an agent's.
   const log = existsSync(join(dir, "provenance.jsonl")) ? readFileSync(join(dir, "provenance.jsonl"), "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];

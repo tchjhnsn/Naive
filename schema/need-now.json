@@ -278,9 +278,27 @@
         {
           "if": "founders>=2",
           "at_least": 1
+        },
+        {
+          "if": "team:cofounders",
+          "at_least": 1
+        },
+        {
+          "if": "team:cofounders",
+          "phase": "discovery",
+          "at_most": 0.6
+        },
+        {
+          "if": "founders>=2",
+          "phase": "discovery",
+          "at_most": 0.6
+        },
+        {
+          "if": "team:looking",
+          "at_least": 0.5
         }
       ],
-      "why": "Required once two or more founders share ownership"
+      "why": "Required once two or more founders share ownership. In Discovery a founding team works on it beside validation, at a lower priority than proving the problem, and a founder looking for cofounders gets the kit early (EE-060)"
     },
     "board": {
       "base": {
@@ -468,6 +486,16 @@
         "platform": 0.3
       },
       "why": "Shows where the founder's ideas cluster and what the dump never mentions, on one canvas (EE-059)"
+    },
+    "idea-graph": {
+      "base": {
+        "discovery": 0.8,
+        "validation": 0.6,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Which ideas to develop next, which must move in order and which can move on their own (EE-060)"
     }
   }
 }

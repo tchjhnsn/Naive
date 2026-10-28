@@ -179,6 +179,17 @@
       "note": "The idea dump mapped onto Naive's conventions: one <Idea> per idea, its text unchanged, tagged with departments, records and whether it exists (purpose/frameworks/idea-map); drawn as a mind map (EE-059)"
     },
     {
+      "id": "idea-graph",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/idea-graph.schema.json",
+      "paths": [
+        "instance/**/purpose/ideas/graph.json",
+        "schema/examples/**/purpose/ideas/graph.json"
+      ],
+      "note": "The idea map as a Merkle DAG: each idea with the ideas it builds on, a hash over its text and theirs, its signal, and its lane (in order or on its own); laid out left to right by dependency and top down by signal (EE-060)"
+    },
+    {
       "id": "validation-problem",
       "layer": "purpose",
       "level": "venture",

@@ -60,6 +60,13 @@ const productFoundation = [
   { id: "flagship", parent: "core-product", question: "Which product is the flagship now: the one that best delivers the core promise?", decides: { record: "product", path: "products/" },
     unlocks: [{ activity: "Plan how to validate the flagship", routes: ["purpose/validation/solution"] }] },
 ];
+// The team question (EE-060): asked in Discovery, failing open, so validation never waits on it. A
+// founding team, or a founder looking for one, gets the founder-agreement kit beside validation.
+mkdirSync(join(dir, "decisions"), { recursive: true });
+writeFileSync(join(dir, "decisions/venture.team.decision.json"), JSON.stringify({ id: "founding-team", question: "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
+  decides: { record: "founder-agreement", path: "governance/founder-agreement.json" }, layer: "governance", boundary: "fail-open", needed_in: phase, status: "open",
+  options: ["Solo: I am founding it alone", "Cofounders: we are founding it together", "Looking: I want cofounders"],
+  unlocks: [{ activity: "Draft the founder agreement with the founding-agreement kit", routes: ["governance/founder-agreement"] }], provenance: framework }, null, 2) + "\n");
 mkdirSync(join(dir, "products/decisions"), { recursive: true });
 for (const d of productFoundation) writeFileSync(join(dir, "products/decisions", `product.${d.id.replace(/^product-/, "")}.decision.json`),
   JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");

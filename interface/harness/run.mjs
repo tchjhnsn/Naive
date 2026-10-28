@@ -16,7 +16,8 @@
 //   --yes     the founder settles the top-ranked decisions as worded (rehearsals and tests)
 //   --steps   how many decisions the founder settles between the agent's passes (default 3)
 //
-// 1. Naive maps the dump (Jev, else the agent tags it with the same conventions).
+// 1. Naive maps the dump (Jev, else the agent tags it with the same conventions), then structures the
+//    map as an idea graph: a Merkle DAG with signal and lanes (EE-060).
 // 2. Pass 1: the agent reads the idea map, drafts answers to Naive's product questions and the problem
 //    record from the founder's own ideas, researches the market, and proposes the decisions the founder
 //    owes.
@@ -30,6 +31,8 @@ import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { decisions } from "../../schema/decisions.mjs";
 import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../purpose/frameworks/idea-map/ideamap.mjs";
+import { GRAPH, build as buildGraph, request as graphRequest } from "../../purpose/frameworks/idea-map/graph.mjs";
+import { createHash } from "node:crypto";
 import { agentFromEnv, record as prov } from "../provenance.mjs";
 import { evaluate } from "./evals.mjs";
 
@@ -164,13 +167,30 @@ const sum = summary(parse(readFileSync(join(dir, MAP), "utf8")), phase);
 trace.children.push(Object.assign(mapNode, { end: iso(), outputs: { tagger, summary: sum }, metadata: { tagger } }));
 lap(`idea map: ${sum.ideas} ideas; ${Object.entries(sum.by_pillar).map(([k, v]) => `${k} ${v}`).join(", ")}; clusters ${sum.strengths.map((s) => s.department).join(", ")}; ${sum.product.reading}`);
 
+// 1b. The idea graph: the map's structured form. Jev judges which ideas build on which; without Jev,
+//     Naive's record order does. Signal, lanes and layout follow in code.
+const graphNode = { name: "idea graph", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
+const mapIdeas = parse(readFileSync(join(dir, MAP), "utf8")).ideas;
+let graphAnswers = null;
+if (jev) {
+  const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(graphRequest(mapIdeas, venture)), encoding: "utf8", maxBuffer: 1 << 26 });
+  if (p.status === 0) { const out = JSON.parse(p.stdout); graphAnswers = out.answers; console.log(`   Jev answered ${Object.keys(out.answers).length} dependency and concreteness questions in ${out.ms} ms`); }
+  else console.log(`   Jev could not judge the dependencies (${p.stderr.trim().slice(0, 200)}); using Naive's record order`);
+}
+const g = buildGraph(mapIdeas, { answers: graphAnswers, phase, venture: id, source: `${MAP}@${createHash("sha256").update(readFileSync(join(dir, MAP))).digest("hex").slice(0, 16)}` });
+writeFileSync(join(dir, GRAPH), JSON.stringify(g, null, 2) + "\n");
+prov(dir, { entity: GRAPH, route: "purpose/idea-graph", activity: "create", derived_from: [MAP], agent: agentFromEnv("agent", "harness", { id: g.judged_by }), note: `Merkle root ${g.root}` });
+trace.children.push(Object.assign(graphNode, { end: iso(), outputs: { root: g.root, edges: g.edges.length, lanes: g.lanes.map((l) => ({ mode: l.mode, ideas: l.ideas.length })), next: g.next } }));
+lap(`idea graph: ${g.edges.length} dependencies (${g.judged_by}); ${g.lanes.filter((l) => l.mode === "sync").length} lane(s) in order, ${g.lanes.filter((l) => l.mode === "async").length} on their own; develop next: ${g.next.join(", ")}; root ${g.root}`);
+
 const rules = `You are the builder agent (agent_id builder) for the venture ${id}. Work only through the naive MCP tools${research ? " and the research tools" : ""}; pass agent_id "builder" on every naive call.
 Rules: the founder's idea dump is theirs. Quote it, cite ideas by id (i-01...), never put words in their mouth. Never invent evidence: every evidence item cites a URL a research result gave you${research ? "" : " (you have no research tool in this run, so leave evidence empty and say so)"}. Records Naive treats as the founder's are written as drafts for the founder to accept; that is expected. You never decide; you propose. knowledge/venture-profile cannot be written over MCP; skip it.`;
 
 await agent(`${rules}
 The founder has just submitted an idea dump. Naive mapped it onto its conventions.
-1. mentura_run purpose/ideas: read every idea, where they cluster and what the dump never mentions. Then mentura_decisions: Naive's own product questions come first (product-exists, then core-product, then flagship) and fail closed.
+1. mentura_run purpose/ideas: read every idea, where they cluster and what the dump never mentions. mentura_run purpose/ideas/graph: which ideas build on which, the lanes that move in order and the ones that can move on their own, and the highest-signal ideas to develop next. Then mentura_decisions: Naive's own product questions come first (product-exists, then core-product, then flagship) and fail closed.
 2. Propose an answer to product-exists with mentura_propose_decision (id "product-exists", at "products", name "product.exists", same question), worded from the ideas tagged exists and citing them by id. Do not change its parent, boundary or unlocks.
+2b. If the dump says anything about a team or cofounders, propose wording for founding-team (id "founding-team", at "", name "venture.team", same question), starting with Solo, Cofounders or Looking and quoting the idea; if it says nothing, leave it for the founder.
 3. Write the problem record (purpose/validation/problem) from the founder's ideas: the problem in their words, who has it, and the assumptions to test. Read mentura_layout first.${research ? `
 4. Research the market with research_search: existing alternatives and competitors the dump names or implies, prices, and people describing the problem. Add what you find to the problem record as evidence with URLs.` : ""}
 5. Propose two or three more decisions the founder owes from what the dump leaves open (at "purpose/validation", name "problem.<topic>"), each with your proposed answer, a due time within 72 hours if urgent, one or two projected outcomes, and unlocks for ["builder"].

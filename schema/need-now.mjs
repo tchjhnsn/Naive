@@ -3,7 +3,7 @@
 // type and phase are in schema/need-now.json; facts about the venture raise or lower them:
 //   phase, ambition, funding, legal_form, offering (of any product), software (any product),
 //   path (go-to-market record), people, founders, agents, products (counts), publishes (a handoff
-//   under public-commitment).
+//   under public-commitment), team (the answer to Naive's team question: solo, cofounders, looking).
 // Departments (EE-047) are scored the same way, from their priors in operations/departments.json, and
 // held once venture.json lists them. Records that already exist are listed as held; a record in a layer the venture has turned off is
 // listed as layer off, not suggested. Jev re-scores the priors per venture once the
@@ -32,8 +32,12 @@ export function factsOf(dir) {
   const own = json("governance/ownership.json");
   const hDir = join(dir, "operations/handoffs");
   const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => load(join(hDir, f))) : [];
+  // The founding team, as the founder answered Naive's team question (EE-060): solo, cofounders or looking.
+  const teamFile = join(dir, "decisions/venture.team.decision.json");
+  const td = existsSync(teamFile) ? load(teamFile) : null;
+  const team = td?.status === "decided" ? ["solo", "cofounders", "looking"].find((t) => (td.answer ?? "").toLowerCase().startsWith(t)) ?? null : null;
   return {
-    phase: v.phase, ambition: v.ambition, funding: v.form?.funding, legal_form: v.form?.legal_form,
+    team, phase: v.phase, ambition: v.ambition, funding: v.form?.funding, legal_form: v.form?.legal_form,
     offering: products.map((p) => p.offering), software: products.some((p) => p.software),
     path: json("purpose/validation/go-to-market.json")?.path,
     people: members.filter((m) => m.kind !== "agent").length + (v.owner === "self" && !members.some((m) => m.kind !== "agent") ? 1 : 0),
