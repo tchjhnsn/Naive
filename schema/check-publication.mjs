@@ -33,12 +33,12 @@ for (const root of walk(dir)) {
   const pPath = join(root, "governance/publication-policy.json");
   const policy = existsSync(pPath) ? load(pPath) : null;
   const at = `${v.id}/governance/publication-policy.json`;
-  const hDir = join(root, "execution/handoffs");
+  const hDir = join(root, "operations/handoffs");
   const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => [f, load(join(hDir, f))]) : [];
 
   for (const [f, h] of handoffs) {
     const publishes = (h.decision_classes ?? []).includes("public-commitment") || (h.escalations ?? []).some((e) => e.class === "public-commitment");
-    const where = `${v.id}/execution/handoffs/${f}`;
+    const where = `${v.id}/operations/handoffs/${f}`;
     if (!publishes) { if (h.publication) warnings.push(`${where}: names a publication but has no public-commitment class`); continue; }
     if (!policy) { errors.push(`${where}: publishes, but the venture has no governance/publication-policy.json`); continue; }
     if (!h.publication) { errors.push(`${where}: publishes, so it names its channel and content (publication)`); continue; }

@@ -26,12 +26,12 @@ export const TOOLS = [
     model: { type: "string", description: "Your model, for the provenance log" }, note: { type: "string" } }, required: ["venture", "route", "record"] } },
   { name: "mentura_check", description: "Run the checks for one record of a venture.", inputSchema: { type: "object", properties: { venture, route }, required: ["venture", "route"] } },
   { name: "mentura_template", description: "The fill-in template for a record, where its kit has one.", inputSchema: { type: "object", properties: { route }, required: ["route"] } },
-  { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/score, governance/payouts.", inputSchema: { type: "object", properties: { venture, route, value: { type: "number", description: "governance/payouts only: a sale value" } }, required: ["venture", "route"] } },
+  { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/score, governance/payouts, knowledge/catalog (index every source the venture keeps records in), knowledge/search (find items in any of them).", inputSchema: { type: "object", properties: { venture, route, value: { type: ["number", "string"], description: "governance/payouts: a sale value; knowledge/search: the query" } }, required: ["venture", "route"] } },
 ];
 
 let client = null; // the harness, as it named itself at initialize
 
-export function handle(msg) {
+export async function handle(msg) {
   const { id, method, params = {} } = msg;
   const reply = (result) => ({ jsonrpc: "2.0", id, result });
   const fail = (code, message) => ({ jsonrpc: "2.0", id, error: { code, message } });
@@ -49,14 +49,14 @@ export function handle(msg) {
       switch (params.name) {
         case "mentura_routes": r = { ok: true, result: a.group ? routes().filter((x) => x.groups.includes(`(${a.group})`)) : routes() }; break;
         case "mentura_ventures": r = { ok: true, result: ventures().map(({ id, name, phase, path }) => ({ id, name, phase, path })) }; break;
-        case "mentura_layout": r = call({ venture: a.venture, route: a.route, action: "layout" }); break;
-        case "mentura_view": r = call({ venture: a.venture, route: a.route, action: "view" }); break;
-        case "mentura_read": r = call({ venture: a.venture, route: a.route, action: "read" }); break;
-        case "mentura_write": r = call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", via: "mcp",
+        case "mentura_layout": r = await call({ venture: a.venture, route: a.route, action: "layout" }); break;
+        case "mentura_view": r = await call({ venture: a.venture, route: a.route, action: "view" }); break;
+        case "mentura_read": r = await call({ venture: a.venture, route: a.route, action: "read" }); break;
+        case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
-        case "mentura_check": r = call({ venture: a.venture, route: a.route, action: "check" }); break;
-        case "mentura_template": r = call({ route: a.route, action: "template" }); break;
-        case "mentura_run": r = call({ venture: a.venture, route: a.route, action: "run", input: a.value !== undefined ? { value: a.value } : undefined }); break;
+        case "mentura_check": r = await call({ venture: a.venture, route: a.route, action: "check" }); break;
+        case "mentura_template": r = await call({ route: a.route, action: "template" }); break;
+        case "mentura_run": r = await call({ venture: a.venture, route: a.route, action: "run", input: a.value !== undefined ? { value: a.value } : undefined }); break;
         default: return fail(-32602, `unknown tool ${params.name}`);
       }
       const extra = ["not_found", "pending_draft", "fix", "deprecated"].some((k) => r[k]);
@@ -73,10 +73,10 @@ export function handle(msg) {
       const uri = params.uri ?? "";
       if (uri === "mentura://routes") return reply({ contents: [{ uri, mimeType: "text/markdown", text: routesMd() }] });
       const o = uri.match(/^mentura:\/\/([^/]+)$/);
-      if (o) { const r = call({ venture: o[1], route: "system/overview", action: "view" }); return r.ok ? reply({ contents: [{ uri, mimeType: "text/markdown", text: r.result }] }) : fail(-32602, r.error); }
+      if (o) { const r = await call({ venture: o[1], route: "system/overview", action: "view" }); return r.ok ? reply({ contents: [{ uri, mimeType: "text/markdown", text: r.result }] }) : fail(-32602, r.error); }
       const m = uri.match(/^mentura:\/\/([^/]+)\/(.+)$/);
       if (!m) return fail(-32602, `unknown resource ${uri}`);
-      const r = call({ venture: m[1], route: m[2], action: "read" });
+      const r = await call({ venture: m[1], route: m[2], action: "read" });
       if (!r.ok) return fail(-32602, r.error);
       return reply({ contents: [{ uri, mimeType: "application/json", text: JSON.stringify(r.result, null, 2) }] });
     }
@@ -87,12 +87,16 @@ export function handle(msg) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const rl = createInterface({ input: process.stdin });
+  // Answers go out in the order requests came in: each line waits for the one before.
+  let queue = Promise.resolve();
   rl.on("line", (line) => {
     if (!line.trim()) return;
-    let msg;
-    try { msg = JSON.parse(line); } catch { process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } }) + "\n"); return; }
-    let res;
-    try { res = handle(msg); } catch (e) { res = { jsonrpc: "2.0", id: msg.id ?? null, error: { code: -32603, message: String(e.message ?? e) } }; }
-    if (res) process.stdout.write(JSON.stringify(res) + "\n");
+    queue = queue.then(async () => {
+      let msg;
+      try { msg = JSON.parse(line); } catch { process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } }) + "\n"); return; }
+      let res;
+      try { res = await handle(msg); } catch (e) { res = { jsonrpc: "2.0", id: msg.id ?? null, error: { code: -32603, message: String(e.message ?? e) } }; }
+      if (res) process.stdout.write(JSON.stringify(res) + "\n");
+    });
   });
 }

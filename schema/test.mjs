@@ -24,7 +24,7 @@ function broken(name, script, change, pattern) {
   const r = run(script, [script === "check-ventures.mjs" ? dir : dir]);
   expect(name, r.status !== 0 && pattern.test(r.stderr));
 }
-const handoff = (dir, id) => join(dir, "execution/handoffs", `${id}.json`);
+const handoff = (dir, id) => join(dir, "operations/handoffs", `${id}.json`);
 
 expect("check-ventures passes on the instance", run("check-ventures.mjs", [join(root, "instance")]).status === 0);
 expect("check-ventures passes on the examples", run("check-ventures.mjs", [join(root, "schema/examples/workspace")]).status === 0);
@@ -43,13 +43,13 @@ broken("done without a PR fails", "check-execution.mjs", (d) => edit(handoff(d, 
 broken("a review passed by the wrong role fails", "check-execution.mjs", (d) => {
   for (const f of ["anatomy-json-output"]) edit(handoff(d, f), (h) => { h.evidence = h.evidence.slice(-1); });
   const e = JSON.parse(readFileSync(handoff(d, "anatomy-json-output"), "utf8")).evidence[0];
-  edit(join(d, "execution/handoffs", e), (x) => { x.results.forEach((r) => { if (r.kind === "review") r.by = "builder"; }); });
+  edit(join(d, "operations/handoffs", e), (x) => { x.results.forEach((r) => { if (r.kind === "review") r.by = "builder"; }); });
 }, /must be passed by architect/);
 broken("escalated with no open question fails", "check-execution.mjs", (d) => edit(handoff(d, "methodology-site-refresh"), (h) => { h.escalations.forEach((e) => { e.answer = "yes"; }); }), /escalated with no open question/);
 broken("attempts used up while in progress fail", "check-execution.mjs", (d) => edit(handoff(d, "methodology-site-refresh"), (h) => { h.status = "in-progress"; h.attempts = 3; }), /attempts used up/);
 broken("evidence whose passed flag lies fails", "check-execution.mjs", (d) => {
   const e = JSON.parse(readFileSync(handoff(d, "methodology-site-refresh"), "utf8")).evidence[0];
-  edit(join(d, "execution/handoffs", e), (x) => { x.passed = true; });
+  edit(join(d, "operations/handoffs", e), (x) => { x.passed = true; });
 }, /results disagree/);
 broken("loosening a class without a decision fails", "check-execution.mjs", (d) => edit(join(d, "governance/decision-rights.json"), (r) => { r.classes = [{ id: "public-commitment", owner: "founder", level: "decide" }]; }), /loosens escalate to decide/);
 
@@ -62,13 +62,12 @@ function draft(name, change, pattern) {
   const r = run("check-ready.mjs", [dir, "anatomy-runner-fixes"]);
   expect(name, pattern ? r.status !== 0 && pattern.test(r.stdout) : r.status === 0);
 }
-const briefOf = (d) => join(d, "execution/handoffs/anatomy-runner-fixes.md");
+const briefOf = (d) => join(d, "operations/handoffs/anatomy-runner-fixes.md");
 draft("check-ready passes on a complete draft", () => {});
 draft("a brief with no Outcome is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8").replace(/## Outcome/, "## Background")), /FAIL  brief has its Outcome section/);
 draft("a brief with a TBD is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8") + "\nStep 4: TBD\n"), /FAIL  brief has no placeholders left: TBD/);
 draft("an unknown product is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.products = ["nope"]; }), /FAIL  every product it serves exists: nope/);
 draft("an unknown decision is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.governed_by = ["EE-999"]; }), /FAIL  every governing decision exists.*EE-999/);
-draft("no assignment named is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { delete h.assignment; }), /FAIL  names the methodology assignment/);
 draft("a criterion calling a missing script is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.done_criteria[0].check = "node purpose/nope.mjs"; }), /FAIL  every script a criterion runs exists/);
 broken("in progress without a readiness check fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.status = "in-progress"; h.attempts = 1; }), /without a recorded readiness check/);
 
@@ -116,12 +115,6 @@ telosBroken("an exit criterion serving no known measure fails", (d) => edit(telo
 telosBroken("two primary measures fail", (d) => edit(telosOf(d), (t) => { t.measures[1].primary = true; }), /exactly one measure is primary/);
 telosBroken("exit.json preferring another path fails", (d) => edit(telosOf(d), (t) => { t.owner_outcome.path = "ipo"; }), /prefers acquisition, but the telos intends ipo/);
 telosBroken("exit.json ruling out the telos path fails", (d) => edit(gov(d, "exit.json"), (e) => { e.paths[0].stance = "ruled-out"; }), /rules out acquisition/);
-{
-  const r = spawnSync("node", [join(root, "operations/skills/methodology-selection/derive-answers.mjs"), tandem, "--json"], { encoding: "utf8" });
-  const out = JSON.parse(r.stdout);
-  expect("MAD reads who decides from the board instead of asking", out.derived["governance.who_decides"]?.answer === "board_or_committee");
-  expect("MAD reads its success measure from the telos", out.derived["governance.success_measure"]?.answer === "usage_or_adoption");
-}
 
 // check-publication: every publication passes the gate (EE-025).
 function pubBroken(name, change, pattern) {
@@ -132,7 +125,7 @@ function pubBroken(name, change, pattern) {
   expect(name, r.status !== 0 && pattern.test(r.stderr));
 }
 const policyOf = (d) => gov(d, "publication-policy.json");
-const publishing = (d, h) => { mkdirSync(join(d, "execution/handoffs"), { recursive: true }); writeFileSync(join(d, "execution/handoffs/post.json"), JSON.stringify({ id: "post", decision_classes: ["public-commitment"], ...h })); };
+const publishing = (d, h) => { mkdirSync(join(d, "operations/handoffs"), { recursive: true }); writeFileSync(join(d, "operations/handoffs/post.json"), JSON.stringify({ id: "post", decision_classes: ["public-commitment"], ...h })); };
 expect("check-publication passes on the examples", run("check-publication.mjs", [join(root, "schema/examples/workspace")]).status === 0);
 pubBroken("an agent role as approver fails", (d) => edit(policyOf(d), (p) => { p.channels[0].rules[0].approvers = ["builder"]; }), /builder is an agent role/);
 pubBroken("a team with no person cannot approve", (d) => edit(policyOf(d), (p) => { p.teams[0].members = ["builder"]; }), /team founders has no person/);
@@ -210,7 +203,7 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.ev
   const { timeToReady } = await import(join(root, "schema/time-to-ready.mjs"));
   const r = timeToReady(tandem);
   expect("time-to-ready: a venture with no live product is not running yet", !r.running.on && r.running.missing.includes("product_offered"));
-  expect("time-to-ready: layers the venture turned off are not asked for", !r.layers.some((l) => l.layer === "operations"));
+  expect("time-to-ready: layers the venture turned off are not asked for", !r.layers.some((l) => l.layer === "interface"));
   const live = join(tmp, "live"); cpSync(tandem, live, { recursive: true });
   edit(join(live, "products/shop-app.json"), (p) => { p.status = "live"; });
   mkdirSync(join(live, "accounts/first-shop"), { recursive: true });
@@ -252,7 +245,7 @@ expect("check-data-model passes on the repository", run("check-data-model.mjs", 
 for (const [name, change, pattern] of [
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
   ["a schema no record type names fails", (d) => writeFileSync(join(d, "schema/stray.schema.json"), "{}"), /a schema no record type names/],
-  ["a skill no kit lists fails", (d) => { mkdirSync(join(d, "execution/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "execution/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no kit lists this skill/],
+  ["a skill no kit lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no kit lists this skill/],
   ["a kit owning another layer's record fails", (d) => edit(join(d, "purpose/kit.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
   ["a kit reading an unknown record type fails", (d) => edit(join(d, "operations/kit.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
 ]) {

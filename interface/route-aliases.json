@@ -1,3 +1,10 @@
 {
-  "aliases": []
+  "aliases": [
+    {
+      "from": "execution/handoff",
+      "to": "operations/handoff",
+      "since": "2026-10-28",
+      "note": "Execution folded into operations (EE-038)"
+    }
+  ]
 }

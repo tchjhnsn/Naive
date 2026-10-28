@@ -1,4 +1,4 @@
-// Checks a venture's execution and evidence records against its decision rights (EE-017).
+// Checks a venture's handoffs (operations, EE-038) and evidence records against its decision rights (EE-017).
 // Validate each file against its schema first; this checks how they fit together.
 //
 //   node schema/check-execution.mjs <venture dir>
@@ -43,7 +43,7 @@ for (const f of jsonIn(join(dir, "evidence/results"))) {
 }
 
 let count = 0;
-for (const f of jsonIn(join(dir, "execution/handoffs"))) {
+for (const f of jsonIn(join(dir, "operations/handoffs"))) {
   const h = load(f), at = `handoff/${h.id}`;
   count++;
   if (h.venture !== venture.id) errors.push(`${at}: venture ${h.venture} is not ${venture.id}`);

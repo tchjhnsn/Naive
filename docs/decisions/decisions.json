@@ -405,6 +405,34 @@
         "EE-031",
         "EE-035"
       ]
+    },
+    {
+      "id": "EE-037",
+      "date": "2026-10-28",
+      "decision": "The knowledge layer federates rather than copies. Records stay in the sources a venture already uses, and the venture decides which record type lives where in an optional knowledge/sources.json; without one, everything stays in the venture folder. Each source is reached through a connector with one contract (list, read, version, search, write where allowed), registered as an integration with a connector in knowledge/tooling/integrations.json. A version is the git blob SHA-1 of the content in every source, and a read says its source, version and, for GitHub, a permalink at the commit, so provenance can cite it. The router reads and writes every record through the connector for its source, so its call is asynchronous. A catalog indexes every item's address, version, route, title and words, and keeps no content. The first two connectors are the file system (folders and git repositories, writing in place) and GitHub (REST over fetch, writing by draft pull request, which a person accepts by merging). Every connector passes one eval suite (knowledge/connectors/eval.mjs), run offline against a fake of the GitHub API and live when a repository and token are given.",
+      "why": "The owner asked to think from first principles about a knowledge layer that may span repositories, wikis, Slack, Notion and Salesforce, held that ventures organise their own knowledge so Mentura should not be too opinionated, and asked to start with two connections plus evals that prove they work. He chose writes by pull request for GitHub (2026-10-28), matching the rule that a person merges.",
+      "status": "proposed",
+      "related": [
+        "EE-005",
+        "EE-030",
+        "EE-031",
+        "EE-036"
+      ]
+    },
+    {
+      "id": "EE-038",
+      "date": "2026-10-28",
+      "decision": "Operations in Mentura is business operations: the team plan and hiring, handing work to people and agents, and the tools each business function uses (marketing, sales, research; treg is a candidate integration). Every venture has it, with or without a repository. Execution folds into operations: a handoff is how operational work is assigned, so handoffs move to <venture>/operations/handoffs/ and the execution/handoff route aliases to operations/handoff. Mentura has six layers: purpose, knowledge, operations, evidence, governance, interface. MAD, the method for building software or hardware (its catalog, methodology selection, assignments, recommendations, answers and the method-site publisher), leaves Mentura to be its own product that reads Mentura's records when a venture has a repository; git keeps what was removed. MAD's governance and delivery questions (is it worth doing, who decides, how work is planned and handed over) are general business questions, to be re-homed in Mentura's governance and operations layers. Evidence stays: its results and evals are records.",
+      "why": "The owner asked whether everything except MAD and evidence is knowledge, and ran the five-step algorithm on it. A venture with no repository still needs operations for marketing, hiring and the like, and two of MAD's tiers are about the business rather than the build; so only the build side of operations is a separate product.",
+      "status": "proposed",
+      "related": [
+        "EE-013",
+        "EE-017",
+        "EE-019",
+        "EE-023",
+        "EE-036",
+        "EE-037"
+      ]
     }
   ]
 }

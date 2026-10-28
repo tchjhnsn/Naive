@@ -35,7 +35,7 @@
     {
       "noun": "method",
       "level": "system",
-      "meaning": "What to do: MAD, Product Anatomy, handoffs",
+      "meaning": "What to do: Product Anatomy, handoffs; MAD, the method for building software, is a separate product (EE-038)",
       "standard": "common usage",
       "status": "kept"
     },
@@ -63,7 +63,7 @@
     {
       "noun": "layer",
       "level": "system",
-      "meaning": "One of the seven: purpose, knowledge, operations, execution, evidence, governance, interface",
+      "meaning": "One of the six: purpose, knowledge, operations, evidence, governance, interface (execution folded into operations, EE-038)",
       "standard": "ours",
       "status": "kept"
     },
@@ -297,20 +297,20 @@
     {
       "noun": "tier",
       "level": "operations",
-      "meaning": "One of MAD's four levels: governance, delivery, software engineering, automation",
+      "meaning": "One of MAD's four levels: governance, delivery, software engineering, automation; MAD is a separate product, and Mentura records name a tier only where a venture uses MAD (EE-038)",
       "standard": "architecture tiers",
       "status": "new"
     },
     {
       "noun": "handoff",
-      "level": "execution",
-      "meaning": "One unit of delegated work: a JSON record (role, decision classes, done-criteria, status, attempts) at <venture>/execution/handoffs/<id>.json with a Markdown brief beside it",
+      "level": "operations",
+      "meaning": "One unit of delegated work: a JSON record (role, decision classes, done-criteria, status, attempts) at <venture>/operations/handoffs/<id>.json with a Markdown brief beside it",
       "standard": "common operations usage",
       "status": "kept"
     },
     {
       "noun": "done-criterion",
-      "level": "execution",
+      "level": "operations",
       "meaning": "One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role)",
       "standard": "definition of done (Scrum)",
       "status": "new"
@@ -704,9 +704,9 @@
     {
       "noun": "derived answer",
       "level": "operations",
-      "meaning": "A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from",
+      "meaning": "A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from Retired with MAD's move out of Mentura (EE-038).",
       "standard": "ours",
-      "status": "new"
+      "status": "retired"
     },
     {
       "noun": "route",

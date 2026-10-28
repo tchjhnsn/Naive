@@ -12,6 +12,8 @@
 //          a collection item is <route>/<id> (purpose/product/kettle); a nested venture is its
 //          folder path (--venture studio/print); system/overview view shows the venture at a glance
 //          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
+//          knowledge/catalog run builds the catalog over the venture's sources; knowledge/search run
+//          --value <query> finds items in any of them (EE-037)
 //   mentura baseline --venture <id>                 adopt existing records into the provenance log
 //
 // The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
@@ -73,7 +75,7 @@ if (cmd === "accept") {
   if (!d?.gate) { console.error(`${rt} is not a gated record route, or no venture ${venture}`); process.exit(1); }
   const draft = join(d.dir, d.draft);
   if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
-  const w = call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
+  const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
     provenance: { activity: "accept", derived_from: [d.draft], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
   rmSync(draft);
@@ -107,9 +109,9 @@ if (!venture && !["template", "layout"].includes(action)) usage();
 let input;
 const src = opt("input");
 if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
-if (opt("value")) input = { ...(input ?? {}), value: Number(opt("value")) };
+if (opt("value")) input = { ...(input ?? {}), value: Number.isNaN(Number(opt("value"))) ? opt("value") : Number(opt("value")) };
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
-const r = call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+const r = await call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);
 const extra = ["not_found", "pending_draft", "fix"].some((k) => r[k]);

@@ -24,13 +24,21 @@
 //                 record (escalate -> an agent's write is a draft), and the role's allowed routes
 //   robots        a team-plan role may list the routes it may read and write; system/robots shows them
 //   aliases       interface/route-aliases.json maps a renamed route to its new one, with a note
+//   storage       a record is read and written through the connector for the source its record
+//                 type lives in (knowledge/connectors, EE-037): the venture's own folder unless its
+//                 knowledge/sources.json names another, such as a GitHub repository, where a write
+//                 opens a draft pull request. A read says which source and version it came from.
 //
 // Partial adoption: a route needs only its own record and what its kit reads.
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, dirname, join, relative } from "node:path";
 import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
+import { address } from "../knowledge/connectors/contract.mjs";
+import { LOCAL, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -96,6 +104,8 @@ export function routes() {
     cmd("governance/payouts", "schema/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
     cmd("system/overview", null, "The venture at a glance: telos, validation, need-now, time to ready, team and recent provenance, rendered as parallel slots", { internal: "overview" }),
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
+    cmd("knowledge/catalog", "knowledge/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
+    cmd("knowledge/search", "knowledge/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
   );
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
@@ -221,7 +231,7 @@ const fix = (r) => ({ skills: r.kit_path ? kits().find((k) => k.path === r.kit_p
  * routes; via: the interface (cli, mcp, api; default router); provenance: { derived_from,
  * decision, note, agent } for the log.
  */
-export function call({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+export async function call({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const { r, params, alias } = resolve(route);
   if (!r) return { ok: false, error: `no route ${route}` };
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
@@ -234,37 +244,55 @@ export function call({ venture, route, action, input, actor = "agent", actor_id 
   if (!allowed(dir, actor_id, action === "write" ? "write" : "read", route)) return { ok: false, error: `${actor_id} may not ${action === "write" ? "write" : "read"} ${route} (team plan routes)` };
 
   if (action === "view") {
-    const inner = call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance });
+    const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance });
     return inner.ok ? { ok: true, result: render(route, inner), ...deprecated } : inner;
   }
 
   if (r.kind === "command") {
-    if (r.internal === "overview") return { ok: true, result: overview(venture, workspace), ...deprecated };
+    if (r.internal === "overview") return { ok: true, result: await overview(venture, workspace), ...deprecated };
     if (r.internal === "robots") return { ok: true, result: robots(dir), ...deprecated };
     const lacking = (r.needs ?? []).filter((f) => !existsSync(join(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };
-    const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : [dir, ...(r.args ?? []), "--json"];
+    if (r.value_flag && !input?.value) return { ok: false, error: `${route} needs a value (${r.note})` };
+    const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(input.value), "--json"] : [dir, ...(r.args ?? []), "--json"];
     const p = spawnSync("node", [join(repo, r.script), ...args], { encoding: "utf8" });
     if (p.status !== 0) return { ok: false, error: (p.stderr || p.stdout).trim() };
     try { return { ok: true, result: JSON.parse(p.stdout), ...deprecated }; } catch { return { ok: true, result: p.stdout, ...deprecated }; }
   }
 
+  // Storage: the connector for the source this record type lives in.
+  let src, store;
+  if (r.kind === "record" && (action === "read" || action === "write")) {
+    try { src = sourceFor(dir, r.record); store = await connect(src, dir); } catch (e) { return { ok: false, error: String(e.message ?? e) }; }
+  }
+  const remote = src && src.id !== LOCAL;
+  const cite = (x) => ({ source: src.id, address: address(src.id, x.path), version: x.version, ...(x.commit ? { commit: x.commit } : {}), ...(x.permalink ? { permalink: x.permalink } : {}) });
+
   if (action === "read") {
     const patterns = r.collection === "item" ? [fileFor(r, params)] : r.files;
-    const found = files(dir).filter((f) => patterns.some((g) => glob(g).test(f)));
-    const draft = r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params)))) ? draftPath(fileFor(r, params)) : null;
+    let items;
+    try {
+      const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => patterns.some((g) => glob(g).test(f))) : patterns;
+      items = (await Promise.all(paths.map((f) => store.read(f)))).filter(Boolean);
+    } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
+    const found = items.map((x) => x.path);
+    const draft = !remote && r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params)))) ? draftPath(fileFor(r, params)) : null;
     const loading = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
+    if (remote) {
+      const prs = provEntries(dir).filter((e) => e.source?.pull_request && found.concat(patterns).some((f) => e.entity === address(src.id, f)));
+      if (prs.length) loading.pending_pull_requests = prs.map((e) => ({ entity: e.entity, pull_request: e.source.pull_request, since: e.at }));
+    }
     if (!found.length) {
       const l = layout(r, dir);
-      return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, template: r.template, schema: r.schema, need_now: l.need_now ?? null, skills: fix(r).skills }, ...loading, ...deprecated };
+      return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, ...(remote ? { source: src.id } : {}), template: r.template, schema: r.schema, need_now: l.need_now ?? null, skills: fix(r).skills }, ...loading, ...deprecated };
     }
-    const parse = (f) => f.endsWith(".json") ? load(join(dir, f)) : f.endsWith(".jsonl") ? readFileSync(join(dir, f), "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : readFileSync(join(dir, f), "utf8");
+    const parse = (x) => x.path.endsWith(".json") ? JSON.parse(x.content) : x.path.endsWith(".jsonl") ? x.content.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : x.content;
     if (r.collection === "list") {
       const re = new RegExp("^" + r.files[0].split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$");
-      return { ok: true, result: Object.fromEntries(found.map((f) => [f.match(re)[1], parse(f)])), ...deprecated };
+      return { ok: true, result: Object.fromEntries(items.map((x) => [x.path.match(re)[1], parse(x)])), sources: Object.fromEntries(items.map((x) => [x.path.match(re)[1], cite(x)])), ...deprecated };
     }
-    const data = Object.fromEntries(found.map((f) => [f, parse(f)]));
-    return { ok: true, result: found.length === 1 ? data[found[0]] : data, ...loading, ...deprecated };
+    const data = Object.fromEntries(items.map((x) => [x.path, parse(x)]));
+    return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...deprecated };
   }
 
   if (action === "check") {
@@ -278,18 +306,40 @@ export function call({ venture, route, action, input, actor = "agent", actor_id 
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params);
     const gate = gateOf(r, dir);
-    const draft = !!gate?.drafts && actor !== "person";
-    const dest = join(dir, draft ? draftPath(file) : file);
-    mkdirSync(dirname(dest), { recursive: true });
-    const tmp = `${dest}.tmp.json`;
-    writeFileSync(tmp, JSON.stringify(input, null, 2) + "\n");
+    const text = JSON.stringify(input, null, 2) + "\n";
+    // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
+    const scratch = mkdtempSync(join(tmpdir(), "mentura-write-"));
+    const tmp = join(scratch, basename(file));
+    writeFileSync(tmp, text);
     const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", tmp], { encoding: "utf8" });
-    if (v.status !== 0) { spawnSync("rm", ["-f", tmp]); return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) }; }
-    execFileSync("mv", [tmp, dest]);
-    const entry = prov(dir, { entity: relative(dir, dest), route, activity: draft ? "draft" : provenance.activity ?? "write",
-      agent: agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent }), derived_from: provenance.derived_from,
-      decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note });
-    return { ok: true, result: { written: relative(dir, dest), draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "written" }, ...deprecated };
+    rmSync(scratch, { recursive: true, force: true });
+    if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) };
+    const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
+    const log = (entity, activity, extra = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, ...extra });
+
+    if (remote) {
+      // Another source: its connector decides how a write lands. A pull-request source opens a
+      // draft pull request, which a person accepts by merging, so it is a draft for anyone.
+      if (store.writes === "none") return { ok: false, error: `${route} lives in ${src.id}, which is read-only` };
+      let w;
+      try { w = await store.write(file, text, { message: `${route}: ${provenance.note ?? `written by ${actor === "person" ? "a person" : "an agent"} through Mentura`}`, title: `Mentura: ${route} (${venture})` }); }
+      catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
+      const draft = store.writes === "pull-request";
+      const at = address(src.id, file);
+      const entry = log(at, draft ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(text).digest("hex"),
+        source: { id: src.id, connector: src.connector, version: w.version, ...(w.commit ? { commit: w.commit } : {}), ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
+      return { ok: true, result: { written: at, draft, gate: gate?.class ?? null, provenance: entry.hash, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}),
+        note: draft ? `opened draft pull request ${w.pull_request.url}; merging it accepts the write` : "written" }, ...deprecated };
+    }
+
+    const draft = !!gate?.drafts && actor !== "person";
+    if (draft) {
+      const dest = join(dir, draftPath(file));
+      mkdirSync(dirname(dest), { recursive: true });
+      writeFileSync(dest, text);
+    } else await store.write(file, text);
+    const entry = log(draft ? draftPath(file) : file, draft ? "draft" : provenance.activity ?? "write");
+    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "written" }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
@@ -325,23 +375,23 @@ function render(route, res) {
 }
 
 // The overview's slots (@slot): each is computed on its own, so one failing does not stop the rest.
-function overview(venture, workspace) {
+async function overview(venture, workspace) {
   const dir = ventureDir(venture, workspace);
   const v = load(join(dir, "venture.json"));
-  const slot = (name, f) => { try { return { slot: name, data: f() }; } catch (e) { return { slot: name, error: String(e.message ?? e).split("\n")[0] }; } };
-  const run = (route) => { const r = call({ venture, route, action: "run", workspace }); if (!r.ok) throw new Error(r.error); return r.result; };
-  const read = (route) => { const r = call({ venture, route, action: "read", workspace }); if (!r.ok) throw new Error(r.error); return r.result ?? r.not_found?.note; };
+  const slot = async (name, f) => { try { return { slot: name, data: await f() }; } catch (e) { return { slot: name, error: String(e.message ?? e).split("\n")[0] }; } };
+  const run = async (route) => { const r = await call({ venture, route, action: "run", workspace }); if (!r.ok) throw new Error(r.error); return r.result; };
+  const read = async (route) => { const r = await call({ venture, route, action: "read", workspace }); if (!r.ok) throw new Error(r.error); return r.result ?? r.not_found?.note; };
   return {
     venture: v.id,
-    slots: [
+    slots: await Promise.all([
       slot("@venture", () => ({ name: v.name, phase: v.phase, ambition: v.ambition ?? null, status: v.status, promise: v.core?.promise ?? null })),
-      slot("@telos", () => { const t = read("purpose/telos"); return typeof t === "string" ? t : { end: t.end ?? t.statement ?? null, phases: (t.phases ?? []).map((p) => p.phase) }; }),
-      slot("@validation", () => { const s = run("purpose/validation/score").scores?.find((x) => x.venture === v.id); if (!s) throw new Error("no validation records yet"); return { V: s.V, threshold: s.threshold, below_floor: s.below_floor.join(", ") || "none", most_to_gain: s.most_to_gain }; }),
-      slot("@need-now", () => run("system/need-now").rows.filter((x) => x.status === "suggest now").map((x) => ({ record: x.type, now: x.now, why: x.why }))),
-      slot("@ready", () => { const t = run("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
-      slot("@team", () => { const p = read("operations/team-plan"); if (typeof p === "string") return p; return p.roles.map((x) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
+      slot("@telos", async () => { const t = await read("purpose/telos"); return typeof t === "string" ? t : { end: t.end ?? t.statement ?? null, phases: (t.phases ?? []).map((p) => p.phase) }; }),
+      slot("@validation", async () => { const s = (await run("purpose/validation/score")).scores?.find((x) => x.venture === v.id); if (!s) throw new Error("no validation records yet"); return { V: s.V, threshold: s.threshold, below_floor: s.below_floor.join(", ") || "none", most_to_gain: s.most_to_gain }; }),
+      slot("@need-now", async () => (await run("system/need-now")).rows.filter((x) => x.status === "suggest now").map((x) => ({ record: x.type, now: x.now, why: x.why }))),
+      slot("@ready", async () => { const t = await run("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
+      slot("@team", async () => { const p = await read("operations/team-plan"); if (typeof p === "string") return p; return p.roles.map((x) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
       slot("@provenance", () => provEntries(dir).slice(-5).reverse().map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, by: `${e.agent.kind}${e.agent.id ? ` ${e.agent.id}` : ""} via ${e.agent.via}` }))),
-    ],
+    ]),
   };
 }
 

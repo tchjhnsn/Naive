@@ -33,9 +33,6 @@
     "operations": {
       "location": "operations/"
     },
-    "execution": {
-      "location": "execution/"
-    },
     "evidence": {
       "location": "evidence/"
     },

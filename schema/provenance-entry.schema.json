@@ -8,11 +8,11 @@
   "additionalProperties": false,
   "properties": {
     "at": { "type": "string", "format": "date-time", "description": "When the activity ended (prov:endedAtTime)" },
-    "entity": { "type": "string", "pattern": "^(?!/)(?!.*\\.\\./).+$", "description": "The file written, relative to the venture folder (prov:Entity)" },
+    "entity": { "type": "string", "pattern": "^(?!/)(?!.*\\.\\./).+$", "description": "The file written, relative to the venture folder (prov:Entity); for a record kept in another source (EE-037), its address <source>://<path>" },
     "route": { "type": "string", "description": "The route the write went through, when it went through the router" },
     "activity": {
       "enum": ["write", "draft", "accept", "baseline"],
-      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity)"
+      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity)"
     },
     "agent": {
       "type": "object",
@@ -35,6 +35,19 @@
     },
     "decision": { "type": "string", "description": "The decision or decision class the activity acted under, such as EE-026 or ownership-or-control" },
     "note": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["id", "connector", "version"],
+      "additionalProperties": false,
+      "description": "For a record kept outside the venture folder (EE-037): the source it was written to, its version there, and the commit or pull request that holds it",
+      "properties": {
+        "id": { "type": "string", "description": "The source id from the venture's knowledge/sources.json" },
+        "connector": { "type": "string" },
+        "version": { "type": "string", "pattern": "^[0-9a-f]{40}$", "description": "The git blob SHA-1 of the content as written" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "pull_request": { "type": "string", "format": "uri", "description": "The pull request that accepts the write when it is merged" }
+      }
+    },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Hash of the file's content as written" },
     "prev": { "type": "string", "pattern": "^([0-9a-f]{64}|genesis)$", "description": "The previous line's hash, or genesis for the first line" },
     "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 of prev followed by this line without its hash field, as JSON with sorted keys" }

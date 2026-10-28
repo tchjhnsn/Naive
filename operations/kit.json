@@ -1,77 +1,50 @@
 {
   "kit": "operations-kit",
   "layer": "operations",
-  "purpose": "Decide how work is run (MAD): which methodology builds each system, which artifacts it needs, which tools each layer uses, and the build roadmap.",
-  "product": "everything-ecosystem/mad",
+  "purpose": "Run the business (business operations): the team plan and hiring, handing work to people and agents (handoffs, with decision rights, done-criteria, attempt limits and run caps), and the tools each function uses, such as marketing, sales and research. How software or hardware gets built is MAD's, a separate product that reads these records (EE-038).",
   "skills": [
     {
-      "id": "build-roadmap",
-      "path": "operations/skills/build-roadmap/SKILL.md",
-      "tier": "delivery"
-    },
-    {
-      "id": "contract-first",
-      "path": "operations/skills/contract-first/SKILL.md",
-      "tier": "software-engineering"
-    },
-    {
-      "id": "linear-workflow",
-      "path": "operations/skills/linear-workflow/SKILL.md",
-      "tier": "delivery"
-    },
-    {
-      "id": "methodology-selection",
-      "path": "operations/skills/methodology-selection/SKILL.md",
-      "tier": "delivery"
-    },
-    {
       "id": "tool-selection",
-      "path": "operations/skills/tool-selection/SKILL.md",
-      "tier": "delivery"
+      "path": "operations/skills/tool-selection/SKILL.md"
     },
     {
       "id": "team-design",
-      "path": "operations/skills/team-design/SKILL.md",
-      "tier": "governance"
+      "path": "operations/skills/team-design/SKILL.md"
     },
     {
       "id": "recruiting",
-      "path": "operations/skills/recruiting/SKILL.md",
-      "tier": "governance"
+      "path": "operations/skills/recruiting/SKILL.md"
     }
   ],
   "records": [
-    "methodology",
-    "question",
-    "artifact-type",
-    "assignment",
-    "catalog-common",
-    "recommendation",
-    "mad-answers",
-    "team-plan"
+    "team-plan",
+    "handoff"
   ],
   "reads": [
-    "design-document",
-    "product",
-    "integration",
-    "telos",
-    "ownership",
-    "board",
-    "venture",
-    "publish-config",
     "agent-capability",
+    "board",
+    "decision",
     "decision-rights",
-    "role"
+    "integration",
+    "ownership",
+    "product",
+    "publication-policy",
+    "role",
+    "telos",
+    "venture"
   ],
-  "writes": [],
+  "writes": [
+    "evidence"
+  ],
   "checks": [
-    "operations/skills/methodology-selection/ee.mjs",
-    "operations/skills/methodology-selection/test.mjs",
-    "operations/skills/methodology-selection/test-publish.mjs",
-    "operations/skills/methodology-selection/derive-answers.mjs",
-    "schema/check-team.mjs"
+    "schema/check-team.mjs",
+    "schema/check-ready.mjs",
+    "schema/run-handoff.mjs",
+    "schema/check-execution.mjs"
   ],
   "gaps": [
-    "Assignments live in this repo's register, not inside each venture's operations layer"
+    "No run-handoff skill: the handoff contract is prose (operations/handoff-v2.md) beside three scripts in schema/ (check-ready, run-handoff, check-execution)",
+    "Business functions (marketing, sales, finance) have no record types yet; only the team plan and handoffs do",
+    "MAD's governance and delivery questions (is it worth doing, who decides, how work is planned and handed over) are not yet re-homed as governance and operations questions"
   ]
 }

@@ -103,12 +103,11 @@ Each arrow is a record type one layer owns and another reads, or one layer write
 
 | Layer | Skills | Owns | Takes from | Gives to |
 | --- | --- | --- | --- | --- |
-| purpose | 2 | product, account, anatomy-framework, anatomy-answers, telos | system (venture); governance (exit) | knowledge (product); operations (product, telos); execution (product); governance (telos); system (product, account) |
-| knowledge | 2 | venture-profile, decision, design-document | system (venture); purpose (product); governance (decision) | system (reference, decision); operations (design-document); execution (decision); evidence (design-document, venture-profile, decision) |
-| operations | 7 | methodology, question, artifact-type, assignment, catalog-common, recommendation, mad-answers, team-plan | knowledge (design-document); purpose (product, telos); system (integration, venture); governance (ownership, board, publish-config, decision-rights, role); evidence (agent-capability) | execution (assignment) |
-| execution | 0 | handoff | purpose (product); knowledge (decision); governance (decision-rights, role, publication-policy, handoff); operations (assignment) | evidence (evidence, handoff); governance (handoff) |
-| evidence | 6 | evidence, eval-suite, design-documents-registry, benchmark, agent-capability | execution (evidence, handoff); knowledge (design-document, venture-profile, decision) | operations (agent-capability); governance (evidence) |
-| governance | 15 | decision-rights, role, pillar, ownership, board, founder-agreement, exit, publication-policy, publish-config | execution (handoff); evidence (evidence); system (venture); purpose (telos) | purpose (exit); operations (ownership, board, publish-config, decision-rights, role); execution (decision-rights, role, publication-policy, handoff); knowledge (decision) |
+| purpose | 2 | product, account, anatomy-framework, anatomy-answers, telos | system (venture); governance (exit) | knowledge (product); operations (product, telos); governance (telos); system (product, account) |
+| knowledge | 2 | venture-profile, decision, design-document, knowledge-sources | system (venture); purpose (product); governance (decision) | system (reference, decision); operations (decision); evidence (design-document, venture-profile, decision) |
+| operations | 3 | team-plan, handoff | evidence (agent-capability); governance (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision); system (integration, venture); purpose (product, telos) | evidence (evidence, handoff); governance (handoff) |
+| evidence | 6 | evidence, eval-suite, design-documents-registry, benchmark, agent-capability | operations (evidence, handoff); knowledge (design-document, venture-profile, decision) | operations (agent-capability); governance (evidence) |
+| governance | 15 | decision-rights, role, pillar, ownership, board, founder-agreement, exit, publication-policy | operations (handoff); evidence (evidence); system (venture); purpose (telos) | purpose (exit); operations (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision) |
 | interface | 1 | route-aliases | system (integration) | none |
 | system | 0 | workspace, venture, ontology, reference, integration, business-models, scaffold, data-model, kit-manifest, need-now, provenance | knowledge (reference, decision); purpose (product, account) | purpose (venture); knowledge (venture); operations (integration, venture); governance (venture); interface (integration) |
 
@@ -119,18 +118,14 @@ flowchart LR
   system -->|venture| knowledge
   purpose -->|product| knowledge
   knowledge -->|reference, decision| system
-  knowledge -->|design-document| operations
-  purpose -->|product, telos| operations
-  system -->|integration, venture| operations
-  governance -->|ownership, board, publish-config, decision-rights, role| operations
   evidence -->|agent-capability| operations
-  purpose -->|product| execution
-  knowledge -->|decision| execution
-  governance -->|decision-rights, role, publication-policy, handoff| execution
-  operations -->|assignment| execution
-  execution -->|evidence, handoff| evidence
+  governance -->|board, decision-rights, ownership, publication-policy, role, handoff| operations
+  knowledge -->|decision| operations
+  system -->|integration, venture| operations
+  purpose -->|product, telos| operations
+  operations -->|evidence, handoff| evidence
   knowledge -->|design-document, venture-profile, decision| evidence
-  execution -->|handoff| governance
+  operations -->|handoff| governance
   evidence -->|evidence| governance
   system -->|venture| governance
   purpose -->|telos| governance

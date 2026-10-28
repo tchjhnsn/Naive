@@ -5,7 +5,6 @@
     "purpose",
     "knowledge",
     "operations",
-    "execution",
     "evidence",
     "governance",
     "interface"
@@ -39,7 +38,6 @@
         "product",
         "account",
         "anatomy-answers",
-        "mad-answers",
         "handoff",
         "evidence",
         "decision-rights",
@@ -49,7 +47,8 @@
         "founder-agreement",
         "exit",
         "telos",
-        "provenance"
+        "provenance",
+        "knowledge-sources"
       ],
       "refs": [
         {
@@ -345,6 +344,29 @@
       "note": "Domain, product, experience, interface and systems design documents; which ones a venture needs is in the design-documents registry"
     },
     {
+      "id": "knowledge-sources",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/knowledge-sources.schema.json",
+      "paths": [
+        "instance/**/knowledge/sources.json",
+        "schema/examples/**/knowledge/sources.json"
+      ],
+      "refs": [
+        {
+          "field": "sources[].connector",
+          "to": "integration",
+          "checked_by": "schema/check-sources.mjs"
+        },
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/check-sources.mjs"
+        }
+      ],
+      "note": "Which source each record type lives in: the venture's own folder by default, or a connected source such as a GitHub repository (EE-037)"
+    },
+    {
       "id": "ontology",
       "layer": "system",
       "level": "method",
@@ -450,108 +472,12 @@
       "note": "What one kit holds: skills, record types it owns, record types it reads and writes, checks. A layer may hold more kits under <layer>/kits/<kit>/ (EE-026)"
     },
     {
-      "id": "methodology",
-      "layer": "operations",
-      "level": "method",
-      "schema": "operations/catalog/_schema/methodology.schema.json",
-      "form": "markdown",
-      "paths": [
-        "operations/catalog/methodologies/*.md"
-      ],
-      "note": "Frontmatter checked by ee.mjs validate"
-    },
-    {
-      "id": "question",
-      "layer": "operations",
-      "level": "method",
-      "schema": "operations/catalog/_schema/question.schema.json",
-      "form": "markdown",
-      "paths": [
-        "operations/catalog/questions/*.md"
-      ]
-    },
-    {
-      "id": "artifact-type",
-      "layer": "operations",
-      "level": "method",
-      "schema": "operations/catalog/_schema/artifact-type.schema.json",
-      "form": "markdown",
-      "paths": [
-        "operations/catalog/artifact-types/*.md"
-      ]
-    },
-    {
-      "id": "assignment",
-      "layer": "operations",
-      "level": "method",
-      "schema": "operations/catalog/_schema/assignment.schema.json",
-      "form": "markdown",
-      "paths": [
-        "operations/register/A-*.md"
-      ],
-      "refs": [
-        {
-          "field": "methodology",
-          "to": "methodology",
-          "checked_by": "operations/skills/methodology-selection/ee.mjs"
-        }
-      ],
-      "note": "Which methodology builds a system. Lives in the method repo for now; belongs inside each venture's operations layer"
-    },
-    {
-      "id": "catalog-common",
-      "layer": "operations",
-      "level": "method",
-      "schema": null,
-      "form": "json",
-      "paths": [
-        "operations/catalog/_schema/common.json"
-      ],
-      "note": "Shared definitions the catalog schemas $ref"
-    },
-    {
-      "id": "recommendation",
-      "layer": "operations",
-      "level": "method",
-      "schema": null,
-      "form": "json",
-      "paths": [
-        "operations/register/_recommendations/*.json"
-      ],
-      "refs": [
-        {
-          "field": "ranked",
-          "to": "methodology",
-          "checked_by": "operations/skills/methodology-selection/ee.mjs"
-        }
-      ],
-      "note": "A scored ranking from ee recommend (Jev or a reasoning model); written once, never edited"
-    },
-    {
-      "id": "mad-answers",
-      "layer": "operations",
-      "level": "venture",
-      "schema": null,
-      "form": "json",
-      "paths": [
-        "instance/**/operations/systems/*.answers.json"
-      ],
-      "refs": [
-        {
-          "field": "(keys)",
-          "to": "question",
-          "checked_by": "operations/skills/methodology-selection/ee.mjs"
-        }
-      ],
-      "note": "Answers to the MAD questions for one system; MAD repo has record.schema.json, not yet folded in"
-    },
-    {
       "id": "handoff",
-      "layer": "execution",
+      "layer": "operations",
       "level": "venture",
       "schema": "schema/handoff.schema.json",
       "paths": [
-        "instance/**/execution/handoffs/*.json"
+        "instance/**/operations/handoffs/*.json"
       ],
       "refs": [
         {
@@ -562,11 +488,6 @@
         {
           "field": "governed_by",
           "to": "decision",
-          "checked_by": "schema/check-ready.mjs"
-        },
-        {
-          "field": "assignment",
-          "to": "assignment",
           "checked_by": "schema/check-ready.mjs"
         },
         {
@@ -589,7 +510,8 @@
           "to": "publication-policy",
           "checked_by": "schema/check-publication.mjs"
         }
-      ]
+      ],
+      "note": "Execution folded into operations (EE-038)."
     },
     {
       "id": "evidence",
@@ -807,26 +729,10 @@
           "field": "channels.guidelines",
           "to": "publication-policy",
           "checked_by": "schema/check-publication.mjs"
-        },
-        {
-          "field": "channels.config",
-          "to": "publish-config",
-          "checked_by": "schema/check-publication.mjs"
         }
       ],
       "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
       "decision_class": "strategy-or-constitution"
-    },
-    {
-      "id": "publish-config",
-      "layer": "governance",
-      "level": "method",
-      "schema": null,
-      "form": "json",
-      "paths": [
-        "publish.json"
-      ],
-      "note": "The method-site channel's configuration: what the publisher may consider (allowlist, private terms). The publication policy names it (EE-025)"
     },
     {
       "id": "need-now",

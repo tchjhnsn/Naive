@@ -42,9 +42,7 @@ Status:
 | Purpose | Product Anatomy and Succession Matrix | `purpose/frameworks/product-anatomy/` (phases, gates, questions as JSON) | defined, draft |
 | Knowledge | Venture profile | the file `venture.json` names in `profile` | prose |
 | Knowledge | Decision log | `schema/decision.schema.json`; the schema's own log is `docs/decisions/decisions.json` (EE-NNN) | defined |
-| Operations | Methodology catalog, questions, artifact types, assignments | `operations/catalog/_schema/` | defined |
-| Operations | MAD record (answers per tier, templates, risk) | MAD repo `schema/record.schema.json` | defined, outside this repo until MAD folds in |
-| Execution | Handoff | `schema/handoff.schema.json` at `<venture>/execution/handoffs/<id>.json`, brief beside it; contract prose in `execution/handoff-v2.md`; `check-ready.mjs` (definition of ready, EE-019), `run-handoff.mjs`, `check-execution.mjs` | defined |
+| Operations | Handoff | `schema/handoff.schema.json` at `<venture>/operations/handoffs/<id>.json`, brief beside it; contract prose in `operations/handoff-v2.md` (execution folded into operations, EE-038); `check-ready.mjs` (definition of ready, EE-019), `run-handoff.mjs`, `check-execution.mjs` | defined |
 | Evidence | Evals and results | `schema/eval-suite.schema.json` for `evidence/evals/*.json`; `schema/evidence.schema.json` at `<venture>/evidence/results/<id>.json` | defined |
 | Evidence | Design-documents registry | `evidence/design-documents.registry.json` | self-describing, no schema |
 | Governance | Decision rights | `schema/decision-rights.schema.json`; template `governance/venture-template/decision-rights.json`, a venture's own at `<venture>/governance/decision-rights.json` (tightens only); switches on when a venture is formalized | defined |

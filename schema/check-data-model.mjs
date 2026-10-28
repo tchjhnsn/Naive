@@ -101,8 +101,6 @@ for (const k of kits.values()) for (const s of k.skills) {
   if (!existsSync(join(root, s.path))) errors.push(`${k.kit}/${s.id}: ${s.path} not found`);
   if (listed.has(s.path)) errors.push(`${s.path}: listed by ${listed.get(s.path)} and ${k.kit}`);
   listed.set(s.path, k.kit);
-  if (k.layer === "operations" && !s.tier) errors.push(`${k.kit}/${s.id}: an operations skill names the MAD tier it serves`);
-  if (k.layer !== "operations" && s.tier) errors.push(`${k.kit}/${s.id}: tiers belong to operations skills only`);
   if (s.move_to && !kits.has(s.move_to)) errors.push(`${k.kit}/${s.id}: move_to unknown kit ${s.move_to}`);
 }
 for (const f of skillFiles) if (!listed.has(f)) errors.push(`${f}: no kit lists this skill`);

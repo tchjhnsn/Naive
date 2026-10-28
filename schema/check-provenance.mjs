@@ -1,7 +1,8 @@
 // Checks each venture's provenance log (<venture>/provenance.jsonl, EE-031).
 //   errors: a line that is not JSON; a broken chain (a line's prev is not the hash of the line
 //     before, or its hash does not match its content), which means a line was edited, removed or
-//     reordered; an entity outside the venture folder.
+//     reordered; an entity outside the venture folder (a record in another source is logged by
+//     its address, <source>://<path>, and carries the source's version; EE-037).
 //   warnings: a logged file that has changed since its last entry, or is gone, so its later
 //     history is only in git; a derived_from path (not a URL or a decision id) that is not in the
 //     venture folder; time going backwards.
@@ -35,12 +36,12 @@ for (const root of walk(dir)) {
     lines++;
     if (prev !== null && e.prev !== prev) errors.push(`${where}: chain broken: prev does not match the line before (a line was edited, removed or reordered)`);
     if (e.hash !== lineHash(e.prev, e)) errors.push(`${where}: hash does not match the line's content (the line was edited)`);
-    if (/^\/|(^|\/)\.\.(\/|$)/.test(e.entity ?? "")) errors.push(`${where}: entity ${e.entity} is outside the venture folder`);
+    if (/^\/|(^|\/)\.\.(\/|$)/.test(e.entity ?? "") || (/^[a-z][a-z0-9+.-]*:\/\//.test(e.entity ?? "") && !e.source)) errors.push(`${where}: entity ${e.entity} is outside the venture folder`);
     if (e.at < at) warnings.push(`${where}: time goes backwards`);
     at = e.at; prev = e.hash;
     if (typeof e.entity !== "string") { errors.push(`${where}: no entity`); return; }
-    last.set(e.entity, e);
-    for (const d of e.derived_from ?? []) if (!/^[a-z]+:\/\//.test(d) && !/^[A-Z]+-\d+$/.test(d) && !d.startsWith("_drafts/") && !existsSync(join(root, d))) warnings.push(`${where}: derived from ${d}, which is not in the venture folder`);
+    if (!e.source) last.set(e.entity, e);
+    for (const d of e.derived_from ?? []) if (!/^[a-z][a-z0-9+.-]*:\/\//.test(d) && !/^[A-Z]+-\d+$/.test(d) && !d.startsWith("_drafts/") && !existsSync(join(root, d))) warnings.push(`${where}: derived from ${d}, which is not in the venture folder`);
   });
   for (const [entity, e] of last) {
     const p = join(root, entity);

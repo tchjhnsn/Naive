@@ -26,7 +26,6 @@
         "purpose",
         "knowledge",
         "operations",
-        "execution",
         "evidence",
         "governance",
         "interface"
@@ -64,7 +63,7 @@
               "software-engineering",
               "automation"
             ],
-            "description": "For an operations-kit skill: the MAD tier it serves. Required there, not allowed elsewhere"
+            "description": "Optional: the MAD tier a skill serves, for a venture that uses MAD (a separate product since EE-038)"
           },
           "standalone": {
             "type": "boolean",

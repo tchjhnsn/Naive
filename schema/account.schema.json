@@ -57,12 +57,12 @@
     },
     "layers": {
       "type": "object",
-      "description": "Optional: where this account's knowledge and execution records live",
+      "description": "Optional: where this account's knowledge and operations records live",
       "properties": {
         "knowledge": {
           "$ref": "venture.schema.json#/$defs/layer"
         },
-        "execution": {
+        "operations": {
           "$ref": "venture.schema.json#/$defs/layer"
         },
         "evidence": {
