@@ -360,7 +360,7 @@
     {
       "id": "EE-033",
       "date": "2026-10-27",
-      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI). See EE-064.",
+      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI). See EE-071.",
       "why": "The owner wants MDX preferred over Markdown and asked for a convention for when to use MDX versus JSON or other formats. Generated pages in MDX render the repository's data at build time instead of being copied, so they cannot go stale.",
       "status": "in-force",
       "related": [
@@ -372,7 +372,7 @@
     {
       "id": "EE-034",
       "date": "2026-10-27",
-      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props. See EE-064.",
+      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props. See EE-071.",
       "why": "The owner chose Nextra's documentation starter for the developer docs, on the latest Next.js, and asked whether the site belongs in a separate repo; the starter kit itself pins Next.js 13 and the Pages Router, which Nextra 4 no longer supports.",
       "status": "in-force",
       "related": [
@@ -546,10 +546,10 @@
       ]
     },
     {
-      "id": "EE-064",
+      "id": "EE-071",
       "date": "2026-10-28",
       "decision": "The developer docs move from Nextra to Fumadocs in site/. This supersedes the Nextra sentence of EE-034. This venture's marketing pages live in the same app. They may read only the facts named in the Naive docs handoff (the problem statement and the segment), written by site/scripts/venture-facts.mjs to site/generated/venture-facts.json. site/scripts/data.mjs still reads no instance venture. This supersedes EE-034's \"never an instance venture\" for that one file only. test.mjs and the site CI job run npm run check:content instead of site/scripts/check-mdx.mjs. This supersedes that clause of EE-033. The zod 4.1.12 pin may be removed once Nextra is gone and the build passes. This supersedes the zod sentence of EE-034. These marketing pages are added to the existing docs app and do not start from a Vercel template. The template stays the default for a later standalone marketing site. This supersedes that clause of proposed EE-044.",
-      "why": "The handoff naive-docs-and-marketing-site carries this migration, and Torian accepts it by merging. EE-060 was taken on draft PR #19, which also uses EE-061, EE-062 and EE-063. EE-049 stays unused. The next free id that skips those is EE-064.",
+      "why": "The handoff naive-docs-and-marketing-site carries this migration, and Torian accepts it by merging. Draft PR #19 uses EE-053 through EE-070. EE-049 stays unused. The next free id on main and the open pull requests is EE-071.",
       "status": "proposed",
       "related": [
         "EE-033",
