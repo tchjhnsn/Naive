@@ -6,7 +6,7 @@
 |---|---|---|---|
 | Purpose | Why | `purpose/` | Discovery frameworks (BASED goals), ambition tiers |
 | Knowledge | Memory: where every record is stored; the other layers define what they write here (EE-036) | `knowledge/` | storage tooling, the find-reference and industry-awareness skills |
-| Operations | How the business runs: team, hiring, handoffs of work to people and agents (EE-038) | `operations/` | Team design, recruiting and tool-selection skills; handoff v2; founder operating model. MAD, the method for building software, is a separate product |
+| Operations | How the business runs: team, hiring, handoffs of work to people and agents (EE-038), by department (EE-047) | `operations/` | Department catalog (APQC and the value chain), imported only when needed (EE-048); team design, recruiting and tool-selection skills; handoff v2; founder operating model. MAD, the method for building software, is a separate product |
 | Evidence | Did it work | `evidence/` | Evals, design-coverage registry and checks, metrics review |
 | Governance (cross-cutting) | Who may decide | `governance/` | Company vault template, roles, decision rights, pillar skills |
 | Interface (cross-cutting) | How you work across the layers at once | `interface/` | Agent harnesses (Claude Code, Cursor), operator console |

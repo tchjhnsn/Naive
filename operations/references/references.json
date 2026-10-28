@@ -1,0 +1,45 @@
+{
+  "layer": "operations",
+  "references": [
+    {
+      "id": "porter-1985-competitive-advantage",
+      "title": "Competitive Advantage: Creating and Sustaining Superior Performance",
+      "authors": [
+        "Michael E. Porter"
+      ],
+      "year": 1985,
+      "kind": "book",
+      "summary": "The value chain: primary activities (inbound logistics, operations, outbound logistics, marketing and sales, service) and support activities (firm infrastructure, human resource management, technology development, procurement).",
+      "url": "https://umbrex.com/resources/frameworks/organization-frameworks/porter-value-chain/",
+      "checked": "2026-10-28",
+      "informs": [
+        "field:department.value_chain",
+        "rule:department-grouping"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Each department is tagged primary or support by Porter's activities, and the optional grouping folders take those names; product development is filed as primary for a venture whose product is its work."
+      }
+    },
+    {
+      "id": "apqc-pcf-cross-industry",
+      "title": "APQC Process Classification Framework (PCF), cross-industry and industry-specific versions",
+      "authors": [
+        "APQC"
+      ],
+      "year": 2025,
+      "kind": "standard",
+      "summary": "A hierarchical taxonomy of business processes with 13 top-level categories (from Develop Vision and Strategy to Develop and Manage Business Capabilities), published cross-industry and in industry-specific versions.",
+      "url": "https://www.apqc.org/process-frameworks/industry-specific-process-frameworks",
+      "checked": "2026-10-28",
+      "informs": [
+        "field:venture.departments",
+        "field:department.apqc"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "A venture's departments are the PCF's top-level categories under short ids; the catalog maps to them and cites them rather than copying the framework's text, which carries licence terms."
+      }
+    }
+  ]
+}
