@@ -24,8 +24,9 @@
 // 3. The founder settles the top-ranked decisions, one at a time, in the order Naive ranks them.
 // 4. Pass 2: the agent assesses the accepted problem, does the work the decisions unlocked, and reports
 //    what comes next.
-// 5. Naive plans the site from the records and writes the venture package: every package that fits the
-//    venture now, each record confirmed, waiting for review or still to write (EE-067).
+// 5. Naive writes the venture package view: the packages open now, each record confirmed, to review or
+//    to write, what moves now and what waits (EE-067, EE-069). The founder confirms Mentura's
+//    understanding of the ideas between the graph and the agent's first pass (Understand, EE-069).
 
 import { spawn, spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -34,6 +35,7 @@ import { basename, join, resolve } from "node:path";
 import { decisions } from "../../schema/decisions.mjs";
 import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../purpose/frameworks/idea-map/ideamap.mjs";
 import { GRAPH, build as buildGraph, request as graphRequest } from "../../purpose/frameworks/idea-map/graph.mjs";
+import { understood } from "../../purpose/frameworks/idea-map/route.mjs";
 import { createHash } from "node:crypto";
 import { agentFromEnv, record as prov } from "../provenance.mjs";
 import { evaluate } from "./evals.mjs";
@@ -185,6 +187,18 @@ prov(dir, { entity: GRAPH, route: "purpose/idea-graph", activity: "create", deri
 trace.children.push(Object.assign(graphNode, { end: iso(), outputs: { root: g.root, edges: g.edges.length, lanes: g.lanes.map((l) => ({ mode: l.mode, ideas: l.ideas.length })), next: g.next } }));
 lap(`idea graph: ${g.edges.length} dependencies (${g.judged_by}); ${g.lanes.filter((l) => l.mode === "sync").length} lane(s) in order, ${g.lanes.filter((l) => l.mode === "async").length} on their own; develop next: ${g.next.join(", ")}; root ${g.root}`);
 
+// 1c. Understand (EE-069): the founder confirms Mentura read their ideas right, after correcting the
+//     map or the graph, before anything is routed.
+if (flag("yes")) {
+  const u = cli("understand", "--venture", id, "--confirm", "ideas", "--note", "rehearsal: confirmed as mapped");
+  if (u.status !== 0) { console.error(u.stderr || u.stdout); process.exit(1); }
+} else {
+  lap("waiting for the founder to confirm the understanding of their ideas (mentura understand)");
+  while (!understood(dir)) await new Promise((r) => setTimeout(r, 1000));
+}
+trace.children.push({ name: "founder: understand", run_type: "chain", start: iso(), end: iso(), inputs: { map: MAP, graph: GRAPH }, outputs: { understood: true } });
+lap("the founder confirmed Mentura's understanding of the ideas; routing them");
+
 const rules = `You are the builder agent (agent_id builder) for the venture ${id}. Work only through the naive MCP tools${research ? " and the research tools" : ""}; pass agent_id "builder" on every naive call.
 Rules: the founder's idea dump is theirs. Quote it, cite ideas by id (i-01...), never put words in their mouth. Never invent evidence: every evidence item cites a URL a research result gave you${research ? "" : " (you have no research tool in this run, so leave evidence empty and say so)"}. Records Naive treats as the founder's are written as drafts for the founder to accept; that is expected. You never decide; you propose. knowledge/venture-profile cannot be written over MCP; skip it.`;
 
@@ -225,11 +239,9 @@ if (!settled.length) { lap("nothing for the founder to settle; stopping"); finis
 await agent(`${rules}
 The founder settled: ${settled.join(", ")}. mentura_decisions shows what that unlocked. First, if the founder accepted the problem record, mentura_run purpose/validation/assess with as_is true and note what the evidence supports. Then do the work the decisions unlock for you: if product-exists is decided, write product cards (purpose/product/<id>) for what exists or is planned, from the founder's ideas, citing them; then propose wording for core-product with mentura_propose_decision (id "core-product", at "products", name "product.core", the same question; mentura_decisions shows it), from the ideas tagged venture-core, citing them. Then mentura_run purpose/ideas/routes and draft the highest-signal destination still in Routed that moves in order and has no record yet (not the problem, not products), from its ideas, citing them. Then mentura_decisions again and report in at most six lines: what the assessment says, what you did, and the founder's next decision with why it ranks first.`, "pass 2: the work the decisions unlocked");
 
-// 5. The venture package (EE-067): what the founder walks away with. The sitemap is planned from the
-//    records the run wrote (EE-064); then the question matrix settles which packages fit (Jev answers
-//    what the records leave open), and each fitting package is rendered with what is still to write.
-const sp = spawnSync("node", [join(repo, "operations/marketing/site/plan.mjs"), dir, "--write"], { encoding: "utf8" });
-if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records" });
+// 5. The venture package (EE-067, EE-069): the question matrix settles which packages are open (Jev
+//    answers what the records leave open), and the view shows each package's state, what moves now and
+//    what waits. The sitemap is a marketing record: it is planned only once the marketing package is open.
 let pkgArgs = [];
 if (jev) {
   const rq = spawnSync("node", [join(repo, "schema/packages.mjs"), "request", dir], { encoding: "utf8" });
@@ -239,11 +251,17 @@ if (jev) {
     if (p.status === 0) { writeFileSync(join(ws, "package-answers.json"), p.stdout); pkgArgs = ["--answers", join(ws, "package-answers.json")]; console.log(`   Jev answered ${Object.keys(q.questions).length} of the question matrix's questions`); }
   }
 }
-const pk = spawnSync("node", [join(repo, "schema/packages.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
+let pk = spawnSync("node", [join(repo, "schema/packages.mjs"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
+if (pk.status === 0 && JSON.parse(pk.stdout).core.some((x) => x.id === "marketing" && x.in === "now")) {
+  const sp = spawnSync("node", [join(repo, "operations/marketing/site/plan.mjs"), dir, "--write"], { encoding: "utf8" });
+  if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records: the marketing package is open" });
+}
+pk = spawnSync("node", [join(repo, "schema/packages.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
 if (pk.status === 0) {
   const r = JSON.parse(pk.stdout);
-  trace.children.push({ name: "venture package", run_type: "tool", start: iso(), end: iso(), inputs: { phase: r.phase }, outputs: { progress: r.progress, now: r.packages.filter((x) => x.in === "now").map((x) => ({ id: x.id, state: x.state, progress: x.progress, missing: x.missing })), open: r.situation.questions.filter((x) => x.value == null).map((x) => x.id) } });
-  lap(`venture package in ${join(dir, "package")}: ${Math.round(r.progress * 100)}% across ${r.packages.filter((x) => x.in === "now").map((x) => `${x.title} (${x.state})`).join(", ")}; held: ${r.packages.filter((x) => x.in === "held").map((x) => x.title).join(", ")}`);
+  const open = r.core.filter((x) => x.in === "now");
+  trace.children.push({ name: "venture package", run_type: "tool", start: iso(), end: iso(), inputs: { phase: r.phase }, outputs: { progress: r.progress, open: open.map((x) => ({ id: x.id, state: x.state, progress: x.progress, moving: x.moving, missing: x.missing })), questions_open: r.situation.questions.filter((x) => x.value == null).map((x) => x.id) } });
+  lap(`venture package: ${Math.round(r.progress * 100)}% across ${open.map((x) => `${x.title} (${x.state}, ${Math.round(x.progress * 100)}%)`).join(", ")}; next phase: ${r.core.filter((x) => x.in === "next").map((x) => x.title).join(", ") || "none"}; view in ${join(dir, "package")}`);
 } else console.log(`   the venture package failed: ${pk.stderr.trim().slice(0, 300)}`);
 
 const end = decisions(dir);

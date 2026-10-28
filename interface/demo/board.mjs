@@ -243,37 +243,56 @@ const PACKAGE_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"
 @media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--muted:#a19d94;--line:#2e2d2a;--card:#1c1b19;--col:#191917;--accent:#58a6ff;--ok:#56d364;--low:#e3b341;--miss:#ff7b72}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}h1{font-size:20px;margin:0}.meta{color:var(--muted);font-size:13px}a{color:var(--accent)}
-.pipe{display:flex;gap:6px;padding:14px 24px;flex-wrap:wrap;align-items:stretch}.step{background:var(--col);border-radius:8px;padding:7px 10px;min-width:120px;border-top:3px solid var(--line)}.step.done{border-top-color:var(--ok)}.step.part{border-top-color:var(--low)}.step .n{font-size:11px;color:var(--muted)}.step .l{font-weight:600}.step .d{font-size:12px;color:var(--muted)}.arrow{align-self:center;color:var(--muted)}
+.pipe{display:flex;gap:6px;padding:14px 24px;flex-wrap:wrap;align-items:stretch}.step{background:var(--col);border-radius:8px;padding:7px 10px;min-width:118px;border-top:3px solid var(--line)}.step.done{border-top-color:var(--ok)}.step.part{border-top-color:var(--low)}.step .n{font-size:11px;color:var(--muted)}.step .l{font-weight:600}.step .d{font-size:12px;color:var(--muted)}.arrow{align-self:center;color:var(--muted)}
 .wrap{display:grid;grid-template-columns:1fr 320px;gap:16px;padding:0 24px 28px}@media (max-width:900px){.wrap{grid-template-columns:1fr}}
-h2{font-size:15px;margin:14px 0 6px}.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
-.pkg{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:10px;padding:10px 12px}.pkg.ready{border-top-color:var(--ok)}.pkg.review{border-top-color:var(--accent)}.pkg.building{border-top-color:var(--low)}.pkg.held{opacity:.6}
+h2{font-size:15px;margin:16px 0 4px}.sub{color:var(--muted);font-size:13px;margin:0 0 8px}.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.pkg{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:10px;padding:10px 12px}.pkg.complete{border-top-color:var(--ok)}.pkg.review{border-top-color:var(--accent)}.pkg.building{border-top-color:var(--low)}.pkg.held,.pkg.next{opacity:.65}
 .t{font-weight:600}.for{font-size:12px;color:var(--muted)}.bar{height:6px;background:var(--col);border-radius:3px;margin:8px 0 4px}.bar span{display:block;height:100%;background:var(--accent);border-radius:3px}
 .rec{font-size:12.5px;display:flex;gap:6px;align-items:baseline;margin-top:5px}.dot{width:8px;height:8px;border-radius:50%;flex:none;transform:translateY(-1px)}.dot.confirmed{background:var(--ok)}.dot.agent,.dot.draft{background:var(--accent)}.dot.missing{background:transparent;border:1.5px solid var(--miss)}
-.opt{color:var(--muted)}.nx{font-size:11.5px;color:var(--muted);margin-left:14px}.tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:99px;padding:1px 7px;margin-left:6px;color:var(--muted)}
+.opt{color:var(--muted)}.nx{font-size:11.5px;color:var(--muted);margin-left:14px}.tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:99px;padding:1px 7px;margin-left:6px;color:var(--muted)}.tag.now{border-color:var(--ok);color:var(--ok)}
+.un{font-size:12px;margin-top:8px;padding-top:6px;border-top:1px dashed var(--line);color:var(--muted)}
 aside{background:var(--col);border-radius:10px;padding:12px;align-self:start}.qq{font-size:12.5px;margin:0 0 8px}.qq b{font-weight:600}.big{font-size:34px;font-weight:700}button{font:inherit;padding:7px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
-</style></head><body><header><h1 id="title">Venture package</h1><span class="meta" id="meta"></span><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/site">Site presence</a><a class="meta" href="/">Decision board</a></header>
+</style></head><body><header><h1 id="title">Venture package</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/">Decision board</a><a class="meta" href="/site">Site presence</a></header>
 <div class="pipe" id="pipe"></div>
-<div class="wrap"><main><h2>Fits now</h2><div class="cols" id="now"></div><h2>Next phase</h2><div class="cols" id="next"></div><h2>Held for now</h2><div class="cols" id="held"></div></main><aside id="side"></aside></div>
+<div class="wrap"><main>
+<h2>Core packages open now</h2><p class="sub">Where the venture's records live. A package is complete when you have confirmed its records and everything it reads; then its automation may run.</p><div class="cols" id="now"></div>
+<h2>Handoff packages</h2><p class="sub">Snapshots of core packages for one receiver. Ready when every package they draw on is complete.</p><div class="cols" id="handoff"></div>
+<h2>Next phase and held</h2><div class="cols" id="later"></div></main><aside id="side"></aside></div>
 <script>
 const esc=(s)=>String(s??"").replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const ST={ready:"ready to hand off",review:"waiting for your review",building:"still being written"};
+const ST={complete:"complete",review:"waiting for your review",building:"still being written"};
 const MK={confirmed:"confirmed",agent:"agent draft, to review",draft:"draft, to accept",missing:"not written"};
-function card(p,written){
-  const recs=p.in==="held"?'':p.records.map((r)=>'<div class="rec"><span class="dot '+r.status+'"></span><span class="'+(r.required?'':'opt')+'">'+esc(r.title)+(r.required?'':' (optional)')+' <span class="opt">· '+MK[r.status]+'</span></span></div>'+(r.status!=="confirmed"&&r.route&&r.route.next?'<div class="nx">Next: '+esc(r.route.next.do)+'</div>':'')).join("");
-  return '<div class="pkg '+(p.in==="now"?p.state:p.in)+'"><div class="t">'+esc(p.title)+(p.in==="now"?'<span class="tag">'+ST[p.state]+'</span>':'<span class="tag">fit '+p.fit+'</span>')+'</div><div class="for">For '+esc(p.for)+'. '+esc(p.purpose)+'</div>'+
-    (p.in==="now"?'<div class="bar"><span style="width:'+Math.round(p.progress*100)+'%"></span></div><div class="for">'+Math.round(p.progress*100)+'% · fit '+p.fit+(written&&written.includes(p.id)?' · <a href="package/'+p.id+'.md" target="_blank">read the document</a>':'')+'</div>':'<div class="for" style="margin-top:6px">'+esc(p.why)+'</div>')+recs+'</div>';
+let T={};
+const pct=(x)=>Math.round(x*100)+"%";
+function rec(r){
+  const move=r.role==="reads"?'<span class="tag">read from '+esc(T[r.home]||r.home)+'</span>':r.moves==="now"?'<span class="tag now">moves now</span>':r.moves==="waits"?'<span class="tag">waits on '+esc((r.waits_on_titles||r.waits_on).join(", "))+'</span>':'';
+  return '<div class="rec"><span class="dot '+r.status+'"></span><span class="'+(r.role==="optional"||r.role==="reads"?'opt':'')+'">'+esc(r.title)+(r.role==="optional"?' (optional)':'')+' <span class="opt">· '+MK[r.status]+'</span>'+move+'</span></div>'+(r.role!=="reads"&&r.status!=="confirmed"&&r.moves==="now"&&r.route&&r.route.next?'<div class="nx">Next: '+esc(r.route.next.do)+'</div>':'');
+}
+function core(p,written){
+  if(p.in!=="now")return '<div class="pkg '+p.in+'"><div class="t">'+esc(p.title)+'<span class="tag">'+(p.in==="next"?'next phase':'held')+' · fit '+p.fit+'</span></div><div class="for">'+esc(p.why)+'</div></div>';
+  return '<div class="pkg '+p.state+'"><div class="t">'+esc(p.title)+'<span class="tag">'+ST[p.state]+'</span></div><div class="for">'+esc(p.purpose)+'</div><div class="bar"><span style="width:'+pct(p.progress)+'"></span></div><div class="for">'+pct(p.progress)+' · fit '+p.fit+(written&&written.includes(p.id)?' · <a href="package/'+p.id+'.md" target="_blank">read the document</a>':'')+'</div>'+
+    p.records.map(rec).join("")+'<div class="un">Unlocks: '+esc(p.unlocks.join(", "))+(p.planned.length?'<br>Not in Naive yet: '+esc(p.planned.join(", ")):'')+'</div></div>';
+}
+function handoff(p){
+  return '<div class="pkg '+(p.in==="now"?p.state:p.in)+'"><div class="t">'+esc(p.title)+'<span class="tag">'+(p.in==="now"?(p.state==="complete"?'ready':'waits on '+esc(p.waits_on.join(", "))):(p.in==="next"?'next phase':'held')+' · fit '+p.fit)+'</span></div><div class="for">For '+esc(p.for)+'. Draws on '+esc(p.from.map((x)=>T[x]||x).join(", "))+'.</div>'+
+    (p.in==="now"?'<div class="bar"><span style="width:'+pct(p.progress)+'"></span></div>':'<div class="for" style="margin-top:4px">'+esc(p.why)+'</div>')+'<div class="un">Unlocks: '+esc(p.unlocks.join(", "))+'</div></div>';
 }
 async function load(){
   const r=await (await fetch("package.json"+location.search,{cache:"no-store"})).json();
   if(r.error){document.getElementById("meta").textContent=r.error;return;}
+  T={};r.core.forEach((p)=>T[p.id]=p.title);r.not_modeled.forEach((p)=>T[p.id]=p.title);
   document.getElementById("title").textContent="Venture package: "+r.name;
-  document.getElementById("meta").textContent=r.phase+" phase · "+Math.round(r.progress*100)+"% across what fits now";
+  document.getElementById("meta").textContent=r.phase+" phase · "+pct(r.progress)+" across the open packages"+(r.versions&&r.versions.length?" · v"+r.versions.at(-1).version:"");
   document.getElementById("pipe").innerHTML=r.pipeline.map((s,i)=>(i?'<span class="arrow">&rarr;</span>':'')+'<div class="step '+s.state+'"><div class="n">'+(i+1)+'</div><div class="l">'+(s.href?'<a href="'+s.href+'">'+esc(s.label)+'</a>':esc(s.label))+'</div><div class="d">'+esc(s.detail)+'</div></div>').join("");
-  for(const k of ["now","next","held"])document.getElementById(k).innerHTML=r.packages.filter((p)=>p.in===k).map((p)=>card(p,r.written)).join("")||'<div class="meta">None.</div>';
-  document.getElementById("side").innerHTML='<div class="big">'+Math.round(r.progress*100)+'<small style="font-size:14px">%</small></div><div class="meta">Ready to hand off: '+(r.ready.length?esc(r.ready.join(", ")):"none yet")+'</div>'+
-    '<p><button id="w">'+(r.written?'Write it again':'Write the package')+'</button></p>'+
-    '<h2>What decided this</h2>'+r.situation.questions.map((q)=>'<div class="qq">'+esc(q.ask)+' <b>'+(q.value==null?'open, yours to answer':q.value?'yes':'no')+'</b><br><span class="meta">'+(q.by==="records"?'from the records':q.by==="jev"?'Jev, '+q.p:'the records do not say')+' · moves '+esc(q.moves.join(", "))+'</span></div>').join("")+
-    '<h2>Not included</h2><div class="qq">Agents. '+esc(r.enhancements.agents)+'</div>';
+  document.getElementById("now").innerHTML=r.core.filter((p)=>p.in==="now").map((p)=>core(p,r.written)).join("")||'<div class="meta">None.</div>';
+  document.getElementById("handoff").innerHTML=r.handoff.filter((p)=>p.in!=="held").map(handoff).join("")||'<div class="meta">None fits yet: '+esc(r.handoff.map((p)=>p.title).join(", "))+' are held.</div>';
+  document.getElementById("later").innerHTML=r.core.filter((p)=>p.in!=="now").map((p)=>core(p)).join("")+r.handoff.filter((p)=>p.in==="held").map(handoff).join("");
+  document.getElementById("side").innerHTML='<div class="big">'+Math.round(r.progress*100)+'<small style="font-size:14px">%</small></div><div class="meta">Complete, so their automation may run: '+(r.complete.length?esc(r.complete.join(", ")):"none yet")+'</div>'+
+    '<p><button id="w">'+(r.written?'Write a new view':'Write the package view')+'</button></p>'+
+    '<h2>What decided this</h2>'+r.situation.questions.map((q)=>'<div class="qq">'+esc(q.ask)+' <b>'+(q.value==null?'open, yours to answer':q.value?'yes':'no')+'</b><br><span class="meta">'+(q.by==="records"?'from the records':q.by==="jev"?'Jev, '+q.p:'the records do not say')+'</span></div>').join("")+
+    (r.versions&&r.versions.length?'<h2>Versions</h2>'+r.versions.slice().reverse().map((v)=>'<div class="qq"><b>v'+v.version+'</b> '+esc(v.phase)+': '+esc(v.why)+'<br><span class="meta">'+esc(v.at)+' · tag '+esc(v.tag)+'</span></div>').join(""):'')+
+    '<h2>Assumed</h2><div class="qq">'+esc(r.assumes.note)+'</div>'+
+    '<h2>Not included</h2><div class="qq">Agents. '+esc(r.enhancements.agents)+'</div>'+r.not_modeled.map((x)=>'<div class="qq">'+esc(x.title)+'. '+esc(x.why)+'</div>').join("");
   document.getElementById("w").onclick=async()=>{await fetch("package/write"+location.search,{method:"POST"});load();};
 }
 load();
@@ -295,13 +314,15 @@ h2.board{font-size:15px;margin:20px 24px 4px}.sub{margin:0 24px 10px;color:var(-
 .tag{display:inline-block;font-size:11px;border-radius:99px;padding:1px 6px;margin:4px 3px 0 0;border:1px solid var(--line);color:var(--muted)}.tag.async{border-color:var(--done);color:var(--done)}
 .next{font-size:12px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}.next b{color:var(--muted);font-weight:600}code{font-size:11px;word-break:break-all}
 .foot{padding:4px 24px 28px;color:var(--muted);font-size:13px}
+.pk{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;padding:0 24px 6px}.pb{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}.pb .bar{height:8px;background:var(--col);border-radius:4px;margin:6px 0 3px;overflow:hidden}.pb .bar span{display:block;height:100%;background:var(--done);border-radius:4px;transition:width .6s}.pb.next{opacity:.6}
 </style></head><body><header><h1 id="title">Idea routes</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a><a class="meta" href="/site">Site presence</a><a class="meta" href="/package">Venture package</a><a class="meta" href="/">Decision board</a></header>
+<h2 class="board">The packages taking shape</h2><p class="sub">Your ideas land in the venture's packages. Each bar climbs as records are written and you confirm them; at 100% the package is complete and its automation may run. <a href="/package">Open the venture package</a></p><div class="pk" id="pkgs"></div>
 <h2 class="board">From ideas to the framework</h2><p class="sub">Each card is a record the founder's ideas feed. It moves left to right as an agent drafts it and the founder settles it; the next step comes from the framework, not from a guess.</p><div class="cols" id="dest"></div>
 <div class="foot" id="loose"></div>
 <h2 class="board">The decision docket</h2><p class="sub">Every open decision, by what moves it next, traced to the ideas it comes from. Ranked ones show their place in line.</p><div class="cols" id="docket"></div>
 <script>
 const esc=(s)=>String(s??"").replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let text={};const chip=(id)=>'<span class="chip" title="'+esc(text[id])+'">'+esc(id)+'</span>';
+let text={},PK={};const chip=(id)=>'<span class="chip" title="'+esc(text[id])+'">'+esc(id)+'</span>';
 const laneTag=(x)=>x.lane==="async"?'<span class="tag async">on its own</span>':'<span class="tag">in order'+(x.order?' #'+x.order:'')+'</span>';
 const board=(el,stages,items,card)=>{document.getElementById(el).innerHTML=stages.map(([k,l])=>{const xs=items.filter((x)=>x.stage===k);return '<div class="col"><h3><span>'+esc(l)+'</span><span>'+xs.length+'</span></h3>'+xs.map(card).join("")+'</div>';}).join("");};
 async function tick(){
@@ -311,7 +332,8 @@ async function tick(){
     text={};s.destinations.forEach((d)=>d.ideas.forEach((i)=>text[i.id]=i.text));s.loose.forEach((i)=>text[i.id]=i.text);
     document.getElementById("title").textContent="Idea routes: "+(s.name||s.venture);
     document.getElementById("meta").textContent=s.phase+" phase · "+s.destinations.length+" destinations · updated "+new Date().toLocaleTimeString();
-    board("dest",s.stages,s.destinations,(x)=>'<div class="card '+x.stage+'"><div class="t">'+esc(x.title)+'</div><div class="r">'+esc(x.route)+(x.signal!=null?' · signal '+x.signal:'')+'</div>'+laneTag(x)+'<div>'+x.ideas.map((i)=>chip(i.id)).join("")+'</div>'+
+    try{const k=await (await fetch("package.json"+location.search,{cache:"no-store"})).json();if(k.core){PK={};k.core.forEach((p)=>PK[p.id]=p.title);document.getElementById("pkgs").innerHTML=k.core.filter((p)=>p.in!=="held").map((p)=>'<div class="pb '+p.in+'"><div class="t">'+esc(p.title)+'</div><div class="bar"><span style="width:'+Math.round(p.progress*100)+'%"></span></div><div class="r">'+(p.in==="now"?Math.round(p.progress*100)+'% · '+(p.moving.length?p.moving.length+' moving now':'nothing can move yet'):'opens next phase')+'</div></div>').join("");}}catch(e){}
+    board("dest",s.stages,s.destinations,(x)=>'<div class="card '+x.stage+'"><div class="t">'+esc(x.title)+'</div><div class="r">'+(x.package?esc(PK[x.package]||x.package)+' package · ':'')+esc(x.route)+(x.signal!=null?' · signal '+x.signal:'')+'</div>'+laneTag(x)+'<div>'+x.ideas.map((i)=>chip(i.id)).join("")+'</div>'+
       (x.next?'<div class="next"><b>Next, '+esc(x.next.by||"nobody yet")+':</b> '+esc(x.next.do)+(x.next.command?'<br><code>'+esc(x.next.command)+'</code>':'')+'</div>':'')+'</div>');
     document.getElementById("loose").innerHTML=(s.loose.length?'Loose, on the map only: '+s.loose.map((i)=>chip(i.id)).join(""):'')+(s.gaps.length?' · Nothing in the dump feeds: '+esc(s.gaps.map((g)=>g.title).join(", ")):'');
     const ranked=s.docket.filter((d)=>d.rank!=null).sort((a,b)=>b.rank-a.rank).map((d)=>d.id);
@@ -476,18 +498,23 @@ function packageOf(dir, writeIt = false) {
   let rt = null; try { rt = route(dir); } catch {}
   const d = decisions(dir).decisions;
   const settled = d.filter((x) => ["decided", "accepted"].includes(x.status)).length;
-  const now = r.packages.filter((p) => p.in === "now");
-  const written = has(join(PACKAGE, "venture-package.json")) ? now.filter((p) => has(join(PACKAGE, `${p.id}.md`))).map((p) => p.id) : null;
+  const open = r.core.filter((p) => p.in === "now");
+  const recs = [...new Map(open.flatMap((p) => p.records.filter((x) => x.role !== "optional")).map((x) => [x.record, x])).values()];
+  const written = has(join(PACKAGE, "venture-package.json")) ? open.filter((p) => has(join(PACKAGE, `${p.id}.md`))).map((p) => p.id) : null;
+  const manifest = has(join(PACKAGE, "venture-package.json")) ? JSON.parse(readFileSync(join(dir, PACKAGE, "venture-package.json"), "utf8")) : null;
+  const n = (f) => recs.filter(f).length;
+  const routedTo = rt?.destinations ? new Set(rt.destinations.filter((x) => x.ideas.length && x.package).map((x) => x.package)) : new Set();
+  // The founder's pipeline (EE-069): seven stages by what the founder does, not by the files they produce.
   const pipeline = [
-    { label: "Idea dump", state: has("purpose/ideas/dump.md") ? "done" : "", detail: has("purpose/ideas/dump.md") ? "kept verbatim" : "write it" },
-    { label: "Idea map", href: "/map", state: has(MAP) ? "done" : "", detail: has(MAP) ? "tagged by pillar and department" : "not yet" },
-    { label: "Idea graph", href: "/graph", state: has(GRAPH) ? "done" : "", detail: has(GRAPH) ? "what builds on what" : "not yet" },
-    { label: "Routes", href: "/kanban", state: rt ? (rt.destinations.every((x) => x.stage === "done") ? "done" : "part") : "", detail: rt ? `${rt.destinations.filter((x) => x.stage !== "routed").length} of ${rt.destinations.length} destinations moving` : "not yet" },
-    { label: "Decisions", href: "/", state: settled ? "part" : "", detail: `${settled} settled, ${d.filter((x) => x.rank != null).length} waiting for you` },
-    { label: "Sitemap", href: "/site", state: has("operations/marketing/sitemap.json") ? "done" : "", detail: has("operations/marketing/sitemap.json") ? "planned from the records" : "not planned yet" },
-    { label: "Venture package", state: r.ready.length === now.length && now.length ? "done" : written ? "part" : "", detail: `${now.length} packages fit now, ${r.ready.length} ready` },
+    { label: "Capture", state: has("purpose/ideas/dump.md") ? "done" : "", detail: has("purpose/ideas/dump.md") ? "ideas kept verbatim" : "write the idea dump" },
+    { label: "Understand", href: "/map", state: rt?.understood ? "done" : has(MAP) ? "part" : "", detail: rt?.understood ? "you confirmed the reading" : has(MAP) ? "check and correct the map" : "not yet" },
+    { label: "Route", href: "/kanban", state: rt?.destinations ? "done" : "", detail: rt?.destinations ? `ideas reach ${routedTo.size} packages` : "after Understand" },
+    { label: "Decide", href: "/", state: settled ? "part" : "", detail: `${settled} settled, ${d.filter((x) => x.rank != null).length} waiting for you` },
+    { label: "Write", state: recs.length && !n((x) => x.status === "missing") ? "done" : n((x) => x.status !== "missing") ? "part" : "", detail: `${n((x) => x.status !== "missing")} of ${recs.length} records written` },
+    { label: "Confirm", state: recs.length && n((x) => x.status === "confirmed") === recs.length ? "done" : n((x) => x.status === "confirmed") ? "part" : "", detail: `${n((x) => x.status === "confirmed")} of ${recs.length} confirmed` },
+    { label: "Package", state: open.length && r.complete.length >= open.length ? "done" : r.complete.length ? "part" : "", detail: `${r.complete.length} of ${open.length} open packages complete` },
   ];
-  return { ...r, pipeline, written };
+  return { ...r, versions: writeIt ? r.versions : manifest?.versions ?? [], pipeline, written };
 }
 
 export function serve(p = port, id = venture) {

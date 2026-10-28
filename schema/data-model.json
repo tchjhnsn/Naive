@@ -930,12 +930,12 @@
       ],
       "refs": [
         {
-          "field": "packages.*.required",
+          "field": "core.*.required",
           "to": "(record types)",
-          "checked_by": "schema/test.mjs"
+          "checked_by": "schema/packages-test.mjs"
         }
       ],
-      "note": "Venture packages and the question matrix: each package's receiver, required and optional records, priors per phase with conditions, and the questions a reasoning model answers to decide which packages fit a venture now (EE-067)"
+      "note": "Venture packages (EE-067, EE-069): the assumed governance model; core packages by department (each record's one home, what it reads, priors per phase with conditions, what completion unlocks); handoff packages by receiver; record-level dependencies; the question matrix"
     },
     {
       "id": "venture-package",
@@ -946,7 +946,7 @@
       "paths": [
         "instance/**/package/venture-package.json"
       ],
-      "note": "What the founder walks away with: the packages that fit the venture now, each record confirmed, waiting for review or still to write, rendered as documents beside it in package/ (EE-067)"
+      "note": "The venture package view (EE-067, EE-069): the open core packages and handoffs, each record confirmed, to review or to write, what moves now and what waits, with its versions; the records themselves stay in place"
     },
     {
       "id": "team-plan",

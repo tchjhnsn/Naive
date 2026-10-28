@@ -12,6 +12,8 @@
 //     from (a decision record's `ideas`, or the i-NN ids its question and answer cite).
 // A destination moves in order (sync) when it sits on the fail-closed path or its ideas share a lane
 // that builds in order; it moves on its own (async) when its decisions fail open or its ideas stand alone.
+// Each destination names its home package (schema/packages.json), and the routes say whether the
+// founder has confirmed the understanding of their ideas yet: routing follows that gate (EE-069).
 //
 //   node route.mjs <venture> [--json]
 
@@ -21,10 +23,21 @@ import { fileURLToPath } from "node:url";
 import { decisions } from "../../../schema/decisions.mjs";
 import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 import { GRAPH, ORDER } from "./graph.mjs";
+import { confirmedIn } from "../../../schema/foundation.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const MODEL = load(join(here, "../../../schema/data-model.json")).records;
+
+// Each destination's home package (EE-069), so routing shows the packages taking shape.
+const PKG = load(join(here, "../../../schema/packages.json"));
+const HOME = { "venture-core": "foundation", brand: "marketing", ...Object.fromEntries(Object.entries(PKG.core).flatMap(([id, p]) => [...p.required, ...p.optional].map((r) => [r, id]))) };
+
+/** Understand is a gate (EE-069): the founder confirms Mentura read the ideas right, after any
+ *  corrections, before they are routed. A person's confirm of the map after its last agent write. */
+export function understood(dir) {
+  return existsSync(join(dir, MAP)) && confirmedIn(dir, MAP, "ideas");
+}
 
 export const STAGES = [["routed", "Routed"], ["drafted", "Drafted"], ["yours", "Your decision"], ["waiting", "Waiting"], ["done", "Done"]];
 
@@ -100,7 +113,8 @@ export function route(dir, { now } = {}) {
   });
 
   const routed = new Set(destinations.flatMap((x) => x.ideas.map((i) => i.id)));
-  return { venture: venture.id, name: venture.name, phase: venture.phase, graph: g?.root ?? null, stages: STAGES, destinations,
+  for (const d of destinations) d.package = HOME[d.id] ?? null;
+  return { venture: venture.id, name: venture.name, phase: venture.phase, graph: g?.root ?? null, understood: understood(dir), stages: STAGES, destinations,
     loose: nodes.filter((n) => !routed.has(n.id)).map(short),
     gaps: Object.entries(CONVENTIONS.records).filter(([k]) => !destinations.some((x) => x.id === k)).map(([k, c]) => ({ id: k, title: c.title ?? k, about: c.about })),
     docket, counts: Object.fromEntries(STAGES.map(([s]) => [s, destinations.filter((x) => x.stage === s).length])) };

@@ -1,88 +1,694 @@
 {
-  "version": "0.1.0",
-  "note": "Venture packages (EE-067): what a founder walks away with. A package is a set of records that together serve one receiver (the founder, investors, a cofounder, engineering, partners, counsel, the team), complete when every required record is confirmed by a person, at which point it is ready to hand off, to a person or to an agent. Which packages a venture needs depends on its phase and on its situation, so each package has a prior per phase, raised or lowered by facts, in the same form as need-now (EE-028). Facts come from the venture's records first; the question matrix asks a reasoning model (Jev, or the founder's own agent) only what the records do not say, and leaves what it cannot answer to the founder. Agents never come in a package: an agent that works a package is a package enhancement. Version 0.x: ours and unevaluated.",
+  "version": "0.3.0",
+  "note": "Venture packages (EE-067, EE-069): the venture's business source of truth, grouped two ways. Core packages are where the records live, one per department (EE-047) plus the foundation; every record has exactly one home and other packages read it (refs). Handoff packages hold no records: each is a versioned snapshot of core packages for one receiver. A package is complete, and its gate to MAD's automation tier opens, when a person has confirmed every required record and every record it reads (refs); a handoff, when every core package it draws on is complete. Which packages fit depends on the phase and the venture's situation: priors per phase with conditions (the need-now form, EE-028), facts from the records first and from the question matrix where the records are silent. Inside a package, a record moves on its own when nothing it reads first is still unconfirmed; otherwise it waits (records.after). Agents never come in a package: an agent that works a package is a package enhancement. Version 0.x: ours and unevaluated.",
   "fit": 0.5,
-  "packages": {
+  "assumes": {
+    "governance": "founder-led",
+    "team": "a solo founder or a small founding team (up to about five people)",
+    "phases": [
+      "discovery",
+      "validation"
+    ],
+    "note": "Naive is opinionated (2026-10-28, EE-069): it assumes one governance model. The founders decide, confirm every record and do everything in the venture, product management and engineering included. How packages split and which gates hold follow from that model; other structures (separate engineering teams, boards that gate decisions, enterprises) are not modeled. Packages that matter only for them, or only after Validation, are kept here marked not_modeled and are left out of the venture package."
+  },
+  "records": {
+    "validation-problem": {
+      "after": []
+    },
+    "icp": {
+      "after": []
+    },
+    "product": {
+      "after": []
+    },
+    "venture-profile": {
+      "after": []
+    },
+    "telos": {
+      "after": [
+        "validation-problem"
+      ]
+    },
+    "alignment": {
+      "after": [
+        "telos"
+      ]
+    },
+    "validation-solution": {
+      "after": [
+        "validation-problem"
+      ]
+    },
+    "validation-pricing": {
+      "after": [
+        "validation-solution"
+      ]
+    },
+    "validation-go-to-market": {
+      "after": [
+        "validation-pricing",
+        "icp"
+      ]
+    },
+    "validation-product-market-fit": {
+      "after": [
+        "validation-solution"
+      ]
+    },
+    "evidence": {
+      "after": []
+    },
+    "anatomy-answers": {
+      "after": [
+        "product"
+      ]
+    },
+    "marketing-sitemap": {
+      "after": [
+        "icp",
+        "product"
+      ]
+    },
+    "marketing-content": {
+      "after": [
+        "marketing-sitemap"
+      ]
+    },
+    "site-presence": {
+      "after": []
+    },
+    "business-models": {
+      "after": [
+        "product"
+      ]
+    },
+    "validation-team": {
+      "after": []
+    },
+    "team-plan": {
+      "after": [
+        "validation-team"
+      ]
+    },
+    "founder-agreement": {
+      "after": [
+        "validation-team"
+      ]
+    },
+    "ownership": {
+      "after": [
+        "validation-team"
+      ]
+    },
+    "decision-rights": {
+      "after": [
+        "team-plan"
+      ]
+    },
+    "board": {
+      "after": [
+        "ownership"
+      ]
+    },
+    "exit": {
+      "after": [
+        "ownership"
+      ]
+    },
+    "publication-policy": {
+      "after": []
+    },
+    "department": {
+      "after": []
+    },
+    "handoff": {
+      "after": [
+        "department",
+        "decision-rights"
+      ]
+    },
+    "validation-operations-readiness": {
+      "after": [
+        "handoff"
+      ]
+    },
+    "knowledge-sources": {
+      "after": []
+    },
+    "where-used": {
+      "after": []
+    },
+    "account": {
+      "after": [
+        "icp"
+      ]
+    }
+  },
+  "core": {
     "foundation": {
-      "title": "Strategic foundation",
-      "for": "the founder, and anyone who joins",
-      "purpose": "What the venture is, why, for whom and with what: the records every other package draws on.",
-      "required": ["validation-problem", "icp", "product"],
-      "optional": ["venture-profile", "telos", "alignment"],
-      "base": { "discovery": 0.95, "validation": 0.95, "beachhead": 0.95, "scale": 0.95, "platform": 0.95 },
-      "why": "Every venture needs it, in every phase; it is what the founder reviews near daily"
+      "title": "Foundation",
+      "department": "strategy",
+      "purpose": "What the venture is, why, for whom and with what: the records every other package reads, reviewed near daily.",
+      "required": [
+        "validation-problem",
+        "icp"
+      ],
+      "optional": [
+        "venture-profile",
+        "telos",
+        "alignment"
+      ],
+      "refs": [
+        "product"
+      ],
+      "planned": [],
+      "base": {
+        "discovery": 0.95,
+        "validation": 0.95,
+        "beachhead": 0.95,
+        "scale": 0.95,
+        "platform": 0.95
+      },
+      "why": "Every venture, every phase",
+      "unlocks": [
+        "agents may draft every other package",
+        "the near-daily review"
+      ]
     },
     "validation": {
       "title": "Validation",
-      "for": "the founder and their advisors",
+      "department": "strategy",
       "purpose": "Whether the problem is real, whether this solves it, whether people pay and keep using it, with the evidence graded.",
-      "required": ["validation-problem", "validation-solution", "icp"],
-      "optional": ["validation-pricing", "validation-go-to-market", "validation-product-market-fit", "evidence"],
-      "base": { "discovery": 0.6, "validation": 0.95, "beachhead": 0.6, "scale": 0.3, "platform": 0.2 },
-      "when": [{ "if": "ambition:hobby", "at_most": 0.4 }],
-      "why": "The work of Discovery and Validation; it fades once retention holds"
+      "required": [
+        "validation-solution",
+        "validation-pricing",
+        "validation-go-to-market"
+      ],
+      "optional": [
+        "validation-product-market-fit",
+        "evidence"
+      ],
+      "refs": [
+        "validation-problem",
+        "icp"
+      ],
+      "planned": [
+        "customer feedback"
+      ],
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.95,
+        "beachhead": 0.6,
+        "scale": 0.3,
+        "platform": 0.2
+      },
+      "when": [
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.4
+        }
+      ],
+      "why": "The work of Discovery and Validation; it fades once retention holds",
+      "unlocks": [
+        "interview scheduling",
+        "surveys",
+        "research runs"
+      ]
+    },
+    "product": {
+      "title": "Product",
+      "department": "products",
+      "purpose": "What the venture offers, each product's role (flagship, substrate, wedge) and what it is offered to whom.",
+      "required": [
+        "product"
+      ],
+      "optional": [
+        "anatomy-answers"
+      ],
+      "refs": [
+        "icp"
+      ],
+      "planned": [
+        "specs",
+        "roadmap"
+      ],
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.9,
+        "beachhead": 1,
+        "scale": 1,
+        "platform": 1
+      },
+      "when": [
+        {
+          "if": "products>=1",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Once a product idea exists",
+      "unlocks": [
+        "the engineering handoff: build what is specified"
+      ]
     },
     "marketing": {
-      "title": "Marketing",
-      "for": "engineering, who builds the site from it",
-      "purpose": "Who the site speaks to, what goes where and why, and the public variants to publish: the business side's handoff to engineering (EE-065).",
-      "required": ["icp", "product", "marketing-sitemap"],
-      "optional": ["marketing-content", "site-presence", "venture-profile"],
-      "base": { "discovery": 0.35, "validation": 0.7, "beachhead": 0.9, "scale": 0.9, "platform": 0.9 },
-      "when": [{ "if": "site", "at_least": 0.75 }, { "if": "publishes", "at_least": 0.8 }],
-      "why": "Once there is something to show, or a site already speaks for the venture"
+      "title": "Marketing and sales",
+      "department": "marketing-and-sales",
+      "purpose": "Who the site and campaigns speak to, what goes where and why, the brand, the public variants and the pipeline.",
+      "required": [
+        "marketing-sitemap"
+      ],
+      "optional": [
+        "marketing-content",
+        "site-presence"
+      ],
+      "refs": [
+        "icp",
+        "product"
+      ],
+      "planned": [
+        "brand voice and guidelines",
+        "campaigns",
+        "sales pipeline"
+      ],
+      "base": {
+        "discovery": 0.35,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "site",
+          "at_least": 0.75
+        },
+        {
+          "if": "publishes",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Once there is something to show, or a site already speaks for the venture",
+      "unlocks": [
+        "site build",
+        "campaigns",
+        "outreach sequences"
+      ]
     },
+    "finance": {
+      "title": "Finance",
+      "department": "finance",
+      "purpose": "How the venture makes and spends money: business models, pricing, budget and runway.",
+      "required": [
+        "business-models"
+      ],
+      "optional": [],
+      "refs": [
+        "validation-pricing",
+        "product"
+      ],
+      "planned": [
+        "budget and runway",
+        "revenue",
+        "financial model"
+      ],
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 1,
+        "platform": 1
+      },
+      "when": [
+        {
+          "if": "raising",
+          "at_least": 0.8
+        }
+      ],
+      "why": "From Validation, or sooner when raising",
+      "unlocks": [
+        "pricing tests",
+        "invoicing",
+        "bookkeeping",
+        "financial models"
+      ]
+    },
+    "people": {
+      "title": "People",
+      "department": "human-capital",
+      "purpose": "Who the venture needs, what each person brings, and on what terms people join.",
+      "required": [
+        "validation-team",
+        "team-plan"
+      ],
+      "optional": [
+        "founder-agreement"
+      ],
+      "refs": [],
+      "planned": [],
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "team:looking",
+          "at_least": 0.9
+        },
+        {
+          "if": "team:cofounders",
+          "at_least": 0.8
+        },
+        {
+          "if": "hiring",
+          "at_least": 0.85
+        },
+        {
+          "if": "path:cofounder-first",
+          "at_least": 0.9
+        }
+      ],
+      "why": "When looking for a cofounder, with cofounders, or hiring",
+      "unlocks": [
+        "recruiting outreach",
+        "onboarding"
+      ]
+    },
+    "legal": {
+      "title": "Legal and governance",
+      "department": "risk-and-compliance",
+      "purpose": "Who owns what, who decides what, what may be published, and how the venture ends.",
+      "required": [
+        "ownership",
+        "decision-rights"
+      ],
+      "optional": [
+        "board",
+        "exit",
+        "publication-policy"
+      ],
+      "refs": [
+        "founder-agreement"
+      ],
+      "planned": [],
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.4,
+        "scale": 0.8,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "founders>=2",
+          "at_least": 0.7
+        },
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.8
+        },
+        {
+          "if": "regulated",
+          "at_least": 0.6
+        },
+        {
+          "if": "exit_intent",
+          "phase": "scale",
+          "at_least": 0.9
+        }
+      ],
+      "why": "Once ownership is shared, outside money comes in, or the field is regulated",
+      "unlocks": [
+        "agreements",
+        "filings",
+        "reminders"
+      ],
+      "not_modeled": "Matters after Validation or under another governance model; kept for later, not computed (EE-069)."
+    },
+    "operations": {
+      "title": "Operations",
+      "department": "service-delivery",
+      "departments": [
+        "service-delivery",
+        "customer-service",
+        "supply-chain",
+        "it",
+        "assets"
+      ],
+      "purpose": "The departments, who hands what to whom, and whether the venture runs without the founder in every loop.",
+      "required": [
+        "department",
+        "handoff",
+        "validation-operations-readiness"
+      ],
+      "optional": [
+        "knowledge-sources",
+        "where-used"
+      ],
+      "refs": [
+        "team-plan",
+        "decision-rights"
+      ],
+      "planned": [],
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.3,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.95
+      },
+      "when": [
+        {
+          "if": "people>=3",
+          "at_least": 0.7
+        },
+        {
+          "if": "offering:service",
+          "phase": "validation",
+          "at_least": 0.55
+        }
+      ],
+      "why": "Once more than a couple of people, or a service delivered by people, has to run",
+      "unlocks": [
+        "support agents",
+        "delivery workflows"
+      ],
+      "not_modeled": "Matters after Validation or under another governance model; kept for later, not computed (EE-069)."
+    },
+    "relationships": {
+      "title": "Relationships",
+      "department": "external-relationships",
+      "purpose": "The named accounts, partners and investors the venture works with.",
+      "required": [
+        "account"
+      ],
+      "optional": [],
+      "refs": [
+        "icp"
+      ],
+      "planned": [
+        "partner records",
+        "investor records"
+      ],
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.3,
+        "scale": 0.6,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "partner_led",
+          "at_least": 0.8
+        },
+        {
+          "if": "offering:service",
+          "at_least": 0.6
+        }
+      ],
+      "why": "From Scale, or sooner when partner-led or a service",
+      "unlocks": [
+        "partner and investor updates"
+      ],
+      "not_modeled": "Matters after Validation or under another governance model; kept for later, not computed (EE-069)."
+    }
+  },
+  "handoff": {
     "investor": {
       "title": "Investor",
       "for": "investors",
-      "purpose": "The case for the venture: problem, solution, market, team, where it is going, and what an investor would own.",
-      "required": ["validation-problem", "validation-solution", "icp", "validation-go-to-market", "validation-team", "telos"],
-      "optional": ["validation-pricing", "validation-product-market-fit", "ownership", "evidence"],
-      "base": { "discovery": 0.05, "validation": 0.2, "beachhead": 0.35, "scale": 0.45, "platform": 0.45 },
-      "when": [{ "if": "raising", "at_least": 0.95 }, { "if": "funding:venture-capital", "at_least": 0.7 }, { "if": "funding:angel", "at_least": 0.6 }, { "if": "funding:bootstrapped", "at_most": 0.1 }, { "if": "ambition:hobby", "at_most": 0.05 }],
-      "why": "Only while raising, or when the venture means to take outside money"
-    },
-    "team": {
-      "title": "Cofounder and team",
-      "for": "cofounders and first hires",
-      "purpose": "Who the venture needs, what each person brings, who decides what, and on what terms people join.",
-      "required": ["validation-team", "team-plan"],
-      "optional": ["founder-agreement", "decision-rights", "ownership"],
-      "base": { "discovery": 0.2, "validation": 0.4, "beachhead": 0.6, "scale": 0.8, "platform": 0.8 },
-      "when": [{ "if": "team:looking", "at_least": 0.9 }, { "if": "team:cofounders", "at_least": 0.8 }, { "if": "hiring", "at_least": 0.85 }, { "if": "path:cofounder-first", "at_least": 0.9 }],
-      "why": "When the founder is looking for a cofounder, has one, or is hiring"
+      "from": [
+        "foundation",
+        "validation",
+        "finance",
+        "people",
+        "legal"
+      ],
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.2,
+        "beachhead": 0.35,
+        "scale": 0.45,
+        "platform": 0.45
+      },
+      "when": [
+        {
+          "if": "raising",
+          "at_least": 0.95
+        },
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.7
+        },
+        {
+          "if": "funding:angel",
+          "at_least": 0.6
+        },
+        {
+          "if": "funding:bootstrapped",
+          "at_most": 0.1
+        },
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.05
+        }
+      ],
+      "why": "Only while raising, or when the venture means to take outside money",
+      "unlocks": [
+        "pitch deck",
+        "data room",
+        "investor updates"
+      ]
     },
     "partner": {
       "title": "Partner",
       "for": "the partners a product is offered to",
-      "purpose": "What the venture offers partners, what they get and give, and whom it serves through them (B2B2C).",
-      "required": ["icp", "product", "validation-go-to-market"],
-      "optional": ["account", "validation-pricing"],
-      "base": { "discovery": 0.05, "validation": 0.1, "beachhead": 0.2, "scale": 0.3, "platform": 0.5 },
-      "when": [{ "if": "partner_led", "at_least": 0.9 }],
-      "why": "Only when the product is offered to partners who serve customers of their own"
+      "from": [
+        "foundation",
+        "product",
+        "marketing"
+      ],
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.5
+      },
+      "when": [
+        {
+          "if": "partner_led",
+          "at_least": 0.9
+        }
+      ],
+      "why": "Only when the product is offered to partners who serve customers of their own",
+      "unlocks": [
+        "partner kit",
+        "co-marketing"
+      ]
     },
-    "governance": {
-      "title": "Ownership and governance",
-      "for": "counsel, the board and co-owners",
-      "purpose": "Who owns what, who decides what, what may be published, and how the venture ends.",
-      "required": ["ownership", "decision-rights"],
-      "optional": ["founder-agreement", "board", "exit", "publication-policy"],
-      "base": { "discovery": 0, "validation": 0.1, "beachhead": 0.4, "scale": 0.8, "platform": 0.9 },
-      "when": [{ "if": "founders>=2", "at_least": 0.7 }, { "if": "funding:venture-capital", "at_least": 0.8 }, { "if": "regulated", "at_least": 0.6 }, { "if": "exit_intent", "phase": "scale", "at_least": 0.9 }],
-      "why": "Once ownership is shared, outside money comes in, or the field is regulated"
+    "cofounder": {
+      "title": "Cofounder and hire",
+      "for": "cofounders and first hires",
+      "from": [
+        "foundation",
+        "people",
+        "legal"
+      ],
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.4,
+        "scale": 0.5,
+        "platform": 0.5
+      },
+      "when": [
+        {
+          "if": "team:looking",
+          "at_least": 0.9
+        },
+        {
+          "if": "hiring",
+          "at_least": 0.85
+        }
+      ],
+      "why": "When looking for a cofounder or hiring",
+      "unlocks": [
+        "recruiting pitch",
+        "offer terms"
+      ]
     },
-    "operations": {
-      "title": "Operations",
-      "for": "the team that runs the venture day to day",
-      "purpose": "The departments, who hands what to whom, and whether the venture is ready to run without the founder in every loop.",
-      "required": ["department", "handoff", "validation-operations-readiness"],
-      "optional": ["team-plan", "decision-rights"],
-      "base": { "discovery": 0.05, "validation": 0.3, "beachhead": 0.7, "scale": 0.9, "platform": 0.95 },
-      "when": [{ "if": "people>=3", "at_least": 0.7 }, { "if": "offering:service", "phase": "validation", "at_least": 0.55 }],
-      "why": "Once more than a couple of people, or a service delivered by people, has to run"
+    "engineering": {
+      "title": "Engineering",
+      "for": "you, or your own coding agent, when you build the site and the product",
+      "from": [
+        "product",
+        "marketing"
+      ],
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.6,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "software",
+          "at_least": 0.7
+        },
+        {
+          "if": "site",
+          "at_least": 0.7
+        }
+      ],
+      "why": "Founders build it themselves (the assumed model): this is what they, or their coding agent, build from",
+      "unlocks": [
+        "the site build",
+        "the product build"
+      ]
+    },
+    "counsel": {
+      "title": "Counsel",
+      "for": "lawyers and accountants",
+      "from": [
+        "legal",
+        "people",
+        "finance"
+      ],
+      "base": {
+        "discovery": 0,
+        "validation": 0.05,
+        "beachhead": 0.3,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "when": [
+        {
+          "if": "founders>=2",
+          "at_least": 0.6
+        },
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.8
+        },
+        {
+          "if": "regulated",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Once there are co-owners, outside money or a regulated field",
+      "unlocks": [
+        "incorporation",
+        "agreements"
+      ],
+      "not_modeled": "Matters with co-owners, outside money or a regulated field; kept for later, not computed (EE-069)."
     }
   },
+  "versions": "A venture package gets a new version each time a package becomes complete or the phase changes; the manifest records it and, in a git repository, the tag to set (package/<venture>/v<n>). Ordinary edits stay plain commits.",
   "enhancements": {
     "agents": "An agent that works a package (drafts its records, keeps them current, acts on them) is a package enhancement. Naive's packages hold records only; Mentura and the founder's own agents enhance them. The hackathon demo includes routing and the harness agent's passes to show the enhancement."
   },
@@ -91,12 +697,99 @@
     "set_at": 0.7,
     "clear_at": 0.3,
     "items": [
-      { "id": "raising", "ask": "Is the venture raising money from investors now, or about to?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["investor"], "from": "the founder's flags (raising)" },
-      { "id": "site", "ask": "Does the venture have a public website, or plan one within the next month?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["marketing"], "from": "a site presence record (a site Naive has read)" },
-      { "id": "partner_led", "ask": "Is the product offered to partners or intermediaries who serve customers of their own?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["partner"], "from": "the ICP (reached_through) and products (offered_to)" },
-      { "id": "hiring", "ask": "Will the venture hire anyone, or bring on a cofounder, in the next three months?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["team"], "from": "the founder's flags (hiring) and the team decision" },
-      { "id": "regulated", "ask": "Does the venture work in a regulated field (health, finance, education, legal, children, public sector)?", "phases": ["validation", "beachhead", "scale", "platform"], "moves": ["governance"], "from": "nothing yet: always asked" },
-      { "id": "exit_intent", "ask": "Does the founder mean to sell the venture or take it public one day?", "phases": ["beachhead", "scale", "platform"], "moves": ["governance", "investor"], "from": "the exit record" }
+      {
+        "id": "raising",
+        "ask": "Is the venture raising money from investors now, or about to?",
+        "phases": [
+          "discovery",
+          "validation",
+          "beachhead",
+          "scale",
+          "platform"
+        ],
+        "moves": [
+          "investor",
+          "finance"
+        ],
+        "from": "the founder's flags (raising)"
+      },
+      {
+        "id": "site",
+        "ask": "Does the venture have a public website, or plan one within the next month?",
+        "phases": [
+          "discovery",
+          "validation",
+          "beachhead",
+          "scale",
+          "platform"
+        ],
+        "moves": [
+          "marketing",
+          "engineering"
+        ],
+        "from": "a site presence record (a site Naive has read)"
+      },
+      {
+        "id": "partner_led",
+        "ask": "Is the product offered to partners or intermediaries who serve customers of their own?",
+        "phases": [
+          "discovery",
+          "validation",
+          "beachhead",
+          "scale",
+          "platform"
+        ],
+        "moves": [
+          "partner",
+          "relationships"
+        ],
+        "from": "the ICP (reached_through) and products (offered_to)"
+      },
+      {
+        "id": "hiring",
+        "ask": "Will the venture hire anyone, or bring on a cofounder, in the next three months?",
+        "phases": [
+          "discovery",
+          "validation",
+          "beachhead",
+          "scale",
+          "platform"
+        ],
+        "moves": [
+          "people",
+          "cofounder"
+        ],
+        "from": "the founder's flags (hiring) and the team decision"
+      },
+      {
+        "id": "regulated",
+        "ask": "Does the venture work in a regulated field (health, finance, education, legal, children, public sector)?",
+        "phases": [
+          "validation",
+          "beachhead",
+          "scale",
+          "platform"
+        ],
+        "moves": [
+          "legal",
+          "counsel"
+        ],
+        "from": "nothing yet: always asked"
+      },
+      {
+        "id": "exit_intent",
+        "ask": "Does the founder mean to sell the venture or take it public one day?",
+        "phases": [
+          "beachhead",
+          "scale",
+          "platform"
+        ],
+        "moves": [
+          "legal",
+          "investor"
+        ],
+        "from": "the exit record"
+      }
     ]
   }
 }

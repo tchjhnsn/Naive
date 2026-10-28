@@ -15,6 +15,9 @@
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
 //   mentura propose --venture <id> --input <file.json> [--as <role>]
 //                                                   an agent proposes a decision; it stays open until a person decides
+//   mentura understand --venture <id> [--confirm ideas] [--note <corrections made>]
+//                                                   a person confirms Mentura read their ideas right (the map
+//                                                   and graph, after any corrections), before routing (EE-069)
 //   mentura confirm <statement> --venture <id> [--confirm <statement>]
 //                                                   a person confirms one foundation statement as theirs (EE-051)
 //   mentura <route> <action> --venture <id|path> [--input <file>|-] [--as person] [--value <n>] [--json]
@@ -150,6 +153,19 @@ if (cmd === "propose") {
   const r = propose(dir, JSON.parse(readFileSync(resolve(opt("input")), "utf8")), { agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID, via: "cli" });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "understand") {
+  // The Understand gate (EE-069): the founder has looked over the map and the graph, corrected what
+  // Mentura got wrong, and confirms the understanding before the ideas are routed.
+  const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const hits = ["purpose/ideas/map.mdx", "purpose/ideas/graph.json"].filter((f) => existsSync(join(dir, f)));
+  if (!hits.length) { console.error(`${venture} has no idea map yet: map the idea dump first (purpose/ideas)`); process.exit(1); }
+  if (!(await typed("ideas", `Confirming Mentura's understanding of your ideas: ${hits.join(", ")}`, "Your ideas are routed to their records from this understanding."))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
+  for (const f of hits) record(dir, { entity: f, route: f.endsWith(".mdx") ? "purpose/ideas" : "purpose/ideas/graph", activity: "confirm", statement: "ideas", agent: agentFromEnv("person", "cli"), note: opt("note") });
+  out("confirmed: ideas");
   process.exit(0);
 }
 

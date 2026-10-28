@@ -1,22 +1,26 @@
 #!/usr/bin/env node
-// Venture packages (EE-067): what a founder walks away with at the end of the pipeline, from the idea
-// dump onward. A package is a set of records for one receiver (the founder, investors, a cofounder,
-// engineering, partners, counsel, the team); it is complete, and ready to hand off, when every
-// required record is confirmed by a person. Which packages fit depends on the phase and the venture's
-// situation: priors per phase in schema/packages.json, raised or lowered by facts (the need-now form,
-// EE-028). Facts come from the records first; the question matrix asks a reasoning model only what the
-// records do not settle, and leaves the rest open for the founder. Agents never come in a package:
-// an agent working a package is a package enhancement (packages.json enhancements).
+// Venture packages (EE-067, EE-069): the venture's business source of truth, and the gate between
+// idea and automation. Core packages are where the records live, one per department plus the
+// foundation; each record has one home and other packages read it. Handoff packages hold no records:
+// each is a snapshot of core packages for one receiver (investors, partners, a cofounder, engineering,
+// counsel). A package is complete when a person has confirmed its required records and every record it
+// reads; then MAD's automation tier may run the work that depends on it (schema/packages.json unlocks).
+// Which packages fit depends on the phase and the venture's situation: priors per phase, raised or
+// lowered by facts (the need-now form, EE-028); facts come from the records first, and the question
+// matrix asks a reasoning model only what the records do not settle. Inside a package, a record moves
+// on its own once everything it reads first is confirmed, and waits otherwise (records.after): that is
+// what Route shows. Agents never come in a package: an agent working a package is an enhancement.
 //
-// Each record in a package carries its route: where the founder's ideas for it stand and the one step
-// that moves it (purpose/ideas/routes, EE-061), so an unfinished package says what to do next.
+// Each record also carries its route: where the founder's ideas for it stand and the one step that
+// moves it (purpose/ideas/routes, EE-061).
 //
 //   node schema/packages.mjs <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json]
 //   node schema/packages.mjs request <venture>       the Jev request for the questions the records leave open
 //
-// --write renders the venture package into <venture>/package/: venture-package.json (the manifest),
-// README.md (the index) and one Markdown document per fitting package, each record rendered in full.
-// The documents are internal: anything public goes through its public variant (EE-064).
+// --write renders a readable view of the venture package into <venture>/package/: venture-package.json
+// (the manifest, with its versions), README.md (the index) and one Markdown document per open package.
+// The records themselves stay where they are; the view is regenerated. The documents are internal:
+// anything public goes through its public variant (EE-064).
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -91,6 +95,9 @@ const TITLES = { "venture-profile": "Venture profile", "validation-product-marke
   department: "Departments", handoff: "Handoffs", evidence: "Evidence", ownership: "Ownership", board: "Board", exit: "Exit", account: "Accounts" };
 const STATUS = { confirmed: 1, agent: 0.5, draft: 0.5, missing: 0 };
 
+/** Which core package each record lives in. */
+export const HOME = Object.fromEntries(Object.entries(PACKAGES.core).flatMap(([id, p]) => [...p.required, ...p.optional].map((r) => [r, id])));
+
 export function packages(dir, { flags = {}, answers = null } = {}) {
   const v = load(join(dir, "venture.json"));
   const { phase, facts, questions } = situation(dir, { flags, answers });
@@ -99,27 +106,47 @@ export function packages(dir, { flags = {}, answers = null } = {}) {
   try { routes = route(dir); } catch { routes = null; }
   const dest = new Map((routes?.destinations ?? []).map((d) => [d.id, d]));
   const titleOf = (type) => dest.get(type)?.title ?? TITLES[type] ?? type.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
-  const list = Object.entries(PACKAGES.packages).map(([id, p]) => {
+  const states = new Map();
+  const st = (type) => (states.has(type) || states.set(type, stateOf(dir, type)), states.get(type));
+  const fitOf = (p) => {
     const fit = r2(probability(p, phase, facts)), later = next ? r2(probability(p, next, facts)) : null;
-    const records = [...p.required.map((t) => [t, true]), ...p.optional.map((t) => [t, false])].map(([type, required]) => {
-      const s = stateOf(dir, type), d = dest.get(type);
-      return { record: type, title: titleOf(type), required, status: s.status, files: s.files,
-        ...(d ? { route: { stage: d.stage, ideas: d.ideas.length, next: d.next ? { by: d.next.by, do: d.next.do, command: d.next.command } : null } } : {}) };
-    });
-    const req = records.filter((r) => r.required);
-    const progress = r2(records.reduce((s, r) => s + STATUS[r.status] * (r.required ? 1 : 0.5), 0) / records.reduce((s, r) => s + (r.required ? 1 : 0.5), 0));
-    const state = req.every((r) => r.status === "confirmed") ? "ready" : req.every((r) => r.status !== "missing") ? "review" : "building";
-    // Why it fits: the prior, and each condition that moved it.
     const moved = (p.when ?? []).filter((w) => (!w.phase || w.phase === phase) && probability({ base: { [phase]: p.base[phase] }, when: [w] }, phase, facts) !== p.base[phase]).map((w) => w.if);
-    return { id, title: p.title, for: p.for, purpose: p.purpose, fit, next_phase: later, in: fit >= PACKAGES.fit ? "now" : later != null && later >= PACKAGES.fit ? "next" : "held",
-      why: moved.length ? `${p.why}; here: ${moved.join(", ")}` : p.why, state, progress, records,
-      missing: req.filter((r) => r.status === "missing").map((r) => r.record), to_review: req.filter((r) => r.status === "agent" || r.status === "draft").map((r) => r.record) };
-  }).sort((a, b) => (a.in === b.in ? 0 : a.in === "now" ? -1 : b.in === "now" ? 1 : a.in === "next" ? -1 : 1) || b.fit - a.fit);
-  const now = list.filter((p) => p.in === "now");
+    return { fit, next_phase: later, in: fit >= PACKAGES.fit ? "now" : later != null && later >= PACKAGES.fit ? "next" : "held", why: moved.length ? `${p.why}; here: ${moved.join(", ")}` : p.why };
+  };
+  // A record moves on its own once everything it reads first is confirmed; otherwise it waits on those.
+  const row = (type, role) => {
+    const s = st(type), d = dest.get(type);
+    const waits = (PACKAGES.records[type]?.after ?? []).filter((a) => st(a).status !== "confirmed");
+    return { record: type, title: titleOf(type), role, home: HOME[type], status: s.status, files: s.files,
+      moves: s.status === "confirmed" ? "done" : waits.length ? "waits" : "now", ...(waits.length && s.status !== "confirmed" ? { waits_on: waits, waits_on_titles: waits.map(titleOf) } : {}),
+      ...(d ? { route: { stage: d.stage, ideas: d.ideas.length, next: d.next ? { by: d.next.by, do: d.next.do, command: d.next.command } : null } } : {}) };
+  };
+  const core = Object.entries(PACKAGES.core).filter(([, p]) => !p.not_modeled).map(([id, p]) => {
+    const records = [...p.required.map((t) => row(t, "required")), ...p.optional.map((t) => row(t, "optional")), ...p.refs.map((t) => row(t, "reads"))];
+    const gate = records.filter((r) => r.role !== "optional");
+    const weight = (r) => (r.role === "optional" ? 0.5 : 1);
+    const progress = r2(records.reduce((s, r) => s + STATUS[r.status] * weight(r), 0) / records.reduce((s, r) => s + weight(r), 0));
+    const state = gate.every((r) => r.status === "confirmed") ? "complete" : gate.every((r) => r.status !== "missing") ? "review" : "building";
+    return { kind: "core", id, title: p.title, department: p.department, purpose: p.purpose, ...fitOf(p), state, progress, records, planned: p.planned, unlocks: p.unlocks,
+      missing: gate.filter((r) => r.status === "missing").map((r) => r.record), to_review: gate.filter((r) => r.status === "agent" || r.status === "draft").map((r) => r.record),
+      moving: records.filter((r) => r.moves === "now" && r.role !== "reads").map((r) => r.record) };
+  });
+  const byId = Object.fromEntries(core.map((p) => [p.id, p]));
+  const handoff = Object.entries(PACKAGES.handoff).filter(([, p]) => !p.not_modeled).map(([id, p]) => {
+    const from = p.from.map((c) => byId[c]).filter(Boolean);
+    return { kind: "handoff", id, title: p.title, for: p.for, from: p.from, ...fitOf(p), state: from.every((c) => c.state === "complete") ? "complete" : "building",
+      progress: r2(from.reduce((s, c) => s + c.progress, 0) / from.length), waits_on: from.filter((c) => c.state !== "complete").map((c) => c.id), unlocks: p.unlocks };
+  });
+  const order = (a, b) => ({ now: 0, next: 1, held: 2 }[a.in] - { now: 0, next: 1, held: 2 }[b.in]) || b.fit - a.fit;
+  core.sort(order); handoff.sort(order);
+  const open = core.filter((p) => p.in === "now");
   return { version: PACKAGES.version, venture: v.id, name: v.name, phase, built_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
     situation: { facts: Object.fromEntries(questions.map((q) => [q.id, q.value])), questions: questions.map((q) => ({ id: q.id, ask: q.ask, value: q.value, by: q.by, ...(q.p != null ? { p: q.p } : {}), moves: q.moves })) },
-    progress: now.length ? r2(now.reduce((s, p) => s + p.progress, 0) / now.length) : 0, ready: now.filter((p) => p.state === "ready").map((p) => p.id),
-    packages: list, enhancements: PACKAGES.enhancements, routing: routes ? { included: true, note: "Hackathon demo: each record shows where the founder's ideas for it stand and the one step that moves it (EE-061).", loose: routes.loose?.length ?? 0 } : { included: false } };
+    progress: open.length ? r2(open.reduce((s, p) => s + p.progress, 0) / open.length) : 0,
+    complete: [...core, ...handoff].filter((p) => p.in === "now" && p.state === "complete").map((p) => p.id),
+    core, handoff, assumes: PACKAGES.assumes, not_modeled: [...Object.entries(PACKAGES.core), ...Object.entries(PACKAGES.handoff)].filter(([, p]) => p.not_modeled).map(([id, p]) => ({ id, title: p.title, why: p.not_modeled })),
+    enhancements: PACKAGES.enhancements,
+    routing: routes ? { included: true, note: "Hackathon demo: each record shows where the founder's ideas for it stand and the one step that moves it (EE-061).", loose: routes.loose?.length ?? 0 } : { included: false } };
 }
 
 // Render a record as readable Markdown, whatever its shape: the package documents are for people.
@@ -142,33 +169,57 @@ const body = (dir, f) => {
   return t.replace(/^---\n[\s\S]*?\n---\n/, "").replace(/^#\s.*\n/, "").trim();
 };
 const MARK = { confirmed: "confirmed", agent: "drafted by an agent, not yet reviewed", draft: "a draft waiting for you", missing: "not written yet" };
+const STATE = { complete: "complete: its automation may run", review: "every record is written; some wait for your review", building: "still being written" };
 
-/** Write the venture package: the manifest, the index, and one document per package that fits now. */
+/** A new version each time a package completes or the phase changes; earlier versions are kept. */
+export function versions(dir, r) {
+  const f = join(dir, OUT, "venture-package.json");
+  const before = existsSync(f) ? load(f) : null;
+  const list = before?.versions ?? [];
+  const last = list.at(-1);
+  const done = r.complete.slice().sort();
+  const changed = !last || last.phase !== r.phase || done.some((id) => !last.complete.includes(id));
+  if (!changed) return list;
+  const n = list.length + 1;
+  return [...list, { version: n, at: r.built_at, phase: r.phase, complete: done, why: !last ? "first package" : last.phase !== r.phase ? `phase changed to ${r.phase}` : `completed: ${done.filter((id) => !last.complete.includes(id)).join(", ")}`, tag: `package/${r.venture}/v${n}` }];
+}
+
+/** Write the readable view: the manifest, the index, and one document per open core package. */
 export function write(dir, r) {
   const out = join(dir, OUT);
   mkdirSync(out, { recursive: true });
+  r.versions = versions(dir, r);
   writeFileSync(join(out, "venture-package.json"), JSON.stringify(r, null, 2) + "\n");
-  const now = r.packages.filter((p) => p.in === "now");
-  for (const p of now) {
-    const doc = [`# ${r.name}: ${p.title} package`, "", `For ${p.for}. ${p.purpose}`, "",
+  const open = r.core.filter((p) => p.in === "now");
+  for (const p of open) {
+    const doc = [`# ${r.name}: ${p.title}`, "", p.purpose, "",
       `Internal: these are the venture's own records. Anything public is a separate variant that passes the public gate (EE-064).`, "",
-      `State: ${p.state === "ready" ? "ready to hand off" : p.state === "review" ? "every record is written; some wait for your review" : `${p.missing.length} required record${p.missing.length === 1 ? "" : "s"} still to write`} (${Math.round(p.progress * 100)}%).`, ""];
+      `State: ${STATE[p.state]} (${Math.round(p.progress * 100)}%). Unlocks: ${p.unlocks.join(", ")}.`, ""];
     for (const x of p.records) {
-      doc.push(`## ${x.title}${x.required ? "" : " (optional)"}`, "", `*${MARK[x.status]}*${x.route?.next ? `. Next: ${x.route.next.do}` : ""}`, "");
+      doc.push(`## ${x.title}${x.role === "optional" ? " (optional)" : x.role === "reads" ? ` (read from ${PACKAGES.core[x.home]?.title ?? x.home})` : ""}`, "",
+        `*${MARK[x.status]}*${x.waits_on ? `. Waits on: ${x.waits_on.map(titleOf0).join(", ")}` : ""}${x.route?.next && x.status !== "confirmed" ? `. Next: ${x.route.next.do}` : ""}`, "");
+      if (x.role === "reads") continue;
       for (const f of x.files) { if (x.files.length > 1) doc.push(`### ${f}`, ""); doc.push(body(dir, f) || "(empty)", ""); }
     }
+    if (p.planned.length) doc.push("## Not in Naive yet", "", ...p.planned.map((x) => `- ${x}`), "");
     writeFileSync(join(out, `${p.id}.md`), doc.join("\n").replace(/\n{3,}/g, "\n\n"));
   }
-  const fm = ["---", "type: venture-package", "source: generated", `created: ${r.built_at}`, "ai-model: none", `tags: [venture-package, ${r.venture}, ${r.phase}]`, `description: "${r.name}'s venture package in ${r.phase}: ${now.length} packages fit now (EE-067)."`, "---", ""];
-  const idx = [...fm, `# ${r.name}: venture package`, "", `Phase: ${r.phase}. ${Math.round(r.progress * 100)}% complete across the packages that fit now. Ready to hand off: ${r.ready.length ? r.ready.join(", ") : "none yet"}.`, "",
-    "| Package | For | Fit now | State | Progress | Still to write | To review |", "|---|---|---|---|---|---|---|",
-    ...now.map((p) => `| [${p.title}](${p.id}.md) | ${p.for} | ${p.fit} | ${p.state} | ${Math.round(p.progress * 100)}% | ${p.missing.join(", ") || "none"} | ${p.to_review.join(", ") || "none"} |`), "",
-    `Coming next phase: ${r.packages.filter((p) => p.in === "next").map((p) => p.title).join(", ") || "none"}. Held: ${r.packages.filter((p) => p.in === "held").map((p) => p.title).join(", ") || "none"}.`, "",
+  const pct = (x) => `${Math.round(x * 100)}%`;
+  const fm = ["---", "type: venture-package", "source: generated", `created: ${r.built_at}`, "ai-model: none", `tags: [venture-package, ${r.venture}, ${r.phase}]`, `description: "${r.name}'s venture package in ${r.phase}, version ${r.versions.at(-1)?.version ?? 1} (EE-067, EE-069)."`, "---", ""];
+  const idx = [...fm, `# ${r.name}: venture package`, "", `Phase: ${r.phase}. ${pct(r.progress)} across the core packages open now. Complete, so their automation may run: ${r.complete.length ? r.complete.join(", ") : "none yet"}.`, "",
+    "## Core packages", "", "| Package | Fit now | State | Progress | Moving now | Still to write | To review |", "|---|---|---|---|---|---|---|",
+    ...r.core.filter((p) => p.in !== "held").map((p) => `| ${p.in === "now" ? `[${p.title}](${p.id}.md)` : `${p.title} (next phase)`} | ${p.fit} | ${p.state} | ${pct(p.progress)} | ${p.moving.join(", ") || "none"} | ${p.missing.join(", ") || "none"} | ${p.to_review.join(", ") || "none"} |`), "",
+    `Held: ${r.core.filter((p) => p.in === "held").map((p) => p.title).join(", ") || "none"}.`, "",
+    "## Handoff packages", "", "| Package | For | Fit now | Draws on | Waits on |", "|---|---|---|---|---|",
+    ...r.handoff.filter((p) => p.in !== "held").map((p) => `| ${p.title} | ${p.for} | ${p.fit} | ${p.from.join(", ")} | ${p.waits_on.join(", ") || "nothing: ready"} |`), "",
+    `Held: ${r.handoff.filter((p) => p.in === "held").map((p) => p.title).join(", ") || "none"}.`, "",
     "## What decided this", "", ...r.situation.questions.map((q) => `- ${q.ask} **${q.value == null ? "open: yours to answer" : q.value ? "yes" : "no"}** (${q.by === "records" ? "from the records" : q.by === "jev" ? `Jev, ${q.p}` : "the records do not say"})`), "",
-    "## Not included", "", `- Agents. ${r.enhancements.agents}`, ""];
+    "## Versions", "", ...r.versions.map((x) => `- v${x.version}, ${x.at}, ${x.phase}: ${x.why}. Tag: \`${x.tag}\``), "",
+    "## Assumed", "", `- ${r.assumes.note}`, "", "## Not included", "", `- Agents. ${r.enhancements.agents}`, ...r.not_modeled.map((x) => `- ${x.title}. ${x.why}`), ""];
   writeFileSync(join(out, "README.md"), idx.join("\n"));
   return out;
 }
+const titleOf0 = (t) => TITLES[t] ?? t.replace(/-/g, " ");
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
@@ -182,8 +233,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (has("write")) console.error(`wrote ${write(dir, r)}`);
   if (has("json")) console.log(JSON.stringify(r, null, 2));
   else {
-    console.log(`${r.name} (${r.phase}): venture package ${Math.round(r.progress * 100)}%, ready to hand off: ${r.ready.join(", ") || "none yet"}`);
-    for (const p of r.packages) console.log(`${p.in.padEnd(5)} ${p.title.padEnd(26)} fit ${String(p.fit).padEnd(5)} ${p.in === "now" ? `${p.state.padEnd(9)} ${Math.round(p.progress * 100)}%${p.missing.length ? `  to write: ${p.missing.join(", ")}` : ""}` : p.why}`);
+    console.log(`${r.name} (${r.phase}): ${Math.round(r.progress * 100)}% across the open core packages; complete: ${r.complete.join(", ") || "none yet"}`);
+    for (const p of r.core) console.log(`core    ${p.in.padEnd(5)} ${p.title.padEnd(22)} fit ${String(p.fit).padEnd(5)} ${p.in === "now" ? `${p.state.padEnd(9)} ${Math.round(p.progress * 100)}%  moving: ${p.moving.join(", ") || "none"}` : p.why}`);
+    for (const p of r.handoff) console.log(`handoff ${p.in.padEnd(5)} ${p.title.padEnd(22)} fit ${String(p.fit).padEnd(5)} ${p.in === "now" ? `waits on ${p.waits_on.join(", ") || "nothing"}` : p.why}`);
     const open = r.situation.questions.filter((q) => q.value == null);
     if (open.length) console.log(`Open: ${open.map((q) => q.ask).join(" ")}`);
   }

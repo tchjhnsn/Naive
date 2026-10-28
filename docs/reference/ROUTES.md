@@ -93,11 +93,11 @@ Every route works on one venture, named in front of it: its id, or its folder pa
 | `purpose/validation/team` | record | read, view, layout, write, check, template | `purpose/validation/team.json` |  | (validation) (beachhead) (scale) | Validation sub-score: skills needed, held and the gaps; cofounder sought (EE-026) |
 | `system/need-now` | command | run, view, layout | `schema/need-now.mjs` |  |  | What the venture needs now, soon, or should hold back (EE-028) |
 | `system/overview` | command | run, view, layout | router |  |  | The venture at a glance: telos, validation, need-now, time to ready, team and recent provenance, rendered as parallel slots |
-| `system/package` | command | run, view, layout | `schema/packages.mjs` |  |  | The venture package: which packages fit the venture now (by phase and the question matrix), each record confirmed, waiting for review or still to write, with the step that moves it; --write renders them into package/ (EE-067). Agents are not included: they are a package enhancement |
+| `system/package` | command | run, view, layout | `schema/packages.mjs` |  |  | The venture package (EE-067, EE-069): the core packages open now and the handoffs, each record confirmed, to review or to write, what moves on its own and what waits, and what completion unlocks; --write renders the view and records a version. Assumes a solo founder or small founding team in Discovery and Validation; agents are a package enhancement |
 | `system/provenance` | record | read, view, layout, check | `provenance.jsonl` |  | (discovery) (validation) (beachhead) (scale) (platform) | Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031) |
 | `system/robots` | command | run, view, layout | router |  |  | Which roles may read and write which routes, from the team plan |
 | `system/time-to-ready` | command | run, view, layout | `schema/time-to-ready.mjs` |  |  | Time to running, and to ready per layer and MAD tier |
-| `system/venture-package` | record | read, view, layout | `package/venture-package.json` |  | (discovery) (validation) (beachhead) (scale) (platform) | What the founder walks away with: the packages that fit the venture now, each record confirmed, waiting for review or still to write, rendered as documents beside it in package/ (EE-067) |
+| `system/venture-package` | record | read, view, layout | `package/venture-package.json` |  | (discovery) (validation) (beachhead) (scale) (platform) | The venture package view (EE-067, EE-069): the open core packages and handoffs, each record confirmed, to review or to write, what moves now and what waits, with its versions; the records themselves stay in place |
 
 ### Route groups (generated)
 
