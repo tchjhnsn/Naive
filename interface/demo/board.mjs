@@ -77,14 +77,17 @@ function layout(s){
       const da=a-span/2+k*step,dp=P(da,400),n=s.summary.by_department[d];
       nodes.push({id:"d-"+d,position:{x:dp.x-70,y:dp.y-16},data:{label:h("div",{className:"node dept"+(n?"":" empty"),style:n?{borderColor:col,borderWidth:Math.min(6,1+n)}:{},title:s.departments[d]},d.replace(/-/g," ")+(n?" · "+n:""))},style:{border:"none",background:"transparent",padding:0,width:"auto"}});
       edges.push({type:"straight",id:"e-"+p+"-"+d,source:"p-"+p,target:"d-"+d,style:{stroke:col,strokeOpacity:n?.8:.25,strokeDasharray:n?"":"4 4"}});
-      (byDept[d]||[]).forEach((i,j,all)=>{
-        const ia=da+(j-(all.length-1)/2)*Math.min(13,56/all.length),ip=P(ia,720+(j%2)*210);
-        nodes.push({id:i.id,position:{x:ip.x-110,y:ip.y-30},data:{label:h("div",{className:"node idea",style:{borderColor:col},title:i.text},
-          h("span",{className:"t"},i.text.length>110?i.text.slice(0,107)+"...":i.text),
-          i.exists?h("span",{className:"chip ex"},"exists"):null,...(i.records||[]).map((r)=>h("span",{className:"chip",key:r},r.replace(/^validation-/,""))))},style:{border:"none",background:"transparent",padding:0,width:"auto"}});
-        edges.push({type:"straight",id:"e-"+i.id,source:"d-"+d,target:i.id,style:{stroke:col,strokeOpacity:.5}});
-        (i.departments||[]).slice(1).forEach((d2)=>edges.push({type:"straight",id:"e-"+i.id+"-"+d2,source:i.id,target:"d-"+d2,style:{stroke:col,strokeOpacity:.25,strokeDasharray:"2 4"}}));
-      });
+    });
+    // Ideas spread evenly across the pillar's sector, in department order, on two alternating rings,
+    // so a crowded department never stacks its cards on a neighbour's.
+    const mine=depts.flatMap((d)=>(byDept[d]||[]).map((i)=>[d,i])),n=mine.length;
+    mine.forEach(([d,i],k)=>{
+      const ia=a-60+(k+.5)*120/Math.max(1,n),ip=P(ia,760+(k%2)*230);
+      nodes.push({id:i.id,position:{x:ip.x-110,y:ip.y-30},data:{label:h("div",{className:"node idea",style:{borderColor:col},title:i.text},
+        h("span",{className:"t"},i.text.length>110?i.text.slice(0,107)+"...":i.text),
+        i.exists?h("span",{className:"chip ex"},"exists"):null,...(i.records||[]).map((r)=>h("span",{className:"chip",key:r},r.replace(/^validation-/,""))))},style:{border:"none",background:"transparent",padding:0,width:"auto"}});
+      edges.push({type:"straight",id:"e-"+i.id,source:"d-"+d,target:i.id,style:{stroke:col,strokeOpacity:.5}});
+      (i.departments||[]).slice(1).forEach((d2)=>edges.push({type:"straight",id:"e-"+i.id+"-"+d2,source:i.id,target:"d-"+d2,style:{stroke:col,strokeOpacity:.25,strokeDasharray:"2 4"}}));
     });
   }
   return {nodes,edges};
