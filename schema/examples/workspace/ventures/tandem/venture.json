@@ -65,5 +65,11 @@
         "claude-code"
       ]
     }
-  ]
+  ],
+  "regulation": {
+    "exposure": "some",
+    "regimes": [
+      "GDPR"
+    ]
+  }
 }

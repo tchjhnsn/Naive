@@ -364,7 +364,30 @@
           "checked_by": "schema/check-sources.mjs"
         }
       ],
-      "note": "Which source each record type lives in: the venture's own folder by default, or a connected source such as a GitHub repository (EE-037)"
+      "note": "Which source each record type lives in: the venture's own folder by default, or a connected source such as a GitHub repository (EE-037); its rules are the source-of-truth matrix: a system of record and owner per record type, attribute and context (EE-042)"
+    },
+    {
+      "id": "where-used",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/where-used.schema.json",
+      "paths": [
+        "instance/**/knowledge/where-used.json",
+        "schema/examples/**/knowledge/where-used.json"
+      ],
+      "refs": [
+        {
+          "field": "facts[].parent.route",
+          "to": "(record routes)",
+          "checked_by": "schema/check-where-used.mjs"
+        },
+        {
+          "field": "facts[].children[].source",
+          "to": "knowledge-sources",
+          "checked_by": "schema/check-where-used.mjs"
+        }
+      ],
+      "note": "For each fact kept once in its system of record, every place that repeats it; live children must show the parent's value (EE-042)"
     },
     {
       "id": "ontology",

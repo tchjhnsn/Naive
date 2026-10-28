@@ -109,8 +109,8 @@
       "properties": {
         "module": {
           "type": "string",
-          "pattern": "^knowledge/connectors/[a-z0-9-]+\\.mjs$",
-          "description": "Path from the repository root; it exports connect(options)"
+          "pattern": "^(knowledge|platform)/connectors/[a-z0-9-]+\\.mjs$",
+          "description": "Path from the repository root; it exports connect(options). A connector that works offline and names no vendor is framework (knowledge/connectors/); any other is platform (platform/connectors/), EE-041"
         },
         "writes": {
           "type": "array",

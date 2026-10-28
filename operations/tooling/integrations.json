@@ -106,5 +106,53 @@
     "links": [
       "https://treg.to"
     ]
+  },
+  {
+    "id": "website-github",
+    "name": "GitHub (website source)",
+    "layer": "operations",
+    "role": "where a marketing website's source lives: the default, so the site has history, review by pull request and a deploy hook",
+    "interfaces": [
+      "files",
+      "api",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "Torian, 2026-10-28 (EE-044): a marketing website is business operations, not engineering; opinionated default: keep it in GitHub",
+    "links": [
+      "https://github.com"
+    ]
+  },
+  {
+    "id": "website-vercel",
+    "name": "Vercel (website hosting)",
+    "layer": "operations",
+    "role": "deploys the marketing website from its GitHub repository, with a preview per pull request; the default host, swappable for another the venture chooses",
+    "interfaces": [
+      "api",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "Torian, 2026-10-28 (EE-044); Mentura's own docs site already deploys this way (EE-034)",
+    "credentials": [
+      "VERCEL_TOKEN"
+    ],
+    "links": [
+      "https://vercel.com"
+    ]
+  },
+  {
+    "id": "website-vercel-templates",
+    "name": "Vercel templates",
+    "layer": "operations",
+    "role": "the starting point for a marketing website: pick a template, clone it into the venture's GitHub, deploy",
+    "interfaces": [
+      "app"
+    ],
+    "status": "candidate",
+    "reason": "Torian, 2026-10-28 (EE-044): start a site from a template rather than building one",
+    "links": [
+      "https://vercel.com/templates"
+    ]
   }
 ]

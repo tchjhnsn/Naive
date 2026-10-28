@@ -229,6 +229,33 @@ teamBroken("a task citing an unknown capability fails", (d) => edit(planOf(d), (
 teamBroken("an open person role needed now with no recruiting entry fails", (d) => edit(planOf(d), (p) => { p.roles.push({ id: "sales-lead", name: "Sales lead", occupant: "person", needed_by: "discovery", status: "open" }); }), /needed now and open, but has no recruiting entry/);
 teamBroken("an agent in a person's registry role fails", (d) => edit(planOf(d), (p) => { p.roles[0].occupant = "agent"; }), /an agent cannot occupy it/);
 
+// The source-of-truth matrix and the where-used list (EE-042), on broken copies of tandem.
+function knowBroken(name, script, change, pattern) {
+  const dir = join(tmp, `k${++n}`);
+  cpSync(tandem, dir, { recursive: true });
+  change(dir);
+  const r = run(script, [dir]);
+  expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+const srcMap = (d) => join(d, "knowledge/sources.json");
+const used = (d) => join(d, "knowledge/where-used.json");
+const anyRule = { record: "product", attribute: "*", phase: "*", product: "*", account: "*", actor: "*", system_of_record: "venture", owner: "founder" };
+expect("check-sources passes on the examples", run("check-sources.mjs", [join(root, "schema/examples/workspace")]).status === 0);
+expect("check-where-used passes on the examples", run("check-where-used.mjs", [join(root, "schema/examples/workspace")]).status === 0);
+knowBroken("a matrix rule naming an unknown source fails", "check-sources.mjs", (d) => edit(srcMap(d), (m) => { m.rules[0].system_of_record = "crm"; }), /system of record crm is not one of its sources/);
+knowBroken("two matrix rules that can tie fail", "check-sources.mjs", (d) => edit(srcMap(d), (m) => { m.rules.push({ ...anyRule, phase: "validation" }, { ...anyRule, actor: "agent" }); }), /can both hold and tie/);
+knowBroken("a matrix rule for a pinned record type fails", "check-sources.mjs", (d) => edit(srcMap(d), (m) => { m.rules.push({ ...anyRule, record: "venture", phase: "scale" }); }), /venture stays in the venture folder/);
+knowBroken("a live child that no longer shows its parent's value is drift", "check-where-used.mjs", (d) => edit(join(d, "products/shop-app.json"), (p) => { p.name = "Tandem for shops"; }), /does not show "Tandem for shops"/);
+knowBroken("a parent pointer with no value fails", "check-where-used.mjs", (d) => edit(used(d), (w) => { w.facts[0].parent.pointer = "/price"; }), /has no value at \/price/);
+knowBroken("a child in an unknown source fails", "check-where-used.mjs", (d) => edit(used(d), (w) => { w.facts[0].children[0].source = "website"; }), /website is not one of the venture's sources/);
+{
+  const dir = join(tmp, `k${++n}`);
+  cpSync(tandem, dir, { recursive: true });
+  edit(used(dir), (w) => { w.facts[0].children = w.facts[0].children.filter((c) => c.status === "frozen"); });
+  edit(join(dir, "products/shop-app.json"), (p) => { p.name = "Tandem for shops"; });
+  expect("a frozen child is history: a changed parent is not drift for it", run("check-where-used.mjs", [dir]).status === 0);
+}
+
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) });
@@ -238,6 +265,14 @@ edit(join(repo, "interface/tooling/integrations.json"), (list) => { list.push({ 
 expect("check-nouns passes on the repository", run("check-nouns.mjs", [], { EE_ROOT: repo }).status === 0);
 writeFileSync(join(repo, "schema/README.md"), readFileSync(join(repo, "schema/README.md"), "utf8") + "\nEach sphere holds products.\n"); // a retired noun, on purpose
 { const r = run("check-nouns.mjs", [], { EE_ROOT: repo }); expect("a retired noun in a checked file fails", r.status !== 0 && /retired noun "sphere"/.test(r.stderr)); }
+
+// check-boundary reads a whole repository: framework code never imports platform code (EE-041).
+expect("check-boundary passes on the repository", run("check-boundary.mjs", [], { EE_ROOT: repo }).status === 0);
+writeFileSync(join(repo, "knowledge/connectors/leak.mjs"), 'import { connect } from "../../platform/connectors/github.mjs";\nexport default connect;\n');
+{ const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework file importing from platform/ fails", r.status !== 0 && /framework code never imports platform code/.test(r.stderr)); }
+rmSync(join(repo, "knowledge/connectors/leak.mjs"));
+edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { list.find((t) => t.id === "github").connector.module = "knowledge/connectors/filesystem.mjs"; list.find((t) => t.id === "github").credentials = ["GITHUB_TOKEN"]; });
+{ const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
 const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };

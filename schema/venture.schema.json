@@ -302,6 +302,28 @@
           }
         }
       }
+    },
+    "regulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How much laws, regulators or formal standards constrain what the venture may do (EE-040; MAD's governance tier reads it as regulatory_exposure). The obligations themselves are founder decisions made with counsel.",
+      "properties": {
+        "exposure": {
+          "enum": [
+            "light",
+            "some",
+            "heavy"
+          ],
+          "description": "light: ordinary terms of service and licences. some: obligations such as personal data, accessibility rules or industry codes. heavy: health, finance, safety-critical or government work, where an auditor or regulator must be satisfied."
+        },
+        "regimes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The laws, regulators or standards that apply, such as GDPR, HIPAA or SOC 2"
+        }
+      }
     }
   },
   "$defs": {

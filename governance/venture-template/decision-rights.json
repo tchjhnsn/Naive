@@ -1,6 +1,6 @@
 {
   "register": "decision-rights",
-  "updated": "2026-10-14",
+  "updated": "2026-10-28",
   "governed_by": "ratified operating-model decisions",
   "template": true,
   "levels": {
@@ -136,6 +136,24 @@
       "id": "experience-design",
       "description": "Experience and interface design within decided product lines",
       "owner": "product-design-lead",
+      "level": "decide-inform"
+    },
+    {
+      "id": "continue-or-stop",
+      "description": "Whether to start building a product, keep building it or stop, read against the telos exit criteria and the validation evidence (EE-040)",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "change-direction",
+      "description": "Changing the product, customer or business model when evidence shows the current direction is wrong; the telos steering says how (EE-040)",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "set-priorities",
+      "description": "The order in which work is taken up across roles and handoffs (EE-040)",
+      "owner": "founder",
       "level": "decide-inform"
     },
     {

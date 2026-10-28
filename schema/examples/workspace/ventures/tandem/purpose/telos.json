@@ -69,5 +69,10 @@
         }
       ]
     }
-  ]
+  ],
+  "steering": {
+    "go_decision": "test-hypotheses-first",
+    "review": "per-experiment",
+    "change_of_direction": "pivot-on-evidence"
+  }
 }

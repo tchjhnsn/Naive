@@ -10,6 +10,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { LOCAL, MAP, registry } from "../knowledge/connectors/index.mjs";
+import { ANY, CONTEXT, specificity } from "../knowledge/connectors/resolve.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-sources.mjs <workspace or venture dir>"); process.exit(2); }
@@ -45,6 +46,21 @@ for (const v of walk(dir)) {
     if (PINNED.has(type)) errors.push(`${id}: ${type} stays in the venture folder`);
     if (!ids.has(src)) errors.push(`${id}: ${type} goes to ${src}, which is not one of its sources`);
   }
+  // The matrix (EE-042): every rule names a known record type and a known source, and two rules
+  // that can hold at once never tie. Product and account ids are not checked here: those records
+  // may themselves live in another source.
+  const rules = m.rules ?? [];
+  rules.forEach((rule, i) => {
+    const where = `${id}: rule ${i + 1} (${rule.record}${rule.attribute !== ANY ? `.${rule.attribute}` : ""})`;
+    if (!ventureTypes.has(rule.record)) errors.push(`${where}: ${rule.record} is not a venture record type`);
+    if (PINNED.has(rule.record)) errors.push(`${where}: ${rule.record} stays in the venture folder`);
+    if (!ids.has(rule.system_of_record)) errors.push(`${where}: system of record ${rule.system_of_record} is not one of its sources`);
+    for (const s of rule.survivorship?.also_in ?? []) if (!ids.has(s) || s === rule.system_of_record) errors.push(`${where}: survivorship names ${s}, which is not another of its sources`);
+  });
+  const overlap = (a, b) => a.record === b.record && ["attribute", ...CONTEXT].every((k) => a[k] === ANY || b[k] === ANY || a[k] === b[k]);
+  for (let i = 0; i < rules.length; i++) for (let j = i + 1; j < rules.length; j++)
+    if (overlap(rules[i], rules[j]) && specificity(rules[i]) === specificity(rules[j]) && rules[i].attribute === rules[j].attribute)
+      errors.push(`${id}: rules ${i + 1} and ${j + 1} (${rules[i].record}) can both hold and tie at the same specificity; narrow one`);
 }
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`${maps} source maps: every source has a connector and every record type a source.`);
+console.log(`${maps} source maps: every source has a connector, every record type a source, and no two matrix rules tie.`);

@@ -381,6 +381,16 @@
         "platform": 0.7
       },
       "why": "Only once some records live outside the venture folder (a team repository, a CRM, a wiki); until then the folder is the whole knowledge layer"
+    },
+    "where-used": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.15,
+        "beachhead": 0.4,
+        "scale": 0.7,
+        "platform": 0.8
+      },
+      "why": "Once one fact (a price, a product name, a plan's limits) is repeated in several places, such as a site, newsletters and a payment provider; before launch there is rarely more than one copy"
     }
   }
 }

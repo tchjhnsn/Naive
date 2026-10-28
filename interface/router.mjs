@@ -38,7 +38,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
-import { LOCAL, connect, sourceFor } from "../knowledge/connectors/index.mjs";
+import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -261,12 +261,17 @@ export async function call({ venture, route, action, input, actor = "agent", act
   }
 
   // Storage: the connector for the source this record type lives in.
-  let src, store;
+  let src, store, attrs = [];
   if (r.kind === "record" && (action === "read" || action === "write")) {
-    try { src = sourceFor(dir, r.record); store = await connect(src, dir); } catch (e) { return { ok: false, error: String(e.message ?? e) }; }
+    const context = { actor, ...(r.collection === "item" && (r.record === "product" || r.record === "account") ? { [r.record]: params.id } : {}) };
+    try {
+      src = sourceFor(dir, r.record, context); store = await connect(src, dir);
+      // Attributes mastered elsewhere (EE-042): read from and written to their own system of record.
+      attrs = r.files.every((f) => f.endsWith(".json")) ? await Promise.all(attributeSources(dir, r.record, context).map(async (a) => ({ ...a, store: await connect(a.source, dir) }))) : [];
+    } catch (e) { return { ok: false, error: String(e.message ?? e) }; }
   }
   const remote = src && src.id !== LOCAL;
-  const cite = (x) => ({ source: src.id, address: address(src.id, x.path), version: x.version, ...(x.commit ? { commit: x.commit } : {}), ...(x.permalink ? { permalink: x.permalink } : {}) });
+  const cite = (x) => ({ source: src.id, address: address(src.id, x.path), version: x.version, ...(x.commit ? { commit: x.commit } : {}), ...(x.permalink ? { permalink: x.permalink } : {}), ...(x.attributes ? { attributes: x.attributes } : {}) });
 
   if (action === "read") {
     const patterns = r.collection === "item" ? [fileFor(r, params)] : r.files;
@@ -287,11 +292,27 @@ export async function call({ venture, route, action, input, actor = "agent", act
       return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, ...(remote ? { source: src.id } : {}), template: r.template, schema: r.schema, need_now: l.need_now ?? null, skills: fix(r).skills }, ...loading, ...deprecated };
     }
     const parse = (x) => x.path.endsWith(".json") ? JSON.parse(x.content) : x.path.endsWith(".jsonl") ? x.content.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : x.content;
+    // Overlay each attribute mastered elsewhere with the value its system of record holds, and
+    // cite where it came from. A source that holds nothing for it leaves the record's own value.
+    const overlays = new Map();
+    for (const x of items) {
+      const cites = {};
+      for (const a of attrs) {
+        let got;
+        try { got = await a.store.read(x.path); } catch (e) { return { ok: false, error: `${a.source.id}: ${String(e.message ?? e)}` }; }
+        const value = got ? JSON.parse(got.content)[a.attribute] : undefined;
+        cites[a.attribute] = value === undefined ? { source: a.source.id, missing: true } : { source: a.source.id, address: address(a.source.id, x.path), version: got.version };
+        if (value !== undefined) overlays.set(x.path, { ...(overlays.get(x.path) ?? {}), [a.attribute]: value });
+      }
+      if (attrs.length) x.attributes = cites;
+    }
+    const parseOne = parse;
+    const parseWith = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
     if (r.collection === "list") {
       const re = new RegExp("^" + r.files[0].split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$");
-      return { ok: true, result: Object.fromEntries(items.map((x) => [x.path.match(re)[1], parse(x)])), sources: Object.fromEntries(items.map((x) => [x.path.match(re)[1], cite(x)])), ...deprecated };
+      return { ok: true, result: Object.fromEntries(items.map((x) => [x.path.match(re)[1], parseWith(x)])), sources: Object.fromEntries(items.map((x) => [x.path.match(re)[1], cite(x)])), ...deprecated };
     }
-    const data = Object.fromEntries(items.map((x) => [x.path, parse(x)]));
+    const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
     return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...deprecated };
   }
 
@@ -317,29 +338,55 @@ export async function call({ venture, route, action, input, actor = "agent", act
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
     const log = (entity, activity, extra = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, ...extra });
 
+    // Attributes mastered elsewhere (EE-042) go to their own system of record, each as a JSON
+    // object holding only that attribute at the record's path, and leave the record's own file, so
+    // the fact lives in one place. The whole record was checked against its schema above. A gated
+    // agent write stays whole, as a draft, until a person accepts it.
+    const split = attrs.filter((a) => a.attribute in input);
+    const gatedDraft = !remote && !!gate?.drafts && actor !== "person";
+    const attributeWrites = [];
+    if (split.length && !gatedDraft) {
+      for (const a of split) {
+        if (a.store.writes === "none") return { ok: false, error: `${r.record}.${a.attribute} is mastered in ${a.source.id}, which is read-only` };
+      }
+      for (const a of split) {
+        const part = JSON.stringify({ [a.attribute]: input[a.attribute] }, null, 2) + "\n";
+        let w;
+        try { w = await a.store.write(file, part, { message: `${route}.${a.attribute}: ${provenance.note ?? "written through Mentura"}`, title: `Mentura: ${route}.${a.attribute} (${venture})` }); }
+        catch (e) { return { ok: false, error: `${a.source.id}: ${String(e.message ?? e)}` }; }
+        const at = address(a.source.id, file);
+        log(`${at}#${a.attribute}`, a.store.writes === "pull-request" ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(part).digest("hex"),
+          source: { id: a.source.id, connector: a.source.connector, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
+        attributeWrites.push({ attribute: a.attribute, written: at, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) });
+      }
+      input = Object.fromEntries(Object.entries(input).filter(([k]) => !split.some((a) => a.attribute === k)));
+    }
+    const attributesOut = attributeWrites.length ? { attributes: attributeWrites } : {};
+    const recordText = attributeWrites.length ? JSON.stringify(input, null, 2) + "\n" : text;
+
     if (remote) {
       // Another source: its connector decides how a write lands. A pull-request source opens a
       // draft pull request, which a person accepts by merging, so it is a draft for anyone.
       if (store.writes === "none") return { ok: false, error: `${route} lives in ${src.id}, which is read-only` };
       let w;
-      try { w = await store.write(file, text, { message: `${route}: ${provenance.note ?? `written by ${actor === "person" ? "a person" : "an agent"} through Mentura`}`, title: `Mentura: ${route} (${venture})` }); }
+      try { w = await store.write(file, recordText, { message: `${route}: ${provenance.note ?? `written by ${actor === "person" ? "a person" : "an agent"} through Mentura`}`, title: `Mentura: ${route} (${venture})` }); }
       catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
       const draft = store.writes === "pull-request";
       const at = address(src.id, file);
-      const entry = log(at, draft ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(text).digest("hex"),
+      const entry = log(at, draft ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(recordText).digest("hex"),
         source: { id: src.id, connector: src.connector, version: w.version, ...(w.commit ? { commit: w.commit } : {}), ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
       return { ok: true, result: { written: at, draft, gate: gate?.class ?? null, provenance: entry.hash, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}),
-        note: draft ? `opened draft pull request ${w.pull_request.url}; merging it accepts the write` : "written" }, ...deprecated };
+        note: draft ? `opened draft pull request ${w.pull_request.url}; merging it accepts the write` : "written", ...attributesOut }, ...deprecated };
     }
 
-    const draft = !!gate?.drafts && actor !== "person";
+    const draft = gatedDraft;
     if (draft) {
       const dest = join(dir, draftPath(file));
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, text);
-    } else await store.write(file, text);
+    } else await store.write(file, recordText);
     const entry = log(draft ? draftPath(file) : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "written" }, ...deprecated };
+    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "written", ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
