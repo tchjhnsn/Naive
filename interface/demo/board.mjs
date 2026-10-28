@@ -8,7 +8,8 @@
 import { createServer } from "node:http";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureDir, ventures } from "../router.mjs";
+import { spawnSync } from "node:child_process";
+import { routes, ventureDir, ventures } from "../router.mjs";
 import { decisions } from "../../schema/decisions.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
@@ -19,7 +20,12 @@ function state(id) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
   const log = existsSync(join(dir, "provenance.jsonl")) ? readFileSync(join(dir, "provenance.jsonl"), "utf8").trim().split("\n").filter(Boolean).slice(-8).map((l) => JSON.parse(l)).reverse() : [];
-  return { ...decisions(dir), log: log.map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, who: `${e.agent?.kind ?? "?"}${e.agent?.id ? ` ${e.agent.id}` : ""}`, via: e.agent?.via })) };
+  // The kit for now (EE-028): what need-now says this venture needs in its phase, and which kit holds it.
+  const nn = spawnSync("node", [new URL("../../schema/need-now.mjs", import.meta.url).pathname, dir, "--json"], { encoding: "utf8" });
+  const kitOf = new Map(routes().filter((r) => r.record).map((r) => [r.record, { kit: r.kit, route: r.route.replace(/\/\[id\]$/, "") }]));
+  const rows = nn.status === 0 ? JSON.parse(nn.stdout).rows : [];
+  const kit = rows.filter((r) => r.now >= 0.5 || r.status === "coming soon").map((r) => ({ type: r.type, status: r.status, now: r.now, next: r.next, why: r.why, ...(kitOf.get(r.type) ?? {}) }));
+  return { ...decisions(dir), kit, log: log.map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, who: `${e.agent?.kind ?? "?"}${e.agent?.id ? ` ${e.agent.id}` : ""}`, via: e.agent?.via })) };
 }
 
 const PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -35,8 +41,11 @@ section h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:va
 .card.overdue{border-left-color:var(--over)}.card.now{border-left-color:var(--now)}.card.waiting,.card.stale{border-left-color:var(--wait)}.card.done{border-left-color:var(--done)}
 .q{font-weight:600}.id{font:12px ui-monospace,monospace;color:var(--muted)}.tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:99px;border:1px solid var(--line);margin:4px 4px 0 0;color:var(--muted)}
 .tag.ask{border-color:var(--now);color:var(--now)}.tag.lock{border-color:var(--wait);color:var(--wait)}
+.why{font-size:12px;color:var(--muted);margin-top:4px}.rank{float:right;font:12px ui-monospace,monospace;color:var(--now)}
+.kit{padding:0 24px 8px}.kit ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}.kit li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;max-width:320px}
+.kit li b{display:block;margin-bottom:2px}.tag.start{border-color:var(--now);color:var(--now);font-weight:600}.tag.soon{opacity:.6}.tag.has{color:var(--done);border-color:var(--done)}
 .log{padding:0 24px 24px}.log table{width:100%;border-collapse:collapse;font-size:13px}.log td{padding:4px 8px;border-top:1px solid var(--line)}.log td:first-child{color:var(--muted);white-space:nowrap}
-</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span></header><main id="cols"></main>
+</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span></header><div class="kit"><section><h2>The kit for this phase (from need-now)</h2><ul id="kit"></ul></section></div><main id="cols"></main>
 <div class="log"><section><h2>Provenance, latest first</h2><table id="log"></table></section></div>
 <script>
 const COLS=[["overdue","Overdue"],["now","Now"],["waiting","Waiting"],["stale","Stale"],["later","Later"],["deferred","Deferred"],["done","Done"]];
@@ -48,14 +57,19 @@ async function tick(){
     document.getElementById("title").textContent="Decisions: "+s.venture;
     document.getElementById("meta").textContent=s.phase+" phase · "+s.kind+" · updated "+new Date().toLocaleTimeString();
     const ds=s.decisions.filter((d)=>d.source!=="root"||d.id==="foundation");
+    const ranked=ds.filter((d)=>d.rank!=null).map((d)=>d.id);
+    const kits={};(s.kit||[]).forEach((r)=>{(kits[r.kit||"other"]=kits[r.kit||"other"]||[]).push(r);});
+    const mark={"held":["has","has"],"suggest now":["start now","start"],"coming soon":["next phase","soon"]};
+    document.getElementById("kit").innerHTML=Object.entries(kits).sort((a,b)=>b[1].filter((r)=>r.status==="suggest now").length-a[1].filter((r)=>r.status==="suggest now").length).map(([k,rs])=>'<li><b>'+esc(k)+'</b>'+rs.map((r)=>'<span class="tag '+(mark[r.status]||["",""])[1]+'" title="'+esc(r.why)+'">'+esc(r.type.replace(/^validation-/,""))+' · '+esc((mark[r.status]||[r.status])[0])+'</span>').join("")+'</li>').join("");
     document.getElementById("cols").innerHTML=COLS.map(([k,label])=>{const xs=ds.filter((d)=>d.render===k);return xs.length?'<section><h2>'+label+' ('+xs.length+')</h2>'+xs.map((d)=>
-      '<div class="card '+k+'"><div class="q">'+esc(d.question)+'</div><div class="id">'+esc(d.id)+' · '+esc(d.layer)+' · '+esc(d.boundary)+'</div>'+
+      '<div class="card '+k+'">'+(d.rank!=null?'<span class="rank">#'+(ranked.indexOf(d.id)+1)+'</span>':'')+'<div class="q">'+esc(d.question)+'</div><div class="id">'+esc(d.id)+' · '+esc(d.layer)+' · '+esc(d.boundary)+'</div>'+
       (d.awaiting?'<span class="tag ask">agent wording, awaiting approval</span>':'')+
       (d.held_by?'<span class="tag lock">held by '+esc(d.held_by)+'</span>':'')+
       (d.due&&k!=="done"?'<span class="tag">due '+esc(d.due)+' ('+d.due_in_hours+'h)</span>':'')+
       (d.provenance&&d.provenance.approved_by?'<span class="tag">approved by '+esc(d.provenance.approved_by)+' in '+esc(d.provenance.phase)+'</span>':'')+
       (d.unlocks?'<span class="tag">unlocks: '+esc(d.unlocks.join(", "))+'</span>':'')+
-      (d.outcomes?'<span class="tag">outcomes '+(d.outcomes.total-d.outcomes.pending)+'/'+d.outcomes.total+'</span>':'')+'</div>').join("")+'</section>':"";}).join("");
+      (d.outcomes?'<span class="tag">outcomes '+(d.outcomes.total-d.outcomes.pending)+'/'+d.outcomes.total+'</span>':'')+
+      (d.why&&d.why.length?'<div class="why">Why now: '+esc(d.why.join("; "))+'</div>':'')+'</div>').join("")+'</section>':"";}).join("");
     document.getElementById("log").innerHTML=s.log.map((e)=>'<tr><td>'+esc(new Date(e.at).toLocaleTimeString())+'</td><td>'+esc(e.activity)+'</td><td>'+esc(e.entity)+'</td><td>'+esc(e.who)+' via '+esc(e.via)+'</td></tr>').join("");
   }catch(e){document.getElementById("meta").textContent="Lost the board's server.";}
 }

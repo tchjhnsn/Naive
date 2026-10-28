@@ -118,7 +118,7 @@ export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "")
   const chains = new Map(list.map((d) => [d.id, ancestors(d)]));
   const boundaryOf = (d) => d.boundary !== "inherit" ? d.boundary : (chains.get(d.id).find((a) => a.boundary !== "inherit")?.boundary ?? "fail-closed");
 
-  return { venture: venture.id, phase: venture.phase, kind: productOnly ? "product" : "venture", errors, decisions: list.map((d) => {
+  const resolved = list.map((d) => {
     const boundary = boundaryOf(d);
     // An open decision above that fails closed holds this one. As with React's error boundaries the
     // nearest boundary governs: a decision that fails open (a product) shields everything under it
@@ -148,7 +148,32 @@ export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "")
       ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,
         due: d.outcomes.filter((o) => (o.result ?? "pending") === "pending" && /^\d{4}-\d{2}-\d{2}/.test(o.by ?? "") && Date.parse(o.by) < now).map((o) => o.id) } } : {}),
       ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}) };
-  }) };
+  });
+  return { venture: venture.id, phase: venture.phase, kind: productOnly ? "product" : "venture", errors, decisions: rank(resolved, venture.phase, now) };
+}
+
+/** Which open decisions matter most now, and why (EE-057): a deadline, what waits on it, what it
+ *  unlocks, and whether it settles the foundation. Ranks the decisions that render now, overdue or
+ *  stale; the others keep rank null. Higher first; ties keep their order. */
+export function rank(ds, phase, now = Date.now()) {
+  const below = (id) => ds.filter((x) => x.held_by === id || x.parent === id).length;
+  const scored = ds.map((d) => {
+    if (!["now", "overdue", "stale"].includes(d.render) || d.source === "root") return { ...d, rank: null };
+    const why = [];
+    let s = 0;
+    if (d.render === "overdue") { s += 100; why.push("past its due time"); }
+    else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 48) { s += Math.round(60 - h); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
+    if (d.render === "stale") { s += 30; why.push("its parent changed after it was decided"); }
+    const n = below(d.id);
+    if (n) { s += 12 * n; why.push(`${n} decision${n > 1 ? "s" : ""} wait on it`); }
+    if (d.unlocks?.length) { s += 10 * d.unlocks.length; why.push(`unlocks ${d.unlocks.join("; ")}`); }
+    if (d.part_of === "foundation") { s += phase === "discovery" ? 20 : 10; why.push("settles the strategic foundation"); }
+    if (d.awaiting) { s += 8; why.push("an agent has drafted it: approving takes a minute"); }
+    if (d.outcomes?.total) { s += 3 * d.outcomes.total; why.push(`${d.outcomes.total} expected outcome${d.outcomes.total > 1 ? "s" : ""} to test`); }
+    return { ...d, rank: s, why };
+  });
+  const order = scored.map((d, i) => [d, i]).sort(([a, i], [b, j]) => (b.rank ?? -1) - (a.rank ?? -1) || i - j).map(([d]) => d);
+  return order;
 }
 
 /** The decision that makes an agent's write of this file a draft: open and failing closed, or held. */
@@ -237,8 +262,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   else for (const r of rs) {
     console.log(`\n${relative(process.cwd(), r.dir) || "."} (${r.phase}, ${r.kind})`);
     const order = ["overdue", "stale", "now", "waiting", "later", "deferred", "done"];
-    const byDue = (a, b) => (a.due ?? "~").localeCompare(b.due ?? "~");
-    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state)).sort(byDue)) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}${d.provenance?.approved_by ? `, approved by ${d.provenance.approved_by} in ${d.provenance.phase}` : ""}]` : ""}${d.awaiting ? " [agent's wording, awaiting approval]" : ""}${d.due && d.render !== "done" ? ` [due ${d.due}, ${d.due_in_hours}h]` : ""}${d.outcomes?.due?.length ? ` [outcomes due: ${d.outcomes.due.join(", ")}]` : ""}`);
+    const byDue = (a, b) => (b.rank ?? -1) - (a.rank ?? -1) || (a.due ?? "~").localeCompare(b.due ?? "~");
+    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state)).sort(byDue)) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}${d.provenance?.approved_by ? `, approved by ${d.provenance.approved_by} in ${d.provenance.phase}` : ""}]` : ""}${d.awaiting ? " [agent's wording, awaiting approval]" : ""}${d.due && d.render !== "done" ? ` [due ${d.due}, ${d.due_in_hours}h]` : ""}${d.outcomes?.due?.length ? ` [outcomes due: ${d.outcomes.due.join(", ")}]` : ""}${d.why?.length ? `\n           why now: ${d.why.join("; ")}` : ""}`);
     if (process.argv.includes("--md")) {
       const m = matrix(r);
       console.log(`\n| layer | ${PHASES.join(" | ")} |\n| --- | ${PHASES.map(() => "---").join(" | ")} |`);

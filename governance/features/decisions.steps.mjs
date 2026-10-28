@@ -23,7 +23,9 @@ export const steps = [
     cpSync(join(repo, "schema/examples/workspace"), join(d, "workspace"), { recursive: true });
     w.ws = join(d, "workspace"); w.venture = id; w.dir = join(w.ws, "ventures", id); w.cleanup = () => rmSync(d, { recursive: true, force: true });
   }],
-  [/^an open decision "([a-z-]+)" that fails closed$/, (w, id) => decide(w, id, { boundary: "fail-closed" })],
+  [/^an open decision "([a-z-]+)" that fails (closed|open)$/, (w, id, b) => decide(w, id, { boundary: `fail-${b}` })],
+  [/^the first ranked decisions are "([a-z-]+)", "([a-z-]+)"$/, (w, a, b) => { find(w, "venture"); const r = w.report.decisions.filter((d) => d.rank != null).map((d) => d.id); ok(r[0] === a && r[1] === b, `ranked: ${r.join(", ")}`); }],
+  [/^"([a-z-]+)" ranks above "([a-z-]+)" because "([^"]+)"$/, (w, a, b, why) => { const x = find(w, a), y = find(w, b); ok(x.rank > (y.rank ?? -1) && x.why.includes(why), `${a} ${x.rank} ${JSON.stringify(x.why)}; ${b} ${y?.rank}`); }],
   [/^an open decision "([a-z-]+)" under "([a-z-]+)"$/, (w, id, parent) => decide(w, id, { parent })],
   [/^an open decision "([a-z-]+)" needed in "([a-z]+)"$/, (w, id, phase) => decide(w, id, { needed_in: phase })],
   [/^an open decision "([a-z-]+)" needed in "([a-z]+)" and due at "([^"]+)"$/, (w, id, phase, due) => decide(w, id, { needed_in: phase, due })],

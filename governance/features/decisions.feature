@@ -67,6 +67,19 @@ Feature: Decisions
       When the founder asks for the decisions
       Then "pricing-model" is "working"
 
+  Rule: The docket ranks what matters most now
+
+    Scenario: An overdue decision comes first, then one that others wait on
+      Given the example venture "tandem"
+      And it is now "2026-10-30T00:00:00Z"
+      And an open decision "pricing-model" that fails closed
+      And an open decision "launch-price" under "pricing-model"
+      And an open decision "logo" that fails open
+      And an open decision "demo-scope" due at "2026-10-29T22:00:00Z"
+      When the founder asks for the decisions
+      Then the first ranked decisions are "demo-scope", "pricing-model"
+      And "pricing-model" ranks above "logo" because "1 decision wait on it"
+
   Rule: Every decision carries its provenance (EE-058)
 
     Scenario: An agent's wording is not a decision until a person approves it
