@@ -15,7 +15,8 @@
 // Under an open fail-closed decision, children wait and agents only draft (Suspense). A decision
 // made before its parent last changed is stale and shown to the owner again (revalidation). Like
 // a component rendered only when needed, a decision needed in a later phase is held back.
-// In Discovery a decided decision is still a working draft (EE-057).
+// In Discovery a decided decision is still a working draft (EE-057). A decision is decided only
+// when a person approved its wording; provenance says who, when and in which phase (EE-058).
 //
 // render: now (open, needed in this phase or earlier, nothing above it open and fail-closed),
 //   later (needed in a later phase; checked before waiting), waiting, stale, deferred, done, withdrawn.
@@ -69,7 +70,14 @@ export function decisions(dir) {
     const record = d.decides?.record ?? recordOf(path);
     const layer = d.layer ?? MODEL.records.find((r) => r.id === record)?.layer ?? f.split("/")[0];
     if (["venture", "foundation"].includes(d.id)) errors.push(`${f}: ${d.id} is a reserved root`);
-    if (d.status === "decided" && !d.decided_by) errors.push(`${f}: decided, but names no one who decided`);
+    // Provenance (EE-058): a decision is decided only when a person approved its wording, at a
+    // time and in a phase; an agent's wording waits for that approval.
+    const pv = d.provenance;
+    if (d.status === "decided" && !pv?.approved_by) errors.push(`${f}: decided, but names no one who decided`);
+    else if (d.status === "decided" && (!pv.approved_at || !pv.phase)) errors.push(`${f}: decided, but its provenance has no ${!pv.approved_at ? "approved_at" : "phase"}`);
+    if (pv?.approved_by && d.decided_by && pv.approved_by !== d.decided_by) errors.push(`${f}: decided_by ${d.decided_by} differs from provenance.approved_by ${pv.approved_by}`);
+    if (pv?.phase && PHASES.indexOf(pv.phase) > phase) errors.push(`${f}: approved in ${pv.phase}, a phase the venture has not reached`);
+    for (const o of d.outcomes ?? []) if (["met", "partly", "missed"].includes(o.result) && !o.actual) errors.push(`${f}: outcome ${o.id} is ${o.result} but records no actual outcome`);
     const boundary = d.boundary && d.boundary !== "inherit" ? d.boundary : record === "product" ? "fail-open" : "inherit";
     // A decision that settles a foundation statement is part of the foundation, not under it.
     const parent = d.parent ?? (d.statement ? "venture" : FOUNDATION_RECORDS.has(record) ? "foundation" : "venture");
@@ -120,13 +128,18 @@ export function decisions(dir) {
       return null;
     })();
     const parent = byId.get(d.parent);
-    const stale = d.status === "decided" && d.decided_at && parent?.decided_at && parent.decided_at > d.decided_at;
+    const at = (x) => x?.provenance?.approved_at ?? x?.decided_at;
+    const stale = d.status === "decided" && at(d) && at(parent) && at(parent) > at(d);
     const later = d.needed_in && PHASES.indexOf(d.needed_in) > phase;
     const render = d.status === "withdrawn" ? "withdrawn" : d.status === "deferred" ? "deferred" : stale ? "stale"
       : d.status === "decided" ? "done" : later ? "later" : holder ? "waiting" : "now";
     const firmness = d.status !== "decided" ? "open" : venture.phase === "discovery" ? "working" : "firm";
     return { id: d.id, question: d.question, source: d.source, layer: d.layer, parent: d.parent, boundary, needed_in: d.needed_in ?? null, status: d.status, render, firmness,
-      ...(render === "waiting" ? { held_by: holder.id } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}) };
+      ...(render === "waiting" ? { held_by: holder.id } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}),
+      ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),
+      ...(d.provenance ? { provenance: d.provenance } : {}),
+      ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length } } : {}),
+      ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}) };
   }) };
 }
 
@@ -156,7 +169,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   else for (const r of rs) {
     console.log(`\n${relative(process.cwd(), r.dir) || "."} (${r.phase}, ${r.kind})`);
     const order = ["stale", "now", "waiting", "later", "deferred", "done"];
-    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state))) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}]` : ""}`);
+    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state))) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}${d.provenance?.approved_by ? `, approved by ${d.provenance.approved_by} in ${d.provenance.phase}` : ""}]` : ""}${d.awaiting ? " [agent's wording, awaiting approval]" : ""}`);
     if (process.argv.includes("--md")) {
       const m = matrix(r);
       console.log(`\n| layer | ${PHASES.join(" | ")} |\n| --- | ${PHASES.map(() => "---").join(" | ")} |`);

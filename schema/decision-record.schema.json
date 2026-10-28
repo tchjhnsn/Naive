@@ -102,7 +102,7 @@
         "string",
         "null"
       ],
-      "description": "Who decided: a person's name. An agent never decides a fail-closed decision."
+      "description": "Who decided: a person's name. An agent never decides a fail-closed decision. Deprecated in favour of provenance.approved_by, which it must equal when both are present."
     },
     "decided_at": {
       "type": [
@@ -117,6 +117,152 @@
     },
     "note": {
       "type": "string"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Who worded and who approved the decision, when, and in which phase (EE-058). An agent's wording waits with drafted_by alone; a decided decision needs approved_by, approved_at and phase.",
+      "required": [
+        "drafted_by"
+      ],
+      "properties": {
+        "drafted_by": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "person",
+                "agent"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "description": "The person's name or the agent's id"
+            }
+          },
+          "description": "Who wrote the wording"
+        },
+        "approved_by": {
+          "type": "string",
+          "description": "The person who approved the wording or changed it. Never an agent."
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "phase": {
+          "enum": [
+            "discovery",
+            "validation",
+            "beachhead",
+            "scale",
+            "platform"
+          ],
+          "description": "The venture's phase when it was approved"
+        },
+        "wording": {
+          "enum": [
+            "approved",
+            "changed",
+            "own"
+          ],
+          "description": "approved: the drafted wording as it was; changed: the approver altered it; own: the approver wrote it"
+        },
+        "authority": {
+          "type": "string",
+          "description": "The decision class in governance/decision-rights.json under which the approver could decide, when authority was delegated"
+        },
+        "via": {
+          "type": "string",
+          "description": "Where the approval was given, such as the Decision Docket or a decision card"
+        }
+      }
+    },
+    "outcomes": {
+      "type": "array",
+      "description": "What the decision is expected to achieve, and later what happened; the evaluations it is tested against (EE-058). Outcomes, not activities.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "projected"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "projected": {
+            "type": "string",
+            "description": "The outcome expected"
+          },
+          "by": {
+            "type": "string",
+            "description": "When it should be visible: a date or a phase"
+          },
+          "measure": {
+            "type": "string",
+            "description": "How it will be checked"
+          },
+          "actual": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "What happened"
+          },
+          "result": {
+            "enum": [
+              "pending",
+              "met",
+              "partly",
+              "missed"
+            ],
+            "default": "pending"
+          },
+          "recorded_by": {
+            "type": "string"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "unlocks": {
+      "type": "array",
+      "description": "Activities this decision opens that were closed before it (EE-058), and for whom",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "activity"
+        ],
+        "properties": {
+          "activity": {
+            "type": "string"
+          },
+          "for": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Roles, people or agents it opens for; empty means everyone"
+          }
+        }
+      }
     }
   }
 }

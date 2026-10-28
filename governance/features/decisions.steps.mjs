@@ -26,7 +26,12 @@ export const steps = [
   [/^an open decision "([a-z-]+)" about the product "([a-z-]+)"( that fails closed)?$/, (w, id, product, closed) =>
     put(w, `products/decisions/${product}.${id}.decision.json`, { id, question: `What about ${id}?`, status: "open", ...(closed ? { boundary: "fail-closed" } : {}) })],
   [/^a decision "([a-z-]+)"(?: under "([a-z-]+)")? decided at "([^"]+)"( by nobody)?$/, (w, id, parent, at, nobody) =>
-    decide(w, id, { ...(parent ? { parent } : {}), status: "decided", answer: "yes", decided_at: at, ...(nobody ? {} : { decided_by: "Founder" }) })],
+    decide(w, id, { ...(parent ? { parent } : {}), status: "decided", answer: "yes", provenance: { drafted_by: { kind: "agent", id: "claude" }, ...(nobody ? {} : { approved_by: "Founder", approved_at: at, phase: "discovery", wording: "approved" }) } })],
+  [/^an agent's wording for an open decision "([a-z-]+)"$/, (w, id) => decide(w, id, { answer: "Charge per seat", provenance: { drafted_by: { kind: "agent", id: "claude" } } })],
+  [/^a decision "([a-z-]+)" with the outcome "([a-z-]+)" marked "([a-z]+)" and no actual outcome$/, (w, id, o, result) =>
+    decide(w, id, { status: "decided", answer: "yes", provenance: { drafted_by: { kind: "person", id: "Founder" }, approved_by: "Founder", approved_at: "2026-10-20T00:00:00Z", phase: "validation", wording: "own" }, outcomes: [{ id: o, projected: "Ten paying shops", result }] })],
+  [/^"([a-z-]+)" awaits approval$/, (w, id) => ok(find(w, id)?.awaiting === "approval", `${id}: ${JSON.stringify(find(w, id))}`)],
+  [/^"([a-z-]+)" was approved by "([^"]+)" in "([a-z]+)"$/, (w, id, by, ph) => { const p = find(w, id)?.provenance; ok(p?.approved_by === by && p?.phase === ph, `${id}: ${JSON.stringify(p)}`); }],
   [/^a deferred decision "([a-z-]+)" for the statement "([a-z-]+)"$/, (w, id, statement) => put(w, `purpose/decisions/telos.${id}.decision.json`, { id, question: `What is the ${statement}?`, statement, status: "deferred" })],
   [/^the workspace is a product without a venture$/, (w) => venture(w, (v) => { v.kind = "product"; })],
   [/^the venture is in "([a-z]+)"$/, (w, phase) => venture(w, (v) => { v.phase = phase; })],

@@ -58,6 +58,27 @@ Feature: Decisions
       When the founder asks for the decisions
       Then "pricing-model" is "working"
 
+  Rule: Every decision carries its provenance (EE-058)
+
+    Scenario: An agent's wording is not a decision until a person approves it
+      Given the example venture "tandem"
+      And an agent's wording for an open decision "pricing-model"
+      When the founder asks for the decisions
+      Then "pricing-model" renders "now"
+      And "pricing-model" awaits approval
+
+    Scenario: An approved decision says who approved it and in which phase
+      Given the example venture "tandem"
+      And a decision "pricing-model" decided at "2026-10-20T00:00:00Z"
+      When the founder asks for the decisions
+      Then "pricing-model" was approved by "Founder" in "discovery"
+
+    Scenario: An outcome marked met or missed records what actually happened
+      Given the example venture "tandem"
+      And a decision "pricing-model" with the outcome "ten-shops" marked "met" and no actual outcome
+      When the decisions are checked
+      Then the check fails naming "records no actual outcome"
+
   Rule: The foundation and the matrix stay consistent
 
     Scenario: A decision record that settles a foundation statement stands in for it

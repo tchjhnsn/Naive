@@ -599,6 +599,18 @@
       ],
       "decision": "Firmness depends on the phase. In Discovery, a confirmed foundation statement, core promises included, is still a working draft, reviewed at the Discovery exit gate and tested again at each later phase. Every decision names the phase it is needed in (needed_in); a decision needed in a later phase than the venture's is speculative and is held back, the way React renders a component only when it is needed.",
       "why": "Torian, Decision Docket 2026-10-28: core promises should stay drafts until the venture has truly exited Discovery; a venture goes through its own hero's journey; decide for the current phase and only speculate on later ones; knowing when a decision must be made and when it can wait is the signal-to-noise ratio. He also asked for a set of per-phase guidelines and the study of earlier startups (not yet built)."
+    },
+    {
+      "id": "EE-058",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-057",
+        "EE-032"
+      ],
+      "decision": "Every decision record carries its provenance, its outcomes and the activities it unlocks. Provenance: who drafted the wording (an agent or a person), who approved it or changed it, when, and the venture's phase at that moment, plus the authority delegated to whoever decided. A decision whose wording an agent drafted counts as decided only once a person approves or changes it. Outcomes are what the decision is expected to achieve, each projected and later recorded as what actually happened; they are the evaluations a decision is tested against. Unlocks are the activities the decision opens that were closed before it, for which people or agents. Later, Mentura offers decision analytics from this record, as Vercel offers observability: how often kinds of decisions survive a given scale, how many and what kinds of decisions successful teams make over a period, who and which departments make impactful decisions, and their outcomes, projected against actual.",
+      "why": "Torian, 2026-10-28: an agent may draft the phrasing of a decision he made, which he approves or alters, so provenance should say who approved it, when, and in which phase; this matters most in multi-tenant ventures where founders delegate authority. Outcomes need provenance too, projected versus actual, and are something decisions can be tested against. From a talk he heard the same day, investor Gordon Daltrey asks what outcomes a founder expects from the money, not the activities (hiring, inventory), an example of how a role evaluates decisions. Activities stay useful as what a decision unlocks: some activities are closed to particular agents or people until a decision is made, a boundary for agent harnesses, and delegation lets founders hand decisions to agents and people while keeping outcomes high. Analytics and the research on outcome types are not built."
     }
   ]
 }
