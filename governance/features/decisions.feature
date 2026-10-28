@@ -151,3 +151,26 @@ Feature: Decisions
       And a decision "pricing-model" decided at "2026-10-20T00:00:00Z" by nobody
       When the decisions are checked
       Then the check fails naming "names no one who decided"
+
+    Scenario: A decision about a foundation record waits on that statement, not the whole foundation
+      Given a new venture "kept"
+      And an open decision "problem-scope" about the problem record
+      When the founder asks for the decisions
+      Then "problem-scope" renders "waiting"
+      And "problem-scope" is held by "foundation-problem"
+      And "foundation-problem" says to "write purpose/validation/problem"
+
+    Scenario: A new venture asks Naive's product questions first, and they fail closed
+      Given a new venture "kept"
+      When the founder asks for the decisions
+      Then "product-exists" renders "now"
+      And "core-product" renders "waiting"
+      And "flagship" renders "waiting"
+      And "product-exists" says to "mentura decide product-exists --venture kept"
+
+    Scenario: The founder answers Naive's product question in their own words
+      Given a new venture "kept"
+      When "Founder" answers "product-exists" with "No: it is still an idea"
+      Then "product-exists" was approved by "Founder" in "discovery"
+      And "product-exists" was worded by the founder
+      And "core-product" renders "now"

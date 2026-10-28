@@ -141,8 +141,10 @@
             "kind": {
               "enum": [
                 "person",
-                "agent"
-              ]
+                "agent",
+                "framework"
+              ],
+              "description": "framework: Naive asked the question itself, as a convention (the product foundation); a person still answers it"
             },
             "id": {
               "type": "string",

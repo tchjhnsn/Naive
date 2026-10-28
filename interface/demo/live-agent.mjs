@@ -26,7 +26,7 @@ if (process.argv.includes("--board")) { process.env.MENTURA_WORKSPACE = ws; boar
 
 const agent = (prompt) => {
   console.log("\nAGENT  working through Naive's MCP server...");
-  const p = spawnSync("claude", ["-p", prompt, "--mcp-config", mcp, "--strict-mcp-config", "--allowedTools", "mcp__naive__*", "--output-format", "text"], { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] });
+  const p = spawnSync("claude", ["-p", prompt, "--tools", "", "--mcp-config", mcp, "--strict-mcp-config", "--allowedTools", "mcp__naive__*", "--output-format", "text"], { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] });
   if (p.error) { console.error(`could not run claude: ${p.error.message}`); process.exit(1); }
   console.log(p.stdout.trim().split("\n").map((l) => `       ${l}`).join("\n"));
 };

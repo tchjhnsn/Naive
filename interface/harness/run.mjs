@@ -1,0 +1,206 @@
+#!/usr/bin/env node
+// The Naive agent harness (EE-054, EE-058, EE-059): takes a founder's idea dump through Discovery with
+// a real agent, start to end. The dump is not a prompt: it is every idea the founder has about the
+// venture, kept verbatim. Naive maps it onto its conventions (the idea map), asks its own product
+// questions first and fails closed on them, and decides what the agent sees and may do: need-now
+// picks the kit, the router gates every write, the agent's proposals wait for the founder, and routes
+// an open decision unlocks stay closed. The agent is one the founder already has (Claude Code,
+// headless); Naive holds no model key. Platform tools are handed to the agent beside Naive's own MCP
+// server, or spawned by path, never imported: Jev tags the ideas when TYPESAFE_API_KEY is set, and
+// Firecrawl researches the market when FIRECRAWL_API_KEY is set.
+//
+//   node interface/harness/run.mjs discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>]
+//        [--workspace <dir>] [--board] [--yes] [--steps <n>]
+//
+//   --board   serves the decision board at http://127.0.0.1:4331/ and the idea map at /map
+//   --yes     the founder settles the top-ranked decisions as worded (rehearsals and tests)
+//   --steps   how many decisions the founder settles between the agent's passes (default 3)
+//
+// 1. Naive maps the dump (Jev, else the agent tags it with the same conventions).
+// 2. Pass 1: the agent reads the idea map, drafts answers to Naive's product questions and the problem
+//    record from the founder's own ideas, researches the market, and proposes the decisions the founder
+//    owes.
+// 3. The founder settles the top-ranked decisions, one at a time, in the order Naive ranks them.
+// 4. Pass 2: the agent assesses the accepted problem, does the work the decisions unlocked, and reports
+//    what comes next.
+
+import { spawn, spawnSync } from "node:child_process";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, join, resolve } from "node:path";
+import { decisions } from "../../schema/decisions.mjs";
+import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../purpose/frameworks/idea-map/ideamap.mjs";
+import { agentFromEnv, record as prov } from "../provenance.mjs";
+import { evaluate } from "./evals.mjs";
+
+const repo = new URL("../../", import.meta.url).pathname;
+const argv = process.argv.slice(2);
+const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+const flag = (n) => argv.includes(`--${n}`);
+const phase = argv[0];
+const dumpFile = opt("dump");
+if (phase !== "discovery" || !dumpFile || !existsSync(dumpFile)) {
+  console.error("usage: node interface/harness/run.mjs discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>] [--workspace <dir>] [--board] [--yes] [--steps <n>]");
+  process.exit(2);
+}
+const id = opt("id") ?? basename(dumpFile).replace(/\..*$/, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const founder = opt("founder") ?? process.env.MENTURA_PERSON ?? "Founder";
+const ws = resolve(opt("workspace") ?? join(mkdtempSync(join(tmpdir(), "naive-run-")), "workspace"));
+const dir = join(ws, "ventures", id);
+const steps = Number(opt("steps") ?? 3);
+const jev = Boolean(process.env.TYPESAFE_API_KEY ?? process.env.TYPESAFEAI_API_KEY);
+const research = Boolean(process.env.FIRECRAWL_API_KEY);
+const t0 = Date.now();
+const laps = [];
+const lap = (what) => { const s = (Date.now() - t0) / 1000; laps.push({ at: s, what }); console.log(`\n[${s.toFixed(1)}s] ${what}`); };
+const cli = (...args) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...args], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+
+// The venture, scaffolded by Naive, and the founder's dump, kept as they wrote it.
+if (!existsSync(join(dir, "venture.json"))) {
+  const p = spawnSync("node", [join(repo, "schema/init-venture.mjs"), dir, id, "--phase", phase], { encoding: "utf8" });
+  if (p.status !== 0) { console.error(p.stderr || p.stdout); process.exit(1); }
+  if (opt("name")) { const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")); v.name = opt("name"); writeFileSync(join(dir, "venture.json"), JSON.stringify(v, null, 2) + "\n"); }
+}
+mkdirSync(join(dir, "purpose/ideas"), { recursive: true });
+copyFileSync(dumpFile, join(dir, DUMP));
+prov(dir, { entity: DUMP, route: "purpose/idea-dump", activity: "create", agent: agentFromEnv("person", "harness", { id: founder }), note: "the founder's idea dump, verbatim" });
+lap(`venture ${id} scaffolded in ${ws}; idea dump saved (${readFileSync(dumpFile, "utf8").length} characters)`);
+
+const servers = { naive: { command: "node", args: [join(repo, "interface/mcp/server.mjs")], env: { MENTURA_WORKSPACE: ws, MENTURA_PERSON: founder } } };
+if (research) servers.research = { command: "node", args: [join(repo, "platform/mcp/research.mjs")], env: { FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY } };
+const mcp = join(ws, ".mcp-harness.json");
+writeFileSync(mcp, JSON.stringify({ mcpServers: servers }));
+
+let board = null;
+if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("../demo/board.mjs")).serve(4331, id); console.log("Decision board: http://127.0.0.1:4331/   Idea map: http://127.0.0.1:4331/map"); }
+
+// The trace (EE-058): every step and every tool call the agent made, with timings, for LangSmith.
+const iso = () => new Date().toISOString();
+const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, founder, phase }, children: [], metadata: { venture: id } };
+const researched = [];
+
+// The agent runs headless and streams what it does; each tool call becomes a child run.
+async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", quiet = false } = {}) {
+  lap(`agent: ${label}`);
+  const node = { name: label, run_type: "chain", start: iso(), inputs: { prompt }, children: [] };
+  trace.children.push(node);
+  // No built-in tools (no shell, no file access): the agent works only through the MCP servers it is handed.
+  const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--tools", "", ...(tools ? ["--mcp-config", mcp, "--strict-mcp-config", "--allowedTools", tools] : ["--strict-mcp-config"])];
+  const child = spawn("claude", args, { stdio: ["ignore", "pipe", "inherit"], env: { ...process.env, MENTURA_WORKSPACE: ws } });
+  const open = new Map();
+  let result = null, buf = "";
+  child.stdout.on("data", (chunk) => {
+    buf += chunk;
+    let nl;
+    while ((nl = buf.indexOf("\n")) >= 0) {
+      const line = buf.slice(0, nl); buf = buf.slice(nl + 1);
+      let ev; try { ev = JSON.parse(line); } catch { continue; }
+      for (const c of ev.message?.content ?? []) {
+        if (c.type === "tool_use") {
+          const t = { name: c.name.replace(/^mcp__/, ""), run_type: "tool", start: iso(), inputs: c.input ?? {}, children: [] };
+          open.set(c.id, t); node.children.push(t);
+          if (!quiet) console.log(`   > ${t.name}${c.input?.route ? ` ${c.input.route}` : c.input?.queries ? ` ${JSON.stringify(c.input.queries)}` : c.input?.id ? ` ${c.input.id}` : ""}`);
+        } else if (c.type === "tool_result" && open.has(c.tool_use_id)) {
+          const t = open.get(c.tool_use_id);
+          const text = Array.isArray(c.content) ? c.content.map((x) => x.text ?? "").join("") : String(c.content ?? "");
+          Object.assign(t, { end: iso(), outputs: { result: text.slice(0, 20000) }, ...(c.is_error ? { error: text.slice(0, 2000) } : {}) });
+          if (t.name.startsWith("research__")) for (const m of text.matchAll(/"url":\s*"([^"]+)"/g)) researched.push(m[1]);
+        }
+      }
+      if (ev.type === "result") result = ev;
+    }
+  });
+  const code = await new Promise((r) => child.on("close", r));
+  if (code !== 0 || !result) { node.error = `the agent stopped with status ${code}`; console.error(node.error); finish(1); }
+  Object.assign(node, { end: iso(), outputs: { report: result.result }, metadata: { cost_usd: result.total_cost_usd, turns: result.num_turns, usage: result.usage } });
+  if (!quiet) console.log(result.result.trim().split("\n").map((l) => `   ${l}`).join("\n"));
+  return result.result;
+}
+
+// The run's evals and trace: written beside the workspace, and sent to LangSmith when a key is set.
+function finish(code = 0) {
+  trace.end = iso();
+  const evals = existsSync(join(dir, DUMP)) ? evaluate(dir, { researched, settled }) : [];
+  trace.feedback = evals;
+  trace.outputs = { settled, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
+  writeFileSync(join(ws, "trace.json"), JSON.stringify(trace, null, 2) + "\n");
+  console.log(`\nEvals:\n${evals.map((e) => `   ${e.score === 1 ? "pass" : e.score === 0 ? "FAIL" : "part"}  ${e.key.padEnd(26)} ${e.score}  ${e.comment}`).join("\n")}`);
+  if (process.env.LANGSMITH_API_KEY) {
+    const p = spawnSync("node", [join(repo, "platform/integrations/langsmith.mjs"), join(ws, "trace.json")], { encoding: "utf8" });
+    console.log(p.status === 0 ? `LangSmith: ${p.stdout.trim()}` : `LangSmith upload failed: ${(p.stderr || p.stdout).trim()}`);
+  }
+  board?.close();
+  process.exit(code);
+}
+const settled = [];
+
+// 1. The idea map: Jev tags each idea with Naive's conventions; without Jev, the agent does, with the
+//    same vocabulary. Either way the ideas stay verbatim and unknown tags are dropped.
+const ideas = split(readFileSync(join(dir, DUMP), "utf8"));
+const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
+let tags, tagger;
+const mapNode = { name: "idea map", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
+if (jev) {
+  const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(request(ideas, venture)), encoding: "utf8", maxBuffer: 1 << 26 });
+  if (p.status !== 0) { console.error(p.stderr); process.exit(1); }
+  const out = JSON.parse(p.stdout);
+  tags = fromAnswers(out.answers);
+  tagger = out.model ?? "jev";
+  console.log(`   Jev answered ${Object.keys(out.answers).length} typed questions in ${out.ms} ms (${out.requests} requests)`);
+} else {
+  const text = await agent(`Tag each idea below with Naive's conventions. Answer with JSON only, no prose: {"<idea id>": {"departments": [...], "records": [...], "exists": true|false}}.
+departments (at most ${CONVENTIONS.max.departments}, the ones the idea is mainly about): ${JSON.stringify(CONVENTIONS.departments)}
+records (at most ${CONVENTIONS.max.records}, the ones it mainly feeds): ${JSON.stringify(Object.fromEntries(Object.entries(CONVENTIONS.records).map(([k, v]) => [k, v.about])))}
+exists: true only if ${CONVENTIONS.exists}.
+Ideas: ${JSON.stringify(Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])))}`, "tagging the ideas (no Jev key)", { tools: null, quiet: true });
+  tags = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+  tagger = "claude-code";
+}
+writeFileSync(join(dir, MAP), render(ideas, clean(tags), { venture: id, tagger }));
+prov(dir, { entity: MAP, route: "purpose/idea-map", activity: "create", derived_from: [DUMP], agent: agentFromEnv("agent", "harness", { id: tagger }), note: `${ideas.length} ideas tagged with Naive's conventions` });
+const sum = summary(parse(readFileSync(join(dir, MAP), "utf8")), phase);
+trace.children.push(Object.assign(mapNode, { end: iso(), outputs: { tagger, summary: sum }, metadata: { tagger } }));
+lap(`idea map: ${sum.ideas} ideas; ${Object.entries(sum.by_pillar).map(([k, v]) => `${k} ${v}`).join(", ")}; clusters ${sum.strengths.map((s) => s.department).join(", ")}; ${sum.product.reading}`);
+
+const rules = `You are the builder agent (agent_id builder) for the venture ${id}. Work only through the naive MCP tools${research ? " and the research tools" : ""}; pass agent_id "builder" on every naive call.
+Rules: the founder's idea dump is theirs. Quote it, cite ideas by id (i-01...), never put words in their mouth. Never invent evidence: every evidence item cites a URL a research result gave you${research ? "" : " (you have no research tool in this run, so leave evidence empty and say so)"}. Records Naive treats as the founder's are written as drafts for the founder to accept; that is expected. You never decide; you propose. knowledge/venture-profile cannot be written over MCP; skip it.`;
+
+await agent(`${rules}
+The founder has just submitted an idea dump. Naive mapped it onto its conventions.
+1. mentura_run purpose/ideas: read every idea, where they cluster and what the dump never mentions. Then mentura_decisions: Naive's own product questions come first (product-exists, then core-product, then flagship) and fail closed.
+2. Propose an answer to product-exists with mentura_propose_decision (id "product-exists", at "products", name "product.exists", same question), worded from the ideas tagged exists and citing them by id. Do not change its parent, boundary or unlocks.
+3. Write the problem record (purpose/validation/problem) from the founder's ideas: the problem in their words, who has it, and the assumptions to test. Read mentura_layout first.${research ? `
+4. Research the market with research_search: existing alternatives and competitors the dump names or implies, prices, and people describing the problem. Add what you find to the problem record as evidence with URLs.` : ""}
+5. Propose two or three more decisions the founder owes from what the dump leaves open (at "purpose/validation", name "problem.<topic>"), each with your proposed answer, a due time within 72 hours if urgent, one or two projected outcomes, and unlocks for ["builder"].
+6. mentura_decisions and report, in at most eight lines: what the idea map shows (clusters and gaps), your answer to product-exists, what the evidence supports, and the founder's decisions in rank order.`, "pass 1: idea map, product questions, problem, research, proposals");
+
+// 3. The founder settles what Naive ranks first, one decision at a time.
+for (let n = 0; n < steps; n++) {
+  const r = decisions(dir);
+  const next = r.decisions.find((d) => d.rank != null && d.action && ["decide", "accept", "confirm"].includes(d.action.kind) && !settled.includes(d.id));
+  if (!next) break;
+  console.log(`\nFOUNDER #${n + 1}: ${next.id}: ${next.question}\n         Why now: ${(next.why ?? []).join("; ")}${next.answer ? `\n         Proposed: ${next.answer}` : ""}\n         ${next.action.command.replace(/^mentura /, `MENTURA_WORKSPACE=${ws} node ${join(repo, "interface/cli/mentura.mjs")} `)}`);
+  const before = JSON.stringify(r.decisions.find((d) => d.id === next.id));
+  if (flag("yes")) {
+    const a = next.action;
+    const p = a.kind === "decide" ? cli("decide", next.id, "--venture", id, "--by", founder, ...(next.answer ? [] : ["--answer", "Not yet: it is still an idea"]), "--confirm", a.confirm)
+      : a.kind === "accept" ? cli("accept", a.route, "--venture", id, "--confirm", a.confirm) : cli("confirm", a.statement, "--venture", id, "--confirm", a.confirm);
+    if (p.status !== 0) { console.error(`   could not settle ${next.id}: ${(p.stderr || p.stdout).trim()}`); settled.push(next.id); continue; }
+  } else {
+    lap(`waiting for the founder to settle ${next.id}`);
+    while (JSON.stringify(decisions(dir).decisions.find((d) => d.id === next.id)) === before) await new Promise((r) => setTimeout(r, 1000));
+  }
+  settled.push(next.id);
+  const now = decisions(dir).decisions.find((d) => d.id === next.id);
+  trace.children.push({ name: `founder: ${next.id}`, run_type: "chain", start: iso(), end: iso(), inputs: { question: next.question, why: next.why, proposed: next.answer ?? null, action: next.action.kind }, outputs: { status: now?.status, provenance: now?.provenance ?? null } });
+  lap(`${next.id} settled${now?.provenance?.approved_by ? ` by ${now.provenance.approved_by} (${now.provenance.wording} the wording)` : ""}`);
+}
+if (!settled.length) { lap("nothing for the founder to settle; stopping"); finish(1); }
+
+// 4. The work the founder's decisions unlocked.
+await agent(`${rules}
+The founder settled: ${settled.join(", ")}. mentura_decisions shows what that unlocked. First, if the founder accepted the problem record, mentura_run purpose/validation/assess with as_is true and note what the evidence supports. Then do the work the decisions unlock for you: if product-exists is decided, write product cards (purpose/product/<id>) for what exists or is planned, from the founder's ideas, citing them; then propose wording for core-product with mentura_propose_decision (id "core-product", at "products", name "product.core", the same question; mentura_decisions shows it), from the ideas tagged venture-core, citing them. Then mentura_decisions again and report in at most six lines: what the assessment says, what you did, and the founder's next decision with why it ranks first.`, "pass 2: the work the decisions unlocked");
+
+const end = decisions(dir);
+lap(`done. ${end.decisions.filter((d) => d.source === "file").length} decision records, ${end.decisions.filter((d) => d.rank != null).length} ranked for the founder, ${settled.length} settled; workspace ${ws}`);
+finish(0);

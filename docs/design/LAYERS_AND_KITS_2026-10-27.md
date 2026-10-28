@@ -103,7 +103,7 @@ Each arrow is a record type one layer owns and another reads, or one layer write
 
 | Layer | Skills | Owns | Takes from | Gives to |
 | --- | --- | --- | --- | --- |
-| purpose | 2 | product, account, anatomy-framework, anatomy-answers, anatomy-input, telos, icp, alignment, strategic-foundation | system (venture); governance (exit) | knowledge (product); operations (product, telos); governance (telos); system (product, account) |
+| purpose | 2 | product, account, anatomy-framework, anatomy-answers, anatomy-input, telos, icp, alignment, strategic-foundation, idea-dump, idea-map, idea-map-conventions | system (venture); governance (exit) | knowledge (product); operations (product, telos); governance (telos); system (product, account) |
 | knowledge | 2 | venture-profile, decision, design-document, knowledge-sources, where-used | system (venture); purpose (product); governance (decision) | system (reference, decision); operations (decision); evidence (design-document, venture-profile, decision) |
 | operations | 3 | team-plan, handoff, department-catalog, department | evidence (agent-capability); governance (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision); system (integration, venture); purpose (product, telos) | evidence (evidence, handoff); governance (handoff) |
 | evidence | 6 | evidence, eval-suite, design-documents-registry, benchmark, agent-capability | operations (evidence, handoff); knowledge (design-document, venture-profile, decision) | operations (agent-capability); governance (evidence) |

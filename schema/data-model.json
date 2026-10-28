@@ -155,6 +155,30 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "idea-dump",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "prose",
+      "paths": [
+        "instance/**/purpose/ideas/dump.md",
+        "schema/examples/**/purpose/ideas/dump.md"
+      ],
+      "note": "The founder's raw idea dump: every idea about the venture, verbatim and unprompted. Never rewritten by an agent (EE-059)"
+    },
+    {
+      "id": "idea-map",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/purpose/ideas/map.mdx",
+        "schema/examples/**/purpose/ideas/map.mdx"
+      ],
+      "note": "The idea dump mapped onto Naive's conventions: one <Idea> per idea, its text unchanged, tagged with departments, records and whether it exists (purpose/frameworks/idea-map); drawn as a mind map (EE-059)"
+    },
+    {
       "id": "validation-problem",
       "layer": "purpose",
       "level": "venture",
@@ -303,6 +327,17 @@
         "purpose/frameworks/product-anatomy/questions.json"
       ],
       "note": "Phases, gates and questions of Product Anatomy; self-describing, checked by its runner's tests"
+    },
+    {
+      "id": "idea-map-conventions",
+      "layer": "purpose",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/idea-map/conventions.json"
+      ],
+      "note": "The tags an idea map may use: departments, records, pillars and the exists judgment, with the threshold (EE-059); checked by the idea-map runner"
     },
     {
       "id": "anatomy-answers",

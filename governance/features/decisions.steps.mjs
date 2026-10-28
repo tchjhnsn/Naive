@@ -68,4 +68,15 @@ export const steps = [
     const r = JSON.parse(w.p.stdout);
     ok(r.draft === true && r.held_by === id, `write: ${w.p.stdout}`);
   }],
+  [/^a new venture "([a-z-]+)"$/, (w, id) => {
+    const d = mkdtempSync(join(tmpdir(), "decisions-"));
+    w.ws = join(d, "workspace"); w.venture = id; w.dir = join(w.ws, "ventures", id); w.cleanup = () => rmSync(d, { recursive: true, force: true });
+    const p = spawnSync("node", [join(repo, "schema/init-venture.mjs"), w.dir, id], { encoding: "utf8" });
+    ok(p.status === 0, `init: ${p.stderr}`);
+  }],
+  [/^an open decision "([a-z-]+)" about the problem record$/, (w, id) => put(w, `purpose/validation/decisions/problem.${id.replace(/^problem-/, "")}.decision.json`, { id, question: `What about ${id}?`, status: "open" })],
+  [/^"([a-z-]+)" is held by "([a-z-]+)"$/, (w, id, by) => ok(find(w, id)?.held_by === by, `${id} is held by ${find(w, id)?.held_by}`)],
+  [/^"([a-z-]+)" says to "([^"]+)"$/, (w, id, cmd) => ok(find(w, id)?.action?.command?.startsWith(cmd), `${id}: ${JSON.stringify(find(w, id)?.action)}`)],
+  [/^"([A-Za-z]+)" answers "([a-z-]+)" with "([^"]+)"$/, (w, by, id, answer) => { const p = cli(w, "decide", id, "--venture", w.venture, "--by", by, "--answer", answer, "--confirm", id); ok(p.status === 0, `decide: ${p.stdout}${p.stderr}`); w.report = null; }],
+  [/^"([a-z-]+)" was worded by the founder$/, (w, id) => ok(find(w, id)?.provenance?.wording === "own", `${id}: ${JSON.stringify(find(w, id)?.provenance)}`)],
 ];

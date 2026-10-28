@@ -29,6 +29,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
 import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
+import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -83,26 +84,37 @@ export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "")
     if (pv?.phase && PHASES.indexOf(pv.phase) > phase) errors.push(`${f}: approved in ${pv.phase}, a phase the venture has not reached`);
     for (const o of d.outcomes ?? []) if (["met", "partly", "missed"].includes(o.result) && !o.actual) errors.push(`${f}: outcome ${o.id} is ${o.result} but records no actual outcome`);
     const boundary = d.boundary && d.boundary !== "inherit" ? d.boundary : record === "product" ? "fail-open" : "inherit";
-    // A decision that settles a foundation statement is part of the foundation, not under it.
-    const parent = d.parent ?? (d.statement ? "venture" : FOUNDATION_RECORDS.has(record) ? "foundation" : "venture");
+    // A decision that settles a foundation statement is part of the foundation, not under it. One
+    // about a foundation record waits on that record's open statement, set below, not the whole foundation.
+    const parent = d.parent ?? (d.statement ? "venture" : null);
     list.push({ ...d, file: f, source: "file", decides: { record, path }, layer, boundary, parent, ...(d.statement ? { part_of: "foundation" } : {}) });
   }
   const covered = new Set(list.map((d) => d.statement).filter(Boolean));
+  // The roll-up counts only the statements still open after decision records stand in for some.
+  list[1].question = `Settle the strategic foundation (${statements.filter((s) => !["confirmed", "planned"].includes(s.status) && !s.derived_from && !list.some((d) => d.statement === s.id && d.status === "decided")).length} statements open)`;
   // A foundation statement no person has confirmed is a decision the founder still owes. It is
   // part of the foundation rather than under it, so the foundation does not hold it.
   for (const s of statements.filter((x) => !["confirmed", "planned"].includes(x.status) && !x.derived_from && !covered.has(x.id))) {
-    list.push({ id: `foundation-${s.id}`, question: `Confirm the ${s.id} statement (${s.status})`, source: "foundation", layer: MODEL.records.find((r) => r.id === s.record)?.layer ?? "purpose",
+    const question = { missing: `Write the ${s.id} statement`, draft: `Accept or change the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement an agent wrote` }[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
+    list.push({ id: `foundation-${s.id}`, question, source: "foundation", statement_status: s.status, layer: MODEL.records.find((r) => r.id === s.record)?.layer ?? "purpose",
       decides: { record: s.record }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
   }
+  const statementFor = (record) => list.find((x) => x.part_of === "foundation" && x.status === "open" && x.decides?.record === record);
   // An agent's draft of a gated record waits for a person to accept it.
   const drafts = existsSync(join(dir, "_drafts")) ? readdirSync(join(dir, "_drafts")).filter((f) => f.endsWith(".draft")) : [];
   for (const d of drafts) {
     const path = d.replace(/\.draft$/, "").replace(/__/g, "/");
     const record = recordOf(path);
+    // A draft of a foundation record is settled through its statement, which says to accept it.
+    const s = statementFor(record);
+    if (s?.statement_status === "draft") { s.decides = { record, path }; continue; }
     list.push({ id: `draft-${path.replace(/[^a-z0-9]+/g, "-").replace(/-json$/, "")}`, question: `Accept or reject the agent's draft of ${path}`, source: "draft",
-      layer: MODEL.records.find((r) => r.id === record)?.layer ?? path.split("/")[0], decides: { record, path }, parent: FOUNDATION_RECORDS.has(record) ? "foundation" : "venture",
+      layer: MODEL.records.find((r) => r.id === record)?.layer ?? path.split("/")[0], decides: { record, path }, parent: FOUNDATION_RECORDS.has(record) ? (statementFor(record)?.id ?? "venture") : "venture",
       boundary: "inherit", status: "open", needed_in: venture.phase });
   }
+  // A decision about a foundation record waits on that record's open statement only, so one open
+  // statement does not hold every decision about the foundation.
+  for (const d of list) if (d.parent === null && d.source === "file") d.parent = (FOUNDATION_RECORDS.has(d.decides?.record) ? statementFor(d.decides.record)?.id : null) ?? "venture";
 
   const byId = new Map();
   for (const d of list) { if (byId.has(d.id)) errors.push(`decision ${d.id}: duplicate id`); else byId.set(d.id, d); }
@@ -147,9 +159,28 @@ export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "")
       ...(d.provenance ? { provenance: d.provenance } : {}),
       ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,
         due: d.outcomes.filter((o) => (o.result ?? "pending") === "pending" && /^\d{4}-\d{2}-\d{2}/.test(o.by ?? "") && Date.parse(o.by) < now).map((o) => o.id) } } : {}),
-      ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}) };
+      ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}),
+      ...(["open", "deferred"].includes(d.status) ? { action: actionFor(d, venture.id) } : {}) };
   });
   return { venture: venture.id, phase: venture.phase, kind: productOnly ? "product" : "venture", errors, decisions: rank(resolved, venture.phase, now) };
+}
+
+// The route that writes a venture-relative file, for the commands a founder runs.
+function routeOf(path, record) {
+  const r = routes().find((x) => x.kind === "record" && (path ? x.files.some((g) => routeFileGlob(g).test(path)) : x.record === record && x.collection !== "item"));
+  if (!r) return null;
+  return r.collection === "item" && path ? r.route.replace("[id]", path.split("/").at(-1).replace(/\.json$/, "")) : r.route;
+}
+
+/** How a person settles an open decision: the command to run, and the word to type to confirm it. */
+export function actionFor(d, venture) {
+  const v = `--venture ${venture}`;
+  if (d.source === "file") return { kind: "decide", confirm: d.id, command: `mentura decide ${d.id} ${v} --by <your name> [--answer "<your words>"]` };
+  const route = routeOf(d.decides?.path, d.decides?.record);
+  if (d.source === "draft" || d.statement_status === "draft") return { kind: "accept", route, confirm: route, command: `mentura accept ${route} ${v}` };
+  if (d.source === "foundation" && d.statement_status === "agent") { const id = d.id.replace(/^foundation-/, ""); return { kind: "confirm", statement: id, confirm: id, command: `mentura confirm ${id} ${v}` }; }
+  if (d.source === "foundation") return { kind: "write", route, command: `write ${route}${route ? "" : ` (${d.decides?.record})`} yourself, or ask an agent to draft it` };
+  return { kind: "settle", command: d.question };
 }
 
 /** Which open decisions matter most now, and why (EE-057): a deadline, what waits on it, what it
@@ -217,7 +248,9 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
   if (existing && load(join(dir, existing)).status === "decided") return { ok: false, error: `${rest.id} is decided; only a person can change it` };
   const file = existing ?? `${at ? `${at}/` : ""}decisions/${name ?? rest.id}.decision.json`;
   if (!existing && !/^([a-z0-9-]+\/)*decisions\/[a-z0-9.-]+\.decision\.json$/.test(file)) return { ok: false, error: `${file} is not a decisions/ path` };
-  const d = { ...rest, status: "open", provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
+  // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
+  const before = existing ? load(join(dir, existing)) : {};
+  const d = { ...before, ...rest, status: "open", provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
   const bad = validate(d);
   if (bad) return { ok: false, error: `does not match schema/decision-record.schema.json:\n${bad}` };
   mkdirSync(dirname(join(dir, file)), { recursive: true });
@@ -235,7 +268,7 @@ export function approve(dir, id, { by, answer, via = "cli", note } = {}) {
   if (d.status === "decided") return { ok: false, error: `${id} is already decided` };
   if (!answer && !d.answer) return { ok: false, error: `${id} has no wording to approve; give an answer` };
   const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
-  const wording = answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
+  const wording = !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
   const phase = load(join(dir, "venture.json")).phase;
   const out = { ...d, status: "decided", answer: answer ?? d.answer, provenance: { ...d.provenance, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via } };
   const bad = validate(out);
