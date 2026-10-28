@@ -649,6 +649,20 @@
       ],
       "decision": "After the idea graph, Naive routes each tagged idea to the records it feeds: the framework's destinations (purpose/frameworks/idea-map/conventions.json records, each with a title, a route and the decisions it settles). A destination's stage comes from the decision matrix and the records on disk: routed (ideas, nothing drafted: an agent drafts it), drafted (an agent's draft or wording awaits the founder), yours (a decision only a person can make), waiting (held), done. Each destination carries one next step from the framework, and moves in order or on its own. The decision docket uses the same stages, and every decision traces to the ideas it comes from (a new `ideas` field on decision records, or the i-NN ids it cites); agent proposals must cite ideas (eval decisions_traced). Both render as Kanban boards in plain columns at /kanban; React Flow stays for the map and the graph. Guidelines for parsing the dump, building the graph and routing live in conventions.json `guidelines` (sent to Jev as state.guidelines) and the idea-map README. Time-oriented features (roadmaps) are deferred past the hackathon.",
       "why": "Torian, 2026-10-28 19:36Z: each step needs a payoff. The dump's is seeing the ideas on a mind map, the graph's is seeing structure applied to them, and the next must turn that structure into executable next steps by routing ideas to their destinations in the framework, visualised as Kanban boards, with the decision docket as a Kanban board too. Hold off on time-oriented features for the deadline."
+    },
+    {
+      "id": "EE-062",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-044",
+        "EE-045",
+        "EE-041",
+        "EE-025",
+        "EE-061"
+      ],
+      "decision": "For the demo there are no connections: a founder pastes a link to their website and Naive reads it. The platform reads the home page and the pages it links to (Firecrawl when keyed, plain fetch otherwise; platform/integrations/site.mjs). Jev judges which pages state which item. Naive scores site presence against a marketing matrix (operations/marketing/site/matrix.json, version 0.x, unevaluated): six audiences (customers, investors, candidates, contributors, partners, press) weighted by the venture's facts (raising, hiring, inviting contributors) and its ICPs; fifteen public items (publish true by default), each tied to the record it comes from; each item's need is its strongest weighted audience, and need sets the prominence it requires: on the home page, in the navigation, linked from the home page, or anywhere. Investor information counts only while the venture is raising. Score 0 to 100, per audience, with what to fix first. New records marketing-matrix (method) and site-presence (venture, schema/site-presence.schema.json); router command operations/marketing/site; board page /site with a paste-a-link form.",
+      "why": "Torian, 2026-10-28 19:46Z: no connections for the demo, but participants should be able to drop in a link to their marketing site or product, have it scraped for marketing-related records, and get a score for how present the public records are. Where information belongs depends on startup type, product and industry; route ICPs into a marketing matrix that decides which public materials are needed, what each ICP wants to know, how important each ICP is, and so how prominent information is in the sitemap. If investors are not an ICP, investor information is not prominent. Still to do: research best practices, skills, and kits for organizing marketing content."
     }
   ]
 }

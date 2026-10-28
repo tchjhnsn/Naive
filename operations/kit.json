@@ -20,13 +20,16 @@
     "team-plan",
     "handoff",
     "department-catalog",
-    "department"
+    "department",
+    "marketing-matrix",
+    "site-presence"
   ],
   "reads": [
     "agent-capability",
     "board",
     "decision",
     "decision-rights",
+    "icp",
     "integration",
     "ownership",
     "product",
@@ -43,7 +46,8 @@
     "schema/check-ready.mjs",
     "schema/run-handoff.mjs",
     "schema/check-execution.mjs",
-    "schema/check-departments.mjs"
+    "schema/check-departments.mjs",
+    "operations/marketing/site/presence.mjs"
   ],
   "gaps": [
     "No run-handoff skill: the handoff contract is prose (operations/handoff-v2.md) beside three scripts in schema/ (check-ready, run-handoff, check-execution)",

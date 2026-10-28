@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "site-presence.schema.json",
+  "title": "Site presence",
+  "description": "How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062). Written by operations/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated.",
+  "type": "object",
+  "required": [
+    "version",
+    "site",
+    "judged_by",
+    "facts",
+    "score",
+    "audiences",
+    "pages",
+    "items",
+    "fix_first"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "site": {
+      "type": "string"
+    },
+    "venture": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "read_via": {
+      "enum": [
+        "firecrawl",
+        "fetch"
+      ]
+    },
+    "read_at": {
+      "type": "string"
+    },
+    "judged_by": {
+      "enum": [
+        "jev",
+        "keywords"
+      ]
+    },
+    "facts": {
+      "type": "object"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "audiences": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "weight"
+        ],
+        "properties": {
+          "weight": {
+            "type": "number"
+          },
+          "score": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "type",
+          "level"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere"
+            ]
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "record",
+          "need",
+          "required",
+          "score",
+          "note"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "record": {
+            "type": "string"
+          },
+          "need": {
+            "type": "number"
+          },
+          "required": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere"
+            ]
+          },
+          "for": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "at": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere",
+              null
+            ]
+          },
+          "score": {
+            "enum": [
+              0,
+              0.5,
+              1
+            ]
+          },
+          "found": {
+            "type": "array"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fix_first": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

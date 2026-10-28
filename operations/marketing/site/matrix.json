@@ -1,0 +1,388 @@
+{
+  "version": "0.1.0",
+  "note": "The marketing matrix (EE-062): who a venture's public site speaks to, what each audience needs to learn, and how prominent each piece of information must be. Version 0.x, ours and unevaluated: where information belongs varies by startup type, product and industry, and this is a starting opinion to replace with researched practice. Every item is public by default (publish: true), and each names the record it comes from.",
+  "audiences": {
+    "customers": {
+      "label": "Customers",
+      "weight": 1,
+      "why": "every venture sells to someone; the ICPs in purpose/icp are this audience"
+    },
+    "investors": {
+      "label": "Investors",
+      "weight": {
+        "raising": 1,
+        "default": 0.15
+      },
+      "why": "only a priority while the venture is raising"
+    },
+    "talent": {
+      "label": "Candidates",
+      "weight": {
+        "hiring": 0.8,
+        "default": 0.15
+      },
+      "why": "only a priority while the venture is hiring"
+    },
+    "contributors": {
+      "label": "Contributors and community",
+      "weight": {
+        "contributors": 0.7,
+        "default": 0.1
+      },
+      "why": "only when the venture invites contributors (open source, community, creators)"
+    },
+    "partners": {
+      "label": "Partners",
+      "weight": 0.3,
+      "why": "integrations, channels and resellers find the venture through the site"
+    },
+    "press": {
+      "label": "Press",
+      "weight": 0.2,
+      "why": "journalists look for the story, the team and a contact"
+    }
+  },
+  "facts": {
+    "raising": "the venture is raising capital or wants investors to reach out",
+    "hiring": "the venture is hiring or wants candidates to reach out",
+    "contributors": "the venture invites contributors: open source, community, creators or volunteers"
+  },
+  "prominence": {
+    "home": {
+      "at_least": 0.7,
+      "means": "on the home page",
+      "rank": 4
+    },
+    "nav": {
+      "at_least": 0.4,
+      "means": "in the home page's header or navigation",
+      "rank": 3
+    },
+    "linked": {
+      "at_least": 0.2,
+      "means": "linked from the home page (the footer will do)",
+      "rank": 2
+    },
+    "anywhere": {
+      "at_least": 0,
+      "means": "somewhere on the site",
+      "rank": 1
+    }
+  },
+  "threshold": 0.6,
+  "pages": {
+    "home": "^/$",
+    "about": "about|team|company|story|mission|who-we-are",
+    "pricing": "pricing|plans",
+    "product": "product|features|how-it-works|platform|solutions",
+    "customers": "customers|case-stud|testimonials|stories",
+    "careers": "careers|jobs|hiring|join",
+    "investors": "investor|\\bir\\b|funding",
+    "community": "community|contribut|open-source|github|discord",
+    "press": "press|news|media|newsroom",
+    "blog": "blog|now|changelog|updates",
+    "contact": "contact|support|help",
+    "trust": "security|privacy|trust|legal|terms|compliance|hipaa"
+  },
+  "items": {
+    "what": {
+      "label": "What it is, in one line",
+      "question": "what the venture or product is, in a sentence or two",
+      "record": "venture",
+      "audiences": {
+        "customers": 1,
+        "investors": 0.8,
+        "talent": 0.6,
+        "contributors": 0.6,
+        "partners": 0.6,
+        "press": 0.8
+      },
+      "belongs": [
+        "home"
+      ],
+      "keywords": []
+    },
+    "who-for": {
+      "label": "Who it is for",
+      "question": "who the product is for: the kind of customer, user or business it serves",
+      "record": "icp",
+      "audiences": {
+        "customers": 1,
+        "investors": 0.6,
+        "partners": 0.5
+      },
+      "belongs": [
+        "home"
+      ],
+      "keywords": [
+        "for teams",
+        "for small",
+        "built for",
+        "designed for",
+        "for founders",
+        "for clinics",
+        "for developers"
+      ]
+    },
+    "problem": {
+      "label": "The problem it solves",
+      "question": "the problem or pain the product solves",
+      "record": "validation-problem",
+      "audiences": {
+        "customers": 0.8,
+        "investors": 0.7,
+        "press": 0.5
+      },
+      "belongs": [
+        "home"
+      ],
+      "keywords": [
+        "tired of",
+        "struggle",
+        "problem",
+        "pain",
+        "instead of",
+        "without the"
+      ]
+    },
+    "how": {
+      "label": "How it works",
+      "question": "how the product works or what it does, step by step or feature by feature",
+      "record": "validation-solution",
+      "audiences": {
+        "customers": 0.8,
+        "partners": 0.5
+      },
+      "belongs": [
+        "home",
+        "product"
+      ],
+      "keywords": [
+        "how it works",
+        "features",
+        "step 1",
+        "integrates"
+      ]
+    },
+    "proof": {
+      "label": "Proof",
+      "question": "proof that it works: customers, testimonials, logos, results or numbers",
+      "record": "evidence",
+      "audiences": {
+        "customers": 0.8,
+        "investors": 0.8,
+        "press": 0.4
+      },
+      "belongs": [
+        "home",
+        "customers"
+      ],
+      "keywords": [
+        "trusted by",
+        "customers",
+        "testimonial",
+        "case study",
+        "used by",
+        "%"
+      ]
+    },
+    "pricing": {
+      "label": "Pricing",
+      "question": "what it costs: prices, plans or how pricing works",
+      "record": "validation-pricing",
+      "audiences": {
+        "customers": 0.9
+      },
+      "belongs": [
+        "pricing"
+      ],
+      "keywords": [
+        "pricing",
+        "per month",
+        "/mo",
+        "free trial",
+        "plans",
+        "$"
+      ]
+    },
+    "next-step": {
+      "label": "A clear next step",
+      "question": "a clear next step for a visitor: sign up, start free, book a demo, join a waitlist or buy",
+      "record": "validation-go-to-market",
+      "audiences": {
+        "customers": 1
+      },
+      "belongs": [
+        "home"
+      ],
+      "keywords": [
+        "sign up",
+        "get started",
+        "start free",
+        "book a demo",
+        "request a demo",
+        "join the waitlist",
+        "buy now",
+        "try"
+      ]
+    },
+    "team": {
+      "label": "Who is behind it",
+      "question": "who founded or runs the venture: the founders or team by name",
+      "record": "validation-team",
+      "audiences": {
+        "investors": 0.9,
+        "talent": 0.7,
+        "press": 0.6,
+        "customers": 0.3
+      },
+      "belongs": [
+        "about"
+      ],
+      "keywords": [
+        "founder",
+        "co-founder",
+        "our team",
+        "ceo",
+        "cto"
+      ]
+    },
+    "mission": {
+      "label": "Mission and vision",
+      "question": "why the venture exists: its mission, vision or story",
+      "record": "telos",
+      "audiences": {
+        "talent": 0.8,
+        "investors": 0.6,
+        "press": 0.5,
+        "contributors": 0.5
+      },
+      "belongs": [
+        "about"
+      ],
+      "keywords": [
+        "mission",
+        "vision",
+        "we believe",
+        "our story",
+        "why we"
+      ]
+    },
+    "contact": {
+      "label": "How to reach them",
+      "question": "how to contact the venture: an email, a form or a contact page",
+      "record": "venture",
+      "audiences": {
+        "customers": 0.5,
+        "press": 0.8,
+        "partners": 0.8,
+        "investors": 0.5
+      },
+      "belongs": [
+        "contact"
+      ],
+      "keywords": [
+        "contact",
+        "email us",
+        "@",
+        "get in touch"
+      ]
+    },
+    "hiring": {
+      "label": "Whether they are hiring",
+      "question": "whether the venture is hiring, with open roles or how to apply",
+      "record": "team-plan",
+      "audiences": {
+        "talent": 1
+      },
+      "belongs": [
+        "careers"
+      ],
+      "keywords": [
+        "careers",
+        "we're hiring",
+        "open roles",
+        "join us",
+        "jobs"
+      ]
+    },
+    "raising": {
+      "label": "Information for investors",
+      "question": "information for investors: that the venture is raising, its backers, or how investors can reach it",
+      "record": "business-models",
+      "audiences": {
+        "investors": 1
+      },
+      "belongs": [
+        "investors",
+        "about"
+      ],
+      "keywords": [
+        "investors",
+        "backed by",
+        "raising",
+        "funding",
+        "seed",
+        "series a"
+      ]
+    },
+    "contribute": {
+      "label": "How to contribute",
+      "question": "how someone can contribute or join the community: open source, a community, volunteering or creating",
+      "record": "team-plan",
+      "audiences": {
+        "contributors": 1
+      },
+      "belongs": [
+        "community"
+      ],
+      "keywords": [
+        "contribute",
+        "community",
+        "github",
+        "discord",
+        "open source"
+      ]
+    },
+    "press": {
+      "label": "News and press",
+      "question": "news, press coverage, announcements or a press kit",
+      "record": "publication-policy",
+      "audiences": {
+        "press": 1,
+        "investors": 0.3
+      },
+      "belongs": [
+        "press",
+        "blog"
+      ],
+      "keywords": [
+        "press",
+        "news",
+        "announc",
+        "featured in",
+        "media kit"
+      ]
+    },
+    "trust": {
+      "label": "Trust and privacy",
+      "question": "how the venture protects data and privacy, or the security and compliance it meets",
+      "record": "alignment",
+      "audiences": {
+        "customers": 0.6,
+        "partners": 0.4
+      },
+      "belongs": [
+        "trust"
+      ],
+      "keywords": [
+        "privacy",
+        "security",
+        "soc 2",
+        "gdpr",
+        "hipaa",
+        "encrypt"
+      ]
+    }
+  }
+}

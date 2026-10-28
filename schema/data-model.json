@@ -857,6 +857,28 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "marketing-matrix",
+      "layer": "operations",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "operations/marketing/site/matrix.json"
+      ],
+      "note": "The marketing matrix: the audiences a public site speaks to, what each needs to learn and from which record, where it belongs, and how prominent it must be by need; weighted by whether the venture is raising, hiring or inviting contributors, and by its ICPs (EE-062). Version 0.x, unevaluated"
+    },
+    {
+      "id": "site-presence",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/site-presence.schema.json",
+      "paths": [
+        "instance/**/operations/marketing/site-presence.json",
+        "schema/examples/**/operations/marketing/site-presence.json"
+      ],
+      "note": "How present the venture's public records are on its marketing site, item by item, with a score weighed by who the site must speak to now (EE-062)"
+    },
+    {
       "id": "need-now",
       "layer": "system",
       "level": "method",
