@@ -111,7 +111,7 @@ async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", 
     }
   });
   const code = await new Promise((r) => child.on("close", r));
-  if (code !== 0 || !result) { node.error = `the agent stopped with status ${code}`; console.error(node.error); finish(1); }
+  if (code !== 0 || !result) { node.error = `the agent stopped with status ${code}`; console.error(node.error); finish(1); process.exit(1); }
   Object.assign(node, { end: iso(), outputs: { report: result.result }, metadata: { cost_usd: result.total_cost_usd, turns: result.num_turns, usage: result.usage } });
   if (!quiet) console.log(result.result.trim().split("\n").map((l) => `   ${l}`).join("\n"));
   return result.result;
@@ -129,6 +129,8 @@ function finish(code = 0) {
     const p = spawnSync("node", [join(repo, "platform/integrations/langsmith.mjs"), join(ws, "trace.json")], { encoding: "utf8" });
     console.log(p.status === 0 ? `LangSmith: ${p.stdout.trim()}` : `LangSmith upload failed: ${(p.stderr || p.stdout).trim()}`);
   }
+  // The board keeps serving the finished run, for the founder (and a demo table) to look over.
+  if (board && code === 0) { console.log(`\nThe board keeps serving: http://127.0.0.1:4331/ and /map. Ctrl-C to stop. Workspace: ${ws}`); return; }
   board?.close();
   process.exit(code);
 }
@@ -195,7 +197,7 @@ for (let n = 0; n < steps; n++) {
   trace.children.push({ name: `founder: ${next.id}`, run_type: "chain", start: iso(), end: iso(), inputs: { question: next.question, why: next.why, proposed: next.answer ?? null, action: next.action.kind }, outputs: { status: now?.status, provenance: now?.provenance ?? null } });
   lap(`${next.id} settled${now?.provenance?.approved_by ? ` by ${now.provenance.approved_by} (${now.provenance.wording} the wording)` : ""}`);
 }
-if (!settled.length) { lap("nothing for the founder to settle; stopping"); finish(1); }
+if (!settled.length) { lap("nothing for the founder to settle; stopping"); finish(1); process.exit(1); }
 
 // 4. The work the founder's decisions unlocked.
 await agent(`${rules}

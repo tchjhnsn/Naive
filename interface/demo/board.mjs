@@ -2,12 +2,14 @@
 // The decision board (EE-054, EE-058): a live page of one venture's decisions, by what renders now,
 // with provenance as it happens, and at /map the founder's idea map on one canvas (EE-059). Local
 // only: it binds to 127.0.0.1 and reads the workspace in
-// MENTURA_WORKSPACE (the default is this repository's instance/). No dependencies.
+// MENTURA_WORKSPACE (the default is this repository's instance/). No dependencies: the map's React
+// Flow is fetched once from unpkg and cached in ~/.cache/naive-board.
 //
 //   node interface/demo/board.mjs [--venture <id>] [--port 4331]
 
 import { createServer } from "node:http";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { routes, ventureDir, ventures } from "../router.mjs";
@@ -41,7 +43,7 @@ function ideas(id) {
 }
 
 const MAP_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Idea map</title><link rel="stylesheet" href="https://unpkg.com/reactflow@11.11.4/dist/style.css">
+<title>Idea map</title><link rel="stylesheet" href="/vendor/reactflow@11.11.4/dist/style.css">
 <style>
 :root{--bg:#fbfaf7;--fg:#1d1c1a;--muted:#6b675f;--line:#e4e0d8;--card:#fff;--product:#1f6feb;--brand:#bf3989;--business:#1a7f37;--gap:#9a6700}
 @media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--muted:#a19d94;--line:#2e2d2a;--card:#1c1b19;--product:#58a6ff;--brand:#f778ba;--business:#56d364;--gap:#e3b341}}
@@ -56,9 +58,9 @@ ul{margin:0;padding-left:18px}li{margin:2px 0}.n{color:var(--muted);font-variant
 .chip{display:inline-block;font-size:10px;border:1px solid var(--line);border-radius:99px;padding:1px 6px;margin:4px 3px 0 0;color:var(--muted)}.chip.ex{border-color:var(--business);color:var(--business);font-weight:600}
 .react-flow__attribution{display:none}.react-flow__handle{opacity:0;pointer-events:none}
 </style></head><body><div id="app"><div id="flow"></div><aside id="side"><h1>Idea map</h1><div class="meta">Waiting for the idea dump...</div></aside></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/reactflow@11.11.4/dist/umd/index.js"></script>
+<script src="/vendor/react@18.3.1/umd/react.production.min.js"></script>
+<script src="/vendor/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="/vendor/reactflow@11.11.4/dist/umd/index.js"></script>
 <script>
 const h=React.createElement, RF=window.ReactFlow, Flow=RF.default||RF.ReactFlow;
 const css=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -164,9 +166,29 @@ async function tick(){
 tick();setInterval(tick,1500);
 </script></body></html>`;
 
+// The map's three libraries, pinned, fetched from unpkg once and kept on disk, so the canvas works
+// offline after its first load. Only these paths are served.
+const VENDOR = new Set(["react@18.3.1/umd/react.production.min.js", "react-dom@18.3.1/umd/react-dom.production.min.js", "reactflow@11.11.4/dist/umd/index.js", "reactflow@11.11.4/dist/style.css"]);
+const cache = join(homedir(), ".cache", "naive-board");
+async function vendor(path) {
+  const f = join(cache, path.replace(/\//g, "__"));
+  if (existsSync(f)) return readFileSync(f);
+  const r = await fetch(`https://unpkg.com/${path}`);
+  if (!r.ok) throw new Error(`unpkg answered ${r.status}`);
+  const body = Buffer.from(await r.arrayBuffer());
+  mkdirSync(cache, { recursive: true });
+  writeFileSync(f, body);
+  return body;
+}
+
 export function serve(p = port, id = venture) {
-  const server = createServer((req, res) => {
+  const server = createServer(async (req, res) => {
     const u = new URL(req.url, "http://x");
+    if (u.pathname.startsWith("/vendor/") && VENDOR.has(u.pathname.slice(8))) {
+      try { const b = await vendor(u.pathname.slice(8)); res.writeHead(200, { "content-type": u.pathname.endsWith(".css") ? "text/css" : "text/javascript", "cache-control": "max-age=86400" }); res.end(b); }
+      catch (e) { res.writeHead(502); res.end(String(e.message)); }
+      return;
+    }
     if (u.pathname === "/state.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(state(u.searchParams.get("venture") ?? id))); return; }
     if (u.pathname === "/ideas.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(ideas(u.searchParams.get("venture") ?? id))); return; }
     if (u.pathname === "/map") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(MAP_PAGE); return; }
