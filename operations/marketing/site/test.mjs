@@ -2,6 +2,11 @@
 // Tests for site presence (EE-062): audience weights follow the venture's facts, need sets prominence,
 // and the score credits what a page says where the matrix says it belongs. No network: the site and
 // Jev's answers are fixtures.
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { plan, offeringsOf } from "./plan.mjs";
+import { check } from "../check-public.mjs";
 import { weights, needs, score, request, pageType, typesOf, customerNeeds, MATRIX } from "./presence.mjs";
 
 let failed = 0;
@@ -63,6 +68,51 @@ t("the sitemap rates each read route on what belongs there and suggests the page
   ok(by["/pricing"].rating === 100 && by["/pricing"].parent === "/" && by["/pricing"].level === "nav", JSON.stringify(by["/pricing"]));
   ok(by["/about"].missing.includes("team") && by["/investors"]?.ghost && by["/investors"].missing.includes("raising"), JSON.stringify(r.sitemap.map((n) => [n.path, n.missing])));
   ok(r.icp.source === "inferred" && /inferred/.test(r.icp.cite), JSON.stringify(r.icp));
+});
+
+// The planner (EE-064): a partner-led venture whose product is offered to clinics' billing partners.
+const venture = (() => {
+  const v = mkdtempSync(join(tmpdir(), "plan-"));
+  const w = (f, x) => { mkdirSync(join(v, f, ".."), { recursive: true }); writeFileSync(join(v, f), typeof x === "string" ? x : JSON.stringify(x)); };
+  w("venture.json", { id: "relay", name: "Relay", phase: "validation", brand: { tagline: "Fewer empty slots" } });
+  w("purpose/icp.json", { venture: "relay", profiles: [
+    { id: "billing-partners", who: "medical billing companies that run the front office for small physical therapy clinics", primary: true, customer: "b2b", buying_roles: ["decider", "buyer"] },
+    { id: "clinics", who: "solo physical therapy clinics", customer: "b2b", reached_through: ["billing-partners"] }] });
+  w("products/relay.json", { id: "relay", name: "Relay", description: "No-show recovery for billing partners", offering: "service", status: "live" });
+  w("purpose/validation/problem.json", { statement: "Solo clinics lose four to six visits a week to no-shows and nobody at the clinic has time to fill the slots again" });
+  return v;
+})();
+
+t("the product decides the audience: offered to the partners others are reached through, serving their clients", () => {
+  const o = offeringsOf(venture).products[0];
+  ok(JSON.stringify(o.offered_to) === JSON.stringify(["billing-partners"]) && JSON.stringify(o.serves) === JSON.stringify(["clinics"]) && o.offering === "service", JSON.stringify(o));
+  const p = plan(venture);
+  ok(p.audience.partner_led && p.audience.offered_to[0].id === "billing-partners", JSON.stringify(p.audience));
+});
+
+t("the plan puts what customers need on the home page, with components, reasons and the variant to write", () => {
+  const p = plan(venture);
+  const home = p.pages.find((x) => x.path === "/");
+  const hero = home.sections.find((s) => s.item === "what");
+  ok(hero.component === "Hero" && hero.why.length && hero.variant === "operations/marketing/content/home/what.mdx", JSON.stringify(hero));
+  ok(home.sections[0].need >= home.sections.at(-1).need, "sections ordered by need");
+  ok(home.sections.find((s) => s.item === "problem").source.exists, "problem record found");
+});
+
+t("an audience that is not a priority gets no page, only a note on when it would", () => {
+  const quiet = plan(venture), raising = plan(venture, { flags: { raising: true } });
+  ok(!quiet.pages.some((x) => x.type === "investors") && quiet.omitted.some((o) => o.item === "raising" && /raising/.test(o.when)), JSON.stringify(quiet.omitted));
+  ok(raising.pages.find((x) => x.type === "investors")?.level === "nav", JSON.stringify(raising.pages.map((x) => [x.path, x.level])));
+});
+
+t("the public gate blocks content that copies its internal record or is published unapproved", () => {
+  const dir = join(venture, "operations/marketing/content/home");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "problem.mdx"), "---\nvariant_of: purpose/validation/problem.json\naudience: customers\npublish: true\n---\n<Problem>Solo clinics lose four to six visits a week to no-shows and nobody at the clinic has time</Problem>\n");
+  writeFileSync(join(dir, "what.mdx"), "---\nvariant_of: venture.json\naudience: customers\npublish: true\napproved_by: Sam\n---\n<Hero>Relay. Fewer empty slots, for the partners who run clinics' front offices.</Hero>\n");
+  const r = check(venture);
+  const bad = r.errors.find((x) => x.file.endsWith("problem.mdx"));
+  ok(r.files === 2 && r.errors.length === 1 && bad.errors.some((e) => /approval/.test(e)) && bad.errors.some((e) => /copies/.test(e)), JSON.stringify(r.errors));
 });
 
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }

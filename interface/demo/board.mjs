@@ -20,6 +20,7 @@ import { GRAPH } from "../../purpose/frameworks/idea-map/graph.mjs";
 import { route } from "../../purpose/frameworks/idea-map/route.mjs";
 import { scan } from "../harness/site.mjs";
 import { MATRIX } from "../../operations/marketing/site/presence.mjs";
+import { plan } from "../../operations/marketing/site/plan.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));
@@ -300,10 +301,11 @@ input[type=url],textarea{width:100%;font:inherit;padding:9px 12px;border:1px sol
 .it{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0 0 8px;background:var(--card)}.it .t{font-weight:600}.it.miss{border-left:4px solid var(--miss)}.it.low{border-left:4px solid var(--low)}.it.ok{border-left:4px solid var(--ok)}
 .why{font-size:12px;color:var(--muted);margin-top:4px}.why b{color:var(--fg);font-weight:600}.fix{display:inline-block;font-size:11px;border-radius:99px;padding:1px 6px;border:1px solid var(--miss);color:var(--miss);margin-left:6px}
 .icp{font-size:12px;background:var(--col);border-radius:8px;padding:8px 10px}.chip{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:99px;padding:1px 6px;margin:3px 3px 0 0}
+.node.planned{border-top-color:var(--accent)}
 .react-flow__attribution{display:none}.react-flow__handle{opacity:0;pointer-events:none}
 </style></head><body><header><h1>Site presence</h1><span class="meta">Your sitemap, each route rated on what your audiences need from it, with the reasons</span><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/">Decision board</a></header>
 <form id="f"><div><input type="url" id="url" placeholder="https://your-site.com" required><div class="flags" style="margin-top:8px"><label><input type="checkbox" id="raising"> raising</label><label><input type="checkbox" id="hiring"> hiring</label><label><input type="checkbox" id="contributors"> inviting contributors</label></div></div>
-<textarea id="icp" placeholder="Who are your customers? (optional; otherwise Naive infers it from your home page and says so)"></textarea><button id="go">Read my site</button></form>
+<textarea id="icp" placeholder="Who are your customers? (optional; otherwise Naive infers it from your home page and says so)"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="go">Read my site</button><button type="button" id="plan" style="background:transparent;color:var(--accent);border:1px solid var(--accent)">Plan from my venture</button></div></form>
 <div id="main"><div id="flow"></div><aside id="side"><div class="meta">Paste a link to your marketing site or your product.</div></aside></div>
 <script src="/vendor/react@18.3.1/umd/react.production.min.js"></script>
 <script src="/vendor/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
@@ -339,8 +341,9 @@ function routePanel(n){
 function layout(r){
   const nodes=[],edges=[],W=190,GAP=20,ROW=130;
   const kids={};r.sitemap.forEach((n)=>{if(n.parent!=null)(kids[n.parent]=kids[n.parent]||[]).push(n);});
-  const keep=(n)=>n.read||n.ghost||n.type!=="other";
-  const card=(n)=>h("div",{className:"node "+cls(n)+(n.path==="/"?" home":"")},n.rating!=null?h("span",{className:"rt"},n.rating):null,h("div",{className:"t"},n.label.slice(0,40)),h("div",{className:"p"},n.path),n.missing.length?h("div",{className:"p"},"missing: "+n.missing.join(", ")):null);
+  const keep=(n)=>n.read||n.ghost||n.planned||n.type!=="other";
+  const card=(n)=>h("div",{className:"node "+(n.planned?"planned":cls(n))+(n.path==="/"?" home":"")},n.rating!=null?h("span",{className:"rt"},n.rating):null,h("div",{className:"t"},n.label.slice(0,40)),h("div",{className:"p"},n.path),
+    n.planned?n.sections.map((x)=>h("div",{key:x.item,className:"p"},"<"+x.component+">"+(x.when?" *":""))):n.missing.length?h("div",{className:"p"},"missing: "+n.missing.join(", ")):null);
   const put=(n,x,y)=>{nodes.push({id:n.path,position:{x,y},data:{label:card(n),n},style:{border:"none",background:"transparent",padding:0,width:"auto"}});};
   const home=r.sitemap.find((n)=>n.path==="/");
   const top=(kids["/"]||[]);
@@ -370,8 +373,31 @@ function layout(r){
   return {nodes,edges};
 }
 function App(){const [g,sg]=React.useState({nodes:[],edges:[]});setG=sg;
-  return h(Flow,{nodes:g.nodes,edges:g.edges,fitView:true,minZoom:.1,key:g.nodes.length+":"+(R&&R.site),onNodeClick:(e,n)=>{if(n.data&&n.data.n)document.getElementById("side").innerHTML=routePanel(n.data.n);}},h(RF.Background,{gap:24,size:1}),h(RF.Controls,null));}
+  return h(Flow,{nodes:g.nodes,edges:g.edges,fitView:true,minZoom:.1,key:g.nodes.length+":"+(R?R.site:P?"plan":""),onNodeClick:(e,n)=>{if(n.data&&n.data.n)document.getElementById("side").innerHTML=n.data.n.planned?plannedPanel(n.data.n):routePanel(n.data.n);}},h(RF.Background,{gap:24,size:1}),h(RF.Controls,null));}
 ReactDOM.createRoot(document.getElementById("flow")).render(h(App));
+// The planned site (EE-064): the same tree, planned from the venture's records instead of read.
+let P=null;
+function planOverview(){
+  const o=P.offerings.map((x)=>'<div class="it"><div class="t">'+esc(x.name)+' <span class="chip">'+esc(x.offering)+'</span></div><div class="why">Offered to '+esc(x.offered_to.join(", ")||"nobody yet")+(x.serves.length?', serving '+esc(x.serves.join(", ")):'')+' (from the '+esc(x.from)+')</div></div>').join("");
+  return '<div class="t" style="font-weight:600;font-size:16px">Planned site for '+esc(P.name)+'</div><div class="meta">Planned from the venture\\'s records by '+esc(P.planned_by)+'. The product decides the audience.</div>'+
+    '<h2>Offerings</h2>'+(o||'<div class="meta">No live or building products yet.</div>')+
+    '<h2>Who the site is for</h2><div class="icp">'+(P.audience.offered_to.map((p)=>esc(p.who)).join("<br>")||'No accepted ICP yet: planned for customers in general.')+'<div class="meta">'+esc(P.audience.note)+'</div>'+P.audience.types.map((x)=>'<span class="chip">'+esc(x.label)+'</span>').join("")+'</div>'+
+    (P.omitted.length?'<h2>Not now</h2>'+P.omitted.map((o)=>'<div class="why"><b>'+esc(o.label)+'</b>: '+esc(o.why)+(o.when?'; '+esc(o.when):'')+'</div>').join(""):'')+
+    '<h2>Handoff</h2><div class="why">'+esc(P.handoff.note)+'</div><div class="meta" style="margin-top:6px">Click a page to see its sections, components and reasons. * shows only under a condition.</div>';
+}
+function plannedPanel(n){
+  return '<a href="#" onclick="document.getElementById(\\'side\\').innerHTML=planOverview();return false">Back to the plan</a><h2>Planned page</h2><div class="t" style="font-weight:600">'+esc(n.label)+'</div><div class="meta">'+esc(n.path)+' · '+esc(n.type)+' page · '+esc(n.level)+'</div><h2>Sections, in order</h2>'+
+    n.sections.map((x)=>'<div class="it"><div class="t">&lt;'+esc(x.component)+'&gt; '+esc(x.label)+'</div><div class="why">Need '+x.need+' for '+esc(x.for.map((a)=>LABEL[a]).join(", "))+(x.when?' · shown '+esc(x.when):'')+'</div>'+x.why.map((w)=>'<div class="why">'+esc(w)+'</div>').join("")+
+      '<div class="why">Draws on '+esc(x.source.record)+(x.source.exists?'':' (not written yet)')+'; the public variant goes to <code>'+esc(x.variant)+'</code></div></div>').join("");
+}
+function showPlan(p){
+  if(p.error){document.getElementById("side").innerHTML='<p>'+esc(p.error)+'</p>';return;}
+  P=p;R=null;document.getElementById("side").innerHTML=planOverview();
+  const nodes=p.pages.map((x)=>({path:x.path,parent:x.parent,label:x.label,type:x.type,level:x.level,read:true,rating:null,expected:[],found:[],missing:[],planned:true,sections:x.sections}));
+  if(setG)setG(layout({sitemap:nodes,site:"plan"}));
+}
+document.getElementById("plan").onclick=async()=>{const q=new URLSearchParams();["raising","hiring","contributors"].forEach((k)=>{if(document.getElementById(k).checked)q.set(k,"1");});
+  try{showPlan(await (await fetch("site/plan.json?"+q,{cache:"no-store"})).json());}catch(err){showPlan({error:"The plan failed: "+err.message});}};
 function show(r){
   if(r.error){document.getElementById("side").innerHTML='<p>'+esc(r.error)+'</p>';return;}
   R=r;document.getElementById("side").innerHTML=overview();if(setG)setG(layout(r));
@@ -414,6 +440,12 @@ export function serve(p = port, id = venture) {
     if (u.pathname === "/site.json") {
       const dir = ventureDir(u.searchParams.get("venture") ?? id), f = dir && join(dir, "operations/marketing/site-presence.json");
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(f && existsSync(f) ? readFileSync(f) : "{}"); return;
+    }
+    if (u.pathname === "/site/plan.json") {
+      const dir = ventureDir(u.searchParams.get("venture") ?? id);
+      let body;
+      try { body = dir ? plan(dir, { flags: Object.fromEntries(["raising", "hiring", "contributors"].map((k) => [k, u.searchParams.get(k) === "1"])) }) : { error: `no venture ${id}` }; } catch (e) { body = { error: e.message }; }
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(body)); return;
     }
     if (u.pathname === "/site/scan" && req.method === "POST") {
       const dir = ventureDir(u.searchParams.get("venture") ?? id);

@@ -62,7 +62,7 @@ export function icpOf(dir, site, text) {
 /** Which customer types the ICP is: Jev's answers when given, else the matrix's keywords. */
 export function typesOf(icp, answers) {
   const out = Object.entries(TYPES.types).map(([id, t]) => ({ id, label: t.label,
-    p: answers ? r2(answers[`type:${id}`]?.noul ?? 0) : new RegExp(t.match, "i").test(icp.text) ? 1 : 0 }));
+    p: answers ? r2(answers[`type:${id}`]?.noul ?? 0) : new RegExp(`\\b(?:${t.match})`, "i").test(icp.text) ? 1 : 0 }));
   // Jev answers "mainly" conservatively: a type counts at the floor or above and within 0.6 of the strongest.
   const top = Math.max(0, ...out.map((t) => t.p));
   return out.filter((t) => t.p >= TYPES.floor && t.p >= 0.6 * top).sort((a, b) => b.p - a.p);

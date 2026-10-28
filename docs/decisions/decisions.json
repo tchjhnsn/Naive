@@ -674,6 +674,43 @@
       ],
       "decision": "What customers look for on a site depends on who they are, and every rating shows why. The marketing matrix gains customer types (consumers, small-business owners, teams inside companies, enterprise buyers, developers, regulated professionals, creators, public sector), each with how much each item matters to it and the reason, a claim to test rather than a finding. The ICP comes from the founder's own sentence, the venture's ICP record, or failing both the home page (marked inferred). Jev places it into types (a type counts at 0.25 or more and within 0.6 of the strongest, since Jev answers 'mainly' conservatively), and the customer's need for an item is the strongest of its types'. Every item carries its evidence: each audience's weight, the item's importance to it and why. Site presence is shown as the site's sitemap (React Flow): the home page, the pages in its navigation, the pages linked elsewhere (the footer), and each page's own routes, each read route rated on the items that belong there, with ghost routes for pages the venture's priorities call for and the site lacks. Clicking a route shows what belongs there, what is missing and why.",
       "why": "Torian, 2026-10-28 20:02Z: 'who is behind it' is not something customers of every product type care about; it depends on the customer. The rating must give evidence for who the ICP is, what they prefer, and why we believe they look for this information. Present site presence as the layout of the sitemap, with a rating for each route, shown visually as its structure."
+    },
+    {
+      "id": "EE-064",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-063",
+        "EE-062",
+        "EE-025",
+        "EE-021",
+        "EE-051"
+      ],
+      "decision": "Site presence runs in reverse: a marketing agent plans the public site from the venture's records (operations/marketing/site/plan.mjs, route operations/marketing/sitemap, record marketing-sitemap). The product decides the audience: a product's offered_to names the ICP profiles it is offered to (who buys or adopts it), and serves names those it reaches through them; an ICP profile may be reached_through another (a channel partner in B2B2C) and carries its buying-center roles (Webster and Wind 1972: user, influencer, decider, buyer, gatekeeper; initiator, Bonoma 1982). In a partner-led venture the partners are the site's customers. Services need no new product type: offering already includes service beside product, platform, content and marketplace, so the product card covers it and drives the ICPs and the site. Pages follow topics, not audiences (audience-based navigation tends to hurt usability, NN/g), except that an audience with content of its own (candidates, investors, contributors, press) gets its own page, and only while it is a priority; otherwise the plan says when it would appear. Each page lists its sections in order of need with the MDX component, the audiences and why, any condition, the internal record it draws on and the public variant to write. Records have variants: marketing content (operations/marketing/content/**/*.mdx, record marketing-content) is always a public variant of a named internal record, written by a marketing agent in its own words; the public gate (operations/marketing/check-public.mjs) requires variant_of, audience, publish and, when published, a person's approval (EE-025), and blocks any run of ten words copied from the internal record except public fields. This keeps internal content out of public pages and generic text off them.",
+      "why": "Torian, 2026-10-28 20:25Z: the site presence tool used in reverse is what marketing agents use to decide what is displayed where, how and when, based on who, by reading the venture's records. ICPs should be categorized by venture type and by who the product is offered to (a service company whose primary audience is partners with customers of their own markets to the partners). Consider services as a product type, so the product determines the ICPs and the marketing pages. Marketing records are variations of internal records: a gate that prevents internal content leaking into public publishing and reduces AI slop, since marketing agents produce unique .mdx files according to skills. Research basis: buying center roles (Webster and Wind 1972; Bonoma 1982), B2B2C, NN/g on audience-based navigation."
+    },
+    {
+      "id": "EE-065",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-044",
+        "EE-064",
+        "EE-038"
+      ],
+      "decision": "Amends EE-044 (Torian withdrew the part that made marketing responsible for web design). Marketing designs the elements a site uses: the sitemap, the content variants, the MDX components and their order, and the brand assets including the brand voice. Engineering implements the web design and builds the site. The marketing package is the handoff between the business side and the engineering side: the sitemap (marketing-sitemap), the public content variants (marketing-content) and the brand, handed to an engineering agent that builds from it and does not decide what goes where. Planning the sitemap and designing the site are separate agents. 'Team' here means record conventions: how files and folders are organized and routed; agents live in those folders and are triggered by commands.",
+      "why": "Torian, 2026-10-28 20:25Z: 'I want to redact that decision and say that the marketing team is designed for certain elements that are utilized within the web design. However, the engineering team should still be responsible for the actual implementation.' The sitemap is a marketing record handed to engineering; separate agents develop the sitemap and design the website; marketing records hold the brand assets including the voice; the marketing kit is a handoff between the business and engineering sides."
+    },
+    {
+      "id": "EE-066",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-026",
+        "EE-065"
+      ],
+      "decision": "Rename kit to package, one to one with Next.js and npm packages, and define a complete package as one ready to hand to an agent for its engineering or operational implementation. Held until after the AITX hackathon (submissions close 2026-10-29 22:00Z): the rename touches every layer's kit.json, the data model, the checks, the router and the docs, and is not worth the risk the night before submission.",
+      "why": "Torian, 2026-10-28 20:25Z: 'We could possibly change the name to package. That way it is a one-to-one comparison with Next.js. A complete package would be a package that is ready to be handed off to an agent for its engineering implementations or its operational implementations.' Ontology already glosses kit as a package (EE-026)."
     }
   ]
 }

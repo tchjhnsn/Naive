@@ -107,7 +107,8 @@
         "contributors": "contributors need to know what they would help build",
         "partners": "partners need to know what they would integrate with or resell",
         "press": "journalists need the one-line story"
-      }
+      },
+      "component": "Hero"
     },
     "who-for": {
       "label": "Who it is for",
@@ -133,7 +134,8 @@
       "why": {
         "investors": "investors look for a clear, reachable market",
         "partners": "partners check whether the customers overlap with theirs"
-      }
+      },
+      "component": "ForWhom"
     },
     "problem": {
       "label": "The problem it solves",
@@ -158,7 +160,8 @@
       "why": {
         "investors": "investors back a painful problem before a product",
         "press": "stories start from the problem"
-      }
+      },
+      "component": "Problem"
     },
     "how": {
       "label": "How it works",
@@ -180,7 +183,8 @@
       ],
       "why": {
         "partners": "partners need to see where they would fit"
-      }
+      },
+      "component": "HowItWorks"
     },
     "proof": {
       "label": "Proof",
@@ -206,7 +210,8 @@
       "why": {
         "investors": "traction is what investors look for first",
         "press": "journalists cite customers and numbers"
-      }
+      },
+      "component": "Proof"
     },
     "pricing": {
       "label": "Pricing",
@@ -225,7 +230,8 @@
         "free trial",
         "plans",
         "$"
-      ]
+      ],
+      "component": "Pricing"
     },
     "next-step": {
       "label": "A clear next step",
@@ -246,7 +252,8 @@
         "join the waitlist",
         "buy now",
         "try"
-      ]
+      ],
+      "component": "CallToAction"
     },
     "team": {
       "label": "Who is behind it",
@@ -272,7 +279,8 @@
         "investors": "early-stage investors back the team as much as the idea",
         "talent": "candidates want to know who they would work with",
         "press": "journalists name and quote founders"
-      }
+      },
+      "component": "Team"
     },
     "mission": {
       "label": "Mission and vision",
@@ -299,7 +307,8 @@
         "investors": "investors look for founders with a long-run ambition",
         "press": "the mission is often the story's angle",
         "contributors": "contributors give time to missions they share"
-      }
+      },
+      "component": "Mission"
     },
     "contact": {
       "label": "How to reach them",
@@ -324,7 +333,8 @@
         "press": "journalists need someone to contact",
         "partners": "partners need a person to start a conversation with",
         "investors": "investors need a way to reach the founders"
-      }
+      },
+      "component": "Contact"
     },
     "hiring": {
       "label": "Whether they are hiring",
@@ -345,7 +355,8 @@
       ],
       "why": {
         "talent": "candidates look for open roles and how to apply"
-      }
+      },
+      "component": "OpenRoles"
     },
     "raising": {
       "label": "Information for investors",
@@ -368,7 +379,8 @@
       ],
       "why": {
         "investors": "investors need to know the venture is raising and how to reach it"
-      }
+      },
+      "component": "InvestorInfo"
     },
     "contribute": {
       "label": "How to contribute",
@@ -389,7 +401,8 @@
       ],
       "why": {
         "contributors": "contributors need to know how to start"
-      }
+      },
+      "component": "Contribute"
     },
     "press": {
       "label": "News and press",
@@ -413,7 +426,8 @@
       "why": {
         "press": "journalists look for news and a press kit",
         "investors": "coverage signals momentum"
-      }
+      },
+      "component": "Press"
     },
     "trust": {
       "label": "Trust and privacy",
@@ -436,7 +450,8 @@
       ],
       "why": {
         "partners": "partners check that the venture handles shared data responsibly"
-      }
+      },
+      "component": "Trust"
     }
   },
   "customer_types": {
@@ -693,5 +708,24 @@
       }
     },
     "floor": 0.25
+  },
+  "page_labels": {
+    "home": "Home",
+    "product": "Product",
+    "customers": "Customers",
+    "pricing": "Pricing",
+    "about": "About",
+    "careers": "Careers",
+    "investors": "Investors",
+    "community": "Community",
+    "press": "Press",
+    "blog": "Blog",
+    "contact": "Contact",
+    "trust": "Security and privacy"
+  },
+  "when": {
+    "raising": "while the venture is raising",
+    "hiring": "while the venture is hiring",
+    "contributors": "while the venture invites contributors"
   }
 }

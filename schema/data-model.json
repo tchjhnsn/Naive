@@ -879,6 +879,29 @@
       "note": "How present the venture's public records are on its marketing site, item by item, with a score weighed by who the site must speak to now (EE-062)"
     },
     {
+      "id": "marketing-sitemap",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/marketing-sitemap.schema.json",
+      "paths": [
+        "instance/**/operations/marketing/sitemap.json",
+        "schema/examples/**/operations/marketing/sitemap.json"
+      ],
+      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on and the public variant to write; part of the marketing package handed to engineering (EE-064, EE-065)"
+    },
+    {
+      "id": "marketing-content",
+      "layer": "operations",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/operations/marketing/content/**/*.mdx",
+        "schema/examples/**/operations/marketing/content/**/*.mdx"
+      ],
+      "note": "Public variants of internal records, written by marketing agents as their own MDX: each names the record it is a variant of, its audience, whether it is published and who approved it; checked by the public gate (EE-064)"
+    },
+    {
       "id": "need-now",
       "layer": "system",
       "level": "method",

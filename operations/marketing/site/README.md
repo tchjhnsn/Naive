@@ -9,7 +9,7 @@ description: "Site presence: read a venture's website, judge which pages say wha
 
 # Site presence and the marketing matrix
 
-Version 0.1.0, ours and unevaluated (EE-062, EE-063). For the demo there are no connections: a founder pastes a link to their marketing site (or their product), and Naive reads it.
+Version 0.1.0, ours and unevaluated (EE-062, EE-063, EE-064, EE-065). For the demo there are no connections: a founder pastes a link to their marketing site (or their product), and Naive reads it.
 
 ## What it does
 
@@ -50,6 +50,29 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
 
 - **Board:** `node interface/demo/board.mjs`, then `/site`. Paste a link, say who your customers are (optional), tick raising, hiring or contributors, and read the sitemap and its ratings.
 - **CLI:** `node interface/harness/site.mjs <url> [--venture <dir>] [--icp "<who your customers are>"] [--raising] [--hiring] [--contributors]`. With a venture, the result is saved to `operations/marketing/site-presence.json`, and the router command `operations/marketing/site` reads it back.
+
+## In reverse: planning the site from the venture (EE-064)
+
+`plan.mjs` uses the same matrix in the other direction. It reads the venture's records and plans the site. The plan says what is shown where, how (the MDX component), when, and for whom, with the reason for each.
+
+- **The product decides the audience.** A product's `offered_to` names the ICP profiles it is offered to, and `serves` names the profiles it reaches through them. In a partner-led (B2B2C) venture, the partners are the site's customers. A profile can say it is `reached_through` another and which buying-center roles it plays (Webster and Wind 1972, with the initiator added by Bonoma 1982).
+- **Services are already an offering type** on the product card (product, service, platform, content, marketplace), so services drive the site like any other product.
+- **Topics, not audiences.** Pages follow topics, because audience-based navigation tends to hurt usability (NN/g). An audience with content of its own (candidates, investors, contributors, press) gets its own page, and only while it is a priority. Otherwise the plan says when that page would appear.
+- **Each page lists its sections in order of need**, each with:
+  - the MDX component;
+  - the audiences and why;
+  - any condition;
+  - the internal record it draws on;
+  - the public variant a marketing agent writes, at `operations/marketing/content/<page>/<item>.mdx`.
+- **The public gate.** `../check-public.mjs` checks every content file before it can be published:
+  - it names the internal record it is a variant of, its audience, and whether it is published;
+  - a published file names the person who approved it;
+  - it copies no run of ten words from its internal record, apart from public fields.
+
+  This keeps internal content out of public pages and keeps generic text off them.
+- **The handoff (EE-065).** The plan, the content variants and the brand make up the marketing package. Marketing hands it to engineering, which builds the site and does not decide what goes where. Planning the sitemap and designing the site are separate agents.
+
+Run it with `node operations/marketing/site/plan.mjs <venture> [--raising] [--hiring] [--contributors] [--write]`, or from the board's /site page with "Plan from my venture".
 
 ## What is not settled
 

@@ -22,7 +22,9 @@
     "department-catalog",
     "department",
     "marketing-matrix",
-    "site-presence"
+    "site-presence",
+    "marketing-sitemap",
+    "marketing-content"
   ],
   "reads": [
     "agent-capability",
@@ -47,7 +49,9 @@
     "schema/run-handoff.mjs",
     "schema/check-execution.mjs",
     "schema/check-departments.mjs",
-    "operations/marketing/site/presence.mjs"
+    "operations/marketing/site/presence.mjs",
+    "operations/marketing/site/plan.mjs",
+    "operations/marketing/check-public.mjs"
   ],
   "gaps": [
     "No run-handoff skill: the handoff contract is prose (operations/handoff-v2.md) beside three scripts in schema/ (check-ready, run-handoff, check-execution)",
