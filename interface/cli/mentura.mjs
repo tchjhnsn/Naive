@@ -8,7 +8,11 @@
 //                                                   start a venture; --layers turns on only those
 //   mentura add <department> --venture <id> [--group]
 //                                                   import a department: list it and create its folders
-//   mentura accept <route> --venture <id>          a person accepts an agent's draft of a gated record
+//   mentura accept <route> --venture <id> [--confirm <route>]
+//                                                   a person accepts an agent's draft of a gated record;
+//                                                   one holding guiding statements asks you to type the route
+//   mentura confirm <statement> --venture <id> [--confirm <statement>]
+//                                                   a person confirms one guiding statement as theirs (EE-051)
 //   mentura <route> <action> --venture <id|path> [--input <file>|-] [--as person] [--value <n>] [--json]
 //          actions: read, write, check, template, layout, view (a page), run (commands)
 //          a collection item is <route>/<id> (purpose/product/kettle); a nested venture is its
@@ -16,6 +20,8 @@
 //          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
 //          knowledge/catalog run builds the catalog over the venture's sources; knowledge/search run
 //          --value <query> finds items in any of them (EE-037)
+//          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;
+//          --as-is runs it anyway (EE-050)
 //   mentura baseline --venture <id>                 adopt existing records into the provenance log
 //
 // The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
@@ -27,6 +33,21 @@ import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
+import { FRAME, filesOf } from "../../schema/guiding.mjs";
+
+// The danger zone (EE-051): a guiding statement is accepted or confirmed only when the person types
+// its name, at the prompt or with --confirm <name>.
+async function typed(name, what) {
+  if (opt("confirm") !== undefined) return opt("confirm") === name;
+  console.log(`${what}\nThis is a guiding statement: changing it changes the venture. Type ${name} to confirm.`);
+  if (!process.stdin.isTTY) { console.log(`(not at a terminal: pass --confirm ${name})`); return false; }
+  const { createInterface } = await import("node:readline/promises");
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const a = (await rl.question("> ")).trim();
+  rl.close();
+  return a === name;
+}
+const guidingOf = (recordType) => FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record === recordType);
 
 const argv = process.argv.slice(2);
 const opt = (name) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : undefined; };
@@ -85,11 +106,38 @@ if (cmd === "accept") {
   if (!d?.gate) { console.error(`${rt} is not a gated record route, or no venture ${venture}`); process.exit(1); }
   const draft = join(d.dir, d.draft);
   if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
+  const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
+  const touched = guidingOf(recType);
+  if (touched.length) {
+    const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+    const now = existsSync(join(d.dir, d.file)) ? JSON.parse(readFileSync(join(d.dir, d.file), "utf8")) : {};
+    const next = JSON.parse(readFileSync(draft, "utf8"));
+    const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
+    if (!(await typed(d.route, `Accepting ${d.route} changes these guiding statements:\n${diff}`))) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
+  }
   const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
     provenance: { activity: "accept", derived_from: [d.draft], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
   rmSync(draft);
   out(`accepted: ${w.result.written}`);
+  process.exit(0);
+}
+
+if (cmd === "confirm") {
+  // A person confirms a guiding statement an agent wrote as their own; the content is unchanged.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const s = FRAME.questions.flatMap((q) => q.statements).find((x) => x.id === id);
+  if (!s?.record) { console.error(`${id} is not a guiding statement with a record (see mentura purpose/guiding run)`); process.exit(1); }
+  const rt = routes().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
+  const hits = filesOf(dir, s.record).filter((f) => existsSync(join(dir, f)));
+  if (!hits.length) { console.error(`${venture} has no ${s.record} record to confirm`); process.exit(1); }
+  const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(join(dir, f), "utf8")), s.attribute) ?? null)}`).join("\n");
+  if (!(await typed(id, `Confirming ${id} as yours:\n${shown}`))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
+  for (const f of hits) record(dir, { entity: f, route: rt, activity: "confirm", statement: id, agent: agentFromEnv("person", "cli"), note: opt("note") });
+  out(`confirmed: ${id}`);
   process.exit(0);
 }
 
@@ -120,9 +168,22 @@ let input;
 const src = opt("input");
 if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
 if (opt("value")) input = { ...(input ?? {}), value: Number.isNaN(Number(opt("value"))) ? opt("value") : Number(opt("value")) };
+if (flag("as-is")) input = { ...(input ?? {}), as_is: true };
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
-const r = await call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+let r = await call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+// Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
+if (r.ok && r.needs_input && !flag("json")) {
+  const n = r.needs_input;
+  console.log(`${n.ask}\n${n.missing.map((m) => `  - ${m.field}${m.items ? ` (${m.items.join(", ")})` : ""}: ${m.why}. As is: ${m.as_is}`).join("\n")}`);
+  if (!process.stdin.isTTY) { console.log(`Fill in: ${n.options[0].how}\nRun as is: ${n.options[1].how}`); process.exit(0); }
+  const { createInterface } = await import("node:readline/promises");
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const a = (await rl.question("Fill in (f) or run as is (r)? ")).trim().toLowerCase();
+  rl.close();
+  if (!a.startsWith("r")) { console.log(`Fill in: ${n.options[0].how}`); process.exit(0); }
+  r = await call({ venture, route: cmd, action, input: { ...(input ?? {}), as_is: true }, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+}
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);
-const extra = ["not_found", "pending_draft", "fix"].some((k) => r[k]);
+const extra = ["not_found", "pending_draft", "fix", "needs_input"].some((k) => r[k]);
 out(flag("json") || extra ? r : r.result);

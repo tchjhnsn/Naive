@@ -170,7 +170,8 @@
           "checked_by": "schema/check-validation.mjs"
         }
       ],
-      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares schema/validation-evidence.schema.json with every sub-score"
+      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares schema/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts.",
+      "decision_class": "strategy-or-constitution"
     },
     {
       "id": "validation-solution",
@@ -883,6 +884,42 @@
         "interface/route-aliases.json"
       ],
       "note": "Old routes kept as aliases of their new ones, so a rename does not break agents (EE-032)"
+    },
+    {
+      "id": "icp",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/icp.schema.json",
+      "paths": [
+        "instance/**/purpose/icp.json",
+        "schema/examples/**/purpose/icp.json"
+      ],
+      "refs": [
+        {
+          "field": "profiles.problem_forms",
+          "to": "validation-problem",
+          "checked_by": "schema/guiding.mjs"
+        }
+      ],
+      "note": "Who the venture serves: ideal customer profiles, one primary (EE-051); a guiding statement, gated",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "guiding-statements",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/guiding-statements.schema.json",
+      "paths": [
+        "purpose/guiding-statements.json"
+      ],
+      "refs": [
+        {
+          "field": "questions.statements.record",
+          "to": "(record types)",
+          "checked_by": "schema/guiding.mjs"
+        }
+      ],
+      "note": "The map of guiding statements by the Five Ws and How plus whether (EE-051)"
     }
   ],
   "ignore": [

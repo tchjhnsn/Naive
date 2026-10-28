@@ -8,9 +8,10 @@ name: problem-validation
 description: >
   Help a builder show that the problem their venture solves is real, with cited
   evidence instead of a statement: who has it, how they cope today, what it
-  costs them, and evidence graded high to very low (GRADE, adapted). Writes
-  purpose/validation/problem.json; schema/check-validation.mjs grades it. The
-  first sub-score of the validation kit (EE-026).
+  costs them, and what the evidence is strong enough for (explore, prototype,
+  charge, raise), with no single score and never a "not viable" verdict.
+  Writes purpose/validation/problem.json; schema/assess-problem.mjs assesses it
+  after asking the person to fill in what is missing or run as is (EE-026, EE-050).
   MANDATORY TRIGGERS: problem validation, validate the problem, is this a real
   problem, customer discovery, problem interview, Mom Test, pain point,
   evidence for the problem, market research for the problem, problem-solution fit.
@@ -18,24 +19,23 @@ description: >
 
 # Problem validation
 
-Purpose layer, validation kit (EE-026). Writes `purpose/validation/problem.json`; `node schema/check-validation.mjs <venture dir>` grades it.
+Purpose layer, validation kit (EE-026, EE-050). Writes `purpose/validation/problem.json`; `node schema/assess-problem.mjs <venture dir>` (route `purpose/validation/assess`) says what its evidence is strong enough for. The behaviors it keeps are in `features/problem-assessment.feature`.
 
-## The rule: a claim is not evidence
+## The rule: no verdict from missing evidence
 
-A problem statement on its own grades very low. The record rises only with cited evidence, and evidence is weighed by what kind of signal it is, who it came from, how many, how specific and how recent. This is the GRADE method from evidence-based medicine, adapted: behavior starts high, commitment moderate, stated intent and desk research low, opinion very low; the wrong audience, a small sample, general answers and old evidence each lower it.
+There is no score and no "not viable". The problem splits into four assumptions (it exists, our segment has it, it hurts enough that people already spend on it, why now), and each gets a label from its evidence: demonstrated, inferred, assumed, unknown or contradicted. The labels say which commitment the evidence supports: explore, prototype, charge or raise. Missing evidence is unknown, never a verdict against the idea. Competitors with paying customers count for the problem. Only first-hand behavior or commitment from five or more people in the segment demonstrates; anything reported (a vendor's customer count, a report) infers. Contradicted needs evidence against from the segment at least as strong as the evidence for.
 
 ## Steps
 
-1. **Draft the claim** from `venture.json` core (promise, promised to): `statement`, `segment`, `workarounds`. Use `templates/problem.md`.
-2. **Grade it** now. It will say "claim only". That is the honest starting point.
-3. **Find the cheapest strong evidence.** Look for behavior first: are people in the segment already paying for or building a workaround? Desk research can size the segment, with a cited source.
-4. **Interview** five or more people in the segment with `templates/problem-interview.md`. Record past facts as evidence items and save the notes in the venture folder.
-5. **Grade again**, and record evidence against the claim as well (`supports: false`).
-6. **Score the probability** (`probability.p`) with Jev, or as the owner until Jev runs. The validation score multiplies it by the evidence weight.
+1. **Run the assessment first.** When the record is missing or incomplete it does not assess; it lists what is missing and what running as is would mean. **Show the person that list and ask whether to fill it in or run as is.** Never choose for them: pass `as_is` (CLI `--as-is`, MCP and API `as_is: true`) only after they chose it.
+2. **Fill in** what they chose to fill: `statement`, `segment`, `cost` or `workarounds`, `why_now`, and for each evidence item the `assumption` it bears on. Use `templates/problem.md`.
+3. **Find the cheapest evidence for the blocking assumption.** The result names it and a test. Competitors and desk research are quick and infer; interviews with five or more people in the segment (`templates/problem-interview.md`) and workarounds they already pay for can demonstrate. Save notes in the venture folder, so items are first-hand.
+4. **Record evidence against as well** (`supports: false`).
+5. **Run again** and tell the person what the evidence now supports and the next test, in those words.
 
 ## When to stop
 
-Don't over-research. When the record grades moderate or high and the weakest validation sub-score is elsewhere, move on to it. The framework asks for the evidence the current phase needs, not all evidence.
+When the evidence supports the commitment the founder is about to make. Prototyping needs the problem and its cost inferred; charging needs the segment and the cost demonstrated. Don't research past the next commitment.
 
 ## Guardrails
 

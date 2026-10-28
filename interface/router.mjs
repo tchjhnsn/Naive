@@ -100,7 +100,9 @@ export function routes() {
   out.push(
     cmd("system/need-now", "schema/need-now.mjs", "What the venture needs now, soon, or should hold back (EE-028)"),
     cmd("system/time-to-ready", "schema/time-to-ready.mjs", "Time to running, and to ready per layer and MAD tier"),
-    cmd("purpose/validation/score", "schema/check-validation.mjs", "The validation score from graded evidence (EE-026)", { args: ["--score"] }),
+    cmd("purpose/validation/assess", "schema/assess-problem.mjs", "What the problem's evidence is strong enough for: each assumption labelled demonstrated, inferred, assumed, unknown or contradicted, the commitment it supports and the next test (EE-050). Asks first when the record is incomplete; input as_is runs it anyway", { as_is: true }),
+    cmd("purpose/guiding", "schema/guiding.mjs", "The venture's guiding statements by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051)"),
+    cmd("purpose/validation/score", "schema/check-validation.mjs", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
     cmd("governance/payouts", "schema/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
     cmd("system/overview", null, "The venture at a glance: telos, validation, need-now, time to ready, team and recent provenance, rendered as parallel slots", { internal: "overview" }),
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
@@ -254,10 +256,12 @@ export async function call({ venture, route, action, input, actor = "agent", act
     const lacking = (r.needs ?? []).filter((f) => !existsSync(join(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };
     if (r.value_flag && !input?.value) return { ok: false, error: `${route} needs a value (${r.note})` };
-    const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(input.value), "--json"] : [dir, ...(r.args ?? []), "--json"];
+    const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(input.value), "--json"] : [dir, ...(r.args ?? []), ...(r.as_is && input?.as_is ? ["--as-is"] : []), "--json"];
     const p = spawnSync("node", [join(repo, r.script), ...args], { encoding: "utf8" });
     if (p.status !== 0) return { ok: false, error: (p.stderr || p.stdout).trim() };
-    try { return { ok: true, result: JSON.parse(p.stdout), ...deprecated }; } catch { return { ok: true, result: p.stdout, ...deprecated }; }
+    // A command that needs input first (EE-050) answers needs_input: the caller asks the person
+    // whether to fill the record in or run as is, and runs again with input as_is to go on.
+    try { const out = JSON.parse(p.stdout); return { ok: true, result: out.needs_input ? null : out, ...(out.needs_input ? { needs_input: out.needs_input } : {}), ...deprecated }; } catch { return { ok: true, result: p.stdout, ...deprecated }; }
   }
 
   // Storage: the connector for the source this record type lives in.
@@ -433,7 +437,7 @@ async function overview(venture, workspace) {
     slots: await Promise.all([
       slot("@venture", () => ({ name: v.name, phase: v.phase, ambition: v.ambition ?? null, status: v.status, promise: v.core?.promise ?? null })),
       slot("@telos", async () => { const t = await read("purpose/telos"); return typeof t === "string" ? t : { end: t.end ?? t.statement ?? null, phases: (t.phases ?? []).map((p) => p.phase) }; }),
-      slot("@validation", async () => { const s = (await run("purpose/validation/score")).scores?.find((x) => x.venture === v.id); if (!s) throw new Error("no validation records yet"); return { V: s.V, threshold: s.threshold, below_floor: s.below_floor.join(", ") || "none", most_to_gain: s.most_to_gain }; }),
+      slot("@validation", async () => { const r = await call({ venture, route: "purpose/validation/assess", action: "run", input: { as_is: true }, workspace }); if (!r.ok) throw new Error(r.error); const a = r.result; return { supports: a.supports, next: a.next, assumptions: a.assumptions.map((x) => `${x.assumption}: ${x.label}`).join(", "), missing: a.missing.length }; }),
       slot("@need-now", async () => (await run("system/need-now")).rows.filter((x) => x.status === "suggest now").map((x) => ({ record: x.type, now: x.now, why: x.why }))),
       slot("@ready", async () => { const t = await run("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
       slot("@team", async () => { const p = await read("operations/team-plan"); if (typeof p === "string") return p; return p.roles.map((x) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),

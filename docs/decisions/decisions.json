@@ -507,6 +507,32 @@
       "date": "2026-10-28",
       "decision": "A venture holds only what it uses, when it needs it (Torian). Schemas stay in the framework and are never copied into a venture; a venture imports what it uses by listing it in venture.json, the way package.json lists dependencies, and gets folders only for what it lists. Need-now (EE-028) says when a part becomes needed, and the agent suggests it then; `mentura add <department> --venture <id>` (schema/add-department.mjs) imports a department. Departments are the first part imported this way; layers already start off until needed (EE-012), and the same rule applies across the system. The list is data an agent edits rather than imports in code, which suits the ICP (EE-045); a typed config file can come later for developers. Torian's line 'What you need, when you need it' is proposed as Naive's tagline, Mentura keeping 'A mentor for your journey' (EE-046).",
       "status": "proposed"
+    },
+    {
+      "id": "EE-050",
+      "date": "2026-10-28",
+      "decision": "The validation kit starts lean, with the problem only, and gives no single score and never a 'not viable' verdict. The problem splits into four assumptions (exists, segment, hurts, why-now); each evidence item names the one it bears on and is labelled demonstrated, inferred, assumed, unknown or contradicted. Only first-hand behavior or commitment from five or more people in the target segment, under 18 months old, demonstrates; anything reported (a vendor's customer count, desk research) infers; competitors with paying customers infer the problem and never count against it; contradicted needs evidence against from the segment at least as strong as the best for. The labels say which commitment the evidence supports, on a ladder after The Founders Bay's 'evidence strong enough for the commitment it unlocks': explore, prototype (exists and hurts inferred), charge (segment and hurts demonstrated) and raise, with the cheapest test for each blocking assumption. Before it runs, the assessment lists what is missing from the record and what running as is would mean, and asks the person to fill it in or run as is; the router, CLI, MCP server, API and skill all do this, and the caller passes as_is only after the person chose it (Torian). The behaviors are written first as Gherkin scenarios (purpose/kits/validation/features/problem-assessment.feature) and run as tests by schema/bdd.mjs. The problem record holds a root problem in statement and the forms it takes (forms[]), each assessed from its own evidence (evidence form), which also counts for the root; a form can be dropped. The problem record is gated like the telos (strategy-or-constitution): an agent's write is a draft the founder accepts. The single validation score (EE-026) is held.",
+      "why": "Torian, 2026-10-28, after running Mentura and Naive through the kit: the run showed more issues in the suite than in the venture; competitors in a market can indicate a real need; one encoded framework is too constraining and risks telling a founder a great idea is not viable. He asked to start very lean with the problem, guard against false negatives and false positives, use behavior-driven development to say what the suite must do, and have it ask before running when the schema is incomplete.",
+      "status": "proposed",
+      "related": [
+        "EE-026",
+        "EE-028",
+        "EE-045"
+      ]
+    },
+    {
+      "id": "EE-051",
+      "date": "2026-10-28",
+      "decision": "Guiding statements: the records a founder keeps in front of them every day, framed by the Five Ws and How plus whether (Stage-Gate's go/kill decision), with brand beside them. purpose/guiding-statements.json maps each question to attributes of existing records: why (problem, vision), what (mission as the core promise, products), who (the ICP, promised to), how (competence, business models), when (phase, exit criteria), where (markets, channels), whether (must-not; go/kill criteria, planned) and brand (tagline). A new ICP record (purpose/icp.json) holds who the venture serves, one primary profile, linked to the problem's forms. schema/guiding.mjs (route purpose/guiding) reports each statement as confirmed, agent, draft, missing or planned from the provenance log: a statement an agent wrote is not the founder's until a person writes, accepts or confirms it. Confirming and accepting are a danger zone: `mentura confirm <statement>` and `mentura accept` of a record holding a guiding statement show the change and need the person to type its name (--confirm <name> off a terminal); provenance gains a confirm activity. The ICP is gated like the telos. Always-visible presence, a daily review and recall practice, delegation unlocked by confirmed statements, and the whether forecast (environmental scanning, a calibrated probability per go/kill criterion) follow; monitoring is platform.",
+      "why": "Torian, 2026-10-28: some records must always be in front of the founder until they are muscle memory (problem, vision, mission, taglines, ICP, the current phase); they should be hard to write and change, like a danger zone, and completing them should unlock delegation. He chose the frame: what, who, why, how, when and whether, and wants whether to become a constantly monitoring forecast ('likeliness of rain').",
+      "status": "proposed",
+      "related": [
+        "EE-023",
+        "EE-031",
+        "EE-042",
+        "EE-045",
+        "EE-050"
+      ]
     }
   ]
 }

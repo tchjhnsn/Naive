@@ -39,8 +39,11 @@ expect("a write that does not match the schema is refused and changes nothing", 
   && JSON.stringify(JSON.parse(readFileSync(join(tandem, "governance/ownership.json"), "utf8"))) === JSON.stringify(own));
 const drafted = (await call({ venture: "tandem", route: "governance/ownership", action: "write", input: own }));
 expect("an agent's write to a gated record lands as a draft", drafted.ok && drafted.result.draft && existsSync(join(tandem, "_drafts/governance__ownership.json.draft")));
-const direct = (await call({ venture: "tandem", route: "purpose/validation/problem", action: "write", input: (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result }));
-expect("an agent's write to an ungated record is written in place", direct.ok && !direct.result.draft && direct.result.written === "purpose/validation/problem.json");
+const direct = (await call({ venture: "tandem", route: "purpose/validation/solution", action: "write", input: (await call({ venture: "tandem", route: "purpose/validation/solution", action: "read" })).result }));
+expect("an agent's write to an ungated record is written in place", direct.ok && !direct.result.draft && direct.result.written === "purpose/validation/solution.json");
+const gatedProblem = await call({ venture: "tandem", route: "purpose/validation/problem", action: "write", input: (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result });
+expect("an agent's write to the problem record is a draft for the founder to accept (EE-050)", gatedProblem.ok && gatedProblem.result.draft === true);
+rmSync(join(tandem, "_drafts/purpose__validation__problem.json.draft"), { force: true });
 expect("a person's write to a gated record is written in place", (await call({ venture: "tandem", route: "governance/ownership", action: "write", input: own, actor: "person" })).result?.written === "governance/ownership.json");
 expect("check runs the record's checks", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "check" })).ok);
 expect("need-now runs", (await call({ venture: "tandem", route: "system/need-now", action: "run" })).result?.rows?.length > 0);
@@ -68,7 +71,12 @@ expect("error: a write that does not match answers with how to fix it", (await c
 expect("view: a record renders as a Markdown page", /^# purpose\/validation\/problem\n/.test((await call({ venture: "tandem", route: "purpose/validation/problem", action: "view" })).result));
 const ov = (await call({ venture: "tandem", route: "system/overview", action: "run" })).result;
 expect("@slot: the overview has its seven slots", ov.slots.map((x) => x.slot).join() === "@venture,@telos,@validation,@need-now,@ready,@team,@provenance");
+const woodOk = (await call({ venture: "woodworking", route: "system/overview", action: "run" })).result;
+expect("@validation: a venture with no problem record shows every assumption unknown, not an error (EE-050)", /exists: unknown/.test(woodOk.slots.find((x) => x.slot === "@validation").data?.assumptions ?? ""));
+const woodProblem = join(ws, "ventures/woodworking/purpose/validation/problem.json");
+mkdirSync(dirname(woodProblem), { recursive: true }); writeFileSync(woodProblem, "not json");
 const wood = (await call({ venture: "woodworking", route: "system/overview", action: "run" })).result;
+rmSync(dirname(woodProblem), { recursive: true });
 expect("@slot: a slot that cannot render shows its error and the rest still render", wood.slots.find((x) => x.slot === "@validation").error && wood.slots.find((x) => x.slot === "@need-now").data);
 expect("(group): each phase groups the routes need-now suggests in it", groups().find((g) => g.group === "(discovery)").routes.includes("purpose/validation/problem")
   && !groups().find((g) => g.group === "(discovery)").routes.includes("governance/ownership"));
@@ -120,7 +128,7 @@ expect("API 405 for GET on run", (await http("GET", "/ventures/tandem/system/nee
 // CLI.
 const cli = (...a) => spawnSync("node", [join(root, "interface/cli/mentura.mjs"), ...a], { encoding: "utf8", env: process.env });
 expect("CLI lists ventures", /tandem/.test(cli("ventures").stdout));
-expect("CLI reads a record", JSON.parse(cli("purpose/validation/problem", "read", "--venture", "tandem").stdout).evidence.length > 0);
+expect("CLI reads a record", (({ result, ...r }) => (result ?? r).evidence.length > 0)(JSON.parse(cli("purpose/validation/problem", "read", "--venture", "tandem").stdout)));
 expect("CLI fails with a message for an unknown route", cli("nope/nope", "read", "--venture", "tandem").status === 1);
 cli("governance/ownership", "write", "--venture", "tandem", "--input", join(tandem, "governance/ownership.json"));
 expect("CLI accept moves a draft into place", cli("accept", "governance/ownership", "--venture", "tandem").status === 0 && !existsSync(join(tandem, "_drafts/governance__ownership.json.draft")));
@@ -135,7 +143,7 @@ const log = entries(tandem);
 const by = (pred) => log.filter(pred).at(-1);
 expect("the log route reads and checks the log, and has no write", !table.find((r) => r.route === "system/provenance")?.actions.includes("write")
   && Array.isArray((await call({ venture: "tandem", route: "system/provenance", action: "read" })).result));
-expect("a router write is logged with its gate as the decision", by((e) => e.activity === "draft" && e.agent.via === "router")?.decision === "ownership-or-control");
+expect("a router write is logged with its gate as the decision", by((e) => e.activity === "draft" && e.agent.via === "router" && /ownership/.test(e.entity))?.decision === "ownership-or-control");
 expect("an MCP write logs the harness that connected", (await handle({ jsonrpc: "2.0", id: 9, method: "initialize", params: { clientInfo: { name: "test-harness", version: "1" } } }))
   && !(await handle({ jsonrpc: "2.0", id: 10, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "purpose/validation/problem",
     record: (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result, derived_from: ["purpose/validation/problem.json"], decision: "EE-026", model: "m" } } })).result.isError

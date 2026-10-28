@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "icp.schema.json",
+  "title": "Ideal customer profile",
+  "description": "Who the venture serves (EE-051), at <venture>/purpose/icp.json: the 'who' guiding statement. One or more profiles, one primary, each specific enough to go and find ten of them, with what they are trying to do, what gets in the way and who is out of scope. Gated like the telos: an agent's write is a draft the founder accepts.",
+  "type": "object",
+  "required": [
+    "venture",
+    "profiles"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "decision": {
+      "type": "string",
+      "description": "The decision that set it, such as EE-045"
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "who"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "who": {
+            "type": "string",
+            "description": "Who they are, specifically enough to find ten of them"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Exactly one profile is primary"
+          },
+          "customer": {
+            "enum": [
+              "b2b",
+              "b2c",
+              "b2g"
+            ]
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "discovery",
+                "validation",
+                "beachhead",
+                "scale",
+                "platform"
+              ]
+            },
+            "description": "The phases of their own venture they are in, when they are founders"
+          },
+          "traits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What must be true of them"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What they are trying to get done (jobs to be done)"
+          },
+          "problem_forms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+$"
+            },
+            "description": "Ids of the problem record's forms they have"
+          },
+          "where_to_find": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Where to reach them: communities, channels, events"
+          },
+          "not": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Who is out of scope, and why"
+          }
+        }
+      }
+    }
+  }
+}

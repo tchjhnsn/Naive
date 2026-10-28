@@ -42,6 +42,42 @@
       },
       "description": "How they cope today; money or time already spent on a workaround is strong evidence"
     },
+    "why_now": {
+      "type": "string",
+      "description": "What has changed that makes the problem solvable or urgent now (EE-050)"
+    },
+    "forms": {
+      "type": "array",
+      "description": "The forms the problem takes (EE-050): one root problem in statement, and each form a narrower problem with its own segment and evidence, assessed on its own so it can be validated or dropped without touching the root",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string",
+            "description": "Only when narrower than the root's"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "dropped"
+            ],
+            "default": "open"
+          }
+        }
+      }
+    },
     "evidence": {
       "type": "array",
       "items": {

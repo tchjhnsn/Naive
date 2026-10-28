@@ -41,6 +41,10 @@ const steps = [
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
   ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace", "--score"]],
+  ["problem assessment behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/kits/validation/features/problem-assessment.feature"]],
+  ["guiding statements: instance", "node", ["schema/guiding.mjs", "instance"]],
+  ["guiding statements: examples", "node", ["schema/guiding.mjs", "schema/examples/workspace"]],
+  ["guiding statement behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/features/guiding-statements.feature"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "operations/handoffs"))).map((v) =>
     [`handoffs: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],

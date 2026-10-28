@@ -1,0 +1,130 @@
+{
+  "version": "0.1.0",
+  "note": "Guiding statements (EE-051): the records a founder keeps in front of them every day, framed by the Five Ws and How plus whether (Stage-Gate go/kill). Each statement is an attribute of a record that already exists; schema/guiding.mjs reports each one for a venture as confirmed (a person wrote or accepted it), drafted by an agent, waiting as a draft, or missing. Changing one ripples through the venture, so its record is gated.",
+  "questions": [
+    {
+      "id": "why",
+      "ask": "Why do you do it?",
+      "statements": [
+        {
+          "id": "problem",
+          "record": "validation-problem",
+          "attribute": "statement"
+        },
+        {
+          "id": "vision",
+          "record": "telos",
+          "attribute": "end_state"
+        }
+      ]
+    },
+    {
+      "id": "what",
+      "ask": "What do you do?",
+      "statements": [
+        {
+          "id": "mission",
+          "record": "venture",
+          "attribute": "core.promise"
+        },
+        {
+          "id": "products",
+          "record": "product",
+          "attribute": "name"
+        }
+      ]
+    },
+    {
+      "id": "who",
+      "ask": "Who do you serve?",
+      "statements": [
+        {
+          "id": "icp",
+          "record": "icp",
+          "attribute": "profiles"
+        },
+        {
+          "id": "promised-to",
+          "record": "venture",
+          "attribute": "core.promised_to"
+        }
+      ]
+    },
+    {
+      "id": "how",
+      "ask": "How do you do it?",
+      "statements": [
+        {
+          "id": "competence",
+          "record": "venture",
+          "attribute": "core.competence"
+        },
+        {
+          "id": "business-models",
+          "record": "product",
+          "attribute": "business_model"
+        }
+      ]
+    },
+    {
+      "id": "when",
+      "ask": "When do you do it?",
+      "statements": [
+        {
+          "id": "phase",
+          "record": "venture",
+          "attribute": "phase"
+        },
+        {
+          "id": "exit-criteria",
+          "record": "telos",
+          "attribute": "phases"
+        }
+      ]
+    },
+    {
+      "id": "where",
+      "ask": "Where do you do it?",
+      "statements": [
+        {
+          "id": "markets",
+          "record": "product",
+          "attribute": "market.geography"
+        },
+        {
+          "id": "channels",
+          "record": "validation-go-to-market",
+          "attribute": "channels"
+        }
+      ]
+    },
+    {
+      "id": "whether",
+      "ask": "Whether to do it, given what is true now?",
+      "statements": [
+        {
+          "id": "must-not",
+          "record": "venture",
+          "attribute": "core.must_not"
+        },
+        {
+          "id": "go-kill",
+          "record": null,
+          "attribute": null,
+          "note": "The go/kill criteria record and its forecast come next (EE-051)"
+        }
+      ]
+    },
+    {
+      "id": "brand",
+      "ask": "How are you known?",
+      "statements": [
+        {
+          "id": "tagline",
+          "record": "venture",
+          "attribute": "brand.tagline"
+        }
+      ]
+    }
+  ]
+}

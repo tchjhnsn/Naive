@@ -31,11 +31,11 @@ export function agentFromEnv(kind, via, extra = {}) {
  * record in another source (EE-037), its address (<source>://<path>) with the content's sha256
  * and the source's version, commit and pull request.
  */
-export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source }) {
+export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement }) {
   const prior = entries(dir);
   const prev = prior.length ? prior.at(-1).hash : "genesis";
   const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
-    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, sha256: sha256 ?? contentHash(join(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, sha256: sha256 ?? contentHash(join(dir, entity)), prev }).filter(([, v]) => v !== undefined));
   entry.hash = lineHash(prev, entry);
   appendFileSync(join(dir, LOG), JSON.stringify(entry) + "\n");
   return entry;
