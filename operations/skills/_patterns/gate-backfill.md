@@ -7,14 +7,14 @@ updated: 2026-07-26T07:50:58Z
 source: hybrid
 name: gate-backfill
 description: >
-  Shared recovery pattern for SAD gate skills when a project is mid-work and
+  Shared recovery pattern for gate skills when a project is mid-work and
   required pre-gate assets are missing. Detect → triage → order → freeze → exit.
   Gate skills link here; they keep only skill-specific recovery notes.
 ---
 
 # Gate-skill backfill pattern
 
-Canonical pattern for **any SAD skill that gates a phase or deliverable** when
+Canonical pattern for **any skill that gates a phase or deliverable** when
 the project is already past that gate with missing assets.
 
 **Greenfield:** assets exist before the gated work begins.  
@@ -100,4 +100,4 @@ When adding or editing a gate skill:
 2. Keep only **skill-specific** detect hints, freeze rules, and exit criteria.
 3. Do not re-copy the five-step table unless amending this pattern.
 
-Path: `knowledge/skills/_patterns/gate-backfill.md`
+Path: `operations/skills/_patterns/gate-backfill.md` (moved from knowledge when SAD was removed, EE-036).

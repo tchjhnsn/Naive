@@ -48,7 +48,7 @@
   },
   "readme": {
     "purpose": "Why this venture exists: its core product, products and the Product Anatomy matrix.",
-    "knowledge": "What is known and intended: notes, specs, decisions and references (SAD).",
+    "knowledge": "Memory: every record the venture keeps, including notes, specs, decisions and references.",
     "operations": "How work is run here: the MAD record (.mad/) and chosen methods.",
     "execution": "Who or what does the work: handoffs to people and agents.",
     "evidence": "Did it work: reviews, evals and metrics.",

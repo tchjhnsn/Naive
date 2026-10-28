@@ -11,7 +11,7 @@ description: >
   (or SDK/MCP) consumers before either side is fully built. Industry names:
   API-first, contract-first, design-first; assets include OpenAPI, AsyncAPI,
   shared types, fixtures, and optional consumer-driven contracts (Pact).
-  Mandatory at SAD Phase 1B → Phase 2 and whenever a new client-facing surface
+  Mandatory before implementation begins and whenever a new client-facing surface
   or cross-boundary capability is planned. Prevents backend-without-contract
   thrash and frontend-mock drift. MANDATORY TRIGGERS: contract-first, API-first,
   design-first, OpenAPI, AsyncAPI, API contract, communication contract,
@@ -43,9 +43,8 @@ drift. The wise sequence is:
 2. Publish the **contract** (resources, errors, auth, versioning, examples).
 3. Implement provider and consumer **in parallel against the contract**.
 
-SAD already requires articulation closure and a full spec stack before Phase 2.
-This skill adds the missing **machine-checkable boundary artifact**: the API /
-event / tool schema that FE and BE both implement.
+This skill adds the **machine-checkable boundary artifact**: the API / event /
+tool schema that FE and BE both implement.
 
 ## When to invoke
 
@@ -145,7 +144,7 @@ over prose-only IMPL sections.
 
 ## Backfill / missing assets (mid-build recovery)
 
-Follow [[../../../knowledge/skills/_patterns/gate-backfill|gate-backfill]] (detect → triage → order →
+Follow `operations/skills/_patterns/gate-backfill.md` (detect → triage → order →
 freeze → exit). Skill-specific notes:
 
 ### Detect
@@ -175,22 +174,6 @@ No **new** networked surface ships without Tier A.
 
 Schema published, fixtures exist, provider responses match the schema (or
 documented exceptions).
-
-## Relationship to SAD
-
-- **Phase 1B Specification** — PRODUCT, DATA_MODEL, IMPL, BEHAVIORAL,
-  VERIFICATION remain required. The API contract is a **first-class Phase 1B /
-  articulation-closure asset**, usually owned under or linked from IMPL_SPEC.
-- **Articulation closure** — cannot pass for software slices that expose
-  client-server boundaries without Tier A contracts (or recorded deferral).
-- **Phase 2 Implementation** — implements against the contract; may refine the
-  contract via Class 1/2 change discipline when reality contradicts it.
-- **Phase Closure / real-run smoke** — smoke exercises the *contracted*
-  external and internal boundaries.
-
-Canonical methodology amendment:
-
-`knowledge/method/SAD_SKILL_v3_AMENDMENT_2026-07-26_contract-first-pre-build.md`
 
 ## Anti-patterns
 

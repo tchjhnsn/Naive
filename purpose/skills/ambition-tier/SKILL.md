@@ -161,7 +161,7 @@ When this skill is loaded, the AI should:
 
 ## Backfill / missing assets
 
-Follow [[../_patterns/gate-backfill|gate-backfill]]. Skill-specific notes:
+Follow `operations/skills/_patterns/gate-backfill.md`. Skill-specific notes:
 
 1. **Detect** — entity profile missing `ambition-tier` while research/build runs.
 2. **Declare retrospectively** — tier matches *current* commitment.

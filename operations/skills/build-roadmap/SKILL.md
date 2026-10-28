@@ -111,7 +111,7 @@ These are what distinguish a working roadmap from a stale document.
 
 ## Backfill / missing assets
 
-Follow [[../_patterns/gate-backfill|gate-backfill]]. Skill-specific notes:
+Follow `operations/skills/_patterns/gate-backfill.md`. Skill-specific notes:
 
 1. **Detect** — active branches, SESSION_LOG open work, articulation ✗ rows, and every `✗ missing` / `↺ partial` row on the entity's Asset Requirement Set.
 2. **Author a roadmap from reality** — done from git/history; blockers in red;

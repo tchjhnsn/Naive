@@ -35,7 +35,7 @@
     {
       "noun": "method",
       "level": "system",
-      "meaning": "What to do: SAD, MAD, Product Anatomy, handoffs",
+      "meaning": "What to do: MAD, Product Anatomy, handoffs",
       "standard": "common usage",
       "status": "kept"
     },
@@ -486,7 +486,7 @@
     {
       "noun": "entity profile",
       "level": "venture",
-      "meaning": "SAD's old name for the profile",
+      "meaning": "The old name for the venture profile",
       "standard": "none",
       "status": "retired",
       "replaced_by": "venture profile",

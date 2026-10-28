@@ -167,7 +167,7 @@ Foreshadowing-audit runs in **office-hours mode**. The work is convergent (verif
 
 ## Backfill / missing assets
 
-Follow [[../_patterns/gate-backfill|gate-backfill]]. Skill-specific notes:
+Follow `operations/skills/_patterns/gate-backfill.md`. Skill-specific notes:
 
 1. **Detect** — V[N+1]+ capabilities vs foreshadowed / gap / N/A on shipped V[N].
 2. **Triage** — brand-discontinuity on shipping surfaces = blocker; pure V[N+1]

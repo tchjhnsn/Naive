@@ -79,7 +79,7 @@
       "paths": [
         "instance/**/profile.md"
       ],
-      "note": "The venture's story and thesis in prose. Guidance still in knowledge/references/entity-profile-schema.md (retired name)"
+      "note": "The venture's story and thesis in prose, beside venture.json"
     },
     {
       "id": "product",
@@ -816,17 +816,6 @@
       ],
       "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
       "decision_class": "strategy-or-constitution"
-    },
-    {
-      "id": "harness-config",
-      "layer": "interface",
-      "level": "method",
-      "schema": null,
-      "form": "json",
-      "paths": [
-        "knowledge/method/reference-hooks-config.json"
-      ],
-      "note": "Reference hooks for an agent harness. An interface record filed under knowledge; see the move list in docs/design/LAYERS_AND_KITS_2026-10-27.md"
     },
     {
       "id": "publish-config",
