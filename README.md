@@ -31,7 +31,7 @@ It replaces the earlier description "AI-Native OS for Builders": an operating sy
 
 ## Framework and platform
 
-Mentura has two sides, the way Next.js and Vercel do (EE-041). The framework, working name **Memento** (EE-043), is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Both live in this repository. The platform is in `platform/`, and framework code never imports from it (`node schema/check-boundary.mjs`). See `platform/README.md`.
+The system has two sides, the way Next.js and Vercel do (EE-041): the framework is **Naive** and the platform is **Mentura** (EE-043). The framework is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Both live in this repository. The platform is in `platform/`, and framework code never imports from it (`node schema/check-boundary.mjs`). See `platform/README.md`.
 
 ## Vault and repo
 

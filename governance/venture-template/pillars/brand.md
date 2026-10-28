@@ -53,7 +53,7 @@ The Brand pillar owns everything that defines what the company looks like, sound
 Concretely, Brand owns:
 
 - **Visual identity** — colors, typography, logo, wordmark, imagery style, illustration style, iconography
-- **Verbal identity** — voice, tone, narrative register, microcopy register, naming conventions
+- **Verbal identity** — tagline (`brand.tagline` in venture.json, EE-046), voice, tone, narrative register, microcopy register, naming conventions
 - **Asset library** — production exports of logos, wordmarks, favicons, OG images, social cards, brand patterns
 - **Foreshadowing discipline** — how the brand evolves predictably across versions; invariants that hold across V1 → V[N]
 - **Version-identities** — per-version persona (one-new-persona-per-version rule); ties to product's version scoping

@@ -475,7 +475,7 @@
     {
       "id": "EE-043",
       "date": "2026-10-28",
-      "decision": "Working name for the framework: Memento (Torian). The framework is the conventions side of EE-041; the platform side has no name of its own yet, and Mentura (EE-027) stays the working name for the whole system until it does. Files keep 'Everything Ecosystem' until the names are settled; a trademark and name-collision check is pending.",
+      "decision": "Names (Torian): the platform is Mentura (EE-027), and the framework is Naive, the conventions side of EE-041. Naive replaces the earlier working name Memento, which collides with Memento Database. Files keep 'Everything Ecosystem' until a rename is decided; a trademark check on both names is pending.",
       "status": "proposed"
     },
     {
@@ -488,6 +488,12 @@
       "id": "EE-045",
       "date": "2026-10-28",
       "decision": "Mentura's ideal customer profile: solo entrepreneurs, low- to no-code founders and small teams in the early phases of business development (Discovery and Validation, not yet scaling), who build AI-native with agents as their editors and team members. Defaults are chosen for them first: agents over people as editors, files and skills over hosted tools, one opinionated choice per decision. A choice that only pays off at scale waits until need-now raises it (EE-028).",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-046",
+      "date": "2026-10-28",
+      "decision": "A venture's tagline is a brand record: the enduring short line a brand keeps across campaigns, such as Burger King's 'Have it your way'. It sits in venture.json under brand.tagline, owned by the brand pillar's verbal identity, and like any attribute it can have its system of record elsewhere through the source-of-truth matrix (EE-042). 'Tagline' is used rather than 'slogan' because in marketing practice a slogan often belongs to one campaign (Keller and Swaminathan's brand elements call both slogans; governance/references/references.json); a campaign's slogan belongs to the campaign, a Brand-pillar product. Mentura's tagline: 'A mentor for your journey' (Torian).",
       "status": "proposed"
     }
   ]
