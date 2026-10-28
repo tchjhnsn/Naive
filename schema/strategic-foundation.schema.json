@@ -57,6 +57,10 @@
                     "null"
                   ]
                 },
+                "derived_from": {
+                  "type": "string",
+                  "description": "The id of another statement this one is derived from; it takes that statement's status and value"
+                },
                 "note": {
                   "type": "string"
                 }

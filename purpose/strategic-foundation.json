@@ -46,7 +46,9 @@
         {
           "id": "promised-to",
           "record": "venture",
-          "attribute": "core.promised_to"
+          "attribute": "core.promised_to",
+          "derived_from": "icp",
+          "note": "The ICP's short form: the primary profile's short, or its who. It takes the ICP's status and is never confirmed on its own, so the two cannot drift (Torian, 2026-10-28)"
         }
       ]
     },

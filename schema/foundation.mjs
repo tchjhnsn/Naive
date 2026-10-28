@@ -48,10 +48,12 @@ export function confirmedIn(dir, file, id) {
 
 /** Each foundation statement of a venture, with its status and value. */
 export function foundation(dir) {
-  return FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => {
+  const report = FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => {
+    if (s.derived_from) return s;
     if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
     const files = filesOf(dir, s.record);
-    const values = files.filter((f) => existsSync(join(dir, f))).map((f) => ({ f, v: get(load(join(dir, f)), s.attribute) })).filter((x) => filled(x.v));
+    // A retired product no longer answers for the venture.
+    const values = files.filter((f) => existsSync(join(dir, f)) && load(join(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(join(dir, f)), s.attribute) })).filter((x) => filled(x.v));
     const drafts = files.filter((f) => existsSync(join(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
     if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing" };
     // A record with no log entry existed before the log; a person's baseline or write confirms it.
@@ -59,6 +61,17 @@ export function foundation(dir) {
     return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent",
       value: values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
   }) }));
+  // A derived statement takes its source's status and shows the primary ICP profile's short form.
+  const all = report.flatMap((q) => q.statements);
+  for (const q of report) q.statements = q.statements.map((s) => {
+    if (!s.derived_from) return s;
+    const src = all.find((x) => x.id === s.derived_from) ?? { status: "missing" };
+    const out = { id: s.id, record: s.record, attribute: s.attribute, derived_from: s.derived_from, status: src.status };
+    const primary = Array.isArray(src.value) ? (src.value.find((p) => p.primary) ?? src.value[0]) : null;
+    if (primary) out.value = primary.short ?? primary.who;
+    return out;
+  });
+  return report;
 }
 
 export function problems(dir) {
@@ -69,6 +82,10 @@ export function problems(dir) {
     for (const p of load(icp).profiles) for (const f of p.problem_forms ?? []) if (!forms.has(f)) out.push(`icp ${p.id}: problem form ${f} is not in the problem record`);
     const primaries = load(icp).profiles.filter((p) => p.primary).length;
     if (load(icp).profiles.length > 1 && primaries !== 1) out.push(`icp: ${primaries} primary profiles; exactly one is primary`);
+    // promised-to is derived from the ICP; a hand-written one that differs has drifted.
+    const p = load(icp).profiles.find((x) => x.primary) ?? load(icp).profiles[0];
+    const said = existsSync(join(dir, "venture.json")) ? load(join(dir, "venture.json")).core?.promised_to : undefined;
+    if (p && filled(said) && said !== (p.short ?? p.who)) out.push(`venture core.promised_to differs from the ICP's short form ("${p.short ?? p.who}"); it is derived from the ICP`);
   }
   return out;
 }

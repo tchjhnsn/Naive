@@ -40,6 +40,10 @@
             "type": "string",
             "description": "Who they are, specifically enough to find ten of them"
           },
+          "short": {
+            "type": "string",
+            "description": "One line naming who they are; the venture's promised-to statement shows it (EE-052)"
+          },
           "primary": {
             "type": "boolean",
             "description": "Exactly one profile is primary"
