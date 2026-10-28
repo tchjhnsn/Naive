@@ -1,4 +1,4 @@
-// Step definitions for guiding-statements.feature (EE-051), run by schema/bdd.mjs, on a copy of
+// Step definitions for strategic-foundation.feature (EE-051), run by schema/bdd.mjs, on a copy of
 // the example workspace.
 
 import { spawnSync } from "node:child_process";
@@ -10,12 +10,12 @@ const repo = new URL("../../", import.meta.url).pathname;
 const ok = (cond, msg) => { if (!cond) throw new Error(msg); };
 const node = (w, script, ...a) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
 const cli = (w, ...a) => node(w, "interface/cli/mentura.mjs", ...a);
-const report = (w) => Object.fromEntries(JSON.parse(node(w, "schema/guiding.mjs", w.dir, "--json").stdout).flatMap((q) => q.statements.map((s) => [s.id, s.status])));
+const report = (w) => Object.fromEntries(JSON.parse(node(w, "schema/foundation.mjs", w.dir, "--json").stdout).flatMap((q) => q.statements.map((s) => [s.id, s.status])));
 const icp = (id, forms) => ({ venture: id, updated: "2026-10-28", profiles: [{ id: "owners", who: "Owners of small service shops", primary: true, ...(forms ? { problem_forms: forms } : {}) }] });
 
 export const steps = [
   [/^the example venture "([a-z-]+)"$/, (w, id) => {
-    const d = mkdtempSync(join(tmpdir(), "guiding-"));
+    const d = mkdtempSync(join(tmpdir(), "foundation-"));
     cpSync(join(repo, "schema/examples/workspace"), join(d, "workspace"), { recursive: true });
     w.ws = join(d, "workspace"); w.venture = id; w.dir = join(w.ws, "ventures", id); w.cleanup = () => rmSync(d, { recursive: true, force: true });
   }],
@@ -24,9 +24,9 @@ export const steps = [
     const r = spawnSync("node", ["--input-type=module", "-e", `import { record, agentFromEnv } from ${JSON.stringify(join(repo, "interface/provenance.mjs"))}; record(${JSON.stringify(w.dir)}, { entity: "venture.json", route: "venture", activity: "write", agent: agentFromEnv("agent", "router") });`], { encoding: "utf8" });
     ok(r.status === 0, r.stderr);
   }],
-  [/^the founder asks for the guiding statements$/, (w) => { w.report = report(w); }],
+  [/^the founder asks for the strategic foundation$/, (w) => { w.report = report(w); }],
   [/^it answers "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)" and "([a-z]+)"$/, (w, ...qs) => {
-    const got = JSON.parse(node(w, "schema/guiding.mjs", w.dir, "--json").stdout).map((q) => q.question);
+    const got = JSON.parse(node(w, "schema/foundation.mjs", w.dir, "--json").stdout).map((q) => q.question);
     ok(got.join() === qs.join(), `questions: ${got.join()}`);
   }],
   [/^"([a-z-]+)" is "([a-z]+)"$/, (w, id, status) => ok((w.report ??= report(w))[id] === status, `${id} is ${w.report[id]}, not ${status}`)],
@@ -36,6 +36,6 @@ export const steps = [
   [/^the ICP write is a draft$/, (w) => ok(w.p.status === 0 && JSON.parse(w.p.stdout).draft === true, `write: ${w.p.stdout}${w.p.stderr}`)],
   [/^the founder accepts "([^"]+)" by typing "([^"]+)"$/, (w, rt, typed) => { w.p = cli(w, "accept", rt, "--venture", w.venture, "--confirm", typed); if (typed === rt) ok(w.p.status === 0, `accept failed: ${w.p.stdout}${w.p.stderr}`); }],
   [/^an ICP for "([a-z-]+)" that names the problem form "([a-z-]+)"$/, (w, id, form) => { mkdirSync(join(w.dir, "purpose"), { recursive: true }); writeFileSync(join(w.dir, "purpose/icp.json"), JSON.stringify(icp(id, [form]))); }],
-  [/^the guiding statements are checked$/, (w) => { w.p = node(w, "schema/guiding.mjs", w.dir); }],
+  [/^the strategic foundation are checked$/, (w) => { w.p = node(w, "schema/foundation.mjs", w.dir); }],
   [/^the check fails naming "([^"]+)"$/, (w, s) => ok(w.p.status === 1 && w.p.stderr.includes(s), `check: ${w.p.stderr}`)],
 ];

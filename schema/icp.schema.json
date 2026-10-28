@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "icp.schema.json",
   "title": "Ideal customer profile",
-  "description": "Who the venture serves (EE-051), at <venture>/purpose/icp.json: the 'who' guiding statement. One or more profiles, one primary, each specific enough to go and find ten of them, with what they are trying to do, what gets in the way and who is out of scope. Gated like the telos: an agent's write is a draft the founder accepts.",
+  "description": "Who the venture serves (EE-051), at <venture>/purpose/icp.json: the 'who' foundation statement. One or more profiles, one primary, each specific enough to go and find ten of them, with what they are trying to do, what gets in the way and who is out of scope. Gated like the telos: an agent's write is a draft the founder accepts.",
   "type": "object",
   "required": [
     "venture",

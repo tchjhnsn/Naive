@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "note": "Guiding statements (EE-051): the records a founder keeps in front of them every day, framed by the Five Ws and How plus whether (Stage-Gate go/kill). Each statement is an attribute of a record that already exists; schema/guiding.mjs reports each one for a venture as confirmed (a person wrote or accepted it), drafted by an agent, waiting as a draft, or missing. Changing one ripples through the venture, so its record is gated.",
+  "note": "Strategic foundation (EE-051, EE-052): the records a founder keeps in front of them every day, framed by the Five Ws and How plus whether (persevere, pivot, pause or stop; the review is not settled). Each statement is an attribute of a record that already exists; schema/foundation.mjs reports each one for a venture as confirmed (a person wrote or accepted it), drafted by an agent, waiting as a draft, or missing. Changing one ripples through the venture, so its record is gated.",
   "questions": [
     {
       "id": "why",
@@ -108,10 +108,10 @@
           "attribute": "core.must_not"
         },
         {
-          "id": "go-kill",
+          "id": "whether-review",
           "record": null,
           "attribute": null,
-          "note": "The go/kill criteria record and its forecast come next (EE-051)"
+          "note": "Not settled (Torian, 2026-10-28): go/kill is too narrow. Open question: whether the review should answer persevere, pivot, pause or stop. No design is agreed"
         }
       ]
     },

@@ -19,7 +19,7 @@
     "anatomy-answers",
     "telos",
     "icp",
-    "guiding-statements"
+    "strategic-foundation"
   ],
   "reads": [
     "venture",
@@ -30,7 +30,7 @@
     "purpose/frameworks/product-anatomy/anatomy.mjs",
     "purpose/frameworks/product-anatomy/test.mjs",
     "schema/check-telos.mjs",
-    "schema/guiding.mjs"
+    "schema/foundation.mjs"
   ],
   "gaps": [
     "ambition-tier still uses the old tiers (hobby, side-project, open-source-tool, venture, enterprise); venture.json uses hobby, survival, lifestyle, managed-growth, aggressive-growth",

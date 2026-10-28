@@ -770,6 +770,20 @@
       "meaning": "An old route kept after a rename, which the router follows to the new one with a deprecation note (EE-032)",
       "standard": "common API usage (deprecation, redirects)",
       "status": "new"
+    },
+    {
+      "noun": "strategic foundation",
+      "level": "venture",
+      "meaning": "The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (purpose/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052)",
+      "standard": "strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How",
+      "status": "new"
+    },
+    {
+      "noun": "guiding statement",
+      "level": "venture",
+      "meaning": "Retired for strategic foundation and foundation statement (EE-052)",
+      "standard": "ours",
+      "status": "retired"
     }
   ]
 }
