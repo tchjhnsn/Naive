@@ -248,7 +248,8 @@ export async function call({ venture, route, action, input, actor = "agent", act
   if (!allowed(dir, actor_id, action === "write" ? "write" : "read", route)) return { ok: false, error: `${actor_id} may not ${action === "write" ? "write" : "read"} ${route} (team plan routes)` };
   // An activity a decision unlocks stays closed to agents until a person makes that decision (EE-058).
   const lock = actor !== "person" && (action === "write" || action === "run") ? locked(dir, route, actor_id) : null;
-  if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id };
+  if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
+    fix: { who: "a person, not an agent", command: `mentura decide ${lock.id} --venture ${venture} --by <their name> [--answer "<their wording>"]`, then: "retry this call" } };
 
   if (action === "view") {
     const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance });
