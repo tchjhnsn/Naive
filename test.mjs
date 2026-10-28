@@ -48,6 +48,7 @@ const steps = [
   ["decisions: instance", "node", ["schema/decisions.mjs", "instance"]],
   ["decisions: examples", "node", ["schema/decisions.mjs", "schema/examples/workspace"]],
   ["decision behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "governance/features/decisions.feature"]],
+  ["decision harness demo (an agent over MCP, paused until the founder decides)", "node", ["interface/demo/decision-harness.mjs", "--auto"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "operations/handoffs"))).map((v) =>
     [`handoffs: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],
