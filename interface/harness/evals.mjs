@@ -1,4 +1,4 @@
-// Evals for a harness run (EE-058, EE-059): what Naive promises about an agent's run, checked in code
+// Evals for a harness run (EE-058, EE-059, EE-061): what Naive promises about an agent's run, checked in code
 // on the venture the run left behind. Outcomes are evaluations for decisions; these are evaluations
 // for the agent. Each returns a score from 0 to 1 and a comment saying what failed.
 //
@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { decisions } from "../../schema/decisions.mjs";
 import { DUMP, MAP, parse } from "../../purpose/frameworks/idea-map/ideamap.mjs";
 import { GRAPH } from "../../purpose/frameworks/idea-map/graph.mjs";
+import { ideasOf } from "../../purpose/frameworks/idea-map/route.mjs";
 import { createHash } from "node:crypto";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -59,6 +60,12 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
   // Naive's product questions come first, answered from the founder's own ideas.
   const exists = r.decisions.find((d) => d.id === "product-exists");
   add("product_question_answered", exists?.answer && /\bi-\d{2}\b/.test(exists.answer) ? 1 : exists?.answer ? 0.5 : 0, exists?.answer ? `answer: ${exists.answer.slice(0, 160)}` : "product-exists has no proposed answer");
+
+  // Every decision an agent proposed traces back to the founder's ideas, by id, and the ids exist.
+  const known = new Set(ideas.map((i) => i.id));
+  const agentDrafted = r.decisions.filter((d) => d.provenance?.drafted_by?.kind === "agent");
+  const traced = agentDrafted.filter((d) => { const xs = ideasOf(d); return xs.length && xs.every((x) => known.has(x)); });
+  add("decisions_traced", frac(traced.length, agentDrafted.length), `${traced.length} of ${agentDrafted.length} agent proposals cite ideas that exist${agentDrafted.length > traced.length ? `; not: ${agentDrafted.filter((d) => !traced.includes(d)).map((d) => d.id).join(", ")}` : ""}`);
 
   // The founder settled what Naive ranked first, and it unlocked work.
   add("founder_settled", settled.length ? 1 : 0, settled.length ? `settled: ${settled.join(", ")}` : "the founder settled nothing");

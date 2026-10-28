@@ -2,7 +2,12 @@
 // Tests for the idea map (EE-059): ideas stay verbatim, tags stay within the conventions, and the
 // .mdx round-trips. No network: Jev's answers are a fixture.
 import { split, render, parse, clean, fromAnswers, summary, request, CONVENTIONS } from "./ideamap.mjs";
-import { build, diff } from "./graph.mjs";
+import { build, diff, GRAPH } from "./graph.mjs";
+import { route, stageOf, ideasOf } from "./route.mjs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { spawnSync } from "node:child_process";
 
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
@@ -97,6 +102,40 @@ t("signal favours what the phase needs and what others build on", () => {
 t("without a judge, Naive's record order supplies the dependencies", () => {
   const g = build([{ ...ideas[0], departments: ["products"] }, ideas[1]]);
   ok(g.judged_by === "convention" && g.edges.length === 1 && g.edges[0].from === "i-01", JSON.stringify(g.edges));
+});
+
+// Routes (EE-061): the graph's ideas go to the framework's destinations, each with a stage and a step.
+const venture = (() => {
+  const v = join(mkdtempSync(join(tmpdir(), "routes-")), "kept");
+  spawnSync("node", [new URL("../../../schema/init-venture.mjs", import.meta.url).pathname, v, "kept", "--phase", "discovery"], { encoding: "utf8" });
+  mkdirSync(join(v, "purpose/ideas"), { recursive: true });
+  const tagged = [{ ...ideas[0], records: ["validation-problem"] }, { ...ideas[1], records: ["product"], exists: true }, { id: "i-03", text: "never sell patient data", departments: ["risk-and-compliance"], records: ["alignment"] }, { id: "i-04", text: "a vibe", departments: ["strategy"], records: [] }];
+  writeFileSync(join(v, GRAPH), JSON.stringify(build(tagged)));
+  return v;
+})();
+
+t("each tagged idea reaches its destination; an untagged one stays loose", () => {
+  const r = route(venture);
+  const problem = r.destinations.find((d) => d.id === "validation-problem");
+  ok(problem && problem.ideas[0].id === "i-01" && r.loose.some((i) => i.id === "i-04"), JSON.stringify(r.destinations.map((d) => [d.id, d.ideas.map((i) => i.id)])));
+});
+
+t("a destination with ideas and nothing drafted is routed to an agent; Naive's product question is the founder's", () => {
+  const r = route(venture);
+  const problem = r.destinations.find((d) => d.id === "validation-problem"), products = r.destinations.find((d) => d.id === "product");
+  ok(problem.stage === "routed" && problem.next.by === "agent", JSON.stringify(problem));
+  ok(products.stage === "yours" && products.next.decision === "product-exists", JSON.stringify(products));
+});
+
+t("the team question fails open, so its destination moves on its own", () => {
+  const team = route(venture).destinations.find((d) => d.id === "validation-team");
+  ok(team && team.lane === "async", JSON.stringify(team));
+});
+
+t("docket stages follow what moves a decision next, and decisions trace to the ideas they cite", () => {
+  ok(stageOf({ render: "now", action: { kind: "write" } }) === "routed" && stageOf({ render: "now", awaiting: "approval", action: { kind: "decide" } }) === "drafted"
+    && stageOf({ render: "now", action: { kind: "decide" } }) === "yours" && stageOf({ render: "waiting" }) === "waiting" && stageOf({ render: "done" }) === "done", "stages");
+  ok(JSON.stringify(ideasOf({ ideas: ["i-02"], question: "Lead with i-03?", answer: "Yes, i-03 and i-02" })) === JSON.stringify(["i-02", "i-03"]), "ideasOf");
 });
 
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }

@@ -69,7 +69,7 @@ export function request(ideas, venture = {}) {
     for (const [r, { about }] of Object.entries(CONVENTIONS.records)) ask(`rec.${r}`, i.id, about);
     questions[`exists:${i.id}`] = { type: "noul", instructions: `Does the idea in \`ideas.${i.id}\` say that ${CONVENTIONS.exists}?`, criteria: { true: "Yes: it says this exists now", false: "No: it is planned, wished for or unclear" } };
   }
-  return { state: { venture: { id: venture.id, phase: venture.phase }, ideas: Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])) }, model: "jev-latest", questions };
+  return { state: { venture: { id: venture.id, phase: venture.phase }, guidelines: { dump: CONVENTIONS.guidelines.dump, tags: CONVENTIONS.guidelines.tags }, ideas: Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])) }, model: "jev-latest", questions };
 }
 
 /** Jev's answers as tags: every judgment at or above the threshold, with the weakest one kept as confidence. */

@@ -20,6 +20,14 @@
       "type": "string",
       "description": "What has to be decided, as a question"
     },
+    "ideas": {
+      "type": "array",
+      "description": "The ideas in the founder's idea dump this decision comes from, by id (purpose/ideas/map.mdx), so a decision can be traced back to the founder's own words (EE-061)",
+      "items": {
+        "type": "string",
+        "pattern": "^i-[0-9]+$"
+      }
+    },
     "decides": {
       "type": "object",
       "additionalProperties": false,

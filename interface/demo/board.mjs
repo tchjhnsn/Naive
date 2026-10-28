@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // The decision board (EE-054, EE-058): a live page of one venture's decisions, by what renders now,
-// with provenance as it happens, and at /map the founder's idea map on one canvas (EE-059). Local
+// with provenance as it happens, at /map the founder's idea map on one canvas (EE-059), at /graph the
+// idea graph (EE-060), and at /kanban the ideas routed into the framework and the docket as boards (EE-061). Local
 // only: it binds to 127.0.0.1 and reads the workspace in
 // MENTURA_WORKSPACE (the default is this repository's instance/). No dependencies: the map's React
 // Flow is fetched once from unpkg and cached in ~/.cache/naive-board.
@@ -16,6 +17,7 @@ import { routes, ventureDir, ventures } from "../router.mjs";
 import { decisions } from "../../schema/decisions.mjs";
 import { CONVENTIONS, MAP, parse, summary } from "../../purpose/frameworks/idea-map/ideamap.mjs";
 import { GRAPH } from "../../purpose/frameworks/idea-map/graph.mjs";
+import { route } from "../../purpose/frameworks/idea-map/route.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));
@@ -158,7 +160,7 @@ function side(g){
   '<h2>Lanes</h2><ul>'+g.lanes.map((l)=>'<li><b>'+(l.mode==="sync"?"In order":"On its own")+'</b> '+esc((l.department||"").replace(/-/g," "))+' <span class="n">'+l.ideas.length+' ideas, signal '+l.signal+'</span></li>').join("")+'</ul>'+
   '<h2>Highest signal</h2><ul>'+top.map((n)=>'<li>'+esc(n.id)+' <span class="n">'+n.signal+' = need '+n.parts.need+', unblocks '+n.parts.unblocks+', concrete '+n.parts.concrete+', emphasis '+n.parts.emphasis+'</span></li>').join("")+'</ul>'+
   '<h2>How to read it</h2><div class="meta">Left to right: an idea builds on the ideas to its left. Top down: higher signal first. A lane in order moves step by step; a lane on its own can move any time, beside the others. Each idea\\'s hash covers its text and everything it builds on.</div>'+
-  '<h2>Next</h2><div><a href="/map'+location.search+'">The idea map</a> · <a href="/'+location.search+'">The decision board</a></div>';
+  '<h2>Next</h2><div><a href="/map'+location.search+'">The idea map</a> · <a href="/kanban'+location.search+'">The idea routes</a> · <a href="/'+location.search+'">The decision board</a></div>';
 }
 let last="";
 function App(){
@@ -188,7 +190,7 @@ section h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:va
 .kit{padding:0 24px 8px}.kit ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}.kit li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;max-width:320px}
 .kit li b{display:block;margin-bottom:2px}.tag.start{border-color:var(--now);color:var(--now);font-weight:600}.tag.soon{opacity:.6}.tag.has{color:var(--done);border-color:var(--done)}
 .log{padding:0 24px 24px}.log table{width:100%;border-collapse:collapse;font-size:13px}.log td{padding:4px 8px;border-top:1px solid var(--line)}.log td:first-child{color:var(--muted);white-space:nowrap}
-</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a></header><div class="kit"><section><h2>The kit for this phase (from need-now)</h2><ul id="kit"></ul></section></div><main id="cols"></main>
+</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a><a class="meta" href="/kanban">Idea routes</a></header><div class="kit"><section><h2>The kit for this phase (from need-now)</h2><ul id="kit"></ul></section></div><main id="cols"></main>
 <div class="log"><section><h2>Provenance, latest first</h2><table id="log"></table></section></div>
 <script>
 const COLS=[["overdue","Overdue"],["now","Now"],["waiting","Waiting"],["stale","Stale"],["later","Later"],["deferred","Deferred"],["done","Done"]];
@@ -221,6 +223,59 @@ async function tick(){
 tick();setInterval(tick,1500);
 </script></body></html>`;
 
+
+// The routes (EE-061): where each idea went in the framework, and the decision docket, as two Kanban
+// boards. Plain columns, not React Flow: a board is a list per stage, and the canvas is for structure.
+function routesOf(id) {
+  const dir = ventureDir(id);
+  if (!dir) return { error: `no venture ${id}` };
+  return route(dir);
+}
+
+const KANBAN_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Idea routes</title><style>
+:root{--bg:#fbfaf7;--fg:#1d1c1a;--muted:#6b675f;--line:#e4e0d8;--card:#fff;--col:#f2efe9;--routed:#6b675f;--drafted:#1f6feb;--yours:#bf3989;--waiting:#9a6700;--done:#1a7f37}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--muted:#a19d94;--line:#2e2d2a;--card:#1c1b19;--col:#191917;--routed:#a19d94;--drafted:#58a6ff;--yours:#f778ba;--waiting:#e3b341;--done:#56d364}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}h1{font-size:20px;margin:0}.meta{color:var(--muted);font-size:13px}a{color:var(--drafted)}
+h2.board{font-size:15px;margin:20px 24px 4px}.sub{margin:0 24px 10px;color:var(--muted);font-size:13px;max-width:760px}
+.cols{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:12px;padding:0 24px 8px;overflow-x:auto}
+.col{background:var(--col);border-radius:10px;padding:10px;min-height:120px}.col h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;display:flex;justify-content:space-between}
+.card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:8px}
+.card.routed{border-top-color:var(--routed)}.card.drafted{border-top-color:var(--drafted)}.card.yours{border-top-color:var(--yours)}.card.waiting{border-top-color:var(--waiting)}.card.done{border-top-color:var(--done)}
+.t{font-weight:600}.r{font:11px ui-monospace,monospace;color:var(--muted)}.q{font-size:13px}
+.chip{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:99px;padding:1px 6px;margin:4px 3px 0 0;color:var(--muted);font-family:ui-monospace,monospace}
+.tag{display:inline-block;font-size:11px;border-radius:99px;padding:1px 6px;margin:4px 3px 0 0;border:1px solid var(--line);color:var(--muted)}.tag.async{border-color:var(--done);color:var(--done)}
+.next{font-size:12px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}.next b{color:var(--muted);font-weight:600}code{font-size:11px;word-break:break-all}
+.foot{padding:4px 24px 28px;color:var(--muted);font-size:13px}
+</style></head><body><header><h1 id="title">Idea routes</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a><a class="meta" href="/">Decision board</a></header>
+<h2 class="board">From ideas to the framework</h2><p class="sub">Each card is a record the founder's ideas feed. It moves left to right as an agent drafts it and the founder settles it; the next step comes from the framework, not from a guess.</p><div class="cols" id="dest"></div>
+<div class="foot" id="loose"></div>
+<h2 class="board">The decision docket</h2><p class="sub">Every open decision, by what moves it next, traced to the ideas it comes from. Ranked ones show their place in line.</p><div class="cols" id="docket"></div>
+<script>
+const esc=(s)=>String(s??"").replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let text={};const chip=(id)=>'<span class="chip" title="'+esc(text[id])+'">'+esc(id)+'</span>';
+const laneTag=(x)=>x.lane==="async"?'<span class="tag async">on its own</span>':'<span class="tag">in order'+(x.order?' #'+x.order:'')+'</span>';
+const board=(el,stages,items,card)=>{document.getElementById(el).innerHTML=stages.map(([k,l])=>{const xs=items.filter((x)=>x.stage===k);return '<div class="col"><h3><span>'+esc(l)+'</span><span>'+xs.length+'</span></h3>'+xs.map(card).join("")+'</div>';}).join("");};
+async function tick(){
+  try{
+    const s=await (await fetch("routes.json"+location.search,{cache:"no-store"})).json();
+    if(s.error||s.waiting){document.getElementById("meta").textContent=s.error||s.waiting;return;}
+    text={};s.destinations.forEach((d)=>d.ideas.forEach((i)=>text[i.id]=i.text));s.loose.forEach((i)=>text[i.id]=i.text);
+    document.getElementById("title").textContent="Idea routes: "+(s.name||s.venture);
+    document.getElementById("meta").textContent=s.phase+" phase · "+s.destinations.length+" destinations · updated "+new Date().toLocaleTimeString();
+    board("dest",s.stages,s.destinations,(x)=>'<div class="card '+x.stage+'"><div class="t">'+esc(x.title)+'</div><div class="r">'+esc(x.route)+(x.signal!=null?' · signal '+x.signal:'')+'</div>'+laneTag(x)+'<div>'+x.ideas.map((i)=>chip(i.id)).join("")+'</div>'+
+      (x.next?'<div class="next"><b>Next, '+esc(x.next.by||"nobody yet")+':</b> '+esc(x.next.do)+(x.next.command?'<br><code>'+esc(x.next.command)+'</code>':'')+'</div>':'')+'</div>');
+    document.getElementById("loose").innerHTML=(s.loose.length?'Loose, on the map only: '+s.loose.map((i)=>chip(i.id)).join(""):'')+(s.gaps.length?' · Nothing in the dump feeds: '+esc(s.gaps.map((g)=>g.title).join(", ")):'');
+    const ranked=s.docket.filter((d)=>d.rank!=null).sort((a,b)=>b.rank-a.rank).map((d)=>d.id);
+    board("docket",s.stages,s.docket.slice().sort((a,b)=>(b.rank??-1)-(a.rank??-1)),(d)=>'<div class="card '+d.stage+'">'+(d.rank!=null?'<span class="r" style="float:right">#'+(ranked.indexOf(d.id)+1)+'</span>':'')+'<div class="q">'+esc(d.question)+'</div><div class="r">'+esc(d.id)+(d.destination?' · '+esc(d.destination):'')+'</div>'+
+      (d.lane==="async"&&d.stage!=="done"?'<span class="tag async">on its own</span>':'')+(d.held_by?'<span class="tag">held by '+esc(d.held_by)+'</span>':'')+(d.awaiting?'<span class="tag">agent wording</span>':'')+
+      (d.ideas.length?'<div>'+(d.cited?'':'<span class="tag">via its destination</span>')+d.ideas.map(chip).join("")+'</div>':'')+'</div>');
+  }catch(e){document.getElementById("meta").textContent="Lost the board's server.";}
+}
+tick();setInterval(tick,2000);
+</script></body></html>`;
+
 // The map's three libraries, pinned, fetched from unpkg once and kept on disk, so the canvas works
 // offline after its first load. Only these paths are served.
 const VENDOR = new Set(["react@18.3.1/umd/react.production.min.js", "react-dom@18.3.1/umd/react-dom.production.min.js", "reactflow@11.11.4/dist/umd/index.js", "reactflow@11.11.4/dist/style.css"]);
@@ -247,6 +302,8 @@ export function serve(p = port, id = venture) {
     if (u.pathname === "/state.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(state(u.searchParams.get("venture") ?? id))); return; }
     if (u.pathname === "/ideas.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(ideas(u.searchParams.get("venture") ?? id))); return; }
     if (u.pathname === "/graph.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(graph(u.searchParams.get("venture") ?? id))); return; }
+    if (u.pathname === "/routes.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(routesOf(u.searchParams.get("venture") ?? id))); return; }
+    if (u.pathname === "/kanban") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(KANBAN_PAGE); return; }
     if (u.pathname === "/graph") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(GRAPH_PAGE); return; }
     if (u.pathname === "/map") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(MAP_PAGE); return; }
     if (u.pathname === "/") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(PAGE); return; }

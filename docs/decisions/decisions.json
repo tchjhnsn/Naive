@@ -636,6 +636,19 @@
       ],
       "decision": "Ideas move through a pipeline: idea dump, idea map, idea graph, roadmap. The dump and the map stay loose and carry no decisions. The idea graph is the first structured form, a Merkle DAG at purpose/ideas/graph.json: an idea builds on the ideas that must be worked out before it (judged by Jev per ordered pair, else by Naive's record order), and its hash covers its text and the hashes of what it builds on. Each idea gets a signal (version 0.x: what the phase needs of the records it feeds, what builds on it, how concrete it is, how much of the dump circles it). Ideas tied by dependencies form a lane that moves in order (synchronous); a lane tied to nothing moves on its own (asynchronous), beside the others. The graph is laid out left to right by dependency and top down by signal. Decisions carry the same distinction: fail-closed decisions are on the ordered path, fail-open ones can move on their own. Naive asks a team question in Discovery, failing open: solo, cofounders or looking. A founding team gets the founder-agreement kit beside validation at a lower priority (0.6 against the problem's 0.9), a founder looking for cofounders gets it early, and a solo founder is not handed it. Kits render as the venture needs them, as React renders components.",
       "why": "Torian, 2026-10-28 19:15Z: an idea dump and a mind map are meant to be loose, with no decisions yet; convert the mind map into a very structured format (a Merkle DAG, then left to right and top down by highest-signal ideas), then into other documents such as roadmaps with timelines, as a pipeline. SAD was his first iteration of a pipeline from idea to shipping with an iterative loop. A venture has many ideas; some develop asynchronously and others need synchronous order, and telling them apart should be a key feature. Ask about teams: founding agreements may be on a founding team's mind in Discovery; they rank below validating the idea but can move asynchronously, and Naive will create kits for founding agreements that render as needed."
+    },
+    {
+      "id": "EE-061",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-060",
+        "EE-059",
+        "EE-057",
+        "EE-054"
+      ],
+      "decision": "After the idea graph, Naive routes each tagged idea to the records it feeds: the framework's destinations (purpose/frameworks/idea-map/conventions.json records, each with a title, a route and the decisions it settles). A destination's stage comes from the decision matrix and the records on disk: routed (ideas, nothing drafted: an agent drafts it), drafted (an agent's draft or wording awaits the founder), yours (a decision only a person can make), waiting (held), done. Each destination carries one next step from the framework, and moves in order or on its own. The decision docket uses the same stages, and every decision traces to the ideas it comes from (a new `ideas` field on decision records, or the i-NN ids it cites); agent proposals must cite ideas (eval decisions_traced). Both render as Kanban boards in plain columns at /kanban; React Flow stays for the map and the graph. Guidelines for parsing the dump, building the graph and routing live in conventions.json `guidelines` (sent to Jev as state.guidelines) and the idea-map README. Time-oriented features (roadmaps) are deferred past the hackathon.",
+      "why": "Torian, 2026-10-28 19:36Z: each step needs a payoff. The dump's is seeing the ideas on a mind map, the graph's is seeing structure applied to them, and the next must turn that structure into executable next steps by routing ideas to their destinations in the framework, visualised as Kanban boards, with the decision docket as a Kanban board too. Hold off on time-oriented features for the deadline."
     }
   ]
 }

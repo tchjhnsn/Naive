@@ -157,7 +157,7 @@ export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "")
     const lane = boundary === "fail-open" ? "async" : "sync";
     return { id: d.id, question: d.question, source: d.source, layer: d.layer, parent: d.parent, boundary, lane, needed_in: d.needed_in ?? null, status: d.status, render, firmness,
       ...(render === "waiting" || (overdue && holder) ? { held_by: holder.id } : {}),
-      ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}),
+      ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}), ...(d.ideas?.length ? { ideas: d.ideas } : {}),
       ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),
       ...(d.provenance ? { provenance: d.provenance } : {}),
       ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,

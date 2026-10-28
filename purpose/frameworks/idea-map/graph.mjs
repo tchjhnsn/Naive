@@ -24,7 +24,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { MAP, parse } from "./ideamap.mjs";
+import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../..");
@@ -49,7 +49,7 @@ export function request(ideas, venture = {}) {
     questions[`dep:${a.id}>${b.id}`] = { type: "noul", instructions: `Does developing the idea in \`ideas.${b.id}\` depend on the idea in \`ideas.${a.id}\` being worked out first (it builds on it, needs its answer, or makes no sense without it)?`,
       criteria: { true: "Yes: it builds directly on that idea", false: "No: it could be developed without it" } };
   for (const i of ideas) questions[`concrete:${i.id}`] = { type: "score", instructions: `How concrete is the idea in \`ideas.${i.id}\`?`, criteria: CONCRETE };
-  return { state: { venture: { id: venture.id, phase: venture.phase }, ideas: Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])) }, model: "jev-latest", questions };
+  return { state: { venture: { id: venture.id, phase: venture.phase }, guidelines: CONVENTIONS.guidelines.graph, ideas: Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])) }, model: "jev-latest", questions };
 }
 
 /** Dependencies by convention: b builds on a when a feeds an earlier record and they share a department. */
