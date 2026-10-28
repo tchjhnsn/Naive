@@ -97,6 +97,27 @@
     "collected": {
       "type": "string",
       "format": "date"
+    },
+    "assumption": {
+      "enum": [
+        "exists",
+        "segment",
+        "hurts",
+        "why-now"
+      ],
+      "description": "Problem records only (EE-050): the assumption the item bears on. exists: the problem is real; segment: our segment has it; hurts: it costs enough that people already spend time or money on it; why-now: something has changed. Without it the item counts toward exists. schema/assess-problem.mjs labels each assumption from its items."
+    },
+    "origin": {
+      "enum": [
+        "first-hand",
+        "reported"
+      ],
+      "description": "first-hand: the venture saw it (its own interviews, payments, data exports); reported: someone else says so (a vendor's customer count, a report, a roundup). Defaults to first-hand for a file in the venture folder and reported for a URL. Only first-hand evidence can demonstrate an assumption (EE-050)."
+    },
+    "form": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Problem records only (EE-050): the id of the form the item bears on. It counts for that form and for the root."
     }
   }
 }

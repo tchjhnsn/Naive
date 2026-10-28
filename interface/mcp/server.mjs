@@ -26,7 +26,8 @@ export const TOOLS = [
     model: { type: "string", description: "Your model, for the provenance log" }, note: { type: "string" } }, required: ["venture", "route", "record"] } },
   { name: "mentura_check", description: "Run the checks for one record of a venture.", inputSchema: { type: "object", properties: { venture, route }, required: ["venture", "route"] } },
   { name: "mentura_template", description: "The fill-in template for a record, where its kit has one.", inputSchema: { type: "object", properties: { route }, required: ["route"] } },
-  { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/score, governance/payouts, knowledge/catalog (index every source the venture keeps records in), knowledge/search (find items in any of them).", inputSchema: { type: "object", properties: { venture, route, value: { type: ["number", "string"], description: "governance/payouts: a sale value; knowledge/search: the query" } }, required: ["venture", "route"] } },
+  { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/assess (what the problem's evidence is strong enough for), governance/payouts, knowledge/catalog (index every source the venture keeps records in), knowledge/search (find items in any of them). A result with needs_input lists what is missing: ask the person whether to fill it in or run as is, and only then call again with as_is.", inputSchema: { type: "object", properties: { venture, route, value: { type: ["number", "string"], description: "governance/payouts: a sale value; knowledge/search: the query" },
+    as_is: { type: "boolean", description: "purpose/validation/assess: run even though the record is incomplete. Set it only after the person chose to run as is" } }, required: ["venture", "route"] } },
 ];
 
 let client = null; // the harness, as it named itself at initialize
@@ -56,9 +57,10 @@ export async function handle(msg) {
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
         case "mentura_check": r = await call({ venture: a.venture, route: a.route, action: "check" }); break;
         case "mentura_template": r = await call({ route: a.route, action: "template" }); break;
-        case "mentura_run": r = await call({ venture: a.venture, route: a.route, action: "run", input: a.value !== undefined ? { value: a.value } : undefined }); break;
+        case "mentura_run": r = await call({ venture: a.venture, route: a.route, action: "run", input: a.value !== undefined || a.as_is ? { ...(a.value !== undefined ? { value: a.value } : {}), ...(a.as_is ? { as_is: true } : {}) } : undefined }); break;
         default: return fail(-32602, `unknown tool ${params.name}`);
       }
+      if (r.ok && r.needs_input) return reply({ content: [{ type: "text", text: `Ask the person before running. ${r.needs_input.ask}\n${JSON.stringify(r.needs_input, null, 2)}` }], isError: false });
       const extra = ["not_found", "pending_draft", "fix", "deprecated"].some((k) => r[k]);
       const text = r.ok ? (typeof r.result === "string" && !extra ? r.result : JSON.stringify(extra ? r : r.result, null, 2)) : JSON.stringify({ error: r.error, ...(r.fix ? { fix: r.fix } : {}), ...(r.result ? { result: r.result } : {}) }, null, 2);
       return reply({ content: [{ type: "text", text }], isError: !r.ok });

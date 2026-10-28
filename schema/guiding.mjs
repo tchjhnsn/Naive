@@ -1,0 +1,89 @@
+#!/usr/bin/env node
+// Reports a venture's guiding statements (EE-051): for each question of the Five Ws and How plus
+// whether (purpose/guiding-statements.json), the record attributes that answer it, and whether
+// each is confirmed, drafted by an agent, waiting as a draft, or missing. This is what a founder
+// keeps in front of them; a platform renders it always visible. Behaviors:
+// purpose/kits/validation/features/guiding-statements.feature.
+//
+//   node schema/guiding.mjs <venture dir> [--json]
+//
+// Status: confirmed (the last write was a person's, or a person accepted it), agent (an agent
+//   wrote it and no person has confirmed it), draft (a draft waits in _drafts/), missing, planned
+//   (no record type yet). A statement an agent drafted is not the founder's until confirmed.
+// Exit 1 when the frame names a record type the data model lacks, or an ICP names a problem form
+// the problem record lacks.
+
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const repo = new URL("..", import.meta.url).pathname;
+const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+export const FRAME = load(join(repo, "purpose/guiding-statements.json"));
+const MODEL = load(join(repo, "schema/data-model.json"));
+
+const get = (o, path) => path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+const filled = (v) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && !v.length);
+
+/** Venture-relative files of a record type: one file, or every item of a collection. */
+export function filesOf(dir, type) {
+  const r = MODEL.records.find((x) => x.id === type);
+  const g = r?.paths.find((p) => p.startsWith("instance/**/"))?.slice("instance/**/".length);
+  if (!g) return [];
+  if (!g.includes("*")) return [g];
+  const [folder, rest] = [g.slice(0, g.indexOf("*")), g.slice(g.indexOf("*") + 1)];
+  const d = join(dir, folder);
+  return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(rest)).map((f) => folder + f) : [];
+}
+
+/** Whether a person confirmed one statement in a file: their write or accept of the file, or a
+ *  confirm of that statement, after the last write by anyone else. */
+export function confirmedIn(dir, file, id) {
+  const log = join(dir, "provenance.jsonl");
+  if (!existsSync(log)) return false;
+  const draft = `_drafts/${file.replace(/\//g, "__")}.draft`;
+  const es = readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => e.entity === file || e.entity === draft);
+  const lastAgentWrite = es.findLastIndex((e) => e.entity === file && e.activity !== "confirm" && e.agent?.kind !== "person" && e.activity !== "accept");
+  return es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm") || (e.activity === "confirm" && e.statement === id)));
+}
+
+/** Each guiding statement of a venture, with its status and value. */
+export function guiding(dir) {
+  return FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => {
+    if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
+    const files = filesOf(dir, s.record);
+    const values = files.filter((f) => existsSync(join(dir, f))).map((f) => ({ f, v: get(load(join(dir, f)), s.attribute) })).filter((x) => filled(x.v));
+    const drafts = files.filter((f) => existsSync(join(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
+    if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing" };
+    // A record with no log entry existed before the log; a person's baseline or write confirms it.
+    const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
+    return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent",
+      value: values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
+  }) }));
+}
+
+export function problems(dir) {
+  const out = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !MODEL.records.some((r) => r.id === s.record)).map((s) => `frame: ${s.id} names record type ${s.record}, which the data model lacks`);
+  const icp = join(dir, "purpose/icp.json"), prob = join(dir, "purpose/validation/problem.json");
+  if (existsSync(icp)) {
+    const forms = new Set(existsSync(prob) ? (load(prob).forms ?? []).map((f) => f.id) : []);
+    for (const p of load(icp).profiles) for (const f of p.problem_forms ?? []) if (!forms.has(f)) out.push(`icp ${p.id}: problem form ${f} is not in the problem record`);
+    const primaries = load(icp).profiles.filter((p) => p.primary).length;
+    if (load(icp).profiles.length > 1 && primaries !== 1) out.push(`icp: ${primaries} primary profiles; exactly one is primary`);
+  }
+  return out;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const arg = process.argv[2];
+  if (!arg) { console.error("usage: node schema/guiding.mjs <venture or workspace dir> [--json]"); process.exit(2); }
+  const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
+  const dirs = walk(arg);
+  const errs = dirs.flatMap((d) => problems(d).map((p) => `${d}: ${p}`));
+  if (process.argv.includes("--json")) console.log(JSON.stringify(dirs.length === 1 ? guiding(dirs[0]) : Object.fromEntries(dirs.map((d) => [d, guiding(d)])), null, 2));
+  else for (const d of dirs) {
+    if (dirs.length > 1) console.log(`\n${d}`);
+    for (const q of guiding(d)) console.log(`${q.question.padEnd(8)} ${q.ask}\n${q.statements.map((s) => `         ${s.id.padEnd(16)} ${s.status}${s.value !== undefined ? `: ${JSON.stringify(s.value).slice(0, 90)}` : ""}`).join("\n")}`);
+  }
+  for (const e of errs) console.error(`FAIL  ${e}`);
+  process.exit(errs.length ? 1 : 0);
+}
