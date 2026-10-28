@@ -23,6 +23,9 @@ export const steps = [
   [/^an open decision "([a-z-]+)" that fails closed$/, (w, id) => decide(w, id, { boundary: "fail-closed" })],
   [/^an open decision "([a-z-]+)" under "([a-z-]+)"$/, (w, id, parent) => decide(w, id, { parent })],
   [/^an open decision "([a-z-]+)" needed in "([a-z]+)"$/, (w, id, phase) => decide(w, id, { needed_in: phase })],
+  [/^an open decision "([a-z-]+)" needed in "([a-z]+)" and due at "([^"]+)"$/, (w, id, phase, due) => decide(w, id, { needed_in: phase, due })],
+  [/^an open decision "([a-z-]+)" due at "([^"]+)"$/, (w, id, due) => decide(w, id, { due })],
+  [/^it is now "([^"]+)"$/, (w, at) => { process.env.DECISIONS_NOW = at; const c = w.cleanup; w.cleanup = () => { delete process.env.DECISIONS_NOW; c(); }; }],
   [/^an open decision "([a-z-]+)" about the product "([a-z-]+)"( that fails closed)?$/, (w, id, product, closed) =>
     put(w, `products/decisions/${product}.${id}.decision.json`, { id, question: `What about ${id}?`, status: "open", ...(closed ? { boundary: "fail-closed" } : {}) })],
   [/^a decision "([a-z-]+)"(?: under "([a-z-]+)")? decided at "([^"]+)"( by nobody)?$/, (w, id, parent, at, nobody) =>

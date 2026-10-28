@@ -18,7 +18,8 @@
 // In Discovery a decided decision is still a working draft (EE-057). A decision is decided only
 // when a person approved its wording; provenance says who, when and in which phase (EE-058).
 //
-// render: now (open, needed in this phase or earlier, nothing above it open and fail-closed),
+// render: overdue (open and past its due time), now (open, needed in this phase or earlier,
+//   nothing above it open and fail-closed),
 //   later (needed in a later phase; checked before waiting), waiting, stale, deferred, done, withdrawn.
 // Exit 1 on a duplicate id, an unknown parent, a cycle, or an id that takes a reserved root name.
 
@@ -48,7 +49,7 @@ function decisionFiles(dir, sub = "") {
 }
 
 /** Every decision of a venture, resolved: boundary, render state and what holds it. */
-export function decisions(dir) {
+export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now()) {
   const venture = load(join(dir, "venture.json"));
   const phase = PHASES.indexOf(venture.phase);
   const productOnly = venture.kind === "product";
@@ -130,15 +131,19 @@ export function decisions(dir) {
     const parent = byId.get(d.parent);
     const at = (x) => x?.provenance?.approved_at ?? x?.decided_at;
     const stale = d.status === "decided" && at(d) && at(parent) && at(parent) > at(d);
-    const later = d.needed_in && PHASES.indexOf(d.needed_in) > phase;
-    const render = d.status === "withdrawn" ? "withdrawn" : d.status === "deferred" ? "deferred" : stale ? "stale"
+    // A due time is a real deadline: it overrides needed_in, and an open decision past it is overdue.
+    const later = !d.due && d.needed_in && PHASES.indexOf(d.needed_in) > phase;
+    const overdue = d.status === "open" && d.due && Date.parse(d.due) < now;
+    const render = d.status === "withdrawn" ? "withdrawn" : d.status === "deferred" ? "deferred" : stale ? "stale" : overdue ? "overdue"
       : d.status === "decided" ? "done" : later ? "later" : holder ? "waiting" : "now";
     const firmness = d.status !== "decided" ? "open" : venture.phase === "discovery" ? "working" : "firm";
     return { id: d.id, question: d.question, source: d.source, layer: d.layer, parent: d.parent, boundary, needed_in: d.needed_in ?? null, status: d.status, render, firmness,
-      ...(render === "waiting" ? { held_by: holder.id } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}),
+      ...(render === "waiting" || (overdue && holder) ? { held_by: holder.id } : {}),
+      ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}),
       ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),
       ...(d.provenance ? { provenance: d.provenance } : {}),
-      ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length } } : {}),
+      ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,
+        due: d.outcomes.filter((o) => (o.result ?? "pending") === "pending" && /^\d{4}-\d{2}-\d{2}/.test(o.by ?? "") && Date.parse(o.by) < now).map((o) => o.id) } } : {}),
       ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}) };
   }) };
 }
@@ -168,8 +173,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (process.argv.includes("--json")) console.log(JSON.stringify(rs.length === 1 ? rs[0] : rs, null, 2));
   else for (const r of rs) {
     console.log(`\n${relative(process.cwd(), r.dir) || "."} (${r.phase}, ${r.kind})`);
-    const order = ["stale", "now", "waiting", "later", "deferred", "done"];
-    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state))) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}${d.provenance?.approved_by ? `, approved by ${d.provenance.approved_by} in ${d.provenance.phase}` : ""}]` : ""}${d.awaiting ? " [agent's wording, awaiting approval]" : ""}`);
+    const order = ["overdue", "stale", "now", "waiting", "later", "deferred", "done"];
+    const byDue = (a, b) => (a.due ?? "~").localeCompare(b.due ?? "~");
+    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state)).sort(byDue)) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}${d.provenance?.approved_by ? `, approved by ${d.provenance.approved_by} in ${d.provenance.phase}` : ""}]` : ""}${d.awaiting ? " [agent's wording, awaiting approval]" : ""}${d.due && d.render !== "done" ? ` [due ${d.due}, ${d.due_in_hours}h]` : ""}${d.outcomes?.due?.length ? ` [outcomes due: ${d.outcomes.due.join(", ")}]` : ""}`);
     if (process.argv.includes("--md")) {
       const m = matrix(r);
       console.log(`\n| layer | ${PHASES.join(" | ")} |\n| --- | ${PHASES.map(() => "---").join(" | ")} |`);

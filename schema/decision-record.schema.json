@@ -77,6 +77,11 @@
       ],
       "description": "The phase in which it must be made. One needed in a later phase than the venture's is speculative and held back (EE-057)."
     },
+    "due": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When it must be decided, for a decision with a real deadline (a launch, a hackathon, a filing). An open decision past its due time renders overdue; a due time overrides needed_in, so a dated decision is never held back as later."
+    },
     "status": {
       "enum": [
         "open",
@@ -203,7 +208,7 @@
           },
           "by": {
             "type": "string",
-            "description": "When it should be visible: a date or a phase"
+            "description": "When it should be visible: a date-time, a date or a phase. A pending outcome past a date-time or date is due for its actual result."
           },
           "measure": {
             "type": "string",

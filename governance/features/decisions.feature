@@ -44,6 +44,15 @@ Feature: Decisions
       When the founder asks for the decisions
       Then "series-a" renders "later"
 
+    Scenario: A decision with a deadline is never held back, and is overdue once it passes
+      Given the example venture "tandem"
+      And it is now "2026-10-30T00:00:00Z"
+      And an open decision "series-a" needed in "scale" and due at "2026-11-30T00:00:00Z"
+      And an open decision "demo-scope" due at "2026-10-29T22:00:00Z"
+      When the founder asks for the decisions
+      Then "series-a" renders "now"
+      And "demo-scope" renders "overdue"
+
     Scenario: A decision made before its parent changed is stale
       Given the example venture "tandem"
       And a decision "pricing-model" decided at "2026-10-20T00:00:00Z"
