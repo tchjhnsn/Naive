@@ -52,7 +52,7 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
 
   // The agent's proposals are complete enough to decide: wording, an outcome to test, what it unlocks.
   // Naive's own product questions (init-venture) carry their unlocks already; only the agent's own count.
-  const proposed = r.decisions.filter((d) => d.source === "file" && d.provenance?.drafted_by?.kind === "agent" && !["product-exists", "core-product", "flagship"].includes(d.id));
+  const proposed = r.decisions.filter((d) => d.source === "file" && d.provenance?.drafted_by?.kind === "agent" && !["product-exists", "core-product", "flagship", "founding-team"].includes(d.id));
   const complete = proposed.filter((d) => d.answer && d.outcomes?.total && d.unlocks?.length);
   add("proposals_complete", frac(complete.length, proposed.length), `${complete.length} of ${proposed.length} proposals have wording, an outcome and unlocks`);
 
