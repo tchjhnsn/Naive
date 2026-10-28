@@ -18,9 +18,9 @@ The knowledge layer is where every record is stored and found. It does not copy 
 | Contract | `contract.mjs` | The five things every connector does: `list`, `read`, `version`, `search`, `write`. A version is the git blob SHA-1 of the content in every source. |
 | Registry | `../tooling/integrations.json` | An integration with a `connector` names the module that implements the contract for it. |
 | Source map | `<venture>/knowledge/sources.json` | Optional. The venture's sources, and which record type lives in which. Unnamed record types stay in the venture folder. Schema: `schema/knowledge-sources.schema.json`; checked by `schema/check-sources.mjs`. |
-| Connectors | `filesystem.mjs`, `github.mjs` | A folder or git repository (writes in place); a GitHub repository (writes by draft pull request). |
+| Connectors | `filesystem.mjs` | A folder or git repository (writes in place). The framework ships only this one: it works offline and names no vendor. Connectors that reach a vendor, such as GitHub, are platform and live in `platform/connectors/` (EE-041). |
 | Catalog | `catalog.mjs` | One index over every source: address, version, route, title and words. No content. Routes `knowledge/catalog` and `knowledge/search`. |
-| Evals | `eval.mjs`, `fake-github.mjs` | The contract suite for every connector, the router over a mapped source, and the catalog. |
+| Evals | `suite.mjs`, `eval.mjs` | `suite.mjs` is the contract suite every connector passes, framework or platform. `eval.mjs` runs it on the filesystem connector, then the router over a mapped folder and the catalog. The GitHub connector's evals are `platform/connectors/eval.mjs`. |
 
 ## A source map
 
@@ -33,18 +33,20 @@ The knowledge layer is where every record is stored and found. It does not copy 
 }
 ```
 
-With this map, `purpose/product/kettle` reads `ventures/tandem/products/kettle.json` from `acme/tandem` and says which version and commit it came from. A write opens a draft pull request, which a person accepts by merging. Every other record stays in the venture folder. The venture folder always keeps `venture.json`, the provenance log and drafts.
+The `github` connector is a platform connector (`platform/connectors/github.mjs`). With this map, `purpose/product/kettle` reads `ventures/tandem/products/kettle.json` from `acme/tandem` and says which version and commit it came from. A write opens a draft pull request, which a person accepts by merging. Every other record stays in the venture folder. The venture folder always keeps `venture.json`, the provenance log and drafts.
 
 ## Adding a connector
 
-1. Write `knowledge/connectors/<id>.mjs`, exporting `connect(options)` that returns an object meeting the contract.
-2. Add a `connector` to its entry in `knowledge/tooling/integrations.json`: the module, its write modes and its options.
-3. Run it through `contract()` in `eval.mjs`, against a fake of its API offline and against the real one when credentials are given.
+1. Decide which side it is on. If it works offline, needs no credentials and names no vendor, it is framework and goes in `knowledge/connectors/<id>.mjs`. Otherwise it is platform and goes in `platform/connectors/<id>.mjs` (EE-041). `node schema/check-boundary.mjs` enforces this.
+2. Export `connect(options)`, returning an object that meets the contract.
+3. Add a `connector` to its entry in `knowledge/tooling/integrations.json`: the module, its write modes and its options.
+4. Run it through `contract()` from `suite.mjs`: against a fake of its API offline, and against the real one when credentials are given.
 
 ## Running the evals
 
 ```sh
-node knowledge/connectors/eval.mjs
-MENTURA_EVAL_GITHUB_REPO=owner/name GITHUB_TOKEN=... node knowledge/connectors/eval.mjs   # also live
+node knowledge/connectors/eval.mjs                                                       # framework
+node platform/connectors/eval.mjs                                                        # platform (GitHub, against a fake)
+MENTURA_EVAL_GITHUB_REPO=owner/name GITHUB_TOKEN=... node platform/connectors/eval.mjs   # also live
 MENTURA_EVAL_GITHUB_WRITE=1 ...                                                          # and open one real draft PR
 ```

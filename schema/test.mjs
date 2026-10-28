@@ -239,6 +239,14 @@ expect("check-nouns passes on the repository", run("check-nouns.mjs", [], { EE_R
 writeFileSync(join(repo, "schema/README.md"), readFileSync(join(repo, "schema/README.md"), "utf8") + "\nEach sphere holds products.\n"); // a retired noun, on purpose
 { const r = run("check-nouns.mjs", [], { EE_ROOT: repo }); expect("a retired noun in a checked file fails", r.status !== 0 && /retired noun "sphere"/.test(r.stderr)); }
 
+// check-boundary reads a whole repository: framework code never imports platform code (EE-041).
+expect("check-boundary passes on the repository", run("check-boundary.mjs", [], { EE_ROOT: repo }).status === 0);
+writeFileSync(join(repo, "knowledge/connectors/leak.mjs"), 'import { connect } from "../../platform/connectors/github.mjs";\nexport default connect;\n');
+{ const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework file importing from platform/ fails", r.status !== 0 && /framework code never imports platform code/.test(r.stderr)); }
+rmSync(join(repo, "knowledge/connectors/leak.mjs"));
+edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { list.find((t) => t.id === "github").connector.module = "knowledge/connectors/filesystem.mjs"; list.find((t) => t.id === "github").credentials = ["GITHUB_TOKEN"]; });
+{ const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
+
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
 const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);

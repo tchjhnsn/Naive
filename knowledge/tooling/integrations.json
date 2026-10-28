@@ -51,7 +51,7 @@
       "GITHUB_TOKEN"
     ],
     "connector": {
-      "module": "knowledge/connectors/github.mjs",
+      "module": "platform/connectors/github.mjs",
       "writes": [
         "pull-request",
         "none"
@@ -64,7 +64,7 @@
         "api",
         "search"
       ],
-      "eval": "node knowledge/connectors/eval.mjs (live: MENTURA_EVAL_GITHUB_REPO=owner/name)"
+      "eval": "node platform/connectors/eval.mjs (live: MENTURA_EVAL_GITHUB_REPO=owner/name)"
     }
   },
   {

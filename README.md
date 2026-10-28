@@ -29,6 +29,10 @@ A **venture development framework** (proposed genus, EE-024), in the same genus 
 
 It replaces the earlier description "AI-Native OS for Builders": an operating system or operating model describes how one organization runs, while a framework is reused by many builders to build their own.
 
+## Framework and platform
+
+Mentura has two sides, the way Next.js and Vercel do (EE-041). The framework is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Both live in this repository. The platform is in `platform/`, and framework code never imports from it (`node schema/check-boundary.mjs`). See `platform/README.md`.
+
 ## Vault and repo
 
 Docs as code (EE-005): this repo holds the method, its design docs, schemas, skills and templates. Each instance keeps its own notes and decisions in its own ventures. The schema's decisions are in `docs/decisions/decisions.json`, and `schema/README.md` indexes every record type.

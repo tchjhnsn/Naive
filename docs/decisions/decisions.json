@@ -433,6 +433,12 @@
         "EE-036",
         "EE-037"
       ]
+    },
+    {
+      "id": "EE-041",
+      "date": "2026-10-28",
+      "decision": "Mentura has two sides, as Next.js and Vercel do. The framework is the conventions: anything that works offline, with no account and without naming a vendor (record schemas and the data model, kits, the router with its CLI, MCP server and local API, routes, provenance, checks, need-now priors, validation scoring, init-venture and templates, the connector contract and the filesystem connector, the docs). The platform hosts, connects and integrates: connectors that reach a vendor (GitHub first), the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console and a template gallery. Both stay in this repository (Torian's choice, 2026-10-28) with a hard boundary: platform code lives in platform/, nothing outside it imports from it, and a framework connector reaches no network and names no credentials; schema/check-boundary.mjs enforces this. The framework may load a platform connector by the module path the registry names, as Next.js loads a deployment adapter. Each layer's tooling/integrations.json stays framework while its entries are data only. The framework is the open core and the platform is what is sold. Which side carries the name Mentura is open.",
+      "status": "proposed"
     }
   ]
 }
