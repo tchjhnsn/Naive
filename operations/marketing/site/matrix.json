@@ -100,7 +100,14 @@
       "belongs": [
         "home"
       ],
-      "keywords": []
+      "keywords": [],
+      "why": {
+        "investors": "investors decide in one line whether to read further",
+        "talent": "candidates need to know what they would work on",
+        "contributors": "contributors need to know what they would help build",
+        "partners": "partners need to know what they would integrate with or resell",
+        "press": "journalists need the one-line story"
+      }
     },
     "who-for": {
       "label": "Who it is for",
@@ -122,7 +129,11 @@
         "for founders",
         "for clinics",
         "for developers"
-      ]
+      ],
+      "why": {
+        "investors": "investors look for a clear, reachable market",
+        "partners": "partners check whether the customers overlap with theirs"
+      }
     },
     "problem": {
       "label": "The problem it solves",
@@ -143,7 +154,11 @@
         "pain",
         "instead of",
         "without the"
-      ]
+      ],
+      "why": {
+        "investors": "investors back a painful problem before a product",
+        "press": "stories start from the problem"
+      }
     },
     "how": {
       "label": "How it works",
@@ -162,7 +177,10 @@
         "features",
         "step 1",
         "integrates"
-      ]
+      ],
+      "why": {
+        "partners": "partners need to see where they would fit"
+      }
     },
     "proof": {
       "label": "Proof",
@@ -184,7 +202,11 @@
         "case study",
         "used by",
         "%"
-      ]
+      ],
+      "why": {
+        "investors": "traction is what investors look for first",
+        "press": "journalists cite customers and numbers"
+      }
     },
     "pricing": {
       "label": "Pricing",
@@ -245,7 +267,12 @@
         "our team",
         "ceo",
         "cto"
-      ]
+      ],
+      "why": {
+        "investors": "early-stage investors back the team as much as the idea",
+        "talent": "candidates want to know who they would work with",
+        "press": "journalists name and quote founders"
+      }
     },
     "mission": {
       "label": "Mission and vision",
@@ -266,7 +293,13 @@
         "we believe",
         "our story",
         "why we"
-      ]
+      ],
+      "why": {
+        "talent": "candidates choose ventures whose mission they share",
+        "investors": "investors look for founders with a long-run ambition",
+        "press": "the mission is often the story's angle",
+        "contributors": "contributors give time to missions they share"
+      }
     },
     "contact": {
       "label": "How to reach them",
@@ -286,7 +319,12 @@
         "email us",
         "@",
         "get in touch"
-      ]
+      ],
+      "why": {
+        "press": "journalists need someone to contact",
+        "partners": "partners need a person to start a conversation with",
+        "investors": "investors need a way to reach the founders"
+      }
     },
     "hiring": {
       "label": "Whether they are hiring",
@@ -304,7 +342,10 @@
         "open roles",
         "join us",
         "jobs"
-      ]
+      ],
+      "why": {
+        "talent": "candidates look for open roles and how to apply"
+      }
     },
     "raising": {
       "label": "Information for investors",
@@ -324,7 +365,10 @@
         "funding",
         "seed",
         "series a"
-      ]
+      ],
+      "why": {
+        "investors": "investors need to know the venture is raising and how to reach it"
+      }
     },
     "contribute": {
       "label": "How to contribute",
@@ -342,7 +386,10 @@
         "github",
         "discord",
         "open source"
-      ]
+      ],
+      "why": {
+        "contributors": "contributors need to know how to start"
+      }
     },
     "press": {
       "label": "News and press",
@@ -362,7 +409,11 @@
         "announc",
         "featured in",
         "media kit"
-      ]
+      ],
+      "why": {
+        "press": "journalists look for news and a press kit",
+        "investors": "coverage signals momentum"
+      }
     },
     "trust": {
       "label": "Trust and privacy",
@@ -382,7 +433,265 @@
         "gdpr",
         "hipaa",
         "encrypt"
-      ]
+      ],
+      "why": {
+        "partners": "partners check that the venture handles shared data responsibly"
+      }
     }
+  },
+  "customer_types": {
+    "note": "What a customer looks for on a site depends on who the customer is. Jev places the venture's ICP into one or more of these types; each type says how much each item matters to it and why. The reasons are ours, version 0.x and unevaluated: each is a claim to test with the venture's own customers, not a finding. Jev answers conservatively, so a type counts when its probability is at least 0.25 and at least 0.6 of the strongest type's.",
+    "default": {
+      "label": "Customers in general",
+      "why": {
+        "what": [
+          1,
+          "every visitor has to learn what it is before anything else"
+        ],
+        "who-for": [
+          1,
+          "visitors decide in seconds whether it is for them"
+        ],
+        "problem": [
+          0.8,
+          "buyers recognise themselves in the problem before the product"
+        ],
+        "how": [
+          0.8,
+          "buyers want to see how it would work for them"
+        ],
+        "proof": [
+          0.7,
+          "buyers look for others like them who use it"
+        ],
+        "pricing": [
+          0.8,
+          "most buyers check the price before they talk to anyone"
+        ],
+        "next-step": [
+          1,
+          "a visitor who is convinced needs one obvious thing to do"
+        ],
+        "team": [
+          0.3,
+          "most buyers judge the product, not the people behind it"
+        ],
+        "mission": [
+          0.2,
+          "few buyers read the mission before buying"
+        ],
+        "contact": [
+          0.5,
+          "some buyers want a person to ask"
+        ],
+        "trust": [
+          0.4,
+          "buyers handing over data look for how it is protected"
+        ]
+      }
+    },
+    "types": {
+      "consumer": {
+        "label": "Consumers",
+        "about": "individuals buying for themselves or their household",
+        "why": {
+          "team": [
+            0.1,
+            "consumers buy the product; they rarely look up who founded it"
+          ],
+          "proof": [
+            0.8,
+            "consumers lean on reviews and ratings from people like them"
+          ],
+          "pricing": [
+            0.9,
+            "consumers compare prices before anything else"
+          ],
+          "contact": [
+            0.3,
+            "consumers expect self-serve help more than a contact"
+          ],
+          "mission": [
+            0.3,
+            "some consumers choose brands for what they stand for"
+          ]
+        },
+        "match": "consumer|shopper|household|parents|people who|individuals|personal"
+      },
+      "smb-owner": {
+        "label": "Small-business owners",
+        "about": "owners or operators of a small business buying for it, often alone and on their own money",
+        "why": {
+          "team": [
+            0.5,
+            "owners spending their own money often want to see the people they are trusting"
+          ],
+          "pricing": [
+            1,
+            "owners buy on a budget and leave if the price is hidden"
+          ],
+          "proof": [
+            0.8,
+            "owners look for businesses like theirs that already use it"
+          ],
+          "contact": [
+            0.7,
+            "owners want to reach a person before they commit"
+          ]
+        },
+        "match": "small business|owner|shop|restaurant|salon|clinic owner|solo|local business|practice"
+      },
+      "business-team": {
+        "label": "Teams inside companies",
+        "about": "teams in a company (product, engineering, sales, marketing, operations) choosing a tool for their own work",
+        "why": {
+          "how": [
+            0.9,
+            "teams want to see the workflow before they ask colleagues to switch"
+          ],
+          "team": [
+            0.2,
+            "teams judge a tool by trying it, rarely by its founders"
+          ],
+          "proof": [
+            0.8,
+            "teams look for companies like theirs already using it"
+          ],
+          "pricing": [
+            0.8,
+            "per-seat pricing decides whether a team can adopt it without approval"
+          ],
+          "trust": [
+            0.6,
+            "company data in the tool brings an IT or security check"
+          ]
+        },
+        "match": "teams|team of|product team|sales team|marketing team|ops team|workspace|collaborat"
+      },
+      "enterprise-buyer": {
+        "label": "Enterprise buyers",
+        "about": "managers or procurement teams buying for a larger organisation, with review and security sign-off",
+        "why": {
+          "team": [
+            0.6,
+            "vendor-risk reviews ask who stands behind a vendor and whether it will last"
+          ],
+          "trust": [
+            0.9,
+            "security and compliance review gates the purchase"
+          ],
+          "proof": [
+            0.9,
+            "buyers need logos and case studies to justify the choice internally"
+          ],
+          "pricing": [
+            0.5,
+            "enterprise prices are negotiated; a contact-sales path is expected"
+          ],
+          "contact": [
+            0.8,
+            "enterprise buying runs through a sales conversation"
+          ]
+        },
+        "match": "enterprise|organizations|companies of|procurement|it team|large teams|fortune"
+      },
+      "developer": {
+        "label": "Developers",
+        "about": "engineers choosing a tool, library or API",
+        "why": {
+          "how": [
+            1,
+            "developers want docs and examples before anything else"
+          ],
+          "team": [
+            0.3,
+            "developers judge the docs and the code more than the founders"
+          ],
+          "proof": [
+            0.6,
+            "developers look for adoption: stars, users, companies"
+          ],
+          "pricing": [
+            0.9,
+            "developers check free tiers and usage pricing up front"
+          ],
+          "next-step": [
+            1,
+            "developers want to try it immediately: sign up, install or an API key"
+          ]
+        },
+        "match": "developer|engineer|api|sdk|devops|code"
+      },
+      "regulated-professional": {
+        "label": "Regulated professionals",
+        "about": "clinicians, financial or legal professionals whose work carries patient, client or legal obligations",
+        "why": {
+          "trust": [
+            1,
+            "they are liable for their clients' data, so privacy and compliance come first"
+          ],
+          "team": [
+            0.6,
+            "they want to know the people handling their clients' data understand the field"
+          ],
+          "proof": [
+            0.8,
+            "they trust peers in their own profession"
+          ],
+          "contact": [
+            0.6,
+            "they want someone to answer compliance questions"
+          ]
+        },
+        "match": "clinic|patient|therap|physician|doctor|nurse|health|hipaa|law firm|lawyer|attorney|accountant|financial advis|bank"
+      },
+      "creator": {
+        "label": "Creators and freelancers",
+        "about": "independent creators, freelancers and solo professionals",
+        "why": {
+          "team": [
+            0.4,
+            "creators often follow the people behind a tool"
+          ],
+          "mission": [
+            0.4,
+            "creators choose tools whose values match theirs"
+          ],
+          "proof": [
+            0.8,
+            "creators follow other creators who use it"
+          ],
+          "pricing": [
+            0.9,
+            "solo budgets make price decisive"
+          ]
+        },
+        "match": "creator|freelanc|influencer|artist|writer|podcast|designer"
+      },
+      "public-sector": {
+        "label": "Public sector and nonprofits",
+        "about": "government agencies, schools and nonprofits",
+        "why": {
+          "team": [
+            0.6,
+            "procurement asks who the vendor is and checks its standing"
+          ],
+          "mission": [
+            0.6,
+            "mission fit matters to mission-driven buyers"
+          ],
+          "trust": [
+            0.8,
+            "public data rules and accessibility requirements gate the purchase"
+          ],
+          "contact": [
+            0.8,
+            "procurement runs through a named contact"
+          ]
+        },
+        "match": "government|agency|school|district|nonprofit|non-profit|municipal|city of"
+      }
+    },
+    "floor": 0.25
   }
 }

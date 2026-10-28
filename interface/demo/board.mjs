@@ -278,39 +278,109 @@ async function tick(){
 tick();setInterval(tick,2000);
 </script></body></html>`;
 
-// Site presence (EE-062): a founder pastes their website and sees how present their public records
-// are on it, weighed by who the site must speak to now. Local, like the rest of the board.
+// Site presence (EE-062, EE-063): a founder pastes their website and sees its sitemap, each route
+// rated on what the audiences it must speak to need from it, with the reasons. Local, like the rest of the board.
 const SITE_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Site presence</title><style>
+<title>Site presence</title><link rel="stylesheet" href="/vendor/reactflow@11.11.4/dist/style.css"><style>
 :root{--bg:#fbfaf7;--fg:#1d1c1a;--muted:#6b675f;--line:#e4e0d8;--card:#fff;--col:#f2efe9;--accent:#1f6feb;--miss:#c4321f;--low:#9a6700;--ok:#1a7f37}
 @media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--muted:#a19d94;--line:#2e2d2a;--card:#1c1b19;--col:#191917;--accent:#58a6ff;--miss:#ff7b6b;--low:#e3b341;--ok:#56d364}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}h1{font-size:20px;margin:0}.meta{color:var(--muted);font-size:13px}a{color:var(--accent)}
-form{padding:18px 24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}input[type=url]{flex:1;min-width:260px;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
-button{font:inherit;font-weight:600;padding:9px 16px;border:0;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}button:disabled{opacity:.5}label{color:var(--muted);font-size:13px}
-#out{padding:0 24px 28px}.top{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.score{font-size:56px;font-weight:700;line-height:1}.score small{font-size:18px;color:var(--muted)}
-.aud{display:grid;grid-template-columns:150px 1fr 40px;gap:4px 10px;align-items:center;font-size:13px;min-width:320px}.bar{height:8px;background:var(--col);border-radius:4px;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}.dim{opacity:.45}
-.cols{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:12px}@media (max-width:760px){.cols{grid-template-columns:1fr}}
-.col{background:var(--col);border-radius:10px;padding:10px}.col h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px}
-.card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:8px}.card.miss{border-top-color:var(--miss)}.card.low{border-top-color:var(--low)}.card.ok{border-top-color:var(--ok)}
-.t{font-weight:600}.r{font:11px ui-monospace,monospace;color:var(--muted)}.n{font-size:13px;margin-top:4px}.fix{display:inline-block;font-size:11px;border-radius:99px;padding:1px 6px;border:1px solid var(--miss);color:var(--miss);margin-left:6px}
-</style></head><body><header><h1>Site presence</h1><span class="meta">How present your public records are on your website, weighed by who it must speak to now</span><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/">Decision board</a></header>
-<form id="f"><input type="url" id="url" placeholder="https://your-site.com" required><label><input type="checkbox" id="raising"> raising</label><label><input type="checkbox" id="hiring"> hiring</label><label><input type="checkbox" id="contributors"> inviting contributors</label><button id="go">Read my site</button></form>
-<div id="out"></div>
+header{padding:16px 24px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}h1{font-size:20px;margin:0}.meta{color:var(--muted);font-size:13px}a{color:var(--accent)}
+form{padding:14px 24px;display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:start}@media (max-width:860px){form{grid-template-columns:1fr}}
+input[type=url],textarea{width:100%;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}textarea{height:40px;resize:vertical}
+.flags{display:flex;gap:12px;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;padding:9px 16px;border:0;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}button:disabled{opacity:.5}label{color:var(--muted);font-size:13px}
+#main{display:grid;grid-template-columns:1fr 380px;border-top:1px solid var(--line);height:78vh}@media (max-width:860px){#main{grid-template-columns:1fr;height:auto}#flow{height:60vh}}
+#flow{min-height:0}aside{border-left:1px solid var(--line);padding:14px 16px;overflow:auto}aside h2{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.score{font-size:48px;font-weight:700;line-height:1}.score small{font-size:16px;color:var(--muted)}
+.aud{display:grid;grid-template-columns:130px 1fr 32px;gap:3px 8px;align-items:center;font-size:12px}.bar{height:7px;background:var(--col);border-radius:4px;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}.dim{opacity:.45}
+.node{background:var(--card);color:var(--fg);border:1px solid var(--line);border-top:4px solid var(--line);border-radius:8px;padding:7px 9px;width:170px;font-size:13px;text-align:left;cursor:pointer}
+.node.home{width:230px;border-width:2px}.node .p{font:11px ui-monospace,monospace;color:var(--muted);word-break:break-all}.node .t{font-weight:600}.node.unread{opacity:.6}.node.ghost{border-style:dashed;background:transparent}
+.node .rt{float:right;font-weight:700}.node.r-ok{border-top-color:var(--ok)}.node.r-low{border-top-color:var(--low)}.node.r-miss{border-top-color:var(--miss)}.node.ghost{border-color:var(--miss)}
+.band{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:transparent;border:none}
+.it{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0 0 8px;background:var(--card)}.it .t{font-weight:600}.it.miss{border-left:4px solid var(--miss)}.it.low{border-left:4px solid var(--low)}.it.ok{border-left:4px solid var(--ok)}
+.why{font-size:12px;color:var(--muted);margin-top:4px}.why b{color:var(--fg);font-weight:600}.fix{display:inline-block;font-size:11px;border-radius:99px;padding:1px 6px;border:1px solid var(--miss);color:var(--miss);margin-left:6px}
+.icp{font-size:12px;background:var(--col);border-radius:8px;padding:8px 10px}.chip{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:99px;padding:1px 6px;margin:3px 3px 0 0}
+.react-flow__attribution{display:none}.react-flow__handle{opacity:0;pointer-events:none}
+</style></head><body><header><h1>Site presence</h1><span class="meta">Your sitemap, each route rated on what your audiences need from it, with the reasons</span><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/">Decision board</a></header>
+<form id="f"><div><input type="url" id="url" placeholder="https://your-site.com" required><div class="flags" style="margin-top:8px"><label><input type="checkbox" id="raising"> raising</label><label><input type="checkbox" id="hiring"> hiring</label><label><input type="checkbox" id="contributors"> inviting contributors</label></div></div>
+<textarea id="icp" placeholder="Who are your customers? (optional; otherwise Naive infers it from your home page and says so)"></textarea><button id="go">Read my site</button></form>
+<div id="main"><div id="flow"></div><aside id="side"><div class="meta">Paste a link to your marketing site or your product.</div></aside></div>
+<script src="/vendor/react@18.3.1/umd/react.production.min.js"></script>
+<script src="/vendor/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="/vendor/reactflow@11.11.4/dist/umd/index.js"></script>
 <script>
+const h=React.createElement, RF=window.ReactFlow, Flow=RF.default||RF.ReactFlow;
 const esc=(s)=>String(s??"").replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const LABEL=__LABELS__;
+const LABEL=__LABELS__;let R=null,setG=null;
+const cls=(n)=>n.ghost?"ghost":n.rating==null?"unread":n.rating>=80?"r-ok":n.rating>=50?"r-low":"r-miss";
+const itemOf=(id)=>R.items.find((x)=>x.id===id);
+function evidence(x){return x.evidence.map((e)=>'<div class="why"><b>'+esc(LABEL[e.audience])+'</b> need '+e.need+' (weight '+e.weight+' x importance '+e.importance+'): '+esc(e.why)+'</div>').join("");}
+function itemCard(x){return '<div class="it '+(x.score===1?'ok':x.score?'low':'miss')+'"><div class="t">'+esc(x.label)+(R.fix_first.includes(x.id)?'<span class="fix">fix first</span>':'')+'</div><div class="why">'+esc(x.note)+'</div>'+evidence(x)+'<div class="why">From the '+esc(x.record)+' record · needs to be '+esc(x.required)+'</div></div>';}
+function overview(){
+  const aud=Object.entries(R.audiences).sort((a,b)=>b[1].weight-a[1].weight).map(([k,v])=>'<span class="'+(v.weight<0.5?'dim':'')+'">'+esc(LABEL[k])+'</span><div class="bar '+(v.weight<0.5?'dim':'')+'"><span style="width:'+(v.score??0)+'%"></span></div><span class="'+(v.weight<0.5?'dim':'')+'">'+(v.score??"")+'</span>').join("");
+  const t=R.icp.types.map((x)=>'<span class="chip">'+esc(x.label)+(x.p!=null?' '+x.p:'')+'</span>').join("");
+  return '<div class="score">'+R.score+'<small>/100</small></div><div class="meta">'+esc(R.site)+' · '+R.pages.length+' pages read via '+esc(R.read_via)+', judged by '+esc(R.judged_by)+'</div>'+
+    '<h2>Who the site is for</h2><div class="icp">'+esc(R.icp.text.slice(0,240))+'<div class="meta">Source: '+esc(R.icp.cite)+'</div>'+t+'</div>'+
+    '<h2>By audience</h2><div class="aud">'+aud+'</div><div class="meta" style="margin-top:4px">Faded audiences are not a priority now, so they count little.</div>'+
+    '<h2>Fix first</h2>'+(R.fix_first.length?R.fix_first.map((id)=>itemCard(itemOf(id))).join(""):'<div class="meta">Nothing urgent.</div>')+
+    '<h2>Every item</h2>'+R.items.filter((x)=>!R.fix_first.includes(x.id)).map(itemCard).join("")+'<div class="meta">Click a route on the sitemap to see what belongs there.</div>';
+}
+function routePanel(n){
+  const list=(ids,none)=>ids.length?ids.map((id)=>itemCard(itemOf(id))).join(""):'<div class="meta">'+none+'</div>';
+  return '<a href="#" onclick="document.getElementById(\\'side\\').innerHTML=overview();return false">Back to the overview</a><h2>'+esc(n.ghost?'Suggested page':'Route')+'</h2><div class="t" style="font-weight:600">'+esc(n.label)+'</div><div class="meta">'+esc(n.path)+' · '+esc(n.type)+' page · '+esc(n.level)+(n.read?'':' · not read')+(n.rating!=null?' · rating '+n.rating:'')+'</div>'+
+    (n.ghost?'<div class="why">Your priorities call for this page and the site has none.</div>':'')+
+    '<h2>Belongs here, missing</h2>'+list(n.missing,n.read||n.ghost?'Nothing missing.':'Not read in this scan.')+
+    '<h2>Belongs here, present</h2>'+list(n.expected.filter((id)=>n.found.includes(id)),'None.')+
+    '<h2>Also found here</h2>'+list(n.found.filter((id)=>!n.expected.includes(id)),'None.');
+}
+// A sitemap, not a canvas of ideas: the home page on top, the pages in its navigation in one row,
+// the pages linked elsewhere from it (the footer) in a row below, and each page's own routes listed
+// under it. Unread routes of no known type fold into one "more" node per parent.
+function layout(r){
+  const nodes=[],edges=[],W=190,GAP=20,ROW=130;
+  const kids={};r.sitemap.forEach((n)=>{if(n.parent!=null)(kids[n.parent]=kids[n.parent]||[]).push(n);});
+  const keep=(n)=>n.read||n.ghost||n.type!=="other";
+  const card=(n)=>h("div",{className:"node "+cls(n)+(n.path==="/"?" home":"")},n.rating!=null?h("span",{className:"rt"},n.rating):null,h("div",{className:"t"},n.label.slice(0,40)),h("div",{className:"p"},n.path),n.missing.length?h("div",{className:"p"},"missing: "+n.missing.join(", ")):null);
+  const put=(n,x,y)=>{nodes.push({id:n.path,position:{x,y},data:{label:card(n),n},style:{border:"none",background:"transparent",padding:0,width:"auto"}});};
+  const home=r.sitemap.find((n)=>n.path==="/");
+  const top=(kids["/"]||[]);
+  const col=(n,x,y)=>{put(n,x,y);let yy=y+ROW*0.75;const ks=(kids[n.path]||[]);const shown=ks.filter(keep).slice(0,4),more=ks.length-shown.length;
+    shown.forEach((k)=>{put(k,x+16,yy);edges.push({id:n.path+">"+k.path,source:n.path,target:k.path,type:"smoothstep"});yy+=ROW*0.62;});
+    if(more>0){nodes.push({id:n.path+"+more",position:{x:x+16,y:yy},data:{label:h("div",{className:"node unread"},"+"+more+" more routes")},style:{border:"none",background:"transparent",padding:0,width:"auto"}});edges.push({id:n.path+">more",source:n.path,target:n.path+"+more",type:"smoothstep"});yy+=ROW*0.62;}
+    return yy;};
+  const bands=[["nav","In the navigation"],["linked","Linked from the home page"]];
+  let y=ROW*1.2;
+  bands.forEach(([lvl,title])=>{
+    let xs=top.filter((n)=>n.level===lvl||(lvl==="linked"&&n.level==="anywhere"));
+    const shown=xs.filter(keep),hidden=xs.length-shown.length;
+    if(!shown.length&&!hidden)return;
+    nodes.push({id:"band-"+lvl,position:{x:0,y:y-34},data:{label:h("div",{className:"band"},title+" ("+xs.length+")")},style:{border:"none",background:"transparent",padding:0,width:"auto"},selectable:false});
+    // Rated and suggested pages first; rows of at most seven, so a long footer wraps instead of stretching.
+    shown.sort((a,b)=>(b.ghost?2:b.read?1:0)-(a.ghost?2:a.read?1:0));
+    const cells=[...shown,...(hidden>0?[{more:hidden}]:[])];
+    for(let k=0;k<cells.length;k+=7){let x=0,maxY=y+ROW*0.7;
+      cells.slice(k,k+7).forEach((n)=>{
+        if(n.more){nodes.push({id:"more-"+lvl,position:{x,y},data:{label:h("div",{className:"node unread"},"+"+n.more+" more routes, not read")},style:{border:"none",background:"transparent",padding:0,width:"auto"}});edges.push({id:"/>more-"+lvl,source:"/",target:"more-"+lvl,type:"smoothstep"});}
+        else{maxY=Math.max(maxY,col(n,x,y));edges.push({id:"/>"+n.path,source:"/",target:n.path,type:"smoothstep",style:n.ghost?{strokeDasharray:"4 4"}:{}});}
+        x+=W+GAP;});
+      y=maxY+ROW*0.3;}
+    y+=ROW*0.4;
+  });
+  const width=Math.max(...nodes.map((n)=>n.position.x))+W;put(home,width/2-115,0);
+  return {nodes,edges};
+}
+function App(){const [g,sg]=React.useState({nodes:[],edges:[]});setG=sg;
+  return h(Flow,{nodes:g.nodes,edges:g.edges,fitView:true,minZoom:.1,key:g.nodes.length+":"+(R&&R.site),onNodeClick:(e,n)=>{if(n.data&&n.data.n)document.getElementById("side").innerHTML=routePanel(n.data.n);}},h(RF.Background,{gap:24,size:1}),h(RF.Controls,null));}
+ReactDOM.createRoot(document.getElementById("flow")).render(h(App));
 function show(r){
-  if(r.error){document.getElementById("out").innerHTML='<p>'+esc(r.error)+'</p>';return;}
-  const aud=Object.entries(r.audiences).sort((a,b)=>b[1].weight-a[1].weight).map(([k,v])=>'<span class="'+(v.weight<0.5?'dim':'')+'">'+esc(LABEL[k])+'</span><div class="bar '+(v.weight<0.5?'dim':'')+'"><span style="width:'+(v.score??0)+'%"></span></div><span class="'+(v.weight<0.5?'dim':'')+'">'+(v.score??"")+'</span>').join("");
-  const col=(k,l,xs)=>'<div class="col"><h3>'+l+' ('+xs.length+')</h3>'+xs.map((x)=>'<div class="card '+k+'"><div class="t">'+esc(x.label)+(r.fix_first.includes(x.id)?'<span class="fix">fix first</span>':'')+'</div><div class="r">need '+x.need+' · '+esc(x.required)+' · from '+esc(x.record)+'</div><div class="n">'+esc(x.note)+'</div></div>').join("")+'</div>';
-  document.getElementById("out").innerHTML='<div class="top"><div class="score">'+r.score+'<small>/100</small></div><div class="aud">'+aud+'</div><div class="meta">'+esc(r.site)+'<br>'+r.pages.length+' pages read via '+esc(r.read_via)+', judged by '+esc(r.judged_by)+'<br>Faded audiences are not a priority now: they count little.</div></div>'+
-    '<div class="cols">'+col("miss","Missing",r.items.filter((x)=>x.score===0))+col("low","Not prominent enough",r.items.filter((x)=>x.score===0.5))+col("ok","Present",r.items.filter((x)=>x.score===1))+'</div>';
+  if(r.error){document.getElementById("side").innerHTML='<p>'+esc(r.error)+'</p>';return;}
+  R=r;document.getElementById("side").innerHTML=overview();if(setG)setG(layout(r));
 }
 document.getElementById("f").onsubmit=async(e)=>{e.preventDefault();const b=document.getElementById("go");b.disabled=true;b.textContent="Reading...";
-  const q=new URLSearchParams({url:document.getElementById("url").value});["raising","hiring","contributors"].forEach((k)=>{if(document.getElementById(k).checked)q.set(k,"1");});
+  const q=new URLSearchParams({url:document.getElementById("url").value});const icp=document.getElementById("icp").value.trim();if(icp)q.set("icp",icp);
+  ["raising","hiring","contributors"].forEach((k)=>{if(document.getElementById(k).checked)q.set(k,"1");});
   try{show(await (await fetch("site/scan?"+q,{method:"POST"})).json());}catch(err){show({error:"The scan failed: "+err.message});}b.disabled=false;b.textContent="Read my site";};
-fetch("site.json"+location.search).then((r)=>r.json()).then((r)=>{if(r&&r.site){document.getElementById("url").value=r.site;show(r);}}).catch(()=>{});
+fetch("site.json"+location.search).then((r)=>r.json()).then((r)=>{if(r&&r.site&&r.sitemap){document.getElementById("url").value=r.site;if(r.icp&&r.icp.source==="founder")document.getElementById("icp").value=r.icp.text;["raising","hiring","contributors"].forEach((k)=>{document.getElementById(k).checked=!!(r.facts||{})[k];});setTimeout(()=>show(r),50);}}).catch(()=>{});
 </script></body></html>`.replace("__LABELS__", JSON.stringify(Object.fromEntries(Object.entries(MATRIX.audiences).map(([k, v]) => [k, v.label]))));
 
 // The map's three libraries, pinned, fetched from unpkg once and kept on disk, so the canvas works
@@ -349,7 +419,7 @@ export function serve(p = port, id = venture) {
       const dir = ventureDir(u.searchParams.get("venture") ?? id);
       const flags = Object.fromEntries(["raising", "hiring", "contributors"].map((k) => [k, u.searchParams.get(k) === "1"]));
       let body;
-      try { body = await scan(u.searchParams.get("url") ?? "", { venture: dir, flags }); } catch (e) { body = { error: e.message }; }
+      try { body = await scan(u.searchParams.get("url") ?? "", { venture: dir, flags, icp: u.searchParams.get("icp") }); } catch (e) { body = { error: e.message }; }
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(body)); return;
     }
     if (u.pathname === "/kanban") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(KANBAN_PAGE); return; }
