@@ -15,8 +15,8 @@
 // Whether a page says something, and which customer types the ICP is, are judged by Jev when the
 // platform hands over its answers; otherwise by the matrix's keywords, which is rougher.
 //
-//   node presence.mjs request <site.json> [--icp "<who the customers are>"]   the Jev request
-//   node presence.mjs score <site.json> [--answers <jev.json>] [--venture <dir>] [--icp "..."] [--raising] [--hiring] [--contributors]
+//   node presence.mjs request <site.json>   the Jev request
+//   node presence.mjs score <site.json> [--answers <jev.json>] [--venture <dir>] [--raising] [--hiring] [--contributors]
 //   node presence.mjs <venture> [--json]                                      the saved result
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -46,17 +46,22 @@ export function factsOf(dir, flags = {}) {
 }
 
 /** Who the customers are, and where that comes from: the founder's words, the ICP record, or the home page. */
-export function icpOf(dir, site, text) {
-  if (text?.trim()) return { text: text.trim(), source: "founder", cite: "typed by the founder" };
+// Who the site is for, read from the site itself (2026-10-28): what it says outright ("for clinics",
+// "built for teams", "trusted by") and, failing that, what its opening implies. The founder does not
+// type it. The ICP the venture's records state is kept beside it, unscored, for a later clarity check
+// (stated versus seen).
+const SAYS = /\b(?:built for|made for|designed for|for (?:teams|companies|businesses|developers|founders|clinics|owners|people|creators|agencies|startups|enterprises|schools|families)|trusted by|helps?|serving|used by|loved by)\b[^.\n]{0,140}/gi;
+export function icpOf(dir, site) {
+  const ok = (site?.pages ?? []).filter((p) => !p.error);
+  const home = ok.find((p) => p.depth === 0);
+  const who = ok.filter((p) => /customer|solution|who|industr|use-case|about|for-/i.test(p.path));
+  const says = [...new Set([home, ...who].filter(Boolean).flatMap((p) => (p.text ?? "").match(SAYS) ?? []).map((x) => x.trim()))].slice(0, 8);
+  const opening = (home?.text ?? "").slice(0, 500);
   const icpFile = dir && join(dir, "purpose/icp.json");
-  if (icpFile && existsSync(icpFile)) {
-    const icp = load(icpFile);
-    const profiles = icp.profiles ?? icp.icps ?? [];
-    const t = profiles.map((p) => [p.name, p.description ?? p.who ?? p.segment, p.pains?.join?.("; ")].filter(Boolean).join(": ")).join(" | ") || JSON.stringify(icp).slice(0, 600);
-    return { text: t, source: "record", cite: "purpose/icp.json" };
-  }
-  const home = site?.pages?.find((p) => p.depth === 0 && !p.error);
-  return { text: (home?.text ?? "").slice(0, 500), source: "inferred", cite: "the home page's opening text (inferred: not confirmed by the founder)" };
+  const stated = icpFile && existsSync(icpFile) ? (load(icpFile).profiles ?? []).map((p) => p.who ?? p.description ?? p.name).filter(Boolean) : null;
+  return { text: [says.join(" | "), opening].filter(Boolean).join(" || "), source: says.length ? "site" : "inferred", says,
+    cite: says.length ? `what the site says about who it is for (${says.length} phrase${says.length > 1 ? "s" : ""}), with the home page's opening` : "the home page's opening text (inferred: the site does not say outright who it is for)",
+    ...(stated?.length ? { stated } : {}) };
 }
 
 /** Which customer types the ICP is: Jev's answers when given, else the matrix's keywords. */
@@ -226,12 +231,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const opt = (n) => { const i = process.argv.indexOf(`--${n}`); return i > 0 ? process.argv[i + 1] : null; };
   const has = (n) => process.argv.includes(`--${n}`);
   const siteOf = (p) => load(p === "-" ? 0 : p);
-  if (a === "request") { const site = siteOf(b); console.log(JSON.stringify(request(site, icpOf(opt("venture"), site, opt("icp"))))); }
+  if (a === "request") { const site = siteOf(b); console.log(JSON.stringify(request(site, icpOf(opt("venture"), site)))); }
   else if (a === "score") {
     const dir = opt("venture"), site = siteOf(b);
     const answers = opt("answers") ? (load(opt("answers")).answers ?? load(opt("answers"))) : null;
     const facts = factsOf(dir, Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true])));
-    const r = score(site, { answers, facts, icp: icpOf(dir, site, opt("icp")), venture: dir ? load(join(dir, "venture.json")).id : null });
+    const r = score(site, { answers, facts, icp: icpOf(dir, site), venture: dir ? load(join(dir, "venture.json")).id : null });
     if (dir) { mkdirSync(join(dir, dirname(PRESENCE)), { recursive: true }); writeFileSync(join(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
     console.log(JSON.stringify(r, null, 2));
   } else if (a && existsSync(join(a, "venture.json"))) {
@@ -243,5 +248,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       for (const n of r.sitemap) console.log(`  ${n.ghost ? "+" : " "} ${n.path.padEnd(28)} ${n.type.padEnd(9)} ${n.rating == null ? (n.read ? "-" : "not read") : n.rating}${n.missing.length ? `  missing: ${n.missing.join(", ")}` : ""}`);
       for (const x of r.items) console.log(`${x.score === 1 ? "ok  " : x.score ? "low " : "miss"} ${x.label.padEnd(28)} ${x.note}`);
     }
-  } else { console.error("usage: node presence.mjs request <site.json> [--icp ...] | score <site.json> [--answers f] [--venture d] [--icp ...] [--raising] [--hiring] [--contributors] | <venture> [--json]"); process.exit(2); }
+  } else { console.error("usage: node presence.mjs request <site.json> | score <site.json> [--answers f] [--venture d] [--raising] [--hiring] [--contributors] | <venture> [--json]"); process.exit(2); }
 }

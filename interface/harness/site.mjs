@@ -22,13 +22,13 @@ const run = (script, args, input) => new Promise((resolve) => {
 });
 
 /** Read, judge and score one site. Returns the presence result; writes it into the venture if given. */
-export async function scan(url, { venture = null, flags = {}, icp: icpText = null, pages = 10, log = () => {} } = {}) {
+export async function scan(url, { venture = null, flags = {}, pages = 10, log = () => {} } = {}) {
   const t0 = Date.now();
   const r = await run("platform/integrations/site.mjs", [url, "--pages", String(pages)]);
   if (r.code !== 0) throw new Error(`could not read ${url}: ${r.err.trim() || `exit ${r.code}`}`);
   const site = JSON.parse(r.out);
   log(`read ${site.pages.filter((p) => !p.error).length} pages of ${site.site} via ${site.via} in ${Date.now() - t0} ms`);
-  const icp = icpOf(venture, site, icpText);
+  const icp = icpOf(venture, site);
   let answers = null;
   if (process.env.TYPESAFE_API_KEY || process.env.TYPESAFEAI_API_KEY) {
     const j = await run("platform/integrations/jev.mjs", [], JSON.stringify(request(site, icp)));
@@ -45,9 +45,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const url = process.argv[2];
   const opt = (n) => { const i = process.argv.indexOf(`--${n}`); return i > 0 ? process.argv[i + 1] : null; };
   const has = (n) => process.argv.includes(`--${n}`);
-  if (!url || url.startsWith("--")) { console.error("usage: node interface/harness/site.mjs <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--icp \"<who your customers are>\"] [--pages 10] [--json]"); process.exit(2); }
+  if (!url || url.startsWith("--")) { console.error("usage: node interface/harness/site.mjs <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--pages 10] [--json]"); process.exit(2); }
   const flags = Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true]));
-  scan(url, { venture: opt("venture"), flags, icp: opt("icp"), pages: Number(opt("pages") ?? 10), log: (m) => console.error(m) }).then((r) => {
+  scan(url, { venture: opt("venture"), flags, pages: Number(opt("pages") ?? 10), log: (m) => console.error(m) }).then((r) => {
     if (has("json")) return console.log(JSON.stringify(r, null, 2));
     console.log(`${r.site}: site presence ${r.score}/100 (${r.judged_by})`);
     console.log(`Customers: ${r.icp.types.map((t) => `${t.label}${t.p != null ? ` ${t.p}` : ""}`).join(", ")}; ICP from ${r.icp.cite}`);

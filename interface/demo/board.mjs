@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // The decision board (EE-054, EE-058): a live page of one venture's decisions, by what renders now,
 // with provenance as it happens, at /map the founder's idea map on one canvas (EE-059), at /graph the
-// idea graph (EE-060), and at /kanban the ideas routed into the framework and the docket as boards (EE-061). Local
+// idea graph (EE-060), at /kanban the ideas routed into the framework and the docket as boards (EE-061), at /site
+// site presence and the sitemap planner (EE-062 to EE-064), and at /package the venture package (EE-067). Local
 // only: it binds to 127.0.0.1 and reads the workspace in
 // MENTURA_WORKSPACE (the default is this repository's instance/). No dependencies: the map's React
 // Flow is fetched once from unpkg and cached in ~/.cache/naive-board.
@@ -21,6 +22,7 @@ import { route } from "../../purpose/frameworks/idea-map/route.mjs";
 import { scan } from "../harness/site.mjs";
 import { MATRIX } from "../../operations/marketing/site/presence.mjs";
 import { plan } from "../../operations/marketing/site/plan.mjs";
+import { packages, write as writePackage, OUT as PACKAGE } from "../../schema/packages.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));
@@ -235,6 +237,48 @@ function routesOf(id) {
   return route(dir);
 }
 
+const PACKAGE_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Venture package</title><style>
+:root{--bg:#fbfaf7;--fg:#1d1c1a;--muted:#6b675f;--line:#e4e0d8;--card:#fff;--col:#f2efe9;--accent:#1f6feb;--ok:#1a7f37;--low:#9a6700;--miss:#cf222e}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--muted:#a19d94;--line:#2e2d2a;--card:#1c1b19;--col:#191917;--accent:#58a6ff;--ok:#56d364;--low:#e3b341;--miss:#ff7b72}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}h1{font-size:20px;margin:0}.meta{color:var(--muted);font-size:13px}a{color:var(--accent)}
+.pipe{display:flex;gap:6px;padding:14px 24px;flex-wrap:wrap;align-items:stretch}.step{background:var(--col);border-radius:8px;padding:7px 10px;min-width:120px;border-top:3px solid var(--line)}.step.done{border-top-color:var(--ok)}.step.part{border-top-color:var(--low)}.step .n{font-size:11px;color:var(--muted)}.step .l{font-weight:600}.step .d{font-size:12px;color:var(--muted)}.arrow{align-self:center;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:1fr 320px;gap:16px;padding:0 24px 28px}@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+h2{font-size:15px;margin:14px 0 6px}.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.pkg{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:10px;padding:10px 12px}.pkg.ready{border-top-color:var(--ok)}.pkg.review{border-top-color:var(--accent)}.pkg.building{border-top-color:var(--low)}.pkg.held{opacity:.6}
+.t{font-weight:600}.for{font-size:12px;color:var(--muted)}.bar{height:6px;background:var(--col);border-radius:3px;margin:8px 0 4px}.bar span{display:block;height:100%;background:var(--accent);border-radius:3px}
+.rec{font-size:12.5px;display:flex;gap:6px;align-items:baseline;margin-top:5px}.dot{width:8px;height:8px;border-radius:50%;flex:none;transform:translateY(-1px)}.dot.confirmed{background:var(--ok)}.dot.agent,.dot.draft{background:var(--accent)}.dot.missing{background:transparent;border:1.5px solid var(--miss)}
+.opt{color:var(--muted)}.nx{font-size:11.5px;color:var(--muted);margin-left:14px}.tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:99px;padding:1px 7px;margin-left:6px;color:var(--muted)}
+aside{background:var(--col);border-radius:10px;padding:12px;align-self:start}.qq{font-size:12.5px;margin:0 0 8px}.qq b{font-weight:600}.big{font-size:34px;font-weight:700}button{font:inherit;padding:7px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+</style></head><body><header><h1 id="title">Venture package</h1><span class="meta" id="meta"></span><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/site">Site presence</a><a class="meta" href="/">Decision board</a></header>
+<div class="pipe" id="pipe"></div>
+<div class="wrap"><main><h2>Fits now</h2><div class="cols" id="now"></div><h2>Next phase</h2><div class="cols" id="next"></div><h2>Held for now</h2><div class="cols" id="held"></div></main><aside id="side"></aside></div>
+<script>
+const esc=(s)=>String(s??"").replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ST={ready:"ready to hand off",review:"waiting for your review",building:"still being written"};
+const MK={confirmed:"confirmed",agent:"agent draft, to review",draft:"draft, to accept",missing:"not written"};
+function card(p,written){
+  const recs=p.in==="held"?'':p.records.map((r)=>'<div class="rec"><span class="dot '+r.status+'"></span><span class="'+(r.required?'':'opt')+'">'+esc(r.title)+(r.required?'':' (optional)')+' <span class="opt">· '+MK[r.status]+'</span></span></div>'+(r.status!=="confirmed"&&r.route&&r.route.next?'<div class="nx">Next: '+esc(r.route.next.do)+'</div>':'')).join("");
+  return '<div class="pkg '+(p.in==="now"?p.state:p.in)+'"><div class="t">'+esc(p.title)+(p.in==="now"?'<span class="tag">'+ST[p.state]+'</span>':'<span class="tag">fit '+p.fit+'</span>')+'</div><div class="for">For '+esc(p.for)+'. '+esc(p.purpose)+'</div>'+
+    (p.in==="now"?'<div class="bar"><span style="width:'+Math.round(p.progress*100)+'%"></span></div><div class="for">'+Math.round(p.progress*100)+'% · fit '+p.fit+(written&&written.includes(p.id)?' · <a href="package/'+p.id+'.md" target="_blank">read the document</a>':'')+'</div>':'<div class="for" style="margin-top:6px">'+esc(p.why)+'</div>')+recs+'</div>';
+}
+async function load(){
+  const r=await (await fetch("package.json"+location.search,{cache:"no-store"})).json();
+  if(r.error){document.getElementById("meta").textContent=r.error;return;}
+  document.getElementById("title").textContent="Venture package: "+r.name;
+  document.getElementById("meta").textContent=r.phase+" phase · "+Math.round(r.progress*100)+"% across what fits now";
+  document.getElementById("pipe").innerHTML=r.pipeline.map((s,i)=>(i?'<span class="arrow">&rarr;</span>':'')+'<div class="step '+s.state+'"><div class="n">'+(i+1)+'</div><div class="l">'+(s.href?'<a href="'+s.href+'">'+esc(s.label)+'</a>':esc(s.label))+'</div><div class="d">'+esc(s.detail)+'</div></div>').join("");
+  for(const k of ["now","next","held"])document.getElementById(k).innerHTML=r.packages.filter((p)=>p.in===k).map((p)=>card(p,r.written)).join("")||'<div class="meta">None.</div>';
+  document.getElementById("side").innerHTML='<div class="big">'+Math.round(r.progress*100)+'<small style="font-size:14px">%</small></div><div class="meta">Ready to hand off: '+(r.ready.length?esc(r.ready.join(", ")):"none yet")+'</div>'+
+    '<p><button id="w">'+(r.written?'Write it again':'Write the package')+'</button></p>'+
+    '<h2>What decided this</h2>'+r.situation.questions.map((q)=>'<div class="qq">'+esc(q.ask)+' <b>'+(q.value==null?'open, yours to answer':q.value?'yes':'no')+'</b><br><span class="meta">'+(q.by==="records"?'from the records':q.by==="jev"?'Jev, '+q.p:'the records do not say')+' · moves '+esc(q.moves.join(", "))+'</span></div>').join("")+
+    '<h2>Not included</h2><div class="qq">Agents. '+esc(r.enhancements.agents)+'</div>';
+  document.getElementById("w").onclick=async()=>{await fetch("package/write"+location.search,{method:"POST"});load();};
+}
+load();
+</script></body></html>`;
+
 const KANBAN_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Idea routes</title><style>
 :root{--bg:#fbfaf7;--fg:#1d1c1a;--muted:#6b675f;--line:#e4e0d8;--card:#fff;--col:#f2efe9;--routed:#6b675f;--drafted:#1f6feb;--yours:#bf3989;--waiting:#9a6700;--done:#1a7f37}
@@ -251,7 +295,7 @@ h2.board{font-size:15px;margin:20px 24px 4px}.sub{margin:0 24px 10px;color:var(-
 .tag{display:inline-block;font-size:11px;border-radius:99px;padding:1px 6px;margin:4px 3px 0 0;border:1px solid var(--line);color:var(--muted)}.tag.async{border-color:var(--done);color:var(--done)}
 .next{font-size:12px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}.next b{color:var(--muted);font-weight:600}code{font-size:11px;word-break:break-all}
 .foot{padding:4px 24px 28px;color:var(--muted);font-size:13px}
-</style></head><body><header><h1 id="title">Idea routes</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a><a class="meta" href="/site">Site presence</a><a class="meta" href="/">Decision board</a></header>
+</style></head><body><header><h1 id="title">Idea routes</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a><a class="meta" href="/site">Site presence</a><a class="meta" href="/package">Venture package</a><a class="meta" href="/">Decision board</a></header>
 <h2 class="board">From ideas to the framework</h2><p class="sub">Each card is a record the founder's ideas feed. It moves left to right as an agent drafts it and the founder settles it; the next step comes from the framework, not from a guess.</p><div class="cols" id="dest"></div>
 <div class="foot" id="loose"></div>
 <h2 class="board">The decision docket</h2><p class="sub">Every open decision, by what moves it next, traced to the ideas it comes from. Ranked ones show their place in line.</p><div class="cols" id="docket"></div>
@@ -305,7 +349,7 @@ input[type=url],textarea{width:100%;font:inherit;padding:9px 12px;border:1px sol
 .react-flow__attribution{display:none}.react-flow__handle{opacity:0;pointer-events:none}
 </style></head><body><header><h1>Site presence</h1><span class="meta">Your sitemap, each route rated on what your audiences need from it, with the reasons</span><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/">Decision board</a></header>
 <form id="f"><div><input type="url" id="url" placeholder="https://your-site.com" required><div class="flags" style="margin-top:8px"><label><input type="checkbox" id="raising"> raising</label><label><input type="checkbox" id="hiring"> hiring</label><label><input type="checkbox" id="contributors"> inviting contributors</label></div></div>
-<textarea id="icp" placeholder="Who are your customers? (optional; otherwise Naive infers it from your home page and says so)"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="go">Read my site</button><button type="button" id="plan" style="background:transparent;color:var(--accent);border:1px solid var(--accent)">Plan from my venture</button></div></form>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="go">Read my site</button><button type="button" id="plan" style="background:transparent;color:var(--accent);border:1px solid var(--accent)">Plan from my venture</button></div></form>
 <div id="main"><div id="flow"></div><aside id="side"><div class="meta">Paste a link to your marketing site or your product.</div></aside></div>
 <script src="/vendor/react@18.3.1/umd/react.production.min.js"></script>
 <script src="/vendor/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
@@ -322,7 +366,7 @@ function overview(){
   const aud=Object.entries(R.audiences).sort((a,b)=>b[1].weight-a[1].weight).map(([k,v])=>'<span class="'+(v.weight<0.5?'dim':'')+'">'+esc(LABEL[k])+'</span><div class="bar '+(v.weight<0.5?'dim':'')+'"><span style="width:'+(v.score??0)+'%"></span></div><span class="'+(v.weight<0.5?'dim':'')+'">'+(v.score??"")+'</span>').join("");
   const t=R.icp.types.map((x)=>'<span class="chip">'+esc(x.label)+(x.p!=null?' '+x.p:'')+'</span>').join("");
   return '<div class="score">'+R.score+'<small>/100</small></div><div class="meta">'+esc(R.site)+' · '+R.pages.length+' pages read via '+esc(R.read_via)+', judged by '+esc(R.judged_by)+'</div>'+
-    '<h2>Who the site is for</h2><div class="icp">'+esc(R.icp.text.slice(0,240))+'<div class="meta">Source: '+esc(R.icp.cite)+'</div>'+t+'</div>'+
+    '<h2>Who the site is for</h2><div class="icp">'+(R.icp.says&&R.icp.says.length?R.icp.says.slice(0,4).map((x)=>'&ldquo;'+esc(x)+'&rdquo;').join("<br>"):esc(R.icp.text.slice(0,240)))+'<div class="meta">Read from the site: '+esc(R.icp.cite)+'</div>'+t+'</div>'+
     '<h2>By audience</h2><div class="aud">'+aud+'</div><div class="meta" style="margin-top:4px">Faded audiences are not a priority now, so they count little.</div>'+
     '<h2>Fix first</h2>'+(R.fix_first.length?R.fix_first.map((id)=>itemCard(itemOf(id))).join(""):'<div class="meta">Nothing urgent.</div>')+
     '<h2>Every item</h2>'+R.items.filter((x)=>!R.fix_first.includes(x.id)).map(itemCard).join("")+'<div class="meta">Click a route on the sitemap to see what belongs there.</div>';
@@ -403,10 +447,10 @@ function show(r){
   R=r;document.getElementById("side").innerHTML=overview();if(setG)setG(layout(r));
 }
 document.getElementById("f").onsubmit=async(e)=>{e.preventDefault();const b=document.getElementById("go");b.disabled=true;b.textContent="Reading...";
-  const q=new URLSearchParams({url:document.getElementById("url").value});const icp=document.getElementById("icp").value.trim();if(icp)q.set("icp",icp);
+  const q=new URLSearchParams({url:document.getElementById("url").value});
   ["raising","hiring","contributors"].forEach((k)=>{if(document.getElementById(k).checked)q.set(k,"1");});
   try{show(await (await fetch("site/scan?"+q,{method:"POST"})).json());}catch(err){show({error:"The scan failed: "+err.message});}b.disabled=false;b.textContent="Read my site";};
-fetch("site.json"+location.search).then((r)=>r.json()).then((r)=>{if(r&&r.site&&r.sitemap){document.getElementById("url").value=r.site;if(r.icp&&r.icp.source==="founder")document.getElementById("icp").value=r.icp.text;["raising","hiring","contributors"].forEach((k)=>{document.getElementById(k).checked=!!(r.facts||{})[k];});setTimeout(()=>show(r),50);}}).catch(()=>{});
+fetch("site.json"+location.search).then((r)=>r.json()).then((r)=>{if(r&&r.site&&r.sitemap){document.getElementById("url").value=r.site;["raising","hiring","contributors"].forEach((k)=>{document.getElementById(k).checked=!!(r.facts||{})[k];});setTimeout(()=>show(r),50);}}).catch(()=>{});
 </script></body></html>`.replace("__LABELS__", JSON.stringify(Object.fromEntries(Object.entries(MATRIX.audiences).map(([k, v]) => [k, v.label]))));
 
 // The map's three libraries, pinned, fetched from unpkg once and kept on disk, so the canvas works
@@ -422,6 +466,28 @@ async function vendor(path) {
   mkdirSync(cache, { recursive: true });
   writeFileSync(f, body);
   return body;
+}
+
+// The venture package (EE-067), with the pipeline that led to it: each step's state, from the dump on.
+function packageOf(dir, writeIt = false) {
+  const r = packages(dir);
+  if (writeIt) writePackage(dir, r);
+  const has = (f) => existsSync(join(dir, f));
+  let rt = null; try { rt = route(dir); } catch {}
+  const d = decisions(dir).decisions;
+  const settled = d.filter((x) => ["decided", "accepted"].includes(x.status)).length;
+  const now = r.packages.filter((p) => p.in === "now");
+  const written = has(join(PACKAGE, "venture-package.json")) ? now.filter((p) => has(join(PACKAGE, `${p.id}.md`))).map((p) => p.id) : null;
+  const pipeline = [
+    { label: "Idea dump", state: has("purpose/ideas/dump.md") ? "done" : "", detail: has("purpose/ideas/dump.md") ? "kept verbatim" : "write it" },
+    { label: "Idea map", href: "/map", state: has(MAP) ? "done" : "", detail: has(MAP) ? "tagged by pillar and department" : "not yet" },
+    { label: "Idea graph", href: "/graph", state: has(GRAPH) ? "done" : "", detail: has(GRAPH) ? "what builds on what" : "not yet" },
+    { label: "Routes", href: "/kanban", state: rt ? (rt.destinations.every((x) => x.stage === "done") ? "done" : "part") : "", detail: rt ? `${rt.destinations.filter((x) => x.stage !== "routed").length} of ${rt.destinations.length} destinations moving` : "not yet" },
+    { label: "Decisions", href: "/", state: settled ? "part" : "", detail: `${settled} settled, ${d.filter((x) => x.rank != null).length} waiting for you` },
+    { label: "Sitemap", href: "/site", state: has("operations/marketing/sitemap.json") ? "done" : "", detail: has("operations/marketing/sitemap.json") ? "planned from the records" : "not planned yet" },
+    { label: "Venture package", state: r.ready.length === now.length && now.length ? "done" : written ? "part" : "", detail: `${now.length} packages fit now, ${r.ready.length} ready` },
+  ];
+  return { ...r, pipeline, written };
 }
 
 export function serve(p = port, id = venture) {
@@ -451,9 +517,21 @@ export function serve(p = port, id = venture) {
       const dir = ventureDir(u.searchParams.get("venture") ?? id);
       const flags = Object.fromEntries(["raising", "hiring", "contributors"].map((k) => [k, u.searchParams.get(k) === "1"]));
       let body;
-      try { body = await scan(u.searchParams.get("url") ?? "", { venture: dir, flags, icp: u.searchParams.get("icp") }); } catch (e) { body = { error: e.message }; }
+      try { body = await scan(u.searchParams.get("url") ?? "", { venture: dir, flags }); } catch (e) { body = { error: e.message }; }
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(body)); return;
     }
+    if (u.pathname === "/package.json" || (u.pathname === "/package/write" && req.method === "POST")) {
+      const dir = ventureDir(u.searchParams.get("venture") ?? id);
+      let body;
+      try { body = dir ? packageOf(dir, u.pathname === "/package/write") : { error: `no venture ${id}` }; } catch (e) { body = { error: e.message }; }
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(body)); return;
+    }
+    if (/^\/package\/[a-z-]+\.md$/.test(u.pathname)) {
+      const dir = ventureDir(u.searchParams.get("venture") ?? id), f = dir && join(dir, PACKAGE, u.pathname.slice("/package/".length));
+      if (f && existsSync(f)) { res.writeHead(200, { "content-type": "text/markdown; charset=utf-8" }); res.end(readFileSync(f)); } else { res.writeHead(404); res.end(); }
+      return;
+    }
+    if (u.pathname === "/package") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(PACKAGE_PAGE); return; }
     if (u.pathname === "/kanban") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(KANBAN_PAGE); return; }
     if (u.pathname === "/graph") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(GRAPH_PAGE); return; }
     if (u.pathname === "/map") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(MAP_PAGE); return; }

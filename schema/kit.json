@@ -15,7 +15,9 @@
     "data-model",
     "kit-manifest",
     "need-now",
-    "provenance"
+    "provenance",
+    "venture-packages",
+    "venture-package"
   ],
   "reads": [
     "product",
@@ -34,7 +36,9 @@
     "schema/test.mjs",
     "schema/need-now.mjs",
     "schema/time-to-ready.mjs",
-    "schema/check-provenance.mjs"
+    "schema/check-provenance.mjs",
+    "schema/packages.mjs",
+    "schema/packages-test.mjs"
   ],
   "gaps": []
 }

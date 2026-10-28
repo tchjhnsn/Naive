@@ -711,6 +711,31 @@
       ],
       "decision": "Rename kit to package, one to one with Next.js and npm packages, and define a complete package as one ready to hand to an agent for its engineering or operational implementation. Held until after the AITX hackathon (submissions close 2026-10-29 22:00Z): the rename touches every layer's kit.json, the data model, the checks, the router and the docs, and is not worth the risk the night before submission.",
       "why": "Torian, 2026-10-28 20:25Z: 'We could possibly change the name to package. That way it is a one-to-one comparison with Next.js. A complete package would be a package that is ready to be handed off to an agent for its engineering implementations or its operational implementations.' Ontology already glosses kit as a package (EE-026)."
+    },
+    {
+      "id": "EE-067",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-028",
+        "EE-061",
+        "EE-064",
+        "EE-065",
+        "EE-066"
+      ],
+      "decision": "The pipeline's end outcome is the venture package: every business document a venture needs now, grouped into packages by receiver (strategic foundation, validation, marketing, investor, cofounder and team, partner, ownership and governance, operations). Which packages fit depends on the phase and the venture's situation: priors per phase with conditions (the need-now form), and a question matrix per phase that a reasoning model (Jev, or the founder's agent) answers only where the records are silent, leaving the rest open for the founder. A package is ready to hand off when a person has confirmed every required record. Agents never come in a package; an agent that works a package is a package enhancement. The hackathon demo includes routing (each record shows where the founder's ideas for it stand and the step that moves it) and the harness agent's passes. Venture packages are the founder-facing deliverable and are distinct from kits (a layer's records, skills and checks); if EE-066 renames kits to packages, the two names must be reconciled first.",
+      "why": "Torian, 2026-10-28 20:43Z: 'In the end, I believe someone should be able to walk away with a full venture package for all of the business related documents for their venture. For the demo, we will include routing. However, for naive, agents will not come included in the packages. That is a package enhancement.' 20:45Z: 'we should definitely discuss what kits slash packages are necessary at each phase of a business's development... dependent on the type of venture. We could include the questions matrix for each phase that a reasoning model would interact with to determine what packages are the best fit.' Packages, priors and questions are ours and unevaluated (version 0.1.0)."
+    },
+    {
+      "id": "EE-068",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-062",
+        "EE-063"
+      ],
+      "decision": "Site presence reads the ICP from the site, never from a box the founder fills in: what the site says outright about who it is for (built for, trusted by, used by...) first, else what its opening implies, marked as inferred. The ICP the venture's records state is kept beside it, unscored, for a later clarity score that compares who the founder says the customers are with who the site seems to be for.",
+      "why": "Torian, 2026-10-28 20:43Z: 'we shouldn't have that section for the user to enter their ICPs. We should be able to find their ICPs on their site... a tool for users to evaluate their websites based off who they say their ICPs are versus what their ICPs seem to be... some sort of clarity rating or clarity score... or we can wait until later.' The clarity score waits."
     }
   ]
 }

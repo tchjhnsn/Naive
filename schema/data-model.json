@@ -920,6 +920,35 @@
       "note": "Need-now priors per venture record type and phase, with conditions that raise or lower them (EE-028)"
     },
     {
+      "id": "venture-packages",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/packages.json"
+      ],
+      "refs": [
+        {
+          "field": "packages.*.required",
+          "to": "(record types)",
+          "checked_by": "schema/test.mjs"
+        }
+      ],
+      "note": "Venture packages and the question matrix: each package's receiver, required and optional records, priors per phase with conditions, and the questions a reasoning model answers to decide which packages fit a venture now (EE-067)"
+    },
+    {
+      "id": "venture-package",
+      "layer": "system",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/package/venture-package.json"
+      ],
+      "note": "What the founder walks away with: the packages that fit the venture now, each record confirmed, waiting for review or still to write, rendered as documents beside it in package/ (EE-067)"
+    },
+    {
       "id": "team-plan",
       "layer": "operations",
       "level": "venture",

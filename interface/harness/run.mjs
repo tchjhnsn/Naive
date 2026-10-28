@@ -24,6 +24,8 @@
 // 3. The founder settles the top-ranked decisions, one at a time, in the order Naive ranks them.
 // 4. Pass 2: the agent assesses the accepted problem, does the work the decisions unlocked, and reports
 //    what comes next.
+// 5. Naive plans the site from the records and writes the venture package: every package that fits the
+//    venture now, each record confirmed, waiting for review or still to write (EE-067).
 
 import { spawn, spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -222,6 +224,27 @@ if (!settled.length) { lap("nothing for the founder to settle; stopping"); finis
 // 4. The work the founder's decisions unlocked.
 await agent(`${rules}
 The founder settled: ${settled.join(", ")}. mentura_decisions shows what that unlocked. First, if the founder accepted the problem record, mentura_run purpose/validation/assess with as_is true and note what the evidence supports. Then do the work the decisions unlock for you: if product-exists is decided, write product cards (purpose/product/<id>) for what exists or is planned, from the founder's ideas, citing them; then propose wording for core-product with mentura_propose_decision (id "core-product", at "products", name "product.core", the same question; mentura_decisions shows it), from the ideas tagged venture-core, citing them. Then mentura_run purpose/ideas/routes and draft the highest-signal destination still in Routed that moves in order and has no record yet (not the problem, not products), from its ideas, citing them. Then mentura_decisions again and report in at most six lines: what the assessment says, what you did, and the founder's next decision with why it ranks first.`, "pass 2: the work the decisions unlocked");
+
+// 5. The venture package (EE-067): what the founder walks away with. The sitemap is planned from the
+//    records the run wrote (EE-064); then the question matrix settles which packages fit (Jev answers
+//    what the records leave open), and each fitting package is rendered with what is still to write.
+const sp = spawnSync("node", [join(repo, "operations/marketing/site/plan.mjs"), dir, "--write"], { encoding: "utf8" });
+if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records" });
+let pkgArgs = [];
+if (jev) {
+  const rq = spawnSync("node", [join(repo, "schema/packages.mjs"), "request", dir], { encoding: "utf8" });
+  const q = rq.status === 0 ? JSON.parse(rq.stdout) : null;
+  if (q && Object.keys(q.questions).length) {
+    const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(q), encoding: "utf8" });
+    if (p.status === 0) { writeFileSync(join(ws, "package-answers.json"), p.stdout); pkgArgs = ["--answers", join(ws, "package-answers.json")]; console.log(`   Jev answered ${Object.keys(q.questions).length} of the question matrix's questions`); }
+  }
+}
+const pk = spawnSync("node", [join(repo, "schema/packages.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
+if (pk.status === 0) {
+  const r = JSON.parse(pk.stdout);
+  trace.children.push({ name: "venture package", run_type: "tool", start: iso(), end: iso(), inputs: { phase: r.phase }, outputs: { progress: r.progress, now: r.packages.filter((x) => x.in === "now").map((x) => ({ id: x.id, state: x.state, progress: x.progress, missing: x.missing })), open: r.situation.questions.filter((x) => x.value == null).map((x) => x.id) } });
+  lap(`venture package in ${join(dir, "package")}: ${Math.round(r.progress * 100)}% across ${r.packages.filter((x) => x.in === "now").map((x) => `${x.title} (${x.state})`).join(", ")}; held: ${r.packages.filter((x) => x.in === "held").map((x) => x.title).join(", ")}`);
+} else console.log(`   the venture package failed: ${pk.stderr.trim().slice(0, 300)}`);
 
 const end = decisions(dir);
 lap(`done. ${end.decisions.filter((d) => d.source === "file").length} decision records, ${end.decisions.filter((d) => d.rank != null).length} ranked for the founder, ${settled.length} settled; workspace ${ws}`);

@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { plan, offeringsOf } from "./plan.mjs";
 import { check } from "../check-public.mjs";
-import { weights, needs, score, request, pageType, typesOf, customerNeeds, MATRIX } from "./presence.mjs";
+import { weights, needs, score, request, pageType, typesOf, customerNeeds, icpOf, MATRIX } from "./presence.mjs";
 
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
@@ -68,6 +68,14 @@ t("the sitemap rates each read route on what belongs there and suggests the page
   ok(by["/pricing"].rating === 100 && by["/pricing"].parent === "/" && by["/pricing"].level === "nav", JSON.stringify(by["/pricing"]));
   ok(by["/about"].missing.includes("team") && by["/investors"]?.ghost && by["/investors"].missing.includes("raising"), JSON.stringify(r.sitemap.map((n) => [n.path, n.missing])));
   ok(r.icp.source === "inferred" && /inferred/.test(r.icp.cite), JSON.stringify(r.icp));
+});
+
+t("the ICP is read from the site: what it says outright first, and the records' ICP is kept aside for a clarity check", () => {
+  const s2 = { site: "https://x.test", pages: [{ path: "/", depth: 0, text: "Scheduling built for solo physical therapy clinics. Trusted by 400 owners." }, { path: "/customers", depth: 1, text: "Used by clinics in Texas" }] };
+  const v = mkdtempSync(join(tmpdir(), "icp-"));
+  writeFileSync(join(v, "venture.json"), "{}"); mkdirSync(join(v, "purpose")); writeFileSync(join(v, "purpose/icp.json"), JSON.stringify({ profiles: [{ who: "billing partners" }] }));
+  const i = icpOf(v, s2);
+  ok(i.source === "site" && i.says.some((x) => /built for solo physical therapy clinics/.test(x)) && i.says.some((x) => /Used by clinics/.test(x)) && i.stated[0] === "billing partners", JSON.stringify(i));
 });
 
 // The planner (EE-064): a partner-led venture whose product is offered to clinics' billing partners.
