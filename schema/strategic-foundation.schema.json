@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guiding-statements.schema.json",
-  "title": "Guiding statements frame",
-  "description": "The framework's map of guiding statements (EE-051): per question of the Five Ws and How plus whether, the record attributes that answer it.",
+  "$id": "strategic-foundation.schema.json",
+  "title": "Strategic foundation frame",
+  "description": "The framework's map of strategic foundation (EE-051): per question of the Five Ws and How plus whether, the record attributes that answer it.",
   "type": "object",
   "required": [
     "version",

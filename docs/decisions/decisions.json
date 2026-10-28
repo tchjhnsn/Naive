@@ -533,6 +533,17 @@
         "EE-045",
         "EE-050"
       ]
+    },
+    {
+      "id": "EE-052",
+      "date": "2026-10-28",
+      "decision": "The records EE-051 called guiding statements are the venture's strategic foundation; each one is a foundation statement. Files and routes follow: purpose/strategic-foundation.json, schema/foundation.mjs, route purpose/foundation. 'Guiding statement' is retired as a noun. The whether question is not settled: go/kill is too narrow, and the go/kill record built after EE-051 is held, not merged. The open question (Torian, 2026-10-28) is whether the whether review should answer persevere, pivot, pause or stop (Ries's pivot or persevere; Stage-Gate's go, kill, hold and recycle). He took up that question; he has not agreed to a four-answer review or to any design for it.",
+      "why": "Torian chose 'Strategic foundation' on a decision card (standards first, EE-014). On go/kill: 'a lot of times the answer may not be kill, it may be pivot', and many great founders persevered where a go/kill framework would have said kill.",
+      "status": "proposed",
+      "related": [
+        "EE-014",
+        "EE-051"
+      ]
     }
   ]
 }

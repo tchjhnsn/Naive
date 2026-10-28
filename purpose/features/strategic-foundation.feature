@@ -1,31 +1,31 @@
-# The behaviors guiding statements must keep (EE-051): the records a founder keeps in front of
-# them, framed by the Five Ws and How plus whether. Run: node schema/bdd.mjs purpose/features/guiding-statements.feature
+# The behaviors strategic foundation must keep (EE-051): the records a founder keeps in front of
+# them, framed by the Five Ws and How plus whether. Run: node schema/bdd.mjs purpose/features/strategic-foundation.feature
 
-Feature: Guiding statements
+Feature: Strategic foundation
   The founder always sees what they do, who they serve, why, how, when, where and whether, and
   which of those statements are truly theirs. Changing one is deliberate.
 
-  Rule: The founder sees every guiding statement and whose it is
+  Rule: The founder sees every foundation statement and whose it is
 
     Scenario: The report answers each question of the frame
       Given the example venture "tandem"
-      When the founder asks for the guiding statements
+      When the founder asks for the strategic foundation
       Then it answers "why", "what", "who", "how", "when", "where", "whether" and "brand"
-      And "go-kill" is "planned"
+      And "whether-review" is "planned"
 
     Scenario: A statement an agent wrote is not the founder's yet
       Given the example venture "tandem"
       And an agent writes the venture record
-      When the founder asks for the guiding statements
+      When the founder asks for the strategic foundation
       Then "mission" is "agent"
 
-  Rule: Confirming or accepting a guiding statement is deliberate
+  Rule: Confirming or accepting a foundation statement is deliberate
 
     Scenario: Typing the statement's name confirms it
       Given the example venture "tandem"
       And an agent writes the venture record
       When the founder confirms "mission" by typing "mission"
-      And the founder asks for the guiding statements
+      And the founder asks for the strategic foundation
       Then "mission" is "confirmed"
       And "competence" is "agent"
 
@@ -34,7 +34,7 @@ Feature: Guiding statements
       And an agent writes the venture record
       When the founder confirms "mission" by typing "yes"
       Then the command is refused
-      And the founder asks for the guiding statements
+      And the founder asks for the strategic foundation
       And "mission" is "agent"
 
     Scenario: An agent's later write undoes the confirmation
@@ -42,29 +42,29 @@ Feature: Guiding statements
       And an agent writes the venture record
       And the founder confirms "mission" by typing "mission"
       And an agent writes the venture record
-      When the founder asks for the guiding statements
+      When the founder asks for the strategic foundation
       Then "mission" is "agent"
 
     Scenario: An agent's write to the ICP is a draft
       Given the example venture "tandem"
       When an agent writes an ICP for "tandem"
       Then the ICP write is a draft
-      And the founder asks for the guiding statements
+      And the founder asks for the strategic foundation
       And "icp" is "draft"
 
-    Scenario: Accepting a draft that changes a guiding statement shows the change and needs its name typed
+    Scenario: Accepting a draft that changes a foundation statement shows the change and needs its name typed
       Given the example venture "tandem"
       And an agent writes an ICP for "tandem"
       When the founder accepts "purpose/icp" by typing "yes"
       Then the command is refused
       And the founder accepts "purpose/icp" by typing "purpose/icp"
-      And the founder asks for the guiding statements
+      And the founder asks for the strategic foundation
       And "icp" is "confirmed"
 
-  Rule: Guiding statements agree with each other
+  Rule: Strategic foundation agree with each other
 
     Scenario: An ICP that names a problem form the problem record lacks fails the check
       Given the example venture "tandem"
       And an ICP for "tandem" that names the problem form "nope"
-      When the guiding statements are checked
+      When the strategic foundation are checked
       Then the check fails naming "nope"

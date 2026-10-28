@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Reports a venture's guiding statements (EE-051): for each question of the Five Ws and How plus
-// whether (purpose/guiding-statements.json), the record attributes that answer it, and whether
+// Reports a venture's strategic foundation (EE-051, EE-052): for each question of the Five Ws and How plus
+// whether (purpose/strategic-foundation.json), the record attributes that answer it, and whether
 // each is confirmed, drafted by an agent, waiting as a draft, or missing. This is what a founder
 // keeps in front of them; a platform renders it always visible. Behaviors:
-// purpose/kits/validation/features/guiding-statements.feature.
+// purpose/kits/validation/features/strategic-foundation.feature.
 //
-//   node schema/guiding.mjs <venture dir> [--json]
+//   node schema/foundation.mjs <venture dir> [--json]
 //
 // Status: confirmed (the last write was a person's, or a person accepted it), agent (an agent
 //   wrote it and no person has confirmed it), draft (a draft waits in _drafts/), missing, planned
@@ -18,7 +18,7 @@ import { join } from "node:path";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-export const FRAME = load(join(repo, "purpose/guiding-statements.json"));
+export const FRAME = load(join(repo, "purpose/strategic-foundation.json"));
 const MODEL = load(join(repo, "schema/data-model.json"));
 
 const get = (o, path) => path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
@@ -46,8 +46,8 @@ export function confirmedIn(dir, file, id) {
   return es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm") || (e.activity === "confirm" && e.statement === id)));
 }
 
-/** Each guiding statement of a venture, with its status and value. */
-export function guiding(dir) {
+/** Each foundation statement of a venture, with its status and value. */
+export function foundation(dir) {
   return FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => {
     if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
     const files = filesOf(dir, s.record);
@@ -75,14 +75,14 @@ export function problems(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = process.argv[2];
-  if (!arg) { console.error("usage: node schema/guiding.mjs <venture or workspace dir> [--json]"); process.exit(2); }
+  if (!arg) { console.error("usage: node schema/foundation.mjs <venture or workspace dir> [--json]"); process.exit(2); }
   const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
   const dirs = walk(arg);
   const errs = dirs.flatMap((d) => problems(d).map((p) => `${d}: ${p}`));
-  if (process.argv.includes("--json")) console.log(JSON.stringify(dirs.length === 1 ? guiding(dirs[0]) : Object.fromEntries(dirs.map((d) => [d, guiding(d)])), null, 2));
+  if (process.argv.includes("--json")) console.log(JSON.stringify(dirs.length === 1 ? foundation(dirs[0]) : Object.fromEntries(dirs.map((d) => [d, foundation(d)])), null, 2));
   else for (const d of dirs) {
     if (dirs.length > 1) console.log(`\n${d}`);
-    for (const q of guiding(d)) console.log(`${q.question.padEnd(8)} ${q.ask}\n${q.statements.map((s) => `         ${s.id.padEnd(16)} ${s.status}${s.value !== undefined ? `: ${JSON.stringify(s.value).slice(0, 90)}` : ""}`).join("\n")}`);
+    for (const q of foundation(d)) console.log(`${q.question.padEnd(8)} ${q.ask}\n${q.statements.map((s) => `         ${s.id.padEnd(16)} ${s.status}${s.value !== undefined ? `: ${JSON.stringify(s.value).slice(0, 90)}` : ""}`).join("\n")}`);
   }
   for (const e of errs) console.error(`FAIL  ${e}`);
   process.exit(errs.length ? 1 : 0);

@@ -898,28 +898,28 @@
         {
           "field": "profiles.problem_forms",
           "to": "validation-problem",
-          "checked_by": "schema/guiding.mjs"
+          "checked_by": "schema/foundation.mjs"
         }
       ],
-      "note": "Who the venture serves: ideal customer profiles, one primary (EE-051); a guiding statement, gated",
+      "note": "Who the venture serves: ideal customer profiles, one primary (EE-051); a foundation statement, gated",
       "decision_class": "strategy-or-constitution"
     },
     {
-      "id": "guiding-statements",
+      "id": "strategic-foundation",
       "layer": "purpose",
       "level": "method",
-      "schema": "schema/guiding-statements.schema.json",
+      "schema": "schema/strategic-foundation.schema.json",
       "paths": [
-        "purpose/guiding-statements.json"
+        "purpose/strategic-foundation.json"
       ],
       "refs": [
         {
           "field": "questions.statements.record",
           "to": "(record types)",
-          "checked_by": "schema/guiding.mjs"
+          "checked_by": "schema/foundation.mjs"
         }
       ],
-      "note": "The map of guiding statements by the Five Ws and How plus whether (EE-051)"
+      "note": "The map of strategic foundation by the Five Ws and How plus whether (EE-051)"
     }
   ],
   "ignore": [

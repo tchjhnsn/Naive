@@ -57,6 +57,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | pillar | Product, brand and business, in every venture | ours |  |
 | venture template | The scaffold for a venture: pillars, roles, decision rights | ours |  |
 | kit | A package a layer offers: skills, record types (schemas), checks, templates and references, used together. Each layer has one at <layer>/kit.json and may hold more under <layer>/kits/ (EE-026). As an offering it is a bundle; a part can also be its own product | product bundling (Adams and Yellen 1976); package, as in a framework's packages |  |
+| strategic foundation | The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (purpose/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052) | strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How |  |
 
 ### Purpose
 
@@ -158,3 +159,4 @@ The system is opinionated: it names one default for each choice, and every defau
 | orientation | retired; use legal form |
 | liquidation waterfall | retired; use preference stack |
 | derived answer | retired; use undefined |
+| guiding statement | retired; use undefined |
