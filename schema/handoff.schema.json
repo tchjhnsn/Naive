@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "handoff.schema.json",
   "title": "Handoff",
-  "description": "One unit of delegated work, stored at <venture>/execution/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (execution/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence.",
+  "description": "One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence.",
   "type": "object",
   "required": [
     "id",
@@ -46,7 +46,7 @@
     "assignment": {
       "type": "string",
       "pattern": "^(A-[0-9]{3}|none)$",
-      "description": "The methodology assignment (operations/register/A-NNN) the work runs under, or none for a change too small to need one. This is how Operations reaches Execution (EE-019)"
+      "description": "Optional: the build-method assignment the work runs under, such as a MAD A-NNN, or none. MAD is a separate product, so Mentura records the reference and does not check it (EE-019, EE-038)"
     },
     "inputs": {
       "type": "array",

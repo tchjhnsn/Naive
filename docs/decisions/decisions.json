@@ -418,6 +418,21 @@
         "EE-031",
         "EE-036"
       ]
+    },
+    {
+      "id": "EE-038",
+      "date": "2026-10-28",
+      "decision": "Operations in Mentura is business operations: the team plan and hiring, handing work to people and agents, and the tools each business function uses (marketing, sales, research; treg is a candidate integration). Every venture has it, with or without a repository. Execution folds into operations: a handoff is how operational work is assigned, so handoffs move to <venture>/operations/handoffs/ and the execution/handoff route aliases to operations/handoff. Mentura has six layers: purpose, knowledge, operations, evidence, governance, interface. MAD, the method for building software or hardware (its catalog, methodology selection, assignments, recommendations, answers and the method-site publisher), leaves Mentura to be its own product that reads Mentura's records when a venture has a repository; git keeps what was removed. MAD's governance and delivery questions (is it worth doing, who decides, how work is planned and handed over) are general business questions, to be re-homed in Mentura's governance and operations layers. Evidence stays: its results and evals are records.",
+      "why": "The owner asked whether everything except MAD and evidence is knowledge, and ran the five-step algorithm on it. A venture with no repository still needs operations for marketing, hiring and the like, and two of MAD's tiers are about the business rather than the build; so only the build side of operations is a separate product.",
+      "status": "proposed",
+      "related": [
+        "EE-013",
+        "EE-017",
+        "EE-019",
+        "EE-023",
+        "EE-036",
+        "EE-037"
+      ]
     }
   ]
 }

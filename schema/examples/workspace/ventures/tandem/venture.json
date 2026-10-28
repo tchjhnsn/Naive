@@ -23,9 +23,8 @@
     "knowledge": {
       "location": "knowledge/"
     },
-    "operations": false,
-    "execution": {
-      "location": "execution/"
+    "operations": {
+      "location": "operations/"
     },
     "evidence": {
       "location": "evidence/"

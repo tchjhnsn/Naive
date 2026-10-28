@@ -198,12 +198,11 @@
     },
     "layers": {
       "type": "object",
-      "description": "Every venture has the same seven layers, at the depth it needs. A layer not used yet is false.",
+      "description": "Every venture has the same six layers (execution folded into operations, EE-038), at the depth it needs. A layer not used yet is false.",
       "required": [
         "purpose",
         "knowledge",
         "operations",
-        "execution",
         "evidence"
       ],
       "properties": {
@@ -214,9 +213,6 @@
           "$ref": "#/$defs/layer"
         },
         "operations": {
-          "$ref": "#/$defs/layer"
-        },
-        "execution": {
           "$ref": "#/$defs/layer"
         },
         "evidence": {

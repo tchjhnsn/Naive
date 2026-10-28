@@ -72,8 +72,7 @@
     "board",
     "founder-agreement",
     "exit",
-    "publication-policy",
-    "publish-config"
+    "publication-policy"
   ],
   "reads": [
     "handoff",

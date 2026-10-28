@@ -1,17 +1,5 @@
 [
   {
-    "id": "mad",
-    "name": "MAD",
-    "layer": "operations",
-    "role": "method choice, fit ranking, risk judgment",
-    "interfaces": [
-      "cli",
-      "files"
-    ],
-    "status": "in-use",
-    "reason": "The MAD repo"
-  },
-  {
     "id": "linear",
     "name": "Linear",
     "layer": "operations",
@@ -35,17 +23,6 @@
     "reason": "Researched in operations/research"
   },
   {
-    "id": "jev",
-    "name": "Jev (TypeSafe AI)",
-    "layer": "operations",
-    "role": "recommended MAD scorer",
-    "interfaces": [
-      "api"
-    ],
-    "status": "candidate",
-    "reason": "MAD README requirement 13; needs TYPESAFE_API_KEY"
-  },
-  {
     "id": "calendar",
     "name": "Calendar",
     "layer": "operations",
@@ -56,5 +33,78 @@
     ],
     "status": "candidate",
     "reason": "Researched in operations/research"
+  },
+  {
+    "id": "claude-agent-sdk",
+    "name": "Claude Agent SDK",
+    "layer": "operations",
+    "role": "build and run Claude agents in code (Python, TypeScript)",
+    "interfaces": [
+      "sdk"
+    ],
+    "status": "candidate",
+    "reason": "Same harness as Claude Code"
+  },
+  {
+    "id": "cursor-agent-sdk",
+    "name": "Cursor Agent SDK",
+    "layer": "operations",
+    "role": "agents as code with evals, deployed on Cursor or own infra",
+    "interfaces": [
+      "sdk"
+    ],
+    "status": "candidate",
+    "reason": "https://cursor.com/docs/agent-sdk"
+  },
+  {
+    "id": "cursor-background-agents",
+    "name": "Cursor background agents and automations",
+    "layer": "operations",
+    "role": "run handoffs unattended (EE-006)",
+    "interfaces": [
+      "app"
+    ],
+    "status": "in-use",
+    "reason": ".cursor/ in the vault and repos"
+  },
+  {
+    "id": "github-actions",
+    "name": "GitHub Actions",
+    "layer": "operations",
+    "role": "CI and scheduled jobs",
+    "interfaces": [
+      "files",
+      "api"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "layer": "operations",
+    "role": "workflow automation",
+    "interfaces": [
+      "api",
+      "mcp"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists; sign-in expired"
+  },
+  {
+    "id": "treg",
+    "name": "treg",
+    "layer": "operations",
+    "role": "one credential for agent tools and data APIs used in business operations: SEO and rank tracking, social publishing, people and company enrichment, ad campaigns",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Open source (Apache 2.0), pay per call, 114 providers behind one token; no MCP server stated on its page, so it would come in through the token route (EE-038)",
+    "credentials": [
+      "TREG_TOKEN"
+    ],
+    "links": [
+      "https://treg.to"
+    ]
   }
 ]

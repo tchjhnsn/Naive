@@ -19,13 +19,13 @@ if (!dir || !id) { console.error("usage: node schema/check-ready.mjs <venture di
 const opt = (k) => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
 const root = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const hPath = join(dir, "execution/handoffs", `${id}.json`);
+const hPath = join(dir, "operations/handoffs", `${id}.json`);
 const h = load(hPath);
 const items = [];
 const item = (name, ok, why = "") => items.push({ name, ok, why });
 
 // 1. The brief says what done looks like and what to do, with no placeholders left.
-const bPath = join(dir, "execution/handoffs", h.brief);
+const bPath = join(dir, "operations/handoffs", h.brief);
 const brief = existsSync(bPath) ? readFileSync(bPath, "utf8") : "";
 item("brief exists", !!brief, bPath);
 const section = (name) => { const m = brief.match(new RegExp(`^##\\s+(?:\\d+\\.\\s*)?${name}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, "mi")); return m ? m[1].trim() : null; };
@@ -41,13 +41,8 @@ const logs = [join(root, "docs/decisions/decisions.json"), join(dir, "knowledge/
 const decisions = new Map(logs.map((d) => [d.id, d]));
 const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || ["withdrawn", "superseded"].includes(decisions.get(d).status));
 item("every governing decision exists and is in force or proposed", !badDecisions.length, badDecisions.join(", "));
-if (h.assignment === "none") item("states it needs no methodology assignment", true);
-else if (h.assignment) {
-  const reg = join(root, "operations/register");
-  const file = readdirSync(reg).find((f) => f.startsWith(`${h.assignment}-`));
-  item(`methodology assignment ${h.assignment} exists`, !!file);
-  if (file) { const st = readFileSync(join(reg, file), "utf8").match(/^status:\s*(\S+)/m)?.[1]; item(`assignment ${h.assignment} is ratified`, st === "ratified", `status ${st}`); }
-} else item("names the methodology assignment it works under", false, "add `assignment` (an A-NNN from operations/register), or a small change has none: say so in the brief's Method section and set assignment to \"none\"");
+// A method assignment (such as a MAD A-NNN) belongs to the build method a venture uses, which is
+// not part of Mentura (EE-038); a handoff may cite one, and this does not check it.
 const missingInputs = (h.inputs ?? []).filter((p) => !existsSync(join(root, p)));
 item("every input it needs exists", !missingInputs.length, missingInputs.join(", "));
 

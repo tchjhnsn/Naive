@@ -19,7 +19,7 @@ const opt = (k) => process.argv.includes(k) ? process.argv[process.argv.indexOf(
 const runner = opt("--runner") ?? "local";
 const [reviewId, verdict] = (opt("--review") ?? "").split("=");
 const root = new URL("..", import.meta.url).pathname;
-const hPath = join(dir, "execution/handoffs", `${id}.json`);
+const hPath = join(dir, "operations/handoffs", `${id}.json`);
 const h = JSON.parse(readFileSync(hPath, "utf8"));
 const dirty = execSync("git status --porcelain", { cwd: root, encoding: "utf8" }).trim() ? "+uncommitted" : "";
 const version = execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim() + dirty;
@@ -44,7 +44,7 @@ const ev = { id: eid, subject: { kind: "handoff", id: h.id, version }, ran_at: a
 mkdirSync(join(dir, "evidence/results"), { recursive: true });
 const ePath = join(dir, "evidence/results", `${eid}.json`);
 writeFileSync(ePath, JSON.stringify(ev, null, 2) + "\n");
-h.evidence = [...(h.evidence ?? []), relative(join(dir, "execution/handoffs"), ePath)];
+h.evidence = [...(h.evidence ?? []), relative(join(dir, "operations/handoffs"), ePath)];
 writeFileSync(hPath, JSON.stringify(h, null, 2) + "\n");
 const pending = h.done_criteria.filter((d) => d.kind === "review" && d.id !== reviewId).map((d) => `${d.id} (${d.reviewer})`);
 console.log(`${ev.passed ? "every criterion run passed" : "some criteria failed"}${pending.length ? `; review still owed: ${pending.join(", ")}` : ""}: ${relative(process.cwd(), ePath)}`);

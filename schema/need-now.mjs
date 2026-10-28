@@ -28,7 +28,7 @@ export function factsOf(dir) {
   const products = existsSync(join(dir, "products")) ? readdirSync(join(dir, "products")).filter((f) => f.endsWith(".json")).map((f) => load(join(dir, "products", f))) : [];
   const members = (v.members ?? []).map((m) => typeof m === "string" ? { kind: "person", role: m } : m);
   const own = json("governance/ownership.json");
-  const hDir = join(dir, "execution/handoffs");
+  const hDir = join(dir, "operations/handoffs");
   const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => load(join(hDir, f))) : [];
   return {
     phase: v.phase, ambition: v.ambition, funding: v.form?.funding, legal_form: v.form?.legal_form,

@@ -12,7 +12,6 @@
       "purpose",
       "knowledge",
       "operations",
-      "execution",
       "evidence",
       "governance"
     ],
@@ -32,7 +31,6 @@
       "purpose",
       "knowledge",
       "operations",
-      "execution",
       "evidence",
       "governance"
     ],
@@ -52,7 +50,6 @@
     "reach": [
       "knowledge",
       "operations",
-      "execution",
       "evidence"
     ],
     "interface_kind": "agent-harness",
@@ -70,7 +67,6 @@
     "reach": [
       "knowledge",
       "operations",
-      "execution",
       "evidence"
     ],
     "interface_kind": "agent-harness",
@@ -88,7 +84,6 @@
     "reach": [
       "knowledge",
       "operations",
-      "execution",
       "evidence"
     ],
     "interface_kind": "agent-harness",
@@ -109,7 +104,6 @@
       "purpose",
       "knowledge",
       "operations",
-      "execution",
       "evidence",
       "governance"
     ],

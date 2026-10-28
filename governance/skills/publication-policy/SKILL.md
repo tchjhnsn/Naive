@@ -38,7 +38,7 @@ Start from the destination, not the content. The same paragraph is held to diffe
 - `preview`: how to see exactly what would go out before it does: a dry run, a staging deploy, a draft sent to the approvers.
 - `platform`: the third-party platform it runs on (Substack, X, Facebook, Instagram, LinkedIn, YouTube, TikTok and others). A social, newsletter or app-store channel must name it, and a channel on a platform must cite that platform's rules as a guideline of kind `platform`.
 - `replies`: on social, newsletter and blog channels, replies, comments and direct messages speak for the venture in public too. Choose `gated` (each reply passes the gate), `delegated` (named people may reply within the guidelines; agents alone never), or `none`.
-- `config`: the channel tool's own configuration, if it has one (the method site's is `publish.json`).
+- `config`: the channel tool's own configuration, if it has one (such as a site generator's allowlist).
 
 ## 2. Guidelines: the venture's own and the outside world's
 

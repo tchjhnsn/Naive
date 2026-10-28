@@ -35,12 +35,9 @@ const steps = [
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
   ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace", "--score"]],
-  ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "execution"))).map((v) =>
-    [`execution: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
+  ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "operations/handoffs"))).map((v) =>
+    [`handoffs: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],
-  ["MAD catalog and register", "node", ["operations/skills/methodology-selection/ee.mjs", "validate"]],
-  ["MAD tests", "node", ["operations/skills/methodology-selection/test.mjs"]],
-  ["MAD publisher tests", "node", ["operations/skills/methodology-selection/test-publish.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
   ...(existsSync(join(root, "site/node_modules")) ? [["site pages compile as MDX", "node", ["site/scripts/check-mdx.mjs"]]] : []),

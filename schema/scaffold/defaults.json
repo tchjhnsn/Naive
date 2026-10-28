@@ -8,21 +8,19 @@
     "validation": [
       "purpose",
       "knowledge",
-      "execution",
+      "operations",
       "evidence"
     ],
     "beachhead": [
       "purpose",
       "knowledge",
       "operations",
-      "execution",
       "evidence"
     ],
     "scale": [
       "purpose",
       "knowledge",
       "operations",
-      "execution",
       "evidence",
       "interface"
     ],
@@ -30,7 +28,6 @@
       "purpose",
       "knowledge",
       "operations",
-      "execution",
       "evidence",
       "interface"
     ]
@@ -49,8 +46,7 @@
   "readme": {
     "purpose": "Why this venture exists: its core product, products and the Product Anatomy matrix.",
     "knowledge": "Memory: every record the venture keeps, including notes, specs, decisions and references.",
-    "operations": "How work is run here: the MAD record (.mad/) and chosen methods.",
-    "execution": "Who or what does the work: handoffs to people and agents.",
+    "operations": "How work is run here: the MAD record (.mad/) and chosen methods, and handoffs of work to people and agents.",
     "evidence": "Did it work: reviews, evals and metrics.",
     "governance": "Who may decide what: roles and decision rights.",
     "interface": "How people and agents see this venture: consoles and dashboards."

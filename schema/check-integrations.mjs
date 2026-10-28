@@ -1,7 +1,7 @@
 // Checks every layer's tooling/integrations.json for the rules one entry's schema cannot
 // state: ids are unique within a layer, each entry's layer matches its folder, and every
-// entry under interface/ is an interface: it names its kind and reaches at least four of
-// the six other layers in one session. A tool that serves one or two layers is an
+// entry under interface/ is an interface: it names its kind and reaches at least three of
+// the five other layers in one session (four of six before execution folded into operations, EE-038). A tool that serves one or two layers is an
 // integration of those layers (Obsidian under knowledge), however good its screen is.
 //
 //   node schema/check-integrations.mjs
@@ -11,7 +11,7 @@ import { join } from "node:path";
 
 // EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
-const MIN_REACH = 4;
+const MIN_REACH = 3;
 const errors = [];
 let count = 0;
 for (const layer of readdirSync(root)) {

@@ -1,6 +1,3 @@
-# local only: private publish term lists (see publish.json comments)
-publish.private.json
-_publish/
 .DS_Store
 node_modules/
 _catalog/

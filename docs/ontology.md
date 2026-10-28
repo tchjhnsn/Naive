@@ -23,11 +23,11 @@ The system is opinionated: it names one default for each choice, and every defau
 | Everything Ecosystem | The name of the system | ours |  |
 | the system | How files refer to the whole. Proposed genus (EE-024): a venture development framework; operating system and operating model are set aside | EOS (Wickman) for 'operating system' |  |
 | venture development framework | Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages that plug in (kits). The builder's venture calls on it, and its checks call back on the venture's records | software framework (Johnson and Foote 1988; Rails' convention over configuration) applied to venture development (venture building, venture studios) |  |
-| method | What to do: MAD, Product Anatomy, handoffs | common usage |  |
+| method | What to do: Product Anatomy, handoffs; MAD, the method for building software, is a separate product (EE-038) | common usage |  |
 | schema | What to record: venture.json, products, decisions, references | JSON Schema |  |
 | tooling | What helps do it: scripts, skills, agent rules | common usage |  |
 | workspace | One builder's instance of the system, declared by workspace.json | common software usage |  |
-| layer | One of the seven: purpose, knowledge, operations, execution, evidence, governance, interface | ours |  |
+| layer | One of the six: purpose, knowledge, operations, evidence, governance, interface (execution folded into operations, EE-038) | ours |  |
 | integration | A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). An interface reaches integrations; it is not one | systems integration |  |
 | data model | The list of every record type in the ecosystem, the layer that owns it, its schema, where its records live and what it references (schema/data-model.json). It is the master map; no single schema contains everything | data model (ANSI/SPARC; entity-relationship modelling, Chen 1976) |  |
 | record type | One kind of record in the data model, such as venture, product, handoff or evidence, owned by exactly one layer or by the system | record type (database usage) |  |
@@ -89,14 +89,8 @@ The system is opinionated: it names one default for each choice, and every defau
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
-| tier | One of MAD's four levels: governance, delivery, software engineering, automation | architecture tiers |  |
-| derived answer | A MAD answer taken from a venture's records (telos, ownership, board, form, decision rights) instead of asked again; it names the record it came from | ours |  |
-
-### Execution
-
-| Noun | Meaning | Standard | References |
-| --- | --- | --- | --- |
-| handoff | One unit of delegated work: a JSON record (role, decision classes, done-criteria, status, attempts) at <venture>/execution/handoffs/<id>.json with a Markdown brief beside it | common operations usage |  |
+| tier | One of MAD's four levels: governance, delivery, software engineering, automation; MAD is a separate product, and Mentura records name a tier only where a venture uses MAD (EE-038) | architecture tiers |  |
+| handoff | One unit of delegated work: a JSON record (role, decision classes, done-criteria, status, attempts) at <venture>/operations/handoffs/<id>.json with a Markdown brief beside it | common operations usage |  |
 | done-criterion | One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role) | definition of done (Scrum) |  |
 
 ### Evidence
@@ -163,3 +157,4 @@ The system is opinionated: it names one default for each choice, and every defau
 | company template | retired; use venture template |
 | orientation | retired; use legal form |
 | liquidation waterfall | retired; use preference stack |
+| derived answer | retired; use undefined |

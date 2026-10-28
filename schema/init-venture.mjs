@@ -24,7 +24,7 @@ if (!dir || !id) { console.error("usage: node schema/init-venture.mjs <dir> <id>
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
 if (existsSync(join(dir, "venture.json"))) { console.error(`${dir}/venture.json already exists`); process.exit(1); }
 
-const ALL = ["purpose", "knowledge", "operations", "execution", "evidence", "governance", "interface"];
+const ALL = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
 const on = only !== null ? only.split(",").filter(Boolean) : [...layers[phase], ...(legalForm && legalForm !== "none" ? formalized : [])];
 const unknown = on.filter((l) => !ALL.includes(l));
 if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
