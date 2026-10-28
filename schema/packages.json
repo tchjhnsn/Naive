@@ -92,7 +92,7 @@
     "clear_at": 0.3,
     "items": [
       { "id": "raising", "ask": "Is the venture raising money from investors now, or about to?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["investor"], "from": "the founder's flags (raising)" },
-      { "id": "site", "ask": "Does the venture have a public website, or plan one within the next month?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["marketing"], "from": "a site presence or sitemap record" },
+      { "id": "site", "ask": "Does the venture have a public website, or plan one within the next month?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["marketing"], "from": "a site presence record (a site Naive has read)" },
       { "id": "partner_led", "ask": "Is the product offered to partners or intermediaries who serve customers of their own?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["partner"], "from": "the ICP (reached_through) and products (offered_to)" },
       { "id": "hiring", "ask": "Will the venture hire anyone, or bring on a cofounder, in the next three months?", "phases": ["discovery", "validation", "beachhead", "scale", "platform"], "moves": ["team"], "from": "the founder's flags (hiring) and the team decision" },
       { "id": "regulated", "ask": "Does the venture work in a regulated field (health, finance, education, legal, children, public sector)?", "phases": ["validation", "beachhead", "scale", "platform"], "moves": ["governance"], "from": "nothing yet: always asked" },

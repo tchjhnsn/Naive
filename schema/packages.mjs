@@ -43,15 +43,17 @@ export function situation(dir, { flags = {}, answers = null } = {}) {
   // What the records settle, by question; undefined means they do not.
   const settled = {
     raising: flags.raising != null ? !!flags.raising : f.funding === "bootstrapped" ? false : undefined,
-    site: existsSync(join(dir, "operations/marketing/site-presence.json")) || existsSync(join(dir, "operations/marketing/sitemap.json")) || undefined,
+    // A site read by site presence; a planned sitemap does not count, since the pipeline plans one for every venture.
+    site: existsSync(join(dir, "operations/marketing/site-presence.json")) || undefined,
     partner_led: profiles.some((p) => p.reached_through?.length) || products.some((p) => (p.offered_to ?? []).some((id) => profiles.some((y) => y.reached_through?.includes(id)))) || undefined,
     hiring: flags.hiring != null ? !!flags.hiring : f.team === "looking" ? true : undefined,
     regulated: undefined,
     exit_intent: json(dir, "governance/exit.json") ? true : undefined,
   };
   const Q = PACKAGES.questions;
-  // Without new answers, Jev's answers from the last written package stand.
-  if (!answers && existsSync(join(dir, OUT, "venture-package.json"))) answers = Object.fromEntries(load(join(dir, OUT, "venture-package.json")).situation.questions.filter((q) => q.p != null).map((q) => [`q:${q.id}`, { noul: q.p }]));
+  // Jev's answers from the last written package stand, unless new answers replace them.
+  const last = existsSync(join(dir, OUT, "venture-package.json")) ? Object.fromEntries(load(join(dir, OUT, "venture-package.json")).situation.questions.filter((q) => q.p != null).map((q) => [`q:${q.id}`, { noul: q.p }])) : {};
+  answers = { ...last, ...(answers ?? {}) };
   const questions = Q.items.filter((q) => q.phases.includes(phase)).map((q) => {
     if (settled[q.id] !== undefined) return { ...q, value: settled[q.id], by: "records" };
     const a = answers?.[`q:${q.id}`]?.noul;
