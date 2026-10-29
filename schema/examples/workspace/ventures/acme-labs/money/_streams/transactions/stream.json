@@ -1,0 +1,5 @@
+{
+  "id": "transactions",
+  "sensitive": true,
+  "summary": "Every transaction rho-sandbox posted, one file each, as Rho returned it; Rho is the system of record. The versioned view is money/_summary.json."
+}
