@@ -1088,6 +1088,10 @@
     {
       "path": "platform/integrations/fixtures/rho-sandbox.json",
       "reason": "What Rho's sandbox (a fictional company) answered to one sync, replayed offline by platform/integrations/rho-test.mjs and the harness's --money; vendor data, not a record"
+    },
+    {
+      "path": "schema/examples/docket-scenarios.json",
+      "reason": "Venture states with a source-argued next step, the evidence set schema/docket-eval.mjs scores the docket against (EE-074); test data, not a record"
     }
   ]
 }

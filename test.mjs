@@ -57,6 +57,7 @@ const steps = [
   ["venture packages (fit by phase, question matrix, completeness)", "node", ["schema/packages-test.mjs"]],
   ["decision analytics (by function and type, wording, outcomes)", "node", ["schema/decision-analytics-test.mjs"]],
   ["decision docket across functions (value, attention, dominance, replay)", "node", ["schema/docket-test.mjs"]],
+  ["decision docket against the scenario evidence set (reports agreement; does not gate on it)", "node", ["schema/docket-eval.mjs"]],
   ["site reader (links and text, offline)", "node", ["platform/integrations/site-test.mjs"]],
   ["Rho money source (package, append-only, read-only client, offline)", "node", ["platform/integrations/rho-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],

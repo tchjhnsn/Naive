@@ -25,6 +25,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { decisions, ownScore } from "./decisions.mjs";
 import { analytics } from "./decision-analytics.mjs";
+import { PACKAGES } from "./packages.mjs";
 
 const ACTIONABLE = new Set(["now", "overdue", "stale"]);
 const OPEN = new Set(["now", "overdue", "stale", "waiting"]);
@@ -33,8 +34,15 @@ const BASE = 10;
 export function docket(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now(), { set_aside = new Set() } = {}) {
   const r = decisions(dir, now);
   const fnOf = new Map(analytics(dir, now).decisions.map((x) => [x.id, { id: x.function_id, title: x.function }]));
-  const ds = r.decisions.filter((d) => d.source !== "root" && OPEN.has(d.render) && !set_aside.has(d.id));
-  const own = new Map(ds.map((d) => [d.id, { score: BASE + ownScore(d, r.phase, now).score, why: ownScore(d, r.phase, now).why }]));
+  const ds = r.decisions.filter((d) => d.source !== "root" && !set_aside.has(d.id)).map((d) => ({ ...d, function: fnOf.get(d.id) }));
+  return { venture: r.venture, ...rankDocket(ds, r.phase, now) };
+}
+
+/** The ranking itself, over decisions as decisions.mjs resolves them, each with its function ({id, title}).
+ *  Pure, so scenarios can be ranked without a venture on disk (schema/docket-eval.mjs). */
+export function rankDocket(all, phase, now = Date.now()) {
+  const ds = all.filter((d) => OPEN.has(d.render));
+  const own = new Map(ds.map((d) => { const o = ownScore(d, phase, now); return [d.id, { score: BASE + o.score, why: o.why }]; }));
   const heldBy = new Map();
   for (const d of ds) if (d.held_by) heldBy.set(d.held_by, [...(heldBy.get(d.held_by) ?? []), d.id]);
   const holds = (id, seen = new Set()) => { for (const x of heldBy.get(id) ?? []) if (!seen.has(x)) { seen.add(x); holds(x, seen); } return seen; };
@@ -42,14 +50,15 @@ export function docket(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") ||
   const rows = ds.filter((d) => ACTIONABLE.has(d.render)).map((d) => {
     const held = [...holds(d.id)];
     const value = own.get(d.id).score + held.reduce((s, x) => s + (own.get(x)?.score ?? 0), 0);
-    const fn = fnOf.get(d.id) ?? { id: "venture", title: "Venture" };
+    const fn = d.function ?? { id: "venture", title: "Venture" };
     return { id: d.id, question: d.question, function: fn.title, function_id: fn.id, render: d.render, own: own.get(d.id).score, value,
       holds: held, why: [...own.get(d.id).why, ...(held.length ? [`holds ${held.length} decision${held.length > 1 ? "s" : ""}: ${held.join(", ")}`] : [])], action: d.action ?? null };
   });
   const functions = [...new Set(rows.map((x) => x.function_id))].map((id) => {
     const xs = rows.filter((x) => x.function_id === id).sort((a, b) => b.value - a.value || a.id.localeCompare(b.id));
     return { id, function: xs[0].function, attention: Math.round(xs.reduce((s, x, i) => s + x.value / 2 ** i, 0)), decisions: xs };
-  }).sort((a, b) => b.attention - a.attention || a.id.localeCompare(b.id));
+  // A tie goes to the function that fits the phase better (schema/packages.json, base), not to the alphabet.
+  }).sort((a, b) => b.attention - a.attention || (PACKAGES.core[b.id]?.base?.[phase] ?? 0) - (PACKAGES.core[a.id]?.base?.[phase] ?? 0) || a.id.localeCompare(b.id));
   const total = functions.reduce((s, f) => s + f.attention, 0);
   for (const f of functions) {
     f.share = total ? Math.round((f.attention / total) * 100) / 100 : 0;
@@ -57,7 +66,7 @@ export function docket(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") ||
   }
   const top = functions[0];
   return {
-    venture: r.venture, phase: r.phase, at: new Date(now).toISOString(), total,
+    phase, at: new Date(now).toISOString(), total,
     next: top ? { function: top.function, function_id: top.id, decision: top.decisions[0].id, question: top.decisions[0].question, value: top.decisions[0].value,
       dominant: top.decisions[0].dominant, why: top.decisions[0].why, action: top.decisions[0].action } : null,
     functions,

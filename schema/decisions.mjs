@@ -193,7 +193,8 @@ export function ownScore(d, phase, now = Date.now()) {
   const why = [];
   let s = 0;
   if (d.render === "overdue") { s += 100; why.push("past its due time"); }
-  else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 48) { s += Math.round(60 - h); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
+  // Cost of delay grows as the deadline nears: 40 at three days, 60 at two, 120 at one, up to 300.
+  else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 72) { s += Math.min(300, Math.round((60 * 48) / Math.max(h, 1))); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
   if (d.render === "stale") { s += 30; why.push("its parent changed after it was decided"); }
   if (d.unlocks?.length) { s += 10 * d.unlocks.length; why.push(`unlocks ${d.unlocks.join("; ")}`); }
   if (d.part_of === "foundation") { s += phase === "discovery" ? 20 : 10; why.push("settles the strategic foundation"); }
