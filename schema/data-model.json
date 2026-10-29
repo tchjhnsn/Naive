@@ -496,6 +496,24 @@
       "note": "For each fact kept once in its system of record, every place that repeats it; live children must show the parent's value (EE-042)"
     },
     {
+      "id": "glossary",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/glossary.schema.json",
+      "paths": [
+        "instance/**/glossary/*.json",
+        "schema/examples/**/glossary/*.json"
+      ],
+      "refs": [
+        {
+          "field": "terms[].export",
+          "to": "glossary",
+          "checked_by": "schema/check-brand.mjs"
+        }
+      ],
+      "note": "A package's own terms, at glossary/<package>.json (Y-2): local to the package unless exported, so an agent in another package sees only exported terms; glossary/terms shows what one package sees"
+    },
+    {
       "id": "department-catalog",
       "layer": "operations",
       "level": "method",
@@ -940,6 +958,48 @@
         "schema/examples/**/operations/marketing/content/**/*.mdx"
       ],
       "note": "Public variants of internal records, written by marketing agents as their own MDX: each names the record it is a variant of, its audience, whether it is published and who approved it; checked by the public gate (EE-064)"
+    },
+    {
+      "id": "marketing-brand",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/marketing-brand.schema.json",
+      "paths": [
+        "instance/**/marketing/brand.json",
+        "schema/examples/**/marketing/brand.json"
+      ],
+      "refs": [
+        {
+          "field": "marks[].asset",
+          "to": "public-assets",
+          "checked_by": "schema/check-brand.mjs"
+        },
+        {
+          "field": "typefaces[].files",
+          "to": "public-assets",
+          "checked_by": "schema/check-brand.mjs"
+        }
+      ],
+      "decision_class": "experience-design",
+      "note": "Brand tokens in the marketing package (Y-3): colors, licensed self-hosted typefaces (T-1), the font each role uses with scopes where nearer context wins (Y-5, T-2), voice rules (the global stylesheet for words), the logo and marks (P-24) and outside design systems by reference (Y-4). Read by every agent's layout; marketing/brand/tokens renders it for interfaces"
+    },
+    {
+      "id": "public-assets",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/public-assets.schema.json",
+      "paths": [
+        "instance/**/public/assets.json",
+        "schema/examples/**/public/assets.json"
+      ],
+      "refs": [
+        {
+          "field": "remote[].id",
+          "to": "raw-source",
+          "checked_by": "schema/check-assets.mjs"
+        }
+      ],
+      "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
     },
     {
       "id": "need-now",

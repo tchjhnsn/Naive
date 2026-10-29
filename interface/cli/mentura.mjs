@@ -91,6 +91,9 @@ if (cmd === "ventures") {
   process.exit(0);
 }
 
+// Brand hook: mentura brand ... and mentura assets ... (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26) live in interface/brand.mjs.
+if (cmd === "brand" || cmd === "assets") process.exit(await (await import("../brand.mjs")).main(argv, { workspace }));
+
 if (cmd === "add") {
   // Imports one function into a venture (EE-047, EE-048, EE-071). department is the alias for function for one release.
   const v = opt("venture");

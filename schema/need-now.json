@@ -507,6 +507,26 @@
       },
       "why": "Whether the public site says what the audiences the venture courts now need to learn, once it has a site (EE-062)"
     },
+    "marketing-brand": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "One brand every agent and interface reads (colors, licensed typefaces, voice rules, marks), once the venture shows itself in public"
+    },
+    "public-assets": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "The source, license and credit of every file the venture ships as it is, before anything with rights attached is published"
+    },
     "marketing-sitemap": {
       "base": {
         "discovery": 0.2,
@@ -596,6 +616,16 @@
         "platform": 0.3
       },
       "why": "The text of a raw source, beside source.json (EE-070)."
+    },
+    "glossary": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.5,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "A package's own terms, once two packages start using one word in different senses"
     }
   }
 }

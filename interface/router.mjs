@@ -41,6 +41,8 @@ import { address } from "../knowledge/connectors/contract.mjs";
 import { holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
+// Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from schema/brand.mjs.
+import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -127,6 +129,7 @@ export function routes() {
     cmd("knowledge/catalog", "knowledge/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "knowledge/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
   );
+  out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (schema/brand.mjs).
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
 
@@ -219,6 +222,7 @@ const PACKAGE_ROUTE = {
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
+  ...BRAND_ROUTES, // Brand hook: marketing/brand, public/assets, glossary (schema/brand.mjs).
 };
 
 // Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
@@ -292,6 +296,7 @@ export function layout(r, dir) {
   const pkg = owned ? { skill: skillsOf(owned).map((s) => s.path), template: r.template ?? null, gates: owned.gates ?? [] } : null;
   const out = { route: r.route, stack, chain, instructions: instructionsOf(chain), package: pkg, note: r.note, groups: r.groups ?? [] };
   if (r.kind === "record") Object.assign(out, { schema: r.schema, template: r.template, checks: r.checks, gate: gateOf(r, dir) });
+  { const brand = brandLayout(dir, r.route); if (brand) out.brand = brand; } // Brand hook: brand, voice and package terms at this route (Y-2, Y-3, T-2).
   if (dir && r.kind === "record") {
     try {
       const nn = JSON.parse(spawnSync("node", [join(repo, "schema/need-now.mjs"), dir, "--json"], { encoding: "utf8" }).stdout);
