@@ -141,7 +141,12 @@ async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", 
     }
   });
   const code = await new Promise((r) => child.on("close", r));
-  if (code !== 0 || !result) { node.error = `the agent stopped with status ${code}`; console.error(node.error); finish(1); process.exit(1); }
+  if (code !== 0 || !result || result.is_error) {
+    // Say why: the reason is in the agent's own result (an expired login, a refused tool), not in its exit code.
+    const why = (result?.result ?? "").trim();
+    node.error = `the agent stopped with status ${code}${why ? `: ${why}` : ""}${/log ?in|\/login|authenticat/i.test(why) ? " (run claude, then /login, and start again)" : ""}`;
+    console.error(node.error); finish(1); if (!board) process.exit(1); await new Promise(() => {});
+  }
   Object.assign(node, { end: iso(), outputs: { report: result.result }, metadata: { cost_usd: result.total_cost_usd, turns: result.num_turns, usage: result.usage } });
   if (!quiet) console.log(result.result.trim().split("\n").map((l) => `   ${l}`).join("\n"));
   return result.result;
@@ -163,12 +168,15 @@ function finish(code = 0) {
     const p = spawnSync("node", [join(repo, "platform/integrations/langsmith.mjs"), join(ws, "trace.json")], { encoding: "utf8" });
     console.log(p.status === 0 ? `LangSmith: ${p.stdout.trim()}` : `LangSmith upload failed: ${(p.stderr || p.stdout).trim()}`);
   }
-  // The board keeps serving the finished run, for the founder (and a demo table) to look over.
-  if (board && code === 0) { console.log(`\nThe board keeps serving: http://127.0.0.1:4331/ and /map. Ctrl-C to stop. Workspace: ${ws}`); return; }
+  // The board keeps serving the finished run, or the stopped one, so the founder can see where it got to.
+  if (board) { console.log(`\nThe board keeps serving${code ? " what the run got to" : ""}: http://127.0.0.1:4331/ and /map. Ctrl-C to stop. Workspace: ${ws}`); return; }
   board?.close();
   process.exit(code);
 }
 const settled = [];
+const docketSteps = [];
+const compact = (k) => ({ leading: k.functions[0]?.function ?? null, functions: k.functions.map((f) => ({ function: f.function, attention: f.attention,
+  decisions: f.decisions.slice(0, 3).map((d) => ({ id: d.id, question: d.question, value: d.value, dominant: d.dominant, why: d.why })) })) });
 
 // 1. The idea map: Jev tags each idea with Naive's conventions; without Jev, the agent does, with the
 //    same vocabulary. Either way the ideas stay verbatim and unknown tags are dropped.
@@ -243,9 +251,6 @@ The founder has just submitted an idea dump. Naive mapped it onto its convention
 // 3. The founder settles what the docket ranks first, one decision at a time (EE-074): the function that
 //    needs attention most, then its highest-value decision the founder can settle now. Each step's docket
 //    goes in the trace, so a judge can check that the ranking was the right next step.
-const docketSteps = [];
-const compact = (k) => ({ leading: k.functions[0]?.function ?? null, functions: k.functions.map((f) => ({ function: f.function, attention: f.attention,
-  decisions: f.decisions.slice(0, 3).map((d) => ({ id: d.id, question: d.question, value: d.value, dominant: d.dominant, why: d.why })) })) });
 for (let n = 0; n < steps; n++) {
   const r = decisions(dir);
   const k = docket(dir);
