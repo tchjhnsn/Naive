@@ -20,12 +20,15 @@ export const TOOLS = [
   { name: "mentura_layout", description: "The context for a route before you act on it: the system, layer and kit purpose, skills and references, the schema and template, the gate, and what need-now says about the record.", inputSchema: { type: "object", properties: { venture, route }, required: ["route"] } },
   { name: "mentura_view", description: "A route as a Markdown page for a person. system/overview shows the venture at a glance.", inputSchema: { type: "object", properties: { venture, route }, required: ["venture", "route"] } },
   { name: "mentura_ventures", description: "The ventures in the workspace, with their phase.", inputSchema: { type: "object", properties: {} } },
-  { name: "mentura_read", description: "Read one record of a venture. Returns null when the venture has no such record yet.", inputSchema: { type: "object", properties: { venture, route }, required: ["venture", "route"] } },
+  { name: "mentura_read", description: "Read one record of a venture. Returns null when the venture has no such record yet. A list returns only the items your role may read.", inputSchema: { type: "object", properties: { venture, route,
+    agent_id: { type: "string", description: "Your role in the team plan, so its read routes apply" } }, required: ["venture", "route"] } },
   { name: "mentura_write", description: "Write one record of a venture. The record must match its schema. A gated record is written as a draft under _drafts/ for a person to accept. Every write is logged in the venture's provenance log: say what the content came from and the decision it acts under.", inputSchema: { type: "object", properties: { venture, route, record: { type: "object", description: "The whole record" },
     derived_from: { type: "array", items: { type: "string" }, description: "What the content came from: venture-relative paths, URLs or decision ids" },
     decision: { type: "string", description: "The decision the write acts under, such as EE-026" },
     model: { type: "string", description: "Your model, for the provenance log" }, note: { type: "string" },
-    agent_id: { type: "string", description: "Your role in the team plan, so its routes and unlocks apply" } }, required: ["venture", "route", "record"] } },
+    agent_id: { type: "string", description: "Your role in the team plan, so its routes and unlocks apply" },
+    // Gate group hook (X-4): a score computed before the write; the gate's confidence rules read it and never compute one.
+    confidence: { type: "number", description: "Your confidence in this record, 0 to 1, if you computed one. Below the venture's threshold, a gate rule may send the write to its function owner" } }, required: ["venture", "route", "record"] } },
   { name: "mentura_decisions", description: "The decisions a venture owes (EE-054): each with its parent, boundary, phase, due time and whether it renders now, is overdue, waits, comes later, is stale or deferred. Work on what renders now or overdue; a decision that waits is held by an open fail-closed decision above it. A route a pending decision unlocks is refused until a person decides it.", inputSchema: { type: "object", properties: { venture,
     render: { type: "array", items: { type: "string" }, description: "Only these states, such as [\"overdue\", \"now\"]" } }, required: ["venture"] } },
   { name: "mentura_propose_decision", description: "Propose a decision, or new wording for an open one. It stays open until a person approves it in the CLI (mentura decide); you can never mark a decision decided. Put it beside what it decides with at (a venture folder such as operations) and name (<record>[.<topic>]).", inputSchema: { type: "object", properties: { venture,
@@ -60,9 +63,9 @@ export async function handle(msg) {
         case "mentura_ventures": r = { ok: true, result: ventures().map(({ id, name, phase, path }) => ({ id, name, phase, path })) }; break;
         case "mentura_layout": r = await call({ venture: a.venture, route: a.route, action: "layout" }); break;
         case "mentura_view": r = await call({ venture: a.venture, route: a.route, action: "view" }); break;
-        case "mentura_read": r = await call({ venture: a.venture, route: a.route, action: "read" }); break;
+        case "mentura_read": r = await call({ venture: a.venture, route: a.route, action: "read", actor_id: a.agent_id }); break;
         case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
-          provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
+          provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, confidence: a.confidence, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
         case "mentura_decisions": {
           r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
           if (r.ok && a.render?.length) r.result = { ...r.result, decisions: r.result.decisions.filter((d) => a.render.includes(d.render)) };

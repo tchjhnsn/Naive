@@ -16,12 +16,14 @@
     "need-now",
     "provenance",
     "venture-packages",
-    "venture-package"
+    "venture-package",
+    "naive-config"
   ],
   "reads": [
     "product",
     "account",
-    "decision"
+    "decision",
+    "team-plan"
   ],
   "writes": [],
   "checks": [
@@ -39,7 +41,9 @@
     "schema/packages.mjs",
     "schema/packages-test.mjs",
     "schema/decision-analytics.mjs",
-    "schema/decision-analytics-test.mjs"
+    "schema/decision-analytics-test.mjs",
+    "schema/check-config.mjs",
+    "schema/gate-test.mjs"
   ],
   "gaps": [],
   "name": "system"

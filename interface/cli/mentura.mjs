@@ -14,7 +14,8 @@
 //   mentura typegen                                 alias of naive typegen (EE-073)
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
-//                                                   one holding a foundation statement asks you to type the route
+//                                                   one holding a foundation statement asks you to type the route;
+//                                                   [--pick <letter>] [--by <name>] accepts one of drafts kept side by side
 //   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--confirm <decision>]
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
 //   mentura propose --venture <id> --input <file.json> [--as <role>]
@@ -29,6 +30,7 @@
 //          a collection item is <route>/<id> (purpose/product/kettle); a nested venture is its
 //          folder path (--venture studio/print); system/overview view shows the venture at a glance
 //          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
+//          [--confidence <n>]   a score computed before the write, read by the gate's confidence rules
 //          knowledge/catalog run builds the catalog over the venture's sources; knowledge/search run
 //          --value <query> finds items in any of them (EE-037)
 //          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;
@@ -46,6 +48,8 @@ import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir,
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
 import { approve, decisions, propose } from "../../schema/decisions.mjs";
+// Gate group hook (X-2): held drafts kept side by side.
+import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
@@ -144,22 +148,27 @@ if (cmd === "accept") {
   if (!d) { console.error(`${rt} is not a record route, or no venture ${venture}`); process.exit(1); }
   const draft = join(d.dir, d.draft);
   if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
+  // Gate group hook (X-2): drafts kept side by side are accepted one at a time with --pick <letter>.
+  let chosen;
+  try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error(e.message); process.exit(1); }
+  const chosenFile = join(d.dir, chosen);
   const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
   const touched = foundationOf(recType);
   if (touched.length) {
     const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
     const now = existsSync(join(d.dir, d.file)) ? JSON.parse(readFileSync(join(d.dir, d.file), "utf8")) : {};
-    const next = JSON.parse(readFileSync(draft, "utf8"));
+    const next = JSON.parse(readFileSync(chosenFile, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
     const names = new Set([d.route, rt]);
     const confirmed = opt("confirm") !== undefined ? names.has(opt("confirm")) : await typed(d.route, `Accepting ${d.route} changes these foundation statements:\n${diff}`);
     if (!confirmed) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
   }
-  const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
-    provenance: { activity: "accept", derived_from: [d.draft], note: opt("note") } });
+  const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(chosenFile, "utf8")), actor: "person", workspace, via: "cli",
+    provenance: { activity: "accept", derived_from: [chosen], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
-  rmSync(draft);
-  out(`accepted: ${w.result.written}`);
+  // Gate group hook (X-2): removes the draft, its variants and sidecar, and decides the variants decision.
+  const settled = settleDraft(d.dir, d.draft, { picked: opt("pick") ?? "a", by: opt("by") });
+  out(`accepted: ${w.result.written}${settled.decision ? ` (draft ${settled.picked}; decision ${settled.decision} ${settled.decided ? "decided" : `not decided: ${settled.error}`})` : ""}`);
   process.exit(0);
 }
 
@@ -248,6 +257,8 @@ if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync
 if (opt("value")) input = { ...(input ?? {}), value: Number.isNaN(Number(opt("value"))) ? opt("value") : Number(opt("value")) };
 if (flag("as-is")) input = { ...(input ?? {}), as_is: true };
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
+// Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
+if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
 let r = await call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
 // Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
 if (r.ok && r.needs_input && !flag("json")) {

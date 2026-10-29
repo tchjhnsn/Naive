@@ -36,6 +36,7 @@ Status:
 |---|---|---|---|
 | Purpose | Core product | `core` in `venture.json` | defined |
 | Purpose | Telos (start with the end) | `schema/telos.schema.json` at `<venture>/purpose/telos.json`; `check-telos.mjs` (EE-023) | defined |
+| System | Venture config (`naive.config.json`: the gate's rules, owners, check settings, thresholds, System 1 questions, pinned packages, acting) | `schema/naive-config.schema.json` at `<venture>/naive.config.json`; `schema/naive-config.mjs` (defaults), `schema/check-config.mjs`, the gate `schema/gate.mjs` and held drafts `schema/gate-drafts.mjs` (EE-073) | defined |
 | Governance | Publication policy (the publication gate) | `schema/publication-policy.schema.json` at `<venture>/governance/publication-policy.json`; `check-publication.mjs` (EE-025) | defined |
 | Purpose | Validation package: problem record, shared evidence item, GRADE-adapted grading | `schema/validation-problem.schema.json` and `schema/validation-evidence.schema.json` at `<venture>/purpose/validation/`; `check-validation.mjs`; package at `packages/validation/` (templates and skills still under `purpose/kits/validation/`, EE-026, EE-071) | problem built; six sub-scores to build |
 | Purpose | Goals and vision | `purpose/frameworks/business-discovery-framework.md` | prose |

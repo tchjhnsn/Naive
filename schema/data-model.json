@@ -1064,6 +1064,35 @@
       "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031)"
     },
     {
+      "id": "naive-config",
+      "layer": "system",
+      "level": "venture",
+      "schema": "schema/naive-config.schema.json",
+      "paths": [
+        "instance/**/naive.config.json",
+        "schema/examples/**/naive.config.json"
+      ],
+      "decision_class": "security-loosening",
+      "refs": [
+        {
+          "field": "gate.rules.routes",
+          "to": "(routes)",
+          "checked_by": "schema/check-config.mjs"
+        },
+        {
+          "field": "owners",
+          "to": "team-plan",
+          "checked_by": "schema/check-config.mjs"
+        },
+        {
+          "field": "packages",
+          "to": "venture-packages",
+          "checked_by": "schema/check-config.mjs"
+        }
+      ],
+      "note": "The venture's overrides to Naive's defaults (P-2, like next.config.js): the gate's static rules, function owners, check settings, thresholds, which System 1 questions run, pinned package versions and how strictly the acting role is checked. An agent's write of it is a draft, since it can loosen the gate"
+    },
+    {
       "id": "route-aliases",
       "layer": "interface",
       "level": "method",
