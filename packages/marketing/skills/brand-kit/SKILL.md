@@ -57,3 +57,7 @@ Both carry the experience-design decision class, so an agent's write is a draft.
 ## Then
 
 Build the design system with the `design-system` skill (`packages/marketing/skills/design-system/SKILL.md`).
+
+## Brand alignment lint
+
+`node schema/brand-lint.mjs <venture dir> [--json]` (route `marketing/brand-lint`) checks every decision record and marketing content file against `marketing/design-system.json`. Rules: `avoid-words` (ethos.avoid terms), `voice-jargon` (a built-in jargon list), `audience-unknown` (an icp id not in `audiences`) and `unsourced-brand-choice` (a choice with no `from`). Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `brand_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1).
