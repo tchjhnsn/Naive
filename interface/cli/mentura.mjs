@@ -39,6 +39,10 @@
 //   mentura verify <route|folder> --venture <id>    checked and still right, unchanged: its age starts again
 //   mentura phase <phase> --venture <id> --as person   change phase; per-phase records go stale
 //   mentura freshness --venture <id> [--freeze <out dir>]   what is fresh, stale, expired or a live hole
+//   mentura <route> navigate|head --venture <id> [--session <s>] [--task <text>] [--prefetch a,b | --no-prefetch] [--stream]
+//                                                   read a route header first, with layout once per session, template and prefetch
+//   mentura batch --venture <id> --input <calls.json> [--stream]
+//                                                   run a list of {route, action, input} calls, reporting each as it finishes
 //
 // The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
@@ -247,6 +251,10 @@ if (cmd === "baseline") {
 // Freshness (Revalidating, V-1 to V-8): revalidate, verify, phase and freshness live in ./freshness.mjs.
 if (["revalidate", "verify", "phase", "freshness"].includes(cmd)) process.exit(await (await import("./freshness.mjs")).main(cmd, argv, workspace));
 
+// Context hook (interface/context.mjs): navigate and head read a route header first, with its layout once per
+// session (--session), its template and prefetched refs (--task, --prefetch, --no-prefetch, --stream); batch runs
+// a list of calls with progress.
+if (["navigate", "head"].includes(action) || cmd === "batch") { const { cli } = await import("../context.mjs"); process.exit(await cli(argv, { workspace })); }
 if (!action) usage();
 const venture = opt("venture");
 if (!venture && !["template", "layout"].includes(action)) usage();

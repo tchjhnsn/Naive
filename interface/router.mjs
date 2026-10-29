@@ -45,6 +45,8 @@ import { readFlag as freshnessFlag } from "../schema/freshness.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 // Caching (schema/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { actionScope, cacheRoutes, command as cachedCommand, forget, internal as cacheInternal, memo } from "../schema/caching.mjs";
+// Context hook: instrumentation of every call and judgment (interface/instrumentation.mjs, P-4, F-4).
+import { instrumented, judgment } from "./instrumentation.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -130,6 +132,9 @@ function buildRoutes() {
     cmd("governance/payouts", "schema/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
     cmd("system/overview", null, "The venture at a glance: telos, validation, need-now, time to ready, team and recent provenance, rendered as parallel slots", { internal: "overview" }),
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
+    // Context hook (interface/vitals.mjs, interface/context.mjs): agent vitals and the context budget (N-6, C-15, N-13).
+    cmd("system/vitals", "interface/vitals.mjs", "Agent vitals (N-6): calls per task, tokens of context per call, time to a useful answer and time from a decision opening to a person deciding it, at the 75th percentile, each checked against its threshold (C-15). Reads the events log that instrumentation writes"),
+    cmd("system/context", "interface/context.mjs", "The context budget (N-13): what every route sends an agent, in tokens, against its budget, with the largest part and where to move it (S-14, F-6)", { args: ["budget"] }),
     cmd("knowledge/catalog", "knowledge/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "knowledge/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
     // Freshness (Revalidating, V-1 to V-8): schema/freshness.mjs.
@@ -276,9 +281,11 @@ function instructionsOf(chain) {
 }
 
 /** A score below its threshold is uncertain: not an error and not an answer. It routes to the function owner. */
-export function judge(score, threshold, owner) {
-  if (typeof score !== "number" || score < threshold) return { outcome: "uncertain", owner, result: null };
-  return { outcome: "answer", result: score };
+export function judge(score, threshold, owner, at) {
+  const out = typeof score !== "number" || score < threshold ? { outcome: "uncertain", owner, result: null } : { outcome: "answer", result: score };
+  // Context hook: a judgment made for a venture (at.dir) is an instrumentation event (F-4).
+  if (at?.dir) judgment(at.dir, { question: at.question, route: at.route, model: at.model, score, threshold, outcome: out.outcome, owner });
+  return out;
 }
 
 /** Runs fn. A throw is the uncaught outcome. */
@@ -323,11 +330,15 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
  * decision, note, agent } for the log.
  */
 // Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
-export const call = (args) => actionScope(() => callInAction(args));
+// Context hook: every call is timed and measured for agent vitals (interface/instrumentation.mjs).
+export const call = (args) => actionScope(() => instrumented(args, callInAction, ventureDir));
 async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const requested = route;
   const { r, params, alias } = resolve(route);
   if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
+  // Context hook (interface/context.mjs): navigate reads a route header first, with its layout once per
+  // session, its template and prefetched refs; head stops after the header (N-3, L-2, O-4).
+  if (action === "navigate" || action === "head") return (await import("./context.mjs")).navigate({ ...(input ?? {}), venture, route: requested, workspace, actor, actor_id, via, header_only: action === "head" || !!input?.header_only });
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
   route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
