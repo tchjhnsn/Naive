@@ -27,6 +27,7 @@ const steps = [
   ["private records stay off the model", "node", ["schema/check-private.mjs", "instance"]],
   ["design additions (use model, gate, uncertain)", "node", ["schema/design-additions-test.mjs"]],
   ["naive port (a project in, files as they are, read-only)", "node", ["schema/port-test.mjs"]],
+  ["naive migrate (a project rewritten as records, decided by a person; stand-in agent)", "node", ["schema/migrate-test.mjs"]],
   ["governance: instance", "node", ["schema/check-governance.mjs", "instance"]],
   ["governance: examples", "node", ["schema/check-governance.mjs", "schema/examples/workspace"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],

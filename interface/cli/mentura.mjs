@@ -9,6 +9,8 @@
 //   mentura add <function> --venture <id> [--group]
 //                                                   import a function (department is the alias for one release): list it and create its folders
 //   mentura upgrade --venture <id>                  alias of naive upgrade: move the venture onto the package folder layout (EE-070, EE-076)
+//   mentura migrate --from <project> --venture <id|dir> [--apply]
+//                                                   alias of naive migrate: an agent rewrites a project as Naive records (EE-076)
 //   mentura typegen                                 alias of naive typegen (EE-073)
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
@@ -102,10 +104,18 @@ if (cmd === "typegen") {
   process.exit(p.status ?? 1);
 }
 
+if (cmd === "migrate" && (opt("from") || flag("apply"))) {
+  // migrate means rewriting an outside project into a new venture (EE-076): the same as naive migrate.
+  const v = opt("venture");
+  const d = v && (existsSync(join(resolve(v), "venture.json")) ? resolve(v) : ventureDir(v, workspace));
+  if (!d) usage();
+  const p = spawnSync("node", [join(repo, "schema/migrate-venture.mjs"), "--venture", d, ...(opt("from") ? ["--from", opt("from")] : ["--apply"])], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
 if (cmd === "upgrade" || cmd === "migrate") {
-  // migrate now means rewriting an outside project into a new venture (EE-076); for one release it
-  // still runs upgrade, with a notice.
-  if (cmd === "migrate") console.error("mentura migrate is now naive upgrade (EE-076); migrate will mean rewriting an outside project into Naive");
+  // migrate without --from is the old name of upgrade: for one release it still runs upgrade, with a notice.
+  if (cmd === "migrate") console.error("mentura migrate --venture <id> is now naive upgrade (EE-076); migrate --from <project> rewrites an outside project into Naive");
   const v = opt("venture");
   const d = v && ventureDir(v, workspace);
   if (!d) usage();

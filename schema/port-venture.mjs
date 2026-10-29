@@ -19,6 +19,7 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { record } from "../interface/provenance.mjs";
+import { SECRET } from "./migrate-venture.mjs";
 
 export const PLAN = ".release/port-plan.json";
 const SKIP = new Set([".git", "node_modules", ".next", ".turbo", "dist", "build", ".venv", "__pycache__", ".DS_Store"]);
@@ -64,14 +65,15 @@ export function place(rel, bytes) {
   return { action: "leave", reason: "nothing in its name or folders matches a package; place it by hand or migrate it" };
 }
 
-function walk(root, rel = "", out = { files: [], repos: [] }) {
+function walk(root, rel = "", out = { files: [], repos: [], secrets: [] }) {
   for (const e of readdirSync(join(root, rel), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     if (SKIP.has(e.name) || e.isSymbolicLink()) continue;
     const r = rel ? join(rel, e.name) : e.name;
     if (e.isDirectory()) {
       if (REPO_MARKERS.some((m) => existsSync(join(root, r, m)))) out.repos.push(r);
       else walk(root, r, out);
-    } else if (e.isFile() && !e.name.startsWith(".")) out.files.push(r);
+    } else if (e.isFile() && SECRET.test(r)) out.secrets.push(r);
+    else if (e.isFile() && !e.name.startsWith(".")) out.files.push(r);
   }
   return out;
 }
@@ -82,8 +84,8 @@ export function plan(from, dir) {
   if (!existsSync(src) || !statSync(src).isDirectory()) throw new Error(`${from} is not a directory`);
   if (!existsSync(join(dir, "venture.json"))) throw new Error(`${dir} is not a venture: create one first with naive init`);
   if (resolve(dir).startsWith(src + sep) || resolve(dir) === src) throw new Error("the venture cannot sit inside the project it ports from");
-  const { files, repos } = walk(src);
-  const items = [];
+  const { files, repos, secrets } = walk(src);
+  const items = secrets.map((f) => ({ from: f, action: "leave", reason: "looks like a secret, so it was never opened" }));
   // The project itself is a repository when it carries a marker at its root: point to it, and still
   // port its documents.
   for (const r of REPO_MARKERS.some((m) => existsSync(join(src, m))) ? ["", ...repos] : repos)
