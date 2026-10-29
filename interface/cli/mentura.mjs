@@ -34,6 +34,10 @@
 //          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;
 //          --as-is runs it anyway (EE-050)
 //   mentura baseline --venture <id>                 adopt existing records into the provenance log
+//   mentura <route> navigate|head --venture <id> [--session <s>] [--task <text>] [--prefetch a,b | --no-prefetch] [--stream]
+//                                                   read a route header first, with layout once per session, template and prefetch
+//   mentura batch --venture <id> --input <calls.json> [--stream]
+//                                                   run a list of {route, action, input} calls, reporting each as it finishes
 //
 // The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
@@ -239,6 +243,10 @@ if (cmd === "baseline") {
   process.exit(0);
 }
 
+// Context hook (interface/context.mjs): navigate and head read a route header first, with its layout once per
+// session (--session), its template and prefetched refs (--task, --prefetch, --no-prefetch, --stream); batch runs
+// a list of calls with progress.
+if (["navigate", "head"].includes(action) || cmd === "batch") { const { cli } = await import("../context.mjs"); process.exit(await cli(argv, { workspace })); }
 if (!action) usage();
 const venture = opt("venture");
 if (!venture && !["template", "layout"].includes(action)) usage();

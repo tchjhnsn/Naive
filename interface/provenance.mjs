@@ -7,6 +7,7 @@
 import { createHash } from "node:crypto";
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { emit } from "./instrumentation.mjs";
 
 export const LOG = "provenance.jsonl";
 const sha = (s) => createHash("sha256").update(s).digest("hex");
@@ -38,5 +39,7 @@ export function record(dir, { entity, route, activity, agent, derived_from, deci
     derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, sha256: sha256 ?? contentHash(join(dir, entity)), prev }).filter(([, v]) => v !== undefined));
   entry.hash = lineHash(prev, entry);
   appendFileSync(join(dir, LOG), JSON.stringify(entry) + "\n");
+  // Context hook: every provenance entry (write, draft, accept, confirm, decision) is an instrumentation event (P-4).
+  emit(dir, { kind: "provenance", activity: entry.activity, entity: entry.entity, route: entry.route, decision: entry.decision, by: entry.agent?.kind, via: entry.agent?.via });
   return entry;
 }
