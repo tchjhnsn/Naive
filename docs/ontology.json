@@ -182,6 +182,13 @@
       "status": "new"
     },
     {
+      "noun": "function",
+      "level": "venture",
+      "meaning": "A business function with one accountable owner. One person may own several. A solo founder owns them all. Decision rights and the team plan point at function owners (EE-071). department is the alias for one release",
+      "standard": "business function (common usage)",
+      "status": "new"
+    },
+    {
       "noun": "pillar",
       "level": "venture",
       "meaning": "Product, brand and business, in every venture",

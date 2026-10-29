@@ -18,6 +18,8 @@ export function loadPackages(repo) {
     const pkg = JSON.parse(readFileSync(p, "utf8"));
     const o = {};
     for (const k of fields) if (pkg[k] !== undefined) o[k] = pkg[k];
+    if (o.department && !o.function) o.function = o.department;
+    if (o.function && !o.department) o.department = o.function;
     return [n, o];
   }));
   return { ...rest, core: take(order.core, CORE), handoff: take(order.handoff, HANDOFF) };

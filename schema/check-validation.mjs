@@ -110,12 +110,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const today = new Date();
   for (const root of walk(dir)) {
     const v = load(join(root, "venture.json"));
-    const vDir = join(root, "purpose/validation");
-    if (!existsSync(vDir)) continue;
+    const places = [["foundation/problem.json", "problem"], ["validation", null], ["purpose/validation", null]].flatMap(([rel, name]) => {
+      const p = join(root, rel);
+      if (name) return existsSync(p) ? [[name, p, `${v.id}/${rel}`]] : [];
+      if (!existsSync(p)) return [];
+      return readdirSync(p).filter((x) => x.endsWith(".json")).sort().map((f) => [f.replace(/\.json$/, ""), join(p, f), `${v.id}/${rel}/${f}`]);
+    });
+    if (!places.length) continue;
     const graded = {};
     let path;
-    for (const f of readdirSync(vDir).filter((x) => x.endsWith(".json")).sort()) {
-      const name = f.replace(/\.json$/, ""), rec = load(join(vDir, f)), at = `${v.id}/purpose/validation/${f}`;
+    const seen = new Set();
+    for (const [name, file, at] of places) {
+      if (seen.has(name)) continue;
+      seen.add(name);
+      const rec = load(file);
       if (!SUBSCORES.includes(name)) { errors.push(`${at}: not a validation sub-score (${SUBSCORES.join(", ")})`); continue; }
       const all = name === "operations-readiness" ? rec.tiers.flatMap((t) => t.evidence) : rec.evidence ?? [];
       const ids = all.map((e) => e.id);
@@ -135,8 +143,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       out.push({ venture: v.id, record: name, grade: r.level, weight: r.weight, why: r.why, probability: rec.probability?.p ?? null, facts: facts(name, rec), tiers: r.tiers,
         items: r.items.map((i) => ({ id: i.e.id, kind: i.e.kind, grade: i.level, why: i.why, supports: i.e.supports !== false })) });
     }
-    const pDir = join(root, "products");
-    const products = existsSync(pDir) ? readdirSync(pDir).filter((f) => f.endsWith(".json")).map((f) => load(join(pDir, f))) : [];
+    const products = ["product", "products"].flatMap((d) => existsSync(join(root, d)) ? readdirSync(join(root, d)).filter((f) => f.endsWith(".json")).map((f) => load(join(root, d, f))) : []);
     scores.push({ venture: v.id, ...score(graded, W, { path: path ?? "build-first", kind: kindOf(products) }) });
   }
   const wantScore = process.argv.includes("--score");

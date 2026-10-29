@@ -113,7 +113,7 @@ for (const k of kits.values()) for (const rel of ["reads", "writes"]) for (const
 for (const k of kits.values()) if (k.product) {
   const id = k.name ?? k.kit;
   const [v, pid] = k.product.split("/");
-  const card = all.find((f) => f.endsWith(`/${v}/products/${pid}.json`));
+  const card = all.find((f) => f.endsWith(`/${v}/products/${pid}.json`) || f.endsWith(`/${v}/product/${pid}.json`));
   if (!card) errors.push(`${id}: product card ${k.product} not found`);
 }
 

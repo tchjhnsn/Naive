@@ -54,6 +54,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | relationship | How a party or market stands to the venture: customer (buys), client (served under a professional relationship), user (uses, may not pay), member (belongs), audience (reads, watches or listens; markets only), partner | common business usage; client as a customer of professional services |  |
 | link | What crosses from one venture into another, one way, with a border | Clark's work/family border theory |  |
 | venture profile | The readable companion to venture.json: narrative, pillars, changelog | ours |  |
+| function | A business function with one accountable owner. One person may own several. A solo founder owns them all. Decision rights and the team plan point at function owners (EE-071). department is the alias for one release | business function (common usage) |  |
 | pillar | Product, brand and business, in every venture | ours |  |
 | venture template | The scaffold for a venture: pillars, roles, decision rights | ours |  |
 | kit | Mentura's word (EE-071): an enhanced package that adds automations, agent workflows, richer skills and connectors, at platform/kits/<name>/kit.json. A kit names the one package it extends and never replaces it, so the package works without the kit. The framework does not use kit for its own manifests (was the layer bundle at <layer>/kit.json) | product bundling (Adams and Yellen 1976), kept for the platform |  |

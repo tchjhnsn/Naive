@@ -6,8 +6,9 @@
 //   mentura ventures [--json]                       ventures in the workspace
 //   mentura init <dir> --id <id> [--phase <phase>] [--layers purpose,governance]
 //                                                   start a venture; --layers turns on only those
-//   mentura add <department> --venture <id> [--group]
-//                                                   import a department: list it and create its folders
+//   mentura add <function> --venture <id> [--group]
+//                                                   import a function (department is the alias for one release): list it and create its folders
+//   mentura migrate --venture <id>                  move the venture onto the package folder layout (EE-070)
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route
@@ -88,10 +89,18 @@ if (cmd === "ventures") {
 }
 
 if (cmd === "add") {
-  // Imports one department into a venture (EE-047, EE-048): schema/add-department.mjs.
+  // Imports one function into a venture (EE-047, EE-048, EE-071). department is the alias for function for one release.
   const v = opt("venture");
   if (!action || !v) usage();
   const p = spawnSync("node", [join(repo, "schema/add-department.mjs"), ventureDir(v, workspace), action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
+if (cmd === "migrate") {
+  const v = opt("venture");
+  const d = v && ventureDir(v, workspace);
+  if (!d) usage();
+  const p = spawnSync("node", [join(repo, "schema/migrate-venture.mjs"), d], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -121,7 +130,9 @@ if (cmd === "accept") {
     const now = existsSync(join(d.dir, d.file)) ? JSON.parse(readFileSync(join(d.dir, d.file), "utf8")) : {};
     const next = JSON.parse(readFileSync(draft, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
-    if (!(await typed(d.route, `Accepting ${d.route} changes these foundation statements:\n${diff}`))) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
+    const names = new Set([d.route, rt]);
+    const confirmed = opt("confirm") !== undefined ? names.has(opt("confirm")) : await typed(d.route, `Accepting ${d.route} changes these foundation statements:\n${diff}`);
+    if (!confirmed) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
   }
   const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
     provenance: { activity: "accept", derived_from: [d.draft], note: opt("note") } });

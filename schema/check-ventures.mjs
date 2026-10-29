@@ -33,7 +33,8 @@ for (const f of walk(dir)) {
   if (ventures.has(v.id)) errors.push(`${f}: duplicate venture id ${v.id}`);
   const root = dirname(f);
   for (const [k, l] of Object.entries(v.layers ?? {})) if (l && !existsSync(join(root, l.location))) errors.push(`${v.id}: ${k} layer location ${l.location} not found (relative to the venture folder)`);
-  ventures.set(v.id, { ...v, products: jsonIn(join(root, "products")).map(load), accounts: accountsIn(join(root, "accounts")).map(load) });
+  const productFiles = [...jsonIn(join(root, "product")), ...jsonIn(join(root, "products"))];
+  ventures.set(v.id, { ...v, products: productFiles.map(load), accounts: accountsIn(join(root, "accounts")).map(load) });
 }
 if (!ventures.size) { console.error(`no venture.json found under ${dir}`); process.exit(1); }
 

@@ -28,12 +28,12 @@ const handoff = (dir, id) => join(dir, "operations/handoffs", `${id}.json`);
 
 expect("check-ventures passes on the instance", run("check-ventures.mjs", [join(root, "instance")]).status === 0);
 expect("check-ventures passes on the examples", run("check-ventures.mjs", [join(root, "schema/examples/workspace")]).status === 0);
-broken("a flows_to to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "products/mad.json"), (p) => { p.flows_to = ["nope"]; }), /flows_to unknown product nope/);
-broken("a part_of to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "products/five-step-algorithm.json"), (p) => { p.part_of = ["nope"]; }), /part_of unknown product nope/);
+broken("a flows_to to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/mad.json"), (p) => { p.flows_to = ["nope"]; }), /flows_to unknown product nope/);
+broken("a part_of to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/five-step-algorithm.json"), (p) => { p.part_of = ["nope"]; }), /part_of unknown product nope/);
 broken("a missing layer folder fails", "check-ventures.mjs", (d) => rmSync(join(d, "operations"), { recursive: true }), /operations layer location/);
 broken("a tier scope outside operations fails", "check-ventures.mjs", (d) => edit(join(d, "products/kit.json"), (p) => { p.scope = { level: "tier", layer: "knowledge", tier: "delivery" }; }), /tier-scoped/);
 broken("software with no repository fails", "check-ventures.mjs", (d) => edit(join(d, "venture.json"), (v) => { delete v.repos; }), /builds software, so the venture \(or a parent\) needs a repository/);
-broken("several markets with no primary fail", "check-ventures.mjs", (d) => edit(join(d, "products/mad.json"), (p) => { p.market = [p.market, p.market]; }), /exactly one primary/);
+broken("several markets with no primary fail", "check-ventures.mjs", (d) => edit(join(d, "product/mad.json"), (p) => { p.market = [p.market, p.market]; }), /exactly one primary/);
 
 expect("check-execution passes on the EE venture", run("check-execution.mjs", [venture]).status === 0);
 broken("a class the role does not own fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-json-output"), (h) => { h.decision_classes.push("new-structure"); }), /belongs to architect/);
@@ -220,7 +220,7 @@ function teamBroken(name, change, pattern) {
   const r = run("check-team.mjs", [dir]);
   expect(name, r.status !== 0 && pattern.test(r.stderr));
 }
-const planOf = (d) => join(d, "operations/team-plan.json");
+const planOf = (d) => join(d, "people/team-plan.json");
 expect("check-team passes on the instance", run("check-team.mjs", [join(root, "instance")]).status === 0);
 teamBroken("an agent holding an escalate class fails", (d) => edit(planOf(d), (p) => { p.roles[1].authority.push("spend-money"); }), /holds spend-money, which decision rights give to founder|an escalate class/);
 teamBroken("an agent doing an unknown task with no human loop fails", (d) => edit(planOf(d), (p) => { delete p.roles[3].tasks[0].human_loop; }), /names a human loop/);
