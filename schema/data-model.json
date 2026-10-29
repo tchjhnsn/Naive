@@ -380,6 +380,16 @@
       "note": "A step-by-step guide a venture function runs in conversation with the founder; run by interface/skills/run-playbook (a template is one record's empty shape; a playbook is the order of the work)"
     },
     {
+      "id": "profile-attributes",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/profile-attributes.schema.json",
+      "paths": [
+        "purpose/frameworks/founder-profile/attributes.json"
+      ],
+      "note": "The library of founder-profile attributes (puzzles, passions, telos, ambitions, strengths, weaknesses ...) with their types, and the templates a profile starts from"
+    },
+    {
       "id": "idea-map-conventions",
       "layer": "purpose",
       "level": "method",

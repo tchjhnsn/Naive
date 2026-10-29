@@ -18,7 +18,7 @@
         "Reflect back the pattern you hear in their own words, and ask whether you have it right. Never name their passion for them.",
         "Keep it in the founder's words. Do not judge whether it could be a business yet."
       ],
-      "writes": [{ "route": "people/founders/[id]", "as": "draft", "note": "the profile: puzzles, passions, telos, ambitions, strengths, values" }],
+      "writes": [{ "route": "people/founders/[id]", "as": "draft", "note": "the profile from the torians-playbook template (purpose/frameworks/founder-profile/attributes.json): each attribute a list of entries in the founder's words, typed where a type fits" }],
       "done_when": "The founder confirms their profile reads true.",
       "artifact": "Document: the founder profile, for them to correct"
     },

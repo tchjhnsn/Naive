@@ -30,7 +30,8 @@
     "idea-map",
     "idea-map-conventions",
     "idea-graph",
-    "playbook"
+    "playbook",
+    "profile-attributes"
   ],
   "reads": [
     "venture",

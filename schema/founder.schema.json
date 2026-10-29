@@ -71,42 +71,44 @@
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Who the founder is, in their own words, as a mentor learns it (Torian's playbook, step know-the-founder): the puzzle of their life and what they are for",
+      "description": "Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in purpose/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type",
       "properties": {
-        "puzzles": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The problems they keep turning over"
-        },
-        "passions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "telos": {
+        "template": {
           "type": "string",
-          "description": "What a good life looks like for them; what they are for"
+          "description": "The template it started from; default if absent"
         },
-        "ambitions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "summary": {
+          "type": "string",
+          "description": "The mentor's prose portrait, for reasoning models"
         },
-        "strengths": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "attributes": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z0-9-]+$"
           },
-          "description": "What people come to them for"
-        },
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "text"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "description": "In the founder's own words"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "One of the attribute's types in purpose/frameworks/founder-profile/attributes.json"
+                },
+                "function": {
+                  "type": "string",
+                  "description": "For a strength or weakness of type venture-function: the venture function it is about"
+                }
+              }
+            }
           }
         },
         "confirmed": {
