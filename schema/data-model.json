@@ -1481,35 +1481,6 @@
       "note": "A package's own terms, at glossary/<package>.json (Y-2): local to the package unless exported, so an agent in another package sees only exported terms; glossary/terms shows what one package sees"
     },
     {
-      "id": "marketing-design-system",
-      "layer": "operations",
-      "level": "venture",
-      "schema": "schema/marketing-design-system.schema.json",
-      "paths": [
-        "instance/**/marketing/design-system.json",
-        "schema/examples/**/marketing/design-system.json"
-      ],
-      "refs": [
-        {
-          "field": "brand",
-          "to": "marketing-brand",
-          "checked_by": "schema/design-system.mjs"
-        },
-        {
-          "field": "audiences",
-          "to": "icp",
-          "checked_by": "schema/design-system.mjs"
-        },
-        {
-          "field": "choices[].from",
-          "to": "validation-problem",
-          "checked_by": "schema/design-system.mjs"
-        }
-      ],
-      "decision_class": "experience-design",
-      "note": "The design system in the marketing package: the ethos read from the strategic foundation and every brand choice with why and the records it rests on (mission, ICP profiles, market, founders), inherited through marketing/design-system/inputs. The values stay in marketing/brand.json"
-    },
-    {
       "id": "marketing-brand",
       "layer": "operations",
       "level": "venture",

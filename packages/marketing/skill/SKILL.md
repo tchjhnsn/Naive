@@ -23,8 +23,6 @@ Package `packages/marketing`. A venture function is a part of the venture with o
 | `marketing/sitemap` | The planned public site, page by page | `marketing-sitemap` |
 | `marketing/content` | Public variants of internal records, as MDX (read through the router; write the files) | `marketing-content` |
 | `marketing/brand` | Brand tokens, type, voice and marks | `marketing-brand` |
-| `marketing/design-system` | The ethos and why each brand choice was made, from inherited inputs | `marketing-design-system` |
-| `marketing/design-system/inputs` | Command: what marketing inherits (mission, ICPs, market, founders) | command or item |
 | `marketing/brand/tokens` | Command: the brand as design tokens and CSS | command or item |
 | `marketing/voice` | Command: content held to the voice rules | command or item |
 | `operations/marketing/public` | Command: the public gate | command or item |
@@ -55,7 +53,7 @@ Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-ar
 | Action | Artifact | Built from |
 |---|---|---|
 | Draft a landing page or ad | Design | marketing/brand and positioning |
-| Set up the brand | Design system | marketing/brand and marketing/design-system, by the `brand-kit` and `design-system` skills in `packages/marketing/skills/` |
+| Set up the brand | Design system | marketing/brand |
 | Plan content | Document | marketing/sitemap and content records |
 
 ## Depends on
