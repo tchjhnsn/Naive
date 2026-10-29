@@ -12,7 +12,7 @@
         "schema/init-venture.mjs"
       ],
       "page": "get-started/install",
-      "note": "create-venture creates the venture, writes package.json, installs the framework and starts git. It runs from a clone (npx ./interface/create-venture); npx create-venture@latest works once the package is on the npm registry"
+      "note": "create-venture is on npm: npx create-venture@latest (also pnpm create venture, yarn create venture) creates the venture, writes package.json, installs naive-framework from npm and starts git. From a clone, node interface/create-venture/index.mjs does the same with the clone's framework"
     },
     {
       "id": "I-2",
