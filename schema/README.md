@@ -28,7 +28,7 @@ Status:
 | Nouns | `docs/ontology.json`, `schema/check-nouns.mjs` | defined | Standards first; retired nouns fail the check |
 | References | `schema/reference.schema.json`, `<layer>/references/references.json` | defined | Purpose has one so far; filled by `knowledge/skills/find-reference/` |
 | Data model | `schema/data-model.json`, `schema/data-model.schema.json`, `schema/check-data-model.mjs` | defined | Every record type, its owning layer and references; no JSON file may sit outside it |
-| Kit manifests | `schema/kit.schema.json`, `<layer>/kit.json`, system kit `schema/kit.json` | defined | Each layer's skills, owned record types, reads and writes; layer relationships are derived from them |
+| Layer manifests | `schema/layer.schema.json`, `<layer>/layer.json`, system layer `schema/layer.json` | defined | Each layer's skills, record types it still owns, reads and writes; layer relationships are derived from them (EE-071). Venture packages are `packages/<name>/package.json` |
 
 ## Inside a venture, by layer
 
@@ -37,7 +37,7 @@ Status:
 | Purpose | Core product | `core` in `venture.json` | defined |
 | Purpose | Telos (start with the end) | `schema/telos.schema.json` at `<venture>/purpose/telos.json`; `check-telos.mjs` (EE-023) | defined |
 | Governance | Publication policy (the publication gate) | `schema/publication-policy.schema.json` at `<venture>/governance/publication-policy.json`; `check-publication.mjs` (EE-025) | defined |
-| Purpose | Validation (validation kit): problem record, shared evidence item, GRADE-adapted grading | `schema/validation-problem.schema.json` and `schema/validation-evidence.schema.json` at `<venture>/purpose/validation/`; `check-validation.mjs`; kit at `purpose/kits/validation/` (EE-026) | problem built; six sub-scores to build |
+| Purpose | Validation package: problem record, shared evidence item, GRADE-adapted grading | `schema/validation-problem.schema.json` and `schema/validation-evidence.schema.json` at `<venture>/purpose/validation/`; `check-validation.mjs`; package at `packages/validation/` (templates and skills still under `purpose/kits/validation/`, EE-026, EE-071) | problem built; six sub-scores to build |
 | Purpose | Goals and vision | `purpose/frameworks/business-discovery-framework.md` | prose |
 | Purpose | Product Anatomy and Succession Matrix | `purpose/frameworks/product-anatomy/` (phases, gates, questions as JSON) | defined, draft |
 | Knowledge | Venture profile | the file `venture.json` names in `profile` | prose |

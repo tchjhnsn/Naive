@@ -248,7 +248,7 @@ The founder has just submitted an idea dump. Naive mapped it onto its convention
 5. Propose two or three more decisions the founder owes from what the dump leaves open (at "purpose/validation", name "problem.<topic>"), each with your proposed answer, the ids of the ideas it comes from in "ideas", a due time within 72 hours if urgent, one or two projected outcomes, and unlocks for ["builder"].
 6. mentura_decisions and report, in at most eight lines: what the idea map shows (clusters and gaps), your answer to product-exists, what the evidence supports, and the founder's decisions in rank order.`, "pass 1: idea map, product questions, problem, research, proposals");
 
-// 3. The founder settles what the docket ranks first, one decision at a time (EE-074): the function that
+// 3. The founder settles what the docket ranks first, one decision at a time (EE-075): the function that
 //    needs attention most, then its highest-value decision the founder can settle now. Each step's docket
 //    goes in the trace, so a judge can check that the ranking was the right next step.
 for (let n = 0; n < steps; n++) {

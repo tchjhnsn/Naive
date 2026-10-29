@@ -360,7 +360,7 @@
     {
       "id": "EE-033",
       "date": "2026-10-27",
-      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI).",
+      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI). See EE-080.",
       "why": "The owner wants MDX preferred over Markdown and asked for a convention for when to use MDX versus JSON or other formats. Generated pages in MDX render the repository's data at build time instead of being copied, so they cannot go stale.",
       "status": "in-force",
       "related": [
@@ -372,7 +372,7 @@
     {
       "id": "EE-034",
       "date": "2026-10-27",
-      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props.",
+      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props. See EE-080.",
       "why": "The owner chose Nextra's documentation starter for the developer docs, on the latest Next.js, and asked whether the site belongs in a separate repo; the starter kit itself pins Next.js 13 and the Pages Router, which Nextra 4 no longer supports.",
       "status": "in-force",
       "related": [
@@ -796,7 +796,32 @@
       "why": "Torian, 2026-10-28 23:08Z and 23:11Z: analytics for judging decision outcomes, the highest-impact decisions over time, and how many decisions of what types each function has made; build it if there is time, or foreshadow it. 23:18Z: 'let's take all of your recommendations for the vocabulary, except on the one that you said was open. And yes, let's build that decision analytics.' 23:21Z: 'let's actually not build any views right now, because all of the views we've been creating are technically for the platform. If they're not for the platform, then they would be skills, specifically visualization skills for certain elements of Naive whenever rendering it inside of another harness like Claude Code, Codex, or Cursor.'"
     },
     {
+      "id": "EE-073",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-072"
+      ],
+      "decision": "Vocabulary and design additions from translating the Next.js Getting Started docs (chapters 3 to 18, docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md). Words: AGENTS.md is the file agents read in any folder of a venture and 'layout' is the concept (the router assembles the chain of AGENTS.md files from the root down plus what the package definition supplies); naive typegen; agent vitals (calls per task, context per call, time to a useful answer, time for a decision to be decided); context budget; \"use model\" for a package's declared model steps; private for a record or field that never reaches a model; uncertain for a judgment below its confidence threshold, routed to a person (a third outcome beside expected and uncaught errors); brand tokens; action for what a route supports; export for a release frozen as files; adapter for what runs Naive on a platform or harness (Mentura first). Design additions, built in this order after the deadline: the layout chain, use model, private and its check, uncertain, the gate's rules (fast, no model call, one per venture), the release as a static shell with live holes and freshness profiles, the judgment cache, header-first reads and agent vitals, naive typegen with a venture served over MCP, adapters, and agent-run upgrades with record migrations. Which library plays React's part stays open. Implementation is handed to Grokbot (handoff naive-packages-and-design-additions).",
+      "why": "Torian, 2026-10-28 23:30Z to 23:54Z: chose AGENTS.md over a new layout file ('agents.md is already a standard practice'), naive typegen, agent vitals and context budget, use model and private ('let's go with your recommendation and let's continue all the way through'), and at 23:54Z the remaining words ('let's go with your recommendation on naming'), then 'I'm going to have you make the pull request with instructions for Grokbot to implement it' (2026-10-29 00:01Z: 'Go.')."
+    },
+    {
       "id": "EE-074",
+      "date": "2026-10-29",
+      "status": "proposed",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-072",
+        "EE-073"
+      ],
+      "decision": "Implement handoff naive-packages-and-design-additions. Venture packages live at packages/<name>/package.json with use_model. Layer manifests are <layer>/layer.json. A kit is Mentura only, at platform/kits/, and none are built. The instance venture uses the package folder layout, and old routes stay as aliases for one release. Data packages (customers, investors, money) and raw/ are scaffolded and checked. The layout action returns the AGENTS.md chain, nearest last, plus the package skill, template and gates. check-private refuses a private record or field named in a use_model step. A judgment below its threshold returns uncertain. The gate reads naive.config.json and package gates and does not call a model. naive typegen writes .naive/types/ and mentura typegen is the same command. Stage D, moving the board to platform/board, is not done. Items 6, 7, 8, 10 and 11 of the translation design additions (the release shell, the judgment cache, header-first reads and agent vitals, adapters, agent-run upgrades) are not started. Which library plays React part stays open.",
+      "why": "Torian, 2026-10-28, 7:17 PM CDT: go ahead and start now. Ignore that message that said wait until Thursday. That drops the not-before-2026-10-29 22:00Z wait. The same evening at 7:24 PM CDT he said to skip stage D entirely and not move the board. Implementation is the handoff naive-packages-and-design-additions, stacked on PR #23."
+    },
+    {
+      "id": "EE-075",
       "date": "2026-10-29",
       "status": "proposed",
       "related": [
@@ -808,6 +833,18 @@
       ],
       "decision": "The decision docket ranks across functions, not only within them (Torian, 2026-10-29): which function of the venture needs the founder's attention most at this moment, then its highest-priority decisions. schema/docket.mjs computes it in code: a decision's own weight (open, deadline, staleness, unlocks, foundation, a draft to approve, outcomes to test), its value (own weight plus the own weight of every decision it holds, transitively, so a fail-closed gate carries what waits behind it), a function's attention (its actionable decisions' values, highest first, each worth half the one before), and dominance (one decision worth more than every other function together). The harness settles the docket's next decision and records each step's docket in the trace; a replay settles the top decision again and again in a copy to show the leading function change through a day. Evidence that the ranking is right comes from invariant tests, an independent judge (Jev in LangSmith: was the chosen decision the best next step, was the leading function the right one) whose doubts go to the founder's review queue, and later recorded outcomes. Matching the founder's words stays a check but is no longer a gate: founders write with AI and let its words stand.",
       "why": "The docket is the demo's emphasis and the product's non-obvious claim: that at every moment it names the right next step for the founder across the whole venture. Founders' words are important but obvious, and gating on them works against founders who write with AI."
+    },
+    {
+      "id": "EE-080",
+      "date": "2026-10-28",
+      "decision": "The developer docs move from Nextra to Fumadocs in site/. This supersedes the Nextra sentence of EE-034. This venture's marketing pages live in the same app. They may read only the facts named in the Naive docs handoff (the problem statement and the segment), written by site/scripts/venture-facts.mjs to site/generated/venture-facts.json. site/scripts/data.mjs still reads no instance venture. This supersedes EE-034's \"never an instance venture\" for that one file only. test.mjs and the site CI job run npm run check:content instead of site/scripts/check-mdx.mjs. This supersedes that clause of EE-033. The zod 4.1.12 pin may be removed once Nextra is gone and the build passes. This supersedes the zod sentence of EE-034. These marketing pages are added to the existing docs app and do not start from a Vercel template. The template stays the default for a later standalone marketing site. This supersedes that clause of proposed EE-044.",
+      "why": "The handoff naive-docs-and-marketing-site carries this migration, and Torian accepts it by merging. Draft PR #19 uses EE-053 through EE-070 and is about to take EE-071. EE-049 stays unused. This entry is EE-080 so that pull request has room. A gap in the ledger is fine.",
+      "status": "proposed",
+      "related": [
+        "EE-033",
+        "EE-034",
+        "EE-044"
+      ]
     }
   ]
 }

@@ -1,5 +1,4 @@
 {
-  "kit": "knowledge-kit",
   "layer": "knowledge",
   "purpose": "The memory layer: where every record is stored. The other layers each define the records they write here and the conventions for them; this layer defines only how a record is stored and found (route, schema, provenance), the decision log, the venture profile, design documents and the sources behind them. Storage is federated: records stay in the sources a venture already uses (its own folder by default, or a GitHub repository), reached through connectors with one contract, found through a catalog that copies no content (EE-036, EE-037).",
   "product": "everything-ecosystem/knowledge-kit",
@@ -37,5 +36,6 @@
     "Two connectors so far (filesystem and GitHub); a database, Notion, Slack or Salesforce each need their own module meeting the same contract",
     "Checks and command routes (need-now, time-to-ready, validation score) still read the venture folder, so they do not yet see a record kept in another source",
     "A merged pull request is not logged as an accept in provenance; the read after the merge is the only sign"
-  ]
+  ],
+  "name": "knowledge"
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The decision docket across functions (EE-074): which function of the venture needs the founder's
+// The decision docket across functions (EE-075): which function of the venture needs the founder's
 // attention most right now, and which of its decisions come first. Decisions are ranked inside each
 // function, and functions are ranked against each other, so the answer can move many times in a day as
 // decisions are settled.

@@ -158,7 +158,7 @@ Feature: Decisions
       When the founder asks for the decisions
       Then "problem-scope" renders "waiting"
       And "problem-scope" is held by "foundation-problem"
-      And "foundation-problem" says to "write purpose/validation/problem"
+      And "foundation-problem" says to "write foundation/problem"
 
     Scenario: A new venture asks Naive's product questions first, and they fail closed
       Given a new venture "kept"

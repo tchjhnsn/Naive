@@ -1,0 +1,19 @@
+{
+  "name": "raw",
+  "title": "Raw",
+  "kind": "raw",
+  "purpose": "Immutable captures and founder-supplied sources. dump/ holds captures. sources/[id]/ holds source.json and text.md. original.* stays out of git (EE-070).",
+  "required": [],
+  "optional": [],
+  "refs": [],
+  "gates": [
+    "immutable: append a capture, never edit one"
+  ],
+  "layer": "purpose",
+  "records": ["raw-source", "raw-text"],
+  "schemas": ["schema/raw-source.schema.json"],
+  "templates": [],
+  "checks": ["schema/check-data-packages.mjs"],
+  "skill": null,
+  "use_model": []
+}

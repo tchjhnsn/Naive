@@ -1,0 +1,17 @@
+{
+  "name": "decisions",
+  "title": "Decisions",
+  "kind": "folder",
+  "purpose": "The docket: one file per decision, linked to what it changed (EE-070).",
+  "required": [],
+  "optional": [],
+  "refs": [],
+  "gates": [
+    "present"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}

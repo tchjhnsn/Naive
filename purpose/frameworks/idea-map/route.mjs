@@ -24,13 +24,14 @@ import { decisions } from "../../../schema/decisions.mjs";
 import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 import { GRAPH, ORDER } from "./graph.mjs";
 import { confirmedIn } from "../../../schema/foundation.mjs";
+import { loadPackages } from "../../../schema/load-packages.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const MODEL = load(join(here, "../../../schema/data-model.json")).records;
 
-// Each destination's home package (EE-069), so routing shows the packages taking shape.
-const PKG = load(join(here, "../../../schema/packages.json"));
+// Each destination's home package (EE-069, EE-071), so routing shows the packages taking shape.
+const PKG = loadPackages(join(here, "../../.."));
 const HOME = { "venture-core": "foundation", brand: "marketing", ...Object.fromEntries(Object.entries(PKG.core).flatMap(([id, p]) => [...p.required, ...p.optional].map((r) => [r, id]))) };
 
 /** Understand is a gate (EE-069): the founder confirms Mentura read the ideas right, after any

@@ -536,6 +536,66 @@
         "platform": 0.9
       },
       "why": "What the founder walks away with; written at the end of each pipeline run, cheap to refresh"
+    },
+    "customer": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named customer exists. Never a completion gate (EE-070)."
+    },
+    "investor": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named investor exists. Never a completion gate (EE-070)."
+    },
+    "money-account": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named account of money exists. Never a completion gate (EE-070)."
+    },
+    "data-stream": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "An activity stream beside a master record. Held until that record exists (EE-070)."
+    },
+    "raw-source": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "A founder-supplied source. Held until the founder brings one in (EE-070)."
+    },
+    "raw-text": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "The text of a raw source, beside source.json (EE-070)."
     }
   }
 }

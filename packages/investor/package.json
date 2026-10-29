@@ -1,0 +1,57 @@
+{
+  "name": "investor",
+  "title": "Investor",
+  "kind": "handoff",
+  "purpose": "investors",
+  "for": "investors",
+  "from": [
+    "foundation",
+    "validation",
+    "finance",
+    "people",
+    "legal"
+  ],
+  "base": {
+    "discovery": 0.05,
+    "validation": 0.2,
+    "beachhead": 0.35,
+    "scale": 0.45,
+    "platform": 0.45
+  },
+  "when": [
+    {
+      "if": "raising",
+      "at_least": 0.95
+    },
+    {
+      "if": "funding:venture-capital",
+      "at_least": 0.7
+    },
+    {
+      "if": "funding:angel",
+      "at_least": 0.6
+    },
+    {
+      "if": "funding:bootstrapped",
+      "at_most": 0.1
+    },
+    {
+      "if": "ambition:hobby",
+      "at_most": 0.05
+    }
+  ],
+  "why": "Only while raising, or when the venture means to take outside money",
+  "unlocks": [
+    "pitch deck",
+    "data room",
+    "investor updates"
+  ],
+  "gates": [
+    "every core package it draws on is complete"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}

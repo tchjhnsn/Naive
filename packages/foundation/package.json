@@ -1,0 +1,52 @@
+{
+  "name": "foundation",
+  "title": "Foundation",
+  "kind": "core",
+  "purpose": "What the venture is, why, for whom and with what: the records every other package reads, reviewed near daily.",
+  "department": "strategy",
+  "required": [
+    "validation-problem",
+    "icp"
+  ],
+  "optional": [
+    "venture-profile",
+    "telos",
+    "alignment"
+  ],
+  "refs": [
+    "product"
+  ],
+  "planned": [],
+  "base": {
+    "discovery": 0.95,
+    "validation": 0.95,
+    "beachhead": 0.95,
+    "scale": 0.95,
+    "platform": 0.95
+  },
+  "why": "Every venture, every phase",
+  "unlocks": [
+    "agents may draft every other package",
+    "the near-daily review"
+  ],
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [
+    "schema/validation-problem.schema.json",
+    "schema/icp.schema.json",
+    "schema/telos.schema.json",
+    "schema/alignment.schema.json"
+  ],
+  "templates": [
+    "purpose/templates/telos-based-smart.md"
+  ],
+  "checks": [
+    "schema/check-telos.mjs",
+    "schema/validate.py",
+    "schema/check-validation.mjs",
+    "schema/foundation.mjs"
+  ],
+  "skill": null,
+  "use_model": []
+}

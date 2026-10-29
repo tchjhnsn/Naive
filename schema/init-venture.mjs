@@ -40,6 +40,10 @@ for (const layer of ALL) {
   venture.layers[layer] = { location: `${layer}/` };
 }
 for (const sub of ["products", "accounts"]) { mkdirSync(join(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
+// The package folder layout (EE-070). Old layer folders above stay for one release.
+for (const sub of ["raw/dump", "raw/sources", "ideas", "foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money", "decisions", "evidence", "public", "_private", "_drafts", ".release"]) {
+  mkdirSync(join(dir, sub), { recursive: true });
+}
 mkdirSync(join(dir, "pillars"), { recursive: true });
 for (const [name, what] of Object.entries(pillars.stubs)) {
   const guide = relative(join(dir, "pillars"), join(repo, pillars.guides, `${name}.md`));

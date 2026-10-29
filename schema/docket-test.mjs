@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Tests for the docket across functions (EE-074) on the example ventures: a gate carries the weight of
+// Tests for the docket across functions (EE-075) on the example ventures: a gate carries the weight of
 // what it holds, functions rank by attention, dominance means outweighing every other function, and a
 // replayed day always settles the top decision of the top function.
 import { readdirSync } from "node:fs";

@@ -34,7 +34,7 @@ const holes = brief.match(/\b(TBD|TODO|FIXME)\b|\?\?\?|<(?:title|role|entity|out
 item("brief has no placeholders left", !holes.length, holes.slice(0, 3).join(", "));
 
 // 2. Everything it names exists.
-const products = new Set(existsSync(join(dir, "products")) ? readdirSync(join(dir, "products")).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : []);
+const products = new Set(["products", "product"].flatMap((folder) => existsSync(join(dir, folder)) ? readdirSync(join(dir, folder)).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : []));
 const missingProducts = (h.products ?? []).filter((p) => !products.has(p));
 item("every product it serves exists", !missingProducts.length, missingProducts.join(", "));
 const logs = [join(root, "docs/decisions/decisions.json"), join(dir, "knowledge/decisions.json")].filter(existsSync).flatMap((f) => load(f).decisions);

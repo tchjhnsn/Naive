@@ -28,9 +28,11 @@ import { factsOf as needFacts, probability } from "./need-now.mjs";
 import { confirmedIn, filesOf } from "./foundation.mjs";
 import { route } from "../purpose/frameworks/idea-map/route.mjs";
 
+import { loadPackages } from "./load-packages.mjs";
+
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-export const PACKAGES = load(join(repo, "schema/packages.json"));
+export const PACKAGES = loadPackages(repo);
 export const OUT = "package";
 const MODEL = load(join(repo, "schema/data-model.json"));
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
@@ -41,7 +43,7 @@ const json = (dir, f) => existsSync(join(dir, f)) ? load(join(dir, f)) : null;
 export function situation(dir, { flags = {}, answers = null } = {}) {
   const f = needFacts(dir);
   const phase = PHASES.includes(f.phase) ? f.phase : "discovery";
-  const icp = json(dir, "purpose/icp.json");
+  const icp = json(dir, "foundation/icp.json") ?? json(dir, "purpose/icp.json");
   const profiles = icp?.profiles ?? [];
   const products = filesOf(dir, "product").map((p) => json(dir, p)).filter(Boolean);
   // What the records settle, by question; undefined means they do not.
@@ -73,8 +75,11 @@ export function request(dir) {
   const { questions } = situation(dir);
   const v = load(join(dir, "venture.json"));
   const say = (o) => o ? JSON.stringify(o).slice(0, 1200) : null;
-  const dump = existsSync(join(dir, "purpose/ideas/dump.md")) ? readFileSync(join(dir, "purpose/ideas/dump.md"), "utf8").slice(0, 2500) : null;
-  return { state: { venture: say({ name: v.name, phase: v.phase, ambition: v.ambition, form: v.form, core: v.core }), problem: say(json(dir, "purpose/validation/problem.json")), icp: say(json(dir, "purpose/icp.json")),
+  const dumpFile = ["raw/dump.md", "purpose/ideas/dump.md"].find((f) => existsSync(join(dir, f)));
+  const dump = dumpFile ? readFileSync(join(dir, dumpFile), "utf8").slice(0, 2500) : null;
+  const problem = json(dir, "foundation/problem.json") ?? json(dir, "purpose/validation/problem.json");
+  const icpRec = json(dir, "foundation/icp.json") ?? json(dir, "purpose/icp.json");
+  return { state: { venture: say({ name: v.name, phase: v.phase, ambition: v.ambition, form: v.form, core: v.core }), problem: say(problem), icp: say(icpRec),
     products: say(filesOf(dir, "product").map((p) => json(dir, p)).filter(Boolean).map((p) => ({ name: p.name, offering: p.offering, description: p.description }))), ideas: dump,
     guidelines: "These are one venture's own records and its founder's idea dump. Answer only from what they say; when they do not say, answer low." },
     model: "jev-latest", questions: Object.fromEntries(questions.filter((q) => q.by === "open").map((q) => [`q:${q.id}`, { type: "noul", instructions: q.ask, criteria: { true: "Yes, the records say or clearly imply it", false: "No, or the records do not say" } }])) };

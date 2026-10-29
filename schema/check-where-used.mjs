@@ -31,7 +31,8 @@ for (const v of walk(dir)) {
     if (!r || r.kind !== "record" || r.collection === "list") { errors.push(`${where}: parent ${fact.parent.route} is not a record route`); continue; }
     const context = r.collection === "item" && (r.record === "product" || r.record === "account") ? { [r.record]: params.id } : {};
     const src = sourceFor(v, r.record, context);
-    const path = r.collection === "item" ? r.files[0].replace("*", params.id) : r.files[0];
+    const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", params.id)) : r.files).filter((f) => !f.includes("*"));
+    const path = cands.find((f) => existsSync(join(v, f))) ?? cands[0];
     if (src.connector !== "filesystem") { unchecked.push(`${where}: parent is in ${src.id}`); continue; }
     const parent = await (await connect(src, v)).read(path);
     const value = parent && at(JSON.parse(parent.content), fact.parent.pointer);

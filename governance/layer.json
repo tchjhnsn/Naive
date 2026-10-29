@@ -1,5 +1,4 @@
 {
-  "kit": "governance-kit",
   "layer": "governance",
   "purpose": "Say who owns and controls the venture and who may decide what: ownership (cap table), founders, boards, investor rights and exits, roles, decision rights, where it publishes and who may publish what (the publication gate), the venture template and its pillars, and escalation to the owner.",
   "skills": [
@@ -97,5 +96,6 @@
     "MAD's governance-tier answers are derived from these records by MAD's derive-answers (MAD repo, operations/skills/methodology-selection/derive-answers.mjs), which does not yet read telos steering, venture regulation or the continue-or-stop, change-direction and set-priorities classes (EE-040)",
     "The decision matrix (schema/decisions.mjs) gathers decision records, unconfirmed foundation statements and gated drafts; need-now suggestions, failing checks and forecasts are not gathered yet, and nothing writes decision records through the router yet (EE-054)",
     "Decision records carry provenance, outcomes and unlocks (EE-058), but nothing yet closes an activity to a person or agent until the decision that unlocks it is made, nothing prompts for actual outcomes when they fall due, and Mentura's decision analytics are not built"
-  ]
+  ],
+  "name": "governance"
 }
