@@ -883,6 +883,19 @@
       ],
       "decision": "Setup asks where each of the venture's functions keeps its truth, and records the answers as pointers in knowledge/sources.json under `functions` (the source-of-truth matrix, EE-042, not a second file), with `truth` naming where the venture's source of truth as a whole lives (local by default). schema/systems-catalog.json lists the systems offered per function (a local repo, GitHub, Vercel, Cloudflare, Stripe, Square, Shopify, Rho, Google Drive, DocuSign, a local folder). A system Naive reads through code is connected (Rho, through its MCP API: sandbox, live with RHO_API_TOKEN, or a saved fixture marked as one); the rest are pointed until a connector exists. A function with no system keeps the founder's words. naive dev serves a setup page at /setup (interface/dev/setup.mjs) that walks through people and hats, sources of truth, the strategic foundation and first decisions (each answer an approved decision; a foundation statement as a decision with `statement`), and a goal for discovery, and says when the structure is established and what comes next. A new venture's .gitignore keeps sensitive stream activity out of git.",
       "why": "Torian, 2026-10-29: when scaffolding, ask the user to point Naive to the source of truth for each function (the repo, GitHub and Vercel for a software product; analytics from the host; Stripe, Square or Shopify for sales; Rho for financials in the demo; legal documents, with the connections to set them up if missing), let a function default or be answered in prose, and ship a local setup experience like the one Next.js gives, essentially the strategic foundation and a version of the decision docket, ending by setting a goal for the discovery phase. After setup a founder has the structure of the venture and a way of routing decisions; operating it is Mentura's, as deploying is Vercel's after Next.js."
+    },
+    {
+      "id": "EE-085",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-024",
+        "EE-038",
+        "EE-042",
+        "EE-083"
+      ],
+      "decision": "Naive's project scaffolding is a central data management structure: everything a venture knows sits in one structure under one set of conventions, with pointers to the systems of record that keep the rest. Naive is for solo founders and small founding teams. It is not a software engineering framework (MAD is, EE-038): it leans toward a monorepo for most software and otherwise asks only that the code be connected, with a pointer between the knowledge base and the code base, and it is opinionated about file conventions. README.md, AGENTS.md, the docs introduction and the ontology say so.",
+      "why": "Torian, 2026-10-29: with SaaS commoditized, much of what would sit in separate data silos can be centralized, which is ideal for a solo founder and still for a small team; central data gives AI-native work an edge, since agents move faster with better context and reasoning for their decisions. Lean Startup names Ries's build-measure-learn method rather than team size, so the docs say solo founders and small founding teams."
     }
   ]
 }
