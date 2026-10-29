@@ -104,6 +104,27 @@ if (cmd === "typegen") {
   process.exit(p.status ?? 1);
 }
 
+// Upgrades hook (M-12, E-7, V-9, Z-4): these commands live in their own modules; this only dispatches.
+//   mentura triggers --venture <id> [--fire] [--json]
+//                                                   the venture's triggers, their runs and open failures; --fire runs what new events start
+//   mentura stale --venture <id> [--json]           summaries whose system of record changed since they were written
+//   mentura notify --venture <id> --source <id> --path <p> [--version <v>]
+//                                                   a system of record says <p> changed: mark what reads it stale (a webhook does this on Mentura)
+//   mentura adapt <adapter> --venture <id>          write a harness's entry files into the venture (claude-code, codex, cursor)
+//   mentura adapters [verify [<adapter>]] [--json]  the adapters, or run the framework's tests an adapter must pass
+if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
+  const d = ["triggers", "stale", "notify", "adapt"].includes(cmd) ? (opt("venture") ? ventureDir(opt("venture"), workspace) : null) : null;
+  if (cmd !== "adapters" && !d) { console.error(opt("venture") ? `no venture ${opt("venture")}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
+  const pass = (...names) => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
+  const args = cmd === "triggers" ? ["schema/triggers.mjs", d, ...pass("fire", "json")]
+    : cmd === "stale" ? ["schema/stale.mjs", d, ...pass("json")]
+    : cmd === "notify" ? ["schema/stale.mjs", d, "--notify", ...pass("source", "path", "version", "json")]
+    : cmd === "adapt" ? ["interface/adapters.mjs", "adapt", action ?? "", d, ...pass("json")]
+    : ["interface/adapters.mjs", ...positional.slice(1), ...pass("json")];
+  const p = spawnSync("node", [join(repo, args[0]), ...args.slice(1)], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
 if (cmd === "migrate" && (opt("from") || flag("apply"))) {
   // migrate means rewriting an outside project into a new venture (EE-076): the same as naive migrate.
   const v = opt("venture");
@@ -263,5 +284,5 @@ if (r.ok && r.needs_input && !flag("json")) {
 }
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);
-const extra = ["not_found", "pending_draft", "fix", "needs_input"].some((k) => r[k]);
+const extra = ["not_found", "pending_draft", "fix", "needs_input", "stale"].some((k) => r[k]); // stale: V-9 (schema/stale.mjs)
 out(flag("json") || extra ? r : r.result);

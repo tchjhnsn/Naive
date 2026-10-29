@@ -16,7 +16,9 @@
     "need-now",
     "provenance",
     "venture-packages",
-    "venture-package"
+    "venture-package",
+    "upgrade-registry",
+    "kit"
   ],
   "reads": [
     "product",
@@ -39,7 +41,11 @@
     "schema/packages.mjs",
     "schema/packages-test.mjs",
     "schema/decision-analytics.mjs",
-    "schema/decision-analytics-test.mjs"
+    "schema/decision-analytics-test.mjs",
+    "schema/upgrades.mjs",
+    "schema/upgrades-test.mjs",
+    "schema/triggers.mjs",
+    "schema/stale.mjs"
   ],
   "gaps": [],
   "name": "system"

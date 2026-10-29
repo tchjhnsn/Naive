@@ -1,129 +1,107 @@
 #!/usr/bin/env node
-// naive upgrade: moves one venture onto the next Naive layout, here the package folder layout
-// (EE-070), like next upgrade and its codemods (EE-076). Files move with git mv when git tracks
-// them, wherever the venture's repository is, and with a plain rename when it does not.
-// Provenance is appended, never rewritten: each move is a new line, and the set of moves
-// is one release under .release/. Old routes keep resolving through interface/route-aliases.json.
+// naive upgrade: moves one venture onto the installed Naive, like next upgrade and its codemods
+// (EE-076, U-1 to U-6). The work is in schema/upgrades.mjs; this is its command line.
 //
-//   node schema/upgrade-venture.mjs <venture dir>
+//   node schema/upgrade-venture.mjs <venture dir>                 run the migrations and pin the framework and packages
+//   node schema/upgrade-venture.mjs <venture dir> --check         say what it would do; change nothing
+//   node schema/upgrade-venture.mjs <venture dir> --guide [x.y.z] the guide for each version it crosses, or for one
+//   node schema/upgrade-venture.mjs <venture dir> --canary|--stable   the channel (experimental packages need canary)
+//   node schema/upgrade-venture.mjs <venture dir> --adopt <package>   adopt a later phase's package now
+//   node schema/upgrade-venture.mjs <venture dir> --drop <package>    undo that
+//   node schema/upgrade-venture.mjs <venture dir> --stage         upgrade a copy under .naive/upgrade/ and run the checks
+//   node schema/upgrade-venture.mjs <venture dir> --agent         the same, with an agent working the copy (a Mentura kit)
+//   node schema/upgrade-venture.mjs <venture dir> --status        the staged upgrade and its checks
+//   node schema/upgrade-venture.mjs <venture dir> --accept --confirm upgrade   land a staged upgrade whose checks pass
+//   node schema/upgrade-venture.mjs <venture dir> --reject        discard it
+//   node schema/upgrade-venture.mjs --framework [<venture dir>]   update the installed framework first (git pull --ff-only)
+//
+// Files move with git mv when git tracks them. Provenance is appended, never rewritten. Old routes keep
+// resolving through interface/route-aliases.json. --json prints the result as JSON.
 
-import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { record } from "../interface/provenance.mjs";
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { accept, adopt, check, CONFIRM, draft, drop, guide, plan, registry, reject, setChannel, stage, updateFramework, upgrade } from "./upgrades.mjs";
+import { kitFor } from "./kits.mjs";
 
-const dir = process.argv[2];
-if (!dir || !existsSync(join(dir, "venture.json"))) {
-  console.error("usage: node schema/upgrade-venture.mjs <venture dir>");
-  process.exit(2);
+const argv = process.argv.slice(2);
+const has = (n) => argv.includes(`--${n}`);
+const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : undefined; };
+const valued = new Set(["guide", "adopt", "drop", "confirm", "by"]);
+const dirArg = argv.find((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
+const json = has("json");
+const say = (x, text) => console.log(json ? JSON.stringify(x, null, 2) : text);
+const fail = (e) => { console.error(e.message ?? String(e)); process.exit(1); };
+const usage = () => { console.error("usage: node schema/upgrade-venture.mjs <venture dir> [--check | --guide [version] | --canary | --stable | --adopt <package> | --drop <package> | --stage | --agent | --status | --accept --confirm upgrade | --reject] [--json]\n       node schema/upgrade-venture.mjs --framework [<venture dir>]"); process.exit(2); };
+
+if (has("framework")) {
+  const r = updateFramework();
+  if (!r.ok) fail(new Error(r.error));
+  console.log(r.commits ? `updated Naive from ${r.from} to ${r.to} (${r.commits} commits)` : `Naive ${r.to} is up to date`);
+  if (!dirArg) process.exit(0);
+  // The upgrade runs in the code just pulled, not the code this process loaded.
+  const rest = argv.filter((a) => a !== "--framework");
+  process.exit(spawnSync("node", [new URL(import.meta.url).pathname, ...rest], { stdio: "inherit" }).status ?? 1);
 }
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const moved = [];
-const escalated = [];
 
-function mv(fromRel, toRel) {
-  const from = join(dir, fromRel), to = join(dir, toRel);
-  if (!existsSync(from)) return;
-  if (existsSync(to)) { console.error(`${toRel} already exists`); process.exit(1); }
-  mkdirSync(dirname(to), { recursive: true });
-  try { execSync(`git mv ${JSON.stringify(from)} ${JSON.stringify(to)}`, { cwd: dir, stdio: "pipe" }); }
-  catch { renameSync(from, to); }
-  moved.push([fromRel, toRel]);
-}
+if (!dirArg || !existsSync(join(dirArg, "venture.json"))) usage();
+const dir = resolve(dirArg);
+const id = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id;
 
-// A decision file infers its target from the folder it sits in. Stamp that path before the
-// file moves, so the decision still points at the same record.
-function stampDecisions(folder) {
-  const d = join(dir, folder);
-  if (!existsSync(d)) return;
-  for (const f of readdirSync(d).filter((x) => x.endsWith(".decision.json"))) {
-    const path = join(d, f);
-    const rec = load(path);
-    if (rec.decides?.path) continue;
-    const at = folder.split("/").slice(0, -1).join("/");
-    const base = f.split(".")[0];
-    rec.decides = { ...(rec.decides ?? {}), path: at ? `${at}/${base}.json` : `${base}.json` };
-    writeFileSync(path, JSON.stringify(rec, null, 2) + "\n");
+try {
+  if (has("guide")) {
+    const reg = registry();
+    const versions = opt("guide") ? [opt("guide")] : plan(dir).steps.map((s) => s.version);
+    if (!versions.length) { say({ guides: [] }, `${id} is on Naive ${reg.framework}: no guide to read`); process.exit(0); }
+    const gs = versions.map((v) => guide(v, { reg }) ?? { version: v, path: null, text: `Naive ${v} has no guide.` });
+    say(gs, gs.map((g) => `${g.path ? `# ${g.path}\n\n` : ""}${g.text.replace(/^---\n[\s\S]*?\n---\n\n?/, "")}`).join("\n"));
+  } else if (has("canary") || has("stable")) {
+    const r = setChannel(dir, has("canary") ? "canary" : "stable");
+    say(r, r.changed ? `${id} is on the ${r.channel} channel` : `${id} was already on the ${r.channel} channel`);
+  } else if (opt("adopt")) {
+    const r = adopt(dir, opt("adopt"));
+    say(r, r.changed ? `adopted ${r.name} ${r.version} early${r.channel === "experimental" ? " (experimental)" : ""}: it opens now in the venture package` : r.note);
+  } else if (opt("drop")) {
+    const r = drop(dir, opt("drop"));
+    say(r, `dropped ${r.name}: it fits by its phase again`);
+  } else if (has("stage")) {
+    await stage(dir);
+    const d = check(dir);
+    report(d);
+  } else if (has("agent")) {
+    // The agent-run upgrade is a Mentura kit (U-3, I-29): the framework finds it and runs it as its own process.
+    const k = kitFor("upgrade --agent");
+    if (!k) fail(new Error("an agent-run upgrade is a Mentura kit (platform/kits/agent-upgrade), and none is installed here; --stage upgrades a copy without an agent"));
+    process.exit(spawnSync("node", [join(k.dir, k.entry), dir, ...(json ? ["--json"] : [])], { stdio: "inherit" }).status ?? 1);
+  } else if (has("status")) {
+    const d = draft(dir);
+    if (!d) { say(null, `no upgrade is staged for ${id}`); process.exit(0); }
+    report(check(dir));
+  } else if (has("accept")) {
+    const r = await accept(dir, { confirm: opt("confirm"), by: opt("by") ?? process.env.MENTURA_PERSON });
+    say(r, `accepted: ${id} is on Naive ${r.accepted} (${r.added} added, ${r.changed} changed, ${r.removed} removed)`);
+  } else if (has("reject")) {
+    say(reject(dir), `rejected the staged upgrade of ${id}; the venture is as it was`);
+  } else {
+    const r = await upgrade(dir, { dry: has("check") });
+    if (json) { console.log(JSON.stringify(r, null, 2)); process.exit(0); }
+    const moves = r.release.migrations.reduce((n, m) => n + m.moves.length, 0), rewrites = r.release.migrations.reduce((n, m) => n + m.rewrote.length, 0);
+    const pinned = r.packages.filter((x) => !x.missing && x.from !== x.to);
+    if (!r.pending && !r.changed) console.log(`${id} is on Naive ${r.to}, every package pinned: nothing to upgrade.`);
+    else console.log(`${r.dry ? "would upgrade" : "upgraded"} ${id} from Naive ${r.from} to ${r.to}: ${moves} files moved, ${rewrites} records rewritten, ${pinned.length} packages pinned, ${r.release.escalated.length} escalated for a decision.`);
+    for (const m of r.release.migrations) if (m.moves.length || m.rewrote.length || m.notes.length) console.log(`migrate   ${m.id} (${m.version}): ${m.moves.length} moved, ${m.rewrote.length} rewritten${m.notes.length ? `; ${m.notes.join("; ")}` : ""}`);
+    for (const e of r.release.escalated) console.log(`escalate  ${e}`);
+    for (const g of r.release.guides) console.log(`guide     ${g}`);
+    if (r.release.guides.length) console.log(`Read the guides: node interface/cli/naive.mjs upgrade ${dirArg} --guide`);
   }
+} catch (e) { fail(e); }
+
+function report(d) {
+  if (json) { console.log(JSON.stringify(d, null, 2)); return; }
+  console.log(`staged upgrade of ${id} from Naive ${d.from} to ${d.to}${d.by && d.by !== "naive" ? `, worked by ${d.by}` : ""}: ${d.status}`);
+  if (d.changes) console.log(`changes   ${d.changes.added.length} added, ${d.changes.changed.length} changed, ${d.changes.removed.length} removed`);
+  for (const c of d.checks ?? []) console.log(`${c.passed ? "pass" : "FAIL"}      ${c.check}${c.passed ? "" : `: ${c.output.split("\n").slice(-2).join(" / ")}`}`);
+  for (const e of d.escalated ?? []) console.log(`escalate  ${e}`);
+  if (d.status === "ready") console.log(`Nothing has landed. To land it: node interface/cli/naive.mjs upgrade ${dirArg} --accept --confirm ${CONFIRM}`);
+  else if (d.status === "checks-failed") console.log(`Nothing has landed, and it cannot until the checks pass. Fix the copy in ${dirArg}/.naive/upgrade/venture and run --status, or --reject.`);
 }
-
-const pairs = [
-  ["purpose/validation/problem.json", "foundation/problem.json"],
-  ["purpose/icp.json", "foundation/icp.json"],
-  ["purpose/alignment.json", "foundation/alignment.json"],
-  ["purpose/telos.draft.md", "foundation/telos.draft.md"],
-  ["purpose/validation/solution.json", "validation/solution.json"],
-  ["purpose/validation/go-to-market.json", "validation/go-to-market.json"],
-  ["operations/team-plan.json", "people/team-plan.json"],
-  ["pillars/brand.md", "marketing/brand.md"],
-  // A venture made since init writes a root AGENTS.md keeps it; the old README becomes the knowledge layout.
-  ["knowledge/README.md", existsSync(join(dir, "AGENTS.md")) ? "knowledge/AGENTS.md" : "AGENTS.md"],
-  ["purpose/anatomy.answers.reasoned.json", "product/anatomy.answers.reasoned.json"],
-  ["purpose/anatomy.matrix.md", "product/anatomy.matrix.md"],
-];
-for (const [a, b] of pairs) mv(a, b);
-
-const products = existsSync(join(dir, "products")) ? readdirSync(join(dir, "products")).filter((f) => f.endsWith(".json")) : [];
-for (const f of products) mv(`products/${f}`, `product/${f}`);
-
-const anatomy = existsSync(join(dir, "purpose/anatomy")) ? readdirSync(join(dir, "purpose/anatomy")).filter((f) => f.endsWith(".json")) : [];
-for (const f of anatomy) mv(`purpose/anatomy/${f}`, `product/anatomy/${f}`);
-
-for (const folder of ["purpose/decisions", "purpose/anatomy/decisions", "operations/decisions"]) {
-  stampDecisions(folder);
-  const d = join(dir, folder);
-  if (!existsSync(d)) continue;
-  for (const f of readdirSync(d).filter((x) => x.endsWith(".decision.json"))) mv(`${folder}/${f}`, `decisions/${f}`);
-}
-
-for (const f of ["product.md", "business.md"]) {
-  if (existsSync(join(dir, "pillars", f))) {
-    mv(`pillars/${f}`, `_private/pillars/${f}`);
-    escalated.push(`${f.replace(".md", "")} pillar: the brief names a home only for brand (marketing/). Archived at _private/pillars/${f} rather than guessed.`);
-  }
-}
-const research = join(dir, "purpose/research");
-if (existsSync(research)) {
-  for (const f of readdirSync(research)) {
-    mv(`purpose/research/${f}`, `_private/research/${f}`);
-    escalated.push(`purpose/research/${f}: no package home in the route table. Archived at _private/research/${f}.`);
-  }
-}
-
-function removeEmpty(p) {
-  if (!existsSync(p)) return;
-  for (const e of readdirSync(p, { withFileTypes: true })) if (e.isDirectory()) removeEmpty(join(p, e.name));
-  if (readdirSync(p).length === 0) rmSync(p, { recursive: true });
-}
-for (const gone of ["purpose", "pillars", "knowledge", "products"]) removeEmpty(join(dir, gone));
-
-const policy = join(dir, "governance/publication-policy.json");
-if (existsSync(policy)) {
-  const text = readFileSync(policy, "utf8");
-  if (text.includes("pillars/brand.md")) writeFileSync(policy, text.replaceAll("pillars/brand.md", "marketing/brand.md"));
-}
-
-for (const sub of ["raw/dump", "raw/sources", "ideas", "finance", "customers", "investors", "money", "public"]) {
-  const p = join(dir, sub);
-  if (!existsSync(p)) { mkdirSync(p, { recursive: true }); writeFileSync(join(p, ".gitkeep"), ""); }
-}
-
-const release = {
-  version: 1,
-  at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
-  note: "Moved onto the package folder layout (EE-070). Old routes stay as aliases for one release.",
-  moves: moved.map(([from, to]) => ({ from, to })),
-  escalated,
-};
-mkdirSync(join(dir, ".release"), { recursive: true });
-const releaseRel = ".release/layout.json";
-writeFileSync(join(dir, releaseRel), JSON.stringify(release, null, 2) + "\n");
-
-const agent = { kind: "agent", id: "grokbot", via: "cli" };
-for (const [from, to] of moved) {
-  record(dir, { entity: to, activity: "move", agent, derived_from: [from], note: `moved from ${from} (EE-070)` });
-}
-record(dir, { entity: releaseRel, activity: "release", agent, derived_from: moved.map(([, to]) => to), note: "package folder layout" });
-
-console.log(`upgraded ${load(join(dir, "venture.json")).id}: ${moved.length} files moved, ${escalated.length} archived for a decision.`);
-for (const e of escalated) console.log(`escalate  ${e}`);

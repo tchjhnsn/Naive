@@ -1074,6 +1074,51 @@
       "note": "Old routes kept as aliases of their new ones, so a rename does not break agents (EE-032)"
     },
     {
+      "id": "adapter",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/adapter.schema.json",
+      "paths": [
+        "interface/adapters/*.json",
+        "platform/adapter.json"
+      ],
+      "note": "What runs Naive on a platform or in an agent harness (Z-4): the entry files a harness adapter writes into a venture and where it loads skills, or the tests a platform adapter runs. Verified when it passes the framework's tests (interface/adapters.mjs verify)"
+    },
+    {
+      "id": "upgrade-registry",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/upgrade-registry.schema.json",
+      "paths": [
+        "schema/upgrades.json"
+      ],
+      "refs": [
+        {
+          "field": "versions[].guide",
+          "to": "(repository file)",
+          "checked_by": "schema/upgrades-test.mjs"
+        }
+      ],
+      "note": "Naive's versions with their guides, the migrations between them, and each package's version and channel (U-1 to U-6, EE-076). naive upgrade reads it from the installed copy"
+    },
+    {
+      "id": "kit",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/kit.schema.json",
+      "paths": [
+        "platform/kits/*/kit.json"
+      ],
+      "refs": [
+        {
+          "field": "extends.package",
+          "to": "venture-packages",
+          "checked_by": null
+        }
+      ],
+      "note": "A Mentura kit (EE-071): an enhanced package or command, with its automations (triggers that need a complete package, M-12) or its agent workflow (the agent-run upgrade, U-3). The framework reads it as data and never imports its code (schema/kits.mjs)"
+    },
+    {
       "id": "icp",
       "layer": "purpose",
       "level": "venture",
