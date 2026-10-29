@@ -139,7 +139,9 @@ if (cmd === "accept") {
   const venture = opt("venture"), rt = action;
   if (!venture || !rt) usage();
   const d = draftOf(rt, venture, workspace);
-  if (!d?.gate) { console.error(`${rt} is not a gated record route, or no venture ${venture}`); process.exit(1); }
+  // Any held draft can be accepted: one gated by its decision class, held by an open decision, or held by
+  // the venture's naive.config.json gate.
+  if (!d) { console.error(`${rt} is not a record route, or no venture ${venture}`); process.exit(1); }
   const draft = join(d.dir, d.draft);
   if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
   const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;

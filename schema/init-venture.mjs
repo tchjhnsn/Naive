@@ -52,6 +52,26 @@ for (const [name, what] of Object.entries(pillars.stubs)) {
 }
 writeFileSync(join(dir, "profile.md"), `# ${id}\n\nWhat this venture is, in a few sentences. Its machine fields are in venture.json (EE-011).\n\n## Changelog\n`);
 writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
+// The venture's root layout (EE-072, I-4): every route's layout chain starts here. Lines shaped
+// "key: value" are instructions the router hands an agent with the layout.
+writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${id}
+
+The map of this venture for agents. Read it, then a route's layout, before writing anything here.
+
+## How to work here
+
+- List the routes with \`mentura routes\`. Read a route's \`layout\` and \`template\` before you write to it.
+- Write through the router (the CLI or the MCP server), not by editing files. Every write is checked against its schema and recorded in provenance.jsonl.
+- A write that fails closed comes back as a draft in \`_drafts/\`. A person accepts it with \`mentura accept\`.
+- Never read or send anything under \`_private/\` to a model.
+- A deeper AGENTS.md (for example \`marketing/AGENTS.md\`) adds to this one for the routes under it; the nearer one wins.
+
+## Instructions
+
+phase: ${venture.phase}
+voice: plain words, in the founder's own terms
+private: _private/
+`);
 // The product foundation (EE-059): Naive's own questions about products, asked first and failing
 // closed. Does a product exist already, what is the core product, which product is the flagship.
 // Each waits on the one before it; agents may not write product cards until the first is answered.

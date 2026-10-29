@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // naive upgrade: moves one venture onto the next Naive layout, here the package folder layout
-// (EE-070), like next upgrade and its codemods (EE-076). Files move with git mv.
+// (EE-070), like next upgrade and its codemods (EE-076). Files move with git mv when git tracks
+// them, wherever the venture's repository is, and with a plain rename when it does not.
 // Provenance is appended, never rewritten: each move is a new line, and the set of moves
 // is one release under .release/. Old routes keep resolving through interface/route-aliases.json.
 //
 //   node schema/upgrade-venture.mjs <venture dir>
 
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { record } from "../interface/provenance.mjs";
 
 const dir = process.argv[2];
@@ -17,8 +17,6 @@ if (!dir || !existsSync(join(dir, "venture.json"))) {
   console.error("usage: node schema/upgrade-venture.mjs <venture dir>");
   process.exit(2);
 }
-const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
-const rel = (p) => relative(repo, p);
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const moved = [];
 const escalated = [];
@@ -28,7 +26,8 @@ function mv(fromRel, toRel) {
   if (!existsSync(from)) return;
   if (existsSync(to)) { console.error(`${toRel} already exists`); process.exit(1); }
   mkdirSync(dirname(to), { recursive: true });
-  execSync(`git mv ${JSON.stringify(rel(from))} ${JSON.stringify(rel(to))}`, { cwd: repo });
+  try { execSync(`git mv ${JSON.stringify(from)} ${JSON.stringify(to)}`, { cwd: dir, stdio: "pipe" }); }
+  catch { renameSync(from, to); }
   moved.push([fromRel, toRel]);
 }
 
@@ -57,7 +56,8 @@ const pairs = [
   ["purpose/validation/go-to-market.json", "validation/go-to-market.json"],
   ["operations/team-plan.json", "people/team-plan.json"],
   ["pillars/brand.md", "marketing/brand.md"],
-  ["knowledge/README.md", "AGENTS.md"],
+  // A venture made since init writes a root AGENTS.md keeps it; the old README becomes the knowledge layout.
+  ["knowledge/README.md", existsSync(join(dir, "AGENTS.md")) ? "knowledge/AGENTS.md" : "AGENTS.md"],
   ["purpose/anatomy.answers.reasoned.json", "product/anatomy.answers.reasoned.json"],
   ["purpose/anatomy.matrix.md", "product/anatomy.matrix.md"],
 ];

@@ -44,6 +44,16 @@ expect("an agent's write to an ungated record is written in place", direct.ok &&
 const gatedProblem = await call({ venture: "tandem", route: "purpose/validation/problem", action: "write", input: (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result });
 expect("an agent's write to the problem record is a draft for the founder to accept (EE-050)", gatedProblem.ok && gatedProblem.result.draft === true);
 rmSync(join(tandem, "_drafts/purpose__validation__problem.json.draft"), { force: true });
+// The venture's naive.config.json gate (EE-073): a fail-closed route holds an agent's write, never a person's.
+writeFileSync(join(tandem, "naive.config.json"), JSON.stringify({ gate: { fail_closed: ["validation"] } }));
+const solution = (await call({ venture: "tandem", route: "purpose/validation/solution", action: "read" })).result;
+const cfgHeld = await call({ venture: "tandem", route: "purpose/validation/solution", action: "write", input: solution });
+expect("naive.config.json fail_closed turns an agent's write into a draft, naming the rule", cfgHeld.ok && cfgHeld.result.draft && cfgHeld.result.gate_rule === "validation" && /naive.config.json/.test(cfgHeld.result.note));
+const cfgPerson = await call({ venture: "tandem", route: "purpose/validation/solution", action: "write", input: solution, actor: "person" });
+expect("naive.config.json fail_closed never holds a person's write", cfgPerson.ok && !cfgPerson.result.draft && !cfgPerson.result.gate_rule);
+const cfgAccept = spawnSync("node", [join(root, "interface/cli/mentura.mjs"), "accept", "validation/solution", "--venture", "tandem"], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+expect("a person accepts a draft the naive.config.json gate held", cfgAccept.status === 0 && !existsSync(join(tandem, "_drafts/validation__solution.json.draft")));
+rmSync(join(tandem, "naive.config.json"));
 expect("a person's write to a gated record is written in place", (await call({ venture: "tandem", route: "governance/ownership", action: "write", input: own, actor: "person" })).result?.written === "governance/ownership.json");
 expect("check runs the record's checks", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "check" })).ok);
 expect("need-now runs", (await call({ venture: "tandem", route: "system/need-now", action: "run" })).result?.rows?.length > 0);
