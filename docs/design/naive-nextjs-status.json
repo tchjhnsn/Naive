@@ -1,1831 +1,1881 @@
 {
- "about": "Whether each concept in docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md is built, and where the docs explain it. built: works end to end and is tested; partial: some of it works, the note or the page says what is missing; not built: the ledger describes it, the code does not have it; n/a: the ledger marks it as not converting. Checked by schema/check-nextjs-status.mjs; site/content/docs/get-started/whats-built.mdx is generated from it.",
- "checked": "2026-10-29",
- "rows": [
-  {
-   "id": "I-1",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install",
-   "note": "mentura init and schema/init-venture.mjs create a venture; the create-venture command name is still open"
-  },
-  {
-   "id": "I-2",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/quickstart",
-   "note": "naive dev and the local board are not built; the quickstart uses need-now and overview instead"
-  },
-  {
-   "id": "I-3",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-4",
-   "chapter": "Chapter 1: Installation",
-   "status": "built",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/install",
-   "note": "init writes a root AGENTS.md; the layout chain reads it"
-  },
-  {
-   "id": "I-5",
-   "chapter": "Chapter 1: Installation",
-   "status": "built",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-6",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-7",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-8",
-   "chapter": "Chapter 1: Installation",
-   "status": "built",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-9",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "test.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-10",
-   "chapter": "Chapter 1: Installation",
-   "status": "n/a"
-  },
-  {
-   "id": "I-11",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-12",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-13",
-   "chapter": "Chapter 1: Installation",
-   "status": "built",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-14",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-15",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-16",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-17",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-18",
-   "chapter": "Chapter 1: Installation",
-   "status": "n/a"
-  },
-  {
-   "id": "I-19",
-   "chapter": "Chapter 1: Installation",
-   "status": "built",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-20",
-   "chapter": "Chapter 1: Installation",
-   "status": "built",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-21",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-22",
-   "chapter": "Chapter 1: Installation",
-   "status": "built",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-23",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-24",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-25",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-26",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "interface/mcp/server.mjs",
-    "interface/cli/naive.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "I-27",
-   "chapter": "Chapter 1: Installation",
-   "status": "not built"
-  },
-  {
-   "id": "I-28",
-   "chapter": "Chapter 1: Installation",
-   "status": "n/a"
-  },
-  {
-   "id": "I-29",
-   "chapter": "Chapter 1: Installation",
-   "status": "partial",
-   "evidence": [
-    "schema/upgrade-venture.mjs"
-   ],
-   "page": "get-started/install",
-   "note": "naive upgrade moves a venture onto the package layout; it does not update the framework itself"
-  },
-  {
-   "id": "P-1",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-2",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/gate.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/the-gate",
-   "note": "naive.config.json holds only the gate (fail_closed) so far"
-  },
-  {
-   "id": "P-3",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-4",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-5",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs",
-    "schema/gate.mjs"
-   ],
-   "page": "get-started/the-gate"
-  },
-  {
-   "id": "P-6",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-7",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
-  },
-  {
-   "id": "P-8",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-9",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "n/a"
-  },
-  {
-   "id": "P-10",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-11",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "P-12",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-13",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "P-14",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "P-15",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-16",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "P-17",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-18",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-19",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-20",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-21",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-22",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-23",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "n/a"
-  },
-  {
-   "id": "P-24",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
-  },
-  {
-   "id": "P-25",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
-  },
-  {
-   "id": "P-26",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
-  },
-  {
-   "id": "P-27",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-28",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-29",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "P-30",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-31",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-publication.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-32",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-33",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "n/a"
-  },
-  {
-   "id": "P-34",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-35",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-36",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
-  },
-  {
-   "id": "P-37",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "P-38",
-   "chapter": "Chapter 2: Project Structure",
-   "status": "built",
-   "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "R-1",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "R-2",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "L-1",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-2",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "not built"
-  },
-  {
-   "id": "L-3",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "not built"
-  },
-  {
-   "id": "L-4",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-5",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-6",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-7",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-8",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-9",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-10",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-11",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "n/a"
-  },
-  {
-   "id": "L-12",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "not built"
-  },
-  {
-   "id": "L-13",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-14",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/cli/naive.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "L-15",
-   "chapter": "Chapter 3: Layouts and Pages",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "N-1",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "R-3",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "N-2",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "N-3",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-4",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-5",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "R-4",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/decisions"
-  },
-  {
-   "id": "N-6",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-7",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-8",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "n/a"
-  },
-  {
-   "id": "N-9",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-10",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "N-11",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-12",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-13",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
-  },
-  {
-   "id": "N-14",
-   "chapter": "Chapter 4: Linking and Navigating",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "S-1",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "built",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
-   ],
-   "page": "get-started/agents-and-people"
-  },
-  {
-   "id": "S-2",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
-   ],
-   "page": "get-started/agents-and-people"
-  },
-  {
-   "id": "S-3",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "built",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
-   ],
-   "page": "get-started/agents-and-people"
-  },
-  {
-   "id": "S-4",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-5",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
-   ],
-   "page": "get-started/agents-and-people"
-  },
-  {
-   "id": "S-6",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-7",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-8",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-9",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/use-model.mjs"
-   ],
-   "page": "get-started/agents-and-people",
-   "note": "packages declare use_model and check-private keeps private fields out of it; agent writes are recorded as agent; nothing yet clears a record on passing checks"
-  },
-  {
-   "id": "S-10",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-11",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-12",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
-   ],
-   "page": "get-started/agents-and-people"
-  },
-  {
-   "id": "S-13",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "R-5",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "S-14",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
-   "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
-   ],
-   "page": "get-started/agents-and-people"
-  },
-  {
-   "id": "S-15",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-16",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "built",
-   "evidence": [
-    "schema/check-private.mjs"
-   ],
-   "page": "get-started/agents-and-people"
-  },
-  {
-   "id": "S-17",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "S-18",
-   "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
-  },
-  {
-   "id": "F-1",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-2",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
-  },
-  {
-   "id": "F-3",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-4",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-5",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-6",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
-  },
-  {
-   "id": "F-7",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-8",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-9",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "n/a"
-  },
-  {
-   "id": "F-10",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-11",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "F-12",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
-  },
-  {
-   "id": "F-13",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
-  },
-  {
-   "id": "F-14",
-   "chapter": "Chapter 6: Fetching Data",
-   "status": "built",
-   "evidence": [
-    "schema/check-private.mjs"
-   ],
-   "page": "get-started/routes-and-records"
-  },
-  {
-   "id": "M-1",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-2",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "schema/decisions.mjs",
-    "schema/docket.mjs",
-    "interface/cli/mentura.mjs"
-   ],
-   "page": "get-started/decisions"
-  },
-  {
-   "id": "M-3",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-4",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-5",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-6",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-7",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-8",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-9",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-10",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-11",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-12",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "not built"
-  },
-  {
-   "id": "M-13",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-14",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "n/a"
-  },
-  {
-   "id": "M-15",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "M-16",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/decisions"
-  },
-  {
-   "id": "M-17",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "not built"
-  },
-  {
-   "id": "M-18",
-   "chapter": "Chapter 7: Mutating Data",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "C-1",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-2",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-3",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-4",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-5",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-6",
-   "chapter": "Chapter 8: Caching",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/errors"
-  },
-  {
-   "id": "C-7",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-8",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-9",
-   "chapter": "Chapter 8: Caching",
-   "status": "built",
-   "evidence": [
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/decisions"
-  },
-  {
-   "id": "C-10",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-11",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-12",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-13",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-14",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-15",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-16",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-17",
-   "chapter": "Chapter 8: Caching",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/whats-built"
-  },
-  {
-   "id": "C-18",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "C-19",
-   "chapter": "Chapter 8: Caching",
-   "status": "not built"
-  },
-  {
-   "id": "V-1",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "partial",
-   "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/whats-built"
-  },
-  {
-   "id": "V-2",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
-  },
-  {
-   "id": "V-3",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "partial",
-   "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/whats-built"
-  },
-  {
-   "id": "V-4",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "built",
-   "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "V-5",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "partial",
-   "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/whats-built"
-  },
-  {
-   "id": "V-6",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "built",
-   "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
-   ],
-   "page": "get-started/writing-records"
-  },
-  {
-   "id": "V-7",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
-  },
-  {
-   "id": "V-8",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
-  },
-  {
-   "id": "V-9",
-   "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
-  },
-  {
-   "id": "E-1",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/errors"
-  },
-  {
-   "id": "E-2",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/errors"
-  },
-  {
-   "id": "E-3",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/errors"
-  },
-  {
-   "id": "E-4",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
-  },
-  {
-   "id": "E-5",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/errors"
-  },
-  {
-   "id": "E-6",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
-  },
-  {
-   "id": "E-7",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
-  },
-  {
-   "id": "E-8",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
-  },
-  {
-   "id": "E-9",
-   "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
-  },
-  {
-   "id": "Y-1",
-   "chapter": "Chapter 11: CSS",
-   "status": "n/a"
-  },
-  {
-   "id": "Y-2",
-   "chapter": "Chapter 11: CSS",
-   "status": "not built"
-  },
-  {
-   "id": "Y-3",
-   "chapter": "Chapter 11: CSS",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "Y-4",
-   "chapter": "Chapter 11: CSS",
-   "status": "partial",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "Y-5",
-   "chapter": "Chapter 11: CSS",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs"
-   ],
-   "page": "get-started/layouts"
-  },
-  {
-   "id": "Y-6",
-   "chapter": "Chapter 11: CSS",
-   "status": "n/a"
-  },
-  {
-   "id": "J-1",
-   "chapter": "Chapter 12: Images",
-   "status": "n/a"
-  },
-  {
-   "id": "J-2",
-   "chapter": "Chapter 12: Images",
-   "status": "not built"
-  },
-  {
-   "id": "J-3",
-   "chapter": "Chapter 12: Images",
-   "status": "not built"
-  },
-  {
-   "id": "J-4",
-   "chapter": "Chapter 12: Images",
-   "status": "not built"
-  },
-  {
-   "id": "J-5",
-   "chapter": "Chapter 12: Images",
-   "status": "n/a"
-  },
-  {
-   "id": "T-1",
-   "chapter": "Chapter 13: Fonts",
-   "status": "not built"
-  },
-  {
-   "id": "T-2",
-   "chapter": "Chapter 13: Fonts",
-   "status": "not built"
-  },
-  {
-   "id": "T-3",
-   "chapter": "Chapter 13: Fonts",
-   "status": "n/a"
-  },
-  {
-   "id": "O-1",
-   "chapter": "Chapter 14: Metadata and OG images",
-   "status": "partial",
-   "evidence": [
-    "interface/provenance.mjs",
-    "schema/init-venture.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "O-2",
-   "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
-  },
-  {
-   "id": "O-3",
-   "chapter": "Chapter 14: Metadata and OG images",
-   "status": "partial",
-   "evidence": [
-    "interface/provenance.mjs",
-    "schema/init-venture.mjs"
-   ],
-   "page": "get-started/project-structure"
-  },
-  {
-   "id": "O-4",
-   "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
-  },
-  {
-   "id": "O-5",
-   "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
-  },
-  {
-   "id": "O-6",
-   "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
-  },
-  {
-   "id": "O-7",
-   "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
-  },
-  {
-   "id": "H-1",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/mcp/server.mjs",
-    "interface/cli/naive.mjs"
-   ],
-   "page": "get-started/typegen-and-mcp"
-  },
-  {
-   "id": "H-2",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "built",
-   "evidence": [
-    "interface/router.mjs",
-    "interface/mcp/server.mjs",
-    "interface/cli/naive.mjs"
-   ],
-   "page": "get-started/typegen-and-mcp"
-  },
-  {
-   "id": "H-3",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "not built"
-  },
-  {
-   "id": "H-4",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "not built"
-  },
-  {
-   "id": "H-5",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "not built"
-  },
-  {
-   "id": "H-6",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "n/a"
-  },
-  {
-   "id": "H-7",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "built",
-   "evidence": [
-    "interface/cli/naive.mjs"
-   ],
-   "page": "get-started/typegen-and-mcp"
-  },
-  {
-   "id": "H-8",
-   "chapter": "Chapter 15: Route Handlers",
-   "status": "built",
-   "evidence": [
-    "interface/mcp/server.mjs"
-   ],
-   "page": "get-started/typegen-and-mcp"
-  },
-  {
-   "id": "X-1",
-   "chapter": "Chapter 16: Proxy",
-   "status": "built",
-   "evidence": [
-    "schema/gate.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/the-gate"
-  },
-  {
-   "id": "X-2",
-   "chapter": "Chapter 16: Proxy",
-   "status": "not built"
-  },
-  {
-   "id": "X-3",
-   "chapter": "Chapter 16: Proxy",
-   "status": "built",
-   "evidence": [
-    "schema/gate.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/the-gate",
-   "note": "naive.config.json gate.fail_closed is read on every write"
-  },
-  {
-   "id": "X-4",
-   "chapter": "Chapter 16: Proxy",
-   "status": "partial",
-   "evidence": [
-    "schema/gate.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/the-gate"
-  },
-  {
-   "id": "X-5",
-   "chapter": "Chapter 16: Proxy",
-   "status": "partial",
-   "evidence": [
-    "schema/gate.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/the-gate",
-   "note": "one gate per venture is built; package rules (packageGates) are not yet imported"
-  },
-  {
-   "id": "X-6",
-   "chapter": "Chapter 16: Proxy",
-   "status": "partial",
-   "evidence": [
-    "schema/gate.mjs",
-    "interface/router.mjs"
-   ],
-   "page": "get-started/the-gate",
-   "note": "rules match a route and everything under it, not the router path patterns"
-  },
-  {
-   "id": "Z-1",
-   "chapter": "Chapter 17: Deploying",
-   "status": "built",
-   "evidence": [
-    "interface/cli/mentura.mjs",
-    "interface/mcp/server.mjs"
-   ],
-   "page": "get-started/install"
-  },
-  {
-   "id": "Z-2",
-   "chapter": "Chapter 17: Deploying",
-   "status": "n/a"
-  },
-  {
-   "id": "Z-3",
-   "chapter": "Chapter 17: Deploying",
-   "status": "not built"
-  },
-  {
-   "id": "Z-4",
-   "chapter": "Chapter 17: Deploying",
-   "status": "partial",
-   "evidence": [
-    "interface/cli/mentura.mjs",
-    "interface/mcp/server.mjs"
-   ],
-   "page": "get-started/typegen-and-mcp",
-   "note": "Mentura is the only adapter, and it is the same repository"
-  },
-  {
-   "id": "Z-5",
-   "chapter": "Chapter 17: Deploying",
-   "status": "not built"
-  },
-  {
-   "id": "U-1",
-   "chapter": "Chapter 18: Upgrading",
-   "status": "partial",
-   "evidence": [
-    "schema/upgrade-venture.mjs",
-    "interface/cli/naive.mjs"
-   ],
-   "page": "get-started/upgrading",
-   "note": "naive upgrade moves a venture onto the package layout; it does not update the framework itself"
-  },
-  {
-   "id": "U-2",
-   "chapter": "Chapter 18: Upgrading",
-   "status": "partial",
-   "evidence": [
-    "schema/upgrade-venture.mjs",
-    "interface/route-aliases.json"
-   ],
-   "page": "get-started/upgrading",
-   "note": "route aliases cover renamed folders; per-package schema migrations are not built"
-  },
-  {
-   "id": "U-3",
-   "chapter": "Chapter 18: Upgrading",
-   "status": "not built"
-  },
-  {
-   "id": "U-4",
-   "chapter": "Chapter 18: Upgrading",
-   "status": "not built"
-  },
-  {
-   "id": "U-5",
-   "chapter": "Chapter 18: Upgrading",
-   "status": "partial",
-   "evidence": [
-    "schema/upgrade-venture.mjs",
-    "interface/route-aliases.json"
-   ],
-   "page": "get-started/upgrading"
-  },
-  {
-   "id": "U-6",
-   "chapter": "Chapter 18: Upgrading",
-   "status": "not built"
-  }
- ]
+  "about": "Whether each concept in docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md is built, and where the docs explain it. built: works end to end and is tested; partial: some of it works, the note or the page says what is missing; not built: the ledger describes it, the code does not have it; n/a: the ledger marks it as not converting. Checked by schema/check-nextjs-status.mjs; site/content/docs/get-started/whats-built.mdx is generated from it.",
+  "checked": "2026-10-29",
+  "rows": [
+    {
+      "id": "I-1",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/create-venture/index.mjs",
+        "interface/create-venture/test.mjs",
+        "schema/init-venture.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "create-venture creates the venture, writes package.json, installs the framework and starts git. It runs from a clone (npx ./interface/create-venture); npx create-venture@latest works once the package is on the npm registry"
+    },
+    {
+      "id": "I-2",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/cli/naive.mjs",
+        "interface/create-venture/test.mjs",
+        "interface/demo/board.mjs",
+        "interface/cli/find-venture.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "create-venture, cd, npm run dev, open 127.0.0.1:4331: naive dev serves the board for the venture it runs in"
+    },
+    {
+      "id": "I-3",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/create-venture/index.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "--yes: the discovery phase, the phase's packages, the checks and AGENTS.md"
+    },
+    {
+      "id": "I-4",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "schema/init-venture.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "init writes a root AGENTS.md; the layout chain reads it"
+    },
+    {
+      "id": "I-5",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "package.json",
+        "interface/create-venture/index.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "Node 20 or later and any package manager (npm, pnpm, yarn, bun); python3 with jsonschema for schema checks"
+    },
+    {
+      "id": "I-6",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/cli/naive.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "Supported agents: Claude Code and Cursor over MCP, any MCP client, and HTTP; naive info shows which a venture is connected to"
+    },
+    {
+      "id": "I-7",
+      "chapter": "Chapter 1: Installation",
+      "status": "partial",
+      "evidence": [
+        "interface/create-venture/index.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "Name, then recommended / previous / customize (phase, layers, legal form, idea dump), with answers kept for the next venture. Missing: the AI-native option where System 1 answers the setup questions from a pasted idea dump"
+    },
+    {
+      "id": "I-8",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "schema/init-venture.mjs",
+        "interface/cli/mentura.mjs"
+      ],
+      "page": "get-started/install"
+    },
+    {
+      "id": "I-9",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/cli/naive.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "naive check runs every check that reads a venture"
+    },
+    {
+      "id": "I-10",
+      "chapter": "Chapter 1: Installation",
+      "status": "n/a"
+    },
+    {
+      "id": "I-11",
+      "chapter": "Chapter 1: Installation",
+      "status": "not built"
+    },
+    {
+      "id": "I-12",
+      "chapter": "Chapter 1: Installation",
+      "status": "not built",
+      "note": "Waits on the venture layout decision: a venture directory with knowledge/ and code/ beside each other, which Torian is weighing"
+    },
+    {
+      "id": "I-13",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "schema/init-venture.mjs",
+        "interface/cli/mentura.mjs"
+      ],
+      "page": "get-started/install"
+    },
+    {
+      "id": "I-14",
+      "chapter": "Chapter 1: Installation",
+      "status": "not built"
+    },
+    {
+      "id": "I-15",
+      "chapter": "Chapter 1: Installation",
+      "status": "partial",
+      "evidence": [
+        "schema/init-venture.mjs",
+        "interface/cli/mentura.mjs"
+      ],
+      "page": "get-started/install"
+    },
+    {
+      "id": "I-16",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "package.json",
+        "interface/cli/naive.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "Manual installation: install naive-framework as a dev dependency, add the scripts and write venture.json. The ledger's open question (what Naive's React is) stays a design question, not a missing feature"
+    },
+    {
+      "id": "I-17",
+      "chapter": "Chapter 1: Installation",
+      "status": "partial",
+      "evidence": [
+        "interface/cli/naive.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "dev and check are built; build and start call schema/build-release.mjs and schema/start-release.mjs, which the Chapter 17 work writes"
+    },
+    {
+      "id": "I-18",
+      "chapter": "Chapter 1: Installation",
+      "status": "n/a"
+    },
+    {
+      "id": "I-19",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "schema/init-venture.mjs",
+        "interface/cli/mentura.mjs"
+      ],
+      "page": "get-started/install"
+    },
+    {
+      "id": "I-20",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "schema/init-venture.mjs",
+        "interface/cli/mentura.mjs"
+      ],
+      "page": "get-started/install"
+    },
+    {
+      "id": "I-21",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/cli/naive.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "The root layout is AGENTS.md; create-venture writes it and naive dev writes a stub when it is missing"
+    },
+    {
+      "id": "I-22",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "schema/init-venture.mjs",
+        "interface/cli/mentura.mjs"
+      ],
+      "page": "get-started/install"
+    },
+    {
+      "id": "I-23",
+      "chapter": "Chapter 1: Installation",
+      "status": "partial",
+      "evidence": [
+        "schema/init-venture.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "init makes public/. Torian has since said public should be a reserved route name in each function, not a directory, so this waits on that design"
+    },
+    {
+      "id": "I-24",
+      "chapter": "Chapter 1: Installation",
+      "status": "partial",
+      "evidence": [
+        "interface/cli/naive.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "Edit a record and the board updates; naive dev checks each saved record against its schema and prints what does not match. Missing: System 1 (Noul) checks per field on save"
+    },
+    {
+      "id": "I-25",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/create-venture/index.mjs",
+        "interface/create-venture/test.mjs",
+        "schema/validate.py"
+      ],
+      "page": "get-started/install",
+      "note": "Every record type has a schema and every write is checked. The editor map in .vscode/settings.json stands in for a $schema field, which the schemas' additionalProperties would refuse"
+    },
+    {
+      "id": "I-26",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/create-venture/index.mjs",
+        "interface/create-venture/test.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "create-venture maps every record file to its JSON Schema in .vscode/settings.json, so editors complete and check records; the MCP server gives agents the same routes"
+    },
+    {
+      "id": "I-27",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "site/content/docs/get-started/install.mdx"
+      ],
+      "page": "get-started/install",
+      "note": "Installation gives a copyable prompt for your coding agent on the quick start and on connecting the agent"
+    },
+    {
+      "id": "I-28",
+      "chapter": "Chapter 1: Installation",
+      "status": "n/a"
+    },
+    {
+      "id": "I-29",
+      "chapter": "Chapter 1: Installation",
+      "status": "built",
+      "evidence": [
+        "interface/cli/naive.mjs",
+        "interface/create-venture/test.mjs",
+        "schema/upgrade-venture.mjs"
+      ],
+      "page": "get-started/install",
+      "note": "naive upgrade --framework reinstalls the framework with the venture's package manager, then moves the venture onto the new layout"
+    },
+    {
+      "id": "P-1",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-2",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/gate.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/the-gate",
+      "note": "naive.config.json holds only the gate (fail_closed) so far"
+    },
+    {
+      "id": "P-3",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-4",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-5",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs",
+        "schema/gate.mjs"
+      ],
+      "page": "get-started/the-gate"
+    },
+    {
+      "id": "P-6",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-7",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "not built"
+    },
+    {
+      "id": "P-8",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-9",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "n/a"
+    },
+    {
+      "id": "P-10",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-11",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "P-12",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-13",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "P-14",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "P-15",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-16",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "P-17",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-18",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-19",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-20",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-21",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-22",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-23",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "n/a"
+    },
+    {
+      "id": "P-24",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "not built"
+    },
+    {
+      "id": "P-25",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "not built"
+    },
+    {
+      "id": "P-26",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "not built"
+    },
+    {
+      "id": "P-27",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-28",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-29",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "P-30",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-31",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/check-publication.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-32",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-33",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "n/a"
+    },
+    {
+      "id": "P-34",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-35",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-36",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "not built"
+    },
+    {
+      "id": "P-37",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "partial",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "P-38",
+      "chapter": "Chapter 2: Project Structure",
+      "status": "built",
+      "evidence": [
+        "schema/check-ventures.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "R-1",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "R-2",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "L-1",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-2",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "not built"
+    },
+    {
+      "id": "L-3",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "not built"
+    },
+    {
+      "id": "L-4",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-5",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-6",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-7",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-8",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-9",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-10",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-11",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "n/a"
+    },
+    {
+      "id": "L-12",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "not built"
+    },
+    {
+      "id": "L-13",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-14",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/cli/naive.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "L-15",
+      "chapter": "Chapter 3: Layouts and Pages",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "N-1",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "R-3",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "N-2",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "N-3",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-4",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-5",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "R-4",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/decisions"
+    },
+    {
+      "id": "N-6",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-7",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-8",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "n/a"
+    },
+    {
+      "id": "N-9",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-10",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "N-11",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-12",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-13",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "not built"
+    },
+    {
+      "id": "N-14",
+      "chapter": "Chapter 4: Linking and Navigating",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "S-1",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "built",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/check-data-model.mjs"
+      ],
+      "page": "get-started/agents-and-people"
+    },
+    {
+      "id": "S-2",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "partial",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/check-data-model.mjs"
+      ],
+      "page": "get-started/agents-and-people"
+    },
+    {
+      "id": "S-3",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "built",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/check-data-model.mjs"
+      ],
+      "page": "get-started/agents-and-people"
+    },
+    {
+      "id": "S-4",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-5",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "partial",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/check-data-model.mjs"
+      ],
+      "page": "get-started/agents-and-people"
+    },
+    {
+      "id": "S-6",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-7",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-8",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-9",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "partial",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/use-model.mjs"
+      ],
+      "page": "get-started/agents-and-people",
+      "note": "packages declare use_model and check-private keeps private fields out of it; agent writes are recorded as agent; nothing yet clears a record on passing checks"
+    },
+    {
+      "id": "S-10",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-11",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-12",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "partial",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/check-data-model.mjs"
+      ],
+      "page": "get-started/agents-and-people"
+    },
+    {
+      "id": "S-13",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "R-5",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "S-14",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "partial",
+      "evidence": [
+        "schema/check-private.mjs",
+        "schema/check-data-model.mjs"
+      ],
+      "page": "get-started/agents-and-people"
+    },
+    {
+      "id": "S-15",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-16",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "built",
+      "evidence": [
+        "schema/check-private.mjs"
+      ],
+      "page": "get-started/agents-and-people"
+    },
+    {
+      "id": "S-17",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "S-18",
+      "chapter": "Chapter 5: Server and Client Components",
+      "status": "not built"
+    },
+    {
+      "id": "F-1",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-2",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "not built"
+    },
+    {
+      "id": "F-3",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-4",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-5",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-6",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "not built"
+    },
+    {
+      "id": "F-7",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-8",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-9",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "n/a"
+    },
+    {
+      "id": "F-10",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-11",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "knowledge/connectors/index.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "F-12",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "not built"
+    },
+    {
+      "id": "F-13",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "not built"
+    },
+    {
+      "id": "F-14",
+      "chapter": "Chapter 6: Fetching Data",
+      "status": "built",
+      "evidence": [
+        "schema/check-private.mjs"
+      ],
+      "page": "get-started/routes-and-records"
+    },
+    {
+      "id": "M-1",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-2",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "schema/decisions.mjs",
+        "schema/docket.mjs",
+        "interface/cli/mentura.mjs"
+      ],
+      "page": "get-started/decisions"
+    },
+    {
+      "id": "M-3",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-4",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-5",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-6",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-7",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-8",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-9",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-10",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-11",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-12",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "not built"
+    },
+    {
+      "id": "M-13",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-14",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "n/a"
+    },
+    {
+      "id": "M-15",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "M-16",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/decisions"
+    },
+    {
+      "id": "M-17",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "not built"
+    },
+    {
+      "id": "M-18",
+      "chapter": "Chapter 7: Mutating Data",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/provenance.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "C-1",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-2",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-3",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-4",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-5",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-6",
+      "chapter": "Chapter 8: Caching",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/errors"
+    },
+    {
+      "id": "C-7",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-8",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-9",
+      "chapter": "Chapter 8: Caching",
+      "status": "built",
+      "evidence": [
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/decisions"
+    },
+    {
+      "id": "C-10",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-11",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-12",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-13",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-14",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-15",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-16",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-17",
+      "chapter": "Chapter 8: Caching",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/whats-built"
+    },
+    {
+      "id": "C-18",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "C-19",
+      "chapter": "Chapter 8: Caching",
+      "status": "not built"
+    },
+    {
+      "id": "V-1",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "partial",
+      "evidence": [
+        "schema/check-where-used.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/whats-built"
+    },
+    {
+      "id": "V-2",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "not built"
+    },
+    {
+      "id": "V-3",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "partial",
+      "evidence": [
+        "schema/check-where-used.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/whats-built"
+    },
+    {
+      "id": "V-4",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "built",
+      "evidence": [
+        "schema/check-where-used.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "V-5",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "partial",
+      "evidence": [
+        "schema/check-where-used.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/whats-built"
+    },
+    {
+      "id": "V-6",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "built",
+      "evidence": [
+        "schema/check-where-used.mjs",
+        "schema/decisions.mjs"
+      ],
+      "page": "get-started/writing-records"
+    },
+    {
+      "id": "V-7",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "not built"
+    },
+    {
+      "id": "V-8",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "not built"
+    },
+    {
+      "id": "V-9",
+      "chapter": "Chapter 9: Revalidating",
+      "status": "not built"
+    },
+    {
+      "id": "E-1",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/errors"
+    },
+    {
+      "id": "E-2",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/errors"
+    },
+    {
+      "id": "E-3",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/errors"
+    },
+    {
+      "id": "E-4",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "not built"
+    },
+    {
+      "id": "E-5",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/errors"
+    },
+    {
+      "id": "E-6",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "not built"
+    },
+    {
+      "id": "E-7",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "not built"
+    },
+    {
+      "id": "E-8",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "not built"
+    },
+    {
+      "id": "E-9",
+      "chapter": "Chapter 10: Error Handling",
+      "status": "not built"
+    },
+    {
+      "id": "Y-1",
+      "chapter": "Chapter 11: CSS",
+      "status": "n/a"
+    },
+    {
+      "id": "Y-2",
+      "chapter": "Chapter 11: CSS",
+      "status": "not built"
+    },
+    {
+      "id": "Y-3",
+      "chapter": "Chapter 11: CSS",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "Y-4",
+      "chapter": "Chapter 11: CSS",
+      "status": "partial",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "Y-5",
+      "chapter": "Chapter 11: CSS",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs"
+      ],
+      "page": "get-started/layouts"
+    },
+    {
+      "id": "Y-6",
+      "chapter": "Chapter 11: CSS",
+      "status": "n/a"
+    },
+    {
+      "id": "J-1",
+      "chapter": "Chapter 12: Images",
+      "status": "n/a"
+    },
+    {
+      "id": "J-2",
+      "chapter": "Chapter 12: Images",
+      "status": "not built"
+    },
+    {
+      "id": "J-3",
+      "chapter": "Chapter 12: Images",
+      "status": "not built"
+    },
+    {
+      "id": "J-4",
+      "chapter": "Chapter 12: Images",
+      "status": "not built"
+    },
+    {
+      "id": "J-5",
+      "chapter": "Chapter 12: Images",
+      "status": "n/a"
+    },
+    {
+      "id": "T-1",
+      "chapter": "Chapter 13: Fonts",
+      "status": "not built"
+    },
+    {
+      "id": "T-2",
+      "chapter": "Chapter 13: Fonts",
+      "status": "not built"
+    },
+    {
+      "id": "T-3",
+      "chapter": "Chapter 13: Fonts",
+      "status": "n/a"
+    },
+    {
+      "id": "O-1",
+      "chapter": "Chapter 14: Metadata and OG images",
+      "status": "partial",
+      "evidence": [
+        "interface/provenance.mjs",
+        "schema/init-venture.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "O-2",
+      "chapter": "Chapter 14: Metadata and OG images",
+      "status": "not built"
+    },
+    {
+      "id": "O-3",
+      "chapter": "Chapter 14: Metadata and OG images",
+      "status": "partial",
+      "evidence": [
+        "interface/provenance.mjs",
+        "schema/init-venture.mjs"
+      ],
+      "page": "get-started/project-structure"
+    },
+    {
+      "id": "O-4",
+      "chapter": "Chapter 14: Metadata and OG images",
+      "status": "not built"
+    },
+    {
+      "id": "O-5",
+      "chapter": "Chapter 14: Metadata and OG images",
+      "status": "not built"
+    },
+    {
+      "id": "O-6",
+      "chapter": "Chapter 14: Metadata and OG images",
+      "status": "not built"
+    },
+    {
+      "id": "O-7",
+      "chapter": "Chapter 14: Metadata and OG images",
+      "status": "not built"
+    },
+    {
+      "id": "H-1",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/mcp/server.mjs",
+        "interface/cli/naive.mjs"
+      ],
+      "page": "get-started/typegen-and-mcp"
+    },
+    {
+      "id": "H-2",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "built",
+      "evidence": [
+        "interface/router.mjs",
+        "interface/mcp/server.mjs",
+        "interface/cli/naive.mjs"
+      ],
+      "page": "get-started/typegen-and-mcp"
+    },
+    {
+      "id": "H-3",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "not built"
+    },
+    {
+      "id": "H-4",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "not built"
+    },
+    {
+      "id": "H-5",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "not built"
+    },
+    {
+      "id": "H-6",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "n/a"
+    },
+    {
+      "id": "H-7",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "built",
+      "evidence": [
+        "interface/cli/naive.mjs"
+      ],
+      "page": "get-started/typegen-and-mcp"
+    },
+    {
+      "id": "H-8",
+      "chapter": "Chapter 15: Route Handlers",
+      "status": "built",
+      "evidence": [
+        "interface/mcp/server.mjs"
+      ],
+      "page": "get-started/typegen-and-mcp"
+    },
+    {
+      "id": "X-1",
+      "chapter": "Chapter 16: Proxy",
+      "status": "built",
+      "evidence": [
+        "schema/gate.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/the-gate"
+    },
+    {
+      "id": "X-2",
+      "chapter": "Chapter 16: Proxy",
+      "status": "not built"
+    },
+    {
+      "id": "X-3",
+      "chapter": "Chapter 16: Proxy",
+      "status": "built",
+      "evidence": [
+        "schema/gate.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/the-gate",
+      "note": "naive.config.json gate.fail_closed is read on every write"
+    },
+    {
+      "id": "X-4",
+      "chapter": "Chapter 16: Proxy",
+      "status": "partial",
+      "evidence": [
+        "schema/gate.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/the-gate"
+    },
+    {
+      "id": "X-5",
+      "chapter": "Chapter 16: Proxy",
+      "status": "partial",
+      "evidence": [
+        "schema/gate.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/the-gate",
+      "note": "one gate per venture is built; package rules (packageGates) are not yet imported"
+    },
+    {
+      "id": "X-6",
+      "chapter": "Chapter 16: Proxy",
+      "status": "partial",
+      "evidence": [
+        "schema/gate.mjs",
+        "interface/router.mjs"
+      ],
+      "page": "get-started/the-gate",
+      "note": "rules match a route and everything under it, not the router path patterns"
+    },
+    {
+      "id": "Z-1",
+      "chapter": "Chapter 17: Deploying",
+      "status": "built",
+      "evidence": [
+        "interface/cli/mentura.mjs",
+        "interface/mcp/server.mjs"
+      ],
+      "page": "get-started/install"
+    },
+    {
+      "id": "Z-2",
+      "chapter": "Chapter 17: Deploying",
+      "status": "n/a"
+    },
+    {
+      "id": "Z-3",
+      "chapter": "Chapter 17: Deploying",
+      "status": "not built"
+    },
+    {
+      "id": "Z-4",
+      "chapter": "Chapter 17: Deploying",
+      "status": "partial",
+      "evidence": [
+        "interface/cli/mentura.mjs",
+        "interface/mcp/server.mjs"
+      ],
+      "page": "get-started/typegen-and-mcp",
+      "note": "Mentura is the only adapter, and it is the same repository"
+    },
+    {
+      "id": "Z-5",
+      "chapter": "Chapter 17: Deploying",
+      "status": "not built"
+    },
+    {
+      "id": "U-1",
+      "chapter": "Chapter 18: Upgrading",
+      "status": "partial",
+      "evidence": [
+        "schema/upgrade-venture.mjs",
+        "interface/cli/naive.mjs"
+      ],
+      "page": "get-started/upgrading",
+      "note": "naive upgrade moves a venture onto the package layout; it does not update the framework itself"
+    },
+    {
+      "id": "U-2",
+      "chapter": "Chapter 18: Upgrading",
+      "status": "partial",
+      "evidence": [
+        "schema/upgrade-venture.mjs",
+        "interface/route-aliases.json"
+      ],
+      "page": "get-started/upgrading",
+      "note": "route aliases cover renamed folders; per-package schema migrations are not built"
+    },
+    {
+      "id": "U-3",
+      "chapter": "Chapter 18: Upgrading",
+      "status": "not built"
+    },
+    {
+      "id": "U-4",
+      "chapter": "Chapter 18: Upgrading",
+      "status": "not built"
+    },
+    {
+      "id": "U-5",
+      "chapter": "Chapter 18: Upgrading",
+      "status": "partial",
+      "evidence": [
+        "schema/upgrade-venture.mjs",
+        "interface/route-aliases.json"
+      ],
+      "page": "get-started/upgrading"
+    },
+    {
+      "id": "U-6",
+      "chapter": "Chapter 18: Upgrading",
+      "status": "not built"
+    }
+  ]
 }

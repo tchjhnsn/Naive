@@ -1,0 +1,25 @@
+{
+  "name": "create-venture",
+  "version": "0.1.0",
+  "description": "Create a new Naive venture: npx create-venture my-venture",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tchjhnsn/everything-ecosystem.git",
+    "directory": "interface/create-venture"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "create-venture": "index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "naive-framework": "^0.1.0"
+  }
+}
