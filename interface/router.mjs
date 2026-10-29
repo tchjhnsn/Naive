@@ -24,6 +24,11 @@
 //                 record (escalate -> an agent's write is a draft), and the role's allowed routes
 //   robots        a team-plan role may list the routes it may read and write; system/robots shows them
 //   aliases       interface/route-aliases.json maps a renamed route to its new one, with a note
+//   hierarchy     a read resolves layout, template, error, loading, not-found, then page (P-28);
+//                 resolved_by names the level that answered (interface/reads.mjs)
+//   writes        a write answers with what it changed and the next route to act on; a layout lists
+//                 the actions open to the actor; package, group and venture routes; global errors
+//                 (interface/writes.mjs wraps call)
 //   storage       a record is read and written through the connector for the source its record
 //                 type lives in (knowledge/connectors, EE-037): the venture's own folder unless its
 //                 knowledge/sources.json names another, such as a GitHub repository, where a write
@@ -40,7 +45,26 @@ import { agentFromEnv, entries as provEntries, record as prov } from "./provenan
 import { address } from "../knowledge/connectors/contract.mjs";
 import { holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
+// Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.
+import { readFlag as freshnessFlag } from "../schema/freshness.mjs";
+// Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
+// the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
+import { actingCall, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
+import { checkPlan, gateWrite, heldDraft } from "./gate-hooks.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
+// Caching (schema/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
+import { actionScope, cacheRoutes, command as cachedCommand, forget, internal as cacheInternal, memo } from "../schema/caching.mjs";
+// Context hook: instrumentation of every call and judgment (interface/instrumentation.mjs, P-4, F-4).
+import { instrumented, judgment } from "./instrumentation.mjs";
+// Hooks for writes, reads and boundaries (wf/writes): the wrapper around call, per-record containment and private folders.
+import { around } from "./writes.mjs";
+import { contain } from "./boundaries.mjs";
+import { packageSlots } from "./package-routes.mjs";
+import { routable } from "../schema/structure.mjs";
+// Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from schema/brand.mjs.
+import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
+// Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
+import { staleOf } from "../schema/stale.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -70,7 +94,9 @@ export function kits() {
 const needNowPriors = () => load(join(repo, "schema/need-now.json"));
 
 /** The route table, generated from schema/data-model.json, the kit manifests and schema/need-now.json. */
-export function routes() {
+// Caching hook (F-12): built once per action and shared.
+export function routes() { return memo("routes", buildRoutes); }
+function buildRoutes() {
   const model = load(join(repo, "schema/data-model.json"));
   const ks = kits();
   const owner = new Map(ks.flatMap((k) => k.records.map((r) => [r, k])));
@@ -110,6 +136,8 @@ export function routes() {
     cmd("system/package", "schema/packages.mjs", "The venture package (EE-067, EE-069): the core packages open now and the handoffs, each record confirmed, to review or to write, what moves on its own and what waits, and what completion unlocks; --write renders the view and records a version. Assumes a solo founder or small founding team in Discovery and Validation; agents are a package enhancement"),
     cmd("system/need-now", "schema/need-now.mjs", "What the venture needs now, soon, or should hold back (EE-028)"),
     cmd("system/time-to-ready", "schema/time-to-ready.mjs", "Time to running, and to ready per layer and MAD tier"),
+    // Model steps hook (use model, EE-073): the logic is schema/model-steps.mjs; this route only shows the payload.
+    cmd("system/steps", "schema/model-steps.mjs", "The model steps' payload (use model, EE-073): what code computed, a placeholder for each judgment a model has yet to give, and the only fields each one receives; asks no model. mentura steps run asks one", { args: ["payload"] }),
     cmd("purpose/validation/assess", "schema/assess-problem.mjs", "What the problem's evidence is strong enough for: each assumption labelled demonstrated, inferred, assumed, unknown or contradicted, the commitment it supports and the next test (EE-050). Asks first when the record is incomplete; input as_is runs it anyway", { as_is: true }),
     cmd("governance/analytics", "schema/decision-analytics.mjs", "Decision analytics (EE-072): how many decisions of each type each function has made, open against decided, in whose words, in which phase, and their outcomes. Data only; a view is the platform's, or a visualization skill's", { actions: ["run", "layout"] }),
     cmd("governance/decisions", "schema/decisions.mjs", "The decision matrix: every decision the venture owes by layer and phase, with its parent and boundary, and whether it renders now, waits, comes later, is stale or deferred (EE-054, EE-057)"),
@@ -124,9 +152,17 @@ export function routes() {
     cmd("governance/payouts", "schema/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
     cmd("system/overview", null, "The venture at a glance: telos, validation, need-now, time to ready, team and recent provenance, rendered as parallel slots", { internal: "overview" }),
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
+    // Context hook (interface/vitals.mjs, interface/context.mjs): agent vitals and the context budget (N-6, C-15, N-13).
+    cmd("system/vitals", "interface/vitals.mjs", "Agent vitals (N-6): calls per task, tokens of context per call, time to a useful answer and time from a decision opening to a person deciding it, at the 75th percentile, each checked against its threshold (C-15). Reads the events log that instrumentation writes"),
+    cmd("system/context", "interface/context.mjs", "The context budget (N-13): what every route sends an agent, in tokens, against its budget, with the largest part and where to move it (S-14, F-6)", { args: ["budget"] }),
     cmd("knowledge/catalog", "knowledge/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "knowledge/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
+    // Freshness (Revalidating, V-1 to V-8): schema/freshness.mjs.
+    cmd("system/freshness", "schema/freshness.mjs", "What is fresh, stale or expired, and which records are live holes: by time (freshness profiles, per phase too) and on demand (a dependency changed, a where-used parent drifted, a tag, path or package was revalidated)"),
+    cmd("system/revalidate", "schema/freshness.mjs", "Mark records stale on demand: input value tag:<route> (the record and what depends on it), path:<folder>, package:<name>, or pivot (the validation package); a plain folder is refused in favour of exact tags", { value_flag: "--revalidate" }),
   );
+  out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (schema/caching.mjs).
+  out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (schema/brand.mjs).
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
 
@@ -172,14 +208,15 @@ export function ventureDir(id, workspace = defaultWorkspace()) {
     }
     return null;
   }
-  for (const d of walkVentures(workspace)) if (load(join(d, "venture.json")).id === id) return d;
+  // A broken venture.json is found by its folder name, so its global error can answer (E-8, interface/boundaries.mjs).
+  for (const d of walkVentures(workspace)) { let vid; try { vid = load(join(d, "venture.json")).id; } catch { vid = basename(d); } if (vid === id) return d; }
   return null;
 }
 
 /** The ventures under a workspace: id, name, phase, path (the [...venture] segment) and folder. */
 export function ventures(workspace = defaultWorkspace()) {
   const root = existsSync(join(workspace, "ventures")) ? join(workspace, "ventures") : workspace;
-  return walkVentures(workspace).map((d) => { const v = load(join(d, "venture.json")); return { id: v.id, name: v.name, phase: v.phase, path: relative(root, d), dir: d }; });
+  return walkVentures(workspace).map((d) => { let v; try { v = load(join(d, "venture.json")); } catch { return { id: basename(d), name: null, phase: null, path: relative(root, d), dir: d, broken: true }; } return { id: v.id, name: v.name, phase: v.phase, path: relative(root, d), dir: d }; });
 }
 
 // The venture's decision rights: the template, tightened by the venture's own file.
@@ -200,7 +237,7 @@ export function gateOf(r, dir) {
 }
 
 // Robots: a team-plan role may list the routes it may read and write (globs over routes).
-function allowed(dir, actorId, action, route) {
+export function allowed(dir, actorId, action, route) {
   if (!actorId || !dir) return true;
   const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
   if (!plan) return true;
@@ -219,6 +256,8 @@ const PACKAGE_ROUTE = {
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
+  people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
+  ...BRAND_ROUTES, // Brand hook: marketing/brand, public/assets, glossary (schema/brand.mjs).
 };
 
 // Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
@@ -243,6 +282,7 @@ export function draftOf(route, venture, workspace) {
   const dir = ventureDir(venture, workspace);
   if (!r || r.kind !== "record" || r.collection === "list" || !dir) return null;
   const file = fileFor(r, params, dir);
+  if (!file) return null; // a route with no concrete file (a pattern-only slot) has no draft
   return { dir, file, draft: draftPath(file), gate: gateOf(r, dir), route: r.collection === "item" ? r.route.replace("[id]", params.id) : r.route };
 }
 
@@ -266,9 +306,11 @@ function instructionsOf(chain) {
 }
 
 /** A score below its threshold is uncertain: not an error and not an answer. It routes to the function owner. */
-export function judge(score, threshold, owner) {
-  if (typeof score !== "number" || score < threshold) return { outcome: "uncertain", owner, result: null };
-  return { outcome: "answer", result: score };
+export function judge(score, threshold, owner, at) {
+  const out = typeof score !== "number" || score < threshold ? { outcome: "uncertain", owner, result: null } : { outcome: "answer", result: score };
+  // Context hook: a judgment made for a venture (at.dir) is an instrumentation event (F-4).
+  if (at?.dir) judgment(at.dir, { question: at.question, route: at.route, model: at.model, score, threshold, outcome: out.outcome, owner });
+  return out;
 }
 
 /** Runs fn. A throw is the uncaught outcome. */
@@ -292,9 +334,11 @@ export function layout(r, dir) {
   const pkg = owned ? { skill: skillsOf(owned).map((s) => s.path), template: r.template ?? null, gates: owned.gates ?? [] } : null;
   const out = { route: r.route, stack, chain, instructions: instructionsOf(chain), package: pkg, note: r.note, groups: r.groups ?? [] };
   if (r.kind === "record") Object.assign(out, { schema: r.schema, template: r.template, checks: r.checks, gate: gateOf(r, dir) });
+  { const brand = brandLayout(dir, r.route); if (brand) out.brand = brand; } // Brand hook: brand, voice and package terms at this route (Y-2, Y-3, T-2).
   if (dir && r.kind === "record") {
     try {
-      const nn = JSON.parse(spawnSync("node", [join(repo, "schema/need-now.mjs"), dir, "--json"], { encoding: "utf8" }).stdout);
+      // Caching hook (O-5): shared with the system/need-now command in the same action.
+      const nn = JSON.parse(memo(`cmd:schema/need-now.mjs ${dir} --json`, () => spawnSync("node", [join(repo, "schema/need-now.mjs"), dir, "--json"], { encoding: "utf8" }), { dir }).stdout);
       const row = nn.rows.find((x) => x.type === r.record);
       if (row) out.need_now = { phase: nn.phase, status: row.status, now: row.now, next: row.next, why: row.why };
     } catch {}
@@ -311,10 +355,18 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
  * routes; via: the interface (cli, mcp, api; default router); provenance: { derived_from,
  * decision, note, agent } for the log.
  */
-export async function call({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+// Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
+// Context hook: every call is timed and measured for agent vitals (interface/instrumentation.mjs).
+// Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
+// Writes hook (interface/writes.mjs): adds what reads, layouts and writes answer.
+export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
+async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const requested = route;
   const { r, params, alias } = resolve(route);
   if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
+  // Context hook (interface/context.mjs): navigate reads a route header first, with its layout once per
+  // session, its template and prefetched refs; head stops after the header (N-3, L-2, O-4).
+  if (action === "navigate" || action === "head") return (await import("./context.mjs")).navigate({ ...(input ?? {}), venture, route: requested, workspace, actor, actor_id, via, header_only: action === "head" || !!input?.header_only });
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
   route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
@@ -323,7 +375,8 @@ export async function call({ venture, route, action, input, actor = "agent", act
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
   const act = action === "write" ? "write" : "read";
-  if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route)) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
+  // Gate group hook (F-5): a role that may read some items of a collection may read its list, filtered below.
+  if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route) && !(act === "read" && r.collection === "list" && mayReadSome(dir, actor_id, route))) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
   // An activity a decision unlocks stays closed to agents until a person makes that decision (EE-058).
   const lock = actor !== "person" && (action === "write" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
   if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
@@ -337,15 +390,19 @@ export async function call({ venture, route, action, input, actor = "agent", act
   if (r.kind === "command") {
     if (r.internal === "overview") return { ok: true, result: await overview(venture, workspace), ...deprecated };
     if (r.internal === "robots") return { ok: true, result: robots(dir), ...deprecated };
+    // Caching hook: system/cache, system/judge and system/answer are handled in schema/caching.mjs.
+    if (["cache", "judge", "answer"].includes(r.internal)) return { ...(await cacheInternal(r.internal, { dir, venture, workspace, input, actor, actor_id, via, provenance }, { call, resolve, draftOf })), ...deprecated };
     const lacking = (r.needs ?? []).filter((f) => !existsSync(join(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };
     if (r.value_flag && !input?.value) return { ok: false, error: `${route} needs a value (${r.note})` };
     const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(input.value), "--json"] : [dir, ...(r.args ?? []), ...(r.as_is && input?.as_is ? ["--as-is"] : []), "--json"];
-    const p = spawnSync("node", [join(repo, r.script), ...args], { encoding: "utf8" });
+    // Caching hook (C-3, H-3): a declared command's result comes from the record-level cache; the spawn is memoized per action (O-5).
+    const p = await cachedCommand({ dir, route, script: r.script, args, input, actor, actor_id }, () => memo(`cmd:${r.script} ${args.join(" ")}`, () => spawnSync("node", [join(repo, r.script), ...args], { encoding: "utf8" }), { dir }));
+    const cache = p.cache ? { cache: p.cache } : {};
     if (p.status !== 0) return { ok: false, error: (p.stderr || p.stdout).trim() };
     // A command that needs input first (EE-050) answers needs_input: the caller asks the person
     // whether to fill the record in or run as is, and runs again with input as_is to go on.
-    try { const out = JSON.parse(p.stdout); return { ok: true, result: out.needs_input ? null : out, ...(out.needs_input ? { needs_input: out.needs_input } : {}), ...deprecated }; } catch { return { ok: true, result: p.stdout, ...deprecated }; }
+    try { const out = JSON.parse(p.stdout); return { ok: true, result: out.needs_input ? null : out, ...(out.needs_input ? { needs_input: out.needs_input } : {}), ...cache, ...deprecated }; } catch { return { ok: true, result: p.stdout, ...cache, ...deprecated }; }
   }
 
   // Storage: the connector for the source this record type lives in.
@@ -365,11 +422,15 @@ export async function call({ venture, route, action, input, actor = "agent", act
     const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
-      const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => patterns.some((g) => glob(g).test(f))) : patterns;
-      items = (await Promise.all(paths.map((f) => store.read(f)))).filter(Boolean);
+      // a file named _* is never an item; routable: private _folders (P-22)
+      const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => !/(^|\/)_[^/]*$/.test(f) && patterns.some((g) => glob(g).test(f) && routable(f, g))) : patterns;
+      // Caching hook (F-2): each record is read once per action and shared.
+      items = (await Promise.all(paths.map((f) => memo(`read:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
+      // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
+      if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
-    const draft = !remote && r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
+    const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
     if (remote) {
       const prs = provEntries(dir).filter((e) => e.source?.pull_request && found.concat(patterns).some((f) => e.entity === address(src.id, f)));
@@ -394,6 +455,9 @@ export async function call({ venture, route, action, input, actor = "agent", act
       }
       if (attrs.length) x.attributes = cites;
     }
+    // Freshness (V-5): a stale record is still read, flagged stale until it is redone (stale-while-revalidate).
+    const fresh = remote ? {} : await freshnessFlag(dir, found, r.collection === "list");
+    Object.assign(loading, fresh);
     const parseOne = parse;
     const parseWith = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
     if (r.collection === "list") {
@@ -406,19 +470,26 @@ export async function call({ venture, route, action, input, actor = "agent", act
         }
         return path;
       };
-      return { ok: true, result: Object.fromEntries(items.map((x) => [idOf(x.path), parseWith(x)])), sources: Object.fromEntries(items.map((x) => [idOf(x.path), cite(x)])), ...deprecated };
+      // Per-record containment (E-6): an item that does not parse is named in errors; the rest come back.
+      const { values, errors } = contain(items, parseWith, idOf);
+      return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...deprecated };
     }
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
-    return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...deprecated };
+    // V-9 hook: a summary whose source changed since it was written is marked stale (schema/stale.mjs).
+    const stale = !remote && items.length === 1 ? staleOf(dir, found[0]) : null;
+    return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...(stale ? { stale } : {}), ...deprecated };
   }
 
   if (action === "check") {
-    const outs = r.checks.map((c) => ({ check: c, ...spawnSync("node", [join(repo, c), dir], { encoding: "utf8" }) }));
-    const ok = outs.every((o) => o.status === 0);
-    return { ok, result: outs.map((o) => ({ check: o.check, passed: o.status === 0, output: (o.stdout + o.stderr).trim() })), ...(ok ? {} : { fix: fix(r) }), ...deprecated };
+    // Gate group hook (P-7): the checks settings in naive.config.json turn a check off or make it warn only.
+    const plan = checkPlan(dir, r.checks);
+    const outs = plan.filter((p) => p.mode !== "off").map((p) => ({ check: p.check, mode: p.mode, ...spawnSync("node", [join(repo, p.check), dir], { encoding: "utf8" }) }));
+    const ok = outs.every((o) => o.status === 0 || o.mode === "warn");
+    return { ok, result: [...outs.map((o) => ({ check: o.check, passed: o.status === 0, ...(o.mode === "warn" ? { warn_only: true } : {}), output: (o.stdout + o.stderr).trim() })), ...plan.filter((p) => p.mode === "off").map((p) => ({ check: p.check, passed: null, off: true }))], ...(ok ? {} : { fix: fix(r) }), ...deprecated };
   }
 
   if (action === "write") {
+    forget(dir); // Caching hook (H-3): a write never uses the cache, and what this action memoized for the venture is read again after it.
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
@@ -444,7 +515,9 @@ export async function call({ venture, route, action, input, actor = "agent", act
     // (EE-054): an agent's write becomes a draft, as for a gated record.
     const held = !remote && actor !== "person" ? holding(dir, file) : null;
     // The venture's own fail-closed routes (naive.config.json, the gate, EE-073) hold an agent's write too.
-    const configured = !remote ? hold(configOf(dir), r.route, actor) : null;
+    // Gate group hook (X-1 to X-6, U-4): the venture's gate decides; a refusal stops the write here.
+    const configured = !remote ? gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate }) : null;
+    if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
     const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
@@ -482,13 +555,12 @@ export async function call({ venture, route, action, input, actor = "agent", act
     }
 
     const draft = gatedDraft;
-    if (draft) {
-      const dest = join(dir, draftPath(file));
-      mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, text);
-    } else await store.write(file, recordText);
-    const entry = log(draft ? draftPath(file) : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : `${configured.rule} fails closed in naive.config.json: written as a draft for a person to accept`) : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule } : {}), ...attributesOut }, ...deprecated };
+    // Gate group hook (X-2): the held draft, the owner it was sent to and any variants kept side by side.
+    let held2 = null;
+    if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent });
+    else await store.write(file, recordText);
+    const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write");
+    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured.why) : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
@@ -539,6 +611,7 @@ async function overview(venture, workspace) {
       slot("@need-now", async () => (await run("system/need-now")).rows.filter((x) => x.status === "suggest now").map((x) => ({ record: x.type, now: x.now, why: x.why }))),
       slot("@ready", async () => { const t = await run("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
       slot("@team", async () => { const p = await read("people/team-plan"); if (typeof p === "string") return p; return p.roles.map((x) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
+      slot("@packages", () => packageSlots(dir, venture)), // P-17: a package with nothing in it shows its default
       slot("@provenance", () => provEntries(dir).slice(-5).reverse().map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, by: `${e.agent.kind}${e.agent.id ? ` ${e.agent.id}` : ""} via ${e.agent.via}` }))),
     ]),
   };

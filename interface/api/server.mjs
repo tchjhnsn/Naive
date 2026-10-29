@@ -14,7 +14,8 @@
 //   GET  /ventures/<venture>/<route>/layout         the layout an agent gets before acting
 //   PUT  /ventures/<venture>/<route>                write a record (JSON body); provenance from the
 //        headers x-mentura-derived-from (comma-separated), x-mentura-decision, x-mentura-model;
-//        the role acting from x-mentura-actor (checked against the team plan's routes)
+//        the role acting from x-mentura-actor (checked against the team plan's routes); a confidence
+//        score computed before the write from x-mentura-confidence
 //   POST /ventures/<venture>/<route>/check          run its checks
 //   POST /ventures/<venture>/<route>/run            run a command route (optional JSON body {value})
 //
@@ -47,7 +48,8 @@ export async function route(method, url, body, headers = {}) {
   if (!action || (verb && VERBS[verb] !== method)) return [405, { ok: false, error: `${method} is not allowed on ${path}` }];
   const h = (k) => headers[k] || undefined;
   const r = await call({ venture, route: rt, action, input: body, actor: "agent", actor_id: h("x-mentura-actor"), via: "api",
-    provenance: { derived_from: h("x-mentura-derived-from")?.split(",").map((x) => x.trim()).filter(Boolean), decision: h("x-mentura-decision"),
+    // Gate group hook (X-4): x-mentura-confidence carries a score computed before the write, for the gate's confidence rules.
+    provenance: { derived_from: h("x-mentura-derived-from")?.split(",").map((x) => x.trim()).filter(Boolean), decision: h("x-mentura-decision"), confidence: h("x-mentura-confidence"),
       agent: Object.fromEntries(Object.entries({ model: h("x-mentura-model"), harness: h("user-agent") }).filter(([, v]) => v)) } });
   return [status(r), r];
 }

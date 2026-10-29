@@ -9,14 +9,15 @@
   ],
   "optional": [
     "marketing-content",
-    "site-presence"
+    "site-presence",
+    "marketing-brand",
+    "public-assets"
   ],
   "refs": [
     "icp",
     "product"
   ],
   "planned": [
-    "brand voice and guidelines",
     "campaigns",
     "sales pipeline"
   ],
@@ -48,10 +49,15 @@
   ],
   "schemas": [
     "schema/marketing-sitemap.schema.json",
-    "schema/site-presence.schema.json"
+    "schema/site-presence.schema.json",
+    "schema/marketing-brand.schema.json",
+    "schema/public-assets.schema.json"
   ],
   "templates": [],
-  "checks": [],
+  "checks": [
+    "schema/check-brand.mjs",
+    "schema/check-assets.mjs"
+  ],
   "skill": null,
   "use_model": []
 }

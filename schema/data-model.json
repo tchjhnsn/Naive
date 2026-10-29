@@ -48,7 +48,13 @@
         "exit",
         "telos",
         "provenance",
-        "knowledge-sources"
+        "knowledge-sources",
+        "people",
+        "founder",
+        "fund-thesis",
+        "fund-terms",
+        "deal",
+        "money-summary"
       ],
       "refs": [
         {
@@ -494,6 +500,43 @@
         }
       ],
       "note": "For each fact kept once in its system of record, every place that repeats it; live children must show the parent's value (EE-042)"
+    },
+    {
+      "id": "freshness-profiles",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/freshness-profiles.schema.json",
+      "form": "json",
+      "paths": [
+        "knowledge/freshness.json"
+      ],
+      "refs": [
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/freshness-test.mjs"
+        }
+      ],
+      "note": "Default freshness profiles by record type (Revalidating V-2): stale, revalidate and expire after Next.js cacheLife, plus per_phase and live; a venture overrides them under freshness in naive.config.json"
+    },
+    {
+      "id": "freshness-log",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/freshness-log.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/knowledge/freshness.jsonl",
+        "schema/examples/**/knowledge/freshness.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "target.value",
+          "to": "(venture file)",
+          "checked_by": "schema/freshness.mjs"
+        }
+      ],
+      "note": "On-demand revalidations (a tag, a path or a package marked stale), checks that a record is still right, and phase changes: one append-only line each (Revalidating V-1, V-5, V-7)"
     },
     {
       "id": "department-catalog",
@@ -980,6 +1023,24 @@
       "note": "Venture packages (EE-067, EE-069): the assumed governance model; core packages by department (each record's one home, what it reads, priors per phase with conditions, what completion unlocks); handoff packages by receiver; record-level dependencies; the question matrix"
     },
     {
+      "id": "frame",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/frame.schema.json",
+      "form": "json",
+      "paths": [
+        "packages/*/frames/*.frame.json"
+      ],
+      "refs": [
+        {
+          "field": "emits.*.id",
+          "to": "decision",
+          "checked_by": "schema/frames-test.mjs"
+        }
+      ],
+      "note": "The decision library: one recurring venture problem as a shape (goal, hidden decisions, premises and the attacks on them, a freshness spec, reasoning), never an answer. schema/frames.mjs matches it to the founder's words, judges its premises against the venture and proposes its decisions, open"
+    },
+    {
       "id": "venture-package",
       "layer": "system",
       "level": "venture",
@@ -991,6 +1052,18 @@
         "instance/**/package/venture-package.json"
       ],
       "note": "The venture package view (EE-067, EE-069): the open core packages and handoffs, each record confirmed, to review or to write, what moves now and what waits, with its versions; the records themselves stay in place"
+    },
+    {
+      "id": "release",
+      "layer": "system",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/.release/release.json",
+        "instance/**/.release/card.json"
+      ],
+      "note": "A release (C-11, I-17): the venture's static shell, written by node schema/build-release.mjs. release.json is the manifest (confirmed records frozen in with their sha256, date and who confirmed them; named live holes; the route table as the release holds it; frozen command answers); card.json is the release card's data (P-25, O-7). The frozen copies under .release/records/ keep their own record types. Read without the router by node schema/start-release.mjs"
     },
     {
       "id": "team-plan",
@@ -1064,6 +1137,35 @@
       "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031)"
     },
     {
+      "id": "naive-config",
+      "layer": "system",
+      "level": "venture",
+      "schema": "schema/naive-config.schema.json",
+      "paths": [
+        "instance/**/naive.config.json",
+        "schema/examples/**/naive.config.json"
+      ],
+      "decision_class": "security-loosening",
+      "refs": [
+        {
+          "field": "gate.rules.routes",
+          "to": "(routes)",
+          "checked_by": "schema/check-config.mjs"
+        },
+        {
+          "field": "owners",
+          "to": "team-plan",
+          "checked_by": "schema/check-config.mjs"
+        },
+        {
+          "field": "packages",
+          "to": "venture-packages",
+          "checked_by": "schema/check-config.mjs"
+        }
+      ],
+      "note": "The venture's overrides to Naive's defaults (P-2, like next.config.js): the gate's static rules, function owners, check settings, thresholds, which System 1 questions run, pinned package versions and how strictly the acting role is checked. An agent's write of it is a draft, since it can loosen the gate"
+    },
+    {
       "id": "route-aliases",
       "layer": "interface",
       "level": "method",
@@ -1072,6 +1174,51 @@
         "interface/route-aliases.json"
       ],
       "note": "Old routes kept as aliases of their new ones, so a rename does not break agents (EE-032)"
+    },
+    {
+      "id": "adapter",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/adapter.schema.json",
+      "paths": [
+        "interface/adapters/*.json",
+        "platform/adapter.json"
+      ],
+      "note": "What runs Naive on a platform or in an agent harness (Z-4): the entry files a harness adapter writes into a venture and where it loads skills, or the tests a platform adapter runs. Verified when it passes the framework's tests (interface/adapters.mjs verify)"
+    },
+    {
+      "id": "upgrade-registry",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/upgrade-registry.schema.json",
+      "paths": [
+        "schema/upgrades.json"
+      ],
+      "refs": [
+        {
+          "field": "versions[].guide",
+          "to": "(repository file)",
+          "checked_by": "schema/upgrades-test.mjs"
+        }
+      ],
+      "note": "Naive's versions with their guides, the migrations between them, and each package's version and channel (U-1 to U-6, EE-076). naive upgrade reads it from the installed copy"
+    },
+    {
+      "id": "kit",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/kit.schema.json",
+      "paths": [
+        "platform/kits/*/kit.json"
+      ],
+      "refs": [
+        {
+          "field": "extends.package",
+          "to": "venture-packages",
+          "checked_by": null
+        }
+      ],
+      "note": "A Mentura kit (EE-071): an enhanced package or command, with its automations (triggers that need a complete package, M-12) or its agent workflow (the agent-run upgrade, U-3). The framework reads it as data and never imports its code (schema/kits.mjs)"
     },
     {
       "id": "icp",
@@ -1159,6 +1306,17 @@
       "note": "A money master record. Activity is an append-only stream. The package is never complete (EE-070)."
     },
     {
+      "id": "money-summary",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/money-summary.schema.json",
+      "paths": [
+        "instance/**/money/_summary.json",
+        "schema/examples/**/money/_summary.json"
+      ],
+      "note": "Cash, monthly flows and runway from the money source's last sync; versioned, and the only money record a model sees (EE-070)"
+    },
+    {
       "id": "data-stream",
       "layer": "purpose",
       "level": "venture",
@@ -1195,6 +1353,174 @@
         "schema/examples/**/raw/sources/*/text.md"
       ],
       "note": "The text of a raw source. original.* stays out of git (EE-070)."
+    },
+    {
+      "id": "judgment",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/judgment.schema.json",
+      "paths": [
+        "instance/**/knowledge/judgments/*.json",
+        "schema/examples/**/knowledge/judgments/*.json"
+      ],
+      "refs": [
+        {
+          "field": "package",
+          "to": "(packages and kits)",
+          "checked_by": "schema/model-steps.mjs"
+        },
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": "schema/model-steps.mjs"
+        }
+      ],
+      "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (schema/model-steps.mjs)"
+    },
+    {
+      "id": "venture-types",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/venture-types.schema.json",
+      "paths": [
+        "schema/venture-types.json"
+      ],
+      "note": "The venture types create-venture scaffolds, and what each starts with (EE-082)"
+    },
+    {
+      "id": "venture-role",
+      "layer": "governance",
+      "level": "method",
+      "schema": "schema/venture-role.schema.json",
+      "paths": [
+        "governance/venture-template/roles/venture-roles.json"
+      ],
+      "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
+    },
+    {
+      "id": "people",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/people.schema.json",
+      "paths": [
+        "instance/**/people/people.json",
+        "schema/examples/**/people/people.json"
+      ],
+      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)"
+    },
+    {
+      "id": "founder",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/founder.schema.json",
+      "paths": [
+        "instance/**/people/founders/*.json",
+        "schema/examples/**/people/founders/*.json"
+      ],
+      "note": "One file per founder, linked to the founder agreement (EE-082)"
+    },
+    {
+      "id": "fund-thesis",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/fund-thesis.schema.json",
+      "paths": [
+        "instance/**/fund/thesis.json",
+        "schema/examples/**/fund/thesis.json"
+      ],
+      "note": "A fund's thesis (EE-082)"
+    },
+    {
+      "id": "fund-terms",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/fund-terms.schema.json",
+      "paths": [
+        "instance/**/fund/terms.json",
+        "schema/examples/**/fund/terms.json"
+      ],
+      "note": "A fund's terms and closes (EE-082)"
+    },
+    {
+      "id": "deal",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/deal.schema.json",
+      "paths": [
+        "instance/**/deals/*.json",
+        "schema/examples/**/deals/*.json"
+      ],
+      "note": "A company in a fund's pipeline (EE-082)"
+    },
+    {
+      "id": "systems-catalog",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/systems-catalog.schema.json",
+      "paths": [
+        "schema/systems-catalog.json"
+      ],
+      "note": "The systems of record create-venture offers per function (EE-083)"
+    },
+    {
+      "id": "glossary",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/glossary.schema.json",
+      "paths": [
+        "instance/**/glossary/*.json",
+        "schema/examples/**/glossary/*.json"
+      ],
+      "refs": [
+        {
+          "field": "terms[].export",
+          "to": "glossary",
+          "checked_by": "schema/check-brand.mjs"
+        }
+      ],
+      "note": "A package's own terms, at glossary/<package>.json (Y-2): local to the package unless exported, so an agent in another package sees only exported terms; glossary/terms shows what one package sees"
+    },
+    {
+      "id": "marketing-brand",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/marketing-brand.schema.json",
+      "paths": [
+        "instance/**/marketing/brand.json",
+        "schema/examples/**/marketing/brand.json"
+      ],
+      "refs": [
+        {
+          "field": "marks[].asset",
+          "to": "public-assets",
+          "checked_by": "schema/check-brand.mjs"
+        },
+        {
+          "field": "typefaces[].files",
+          "to": "public-assets",
+          "checked_by": "schema/check-brand.mjs"
+        }
+      ],
+      "decision_class": "experience-design",
+      "note": "Brand tokens in the marketing package (Y-3): colors, licensed self-hosted typefaces (T-1), the font each role uses with scopes where nearer context wins (Y-5, T-2), voice rules (the global stylesheet for words), the logo and marks (P-24) and outside design systems by reference (Y-4). Read by every agent's layout; marketing/brand/tokens renders it for interfaces"
+    },
+    {
+      "id": "public-assets",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/public-assets.schema.json",
+      "paths": [
+        "instance/**/public/assets.json",
+        "schema/examples/**/public/assets.json"
+      ],
+      "refs": [
+        {
+          "field": "remote[].id",
+          "to": "raw-source",
+          "checked_by": "schema/check-assets.mjs"
+        }
+      ],
+      "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
     }
   ],
   "ignore": [
@@ -1245,6 +1571,14 @@
     {
       "path": "site/content/marketing/meta.json",
       "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
+    },
+    {
+      "path": "package.json",
+      "reason": "The framework's npm manifest: the naive and mentura commands (I-1, I-17); not a record"
+    },
+    {
+      "path": "interface/create-venture/package.json",
+      "reason": "The create-venture generator's npm manifest (I-1); not a record"
     }
   ]
 }

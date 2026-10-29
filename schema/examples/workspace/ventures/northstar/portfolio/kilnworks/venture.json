@@ -1,0 +1,27 @@
+{
+  "id": "kilnworks",
+  "name": "kilnworks",
+  "type": "software-startup",
+  "parent": "northstar",
+  "phase": "discovery",
+  "owner": "self",
+  "status": "active",
+  "profile": "profile.md",
+  "layers": {
+    "purpose": false,
+    "knowledge": {
+      "location": "knowledge/"
+    },
+    "operations": false,
+    "evidence": false
+  },
+  "departments": [
+    "strategy",
+    "products",
+    "marketing-and-sales",
+    "customer-service",
+    "human-capital",
+    "it",
+    "finance"
+  ]
+}

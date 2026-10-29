@@ -1,0 +1,22 @@
+{
+  "venture": "acme-labs",
+  "mode": "solo",
+  "people": [
+    {
+      "id": "maya-chen",
+      "name": "Maya Chen",
+      "role": "founder",
+      "hats": [
+        "strategy",
+        "products",
+        "marketing-and-sales",
+        "customer-service",
+        "human-capital",
+        "it",
+        "finance"
+      ],
+      "founder_file": "people/founders/maya-chen.json"
+    }
+  ],
+  "updated": "2026-10-29"
+}

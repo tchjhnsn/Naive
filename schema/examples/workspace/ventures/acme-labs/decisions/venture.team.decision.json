@@ -1,0 +1,37 @@
+{
+  "id": "founding-team",
+  "question": "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
+  "decides": {
+    "record": "founder-agreement",
+    "path": "governance/founder-agreement.json"
+  },
+  "layer": "governance",
+  "boundary": "fail-open",
+  "needed_in": "discovery",
+  "status": "decided",
+  "options": [
+    "Solo: I am founding it alone",
+    "Cofounders: we are founding it together",
+    "Looking: I want cofounders"
+  ],
+  "unlocks": [
+    {
+      "activity": "Draft the founder agreement with the founding-agreement kit",
+      "routes": [
+        "governance/founder-agreement"
+      ]
+    }
+  ],
+  "provenance": {
+    "drafted_by": {
+      "kind": "framework",
+      "id": "naive"
+    },
+    "approved_by": "Maya Chen",
+    "approved_at": "2026-10-29T06:29:12Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  },
+  "answer": "Solo: I am founding it alone"
+}

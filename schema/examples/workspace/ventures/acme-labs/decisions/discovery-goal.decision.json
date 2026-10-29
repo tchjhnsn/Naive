@@ -1,0 +1,23 @@
+{
+  "id": "discovery-goal",
+  "question": "What must be true for the venture to leave discovery? Name the goal this phase works toward.",
+  "decides": {
+    "record": "telos",
+    "path": "foundation/telos.json"
+  },
+  "layer": "purpose",
+  "needed_in": "discovery",
+  "boundary": "fail-open",
+  "status": "decided",
+  "provenance": {
+    "drafted_by": {
+      "kind": "agent"
+    },
+    "approved_by": "Maya Chen",
+    "approved_at": "2026-10-29T06:29:13Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  },
+  "answer": "Ten cafe owners confirm the reordering problem in interviews, and three agree to pilot the app, by the end of December."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "core-product",
+  "parent": "product-exists",
+  "question": "What is the core product: what anyone can claim from this venture, who it is promised to, what it must never deliver, and the competence that makes it deliverable?",
+  "decides": {
+    "record": "venture",
+    "path": "venture.json"
+  },
+  "unlocks": [
+    {
+      "activity": "Judge the products against the core (Product Anatomy)",
+      "routes": [
+        "purpose/anatomy-input/*",
+        "purpose/anatomy-answers"
+      ]
+    }
+  ],
+  "layer": "purpose",
+  "boundary": "fail-closed",
+  "needed_in": "discovery",
+  "status": "open",
+  "provenance": {
+    "drafted_by": {
+      "kind": "framework",
+      "id": "naive"
+    }
+  }
+}

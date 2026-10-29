@@ -23,7 +23,11 @@
     "marketing-matrix",
     "site-presence",
     "marketing-sitemap",
-    "marketing-content"
+    "marketing-content",
+    "people",
+    "founder",
+    "marketing-brand",
+    "public-assets"
   ],
   "reads": [
     "agent-capability",
@@ -37,7 +41,8 @@
     "publication-policy",
     "role",
     "telos",
-    "venture"
+    "venture",
+    "raw-source"
   ],
   "writes": [
     "evidence"
@@ -50,7 +55,9 @@
     "schema/check-departments.mjs",
     "operations/marketing/site/presence.mjs",
     "operations/marketing/site/plan.mjs",
-    "operations/marketing/check-public.mjs"
+    "operations/marketing/check-public.mjs",
+    "schema/check-brand.mjs",
+    "schema/check-assets.mjs"
   ],
   "gaps": [
     "No run-handoff skill: the handoff contract is prose (operations/handoff-v2.md) beside three scripts in schema/ (check-ready, run-handoff, check-execution)",

@@ -1,0 +1,22 @@
+{
+  "id": "statement-problem",
+  "question": "Write the problem statement",
+  "statement": "problem",
+  "decides": {
+    "record": "validation-problem"
+  },
+  "layer": "purpose",
+  "needed_in": "discovery",
+  "status": "decided",
+  "provenance": {
+    "drafted_by": {
+      "kind": "agent"
+    },
+    "approved_by": "Maya Chen",
+    "approved_at": "2026-10-29T06:29:12Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  },
+  "answer": "Independent cafe owners lose three to five hours a week reordering supplies by hand, and still run out of best-sellers."
+}

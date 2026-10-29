@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fund-thesis.schema.json",
+  "title": "Fund thesis",
+  "description": "What a fund invests in and why it wins (fund/thesis.json): rounds, sectors, geographies, check size, and the edge. The fund's strategic foundation, as the problem record is a startup's.",
+  "type": "object",
+  "required": [
+    "venture",
+    "statement",
+    "rounds",
+    "sectors",
+    "check_size"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "statement": {
+      "type": "string",
+      "description": "The thesis in one or two sentences"
+    },
+    "rounds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "pre-seed",
+          "seed",
+          "series-a",
+          "series-b",
+          "growth",
+          "late"
+        ]
+      }
+    },
+    "sectors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "geographies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "check_size": {
+      "type": "object",
+      "required": [
+        "min",
+        "max",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "ownership_target": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Target ownership at entry, as a fraction"
+    },
+    "edge": {
+      "type": "string",
+      "description": "Why this fund sees, wins or helps deals others do not"
+    },
+    "why_now": {
+      "type": "string"
+    }
+  }
+}

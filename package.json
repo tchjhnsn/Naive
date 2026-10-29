@@ -1,0 +1,61 @@
+{
+  "name": "naive-framework",
+  "version": "0.2.0",
+  "description": "Naive, a venture development framework: conventions, routes, records, checks and an agent interface for building a venture.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tchjhnsn/everything-ecosystem.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "naive": "interface/cli/naive.mjs",
+    "mentura": "interface/cli/mentura.mjs"
+  },
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "files": [
+    "AGENTS.md",
+    "README.md",
+    "LICENSE",
+    "interface/",
+    "schema/",
+    "packages/",
+    "purpose/",
+    "knowledge/",
+    "operations/",
+    "governance/",
+    "evidence/",
+    "platform/",
+    "docs/reference/",
+    "docs/decisions/",
+    "docs/ontology.md",
+    "docs/ontology.json",
+    "!**/*test.mjs",
+    "!**/*-test.mjs",
+    "!**/test.mjs",
+    "!**/*.steps.mjs",
+    "!**/*.feature",
+    "!interface/create-venture/",
+    "!platform/integrations/fixtures/",
+    "!schema/examples/docket-scenarios.json",
+    "!**/.env*",
+    "!**/*.pem",
+    "!**/*.key",
+    "!**/_private/",
+    "!**/_internal/",
+    "!platform/agents/",
+    "!**/.DS_Store"
+  ],
+  "keywords": [
+    "venture",
+    "framework",
+    "startup",
+    "agents",
+    "mcp"
+  ]
+}

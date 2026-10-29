@@ -1,0 +1,26 @@
+{
+  "id": "fund-thesis",
+  "question": "What does the fund invest in, and why does it win: rounds, sectors, geographies, check size and its edge?",
+  "decides": {
+    "record": "fund-thesis",
+    "path": "fund/thesis.json"
+  },
+  "unlocks": [
+    {
+      "activity": "Screen deals against the thesis",
+      "routes": [
+        "deals/*"
+      ]
+    }
+  ],
+  "layer": "purpose",
+  "boundary": "fail-closed",
+  "needed_in": "validation",
+  "status": "open",
+  "provenance": {
+    "drafted_by": {
+      "kind": "framework",
+      "id": "naive"
+    }
+  }
+}

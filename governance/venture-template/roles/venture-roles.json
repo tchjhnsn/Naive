@@ -1,0 +1,62 @@
+{
+  "version": "0.1.0",
+  "note": "Roles a person can hold in a venture (EE-082). Agent roles are in agent-roles.json.",
+  "roles": [
+    {
+      "id": "founder",
+      "name": "Founder",
+      "kind": "builder",
+      "description": "Started the venture and owns it; alone, owns every function",
+      "founder": true,
+      "owns_when_solo": true
+    },
+    {
+      "id": "co-founder",
+      "name": "Co-founder",
+      "kind": "builder",
+      "description": "One of two or more founders; owns the functions the team assigns",
+      "founder": true,
+      "owns_when_solo": true
+    },
+    {
+      "id": "general-partner",
+      "name": "General partner",
+      "kind": "investor",
+      "description": "Runs a fund or firm: sets the thesis, raises from limited partners, makes and manages investments",
+      "founder": true,
+      "owns_when_solo": true
+    },
+    {
+      "id": "limited-partner",
+      "name": "Limited partner",
+      "kind": "investor",
+      "description": "Commits capital to a fund and receives reports; does not run it",
+      "founder": false,
+      "owns_when_solo": false
+    },
+    {
+      "id": "operator",
+      "name": "Operator",
+      "kind": "operator",
+      "description": "Runs one or more functions without founding the venture: an early employee or executive",
+      "founder": false,
+      "owns_when_solo": false
+    },
+    {
+      "id": "advisor",
+      "name": "Advisor",
+      "kind": "advisor",
+      "description": "Advises the founders; owns no function",
+      "founder": false,
+      "owns_when_solo": false
+    },
+    {
+      "id": "board-member",
+      "name": "Board member",
+      "kind": "governor",
+      "description": "Sits on the board and governs; owns no function",
+      "founder": false,
+      "owns_when_solo": false
+    }
+  ]
+}

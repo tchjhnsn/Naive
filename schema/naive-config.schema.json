@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "naive-config.schema.json",
+  "title": "naive.config.json",
+  "description": "A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in schema/naive-config.mjs. node schema/check-config.mjs <venture dir> checks it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The venture's one gate (X-5). It runs before every write and never calls a model (X-4).",
+      "properties": {
+        "fail_closed": {
+          "type": "array",
+          "description": "Routes whose agent writes are always drafts; each covers that route and every route under it (X-3)",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rules": {
+          "type": "array",
+          "description": "Rules that read the write itself: who writes it, its route, its confidence (X-1, X-2, X-6)",
+          "items": {
+            "$ref": "#/$defs/rule"
+          }
+        },
+        "packages": {
+          "description": "Which packages' gate rules the gate imports from their package definitions (X-5): true for all (the default), false for none, or a map of package name to false to leave one out",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            }
+          ]
+        },
+        "variants": {
+          "type": "boolean",
+          "description": "Keep differing agent drafts of one record side by side, with one decision for the founder, on every held route (X-2). A rule can turn this on for its routes alone"
+        }
+      }
+    },
+    "owners": {
+      "type": "object",
+      "description": "Function owners: function (department) id to the role that owns it, so a write routed to its owner reaches the right person (X-2)",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Check settings (P-7): which of a route's checks are off, and which only warn",
+      "properties": {
+        "off": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Checks that do not run, by path (schema/check-telos.mjs)"
+        },
+        "warn": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Checks that run but do not fail the route's check"
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "description": "Thresholds by name: confidence (the gate's confidence routing), idea-map (when a System 1 answer becomes a tag)",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "questions": {
+      "type": "object",
+      "description": "Which System 1 questions run, by framework (idea-map): off lists question kinds, the part of a question key before the colon (exists, dept.legal, rec.*)",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "off": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "packages": {
+      "type": "object",
+      "description": "Pinned package versions (U-4): package name to the version the venture uses. A write to a pinned package whose installed version differs is refused until the pin or the install changes. A pin is a version string, or { version, early, channel } as naive upgrade writes it (U-5)",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "type": "string",
+                "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+              },
+              "early": {
+                "type": "boolean"
+              },
+              "channel": {
+                "enum": [
+                  "stable",
+                  "canary"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "acting": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How the acting role is checked on every action (M-18)",
+      "properties": {
+        "unknown_roles": {
+          "enum": [
+            "allow",
+            "refuse"
+          ],
+          "description": "A role id the team plan does not list: allow (the default, it may reach every route) or refuse"
+        }
+      }
+    },
+    "naive": {
+      "type": "object",
+      "description": "The framework version the venture is on, and its channel (EE-076, written by naive upgrade)",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "channel": {
+          "enum": [
+            "stable",
+            "canary"
+          ]
+        }
+      }
+    },
+    "kits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Mentura kits whose automations this venture turns on"
+    },
+    "triggers": {
+      "type": "array",
+      "description": "What starts the next step on an event (schema/triggers.mjs)"
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "routes",
+        "then"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "routes": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The routes the rule covers, in the router's own path patterns (X-6): a route (validation/pricing), an [id] segment (money/[id]), * for one segment and ** for any depth (validation/**, which covers validation too)",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "actors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "agent",
+              "person"
+            ]
+          },
+          "description": "Who it applies to; default agents only"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Team-plan roles it applies to; default every role"
+        },
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "confidence_below": {
+              "description": "Applies when the write carries a confidence score below this number, or below the named threshold. The score is computed before the write; a write with no score never matches",
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "exists": {
+              "type": "boolean",
+              "description": "Applies only when the record already exists (true) or does not yet (false)"
+            }
+          }
+        },
+        "then": {
+          "enum": [
+            "draft",
+            "owner",
+            "refuse"
+          ],
+          "description": "draft: hold it as a draft; owner: hold it as a draft sent to the function owner; refuse: do not write it"
+        },
+        "owner": {
+          "type": "string",
+          "description": "The owner a routed write goes to; default the function owner in owners, else the record's decision-class owner, else founder"
+        },
+        "variants": {
+          "type": "boolean",
+          "description": "Keep differing drafts side by side under one decision (X-2)"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

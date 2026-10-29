@@ -29,6 +29,11 @@
       "default": "venture",
       "description": "venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054)."
     },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The venture type, an id from schema/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082)"
+    },
     "parent": {
       "type": [
         "string",
@@ -144,6 +149,54 @@
         "pattern": "^[a-z0-9-]+$"
       },
       "uniqueItems": true
+    },
+    "packages": {
+      "type": "array",
+      "description": "The Naive packages this venture uses, by name from packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by schema/structure.mjs.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "uniqueItems": true
+    },
+    "kits": {
+      "type": "array",
+      "description": "The Mentura kits this venture uses (EE-071). Each names the one package it extends, which the venture must use; the kit itself lives on the platform.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "extends"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "extends": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "functions": {
+      "type": "object",
+      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from operations/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "owner"
+        ],
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "A role or a person's name; no personal details"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "brand": {
       "type": "object",

@@ -12,9 +12,12 @@
 //   mentura migrate --from <project> --venture <id|dir> [--apply]
 //                                                   alias of naive migrate: an agent rewrites a project as Naive records (EE-076)
 //   mentura typegen                                 alias of naive typegen (EE-073)
+//   mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [--answers <file>] [--speculate] [--stream]
+//                                                   model steps (use model, EE-073): schema/model-steps.mjs
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
-//                                                   one holding a foundation statement asks you to type the route
+//                                                   one holding a foundation statement asks you to type the route;
+//                                                   [--pick <letter>] [--by <name>] accepts one of drafts kept side by side
 //   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--confirm <decision>]
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
 //   mentura propose --venture <id> --input <file.json> [--as <role>]
@@ -29,16 +32,30 @@
 //          a collection item is <route>/<id> (purpose/product/kettle); a nested venture is its
 //          folder path (--venture studio/print); system/overview view shows the venture at a glance
 //          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
+//          [--confidence <n>]   a score computed before the write, read by the gate's confidence rules
 //          knowledge/catalog run builds the catalog over the venture's sources; knowledge/search run
 //          --value <query> finds items in any of them (EE-037)
 //          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;
 //          --as-is runs it anyway (EE-050)
+//          [--where status=active|trial,phase=build] filters a read; --hierarchy shows how it resolved
+//          a package's own route (validation, packages/product) reads its state; (go-to-market) is a
+//          route group; venture read is the manifest, venture check runs every boundary
 //   mentura baseline --venture <id>                 adopt existing records into the provenance log
+//   mentura revalidate <tag:route|path:folder|package:name|route> --venture <id> [--pivot] [--reason <text>]
+//                                                   mark records stale on demand; a plain folder is refused for exact tags (Revalidating)
+//   mentura verify <route|folder> --venture <id>    checked and still right, unchanged: its age starts again
+//   mentura phase <phase> --venture <id> --as person   change phase; per-phase records go stale
+//   mentura freshness --venture <id> [--freeze <out dir>]   what is fresh, stale, expired or a live hole
+//   mentura <route> navigate|head --venture <id> [--session <s>] [--task <text>] [--prefetch a,b | --no-prefetch] [--stream]
+//                                                   read a route header first, with layout once per session, template and prefetch
+//   mentura batch --venture <id> --input <calls.json> [--stream]
+//                                                   run a list of {route, action, input} calls, reporting each as it finishes
 //
 // The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
 // record written by an agent lands in <venture>/_drafts/ for a person to accept.
 
+import "./guard.mjs"; // wf/writes hook: a broken framework file answers with recovery steps (E-8)
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -46,6 +63,9 @@ import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir,
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
 import { approve, decisions, propose } from "../../schema/decisions.mjs";
+// Gate group hook (X-2): held drafts kept side by side.
+import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
+import { asRouted, findVenture } from "./find-venture.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
@@ -62,9 +82,12 @@ async function typed(name, what, why = "This is a foundation statement: changing
 const foundationOf = (recordType) => FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record === recordType);
 
 const argv = process.argv.slice(2);
+// Inside a venture, --venture and the workspace default to it (I-2): `cd my-venture && mentura system/overview view`.
+const here = !argv.includes("--venture") && !argv.includes("--workspace") ? findVenture() : null;
+if (here) { argv.push("--venture", asRouted(here).venture, "--workspace", asRouted(here).workspace); process.env.MENTURA_WORKSPACE = asRouted(here).workspace; }
 const opt = (name) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (name) => argv.includes(`--${name}`);
-const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["json"].includes(argv[i - 1].slice(2))));
+const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["json", "hierarchy"].includes(argv[i - 1].slice(2))));
 const workspace = opt("workspace") ? resolve(opt("workspace")) : undefined;
 const out = (x) => console.log(typeof x === "string" ? x : JSON.stringify(x, null, 2));
 
@@ -91,6 +114,9 @@ if (cmd === "ventures") {
   process.exit(0);
 }
 
+// Brand hook: mentura brand ... and mentura assets ... (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26) live in interface/brand.mjs.
+if (cmd === "brand" || cmd === "assets") process.exit(await (await import("../brand.mjs")).main(argv, { workspace }));
+
 if (cmd === "add") {
   // Imports one function into a venture (EE-047, EE-048, EE-071). department is the alias for function for one release.
   const v = opt("venture");
@@ -101,6 +127,27 @@ if (cmd === "add") {
 
 if (cmd === "typegen") {
   const p = spawnSync("node", [join(repo, "interface/cli/naive.mjs"), "typegen"], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
+// Upgrades hook (M-12, E-7, V-9, Z-4): these commands live in their own modules; this only dispatches.
+//   mentura triggers --venture <id> [--fire] [--json]
+//                                                   the venture's triggers, their runs and open failures; --fire runs what new events start
+//   mentura stale --venture <id> [--json]           summaries whose system of record changed since they were written
+//   mentura notify --venture <id> --source <id> --path <p> [--version <v>]
+//                                                   a system of record says <p> changed: mark what reads it stale (a webhook does this on Mentura)
+//   mentura adapt <adapter> --venture <id>          write a harness's entry files into the venture (claude-code, codex, cursor)
+//   mentura adapters [verify [<adapter>]] [--json]  the adapters, or run the framework's tests an adapter must pass
+if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
+  const d = ["triggers", "stale", "notify", "adapt"].includes(cmd) ? (opt("venture") ? ventureDir(opt("venture"), workspace) : null) : null;
+  if (cmd !== "adapters" && !d) { console.error(opt("venture") ? `no venture ${opt("venture")}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
+  const pass = (...names) => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
+  const args = cmd === "triggers" ? ["schema/triggers.mjs", d, ...pass("fire", "json")]
+    : cmd === "stale" ? ["schema/stale.mjs", d, ...pass("json")]
+    : cmd === "notify" ? ["schema/stale.mjs", d, "--notify", ...pass("source", "path", "version", "json")]
+    : cmd === "adapt" ? ["interface/adapters.mjs", "adapt", action ?? "", d, ...pass("json")]
+    : ["interface/adapters.mjs", ...positional.slice(1), ...pass("json")];
+  const p = spawnSync("node", [join(repo, args[0]), ...args.slice(1)], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -120,6 +167,16 @@ if (cmd === "upgrade" || cmd === "migrate") {
   const d = v && ventureDir(v, workspace);
   if (!d) usage();
   const p = spawnSync("node", [join(repo, "schema/upgrade-venture.mjs"), d], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
+// Model steps hook (use model, EE-073): mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [...].
+// The logic is schema/model-steps.mjs; this passes the venture folder and the other arguments through.
+if (cmd === "steps") {
+  const v = opt("venture"), d = v && ventureDir(v, workspace);
+  if (!d || !action) usage();
+  const pass = argv.slice(argv.indexOf("steps") + 1).filter((a, i, all) => !["--venture", "--workspace"].includes(a) && !["--venture", "--workspace"].includes(all[i - 1]));
+  const p = spawnSync("node", [join(repo, "schema/model-steps.mjs"), d, ...pass], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -144,22 +201,27 @@ if (cmd === "accept") {
   if (!d) { console.error(`${rt} is not a record route, or no venture ${venture}`); process.exit(1); }
   const draft = join(d.dir, d.draft);
   if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
+  // Gate group hook (X-2): drafts kept side by side are accepted one at a time with --pick <letter>.
+  let chosen;
+  try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error(e.message); process.exit(1); }
+  const chosenFile = join(d.dir, chosen);
   const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
   const touched = foundationOf(recType);
   if (touched.length) {
     const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
     const now = existsSync(join(d.dir, d.file)) ? JSON.parse(readFileSync(join(d.dir, d.file), "utf8")) : {};
-    const next = JSON.parse(readFileSync(draft, "utf8"));
+    const next = JSON.parse(readFileSync(chosenFile, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
     const names = new Set([d.route, rt]);
     const confirmed = opt("confirm") !== undefined ? names.has(opt("confirm")) : await typed(d.route, `Accepting ${d.route} changes these foundation statements:\n${diff}`);
     if (!confirmed) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
   }
-  const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
-    provenance: { activity: "accept", derived_from: [d.draft], note: opt("note") } });
+  const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(chosenFile, "utf8")), actor: "person", workspace, via: "cli",
+    provenance: { activity: "accept", derived_from: [chosen], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
-  rmSync(draft);
-  out(`accepted: ${w.result.written}`);
+  // Gate group hook (X-2): removes the draft, its variants and sidecar, and decides the variants decision.
+  const settled = settleDraft(d.dir, d.draft, { picked: opt("pick") ?? "a", by: opt("by") });
+  out(`accepted: ${w.result.written}${settled.decision ? ` (draft ${settled.picked}; decision ${settled.decision} ${settled.decided ? "decided" : `not decided: ${settled.error}`})` : ""}`);
   process.exit(0);
 }
 
@@ -239,6 +301,13 @@ if (cmd === "baseline") {
   process.exit(0);
 }
 
+// Freshness (Revalidating, V-1 to V-8): revalidate, verify, phase and freshness live in ./freshness.mjs.
+if (["revalidate", "verify", "phase", "freshness"].includes(cmd)) process.exit(await (await import("./freshness.mjs")).main(cmd, argv, workspace));
+
+// Context hook (interface/context.mjs): navigate and head read a route header first, with its layout once per
+// session (--session), its template and prefetched refs (--task, --prefetch, --no-prefetch, --stream); batch runs
+// a list of calls with progress.
+if (["navigate", "head"].includes(action) || cmd === "batch") { const { cli } = await import("../context.mjs"); process.exit(await cli(argv, { workspace })); }
 if (!action) usage();
 const venture = opt("venture");
 if (!venture && !["template", "layout"].includes(action)) usage();
@@ -247,7 +316,12 @@ const src = opt("input");
 if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
 if (opt("value")) input = { ...(input ?? {}), value: Number.isNaN(Number(opt("value"))) ? opt("value") : Number(opt("value")) };
 if (flag("as-is")) input = { ...(input ?? {}), as_is: true };
+// wf/writes hook: --where k=v[,k=v] filters a read (L-10); --hierarchy returns its resolution levels (P-28).
+if (["read", "view"].includes(action) && opt("where")) input = { ...(input ?? {}), where: Object.fromEntries(opt("where").split(",").map((kv) => kv.split("=")).map(([k, ...v]) => [k, v.join("=").includes("|") ? v.join("=").split("|") : v.join("=")])) };
+if (["read", "view"].includes(action) && flag("hierarchy")) input = { ...(input ?? {}), hierarchy: true };
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
+// Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
+if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
 let r = await call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
 // Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
 if (r.ok && r.needs_input && !flag("json")) {
@@ -263,5 +337,5 @@ if (r.ok && r.needs_input && !flag("json")) {
 }
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);
-const extra = ["not_found", "pending_draft", "fix", "needs_input"].some((k) => r[k]);
+const extra = ["not_found", "pending_draft", "fix", "needs_input", "errors", "filtered_out", "hierarchy", "stale"].some((k) => r[k]); // stale: V-9 (schema/stale.mjs)
 out(flag("json") || extra ? r : r.result);

@@ -29,6 +29,8 @@ import { confirmedIn, filesOf } from "./foundation.mjs";
 import { route } from "../purpose/frameworks/idea-map/route.mjs";
 
 import { loadPackages } from "./load-packages.mjs";
+// Upgrades hook (U-5): packages a venture adopted early in naive.config.json open now.
+import { adopted } from "./naive-config.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -107,6 +109,9 @@ export function packages(dir, { flags = {}, answers = null } = {}) {
   const v = load(join(dir, "venture.json"));
   const { phase, facts, questions } = situation(dir, { flags, answers });
   const next = PHASES[PHASES.indexOf(phase) + 1];
+  // Upgrades hook (U-5): a package adopted early opens now, even an experimental one Naive does not model.
+  const early = adopted(dir);
+  const adopt = (id, f) => (early.has(id) && f.in !== "now" ? { ...f, in: "now", early: true, why: `${f.why}; adopted early in naive.config.json` } : f);
   let routes = null;
   try { routes = route(dir); } catch { routes = null; }
   const dest = new Map((routes?.destinations ?? []).map((d) => [d.id, d]));
@@ -126,20 +131,20 @@ export function packages(dir, { flags = {}, answers = null } = {}) {
       moves: s.status === "confirmed" ? "done" : waits.length ? "waits" : "now", ...(waits.length && s.status !== "confirmed" ? { waits_on: waits, waits_on_titles: waits.map(titleOf) } : {}),
       ...(d ? { route: { stage: d.stage, ideas: d.ideas.length, next: d.next ? { by: d.next.by, do: d.next.do, command: d.next.command } : null } } : {}) };
   };
-  const core = Object.entries(PACKAGES.core).filter(([, p]) => !p.not_modeled).map(([id, p]) => {
+  const core = Object.entries(PACKAGES.core).filter(([id, p]) => !p.not_modeled || early.has(id)).map(([id, p]) => {
     const records = [...p.required.map((t) => row(t, "required")), ...p.optional.map((t) => row(t, "optional")), ...p.refs.map((t) => row(t, "reads"))];
     const gate = records.filter((r) => r.role !== "optional");
     const weight = (r) => (r.role === "optional" ? 0.5 : 1);
     const progress = r2(records.reduce((s, r) => s + STATUS[r.status] * weight(r), 0) / records.reduce((s, r) => s + weight(r), 0));
     const state = gate.every((r) => r.status === "confirmed") ? "complete" : gate.every((r) => r.status !== "missing") ? "review" : "building";
-    return { kind: "core", id, title: p.title, department: p.department, purpose: p.purpose, ...fitOf(p), state, progress, records, planned: p.planned, unlocks: p.unlocks,
+    return { kind: "core", id, title: p.title, department: p.department, purpose: p.purpose, ...adopt(id, fitOf(p)), state, progress, records, planned: p.planned, unlocks: p.unlocks,
       missing: gate.filter((r) => r.status === "missing").map((r) => r.record), to_review: gate.filter((r) => r.status === "agent" || r.status === "draft").map((r) => r.record),
       moving: records.filter((r) => r.moves === "now" && r.role !== "reads").map((r) => r.record) };
   });
   const byId = Object.fromEntries(core.map((p) => [p.id, p]));
-  const handoff = Object.entries(PACKAGES.handoff).filter(([, p]) => !p.not_modeled).map(([id, p]) => {
+  const handoff = Object.entries(PACKAGES.handoff).filter(([id, p]) => !p.not_modeled || early.has(id)).map(([id, p]) => {
     const from = p.from.map((c) => byId[c]).filter(Boolean);
-    return { kind: "handoff", id, title: p.title, for: p.for, from: p.from, ...fitOf(p), state: from.every((c) => c.state === "complete") ? "complete" : "building",
+    return { kind: "handoff", id, title: p.title, for: p.for, from: p.from, ...adopt(id, fitOf(p)), state: from.every((c) => c.state === "complete") ? "complete" : "building",
       progress: r2(from.reduce((s, c) => s + c.progress, 0) / from.length), waits_on: from.filter((c) => c.state !== "complete").map((c) => c.id), unlocks: p.unlocks };
   });
   const order = (a, b) => ({ now: 0, next: 1, held: 2 }[a.in] - { now: 0, next: 1, held: 2 }[b.in]) || b.fit - a.fit;
@@ -149,7 +154,7 @@ export function packages(dir, { flags = {}, answers = null } = {}) {
     situation: { facts: Object.fromEntries(questions.map((q) => [q.id, q.value])), questions: questions.map((q) => ({ id: q.id, ask: q.ask, value: q.value, by: q.by, ...(q.p != null ? { p: q.p } : {}), moves: q.moves })) },
     progress: open.length ? r2(open.reduce((s, p) => s + p.progress, 0) / open.length) : 0,
     complete: [...core, ...handoff].filter((p) => p.in === "now" && p.state === "complete").map((p) => p.id),
-    core, handoff, assumes: PACKAGES.assumes, not_modeled: [...Object.entries(PACKAGES.core), ...Object.entries(PACKAGES.handoff)].filter(([, p]) => p.not_modeled).map(([id, p]) => ({ id, title: p.title, why: p.not_modeled })),
+    core, handoff, assumes: PACKAGES.assumes, not_modeled: [...Object.entries(PACKAGES.core), ...Object.entries(PACKAGES.handoff)].filter(([id, p]) => p.not_modeled && !early.has(id)).map(([id, p]) => ({ id, title: p.title, why: p.not_modeled })),
     enhancements: PACKAGES.enhancements,
     routing: routes ? { included: true, note: "Hackathon demo: each record shows where the founder's ideas for it stand and the one step that moves it (EE-061).", loose: routes.loose?.length ?? 0 } : { included: false } };
 }

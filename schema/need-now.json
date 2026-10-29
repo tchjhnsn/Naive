@@ -390,6 +390,16 @@
       },
       "why": "Written by the interfaces on every write, so it costs nothing; run mentura baseline once to adopt records written before it (EE-031)"
     },
+    "naive-config": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.4,
+        "platform": 0.4
+      },
+      "why": "Every default holds without it; write one only to change a default: a route that fails closed, a check that only warns, a pinned package"
+    },
     "knowledge-sources": {
       "base": {
         "discovery": 0.05,
@@ -409,6 +419,16 @@
         "platform": 0.8
       },
       "why": "Once one fact (a price, a product name, a plan's limits) is repeated in several places, such as a site, newsletters and a payment provider; before launch there is rarely more than one copy"
+    },
+    "freshness-log": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.7,
+        "platform": 0.8
+      },
+      "why": "Written by mentura revalidate, verify and phase; costs nothing until a fact changes outside the venture, a record is checked without changing it, or the venture changes phase or pivots"
     },
     "department": {
       "base": {
@@ -537,6 +557,16 @@
       },
       "why": "What the founder walks away with; written at the end of each pipeline run, cheap to refresh"
     },
+    "release": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.7,
+        "platform": 0.7
+      },
+      "why": "A release to hand someone (an investor, a partner, a hire): the confirmed records frozen in, with named live holes (C-11, I-17). Built with node schema/build-release.mjs when someone outside needs it"
+    },
     "customer": {
       "base": {
         "discovery": 0.2,
@@ -596,6 +626,147 @@
         "platform": 0.3
       },
       "why": "The text of a raw source, beside source.json (EE-070)."
+    },
+    "judgment": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.05,
+        "beachhead": 0.05,
+        "scale": 0.05,
+        "platform": 0.05
+      },
+      "why": "Never written by hand: a judgment is what a package's model step answers when mentura steps run asks it, so there is nothing to suggest"
+    },
+    "people": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.7,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Who is in the venture and which functions each owns; create-venture writes it"
+    },
+    "founder": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.6,
+        "beachhead": 0.7,
+        "scale": 0.7,
+        "platform": 0.7
+      },
+      "when": [
+        {
+          "if": "team:cofounders",
+          "at_least": 0.8
+        }
+      ],
+      "why": "One file per founder, written by create-venture; links to the founder agreement"
+    },
+    "fund-thesis": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "at_least": 0.9
+        }
+      ],
+      "why": "A fund's foundation: what it invests in and why it wins"
+    },
+    "fund-terms": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "at_least": 0.9
+        }
+      ],
+      "why": "What the fund raises under; LPs ask for it first"
+    },
+    "deal": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "phase": "validation",
+          "at_least": 0.7
+        },
+        {
+          "if": "type:vc-fund",
+          "phase": "beachhead",
+          "at_least": 0.9
+        },
+        {
+          "if": "type:vc-fund",
+          "phase": "scale",
+          "at_least": 0.9
+        }
+      ],
+      "why": "A fund's pipeline, once it is investing"
+    },
+    "money-summary": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Written by the money source's sync; cash and runway once money moves"
+    },
+    "marketing-brand": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "One brand every agent and interface reads (colors, licensed typefaces, voice rules, marks), once the venture shows itself in public"
+    },
+    "public-assets": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "The source, license and credit of every file the venture ships as it is, before anything with rights attached is published"
+    },
+    "glossary": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.5,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "A package's own terms, once two packages start using one word in different senses"
     }
   }
 }

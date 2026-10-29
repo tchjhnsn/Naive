@@ -1,0 +1,12 @@
+{
+  "id": "30000000-0000-4000-8000-000000000004",
+  "name": "Treasury Checking",
+  "type": "checking",
+  "last_4": "7301",
+  "balance": {
+    "amount": 15460929,
+    "currency": "USD"
+  },
+  "source": "rho-sandbox:account:30000000-0000-4000-8000-000000000004",
+  "synced_at": "2026-10-29T06:34:34.210Z"
+}

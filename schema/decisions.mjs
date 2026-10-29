@@ -30,6 +30,8 @@ import { dirname, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
 import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
 import { glob as routeFileGlob, routes } from "../interface/router.mjs";
+// Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
+import { memo } from "./caching.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -53,7 +55,11 @@ function decisionFiles(dir, sub = "") {
 }
 
 /** Every decision of a venture, resolved: boundary, render state and what holds it. */
-export function decisions(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now()) {
+// Caching hook (F-12): without an explicit now, one action shares one decision list; now is the action's.
+export function decisions(dir, now) {
+  return now === undefined ? memo("decisions", () => decisionsAt(dir), { dir }) : decisionsAt(dir, now);
+}
+function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now()) {
   const venture = load(join(dir, "venture.json"));
   const phase = PHASES.indexOf(venture.phase);
   const productOnly = venture.kind === "product";

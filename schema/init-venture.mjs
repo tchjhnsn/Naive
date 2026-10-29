@@ -3,6 +3,11 @@
 // (EE-011). Starting layers come from scaffold/defaults.json, by phase (EE-012).
 //
 //   node schema/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
+//                                [--type <venture type>]
+//
+// --type (schema/venture-types.json, EE-082) decides the package folders, the functions venture.json
+// imports and the first decisions: a software startup answers the product questions, a VC fund its
+// thesis and terms. Without it, every package folder is made and the product questions are asked.
 //
 // --layers turns on only the layers named, for a builder adopting part of the system (EE-030);
 // without it the phase's defaults apply.
@@ -10,6 +15,7 @@
 // Creates new ventures only, like create-next-app: it refuses a directory that exists and is not empty,
 // so it can never overwrite a founder's files. An existing project comes in through naive port (EE-076).
 
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,19 +25,21 @@ const repo = join(here, "..");
 const { layers, formalized, pillars, readme } = JSON.parse(readFileSync(join(here, "scaffold/defaults.json"), "utf8"));
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };
-const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form"), only = flag("layers");
+const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form"), only = flag("layers"), typeId = flag("type");
+const vtype = typeId ? JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8")).types.find((t) => t.id === typeId) : null;
+if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node schema/venture-type.mjs list`); process.exit(2); }
 const [dir, id] = args;
 if (!dir || !id) { console.error("usage: node schema/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
 if (existsSync(dir) && readdirSync(dir).length) { console.error(`${dir} already exists and is not empty: init creates new ventures only, and never writes into an existing project`); process.exit(1); }
 
 const ALL = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
-const on = only !== null ? only.split(",").filter(Boolean) : [...layers[phase], ...(legalForm && legalForm !== "none" ? formalized : [])];
+const on = only !== null ? only.split(",").filter(Boolean) : [...new Set([...layers[phase], ...(vtype?.layers ?? []), ...(legalForm && legalForm !== "none" ? formalized : [])])];
 const unknown = on.filter((l) => !ALL.includes(l));
 if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
 mkdirSync(dir, { recursive: true });
-const venture = { id, name: id, parent: parent ?? null, phase };
-if (legalForm) venture.form = { legal_form: legalForm };
+const venture = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase };
+if (legalForm || vtype?.funding) venture.form = { ...(legalForm ? { legal_form: legalForm } : {}), ...(vtype?.funding ? { funding: vtype.funding } : {}) };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
 Object.assign(venture, { owner: "self", status: "active", profile: "profile.md", layers: {} });
 for (const layer of ALL) {
@@ -42,7 +50,9 @@ for (const layer of ALL) {
 }
 for (const sub of ["products", "accounts"]) { mkdirSync(join(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
 // The package folder layout (EE-070). Old layer folders above stay for one release.
-for (const sub of ["raw/dump", "raw/sources", "ideas", "foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money", "decisions", "evidence", "public", "_private", "_drafts", ".release"]) {
+// A typed venture gets its type's packages; the rest stay out until need-now suggests them.
+const packageDirs = vtype ? vtype.packages : ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money"];
+for (const sub of ["raw/dump", "raw/sources", "ideas", ...packageDirs, "decisions", "evidence", "public", "_private", "_drafts", ".release"]) {
   mkdirSync(join(dir, sub), { recursive: true });
 }
 mkdirSync(join(dir, "pillars"), { recursive: true });
@@ -92,7 +102,27 @@ writeFileSync(join(dir, "decisions/venture.team.decision.json"), JSON.stringify(
   decides: { record: "founder-agreement", path: "governance/founder-agreement.json" }, layer: "governance", boundary: "fail-open", needed_in: phase, status: "open",
   options: ["Solo: I am founding it alone", "Cofounders: we are founding it together", "Looking: I want cofounders"],
   unlocks: [{ activity: "Draft the founder agreement with the founding-agreement kit", routes: ["governance/founder-agreement"] }], provenance: framework }, null, 2) + "\n");
-mkdirSync(join(dir, "products/decisions"), { recursive: true });
-for (const d of productFoundation) writeFileSync(join(dir, "products/decisions", `product.${d.id.replace(/^product-/, "")}.decision.json`),
+// A fund's foundation (EE-082): the thesis first, then the terms it raises under, then the first close.
+const fundFoundation = [
+  { id: "fund-thesis", question: "What does the fund invest in, and why does it win: rounds, sectors, geographies, check size and its edge?", decides: { record: "fund-thesis", path: "fund/thesis.json" },
+    unlocks: [{ activity: "Screen deals against the thesis", routes: ["deals/*"] }] },
+  { id: "fund-terms", parent: "fund-thesis", question: "What are the fund's terms: target size, vintage, structure, management fee, carry and term?", decides: { record: "fund-terms", path: "fund/terms.json" },
+    unlocks: [{ activity: "Raise from limited partners", routes: ["investors/*"] }] },
+  { id: "first-close", parent: "fund-terms", question: "When is the first close, and how much must be committed to hold it?", decides: { record: "fund-terms", path: "fund/terms.json" },
+    unlocks: [{ activity: "Make the first investment", routes: ["portfolio/*"] }] },
+];
+const decisionSet = vtype?.decisions ?? "product-foundation";
+if (decisionSet === "fund-foundation") {
+  mkdirSync(join(dir, "fund/decisions"), { recursive: true });
+  for (const d of fundFoundation) writeFileSync(join(dir, "fund/decisions", `${d.id === "first-close" ? "terms.first-close" : d.id.replace(/^fund-/, "")}.decision.json`),
+    JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
+}
+if (decisionSet === "product-foundation") mkdirSync(join(dir, "products/decisions"), { recursive: true });
+if (decisionSet === "product-foundation") for (const d of productFoundation) writeFileSync(join(dir, "products/decisions", `product.${d.id.replace(/^product-/, "")}.decision.json`),
   JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
-console.log(`created venture ${id} (${phase}) in ${dir} with ${on.join(", ") || "no layers"}, products/, accounts/ and the three pillars.${venture.core ? " Fill in the core product before ranking products." : ""}`);
+// The type's functions are imported like any department (EE-047): listed in venture.json, with their folders.
+if (vtype) for (const d of vtype.departments) {
+  const r = spawnSync("node", [join(here, "add-department.mjs"), dir, d], { encoding: "utf8" });
+  if (r.status !== 0) { console.error((r.stderr || r.stdout).trim()); process.exit(1); }
+}
+console.log(`created ${vtype ? `${vtype.label.toLowerCase()} ` : ""}venture ${id} (${phase}) in ${dir} with ${on.join(", ") || "no layers"}, products/, accounts/ and the three pillars.${venture.core ? " Fill in the core product before ranking products." : ""}`);

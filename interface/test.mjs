@@ -86,7 +86,7 @@ expect("error: a failed check answers with the kit's skills and the template", !
 expect("error: a write that does not match answers with how to fix it", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "write", input: { nope: 1 } })).fix?.schema === "schema/validation-problem.schema.json");
 expect("view: a record renders as a Markdown page", /^# foundation\/problem\n/.test((await call({ venture: "tandem", route: "purpose/validation/problem", action: "view" })).result));
 const ov = (await call({ venture: "tandem", route: "system/overview", action: "run" })).result;
-expect("@slot: the overview has its seven slots", ov.slots.map((x) => x.slot).join() === "@venture,@telos,@validation,@need-now,@ready,@team,@provenance");
+expect("@slot: the overview has its eight slots", ov.slots.map((x) => x.slot).join() === "@venture,@telos,@validation,@need-now,@ready,@team,@packages,@provenance"); // @packages: P-17 (wf/writes)
 const woodOk = (await call({ venture: "woodworking", route: "system/overview", action: "run" })).result;
 expect("@validation: a venture with no problem record shows every assumption unknown, not an error (EE-050)", /exists: unknown/.test(woodOk.slots.find((x) => x.slot === "@validation").data?.assumptions ?? ""));
 const woodProblem = join(ws, "ventures/woodworking/purpose/validation/problem.json");
@@ -117,7 +117,7 @@ expect("gates: a venture's decision rights decide; ownership drafts under the te
 // MCP server.
 const init = (await handle({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }));
 expect("MCP initialize names the server and its tools capability", init.result.serverInfo.name === "mentura" && init.result.capabilities.tools);
-expect("MCP lists its eleven tools", (await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 11);
+expect("MCP lists its fifteen tools, three of them for setup and one for the decision library", (await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 15 && ["mentura_setup", "mentura_setup_answer", "mentura_setup_point", "mentura_frame"].every((n) => TOOLS.some((t) => t.name === n)));
 const mcp = async (name, args) => (await handle({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name, arguments: args } })).result;
 const pd = await mcp("mentura_propose_decision", { venture: "tandem", decision: { id: "mcp-demo", question: "Demo?", answer: "Yes", at: "operations" }, agent_id: "builder" });
 expect("MCP: an agent proposes a decision and it awaits approval (EE-058)", !pd.isError && /"awaiting": "approval"/.test(pd.content[0].text));
@@ -142,7 +142,7 @@ expect("API 404 for an unknown venture", (await http("GET", "/ventures/nobody/pu
 expect("API PUT to a gated record is a draft", (await http("PUT", "/ventures/tandem/governance/ownership", own))[1].result?.draft === true);
 expect("API 422 for a record that does not match", (await http("PUT", "/ventures/tandem/governance/ownership", { nope: 1 }))[0] === 422);
 expect("API POST run", (await http("POST", "/ventures/tandem/system/need-now/run"))[0] === 200);
-expect("API GET a venture is its overview", (await http("GET", "/ventures/tandem"))[1].result?.slots?.length === 7);
+expect("API GET a venture is its overview", (await http("GET", "/ventures/tandem"))[1].result?.slots?.length === 8); // @packages added (wf/writes)
 expect("API reaches a nested venture by its path", (await http("GET", "/ventures/studio/print/system/robots"))[0] === 405 && (await http("POST", "/ventures/studio/print/system/robots/run"))[0] === 200);
 expect("API GET view and layout", typeof (await http("GET", "/ventures/tandem/purpose/validation/problem/view"))[1].result === "string" && (await http("GET", "/ventures/tandem/purpose/validation/problem/layout"))[1].result.stack.length === 3);
 expect("API GET a collection item", (await http("GET", "/ventures/tandem/purpose/product/kettle"))[1].result?.name === "Kettle");

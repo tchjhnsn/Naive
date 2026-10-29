@@ -1,0 +1,27 @@
+{
+  "id": "first-close",
+  "parent": "fund-terms",
+  "question": "When is the first close, and how much must be committed to hold it?",
+  "decides": {
+    "record": "fund-terms",
+    "path": "fund/terms.json"
+  },
+  "unlocks": [
+    {
+      "activity": "Make the first investment",
+      "routes": [
+        "portfolio/*"
+      ]
+    }
+  ],
+  "layer": "purpose",
+  "boundary": "fail-closed",
+  "needed_in": "validation",
+  "status": "open",
+  "provenance": {
+    "drafted_by": {
+      "kind": "framework",
+      "id": "naive"
+    }
+  }
+}

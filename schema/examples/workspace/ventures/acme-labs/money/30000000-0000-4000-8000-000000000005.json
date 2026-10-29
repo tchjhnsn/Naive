@@ -1,0 +1,12 @@
+{
+  "id": "30000000-0000-4000-8000-000000000005",
+  "name": "Inventory Checking",
+  "type": "checking",
+  "last_4": "3608",
+  "balance": {
+    "amount": 0,
+    "currency": "USD"
+  },
+  "source": "rho-sandbox:account:30000000-0000-4000-8000-000000000005",
+  "synced_at": "2026-10-29T06:34:34.210Z"
+}

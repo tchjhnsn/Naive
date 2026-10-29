@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venture setup</title>
+<style>
+:root { --bg:#f6f7f4; --panel:#fff; --fg:#1d2320; --muted:#5d675f; --line:#d9ded8; --accent:#2f6b4f; --accent-soft:#e3efe8; --warn:#8a5a00; --warn-soft:#f6ecd8;
+  --body: system-ui, -apple-system, "Segoe UI", sans-serif; --mono: ui-monospace, "SF Mono", Menlo, monospace; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#121614; --panel:#1a201d; --fg:#e4e9e5; --muted:#9aa59d; --line:#2b332e; --accent:#86c4a3; --accent-soft:#1d2b24; --warn:#e3b25c; --warn-soft:#2c2414; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg:#121614; --panel:#1a201d; --fg:#e4e9e5; --muted:#9aa59d; --line:#2b332e; --accent:#86c4a3; --accent-soft:#1d2b24; --warn:#e3b25c; --warn-soft:#2c2414; color-scheme: dark; }
+* { box-sizing: border-box }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.55 var(--body); }
+.wrap { max-width: 820px; margin: 0 auto; padding: 28px 16px 64px; display: grid; gap: 22px; }
+header { display:grid; gap:6px } h1 { margin:0; font-size:1.7rem; letter-spacing:-.01em } h2 { margin:0 0 2px; font-size:1.1rem }
+.muted { color: var(--muted) } .mono { font-family: var(--mono); font-size: .86em; overflow-wrap: anywhere }
+.bar { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden } .bar > div { height: 100%; background: var(--accent) }
+.steps { display:flex; gap:6px; flex-wrap:wrap } .step { font:600 .76rem/1 var(--mono); padding:6px 9px; border-radius:999px; border:1px solid var(--line); color:var(--muted) }
+.step.ok { background: var(--accent-soft); color: var(--accent); border-color: transparent } .step.next { border-color: var(--accent); color: var(--accent) }
+section { background: var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px; display:grid; gap:12px; min-width: 0 }
+.table { overflow-x: auto } table { width:100%; border-collapse: collapse; font-size:.93rem }
+td.mono { white-space: nowrap }
+td, th { text-align:left; padding:7px 6px; border-bottom:1px solid var(--line); vertical-align: top }
+th { font: 600 .72rem/1.2 var(--mono); text-transform: uppercase; letter-spacing:.05em; color: var(--muted) }
+.pill { display:inline-block; font:600 .72rem/1.2 var(--mono); padding:4px 7px; border-radius:999px; background: var(--accent-soft); color: var(--accent); margin: 0 4px 4px 0 }
+.pill.pointed { background: var(--line); color: var(--fg) } .pill.none { background: var(--warn-soft); color: var(--warn) }
+.card { border:1px solid var(--line); border-radius:8px; padding:12px; display:grid; gap:6px } .card.done { opacity:.7 } .card.next { border-color: var(--accent) }
+.q { font-weight:600 } .hint { font-size:.88rem; color: var(--muted) }
+.celebrate { text-align:center; padding: 28px 18px; background: var(--accent-soft); border-color: transparent }
+.celebrate .big { font-size: 1.9rem; font-weight: 700; color: var(--accent) } ol { margin:0; padding-left: 1.2em; display:grid; gap:6px; text-align:left }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script id="naive-setup-state" type="application/json">__NAIVE_SETUP_STATE__</script>
+<script>
+// A view of the venture's setup state, filled in by `node schema/setup.mjs <venture dir> artifact`.
+// It reads nothing from the network and writes nothing: the founder answers in the chat, the model writes
+// each answer through Naive, and renders this page again.
+const S = JSON.parse(document.getElementById("naive-setup-state").textContent);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const st = S.steps, v = S.venture;
+const order = [["people", "People and hats"], ["truth", "Sources of truth"], ["docket", "Foundation and first decisions"], ["goal", "A goal for discovery"]];
+const next = order.find(([k]) => !st[k])?.[0];
+const doneCount = order.filter(([k]) => st[k]).length;
+const label = ([k, t]) => '<span class="step ' + (st[k] ? "ok" : k === next ? "next" : "") + '">' + (st[k] ? "&#10003; " : "") + t + "</span>";
+
+const people = S.people
+  ? '<div class="table"><table><tr><th>Person</th><th>Role</th><th>Hats</th></tr>' + S.people.people.map((p) => "<tr><td>" + esc(p.name) + '</td><td class="mono">' + esc(p.role) + "</td><td>" + (p.hats.map((h) => '<span class="pill pointed">' + esc(h) + "</span>").join("") || '<span class="muted">none</span>') + "</td></tr>").join("") + "</table></div>"
+  : '<p class="muted">Nobody is listed yet. Tell me your name, your role, and whether you are solo or a team.</p>';
+
+const fns = [...new Set([...Object.keys(S.catalog.functions).filter((f) => f === "legal" || (S.people?.people ?? []).some((p) => p.hats.includes(f))), ...Object.keys(S.functions)])];
+const systemsOf = (f) => { const x = S.functions[f]; return x?.systems?.length ? x.systems.map((s) => '<span class="pill ' + (s.status === "connected" ? "" : "pointed") + '">' + esc(S.catalog.systems[s.system]?.label ?? s.system) + (s.address ? " &middot; " + esc(s.address) : "") + " &middot; " + esc(s.status) + (s.fixture ? " (fixture)" : "") + "</span>").join("") : '<span class="pill none">not pointed yet</span>'; };
+const offered = (f) => (S.catalog.functions[f] ?? []).map((s) => esc(S.catalog.systems[s]?.label ?? s)).join(", ");
+const truth = '<div class="table"><table><tr><th>Function</th><th>Source of truth</th><th>You can point it at</th></tr>' + fns.map((f) => "<tr><td>" + esc(f) + "</td><td>" + systemsOf(f) + '</td><td class="hint">' + offered(f) + "</td></tr>").join("") + "</table></div>";
+
+const open = S.docket.filter((d) => d.status !== "decided");
+const cards = S.docket.map((d) => '<div class="card ' + (d.status === "decided" ? "done" : d === open[0] ? "next" : "") + '"><div class="q">' + esc(d.question) + "</div>"
+  + (d.status === "decided" ? "<div>&#10003; " + esc(d.answer) + "</div>"
+    : d.relayed ? "<div>" + esc(d.answer) + '</div><div class="hint">Your answer, waiting for you to confirm it.</div>'
+
+    : (d.options.length ? '<div class="hint">Options: ' + d.options.map(esc).join(" / ") + "</div>" : "") + '<div class="hint">Answer in the chat, in your own words.</div>')
+  + "</div>").join("");
+
+const goal = S.goal?.status === "decided" ? "<p>&#10003; " + esc(S.goal.answer) + "</p>" : S.goal?.relayed ? "<p>" + esc(S.goal.answer) + '</p><p class="hint">Your answer, waiting for you to confirm it.</p>' : '<p class="muted">What must be true for ' + esc(v.name) + " to leave discovery? For example: ten clinic owners confirm the scheduling problem in interviews by December.</p>";
+
+const done = S.done
+  ? '<section class="celebrate"><div class="big">Your venture is structured.</div><p>' + esc(v.name) + " has its people and their hats, a source of truth for each function, a settled foundation and first decisions, and a goal for discovery. Every decision from here routes through the docket.</p><ol>"
+    + "<li>Orient each next decision around the discovery goal.</li><li>" + (S.later ? S.later + " more decisions wait for later phases; the docket brings each one up when it matters." : "The docket brings up each new decision when it matters.") + "</li><li>To operate the business day to day, with your team and your agents, use Mentura.</li></ol></section>"
+  : "";
+
+document.getElementById("app").innerHTML =
+  '<header><span class="muted mono">' + esc(v.type?.label ?? "venture") + " &middot; " + esc(v.phase) + "</span><h1>Set up " + esc(v.name) + '</h1><p class="muted">The structure of your venture, step by step. Answer in the chat; each answer is saved as a decision, and this page updates.</p>'
+  + '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="' + doneCount + '"><div style="width:' + doneCount * 25 + '%"></div></div><div class="steps">' + order.map(label).join("") + "</div></header>"
+  + (S.waiting.length ? '<section><h2>' + S.waiting.length + (S.waiting.length === 1 ? " answer waits" : " answers wait") + ' for you</h2><p class="muted">The model wrote these down from your words. They become your decisions when you confirm them yourself: run <span class="mono">npx naive setup confirm</span> in the venture.</p></section>' : "")
+  + done
+  + "<section><h2>1. People and hats</h2>" + people + "</section>"
+  + '<section><h2>2. Sources of truth</h2><p class="muted">Where each function keeps its truth. Naive keeps pointers, never copies.</p>' + truth + "</section>"
+  + '<section><h2>3. Foundation and first decisions</h2><p class="muted">The decision docket: ' + S.counts.settled + " of " + S.counts.of + " settled.</p>" + cards + "</section>"
+  + "<section><h2>4. A goal for discovery</h2>" + goal + "</section>";
+</script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "frame.schema.json",
+  "title": "Frame (decision library)",
+  "description": "One recurring venture problem, as a shape, at packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. schema/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "functions",
+    "triggers",
+    "goal",
+    "premises",
+    "attacks",
+    "reframe",
+    "props",
+    "freshness",
+    "reasoning",
+    "emits"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "functions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "description": "The venture functions the problem belongs to; the first is the package the frame lives in"
+    },
+    "triggers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "description": "Sentences a founder says when they have this problem, in a founder's words"
+    },
+    "goal": {
+      "type": "string",
+      "description": "The end the decisions serve; {prop} placeholders are filled from the venture"
+    },
+    "premises": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "claim",
+          "attack"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "claim": {
+            "type": "string",
+            "description": "What the founder's sentence assumes, as a yes/no proposition about this venture"
+          },
+          "attack": {
+            "type": "string",
+            "description": "The premise attack applied to it, one of schema/frames.mjs ATTACKS"
+          },
+          "reads": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The props the judgment of this premise needs"
+          }
+        }
+      },
+      "description": "The chain the founder's sentence assumes, in order"
+    },
+    "attacks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "description": "The premise attacks the frame uses (the hooks of the library)"
+    },
+    "dichotomy": {
+      "type": "string",
+      "description": "The trade the founder's sentence forces, asked as: is it false, a real trade-off, or a sequence?"
+    },
+    "reframe": {
+      "type": "string",
+      "description": "The better question the frame leaves the founder with; {prop} placeholders are filled from the venture"
+    },
+    "composes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Smaller frames this one is built from"
+    },
+    "props": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The venture facts the frame reads, never stores: phase, goal, runway, revenue, cap_table, jurisdiction, control_rights"
+    },
+    "freshness": {
+      "type": "object",
+      "required": [
+        "look_for",
+        "max_age_days",
+        "cite"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "look_for": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "What a lookup must find, described as a problem, never as a named answer"
+        },
+        "filter_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "max_age_days": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cite": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "description": "What current information the frame needs and how fresh it must be. The lookup itself is a kit's skill; the frame says only what to look for."
+    },
+    "reasoning": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "description": "What a model that fetches the frame must do, in order"
+    },
+    "emits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "question"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "question": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Options that describe the problem's own parts, never a named answer; options from a lookup are added at run time with their date and source"
+          },
+          "options_from": {
+            "enum": [
+              "frame",
+              "lookup"
+            ],
+            "default": "frame"
+          },
+          "layer": {
+            "enum": [
+              "purpose",
+              "knowledge",
+              "operations",
+              "evidence",
+              "governance",
+              "interface"
+            ]
+          },
+          "needed_in": {
+            "enum": [
+              "discovery",
+              "validation",
+              "beachhead",
+              "scale",
+              "platform"
+            ]
+          }
+        }
+      },
+      "description": "The decisions the frame proposes, each open for the founder to decide"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "facts",
+          "expect"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "facts": {
+            "type": "object",
+            "description": "The props of a worked venture"
+          },
+          "expect": {
+            "type": "object",
+            "description": "The premise verdicts and dichotomy a good judgment reaches for these facts"
+          }
+        }
+      },
+      "description": "Worked cases, to evaluate a model's judgments against"
+    }
+  }
+}

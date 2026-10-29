@@ -1,0 +1,49 @@
+{
+  "id": "northstar",
+  "name": "Northstar Climate Fund",
+  "type": "vc-fund",
+  "parent": null,
+  "phase": "validation",
+  "form": {
+    "funding": "mixed"
+  },
+  "core": {
+    "promise": "",
+    "promised_to": "",
+    "must_not": "",
+    "competence": ""
+  },
+  "owner": "self",
+  "status": "active",
+  "profile": "profile.md",
+  "layers": {
+    "purpose": {
+      "location": "purpose/"
+    },
+    "knowledge": {
+      "location": "knowledge/"
+    },
+    "operations": {
+      "location": "operations/"
+    },
+    "evidence": {
+      "location": "evidence/"
+    },
+    "governance": {
+      "location": "governance/"
+    }
+  },
+  "departments": [
+    "strategy",
+    "finance",
+    "external-relationships",
+    "risk-and-compliance",
+    "human-capital"
+  ],
+  "members": [
+    {
+      "role": "partner",
+      "kind": "person"
+    }
+  ]
+}

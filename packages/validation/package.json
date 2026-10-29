@@ -42,6 +42,9 @@
   "gates": [
     "a person has confirmed every required record and every record this package reads"
   ],
+  "gate_rules": [
+    { "id": "validation-low-confidence", "routes": ["validation/**", "foundation/problem", "people/team"], "actors": ["agent"], "when": { "confidence_below": "confidence" }, "then": "owner", "note": "A validation record an agent is not confident in goes to its function owner" }
+  ],
   "schemas": [
     "schema/validation-problem.schema.json",
     "schema/validation-solution.schema.json",
@@ -72,6 +75,16 @@
     "path": "purpose/kits/validation/skills/problem-validation/SKILL.md"
   },
   "use_model": [],
+  "use_cache": [
+    {
+      "route": "purpose/validation/assess",
+      "level": "record",
+      "life": "hours",
+      "vary": [
+        "day"
+      ]
+    }
+  ],
   "layer": "purpose",
   "records": [
     "validation-problem",

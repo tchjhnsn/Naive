@@ -856,6 +856,33 @@
         "EE-034",
         "EE-044"
       ]
+    },
+    {
+      "id": "EE-082",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-047",
+        "EE-048",
+        "EE-060",
+        "EE-070",
+        "EE-076"
+      ],
+      "decision": "A venture has a type (venture.json `type`, from schema/venture-types.json), and create-venture scaffolds nothing until the type and the founder's role are set. The founder describes the venture in a few words and Jev classifies it (one Noul per type, uncertain below 0.5), or picks from the list; without TYPESAFE_API_KEY the list is the only way. The type decides the starting packages, the first decisions, the layers it needs and the functions it imports (as departments, with folders). Roles a person can hold are in governance/venture-template/roles/venture-roles.json; investors are roles too (general partner, limited partner), so an investor creates a venture of type vc-fund, which starts with a thesis, terms, deals and a portfolio of nested ventures instead of product questions. people/ holds the venture's human capital: people/people.json (who is in it, in which role, and the functions, or hats, each owns; a solo founder owns every function) and one file per founder in people/founders/, linked to the founder agreement. schema/check-people.mjs checks that roles, hats and founder files agree.",
+      "why": "Torian, 2026-10-29: the app should not be scaffolded until a role is chosen and the type of venture is selected; an investor can be a role, and a VC fund needs a thesis and other templates than a software startup; a solo founder owns every function by default; people needs a top-level folder that is to human capital what venture.json is to the venture, with one file per founder linked to founding agreements. Defaults (one file per founder, the type list, investor split into general and limited partner, the folder name people/, the model only with a key) were chosen by the coordinator on Torian's go-ahead and stay open to change."
+    },
+    {
+      "id": "EE-083",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-037",
+        "EE-042",
+        "EE-070",
+        "EE-082"
+      ],
+      "decision": "Setup asks where each of the venture's functions keeps its truth, and records the answers as pointers in knowledge/sources.json under `functions` (the source-of-truth matrix, EE-042, not a second file), with `truth` naming where the venture's source of truth as a whole lives (local by default). schema/systems-catalog.json lists the systems offered per function (a local repo, GitHub, Vercel, Cloudflare, Stripe, Square, Shopify, Rho, Google Drive, DocuSign, a local folder). A system Naive reads through code is connected (Rho, through its MCP API: sandbox, live with RHO_API_TOKEN, or a saved fixture marked as one); the rest are pointed until a connector exists. A function with no system keeps the founder's words. naive dev serves a setup page at /setup (interface/dev/setup.mjs) that walks through people and hats, sources of truth, the strategic foundation and first decisions (each answer an approved decision; a foundation statement as a decision with `statement`), and a goal for discovery, and says when the structure is established and what comes next. A new venture's .gitignore keeps sensitive stream activity out of git.",
+      "why": "Torian, 2026-10-29: when scaffolding, ask the user to point Naive to the source of truth for each function (the repo, GitHub and Vercel for a software product; analytics from the host; Stripe, Square or Shopify for sales; Rho for financials in the demo; legal documents, with the connections to set them up if missing), let a function default or be answered in prose, and ship a local setup experience like the one Next.js gives, essentially the strategic foundation and a version of the decision docket, ending by setting a goal for the discovery phase. After setup a founder has the structure of the venture and a way of routing decisions; operating it is Mentura's, as deploying is Vercel's after Next.js."
     }
   ]
 }

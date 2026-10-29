@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Runs every sh block on the Get Started pages, in the order the pages are listed, as one script in a
-// fresh home directory, so the docs never show a command that does not run (EE-076). A line ending in
+// fresh home directory, so the docs never show a command that does not run (EE-076). Each block starts at
+// the repository root. A line ending in
 // "# exits 1" must fail; every other command must succeed.
 
 import { spawnSync } from "node:child_process";
@@ -17,7 +18,8 @@ for (const p of pages) {
   const text = readFileSync(join(dir, `${p}.mdx`), "utf8");
   for (const [, body] of text.matchAll(/^```sh\n([\s\S]*?)^```$/gm)) {
     blocks++;
-    script.push(`echo "--- ${p} block ${blocks}" >&2`);
+    // Each block starts at the repository root, as a reader copying it would; a block that goes into a venture says cd itself.
+    script.push(`echo "--- ${p} block ${blocks}" >&2`, `cd ${JSON.stringify(repo)}`);
     for (const line of body.split("\n")) {
       const fail = line.match(/^(.*\S)\s+# exits 1$/);
       script.push(fail ? `if ${fail[1]} >/dev/null 2>&1; then echo "expected to fail: ${fail[1].replace(/["$`\\]/g, "\\$&")}" >&2; exit 1; fi` : line);

@@ -72,7 +72,7 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
   add("founder_settled", settled.length ? 1 : 0, settled.length ? `settled: ${settled.join(", ")}` : "the founder settled nothing");
   // Money (EE-070): when the venture has a money summary, it is fresh, the agent cites it, and no raw
   // transaction leaves its sensitive stream for another record.
-  const summaryFile = join(dir, "money/summary.json");
+  const summaryFile = join(dir, "money/_summary.json");
   if (existsSync(summaryFile)) {
     const m = load(summaryFile);
     const age = (Date.now() - Date.parse(m.synced_at)) / 864e5;
@@ -80,8 +80,8 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
     // Only what touches money has to cite it: pricing, spend, hiring, runway, fundraising, cash.
     const records = [...agentDrafted, ...(problem ? [{ problem: load(problem) }] : [])].map((d) => JSON.stringify(d));
     const touching = records.filter((x) => /money\/summary|\b(pric(e|ing)|spend|budget|hir(e|ing)|runway|burn|fundrais|cash|revenue)\b/i.test(x));
-    const citing = touching.filter((x) => x.includes("money/summary"));
-    add("money_cited", frac(citing.length, touching.length), touching.length ? `${citing.length} of ${touching.length} agent records that touch money cite money/summary.json` : "no agent record touches money, so none needs to cite it");
+    const citing = touching.filter((x) => x.includes("money/_summary"));
+    add("money_cited", frac(citing.length, touching.length), touching.length ? `${citing.length} of ${touching.length} agent records that touch money cite money/_summary.json` : "no agent record touches money, so none needs to cite it");
     const leaked = walk(dir).filter((f) => !f.includes("/money/_streams/") && f.endsWith(".json") && /:transaction:/.test(readFileSync(f, "utf8")));
     add("money_private", leaked.length ? 0 : 1, leaked.length ? `transaction pointers outside the money stream: ${leaked.map((f) => f.slice(dir.length + 1)).join(", ")}` : "transactions stay in their sensitive stream");
   }

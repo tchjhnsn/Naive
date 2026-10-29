@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "judgment.schema.json",
+  "title": "Judgment",
+  "description": "The output of one model step (\"use model\", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by schema/model-steps.mjs through the router.",
+  "type": "object",
+  "required": ["id", "package", "step", "kind", "question", "reads", "outcome", "answer", "by"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "<package>-<step>-<item>, or <package>-<step> for a step asked once" },
+    "package": { "type": "string", "description": "The package (or kit) that declares the step" },
+    "step": { "type": "string", "description": "The step id in the package's use_model" },
+    "kind": { "enum": ["classify", "noul", "choice", "score", "draft"], "description": "classify a fragment, judge fit (noul: yes, no or unknown), choose among options, rate on a scale, or draft prose. Only a draft is model-only" },
+    "item": { "type": ["string", "null"], "description": "The record id the step was asked about, for a step asked for each item of a collection" },
+    "question": { "type": "string", "description": "The question as asked, its {paths} pointing into the state" },
+    "reads": { "type": "array", "items": { "type": "string" }, "description": "The venture-relative files and the field paths the model was given, and nothing else" },
+    "outcome": { "enum": ["answer", "overruled", "uncertain"], "description": "answer: typed, at or above threshold, and every check passed. overruled: a code check disagreed and the code's value stands. uncertain: below threshold, malformed or unanswered, and routed to a person" },
+    "answer": { "description": "The typed answer (the code's value when overruled; null when uncertain)" },
+    "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "threshold": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "why": { "type": "string", "description": "Why the outcome is what it is" },
+    "kept": { "type": "object", "description": "Computed values the answer had to carry unchanged, and they did" },
+    "overruled": { "type": "object", "additionalProperties": false, "properties": { "judgment": {}, "code": {}, "check": { "type": "string" } } },
+    "decision": { "type": "string", "description": "The open decision a person answers when the judgment is uncertain" },
+    "by": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["model", "person"] },
+        "model": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "state_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Hash of the question and the state the model was given; a later run reuses the judgment while it is unchanged" },
+    "asked_at": { "type": "string", "format": "date-time" }
+  }
+}
