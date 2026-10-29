@@ -835,6 +835,17 @@
       "why": "The docket is the demo's emphasis and the product's non-obvious claim: that at every moment it names the right next step for the founder across the whole venture. Founders' words are important but obvious, and gating on them works against founders who write with AI."
     },
     {
+      "id": "EE-076",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-030"
+      ],
+      "decision": "naive init creates new ventures only (Torian, 2026-10-29): like create-next-app it refuses a directory that exists and is not empty, so it never writes over a founder's files. Adopting an existing project is held back as a later feature; when built it starts with a dry run listing every file it would add, never overwrites, and maps existing files through knowledge/sources.json instead of moving them.",
+      "why": "Running init on an important existing venture could overwrite its profile, pillars and layer READMEs; the old guard only checked venture.json."
+    },
+    {
       "id": "EE-080",
       "date": "2026-10-28",
       "decision": "The developer docs move from Nextra to Fumadocs in site/. This supersedes the Nextra sentence of EE-034. This venture's marketing pages live in the same app. They may read only the facts named in the Naive docs handoff (the problem statement and the segment), written by site/scripts/venture-facts.mjs to site/generated/venture-facts.json. site/scripts/data.mjs still reads no instance venture. This supersedes EE-034's \"never an instance venture\" for that one file only. test.mjs and the site CI job run npm run check:content instead of site/scripts/check-mdx.mjs. This supersedes that clause of EE-033. The zod 4.1.12 pin may be removed once Nextra is gone and the build passes. This supersedes the zod sentence of EE-034. These marketing pages are added to the existing docs app and do not start from a Vercel template. The template stays the default for a later standalone marketing site. This supersedes that clause of proposed EE-044.",

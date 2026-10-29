@@ -7,9 +7,10 @@
 // --layers turns on only the layers named, for a builder adopting part of the system (EE-030);
 // without it the phase's defaults apply.
 //
-// Writes nothing over an existing venture.json.
+// Creates new ventures only, like create-next-app: it refuses a directory that exists and is not empty,
+// so it can never overwrite a founder's files. Adopting an existing project is a later feature (EE-076).
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,7 +23,7 @@ const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm =
 const [dir, id] = args;
 if (!dir || !id) { console.error("usage: node schema/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
-if (existsSync(join(dir, "venture.json"))) { console.error(`${dir}/venture.json already exists`); process.exit(1); }
+if (existsSync(dir) && readdirSync(dir).length) { console.error(`${dir} already exists and is not empty: init creates new ventures only, and never writes into an existing project`); process.exit(1); }
 
 const ALL = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
 const on = only !== null ? only.split(",").filter(Boolean) : [...layers[phase], ...(legalForm && legalForm !== "none" ? formalized : [])];
