@@ -794,6 +794,20 @@
       ],
       "decision": "Decision analytics start in the framework as data: schema/decision-analytics.mjs and the route governance/analytics count a venture's decisions by function (the core package holding what each decides; foundation statements and venture.json decisions belong to Foundation) and by type (the record type or statement decided, or the decision's own type field), open against decided, whose words (approved, changed, own), who decided, in which phase, on which day, and outcomes met, partly, missed or pending. Ranking the highest-impact decisions over time (a System 1 Score of impact combined in code with outcomes), projected against actual outcomes, and how long decisions survive are listed as next, not computed. Views are not the framework's: a page that renders Naive data is the platform's (Mentura), and inside another harness (Claude Code, Codex, Cursor) it is a visualization skill; so no analytics view is built, and the demo board's pages are platform work. Vocabulary from the Next.js translation (chapters 1 and 2): npx create-venture, with naive init for an existing folder; the framework CLI is naive and mentura is kept for platform commands; venture/ is the optional source folder; public/ holds assets a release ships as-is; naive.config.json; instrumentation; gate for checks that run before a write (Next.js proxy); release card for how a shared release previews; access for what each role and agent may read and write (Next.js robots); folders Naive does not know are allowed in a venture and never routed or released. Which library plays React's part under Naive stays open.",
       "why": "Torian, 2026-10-28 23:08Z and 23:11Z: analytics for judging decision outcomes, the highest-impact decisions over time, and how many decisions of what types each function has made; build it if there is time, or foreshadow it. 23:18Z: 'let's take all of your recommendations for the vocabulary, except on the one that you said was open. And yes, let's build that decision analytics.' 23:21Z: 'let's actually not build any views right now, because all of the views we've been creating are technically for the platform. If they're not for the platform, then they would be skills, specifically visualization skills for certain elements of Naive whenever rendering it inside of another harness like Claude Code, Codex, or Cursor.'"
+    },
+    {
+      "id": "EE-074",
+      "date": "2026-10-29",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-057",
+        "EE-058",
+        "EE-070",
+        "EE-072"
+      ],
+      "decision": "The decision docket ranks across functions, not only within them (Torian, 2026-10-29): which function of the venture needs the founder's attention most at this moment, then its highest-priority decisions. schema/docket.mjs computes it in code: a decision's own weight (open, deadline, staleness, unlocks, foundation, a draft to approve, outcomes to test), its value (own weight plus the own weight of every decision it holds, transitively, so a fail-closed gate carries what waits behind it), a function's attention (its actionable decisions' values, highest first, each worth half the one before), and dominance (one decision worth more than every other function together). The harness settles the docket's next decision and records each step's docket in the trace; a replay settles the top decision again and again in a copy to show the leading function change through a day. Evidence that the ranking is right comes from invariant tests, an independent judge (Jev in LangSmith: was the chosen decision the best next step, was the leading function the right one) whose doubts go to the founder's review queue, and later recorded outcomes. Matching the founder's words stays a check but is no longer a gate: founders write with AI and let its words stand.",
+      "why": "The docket is the demo's emphasis and the product's non-obvious claim: that at every moment it names the right next step for the founder across the whole venture. Founders' words are important but obvious, and gating on them works against founders who write with AI."
     }
   ]
 }

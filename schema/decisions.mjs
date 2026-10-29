@@ -186,31 +186,39 @@ export function actionFor(d, venture) {
   return { kind: "settle", command: d.question };
 }
 
-/** Which open decisions matter most now, and why (EE-057): a deadline, what waits on it, what it
- *  unlocks, and whether it settles the foundation. Ranks the decisions that render now, overdue or
- *  stale; the others keep rank null. Higher first; ties keep their order. */
+/** A decision's own weight, before anything that waits on it (EE-057): a deadline, a stale parent, what
+ *  it unlocks, whether it settles the foundation, a draft ready to approve, outcomes to test. Scored for
+ *  every open decision, so a gate can carry the weight of what it holds (schema/docket.mjs). */
+export function ownScore(d, phase, now = Date.now()) {
+  const why = [];
+  let s = 0;
+  if (d.render === "overdue") { s += 100; why.push("past its due time"); }
+  else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 48) { s += Math.round(60 - h); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
+  if (d.render === "stale") { s += 30; why.push("its parent changed after it was decided"); }
+  if (d.unlocks?.length) { s += 10 * d.unlocks.length; why.push(`unlocks ${d.unlocks.join("; ")}`); }
+  if (d.part_of === "foundation") { s += phase === "discovery" ? 20 : 10; why.push("settles the strategic foundation"); }
+  if (d.awaiting) { s += 8; why.push("an agent has drafted it: approving takes a minute"); }
+  if (d.outcomes?.total) { s += 3 * d.outcomes.total; why.push(`${d.outcomes.total} expected outcome${d.outcomes.total > 1 ? "s" : ""} to test`); }
+  return { score: s, why };
+}
+
+/** Which open decisions matter most now, and why (EE-057): a decision's own weight plus 12 for each
+ *  decision that waits on it. Ranks the decisions that render now, overdue or stale; the others keep
+ *  rank null. Higher first; ties keep their order. */
 export function rank(ds, phase, now = Date.now()) {
   const below = (id) => ds.filter((x) => x.held_by === id || x.parent === id).length;
   const scored = ds.map((d) => {
     if (!["now", "overdue", "stale"].includes(d.render) || d.source === "root") return { ...d, rank: null };
-    const why = [];
-    let s = 0;
-    if (d.render === "overdue") { s += 100; why.push("past its due time"); }
-    else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 48) { s += Math.round(60 - h); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
-    if (d.render === "stale") { s += 30; why.push("its parent changed after it was decided"); }
+    const { score, why } = ownScore(d, phase, now);
     const n = below(d.id);
-    if (n) { s += 12 * n; why.push(`${n} decision${n > 1 ? "s" : ""} wait on it`); }
-    if (d.unlocks?.length) { s += 10 * d.unlocks.length; why.push(`unlocks ${d.unlocks.join("; ")}`); }
-    if (d.part_of === "foundation") { s += phase === "discovery" ? 20 : 10; why.push("settles the strategic foundation"); }
-    if (d.awaiting) { s += 8; why.push("an agent has drafted it: approving takes a minute"); }
-    if (d.outcomes?.total) { s += 3 * d.outcomes.total; why.push(`${d.outcomes.total} expected outcome${d.outcomes.total > 1 ? "s" : ""} to test`); }
-    return { ...d, rank: s, why };
+    // Kept in the order the reasons were always given: deadline and staleness first, then what waits.
+    if (n) why.splice(why.findIndex((w) => !/due|parent changed/.test(w)) === -1 ? why.length : why.findIndex((w) => !/due|parent changed/.test(w)), 0, `${n} decision${n > 1 ? "s" : ""} wait on it`);
+    return { ...d, rank: score + 12 * n, why };
   });
   const order = scored.map((d, i) => [d, i]).sort(([a, i], [b, j]) => (b.rank ?? -1) - (a.rank ?? -1) || i - j).map(([d]) => d);
   return order;
 }
 
-/** The decision that makes an agent's write of this file a draft: open and failing closed, or held. */
 export function holding(dir, file) {
   if (!existsSync(join(dir, "venture.json"))) return null;
   const record = recordOf(file);

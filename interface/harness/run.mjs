@@ -35,6 +35,7 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFi
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { decisions } from "../../schema/decisions.mjs";
+import { docket } from "../../schema/docket.mjs";
 import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../purpose/frameworks/idea-map/ideamap.mjs";
 import { GRAPH, build as buildGraph, request as graphRequest } from "../../purpose/frameworks/idea-map/graph.mjs";
 import { understood } from "../../purpose/frameworks/idea-map/route.mjs";
@@ -155,7 +156,7 @@ function finish(code = 0) {
   // sees the problem record and the agent's reports beside the founder's dump in the inputs.
   const problem = join(dir, "purpose/validation/problem.json");
   const drafted = { problem: existsSync(problem) ? JSON.parse(readFileSync(problem, "utf8")) : null, reports: trace.children.filter((c) => c.outputs?.report).map((c) => ({ pass: c.name, report: c.outputs.report })) };
-  trace.outputs = { settled, drafted, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
+  trace.outputs = { settled, docket: { steps: docketSteps, now: compact(docket(dir)) }, drafted, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
   writeFileSync(join(ws, "trace.json"), JSON.stringify(trace, null, 2) + "\n");
   console.log(`\nEvals:\n${evals.map((e) => `   ${e.score === 1 ? "pass" : e.score === 0 ? "FAIL" : "part"}  ${e.key.padEnd(26)} ${e.score}  ${e.comment}`).join("\n")}`);
   if (process.env.LANGSMITH_API_KEY) {
@@ -239,11 +240,22 @@ The founder has just submitted an idea dump. Naive mapped it onto its convention
 5. Propose two or three more decisions the founder owes from what the dump leaves open (at "purpose/validation", name "problem.<topic>"), each with your proposed answer, the ids of the ideas it comes from in "ideas", a due time within 72 hours if urgent, one or two projected outcomes, and unlocks for ["builder"].
 6. mentura_decisions and report, in at most eight lines: what the idea map shows (clusters and gaps), your answer to product-exists, what the evidence supports, and the founder's decisions in rank order.`, "pass 1: idea map, product questions, problem, research, proposals");
 
-// 3. The founder settles what Naive ranks first, one decision at a time.
+// 3. The founder settles what the docket ranks first, one decision at a time (EE-074): the function that
+//    needs attention most, then its highest-value decision the founder can settle now. Each step's docket
+//    goes in the trace, so a judge can check that the ranking was the right next step.
+const docketSteps = [];
+const compact = (k) => ({ leading: k.functions[0]?.function ?? null, functions: k.functions.map((f) => ({ function: f.function, attention: f.attention,
+  decisions: f.decisions.slice(0, 3).map((d) => ({ id: d.id, question: d.question, value: d.value, dominant: d.dominant, why: d.why })) })) });
 for (let n = 0; n < steps; n++) {
   const r = decisions(dir);
-  const next = r.decisions.find((d) => d.rank != null && d.action && ["decide", "accept", "confirm"].includes(d.action.kind) && !settled.includes(d.id));
+  const k = docket(dir);
+  const pick = k.functions.flatMap((f) => f.decisions).find((d) => d.action && ["decide", "accept", "confirm"].includes(d.action.kind) && !settled.includes(d.id));
+  const next = pick && r.decisions.find((d) => d.id === pick.id);
   if (!next) break;
+  next.why = pick.why;
+  docketSteps.push({ step: n + 1, ...compact(k), chose: pick.id });
+  trace.children.push({ name: `docket: step ${n + 1}`, run_type: "chain", start: iso(), end: iso(), inputs: { venture: id }, outputs: docketSteps.at(-1) });
+  lap(`docket: ${k.functions.map((f) => `${f.function} ${f.attention}`).join(" · ")}; next ${pick.id} (${pick.function}, value ${pick.value}${pick.dominant ? ", outweighs every other function" : ""})`);
   console.log(`\nFOUNDER #${n + 1}: ${next.id}: ${next.question}\n         Why now: ${(next.why ?? []).join("; ")}${next.answer ? `\n         Proposed: ${next.answer}` : ""}\n         ${next.action.command.replace(/^mentura /, `MENTURA_WORKSPACE=${ws} node ${join(repo, "interface/cli/mentura.mjs")} `)}`);
   const before = JSON.stringify(r.decisions.find((d) => d.id === next.id));
   if (flag("yes")) {
