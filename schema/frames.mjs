@@ -21,6 +21,7 @@
 //   node schema/frames.mjs eval <frame id>
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -120,9 +121,15 @@ export function request(f, facts) {
 }
 const p = (a) => (typeof a?.noul === "number" ? a.noul : a?.noul === true ? 1 : a?.noul === false ? 0 : null);
 /** Code settles the verdicts: yes at 0.7 or above, no at 0.3 or below, unknown between or unanswered. */
-export function verdicts(f, answers) {
+// When every fact a premise reads is missing from the records, the verdict is unknown whatever the model
+// said: code wins over a judgment the facts cannot support.
+export function verdicts(f, answers, facts = null) {
   const out = {};
-  for (const x of f.premises) { const v = p(answers[`premise:${x.id}`]); out[x.id] = { claim: x.claim, attack: x.attack, move: ATTACKS[x.attack], p: v, verdict: v == null ? "unknown" : v >= YES ? "yes" : v <= NO ? "no" : "unknown" }; }
+  for (const x of f.premises) {
+    const v = p(answers[`premise:${x.id}`]);
+    const blind = facts && x.reads?.length && x.reads.every((r) => !facts[r] || facts[r] === NONE);
+    out[x.id] = { claim: x.claim, attack: x.attack, move: ATTACKS[x.attack], p: v, verdict: blind || v == null ? "unknown" : v >= YES ? "yes" : v <= NO ? "no" : "unknown", ...(blind ? { overruled: `the records hold none of: ${x.reads.join(", ")}` } : {}) };
+  }
   let dichotomy = null;
   if (f.dichotomy) {
     const ranked = Object.keys(DICHOTOMY).map((k) => ({ k, p: p(answers[`dichotomy:${k}`]) ?? 0 })).sort((a, b) => b.p - a.p);
@@ -163,7 +170,7 @@ export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "
   const req = request(f, facts);
   let judged;
   try { judged = await ask(dir, req); } catch (e) { return { ok: false, error: e.message, request: req }; }
-  const v = verdicts(f, judged.answers);
+  const v = verdicts(f, judged.answers, facts);
   const reframe = fill(f.reframe, facts);
   const { propose, decisions } = await import("./decisions.mjs");
   const said = text ? `The founder said: "${text}". ` : "";
@@ -185,13 +192,14 @@ export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "
 // ---- eval ----
 
 /** Judge each worked case and compare the verdicts with what the case expects. */
-export async function evaluate(id, { dir = repo } = {}) {
+// Its judgments are cached outside the repository, so an eval never writes into it.
+export async function evaluate(id, { dir = join(tmpdir(), "naive-frame-evals") } = {}) {
   const f = frameOf(id);
   if (!f) return { ok: false, error: `no frame ${id}` };
   const rows = [];
   for (const c of f.cases ?? []) {
     const { answers, model } = await ask(dir, request(f, c.facts));
-    const v = verdicts(f, answers);
+    const v = verdicts(f, answers, c.facts);
     const got = { ...Object.fromEntries(Object.entries(v.premises).map(([k, x]) => [k, x.verdict])), ...(v.dichotomy ? { dichotomy: v.dichotomy.reading } : {}) };
     const right = Object.entries(c.expect).filter(([k, x]) => got[k] === x).length;
     rows.push({ case: c.id, model, right, of: Object.keys(c.expect).length, got, expect: c.expect });

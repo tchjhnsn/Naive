@@ -49,6 +49,8 @@ await t("code settles the verdicts at the thresholds; a premise with no answer i
   const v = F.verdicts(f, { "premise:needs-outside-money": { noul: 0.8 }, "premise:money-means-ownership": { noul: 0.2 }, "premise:ownership-means-control": { noul: 0.5 }, "dichotomy:false": { noul: 0.75 } });
   ok(v.premises["needs-outside-money"].verdict === "yes" && v.premises["money-means-ownership"].verdict === "no" && v.premises["ownership-means-control"].verdict === "unknown" && v.premises["control-is-one-thing"].verdict === "unknown");
   ok(v.dichotomy.reading === "false");
+  const blind = F.verdicts(f, { "premise:control-is-one-thing": { noul: 0.02 } }, { control_rights: "not on record" });
+  ok(blind.premises["control-is-one-thing"].verdict === "unknown" && blind.premises["control-is-one-thing"].overruled, "a judgment the facts cannot support was kept");
 });
 
 await t("a run proposes the frame's decisions open, drafted by an agent, with the reframe and verdicts in the note", async () => {
@@ -56,7 +58,7 @@ await t("a run proposes the frame's decisions open, drafted by an agent, with th
   ok(r.ok, r.error);
   ok(r.result.frame === "fund-without-ceding-control" && r.result.dichotomy.reading === "sequence" && r.result.verdicts["needs-outside-money"].verdict === "unknown", JSON.stringify(r.result.verdicts));
   const d = file("which-control-matters");
-  ok(d.status === "open" && d.options.length === 6 && d.provenance.drafted_by.kind === "agent" && d.note.includes(SAID) && d.note.includes("Which ways of funding"), JSON.stringify(d));
+  ok(d.status === "open" && d.options.length === 6 && d.provenance.drafted_by.kind === "agent" && d.note.includes(SAID) && /which ways of funding/i.test(d.note), JSON.stringify(d));
   const how = file("fund-growth-how");
   ok(how.status === "open" && !how.options?.length && /dated, cited lookup/.test(how.note), JSON.stringify(how));
 });

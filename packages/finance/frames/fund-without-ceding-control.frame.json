@@ -60,7 +60,7 @@
     "sequence-not-choose"
   ],
   "dichotomy": "Take outside money and lose control, or keep control and grow more slowly.",
-  "reframe": "Which ways of funding {goal} keep the specific control rights the founder will not give up, in the {phase} phase?",
+  "reframe": "With the goal \"{goal}\", which ways of funding it keep the specific control rights the founder will not give up, in the {phase} phase?",
   "composes": [
     "which-control-matters",
     "fund-growth-how"
