@@ -99,7 +99,7 @@ if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("
 
 // The trace (EE-058): every step and every tool call the agent made, with timings, for LangSmith.
 const iso = () => new Date().toISOString();
-const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, founder, phase }, children: [], metadata: {
+const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, ideas: readFileSync(join(dir, DUMP), "utf8"), founder, phase }, children: [], metadata: {
   venture: id, venture_id: id, pipeline_step: phase, money: money?.source ?? null,
   // LangSmith groups a founder's runs into one thread by thread_id: one session per venture per day.
   thread_id: process.env.NAIVE_SESSION ?? `${id}-${new Date().toISOString().slice(0, 10)}`,
