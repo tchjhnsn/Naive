@@ -19,7 +19,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ventureFile } from "./venture-paths.mjs";
+import { KBASE, ventureFile } from "./venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "..");
@@ -50,13 +50,13 @@ Object.assign(venture, { owner: "self", status: "active", profile: structured ? 
 // The package folders (EE-070); a typed venture gets its type's packages.
 const packageDirs = vtype ? vtype.packages : ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money"];
 if (structured) {
-  // venture.json first, so every path below resolves into knowledge/ and meta/. The org chart starts flat:
+  // venture.json first, so every path below resolves into k-base/ and meta/. The org chart starts flat:
   // one function per package, owned by no one until create-venture or the founder names the owner.
   venture.layout = "structured";
   venture.functions = Object.fromEntries(packageDirs.map((p) => [p, { owner: null }]));
-  for (const layer of ALL) venture.layers[layer] = on.includes(layer) ? { location: "knowledge/" } : false;
+  for (const layer of ALL) venture.layers[layer] = on.includes(layer) ? { location: `${KBASE}/` } : false;
   writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
-  for (const sub of ["knowledge", "meta"]) mkdirSync(ventureFile(dir, sub), { recursive: true });
+  for (const sub of [KBASE, "meta"]) mkdirSync(join(dir, sub), { recursive: true });
 }
 for (const layer of structured ? [] : ALL) {
   if (!on.includes(layer)) { if (only !== null || !["governance", "interface"].includes(layer)) venture.layers[layer] = false; continue; }
@@ -69,6 +69,16 @@ if (!structured) for (const sub of ["products", "accounts"]) { mkdirSync(venture
 // A typed venture gets its type's packages; the rest stay out until need-now suggests them.
 for (const sub of ["raw/dump", "raw/sources", "ideas", ...packageDirs, "decisions", "evidence", ...(structured ? [] : ["public"]), "_private", "_drafts", ".release"]) {
   mkdirSync(ventureFile(dir, sub), { recursive: true });
+}
+// Every package folder explains itself (EE-086): a README.md from its package, for people. GitHub and
+// editors show it when the folder is opened; an AGENTS.md beside it is the founder's, for agents.
+if (structured) for (const pkg of packageDirs) {
+  const f = join(repo, "packages", pkg, "package.json");
+  if (!existsSync(f)) continue;
+  const p = JSON.parse(readFileSync(f, "utf8"));
+  const lines = [`# ${p.title ?? pkg}`, "", p.purpose ?? "", ...(p.required?.length ? ["", `What goes in it first: ${p.required.join(", ")}.`] : []), ...(p.optional?.length ? [`Also: ${p.optional.join(", ")}.`] : []),
+    ...(p.gates?.length ? ["", `It is ready when ${p.gates.join("; ")}.`] : []), "", `Owner: whoever owns the ${pkg} function in venture.json.`, ""];
+  writeFileSync(join(ventureFile(dir, pkg), "README.md"), lines.join("\n"));
 }
 if (!structured) mkdirSync(join(ventureFile(dir, "pillars")), { recursive: true });
 for (const [name, what] of Object.entries(structured ? {} : pillars.stubs)) {

@@ -7,7 +7,7 @@
 //
 //   node schema/port-venture.mjs <folder> --venture <dir> [--to <path>] [--links <dir> ...]
 //        adds the move to the plan at <venture>/.release/port-plan.json and prints it; moves nothing.
-//        The folder goes to <venture>/repo/<its name> unless --to says where (relative to the venture
+//        The folder goes to <venture>/codebase/<its name> unless --to says where (relative to the venture
 //        or absolute). Run once per folder: each run adds or replaces that folder's item.
 //   node schema/port-venture.mjs --venture <dir> --apply --confirm port [--even-if-busy]
 //        carries out every planned move the founder left as move; any item can be set to leave first
@@ -24,7 +24,7 @@ import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { agentFromEnv, record } from "../interface/provenance.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { CODEBASE, ventureFile } from "./venture-paths.mjs";
 
 export const PLAN = ".release/port-plan.json";
 export const TRACE = ".release/port-trace.json";
@@ -112,7 +112,7 @@ export function planOne(folder, dir, { to, links = [] } = {}) {
   const src = real(folder);
   const v = real(dir);
   if (inside(v, src)) throw new Error("the venture cannot sit inside the folder it ports");
-  const dest = resolve(v, to ?? join("repo", basename(src)));
+  const dest = resolve(v, to ?? join(CODEBASE, basename(src)));
   const s = statSync(src);
   const item = { action: "move", from: src, to: dest, source: slug(basename(src)), identity: { dev: s.dev, ino: s.ino }, ...measure(src) };
   const warnings = [];

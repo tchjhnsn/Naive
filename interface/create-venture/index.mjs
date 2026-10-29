@@ -285,7 +285,7 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
   devDependencies: { [fw.name]: spec },
 }, null, 2) + "\n");
-writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/knowledge/*/_streams/*/*\n!/knowledge/*/_streams/*/stream.json\n!/knowledge/*/_streams/*/summary.md\n");
+writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(join(framework, "interface/router.mjs"));

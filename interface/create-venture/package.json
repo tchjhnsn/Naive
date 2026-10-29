@@ -1,6 +1,6 @@
 {
   "name": "create-venture",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Create a new Naive venture: npx create-venture my-venture",
   "type": "module",
   "license": "MIT",
@@ -20,6 +20,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "naive-framework": "^0.3.0"
+    "naive-framework": "^0.4.0"
   }
 }

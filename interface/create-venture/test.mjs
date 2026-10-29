@@ -33,7 +33,7 @@ t("--yes creates a venture with the recommended defaults, installs the framework
   const venture = load(join(v, "venture.json"));
   ok(venture.phase === "discovery" && venture.id === "kettle");
   ok(existsSync(join(v, "AGENTS.md")) && existsSync(ventureFile(v, "foundation")) && existsSync(ventureFile(v, "decisions")));
-  ok(venture.layout === "structured" && existsSync(join(v, "knowledge/foundation")) && existsSync(join(v, "meta/provenance.jsonl")), "the structured layout: knowledge/ and meta/");
+  ok(venture.layout === "structured" && existsSync(join(v, "k-base/foundation")) && existsSync(join(v, "meta/provenance.jsonl")), "the structured layout: k-base/ and meta/");
   ok(existsSync(join(v, "node_modules/.bin/naive")), "naive is installed in the venture");
   ok(existsSync(join(v, ".git")), "a git repository");
 });
@@ -67,7 +67,7 @@ t("the idea dump is saved verbatim as raw/dump.md and recorded in provenance", (
 
 t("every record file is mapped to its JSON Schema for the editor", () => {
   const s = load(join(v, ".vscode/settings.json"))["json.schemas"];
-  const icp = s.find((x) => x.fileMatch.includes("/knowledge/foundation/icp.json"));
+  const icp = s.find((x) => x.fileMatch.includes("/k-base/foundation/icp.json"));
   ok(icp?.url === "./node_modules/naive-framework/schema/icp.schema.json", JSON.stringify(icp));
   ok(existsSync(join(v, icp.url)), "the schema it points to is installed");
 });
@@ -125,10 +125,10 @@ t("structured layout: the org chart in venture.json names each function's owner,
   ok(create(["duo", "--type", "software-startup", "--name", "Ana Ruiz", "--team", "Ben Okafor", "--yes", "--skip-install", "--no-git"]).status === 0);
   const v2 = load(join(base, "duo/venture.json"));
   ok(v2.layout === "structured" && Object.values(v2.functions).every((f) => f.owner === "ana-ruiz"), JSON.stringify(v2.functions));
-  const roster = load(join(base, "duo/knowledge/people/people.json"));
+  const roster = load(join(base, "duo/k-base/people/people.json"));
   ok(roster.people.every((p) => !("hats" in p)), JSON.stringify(roster));
   const top = readdirSync(join(base, "duo")).filter((f) => !f.startsWith(".")).sort().join(" ");
-  ok(top === "AGENTS.md README.md knowledge meta package.json venture.json", top);
+  ok(top === "AGENTS.md README.md k-base meta package.json venture.json", top);
   const r = spawnSync("node", [join(repo, "schema/check-people.mjs"), join(base, "duo")], { encoding: "utf8" });
   ok(r.status === 0, r.stdout);
 });

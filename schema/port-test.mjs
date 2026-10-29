@@ -47,8 +47,8 @@ expect("port writes a plan", p1.status === 0 && p2.status === 0 && existsSync(ve
 const planned = JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8"));
 const item = (f) => planned.items.find((i) => i.from === f);
 expect("one run per folder adds to one plan", planned.items.length === 2 && item(app)?.action === "move" && item(notes)?.action === "move");
-expect("a folder goes to the venture's repo/ under its own name", item(app).to === join(dir, "repo", "app") && item(notes).to === join(dir, "repo", "notes"));
-expect("writing the plan moves nothing", existsSync(app) && existsSync(notes) && !existsSync(join(dir, "repo")));
+expect("a folder goes to the venture's codebase/ under its own name", item(app).to === join(dir, "codebase", "app") && item(notes).to === join(dir, "codebase", "notes"));
+expect("writing the plan moves nothing", existsSync(app) && existsSync(notes) && !existsSync(join(dir, "codebase")));
 expect("the plan names the repository's worktree", item(app).git?.worktrees.some((w) => w.endsWith("app-side")) && /worktree repair/.test(item(app).warnings.join(" ")));
 expect("the plan says uncommitted work moves with it", /2 uncommitted changes/.test(item(app).warnings.join(" ")));
 expect("the plan names a link into the folder that would break", item(app).links.some((l) => l.link === join(ws, "code", "app-src")));
@@ -70,12 +70,12 @@ expect("applying needs the founder to type the confirmation", unconfirmed.status
 const a = naive("port", "--venture", dir, "--apply", "--confirm", "port");
 expect("the plan is carried out", a.status === 0, a.stderr);
 expect("each folder is gone from where it was", !existsSync(app) && !existsSync(notes));
-expect("every file arrives byte for byte, .git and uncommitted work included", JSON.stringify(tree(join(dir, "repo/app"))) === JSON.stringify(before.app) && JSON.stringify(tree(join(dir, "repo/notes"))) === JSON.stringify(before.notes));
-expect("the repository's history is unchanged", git(join(dir, "repo/app"), "rev-parse", "HEAD").stdout === before.head);
+expect("every file arrives byte for byte, .git and uncommitted work included", JSON.stringify(tree(join(dir, "codebase/app"))) === JSON.stringify(before.app) && JSON.stringify(tree(join(dir, "codebase/notes"))) === JSON.stringify(before.notes));
+expect("the repository's history is unchanged", git(join(dir, "codebase/app"), "rev-parse", "HEAD").stdout === before.head);
 const sources = JSON.parse(readFileSync(ventureFile(dir, "knowledge/sources.json"), "utf8"));
-expect("each folder is a read-only filesystem source, by its path in the venture", ["app", "notes"].every((id) => sources.sources.some((s) => s.id === id && s.connector === "filesystem" && s.writes === "none" && s.root === `repo/${id}` && /source of truth/.test(s.note))));
+expect("each folder is a read-only filesystem source, by its path in the venture", ["app", "notes"].every((id) => sources.sources.some((s) => s.id === id && s.connector === "filesystem" && s.writes === "none" && s.root === `codebase/${id}` && /source of truth/.test(s.note))));
 const log = entries(dir).filter((e) => e.activity === "port");
-expect("every move is in provenance with the path it came from", log.some((e) => e.entity === "repo/app" && e.derived_from?.[0] === `file://${app}`) && log.some((e) => e.entity === "repo/notes"));
+expect("every move is in provenance with the path it came from", log.some((e) => e.entity === "codebase/app" && e.derived_from?.[0] === `file://${app}`) && log.some((e) => e.entity === "codebase/notes"));
 expect("apply says how to repair the worktree", /worktree repair/.test(a.stdout));
 const tr = JSON.parse(readFileSync(ventureFile(dir, ".release/port-trace.json"), "utf8"));
 expect("the run leaves a trace with a child per folder", tr.name === "naive port apply" && tr.children.length === 2 && !/NOT_A_REAL_KEY/.test(JSON.stringify(tr)));

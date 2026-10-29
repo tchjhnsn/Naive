@@ -36,7 +36,7 @@ for (const v of walk(dir)) {
     const base = ventureFile(v, pack);
     if (!existsSync(base)) continue;
     for (const name of readdirSync(base)) {
-      if (name.startsWith("_") || name.startsWith(".")) continue;
+      if (name.startsWith("_") || name.startsWith(".") || name === "README.md" || name === "AGENTS.md") continue;
       const p = join(base, name);
       if (!statSync(p).isFile() || !name.endsWith(".json")) errors.push(`${id}/${pack}/${name}: a master record is <id>.json`);
     }
