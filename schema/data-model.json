@@ -1275,6 +1275,16 @@
         "schema/examples/**/deals/*.json"
       ],
       "note": "A company in a fund's pipeline (EE-082)"
+    },
+    {
+      "id": "systems-catalog",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/systems-catalog.schema.json",
+      "paths": [
+        "schema/systems-catalog.json"
+      ],
+      "note": "The systems of record create-venture offers per function (EE-083)"
     }
   ],
   "ignore": [

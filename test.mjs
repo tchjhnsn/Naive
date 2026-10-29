@@ -28,6 +28,7 @@ const steps = [
   ["design additions (use model, gate, uncertain)", "node", ["schema/design-additions-test.mjs"]],
   ["naive port (a project in, files as they are, read-only)", "node", ["schema/port-test.mjs"]],
   ["naive migrate (a project rewritten as records, decided by a person; stand-in agent)", "node", ["schema/migrate-test.mjs"]],
+  ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["interface/dev/test.mjs"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["interface/create-venture/test.mjs"]],
   ["the Next.js translation status (every concept has a status, its evidence exists, the page is current)", "node", ["schema/check-nextjs-status.mjs"]],
   ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],

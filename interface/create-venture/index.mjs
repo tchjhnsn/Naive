@@ -7,9 +7,15 @@
 //
 //   npx create-venture [dir] [--yes] [--type <type> | --describe "<a few words>"] [--role <role>]
 //                      [--name "<your name>"] [--team "<name>, <name>"] [--phase <phase>]
+//                      [--source <function>=<system>[:<address>],... ...] [--rho-fixture]
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences]
+//
+// --source says where a function keeps its truth (schema/systems-catalog.json), recorded as pointers in
+// knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
+// --source finance=rho. Rho is synced at setup: its sandbox, the founder's own with RHO_API_TOKEN, or a
+// saved answer with --rho-fixture (offline; recorded as a fixture).
 //
 // --yes takes the recommended defaults: a software startup, you as its solo founder wearing every hat,
 // the discovery phase, the type's packages, checks on, and AGENTS.md. --describe classifies only when
@@ -151,6 +157,32 @@ else for (const d of vtype.departments) {
   const who = await choose(`Who owns ${deptLabel(d)}?`, owners.map((p) => p.id), owners[0].id);
   owners.find((p) => p.id === who).hats.push(d);
 }
+// 6. Where each function keeps its truth (EE-083): pointers to its systems of record, in the founder's words when none fits.
+const CATALOG = JSON.parse(readFileSync(join(framework, "schema/systems-catalog.json"), "utf8"));
+const asked = [...vtype.departments.filter((d) => CATALOG.functions[d]), "legal"];
+const parseSystems = (text) => {
+  const items = text.split(",").map((x) => x.trim()).filter(Boolean);
+  const systems = items.map((x) => { const i = x.indexOf(":"); const sys = i < 0 ? x : x.slice(0, i); return CATALOG.systems[sys] ? { system: sys, ...(i < 0 ? {} : { address: x.slice(i + 1) }) } : null; });
+  return systems.every(Boolean) ? { systems } : { systems: [], note: text.trim() };
+};
+const functions = {};
+const sourceFlags = argv.flatMap((a, i) => (a === "--source" ? [argv[i + 1]] : []));
+for (const f of sourceFlags) {
+  const [fn, ...rest] = f.split("=");
+  if (!CATALOG.functions[fn]) fail(`--source ${f}: ${fn} is not a function systems are kept for (${Object.keys(CATALOG.functions).join(", ")})`);
+  functions[fn] = parseSystems(rest.join("="));
+  for (const s of functions[fn].systems) if (!CATALOG.functions[fn].includes(s.system)) fail(`--source ${f}: ${s.system} is not offered for ${fn} (${CATALOG.functions[fn].join(", ")})`);
+}
+if (interactive && !sourceFlags.length) {
+  console.log("\nNow point Naive at where each function keeps its truth. Name systems (comma separated, add :address if you know it), type none, or say it in your own words.");
+  for (const fn of asked) {
+    const options = CATALOG.functions[fn];
+    const a = await ask(`Where is the source of truth for ${fn === "legal" ? "legal documents" : deptLabel(fn)}? ${options.join(" / ")} / none`, "none");
+    if (a.toLowerCase() === "none") continue;
+    functions[fn] = parseSystems(a);
+  }
+}
+
 if (interactive && !given) {
   const modes = prefs ? ["recommended", "previous", "customize"] : ["recommended", "customize"];
   const pick = await choose("Would you like to use the recommended Naive defaults for the rest?", modes, "recommended");
@@ -202,6 +234,29 @@ if (answers.dump) {
   record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv("person", "cli"), note: `the founder's idea dump, verbatim, from ${resolve(answers.dump)}` });
 }
 
+// knowledge/sources.json: each function's systems of record, as pointers (EE-083). Rho is read by code, so it is synced now.
+const rhoScript = join(framework, "platform/integrations/rho.mjs");
+let rhoNote = null;
+for (const f of Object.values(functions)) for (const s of f.systems) {
+  s.status = "pointed";
+  if (s.system !== "rho") continue;
+  if (!existsSync(rhoScript)) { rhoNote = "Rho: recorded as pointed; this copy of Naive has no Rho integration"; continue; }
+  const fixture = flag("rho-fixture") ? join(framework, "platform/integrations/fixtures/rho-sandbox.json") : null;
+  const live = !fixture && process.env.RHO_API_TOKEN;
+  const r = spawnSync("node", [rhoScript, "sync", "--venture", dir, ...(fixture ? ["--fixture", fixture] : live ? ["--live"] : [])], { encoding: "utf8", env: process.env });
+  if (r.status === 0) {
+    Object.assign(s, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(fixture ? { fixture: true } : {}), address: s.address ?? (fixture ? "saved sandbox answer" : live ? "live" : "sandbox") });
+    rhoNote = `Rho: synced ${fixture ? "from a saved sandbox answer (a fixture, not a live account)" : live ? "from your Rho account" : "from Rho's sandbox (a fictional company)"} into money/`;
+  } else rhoNote = `Rho: could not sync (${(r.stderr || r.stdout).trim().split("\n").at(-1)}); recorded as pointed`;
+}
+if (Object.keys(functions).length) {
+  const map = join(dir, "knowledge/sources.json");
+  mkdirSync(dirname(map), { recursive: true });
+  writeFileSync(map, JSON.stringify({ sources: [], records: {}, truth: "local", functions }, null, 2) + "\n");
+  record(dir, { entity: "knowledge/sources.json", route: "knowledge/knowledge-sources", activity: "write", agent: asPerson,
+    note: `systems of record: ${Object.entries(functions).map(([fn, f]) => `${fn} ${f.systems.map((s) => `${s.system} (${s.status})`).join(", ") || "in the founder's words"}`).join("; ")}` });
+}
+
 // The venture's package.json: the framework as a dev dependency and the four scripts (I-17).
 const fromClone = existsSync(join(framework, "test.mjs")) && !framework.split("/").includes("node_modules");
 // A dependency value is a range or a location, never name@range: --framework naive-framework@^0.2 keeps ^0.2.
@@ -211,7 +266,7 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
   devDependencies: { [fw.name]: spec },
 }, null, 2) + "\n");
-writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n");
+writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n");
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(join(framework, "interface/router.mjs"));
@@ -240,9 +295,10 @@ try { mkdirSync(dirname(prefsFile), { recursive: true }); writeFileSync(prefsFil
 
 const runScript = (s) => (manager === "npm" ? `npm run ${s}` : `${manager} ${s}`);
 const cd = relative(process.cwd(), dir) || ".";
+const legal = functions.legal?.systems.length ? null : "Legal documents: none connected yet. Point Naive at them later with --source legal=google-drive:<folder> (or docusign, local-folder), and draft the founder agreement with the founding-agreement kit.";
 console.log(`
 ${bold("Success!")} Created ${basename(dir)} at ${dir}
-Git: ${git}
+Git: ${git}${rhoNote ? `\n${rhoNote}` : ""}${legal ? `\n${legal}` : ""}
 
 Inside that directory, you can run:
 

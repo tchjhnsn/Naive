@@ -2,27 +2,75 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "knowledge-sources.schema.json",
   "title": "Knowledge sources",
-  "description": "A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored.",
+  "description": "A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored. Beside the sources Naive reads records from, `functions` says where each of the venture's functions keeps its truth outside Naive (EE-083): the repo, hosting and analytics for the product, a payments or store account for sales, the bank for money, a folder or signing service for legal documents. Those are pointers to systems of record; a system Naive reads through code is connected, one it only knows of is pointed. `truth` says where the venture's source of truth as a whole lives.",
   "type": "object",
-  "required": ["sources", "records"],
+  "required": [
+    "sources",
+    "records"
+  ],
   "additionalProperties": false,
   "properties": {
     "sources": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "connector"],
+        "required": [
+          "id",
+          "connector"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "not": { "const": "venture" }, "description": "The source's id; `venture` is reserved for the venture's own folder" },
-          "connector": { "type": "string", "description": "An integration id with a connector: filesystem, github" },
-          "writes": { "enum": ["direct", "pull-request", "none"], "description": "How writes reach it; the connector's default when left out" },
-          "root": { "type": "string", "description": "filesystem: the folder, relative to the venture folder or absolute. github: the folder inside the repository" },
-          "repo": { "type": "string", "pattern": "^[\\w.-]+/[\\w.-]+$", "description": "github: owner/name" },
-          "ref": { "type": "string", "description": "github: the branch (default main)" },
-          "token": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$", "description": "github: the environment variable holding a token (default GITHUB_TOKEN)" },
-          "api": { "type": "string", "description": "github: the API base, for GitHub Enterprise" },
-          "search": { "enum": ["api", "scan"], "description": "github: code search (default) or a scan of the files" },
-          "note": { "type": "string" }
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "not": {
+              "const": "venture"
+            },
+            "description": "The source's id; `venture` is reserved for the venture's own folder"
+          },
+          "connector": {
+            "type": "string",
+            "description": "An integration id with a connector: filesystem, github"
+          },
+          "writes": {
+            "enum": [
+              "direct",
+              "pull-request",
+              "none"
+            ],
+            "description": "How writes reach it; the connector's default when left out"
+          },
+          "root": {
+            "type": "string",
+            "description": "filesystem: the folder, relative to the venture folder or absolute. github: the folder inside the repository"
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^[\\w.-]+/[\\w.-]+$",
+            "description": "github: owner/name"
+          },
+          "ref": {
+            "type": "string",
+            "description": "github: the branch (default main)"
+          },
+          "token": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "description": "github: the environment variable holding a token (default GITHUB_TOKEN)"
+          },
+          "api": {
+            "type": "string",
+            "description": "github: the API base, for GitHub Enterprise"
+          },
+          "search": {
+            "enum": [
+              "api",
+              "scan"
+            ],
+            "description": "github: code search (default) or a scan of the files"
+          },
+          "note": {
+            "type": "string"
+          }
         },
         "additionalProperties": false
       }
@@ -30,7 +78,9 @@
     "records": {
       "type": "object",
       "description": "Record type id (from schema/data-model.json) -> source id. Unnamed record types stay in the venture folder.",
-      "additionalProperties": { "type": "string" }
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "rules": {
       "type": "array",
@@ -125,6 +175,86 @@
         }
       }
     },
-    "note": { "type": "string" }
+    "note": {
+      "type": "string"
+    },
+    "truth": {
+      "type": "string",
+      "description": "local: this device is the source of truth; otherwise the address of the host every system is backed up to or hosted on (EE-083)"
+    },
+    "functions": {
+      "type": "object",
+      "description": "Each function's systems of record, by department id (operations/departments.json) or legal (EE-083)",
+      "propertyNames": {
+        "enum": [
+          "strategy",
+          "products",
+          "marketing-and-sales",
+          "supply-chain",
+          "service-delivery",
+          "customer-service",
+          "human-capital",
+          "it",
+          "finance",
+          "assets",
+          "risk-and-compliance",
+          "external-relationships",
+          "capabilities",
+          "legal"
+        ]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "systems"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "systems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "system",
+                "status"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "system": {
+                  "type": "string",
+                  "description": "A system id from schema/systems-catalog.json"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string",
+                  "description": "The source in `sources` that reads it, when it is one"
+                },
+                "status": {
+                  "enum": [
+                    "connected",
+                    "pointed"
+                  ],
+                  "description": "connected: read by code (a connector or an integration); pointed: known, not read yet"
+                },
+                "synced": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "fixture": {
+                  "type": "boolean",
+                  "description": "The last sync replayed a saved answer, not the live system"
+                }
+              }
+            }
+          },
+          "note": {
+            "type": "string",
+            "description": "What the founder said about this function, in their words"
+          }
+        }
+      }
+    }
   }
 }

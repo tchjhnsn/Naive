@@ -3,7 +3,7 @@
 // venture.json in the current directory or its parents. mentura stays for platform commands and as an
 // alias, so `mentura typegen` and `mentura upgrade` run these same commands.
 //
-//   naive dev [--port 4331]                         the board, live: edit a record and it updates; each saved
+//   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
 //                                                   record is checked against its schema as you go (I-17, I-24)
 //   naive build                                     check every package and write a release (I-17)
 //   naive start                                     serve the latest release read-only (I-17)
@@ -62,10 +62,21 @@ async function dev(dir) {
   const { workspace, venture } = asRouted(dir);
   process.env.MENTURA_WORKSPACE = workspace;
   const port = await free(Number(opt("port") ?? 4331));
+  // One origin: /setup is the setup page (interface/dev/setup.mjs); everything else is the board, served
+  // on a port of its own and passed through.
   const { serve } = await import("../demo/board.mjs");
-  serve(port, venture);
+  const { handle } = await import("../dev/setup.mjs");
+  const boardPort = await free(port + 1000);
+  serve(boardPort, venture);
+  const { createServer: http, request } = await import("node:http");
+  http(async (req, res) => {
+    if (await handle(req, res, dir)) return;
+    const up = request({ host: "127.0.0.1", port: boardPort, path: req.url, method: req.method, headers: req.headers }, (r) => { res.writeHead(r.statusCode, r.headers); r.pipe(res); });
+    up.on("error", (e) => { res.writeHead(502); res.end(String(e.message)); });
+    req.pipe(up);
+  }).listen(port, "127.0.0.1");
   const name = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).name ?? venture;
-  console.log(`\n  ▲ Naive ${version()}\n  - Venture:  ${name} (${relative(process.cwd(), dir) || "."})\n  - Board:    http://127.0.0.1:${port}/\n  - Map:      http://127.0.0.1:${port}/map\n\n  Watching for changes. Each saved record is checked against its schema. Ctrl-C to stop.\n`);
+  console.log(`\n  ▲ Naive ${version()}\n  - Venture:  ${name} (${relative(process.cwd(), dir) || "."})\n  - Setup:    http://127.0.0.1:${port}/setup\n  - Board:    http://127.0.0.1:${port}/\n  - Map:      http://127.0.0.1:${port}/map\n\n  Watching for changes. Each saved record is checked against its schema. Ctrl-C to stop.\n`);
   // Live feedback on save (I-24): a record that no longer matches its schema says so at once.
   const pending = new Map();
   watch(dir, { recursive: true }, (_, f) => {
@@ -85,13 +96,12 @@ async function dev(dir) {
   });
 }
 
-// The checks that read a workspace, run on the folder that holds this venture.
+// The checks that read a workspace, run on this venture: it and the ventures nested in it, not its neighbours.
 const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used"];
 function check(dir) {
-  const { workspace } = asRouted(dir);
   let failed = 0;
   for (const c of CHECKS) {
-    const r = spawnSync("node", [join(repo, `schema/${c}.mjs`), workspace], { encoding: "utf8" });
+    const r = spawnSync("node", [join(repo, `schema/${c}.mjs`), dir], { encoding: "utf8" });
     const last = (r.stdout + r.stderr).trim().split("\n").filter(Boolean).at(-1) ?? "";
     if (r.status !== 0) failed++;
     console.log(`${r.status === 0 ? "pass" : "FAIL"}  ${c.replace("check-", "")}: ${last}`);
