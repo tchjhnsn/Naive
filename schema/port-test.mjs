@@ -35,7 +35,6 @@ symlinkSync(join(app, "src"), join(ws, "code", "app-src"));
 const notes = join(ws, "notes");
 mkdirSync(join(notes, "research"), { recursive: true });
 writeFileSync(join(notes, "research/interview.md"), "Ana spends Mondays on the phone.\n");
-const before = { app: tree(app), notes: tree(notes), head: git(app, "rev-parse", "HEAD").stdout };
 
 const dir = join(ws, "naive", "ventures", "clinic");
 const init = spawnSync("node", [join(repo, "schema/init-venture.mjs"), dir, "clinic"], { encoding: "utf8" });
@@ -67,6 +66,8 @@ expect("a process inside a folder refuses the apply, and nothing moves", held.st
 const unconfirmed = naive("port", "--venture", dir, "--apply");
 expect("applying needs the founder to type the confirmation", unconfirmed.status !== 0 && existsSync(app));
 
+// After the plan. Planning runs git status, which can refresh .git/index. The check is that the move itself changes no byte.
+const before = { app: tree(app), notes: tree(notes), head: git(app, "rev-parse", "HEAD").stdout };
 const a = naive("port", "--venture", dir, "--apply", "--confirm", "port");
 expect("the plan is carried out", a.status === 0, a.stderr);
 expect("each folder is gone from where it was", !existsSync(app) && !existsSync(notes));
