@@ -42,10 +42,19 @@
       "package": null,
       "decision": "EE-071",
       "aliases": "interface/route-aliases.json"
+    },
+    {
+      "id": "icp-profiles",
+      "module": "schema/migrations/icp-profiles.mjs",
+      "package": "foundation",
+      "from": "0.3.0",
+      "to": "0.4.0",
+      "decision": null,
+      "note": "One record per ideal customer profile at foundation/icp/<id>.json (Torian, 2026-10-29)"
     }
   ],
   "packages": {
-    "foundation": { "version": "0.3.0", "channel": "stable" },
+    "foundation": { "version": "0.4.0", "channel": "stable" },
     "validation": { "version": "0.3.0", "channel": "stable" },
     "product": { "version": "0.3.0", "channel": "stable" },
     "marketing": { "version": "0.3.0", "channel": "stable" },

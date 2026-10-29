@@ -53,7 +53,7 @@ expect("kit-to-package rewrites team-plan access to package routes", plan2.roles
 expect("a route glob that spans several packages is escalated, not rewritten", plan2.roles[0].routes.read[0] === "purpose/**" && /purpose\/\*\* spans routes/.test(up.stdout));
 expect("kit-to-package rewrites the where-used parent route", json(join(a, "knowledge/where-used.json")).facts[0].parent.route === "product/alpha-app");
 const rel = json(join(a, `.release/upgrade-${reg.framework}.json`));
-expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package" && rel.guides.length === 2 && rel.packages.length > 5);
+expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,icp-profiles" && rel.guides.length === 2 && rel.packages.length > 5);
 const log = entries(a);
 expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("schema/check-provenance.mjs", [a]).status === 0);
 const read = mentura(["purpose/validation/problem", "read", "--venture", "alpha"]);
@@ -153,8 +153,8 @@ naive(["upgrade", t]);
 const tc = json(join(t, "naive.config.json"));
 tc.triggers = [
   { id: "assess", on: { activity: "write", route: "foundation/problem" }, run: { route: "purpose/validation/assess", action: "run", input: { as_is: true } } },
-  { id: "broken", on: { activity: "write", route: "foundation/icp" }, run: { route: "nowhere/at-all", action: "read" } },
-  { id: "throws", on: { activity: "write", route: "foundation/icp" }, run: { action: "read" } },
+  { id: "broken", on: { activity: "write", route: "foundation/icp/bakers" }, run: { route: "nowhere/at-all", action: "read" } },
+  { id: "throws", on: { activity: "write", route: "foundation/icp/bakers" }, run: { action: "read" } },
 ];
 writeFileSync(join(t, "naive.config.json"), JSON.stringify(tc, null, 2));
 await new Promise((r) => setTimeout(r, 20));
@@ -162,7 +162,7 @@ put("tick", "foundation/problem", { venture: "tick", statement: "Bakeries throw 
 let rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
 expect("an event (a record written) starts its trigger's next step", rep.runs.some((r) => r.trigger === "assess" && r.outcome === "ran" && r.entity === "foundation/problem.json"), JSON.stringify(rep.runs));
 expect("only events after the trigger was configured start it", !rep.runs.some((r) => r.activity === "move"));
-put("tick", "foundation/icp", { venture: "tick", profiles: [{ id: "bakers", who: "Bakery owners" }] });
+put("tick", "foundation/icp/bakers", { venture: "tick", id: "bakers", who: "Bakery owners" });
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
 const broken = rep.runs.find((r) => r.trigger === "broken"), thrown = rep.runs.find((r) => r.trigger === "throws");
 expect("a failed run is recorded with its error", broken?.outcome === "failed" && /no route nowhere/.test(broken.error), JSON.stringify(broken));

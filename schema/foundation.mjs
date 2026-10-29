@@ -21,7 +21,8 @@ const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 export const FRAME = load(join(repo, "purpose/strategic-foundation.json"));
 const MODEL = load(join(repo, "schema/data-model.json"));
 
-const get = (o, path) => path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+// "." is the whole record: a collection whose items are the statement, such as one file per ICP profile.
+const get = (o, path) => path === "." ? o : path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
 const filled = (v) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && !v.length);
 
 /** Venture-relative files of a record type: one file, or every item of a collection. */
@@ -70,7 +71,7 @@ export function foundation(dir) {
     // A record with no log entry existed before the log; a person's baseline or write confirms it.
     const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
     return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent",
-      value: values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
+      value: s.attribute === "." ? values.map(({ v }) => v) : values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
   }) }));
   // A derived statement takes its source's status and shows the primary ICP profile's short form.
   const all = report.flatMap((q) => q.statements);
@@ -85,17 +86,28 @@ export function foundation(dir) {
   return report;
 }
 
+/** The venture's ICP profiles: one record each in foundation/icp/, else the profiles of the older single file. */
+export function icpProfiles(dir) {
+  const folder = join(dir, "foundation/icp");
+  if (existsSync(folder)) return readdirSync(folder).filter((f) => f.endsWith(".json")).sort().map((f) => ({ file: `foundation/icp/${f}`, ...load(join(folder, f)) }));
+  const old = ["foundation/icp.json", "purpose/icp.json"].find((f) => existsSync(join(dir, f)));
+  return old ? (load(join(dir, old)).profiles ?? []).map((p) => ({ file: old, ...p })) : [];
+}
+
 export function problems(dir) {
   const out = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !MODEL.records.some((r) => r.id === s.record)).map((s) => `frame: ${s.id} names record type ${s.record}, which the data model lacks`);
   const there = (...fs) => fs.map((f) => join(dir, f)).find((p) => existsSync(p));
-  const icp = there("foundation/icp.json", "purpose/icp.json"), prob = there("foundation/problem.json", "purpose/validation/problem.json");
-  if (icp) {
-    const forms = new Set(existsSync(prob) ? (load(prob).forms ?? []).map((f) => f.id) : []);
-    for (const p of load(icp).profiles) for (const f of p.problem_forms ?? []) if (!forms.has(f)) out.push(`icp ${p.id}: problem form ${f} is not in the problem record`);
-    const primaries = load(icp).profiles.filter((p) => p.primary).length;
-    if (load(icp).profiles.length > 1 && primaries !== 1) out.push(`icp: ${primaries} primary profiles; exactly one is primary`);
+  const prob = there("foundation/problem.json", "purpose/validation/problem.json");
+  const profiles = icpProfiles(dir);
+  if (profiles.length) {
+    const forms = new Set(prob ? (load(prob).forms ?? []).map((f) => f.id) : []);
+    for (const p of profiles) for (const f of p.problem_forms ?? []) if (!forms.has(f)) out.push(`icp ${p.id}: problem form ${f} is not in the problem record`);
+    // Each profile is its own record, so its id is its file name and is unique.
+    for (const p of profiles) if (p.file.startsWith("foundation/icp/") && p.file !== `foundation/icp/${p.id}.json`) out.push(`${p.file}: its id is ${p.id}; the file must be foundation/icp/${p.id}.json`);
+    const primaries = profiles.filter((p) => p.primary).length;
+    if (profiles.length > 1 && primaries !== 1) out.push(`icp: ${primaries} primary profiles; exactly one is primary`);
     // promised-to is derived from the ICP; a hand-written one that differs has drifted.
-    const p = load(icp).profiles.find((x) => x.primary) ?? load(icp).profiles[0];
+    const p = profiles.find((x) => x.primary) ?? profiles[0];
     const said = existsSync(join(dir, "venture.json")) ? load(join(dir, "venture.json")).core?.promised_to : undefined;
     if (p && filled(said) && said !== (p.short ?? p.who)) out.push(`venture core.promised_to differs from the ICP's short form ("${p.short ?? p.who}"); it is derived from the ICP`);
   }

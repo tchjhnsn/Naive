@@ -1224,21 +1224,19 @@
       "id": "icp",
       "layer": "purpose",
       "level": "venture",
-      "schema": "schema/icp.schema.json",
+      "schema": "schema/icp-profile.schema.json",
       "paths": [
-        "instance/**/foundation/icp.json",
-        "schema/examples/**/foundation/icp.json",
-        "instance/**/purpose/icp.json",
-        "schema/examples/**/purpose/icp.json"
+        "instance/**/foundation/icp/*.json",
+        "schema/examples/**/foundation/icp/*.json"
       ],
       "refs": [
         {
-          "field": "profiles.problem_forms",
+          "field": "problem_forms",
           "to": "validation-problem",
           "checked_by": "schema/foundation.mjs"
         }
       ],
-      "note": "Who the venture serves: ideal customer profiles, one primary (EE-051); a foundation statement, gated",
+      "note": "Who the venture serves: one record per ideal customer profile, each with its own id, exactly one primary (EE-051); a foundation statement, gated. The older single foundation/icp.json is split by the icp-profiles migration",
       "decision_class": "strategy-or-constitution"
     },
     {

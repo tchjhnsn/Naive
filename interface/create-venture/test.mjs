@@ -49,8 +49,8 @@ t("the idea dump is saved verbatim as raw/dump.md and recorded in provenance", (
 
 t("every record file is mapped to its JSON Schema for the editor", () => {
   const s = load(join(v, ".vscode/settings.json"))["json.schemas"];
-  const icp = s.find((x) => x.fileMatch.includes("/foundation/icp.json"));
-  ok(icp?.url === "./node_modules/naive-framework/schema/icp.schema.json", JSON.stringify(icp));
+  const icp = s.find((x) => x.fileMatch.includes("/foundation/icp/*.json"));
+  ok(icp?.url === "./node_modules/naive-framework/schema/icp-profile.schema.json", JSON.stringify(icp));
   ok(existsSync(join(v, icp.url)), "the schema it points to is installed");
 });
 
@@ -221,11 +221,12 @@ async function devTest() {
     ok((await fetch(`http://127.0.0.1:${port}/`)).status === 200, "the board answers");
     ok((await fetch(`http://127.0.0.1:${port}/map`)).status === 200, "the map answers");
     await new Promise((r) => setTimeout(r, 300));
-    writeFileSync(join(v, "foundation/icp.json"), '{"id": 5}\n');
+    mkdirSync(join(v, "foundation/icp"), { recursive: true });
+    writeFileSync(join(v, "foundation/icp/bad.json"), '{"id": 5}\n');
     const python = spawnSync("python3", ["-c", "import jsonschema"]).status === 0;
-    await wait(python ? /✗ foundation\/icp\.json does not match schema\/icp\.schema\.json/ : /foundation\/icp\.json changed/);
+    await wait(python ? /✗ foundation\/icp\/bad\.json does not match schema\/icp-profile\.schema\.json/ : /foundation\/icp\/bad\.json changed/);
     return "ok";
-  } finally { child.kill(); rmSync(join(v, "foundation/icp.json"), { force: true }); }
+  } finally { child.kill(); rmSync(join(v, "foundation/icp"), { recursive: true, force: true }); }
 }
 
 for (const [name, fn] of tests) {
