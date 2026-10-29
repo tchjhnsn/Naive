@@ -16,7 +16,8 @@
     "need-now",
     "provenance",
     "venture-packages",
-    "venture-package"
+    "venture-package",
+    "venture-types"
   ],
   "reads": [
     "product",

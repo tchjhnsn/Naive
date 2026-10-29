@@ -1,0 +1,346 @@
+{
+  "version": "0.1.0",
+  "note": "Venture types create-venture scaffolds (EE-082). The type decides the starting packages, first decisions, imported functions and the roles a person can hold. Start from a list, or describe the venture and let a model choose.",
+  "types": [
+    {
+      "id": "software-startup",
+      "label": "Software startup",
+      "description": "A company building a software product: an app, a SaaS, a developer tool or an AI product.",
+      "examples": [
+        "SaaS",
+        "app",
+        "startup",
+        "developer tool",
+        "AI product",
+        "platform",
+        "marketplace"
+      ],
+      "roles": [
+        "founder",
+        "co-founder",
+        "operator",
+        "advisor",
+        "board-member"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "products",
+        "marketing-and-sales",
+        "customer-service",
+        "human-capital",
+        "it",
+        "finance"
+      ],
+      "packages": [
+        "foundation",
+        "validation",
+        "product",
+        "marketing",
+        "finance",
+        "people",
+        "customers",
+        "investors",
+        "money"
+      ],
+      "decisions": "product-foundation"
+    },
+    {
+      "id": "vc-fund",
+      "label": "VC fund or firm",
+      "description": "An investment fund or firm that raises from limited partners and invests in companies: a thesis, fund terms, a deal pipeline and a portfolio.",
+      "examples": [
+        "venture fund",
+        "VC firm",
+        "angel syndicate",
+        "seed fund",
+        "micro VC",
+        "rolling fund",
+        "investment firm"
+      ],
+      "roles": [
+        "general-partner",
+        "limited-partner",
+        "operator",
+        "advisor",
+        "board-member"
+      ],
+      "default_role": "general-partner",
+      "departments": [
+        "strategy",
+        "finance",
+        "external-relationships",
+        "risk-and-compliance",
+        "human-capital"
+      ],
+      "packages": [
+        "foundation",
+        "fund",
+        "deals",
+        "portfolio",
+        "investors",
+        "people",
+        "finance",
+        "money"
+      ],
+      "decisions": "fund-foundation",
+      "funding": "mixed",
+      "layers": [
+        "purpose",
+        "knowledge",
+        "governance"
+      ]
+    },
+    {
+      "id": "services-business",
+      "label": "Services business",
+      "description": "A business selling expertise or labor: an agency, consultancy, studio or freelance practice.",
+      "examples": [
+        "agency",
+        "consultancy",
+        "studio",
+        "freelance",
+        "professional services"
+      ],
+      "roles": [
+        "founder",
+        "co-founder",
+        "operator",
+        "advisor"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "service-delivery",
+        "marketing-and-sales",
+        "customer-service",
+        "finance"
+      ],
+      "packages": [
+        "foundation",
+        "validation",
+        "product",
+        "marketing",
+        "finance",
+        "people",
+        "customers",
+        "money"
+      ],
+      "decisions": "product-foundation"
+    },
+    {
+      "id": "local-business",
+      "label": "Local business",
+      "description": "A business serving customers in one place: a cafe, a shop, a clinic, a gym or a trade.",
+      "examples": [
+        "cafe",
+        "restaurant",
+        "shop",
+        "clinic",
+        "gym",
+        "salon",
+        "trade"
+      ],
+      "roles": [
+        "founder",
+        "co-founder",
+        "operator",
+        "advisor"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "service-delivery",
+        "marketing-and-sales",
+        "customer-service",
+        "supply-chain",
+        "finance",
+        "assets"
+      ],
+      "packages": [
+        "foundation",
+        "validation",
+        "product",
+        "marketing",
+        "finance",
+        "people",
+        "customers",
+        "money"
+      ],
+      "decisions": "product-foundation"
+    },
+    {
+      "id": "ecommerce",
+      "label": "E-commerce or physical product",
+      "description": "A business making or selling physical goods, online or wholesale.",
+      "examples": [
+        "e-commerce",
+        "online store",
+        "DTC brand",
+        "hardware",
+        "consumer product"
+      ],
+      "roles": [
+        "founder",
+        "co-founder",
+        "operator",
+        "advisor",
+        "board-member"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "products",
+        "marketing-and-sales",
+        "supply-chain",
+        "customer-service",
+        "finance"
+      ],
+      "packages": [
+        "foundation",
+        "validation",
+        "product",
+        "marketing",
+        "finance",
+        "people",
+        "customers",
+        "investors",
+        "money"
+      ],
+      "decisions": "product-foundation"
+    },
+    {
+      "id": "creator-media",
+      "label": "Creator or media",
+      "description": "A venture built on content and an audience: a newsletter, channel, podcast or publication.",
+      "examples": [
+        "newsletter",
+        "YouTube channel",
+        "podcast",
+        "publication",
+        "creator"
+      ],
+      "roles": [
+        "founder",
+        "co-founder",
+        "operator",
+        "advisor"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "products",
+        "marketing-and-sales",
+        "finance"
+      ],
+      "packages": [
+        "foundation",
+        "validation",
+        "product",
+        "marketing",
+        "finance",
+        "people",
+        "customers",
+        "money"
+      ],
+      "decisions": "product-foundation"
+    },
+    {
+      "id": "nonprofit",
+      "label": "Nonprofit",
+      "description": "A mission-driven organization funded by donations and grants rather than profit.",
+      "examples": [
+        "nonprofit",
+        "charity",
+        "foundation",
+        "NGO",
+        "community organization"
+      ],
+      "roles": [
+        "founder",
+        "co-founder",
+        "operator",
+        "advisor",
+        "board-member"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "service-delivery",
+        "external-relationships",
+        "finance",
+        "risk-and-compliance"
+      ],
+      "packages": [
+        "foundation",
+        "validation",
+        "product",
+        "marketing",
+        "finance",
+        "people",
+        "money"
+      ],
+      "decisions": "product-foundation",
+      "funding": "grant"
+    },
+    {
+      "id": "holding-company",
+      "label": "Holding company",
+      "description": "A company that owns and governs other ventures; each one it holds is a nested venture.",
+      "examples": [
+        "holding company",
+        "venture studio",
+        "parent company",
+        "portfolio of businesses"
+      ],
+      "roles": [
+        "founder",
+        "co-founder",
+        "operator",
+        "advisor",
+        "board-member"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "finance",
+        "risk-and-compliance",
+        "human-capital"
+      ],
+      "packages": [
+        "foundation",
+        "portfolio",
+        "finance",
+        "people",
+        "investors",
+        "money"
+      ],
+      "decisions": "none"
+    },
+    {
+      "id": "side-project",
+      "label": "Side project",
+      "description": "Something you build for its own sake, with no plan to make it a business yet.",
+      "examples": [
+        "side project",
+        "hobby",
+        "experiment",
+        "open source project"
+      ],
+      "roles": [
+        "founder",
+        "co-founder"
+      ],
+      "default_role": "founder",
+      "departments": [
+        "strategy",
+        "products"
+      ],
+      "packages": [
+        "foundation",
+        "product"
+      ],
+      "decisions": "product-foundation"
+    }
+  ]
+}

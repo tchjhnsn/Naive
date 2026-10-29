@@ -1,0 +1,14 @@
+{
+  "id": "kilnworks",
+  "company": "Kilnworks",
+  "round": "seed",
+  "status": "invested",
+  "sector": "industrial decarbonization",
+  "source": "founder referral",
+  "check": {
+    "amount": 750000,
+    "currency": "USD"
+  },
+  "thesis_fit": "Software that cuts kiln fuel use, from a former plant manager",
+  "portfolio": "portfolio/kilnworks"
+}

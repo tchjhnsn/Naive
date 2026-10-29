@@ -29,6 +29,11 @@
       "default": "venture",
       "description": "venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054)."
     },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The venture type, an id from schema/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082)"
+    },
     "parent": {
       "type": [
         "string",

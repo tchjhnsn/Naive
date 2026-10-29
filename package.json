@@ -1,6 +1,6 @@
 {
   "name": "naive-framework",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Naive, a venture development framework: conventions, routes, records, checks and an agent interface for building a venture.",
   "type": "module",
   "license": "MIT",

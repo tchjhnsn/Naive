@@ -99,14 +99,55 @@ t("the answers are kept for the next venture, and --reset-preferences forgets th
   ok(create(["--reset-preferences"]).status === 0 && !existsSync(join(home, ".config/naive/create-venture.json")));
 });
 
-t("the setup questions: customize asks phase, layers, legal form and an idea dump", () => {
-  const input = ["clinic", "customize", "validation", "purpose,knowledge", "llc", "dump.md", ""].join("\n");
-  const r = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1" }, input, encoding: "utf8" });
+const prompts = (args, lines, extra = {}) => spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), ...args, "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
+
+t("the setup questions: nothing is scaffolded until the type and role are set; customize asks layers, legal form and a dump", () => {
+  // name, what (Enter: the list), type 1 (software startup), role, your name, solo, phase, customize, layers, legal form, dump
+  const r = prompts([], ["clinic", "", "1", "founder", "Pat Doe", "solo", "validation", "customize", "purpose,knowledge", "llc", "dump.md"]);
   ok(r.status === 0, r.stdout + r.stderr);
   const c = load(join(base, "clinic/venture.json"));
-  ok(c.phase === "validation" && c.form?.legal_form === "llc", JSON.stringify(c));
+  ok(c.type === "software-startup" && c.phase === "validation" && c.form?.legal_form === "llc", JSON.stringify(c));
   ok(c.layers.purpose && c.layers.knowledge && c.layers.operations === false, JSON.stringify(c.layers));
   ok(existsSync(join(base, "clinic/raw/dump.md")));
+  const people = load(join(base, "clinic/people/people.json"));
+  ok(people.mode === "solo" && people.people[0].role === "founder" && people.people[0].hats.length === c.departments.length, JSON.stringify(people));
+});
+
+t("a VC fund with a team: an investor role, one file per founder, each function asked once", () => {
+  // name, what, type 2 (VC fund), role, your name, team, other founders, phase, then who owns each of 5 functions, then recommended
+  const r = prompts([], ["northstar", "", "2", "general-partner", "Torian Johnson", "team", "Ada Lovelace", "discovery", "torian-johnson", "ada-lovelace", "ada-lovelace", "torian-johnson", "torian-johnson", "recommended"]);
+  ok(r.status === 0, r.stdout + r.stderr);
+  const v = load(join(base, "northstar/venture.json"));
+  ok(v.type === "vc-fund" && v.layers.purpose, JSON.stringify(v));
+  ok(existsSync(join(base, "northstar/fund/decisions/thesis.decision.json")) && existsSync(join(base, "northstar/deals")) && existsSync(join(base, "northstar/portfolio")), "a fund starts with its thesis question, deals and a portfolio");
+  ok(!existsSync(join(base, "northstar/products/decisions")) && !existsSync(join(base, "northstar/marketing")), "a fund has no product questions and no marketing package");
+  const people = load(join(base, "northstar/people/people.json"));
+  ok(people.mode === "team" && people.people.every((p) => p.role === "general-partner"), JSON.stringify(people));
+  ok(JSON.stringify(load(join(base, "northstar/people/founders/ada-lovelace.json")).hats) === JSON.stringify(["finance", "external-relationships"]));
+  const check = spawnSync("node", [join(repo, "schema/check-people.mjs"), base], { encoding: "utf8" });
+  ok(check.status === 0, check.stdout);
+});
+
+t("described in a few words, a model picks the type, and the founder confirms it", () => {
+  const r = prompts([], ["syndicate", "an angel syndicate for climate founders", "yes", "general-partner", "Sam Lee", "solo", "discovery", "recommended"], { MENTURA_TYPE_CMD: `node ${join(repo, "schema/examples/venture-type/jev.mjs")}` });
+  ok(r.status === 0, r.stdout + r.stderr);
+  ok(/That sounds like a vc fund or firm/.test(r.stdout), r.stdout);
+  ok(load(join(base, "syndicate/venture.json")).type === "vc-fund");
+});
+
+t("without a model key, describing it falls back to the list; an unclear description is uncertain", () => {
+  const r = create(["listed", "--describe", "a newsletter about cafes", "--yes", "--skip-install", "--no-git"]);
+  ok(r.status === 1 && /pass --type/.test(r.stderr), r.stderr);
+  const u = spawnSync("node", [join(repo, "schema/venture-type.mjs"), "classify", "something hard to name"], { env: { ...env, MENTURA_TYPE_CMD: `node ${join(repo, "schema/examples/venture-type/jev.mjs")}` }, encoding: "utf8" });
+  ok(u.status === 0 && JSON.parse(u.stdout).uncertain === true, u.stdout);
+});
+
+t("flags: --type, --role and --team; a role the type does not have is refused", () => {
+  ok(create(["studio2", "--type", "services-business", "--role", "founder", "--name", "Lee Park", "--team", "Kim Cho", "--yes", "--skip-install", "--no-git"]).status === 0);
+  const p = load(join(base, "studio2/people/people.json"));
+  ok(p.mode === "team" && p.people[1].role === "co-founder" && p.people[0].hats.length > 0, JSON.stringify(p));
+  const r = create(["badrole", "--type", "software-startup", "--role", "limited-partner", "--yes", "--skip-install", "--no-git"]);
+  ok(r.status === 1 && /has no limited-partner role/.test(r.stderr) && !existsSync(join(base, "badrole")), r.stderr);
 });
 
 t("naive check runs every venture check, from inside the venture", () => {

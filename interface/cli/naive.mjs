@@ -86,7 +86,7 @@ async function dev(dir) {
 }
 
 // The checks that read a workspace, run on the folder that holds this venture.
-const CHECKS = ["check-ventures", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used"];
+const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used"];
 function check(dir) {
   const { workspace } = asRouted(dir);
   let failed = 0;

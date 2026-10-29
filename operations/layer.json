@@ -23,7 +23,9 @@
     "marketing-matrix",
     "site-presence",
     "marketing-sitemap",
-    "marketing-content"
+    "marketing-content",
+    "people",
+    "founder"
   ],
   "reads": [
     "agent-capability",

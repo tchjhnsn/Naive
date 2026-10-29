@@ -1,0 +1,27 @@
+{
+  "id": "fund-terms",
+  "parent": "fund-thesis",
+  "question": "What are the fund's terms: target size, vintage, structure, management fee, carry and term?",
+  "decides": {
+    "record": "fund-terms",
+    "path": "fund/terms.json"
+  },
+  "unlocks": [
+    {
+      "activity": "Raise from limited partners",
+      "routes": [
+        "investors/*"
+      ]
+    }
+  ],
+  "layer": "purpose",
+  "boundary": "fail-closed",
+  "needed_in": "validation",
+  "status": "open",
+  "provenance": {
+    "drafted_by": {
+      "kind": "framework",
+      "id": "naive"
+    }
+  }
+}

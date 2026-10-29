@@ -219,6 +219,7 @@ const PACKAGE_ROUTE = {
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
+  people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
 };
 
 // Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
