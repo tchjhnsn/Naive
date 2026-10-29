@@ -119,7 +119,8 @@ if (answers.dump) {
 
 // The venture's package.json: the framework as a dev dependency and the four scripts (I-17).
 const fromClone = existsSync(join(framework, "test.mjs")) && !framework.split("/").includes("node_modules");
-const spec = opt("framework") ?? (fromClone ? `file:${framework}` : `${fw.name}@^${fw.version}`);
+// A dependency value is a range or a location, never name@range: --framework naive-framework@^0.2 keeps ^0.2.
+const spec = opt("framework")?.replace(new RegExp(`^${fw.name}@`), "") ?? (fromClone ? `file:${framework}` : `^${fw.version}`);
 writeFileSync(join(dir, "package.json"), JSON.stringify({
   name: id, private: true, type: "module",
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },

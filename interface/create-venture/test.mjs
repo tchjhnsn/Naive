@@ -2,7 +2,7 @@
 // I-21, I-24, I-26, I-29). Runs offline: the framework installs from this checkout.
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -50,6 +50,35 @@ t("every record file is mapped to its JSON Schema for the editor", () => {
   const icp = s.find((x) => x.fileMatch.includes("/foundation/icp.json"));
   ok(icp?.url === "./node_modules/naive-framework/schema/icp.schema.json", JSON.stringify(icp));
   ok(existsSync(join(v, icp.url)), "the schema it points to is installed");
+});
+
+t("installed from the registry, the venture depends on the framework by version, not by file", () => {
+  // Pack both packages and install them as npm would, then create a venture without installing it.
+  const packs = join(base, "packs"), proj = join(base, "registry");
+  mkdirSync(packs); mkdirSync(proj);
+  for (const d of [repo, join(repo, "interface/create-venture")]) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: d, env, encoding: "utf8" }).status === 0, `npm pack in ${d}`);
+  const tgz = (n) => join(packs, readdirSync(packs).find((f) => f.startsWith(`${n}-`)));
+  writeFileSync(join(proj, "package.json"), "{}\n");
+  const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture")], { cwd: proj, env, encoding: "utf8" });
+  ok(i.status === 0, i.stderr);
+  const r = spawnSync("node", [join(proj, "node_modules/.bin/create-venture"), "from-registry", "--yes", "--skip-install", "--no-git"], { cwd: base, env, encoding: "utf8" });
+  ok(r.status === 0, r.stderr + r.stdout);
+  const fwVersion = load(join(repo, "package.json")).version;
+  ok(load(join(base, "from-registry/package.json")).devDependencies["naive-framework"] === `^${fwVersion}`, readFileSync(join(base, "from-registry/package.json"), "utf8"));
+});
+
+t("--framework given as name@range keeps only the range", () => {
+  ok(create(["pinned", "--yes", "--skip-install", "--no-git", "--framework", "naive-framework@^0.1.0"]).status === 0);
+  ok(load(join(base, "pinned/package.json")).devDependencies["naive-framework"] === "^0.1.0");
+});
+
+// With network: the registry-installed generator creates a venture and npm installs the published framework.
+if (process.env.NAIVE_REGISTRY_TEST === "1") t("from the registry: create-venture installs naive-framework from npm and naive check passes", () => {
+  const proj = join(base, "registry");
+  const r = spawnSync("node", [join(proj, "node_modules/.bin/create-venture"), "npm-venture", "--yes", "--no-git"], { cwd: base, env, encoding: "utf8" });
+  ok(r.status === 0, r.stderr + r.stdout);
+  const c = spawnSync("node", [join(base, "npm-venture/node_modules/.bin/naive"), "check"], { cwd: join(base, "npm-venture"), env, encoding: "utf8" });
+  ok(c.status === 0 && /all passing/.test(c.stdout), c.stdout + c.stderr);
 });
 
 t("a directory that is not empty is refused", () => {
