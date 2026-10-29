@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="pele pele-state" viewBox="0 0 759 1606" width="759" height="1606" style="max-width:100%;height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_tw:var(--pele-title-weight,bold);--_fm:var(--pele-font-mono,monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="state"><style>.pele {
+  --pele-bg: #ffffff;
+  --pele-fg: #1c1c1c;
+  --pele-muted: #656565;
+  --pele-line: #808080;
+  --pele-surface: #fcfcfc;
+  --pele-surface-alt: #f1f1f1;
+  --pele-border: #c9c9c9;
+}
+.pele .blue rect { fill: #c3e0ff; }
+.pele .orange rect { fill: #f0d3bf; }
+.pele .purple rect { fill: #e3d5ff; }
+.pele .yellow rect { fill: #f0dcbf; }
+.pele .teal rect { fill: #bfe3df; }
+.pele .tan rect { fill: #e5d9ce; }
+.pele .pink rect { fill: #ffcbe6; }
+.pele .breaks rect {
+  fill: #ffecee !important;
+  stroke: #e72e3b !important;
+  stroke-width: 2.5px !important;
+}
+.pele .breaks text {
+  fill: #cd2834 !important;
+}
+.pele .mayBreak rect {
+  fill: #fff3e6 !important;
+  stroke: #e8730c !important;
+  stroke-width: 2.5px !important;
+}
+.pele .mayBreak text {
+  fill: #b85a06 !important;
+}
+.pele .bugPath rect {
+  stroke: #1680f3 !important;
+  stroke-width: 2.5px !important;
+}
+.pele .repeats rect {
+  stroke: #9b35d6 !important;
+  stroke-width: 2.5px !important;
+  stroke-dasharray: 6 3;
+}
+@media (prefers-color-scheme: dark) {
+  .pele {
+    --pele-bg: #1f1f1f;
+    --pele-fg: #f5f5f5;
+    --pele-muted: #acacac;
+    --pele-line: #939393;
+    --pele-surface: #121212;
+    --pele-surface-alt: #2c2c2c;
+    --pele-border: #4e4e4e;
+  }
+  .pele .blue rect { fill: #1b3857; }
+  .pele .orange rect { fill: #573117; }
+  .pele .purple rect { fill: #3c2e57; }
+  .pele .yellow rect { fill: #573d17; }
+  .pele .teal rect { fill: #174641; }
+  .pele .tan rect { fill: #3d3127; }
+  .pele .pink rect { fill: #57233e; }
+  .pele .breaks rect {
+    fill: #2e2021 !important;
+    stroke: #cf2b35 !important;
+  }
+  .pele .breaks text {
+    fill: #ff6463 !important;
+  }
+  .pele .mayBreak rect {
+    fill: #2e2619 !important;
+    stroke: #d0700f !important;
+  }
+  .pele .mayBreak text {
+    fill: #ffa257 !important;
+  }
+  .pele .bugPath rect {
+    stroke: #116dd2 !important;
+  }
+  .pele .repeats rect {
+    stroke: #9a3fcf !important;
+  }
+}
+</style><text class="pele-title" font-weight="var(--_tw)" text-anchor="middle" xml:space="preserve"><tspan x="379.5" y="25.6">A founder runs the seed fundraising playbook</tspan></text><g transform="translate(0,36)"><g class="pele-clusters"><g class="pele-cluster pele-state-composite" data-id="legend"><rect x="267.08" y="8" width="483.65" height="112" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M267.08,44H750.73" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="508.91" y="31.6" text-anchor="middle">Legend</text></g></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-transition" data-id="edge0"><path d="M220.08,120L220.08,157"/><path class="pele-marker" d="M220.08,164L216.72,156L223.44,156Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge1"><path d="M220.08,208L220.08,285"/><path class="pele-marker" d="M220.08,292L216.72,284L223.44,284Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge2"><path d="M220.08,336L220.08,413"/><path class="pele-marker" d="M220.08,420L216.72,412L223.44,412Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge3"><path d="M165.82,482C165.82,516.5 108.93,516.5 108.93,551L108.93,595C108.93,630.5 191.17,630.5 191.17,666L191.17,672"/><path class="pele-marker" d="M191.17,679L187.81,671L194.53,671Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge4"><path d="M274.34,482C274.34,491.25 331.23,491.25 331.23,500.5L331.23,544"/><path class="pele-marker" d="M331.23,551L327.87,543L334.59,543Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge5"><path d="M191.17,723C191.17,732.25 118.08,732.25 118.08,741.5L118.08,785"/><path class="pele-marker" d="M118.08,792L114.72,784L121.44,784Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge6"><path d="M248.99,723C248.99,757.5 322.08,757.5 322.08,792L322.08,836C322.08,864 267.22,864 267.22,892L267.22,898"/><path class="pele-marker" d="M267.22,905L263.86,897L270.58,897Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge7"><path d="M331.23,595L331.23,653.5C331.23,660.44 248.99,660.44 248.99,667.38L248.99,672"/><path class="pele-marker" d="M248.99,679L245.63,671L252.35,671Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge8"><path d="M118.08,836L118.08,879.5C118.08,886.44 172.95,886.44 172.95,893.38L172.95,898"/><path class="pele-marker" d="M172.95,905L169.58,897L176.31,897Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge9"><path d="M172.95,949C172.95,983.5 120.05,983.5 120.05,1018L120.06,1139"/><path class="pele-marker" d="M120.06,1146L116.7,1138L123.42,1138Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge10"><path d="M267.22,949C267.22,958.25 320.11,958.25 320.11,967.5L320.11,1011"/><path class="pele-marker" d="M320.11,1018L316.75,1010L323.47,1010Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge11"><path d="M220.08,1190L220.08,1252"/><path class="pele-marker" d="M220.08,1259L216.72,1251L223.44,1251Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge12"><path d="M320.11,1062L320.11,1139"/><path class="pele-marker" d="M320.11,1146L316.75,1138L323.47,1138Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge13"><path d="M220.08,1303L220.08,1365"/><path class="pele-marker" d="M220.08,1372L216.72,1364L223.44,1364Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge14"><path d="M220.08,1416L220.08,1493"/><path class="pele-marker" d="M220.08,1500L216.72,1492L223.44,1492Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="edge1"><rect x="140.21" y="228.5" width="159.75" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="220.08" y="242.4">you read the records the</tspan><tspan x="220.08" y="260.4">venture already has</tspan></text></g><g class="pele-edge-label" data-id="edge2"><rect x="118.81" y="356.5" width="202.54" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="220.08" y="370.4">you draft the raise plan with the</tspan><tspan x="220.08" y="388.4">labels empty</tspan></text></g><g class="pele-edge-label" data-id="edge3"><rect x="10" y="555" width="197.87" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="108.93" y="568.9">you fill in amount, months, and</tspan><tspan x="108.93" y="586.9">what the money buys</tspan></text></g><g class="pele-edge-label" data-id="edge4"><rect x="239.69" y="502.5" width="183.08" height="21" rx="3" fill="var(--_bg)"/><text x="331.23" y="517.9" text-anchor="middle">you run the raise plan check</text></g><g class="pele-edge-label" data-id="edge5"><rect x="32.38" y="743.5" width="171.41" height="21" rx="3" fill="var(--_bg)"/><text x="118.08" y="758.9" text-anchor="middle">you run the investor check</text></g><g class="pele-edge-label" data-id="edge6"><rect x="232.11" y="803.5" width="179.95" height="21" rx="3" fill="var(--_bg)"/><text x="322.08" y="818.9" text-anchor="middle">you write an investor record</text></g><g class="pele-edge-label" data-id="edge7"><rect x="232.29" y="615.5" width="197.87" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="331.23" y="629.4">you fill in amount, months, and</tspan><tspan x="331.23" y="647.4">what the money buys</tspan></text></g><g class="pele-edge-label" data-id="edge8"><rect x="28.11" y="856.5" width="179.95" height="21" rx="3" fill="var(--_bg)"/><text x="118.08" y="871.9" text-anchor="middle">you write an investor record</text></g><g class="pele-edge-label" data-id="edge9"><rect x="42.91" y="1022" width="154.29" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="120.05" y="1035.9">you write the data room</tspan><tspan x="120.05" y="1053.9">checklist</tspan></text></g><g class="pele-edge-label" data-id="edge10"><rect x="227.4" y="969.5" width="185.42" height="21" rx="3" fill="var(--_bg)"/><text x="320.11" y="984.9" text-anchor="middle">you run the data room check</text></g><g class="pele-edge-label" data-id="edge11"><rect x="157.33" y="1210.5" width="125.5" height="21" rx="3" fill="var(--_bg)"/><text x="220.08" y="1225.9" text-anchor="middle">you run the checks</text></g><g class="pele-edge-label" data-id="edge12"><rect x="242.97" y="1082.5" width="154.29" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="320.11" y="1096.4">you write the data room</tspan><tspan x="320.11" y="1114.4">checklist</tspan></text></g><g class="pele-edge-label" data-id="edge13"><rect x="155.38" y="1323.5" width="129.41" height="21" rx="3" fill="var(--_bg)"/><text x="220.08" y="1338.9" text-anchor="middle">you decide the plan</text></g><g class="pele-edge-label" data-id="edge14"><rect x="131.65" y="1436.5" width="176.87" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="220.08" y="1450.4">you record the signed</tspan><tspan x="220.08" y="1468.4">instrument on the cap table</tspan></text></g></g><g class="pele-nodes"><g class="pele-node pele-state blue" data-id="s0" transform="translate(220.08,186)"><rect x="-89.81" y="-22" width="179.62" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Venture records only</text></g><g class="pele-node pele-state blue" data-id="s1" transform="translate(220.08,314)"><rect x="-113.38" y="-22" width="226.75" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Story read from the venture</text></g><g class="pele-node pele-state yellow" data-id="s2" transform="translate(220.08,451)"><rect x="-106.26" y="-31" width="212.53" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Raise plan drafted, labels</tspan><tspan x="0" y="16.1">blank</tspan></text></g><g class="pele-node pele-state yellow" data-id="s3" transform="translate(220.08,701)"><rect x="-80.91" y="-22" width="161.82" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Raise plan filled in</text></g><g class="pele-node pele-state orange" data-id="s4" transform="translate(331.23,573)"><rect x="-93.36" y="-22" width="186.72" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Raise plan check fails</text></g><g class="pele-node pele-state orange" data-id="s5" transform="translate(118.08,814)"><rect x="-84.02" y="-22" width="168.05" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Investor check fails</text></g><g class="pele-node pele-state yellow" data-id="s6" transform="translate(220.08,927)"><rect x="-99.14" y="-22" width="198.27" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Investor records written</text></g><g class="pele-node pele-state yellow" data-id="s7" transform="translate(220.08,1168)"><rect x="-112.02" y="-22" width="224.05" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Data room checklist written</text></g><g class="pele-node pele-state orange" data-id="s8" transform="translate(320.11,1040)"><rect x="-92.91" y="-22" width="185.82" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Data room check fails</text></g><g class="pele-node pele-state teal" data-id="s9" transform="translate(220.08,1281)"><rect x="-61.79" y="-22" width="123.58" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Checks pass</text></g><g class="pele-node pele-state teal" data-id="s10" transform="translate(220.08,1394)"><rect x="-106.72" y="-22" width="213.44" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Founder decided the plan</text></g><g class="pele-node pele-state teal" data-id="s11" transform="translate(220.08,1531)"><rect x="-104.94" y="-31" width="209.87" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Signed instrument on the</tspan><tspan x="0" y="16.1">cap table</tspan></text></g><g class="pele-node pele-state-start" data-id="root_start" transform="translate(220.08,113)"><circle r="7" fill="var(--_l)"/></g><g class="pele-node pele-state blue" data-id="lg0" transform="translate(325.76,82)"><rect x="-42.68" y="-22" width="85.36" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">reading</text></g><g class="pele-node pele-state yellow" data-id="lg1" transform="translate(451.12,82)"><rect x="-42.68" y="-22" width="85.36" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">drafting</text></g><g class="pele-node pele-state orange" data-id="lg2" transform="translate(570.7,82)"><rect x="-36.9" y="-22" width="73.79" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">failing</text></g><g class="pele-node pele-state teal" data-id="lg3" transform="translate(691.16,82)"><rect x="-43.57" y="-22" width="87.14" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">passing</text></g></g></g></svg>
