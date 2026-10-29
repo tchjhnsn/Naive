@@ -410,6 +410,16 @@
       },
       "why": "Once one fact (a price, a product name, a plan's limits) is repeated in several places, such as a site, newsletters and a payment provider; before launch there is rarely more than one copy"
     },
+    "judgment": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.05,
+        "beachhead": 0.05,
+        "scale": 0.05,
+        "platform": 0.05
+      },
+      "why": "Never written by hand: a judgment is what a package's model step answers when mentura steps run asks it, so there is nothing to suggest"
+    },
     "department": {
       "base": {
         "discovery": 0.3,

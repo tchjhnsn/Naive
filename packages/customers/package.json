@@ -16,6 +16,26 @@
   "templates": [],
   "checks": ["schema/check-data-packages.mjs"],
   "skill": null,
-  "use_model": [],
+  "use_model": [
+    {
+      "step": "stage",
+      "kind": "choice",
+      "for_each": "customers",
+      "question": "Which buying stage do the notes {item.notes} put this customer at?",
+      "inputs": ["item.notes"],
+      "options": ["aware", "trying", "paying", "gone"],
+      "threshold": 0.7
+    },
+    {
+      "step": "summary",
+      "kind": "draft",
+      "for_each": "customers",
+      "after": ["stage"],
+      "question": "Write one plain sentence about this customer from the notes {item.notes} and the stage {steps.stage}, with the seat count written as {{seats}}.",
+      "inputs": ["item.notes"],
+      "computed": { "seats": { "item": "seats" } },
+      "keep": ["seats"]
+    }
+  ],
   "complete": false
 }
