@@ -157,7 +157,7 @@ t("--source points functions at systems; Rho syncs from its saved answer and is 
   const r = create(["shop", "--type", "ecommerce", "--name", "Lee Park", "--source", "marketing-and-sales=shopify:shop.myshopify.com", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install"]);
   ok(r.status === 0 && /Rho: synced from a saved sandbox answer \(a fixture/.test(r.stdout) && /Legal documents: none connected yet/.test(r.stdout), r.stdout + r.stderr);
   const fns = load(join(base, "shop/knowledge/sources.json")).functions;
-  ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(join(base, "shop/money/summary.json")), JSON.stringify(fns));
+  ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(join(base, "shop/money/_summary.json")), JSON.stringify(fns));
   ok(fns["marketing-and-sales"].systems[0].status === "pointed");
   // The transactions Rho synced are sensitive: git must ignore them. (Where Rho writes account records,
   // money/accounts/ against the data model's money/<id>.json, is the Rho integration's open question.)

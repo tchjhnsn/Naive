@@ -38,7 +38,7 @@ function state(id) {
   const rows = nn.status === 0 ? JSON.parse(nn.stdout).rows : [];
   const kit = rows.filter((r) => r.now >= 0.5 || r.status === "coming soon").map((r) => ({ type: r.type, status: r.status, now: r.now, next: r.next, why: r.why, ...(kitOf.get(r.type) ?? {}) }));
   // Money (EE-070): only the summary, never the transactions stream; the source stays the system of record.
-  const money = existsSync(join(dir, "money/summary.json")) ? JSON.parse(readFileSync(join(dir, "money/summary.json"), "utf8")) : null;
+  const money = existsSync(join(dir, "money/_summary.json")) ? JSON.parse(readFileSync(join(dir, "money/_summary.json"), "utf8")) : null;
   return { ...decisions(dir), kit, money, log: log.map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, who: `${e.agent?.kind ?? "?"}${e.agent?.id ? ` ${e.agent.id}` : ""}`, via: e.agent?.via })) };
 }
 

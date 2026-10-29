@@ -402,7 +402,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
-      const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => patterns.some((g) => glob(g).test(f))) : patterns;
+      const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => !/(^|\/)_[^/]*$/.test(f) && patterns.some((g) => glob(g).test(f))) : patterns; // a file named _* is never an item
       // Caching hook (F-2): each record is read once per action and shared.
       items = (await Promise.all(paths.map((f) => memo(`read:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
       // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
