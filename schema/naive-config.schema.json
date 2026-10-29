@@ -178,6 +178,25 @@
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
+    },
+    "money_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-rule mode for the money lint (schema/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed, and the run exits 1 only when a fail-closed rule has findings.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": ["fail-open", "fail-closed"]
+              }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
