@@ -39,6 +39,17 @@ export const TOOLS = [
   { name: "mentura_propose_decision", description: "Propose a decision, or new wording for an open one. It stays open until a person approves it in the CLI (mentura decide); you can never mark a decision decided. Put it beside what it decides with at (a venture folder such as operations) and name (<record>[.<topic>]).", inputSchema: { type: "object", properties: { venture,
     decision: { type: "object", description: "id, question, and optionally answer (your proposed wording), decides, layer, parent, needed_in, due, outcomes, unlocks, note, plus at and name for where it goes" },
     agent_id: { type: "string", description: "Your role in the team plan" }, model: { type: "string" } }, required: ["venture", "decision"] } },
+  // Setup (EE-083, interface/skills/naive-setup): the questions that establish a new venture, in order, and an artifact of the progress.
+  { name: "mentura_setup", description: "Where a new venture's setup stands: its people and hats, the source of truth for each function, the foundation and first decisions (the docket), the goal for discovery, and which steps are done. artifact is that state as one self-contained HTML page: render it as an artifact where your harness has artifacts, and again after every answer. Ask the founder the next open question, one at a time, in order.", inputSchema: { type: "object", properties: { venture }, required: ["venture"] } },
+  { name: "mentura_setup_answer", description: "Write down the founder's answer to one setup question (a docket id from mentura_setup, or discovery-goal), exactly in their words. It is proposed with their words as its wording and stays open until the founder confirms it at the keyboard (naive setup confirm): you never decide for them.", inputSchema: { type: "object", properties: { venture,
+    id: { type: "string", description: "The question's id from mentura_setup's docket, or discovery-goal" },
+    answer: { type: "string", description: "The founder's answer, verbatim" },
+    agent_id: { type: "string", description: "Your role in the team plan" }, model: { type: "string" } }, required: ["venture", "id", "answer"] } },
+  { name: "mentura_setup_point", description: "Point one function of the venture at the system that holds its truth (from mentura_setup's catalog), as the founder said, such as finance at rho or products at github with address acme/app. Naive keeps a pointer, never a copy; Rho is synced at once.", inputSchema: { type: "object", properties: { venture,
+    function: { type: "string", description: "A function, such as products, finance or legal" },
+    system: { type: "string", description: "A system the catalog offers for that function" },
+    address: { type: "string", description: "Where in that system, such as acme/app" },
+    agent_id: { type: "string", description: "Your role in the team plan" } }, required: ["venture", "function", "system"] } },
   { name: "mentura_check", description: "Run the checks for one record of a venture.", inputSchema: { type: "object", properties: { venture, route }, required: ["venture", "route"] } },
   { name: "mentura_template", description: "The fill-in template for a record, where its kit has one.", inputSchema: { type: "object", properties: { route }, required: ["route"] } },
   { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/assess (what the problem's evidence is strong enough for), governance/payouts, knowledge/catalog (index every source the venture keeps records in), knowledge/search (find items in any of them). A result with needs_input lists what is missing: ask the person whether to fill it in or run as is, and only then call again with as_is.", inputSchema: { type: "object", properties: { venture, route, value: { type: ["number", "string"], description: "governance/payouts: a sale value; knowledge/search: the query" },
@@ -77,6 +88,10 @@ export async function handle(msg, notify = () => {}) {
           input: { session: a.session, task: a.task, prefetch: a.prefetch, header_only: a.header_only, ...(progress ? { onPart: ({ part, data }) => progress({ message: `${part}: ${JSON.stringify(data)}` }) } : {}) } }); break;
         case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, confidence: a.confidence, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
+        // Setup (EE-083): schema/setup.mjs holds the questions; answers are proposals the founder confirms.
+        case "mentura_setup": { const m = await import("../../schema/setup.mjs"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
+        case "mentura_setup_answer": r = await (await import("../../schema/setup.mjs")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
+        case "mentura_setup_point": r = await (await import("../../schema/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id }); break;
         case "mentura_decisions": {
           r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
           if (r.ok && a.render?.length) r.result = { ...r.result, decisions: r.result.decisions.filter((d) => a.render.includes(d.render)) };

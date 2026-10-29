@@ -10,6 +10,8 @@
 //   naive check                                     run every check that applies to the venture (I-9)
 //   naive info                                      versions, the venture, and which agents are connected (I-6)
 //   naive mcp                                       serve the venture to an agent over MCP (stdio)
+//   naive setup [state|artifact|answer|point|confirm]  set the venture up: the state, an artifact of it, and
+//                                                   confirming the answers the model relayed (EE-083)
 //   naive typegen                                   write .naive/types/ from the route table and the MCP tools
 //   naive upgrade [<venture dir>] [--framework]     move a venture onto the next Naive layout; --framework first
 //                                                   updates the installed framework with the venture's package manager (I-29)
@@ -161,6 +163,9 @@ else if (cmd === "build" || cmd === "start") {
   const dir = rest[0] && !rest[0].startsWith("--") ? resolve(rest[0]) : (opt("venture") ? here() : findVenture());
   if (dir && rest.includes("--framework") && upgradeFramework(dir) !== 0) process.exit(1);
   process.exit(run("schema/upgrade-venture.mjs", dir ? [dir] : []));
+} else if (cmd === "setup") {
+  // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
+  process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];

@@ -6,6 +6,10 @@
     {
       "id": "install-mentura",
       "path": "interface/skills/install-mentura/SKILL.md"
+    },
+    {
+      "id": "naive-setup",
+      "path": "interface/skills/naive-setup/SKILL.md"
     }
   ],
   "records": [

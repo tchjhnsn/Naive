@@ -36,6 +36,7 @@ const steps = [
   ["the gate: naive.config.json, one gate per venture, who is acting", "node", ["schema/gate-test.mjs"]],
   ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["interface/dev/test.mjs"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["interface/create-venture/test.mjs"]],
+  ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["schema/setup-test.mjs"]],
   ["the Next.js translation status (every concept has a status, its evidence exists, the page is current)", "node", ["schema/check-nextjs-status.mjs"]],
   ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],
   ["governance: instance", "node", ["schema/check-governance.mjs", "instance"]],

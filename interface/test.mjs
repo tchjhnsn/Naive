@@ -117,7 +117,7 @@ expect("gates: a venture's decision rights decide; ownership drafts under the te
 // MCP server.
 const init = (await handle({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }));
 expect("MCP initialize names the server and its tools capability", init.result.serverInfo.name === "mentura" && init.result.capabilities.tools);
-expect("MCP lists its eleven tools", (await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 11);
+expect("MCP lists its fourteen tools, three of them for setup", (await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 14 && ["mentura_setup", "mentura_setup_answer", "mentura_setup_point"].every((n) => TOOLS.some((t) => t.name === n)));
 const mcp = async (name, args) => (await handle({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name, arguments: args } })).result;
 const pd = await mcp("mentura_propose_decision", { venture: "tandem", decision: { id: "mcp-demo", question: "Demo?", answer: "Yes", at: "operations" }, agent_id: "builder" });
 expect("MCP: an agent proposes a decision and it awaits approval (EE-058)", !pd.isError && /"awaiting": "approval"/.test(pd.content[0].text));

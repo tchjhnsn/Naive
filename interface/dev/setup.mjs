@@ -8,84 +8,11 @@
 //
 //   handle(req, res, dir) -> true when it answered a /setup request
 
-import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { decide, point, state } from "../../schema/setup.mjs";
 
-const repo = new URL("../..", import.meta.url).pathname;
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const json = (res, code, body) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
 const body = (req) => new Promise((ok) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch { ok({}); } }); });
 const GOAL = "discovery-goal";
-
-async function state(dir) {
-  const { decisions } = await import("../../schema/decisions.mjs");
-  const v = load(join(dir, "venture.json"));
-  const people = existsSync(join(dir, "people/people.json")) ? load(join(dir, "people/people.json")) : null;
-  const sources = existsSync(join(dir, "knowledge/sources.json")) ? load(join(dir, "knowledge/sources.json")) : { sources: [], records: {} };
-  const catalog = load(join(repo, "schema/systems-catalog.json"));
-  const types = load(join(repo, "schema/venture-types.json")).types;
-  const all = decisions(dir).decisions;
-  // The roots (venture, foundation) structure the docket; they are not questions to answer here.
-  const docket = all.filter((d) => d.id !== GOAL && d.status !== "deferred" && !["venture", "foundation"].includes(d.id));
-  const now = docket.filter((d) => d.render === "now" || d.status === "decided");
-  const goal = all.find((d) => d.id === GOAL) ?? null;
-  const settled = now.filter((d) => d.status === "decided").length;
-  const pointed = Object.values(sources.functions ?? {}).filter((f) => f.systems.length).length;
-  const steps = { venture: true, people: !!people, truth: pointed > 0, docket: now.length > 0 && settled === now.length, goal: goal?.status === "decided" };
-  return {
-    venture: { id: v.id, name: v.name, phase: v.phase, type: types.find((t) => t.id === v.type) ?? null },
-    people, functions: sources.functions ?? {}, truth: sources.truth ?? "local",
-    catalog, docket: now.map((d) => ({ id: d.id, question: d.question, source: d.source, status: d.status, options: d.options ?? [], answer: d.answer ?? null, why: d.why ?? [], statement: d.statement ?? null })),
-    later: docket.filter((d) => d.render !== "now" && d.status !== "decided").length,
-    goal: goal ? { status: goal.status, answer: goal.answer ?? null } : null,
-    steps, done: Object.values(steps).every(Boolean), counts: { settled, of: now.length },
-    rho: existsSync(join(repo, "platform/integrations/rho.mjs")),
-  };
-}
-
-const founderName = (dir) => existsSync(join(dir, "people/people.json")) ? load(join(dir, "people/people.json")).people[0]?.name ?? "Founder" : "Founder";
-
-// One answer: a decision on file is approved; a foundation statement (or the goal) becomes a decision a person approves.
-async function decide(dir, { id, answer }) {
-  const { approve, decisions, propose } = await import("../../schema/decisions.mjs");
-  if (!answer || !String(answer).trim()) return { ok: false, error: "write an answer first" };
-  const by = founderName(dir);
-  const d = decisions(dir).decisions.find((x) => x.id === id);
-  if (id === GOAL && !d) {
-    const p = propose(dir, { id: GOAL, question: "What must be true for the venture to leave discovery? Name the goal this phase works toward.", decides: { record: "telos", path: "foundation/telos.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }, { via: "api" });
-    if (!p.ok) return p;
-    return approve(dir, GOAL, { by, answer: String(answer).trim(), via: "api", note: "set at /setup" });
-  }
-  if (!d) return { ok: false, error: `no decision ${id}` };
-  if (d.source === "foundation") {
-    const sid = id.replace(/^foundation-/, "");
-    const did = `statement-${sid}`;
-    const p = propose(dir, { id: did, question: d.question, statement: sid, decides: d.decides, layer: d.layer === "system" ? "purpose" : d.layer, needed_in: d.needed_in }, { via: "api" });
-    if (!p.ok) return p;
-    return approve(dir, did, { by, answer: String(answer).trim(), via: "api", note: "the founder's words at /setup" });
-  }
-  return approve(dir, id, { by, answer: String(answer).trim(), via: "api", note: "decided at /setup" });
-}
-
-// One pointer: where a function keeps its truth, merged into knowledge/sources.json through the router.
-async function point(dir, { fn, system, address }) {
-  const catalog = load(join(repo, "schema/systems-catalog.json"));
-  if (!catalog.functions[fn]?.includes(system)) return { ok: false, error: `${system} is not offered for ${fn}` };
-  const file = join(dir, "knowledge/sources.json");
-  const map = existsSync(file) ? load(file) : { sources: [], records: {}, truth: "local" };
-  const f = (map.functions ??= {})[fn] ??= { systems: [] };
-  const entry = { system, ...(address ? { address } : {}), status: "pointed" };
-  if (system === "rho" && existsSync(join(repo, "platform/integrations/rho.mjs"))) {
-    const live = Boolean(process.env.RHO_API_TOKEN);
-    const r = spawnSync("node", [join(repo, "platform/integrations/rho.mjs"), "sync", "--venture", dir, ...(live ? ["--live"] : [])], { encoding: "utf8", env: process.env });
-    if (r.status === 0) Object.assign(entry, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), address: address || (live ? "live" : "sandbox") });
-  }
-  f.systems = [...f.systems.filter((s) => s.system !== system), entry];
-  const { call } = await import("../router.mjs");
-  const r = await call({ workspace: dirname(dir), venture: basename(dir), route: "knowledge/knowledge-sources", action: "write", input: map, actor: "person", via: "api", provenance: { note: `${fn}: ${system}${address ? ` at ${address}` : ""} (${entry.status})` } });
-  return r.ok ? { ok: true, result: entry } : r;
-}
 
 export async function handle(req, res, dir) {
   const u = new URL(req.url, "http://x");
