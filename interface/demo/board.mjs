@@ -37,7 +37,9 @@ function state(id) {
   const kitOf = new Map(routes().filter((r) => r.record).map((r) => [r.record, { kit: r.kit, route: r.route.replace(/\/\[id\]$/, "") }]));
   const rows = nn.status === 0 ? JSON.parse(nn.stdout).rows : [];
   const kit = rows.filter((r) => r.now >= 0.5 || r.status === "coming soon").map((r) => ({ type: r.type, status: r.status, now: r.now, next: r.next, why: r.why, ...(kitOf.get(r.type) ?? {}) }));
-  return { ...decisions(dir), kit, log: log.map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, who: `${e.agent?.kind ?? "?"}${e.agent?.id ? ` ${e.agent.id}` : ""}`, via: e.agent?.via })) };
+  // Money (EE-070): only the summary, never the transactions stream; the source stays the system of record.
+  const money = existsSync(join(dir, "money/summary.json")) ? JSON.parse(readFileSync(join(dir, "money/summary.json"), "utf8")) : null;
+  return { ...decisions(dir), kit, money, log: log.map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, who: `${e.agent?.kind ?? "?"}${e.agent?.id ? ` ${e.agent.id}` : ""}`, via: e.agent?.via })) };
 }
 
 // The idea map (EE-059): the founder's ideas on one canvas, by pillar and department.
@@ -195,7 +197,7 @@ section h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:va
 .kit{padding:0 24px 8px}.kit ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}.kit li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;max-width:320px}
 .kit li b{display:block;margin-bottom:2px}.tag.start{border-color:var(--now);color:var(--now);font-weight:600}.tag.soon{opacity:.6}.tag.has{color:var(--done);border-color:var(--done)}
 .log{padding:0 24px 24px}.log table{width:100%;border-collapse:collapse;font-size:13px}.log td{padding:4px 8px;border-top:1px solid var(--line)}.log td:first-child{color:var(--muted);white-space:nowrap}
-</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/site">Site presence</a></header><div class="kit"><section><h2>The kit for this phase (from need-now)</h2><ul id="kit"></ul></section></div><main id="cols"></main>
+</style></head><body><header><h1 id="title">Decision board</h1><span class="meta" id="meta"></span><a class="meta" href="/map">Idea map</a><a class="meta" href="/graph">Idea graph</a><a class="meta" href="/kanban">Idea routes</a><a class="meta" href="/site">Site presence</a></header><div class="kit"><section><h2>The kit for this phase (from need-now)</h2><ul id="kit"></ul></section><section id="money" hidden><h2 id="money-h">Money</h2><ul id="money-l"></ul></section></div><main id="cols"></main>
 <div class="log"><section><h2>Provenance, latest first</h2><table id="log"></table></section></div>
 <script>
 const COLS=[["overdue","Overdue"],["now","Now"],["waiting","Waiting"],["stale","Stale"],["later","Later"],["deferred","Deferred"],["done","Done"]];
@@ -211,6 +213,10 @@ async function tick(){
     const kits={};(s.kit||[]).forEach((r)=>{(kits[r.kit||"other"]=kits[r.kit||"other"]||[]).push(r);});
     const mark={"held":["has","has"],"suggest now":["start now","start"],"coming soon":["next phase","soon"]};
     document.getElementById("kit").innerHTML=Object.entries(kits).sort((a,b)=>b[1].filter((r)=>r.status==="suggest now").length-a[1].filter((r)=>r.status==="suggest now").length).map(([k,rs])=>'<li><b>'+esc(k)+'</b>'+rs.map((r)=>'<span class="tag '+(mark[r.status]||["",""])[1]+'" title="'+esc(r.why)+'">'+esc(r.type.replace(/^validation-/,""))+' · '+esc((mark[r.status]||[r.status])[0])+'</span>').join("")+'</li>').join("");
+    const m=s.money,box=document.getElementById("money");box.hidden=!m;
+    if(m){const $=(x)=>(x.amount/100).toLocaleString(undefined,{style:"currency",currency:x.currency,maximumFractionDigits:0});
+      document.getElementById("money-h").textContent="Money, from "+(m.source==="rho"?"Rho":"Rho's sandbox")+(m.business?" ("+m.business+")":"")+": the system of record";
+      document.getElementById("money-l").innerHTML=[["Cash",$(m.cash)],["Monthly in",$(m.monthly_inflow)],["Monthly out",$(m.monthly_outflow)],["Monthly net",$(m.monthly_net)],["Runway",m.runway_months!=null?m.runway_months+" months":"not limited by burn"],["As of",new Date(m.as_of).toLocaleDateString()+" · synced "+new Date(m.synced_at).toLocaleString()]].map(([k,v])=>'<li><b>'+esc(k)+'</b>'+esc(v)+'</li>').join("");}
     document.getElementById("cols").innerHTML=COLS.map(([k,label])=>{const xs=ds.filter((d)=>d.render===k);return xs.length?'<section><h2>'+label+' ('+xs.length+')</h2>'+xs.map((d)=>
       '<div class="card '+k+'">'+(d.rank!=null?'<span class="rank">#'+(ranked.indexOf(d.id)+1)+'</span>':'')+'<div class="q">'+esc(d.question)+'</div><div class="id">'+esc(d.id)+' · '+esc(d.layer)+' · '+esc(d.boundary)+'</div>'+
       (d.awaiting?'<span class="tag ask">agent wording, awaiting approval</span>':'')+

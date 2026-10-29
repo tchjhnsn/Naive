@@ -7,14 +7,16 @@
 // an open decision unlocks stay closed. The agent is one the founder already has (Claude Code,
 // headless); Naive holds no model key. Platform tools are handed to the agent beside Naive's own MCP
 // server, or spawned by path, never imported: Jev tags the ideas when TYPESAFE_API_KEY is set, and
-// Firecrawl researches the market when FIRECRAWL_API_KEY is set.
+// Firecrawl researches the market when FIRECRAWL_API_KEY is set. With --money, the founder's money source
+// (Rho; its sandbox by default) fills the venture's money package, and the agent sees only its summary.
 //
 //   node interface/harness/run.mjs discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>]
-//        [--workspace <dir>] [--board] [--yes] [--steps <n>]
+//        [--workspace <dir>] [--board] [--yes] [--steps <n>] [--money sandbox|live|<fixture.json>]
 //
 //   --board   serves the decision board at http://127.0.0.1:4331/ and the idea map at /map
 //   --yes     the founder settles the top-ranked decisions as worded (rehearsals and tests)
 //   --steps   how many decisions the founder settles between the agent's passes (default 3)
+//   --money   syncs money/ from Rho (sandbox, live with RHO_API_TOKEN, or a saved fixture) before pass 1
 //
 // 1. Naive maps the dump (Jev, else the agent tags it with the same conventions), then structures the
 //    map as an idea graph: a Merkle DAG with signal and lanes (EE-060).
@@ -73,6 +75,20 @@ copyFileSync(dumpFile, join(dir, DUMP));
 prov(dir, { entity: DUMP, route: "purpose/idea-dump", activity: "create", agent: agentFromEnv("person", "harness", { id: founder }), note: "the founder's idea dump, verbatim" });
 lap(`venture ${id} scaffolded in ${ws}; idea dump saved (${readFileSync(dumpFile, "utf8").length} characters)`);
 
+// Money (EE-070): the money source stays the system of record. Naive syncs pointers and a summary into
+// the money data package; transactions stay in a sensitive stream that neither the agent nor the trace sees.
+let money = null;
+if (opt("money")) {
+  const m = opt("money");
+  const src = m === "live" ? ["--live"] : m === "sandbox" ? [] : ["--fixture", resolve(m)];
+  const p = spawnSync("node", [join(repo, "platform/integrations/rho.mjs"), "sync", "--venture", dir, ...src], { encoding: "utf8" });
+  if (p.status === 0 && existsSync(join(dir, "money/summary.json"))) {
+    money = JSON.parse(readFileSync(join(dir, "money/summary.json"), "utf8"));
+    prov(dir, { entity: "money/summary.json", route: "money/summary", activity: "create", agent: agentFromEnv("agent", "harness", { id: "naive-money" }), note: `synced from ${money.source}; ${money.transactions} transactions kept as pointers in a sensitive stream` });
+    lap(`money synced from ${money.source}${money.business ? ` (${money.business})` : ""}: cash ${(money.cash.amount / 100).toFixed(2)} ${money.cash.currency}, monthly net ${(money.monthly_net.amount / 100).toFixed(2)}, runway ${money.runway_months ?? "not limited by burn"}, as of ${money.as_of}`);
+  } else console.log(`   money sync failed, so the run goes on without it: ${(p.stderr || p.stdout).trim().slice(0, 300)}`);
+}
+
 const servers = { naive: { command: "node", args: [join(repo, "interface/mcp/server.mjs")], env: { MENTURA_WORKSPACE: ws, MENTURA_PERSON: founder } } };
 if (research) servers.research = { command: "node", args: [join(repo, "platform/mcp/research.mjs")], env: { FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY } };
 const mcp = join(ws, ".mcp-harness.json");
@@ -83,8 +99,14 @@ if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("
 
 // The trace (EE-058): every step and every tool call the agent made, with timings, for LangSmith.
 const iso = () => new Date().toISOString();
-const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, founder, phase }, children: [], metadata: { venture: id } };
+const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, founder, phase }, children: [], metadata: {
+  venture: id, venture_id: id, pipeline_step: phase, money: money?.source ?? null,
+  // LangSmith groups a founder's runs into one thread by thread_id: one session per venture per day.
+  thread_id: process.env.NAIVE_SESSION ?? `${id}-${new Date().toISOString().slice(0, 10)}`,
+  harness_version: spawnSync("git", ["rev-parse", "--short", "HEAD"], { cwd: repo, encoding: "utf8" }).stdout.trim() || null,
+} };
 const researched = [];
+if (money) trace.children.push({ name: "money: sync", run_type: "tool", start: iso(), end: iso(), inputs: { source: money.source }, outputs: { summary: money } });
 
 // The agent runs headless and streams what it does; each tool call becomes a child run.
 async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", quiet = false } = {}) {
@@ -204,7 +226,8 @@ trace.children.push({ name: "founder: understand", run_type: "chain", start: iso
 lap("the founder confirmed Mentura's understanding of the ideas; routing them");
 
 const rules = `You are the builder agent (agent_id builder) for the venture ${id}. Work only through the naive MCP tools${research ? " and the research tools" : ""}; pass agent_id "builder" on every naive call.
-Rules: the founder's idea dump is theirs. Quote it, cite ideas by id (i-01...), never put words in their mouth. Never invent evidence: every evidence item cites a URL a research result gave you${research ? "" : " (you have no research tool in this run, so leave evidence empty and say so)"}. Records Naive treats as the founder's are written as drafts for the founder to accept; that is expected. You never decide; you propose. knowledge/venture-profile cannot be written over MCP; skip it.`;
+Rules: the founder's idea dump is theirs. Quote it, cite ideas by id (i-01...), never put words in their mouth. Never invent evidence: every evidence item cites a URL a research result gave you${research ? "" : " (you have no research tool in this run, so leave evidence empty and say so)"}. Records Naive treats as the founder's are written as drafts for the founder to accept; that is expected. You never decide; you propose. knowledge/venture-profile cannot be written over MCP; skip it.${money ? `
+Money: Naive synced the venture's money summary from ${money.source}, the system of record (money/summary.json): ${JSON.stringify(money)}. Amounts are in minor units (cents). Any proposal or record that touches money (pricing, spend, hiring, runway, fundraising) cites "money/summary.json as of ${money.as_of}" and uses only the figures the summary gives; never estimate the founder's finances.` : ""}`;
 
 await agent(`${rules}
 The founder has just submitted an idea dump. Naive mapped it onto its conventions.

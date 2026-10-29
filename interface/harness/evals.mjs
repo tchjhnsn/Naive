@@ -4,7 +4,7 @@
 //
 //   import { evaluate } from "./evals.mjs";  evaluate(dir, { researched: [urls], settled: [ids] })
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { decisions } from "../../schema/decisions.mjs";
 import { DUMP, MAP, parse } from "../../purpose/frameworks/idea-map/ideamap.mjs";
@@ -14,6 +14,7 @@ import { createHash } from "node:crypto";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const norm = (s) => s.replace(/\s+/g, " ").trim();
+const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 const frac = (ok, all) => (all ? Math.round((ok / all) * 100) / 100 : 1);
 
 export function evaluate(dir, { researched = [], settled = [] } = {}) {
@@ -69,6 +70,18 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
 
   // The founder settled what Naive ranked first, and it unlocked work.
   add("founder_settled", settled.length ? 1 : 0, settled.length ? `settled: ${settled.join(", ")}` : "the founder settled nothing");
+  // Money (EE-070): when the venture has a money summary, it is fresh, the agent cites it, and no raw
+  // transaction leaves its sensitive stream for another record.
+  const summaryFile = join(dir, "money/summary.json");
+  if (existsSync(summaryFile)) {
+    const m = load(summaryFile);
+    const age = (Date.now() - Date.parse(m.synced_at)) / 864e5;
+    add("money_fresh", age <= 7 ? 1 : 0, `money synced from ${m.source} ${age.toFixed(1)} days ago (7 at most); activity as of ${m.as_of}`);
+    const citing = [...agentDrafted, ...(problem ? [{ problem: load(problem) }] : [])].filter((d) => JSON.stringify(d).includes("money/summary"));
+    add("money_cited", citing.length ? 1 : 0, citing.length ? `${citing.length} agent records cite money/summary.json` : "no agent proposal or record cites the money summary");
+    const leaked = walk(dir).filter((f) => !f.includes("/money/_streams/") && f.endsWith(".json") && /:transaction:/.test(readFileSync(f, "utf8")));
+    add("money_private", leaked.length ? 0 : 1, leaked.length ? `transaction pointers outside the money stream: ${leaked.map((f) => f.slice(dir.length + 1)).join(", ")}` : "transactions stay in their sensitive stream");
+  }
   add("checks_clean", r.errors.length ? 0 : 1, r.errors.length ? r.errors.join("; ") : "the decision matrix has no errors");
   return out;
 }
