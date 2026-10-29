@@ -1,0 +1,61 @@
+---
+title: "A launch narrative and a demo script, from the product card"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: waiting
+    lg1: drafting
+    lg2: checking
+    lg3: passed
+    lg4: failed
+  }
+  class lg0 tan
+  class lg1 blue
+  class lg2 purple
+  class lg3 teal
+  class lg4 orange
+  s0: You have not read the product card yet
+  s1: No product card to launch
+  s2: The product card is read
+  s3: The product card has no job to show
+  s4: Inherited inputs are read
+  s5: The brand record is read
+  s6: The pricing record is read
+  s7: The launch narrative is drafted
+  s8: The demo script is drafted
+  s9: The sitemap points at the launch
+  s10: The voice check fails
+  s11: The public gate fails
+  s12: A demo beat names no product field
+  s13: The launch passes its checks
+  s14: The draft uses an Apple mark
+  [*] --> s0
+  s0 --> s1: you read the product card and there is none
+  s0 --> s2: you read the product card
+  s0 --> s3: you read the product card and it has no job
+  s2 --> s4: you read what marketing inherits
+  s4 --> s5: you read the brand record
+  s5 --> s6: you read the pricing record
+  s6 --> s7: you draft the launch narrative
+  s7 --> s8: you draft the demo script
+  s8 --> s9: you point the sitemap at the launch
+  s9 --> s13: you run the checks and they pass
+  s9 --> s11: you run the checks and the public gate fails
+  s9 --> s14: you run the checks and the draft uses an Apple mark
+  s9 --> s10: you run the checks and the voice check fails
+  s9 --> s12: you run the checks and a demo beat has no product field
+  class s0 tan
+  class s1 tan
+  class s2 blue
+  class s3 tan
+  class s4 blue
+  class s5 blue
+  class s6 blue
+  class s7 blue
+  class s8 blue
+  class s9 purple
+  class s10 orange
+  class s11 orange
+  class s12 orange
+  class s13 teal
+  class s14 orange
