@@ -12,7 +12,7 @@ One TLA+ model of a legal-lint run. This is a lint, not legal advice. Read every
 
 ## Does my change touch it?
 
-Coverage, confirmed at the commit that adds `verification/lint-legal` on `cursor/lint-legal`:
+Coverage, confirmed at commit `f6ac8f3` (`cursor/lint-legal`):
 
 | Model action | Code |
 | --- | --- |
