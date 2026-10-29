@@ -74,6 +74,14 @@
         "marketing-sitemap"
       ]
     },
+    "public-assets": {
+      "after": []
+    },
+    "marketing-brand": {
+      "after": [
+        "public-assets"
+      ]
+    },
     "site-presence": {
       "after": []
     },

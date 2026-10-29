@@ -23,7 +23,8 @@
     "freshness-profiles",
     "freshness-log",
     "judgment",
-    "systems-catalog"
+    "systems-catalog",
+    "glossary"
   ],
   "reads": [
     "venture",
