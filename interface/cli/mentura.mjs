@@ -8,7 +8,7 @@
 //                                                   start a venture; --layers turns on only those
 //   mentura add <function> --venture <id> [--group]
 //                                                   import a function (department is the alias for one release): list it and create its folders
-//   mentura migrate --venture <id>                  move the venture onto the package folder layout (EE-070)
+//   mentura upgrade --venture <id>                  alias of naive upgrade: move the venture onto the package folder layout (EE-070, EE-076)
 //   mentura typegen                                 alias of naive typegen (EE-073)
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
@@ -102,11 +102,14 @@ if (cmd === "typegen") {
   process.exit(p.status ?? 1);
 }
 
-if (cmd === "migrate") {
+if (cmd === "upgrade" || cmd === "migrate") {
+  // migrate now means rewriting an outside project into a new venture (EE-076); for one release it
+  // still runs upgrade, with a notice.
+  if (cmd === "migrate") console.error("mentura migrate is now naive upgrade (EE-076); migrate will mean rewriting an outside project into Naive");
   const v = opt("venture");
   const d = v && ventureDir(v, workspace);
   if (!d) usage();
-  const p = spawnSync("node", [join(repo, "schema/migrate-venture.mjs"), d], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "schema/upgrade-venture.mjs"), d], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 

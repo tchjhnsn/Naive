@@ -42,6 +42,8 @@ node interface/cli/mentura.mjs init <folder>/my-venture --id my-venture --layers
 node interface/cli/mentura.mjs system/need-now run --venture my-venture --workspace <folder>
 ```
 
+`init` creates new ventures only: it refuses a directory that already has files. To bring an existing project in, create the venture, then run `node interface/cli/naive.mjs port --from <project> --venture <folder>/my-venture`, read the plan it writes, and apply it with `--apply --confirm port`. Never run `init` on someone's existing project.
+
 To use the whole system, leave out `--layers`. The workspace is the folder that holds the ventures. Set `MENTURA_WORKSPACE` to it so that you do not have to pass `--workspace` each time.
 
 ## 4. Connect the harness

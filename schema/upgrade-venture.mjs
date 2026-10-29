@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Moves one venture onto the package folder layout (EE-070). Files move with git mv.
+// naive upgrade: moves one venture onto the next Naive layout, here the package folder layout
+// (EE-070), like next upgrade and its codemods (EE-076). Files move with git mv.
 // Provenance is appended, never rewritten: each move is a new line, and the set of moves
 // is one release under .release/. Old routes keep resolving through interface/route-aliases.json.
 //
-//   node schema/migrate-venture.mjs <venture dir>
+//   node schema/upgrade-venture.mjs <venture dir>
 
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -13,7 +14,7 @@ import { record } from "../interface/provenance.mjs";
 
 const dir = process.argv[2];
 if (!dir || !existsSync(join(dir, "venture.json"))) {
-  console.error("usage: node schema/migrate-venture.mjs <venture dir>");
+  console.error("usage: node schema/upgrade-venture.mjs <venture dir>");
   process.exit(2);
 }
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -124,5 +125,5 @@ for (const [from, to] of moved) {
 }
 record(dir, { entity: releaseRel, activity: "release", agent, derived_from: moved.map(([, to]) => to), note: "package folder layout" });
 
-console.log(`migrated ${load(join(dir, "venture.json")).id}: ${moved.length} files moved, ${escalated.length} archived for a decision.`);
+console.log(`upgraded ${load(join(dir, "venture.json")).id}: ${moved.length} files moved, ${escalated.length} archived for a decision.`);
 for (const e of escalated) console.log(`escalate  ${e}`);

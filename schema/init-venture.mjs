@@ -8,7 +8,7 @@
 // without it the phase's defaults apply.
 //
 // Creates new ventures only, like create-next-app: it refuses a directory that exists and is not empty,
-// so it can never overwrite a founder's files. Adopting an existing project is a later feature (EE-076).
+// so it can never overwrite a founder's files. An existing project comes in through naive port (EE-076).
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
