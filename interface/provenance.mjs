@@ -5,7 +5,8 @@
 // written outside the router.
 
 import { createHash } from "node:crypto";
-import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { emit } from "./instrumentation.mjs";
 
@@ -41,5 +42,24 @@ export function record(dir, { entity, route, activity, agent, derived_from, deci
   appendFileSync(join(dir, LOG), JSON.stringify(entry) + "\n");
   // Context hook: every provenance entry (write, draft, accept, confirm, decision) is an instrumentation event (P-4).
   emit(dir, { kind: "provenance", activity: entry.activity, entity: entry.entity, route: entry.route, decision: entry.decision, by: entry.agent?.kind, via: entry.agent?.via });
+  fireTriggers(dir);
   return entry;
+}
+
+// Triggers hook (M-12, E-7): every entry is an event. A venture whose naive.config.json has triggers or
+// kits runs them (schema/triggers.mjs) in a separate process after the write; the runs themselves do
+// not fire this again. A crash of that process is kept for the next run to raise, never lost.
+function fireTriggers(dir) {
+  if (process.env.NAIVE_TRIGGERS_ACTIVE) return;
+  let cfg;
+  try { cfg = JSON.parse(readFileSync(join(dir, "naive.config.json"), "utf8")); } catch { return; }
+  if (!cfg?.triggers?.length && !cfg?.kits?.length) return;
+  // The write has landed; nothing here may undo it or throw past it.
+  try {
+    const p = spawnSync(process.execPath, [new URL("../schema/triggers.mjs", import.meta.url).pathname, dir, "--fire", "--quiet"], { encoding: "utf8", env: { ...process.env, NAIVE_TRIGGERS_ACTIVE: "hook" } });
+    if (p.status !== 0) {
+      mkdirSync(join(dir, ".naive"), { recursive: true });
+      appendFileSync(join(dir, ".naive/trigger-errors.jsonl"), JSON.stringify({ at: new Date().toISOString(), status: p.status, error: (p.stderr || p.stdout || String(p.error ?? "")).trim().slice(-2000) }) + "\n");
+    }
+  } catch (e) { console.error(`triggers did not run after this write: ${e.message}`); }
 }

@@ -1,0 +1,14 @@
+{
+  "name": "codex",
+  "title": "Codex",
+  "kind": "harness",
+  "integration": "codex",
+  "reads": ["AGENTS.md"],
+  "files": [],
+  "skills": null,
+  "sources": [
+    "https://agents.md/",
+    "https://github.com/openai/codex"
+  ],
+  "note": "Codex reads AGENTS.md natively, from the venture root down to the folder it works in, which is the layout chain Naive already writes. Nothing else is needed."
+}

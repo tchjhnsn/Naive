@@ -13,7 +13,8 @@
     }
   ],
   "records": [
-    "route-aliases"
+    "route-aliases",
+    "adapter"
   ],
   "reads": [
     "integration"
@@ -21,7 +22,8 @@
   "writes": [],
   "checks": [
     "schema/check-integrations.mjs",
-    "interface/test.mjs"
+    "interface/test.mjs",
+    "interface/adapters.mjs"
   ],
   "gaps": [
     "The operator console is a folder, not part of the layer yet",
