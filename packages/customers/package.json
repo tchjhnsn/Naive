@@ -10,9 +10,11 @@
     "coverage",
     "freshness"
   ],
-  "schemas": [],
+  "layer": "purpose",
+  "records": ["customer", "data-stream"],
+  "schemas": ["schema/data-master.schema.json", "schema/stream.schema.json"],
   "templates": [],
-  "checks": [],
+  "checks": ["schema/check-data-packages.mjs"],
   "skill": null,
   "use_model": [],
   "complete": false

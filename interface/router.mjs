@@ -217,6 +217,7 @@ const PACKAGE_ROUTE = {
   "idea-dump": "raw/dump", "idea-map": "ideas/map", "idea-graph": "ideas/graph", product: "product", evidence: "evidence",
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
+  customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
 };
 
 // Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
@@ -386,6 +387,7 @@ export async function call({ venture, route, action, input, actor = "agent", act
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
+    if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(join(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
     const gate = gateOf(r, dir);
     const text = JSON.stringify(input, null, 2) + "\n";
     // The schema first, on a scratch copy, so nothing reaches any source unless it matches.

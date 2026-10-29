@@ -9,9 +9,11 @@
   "gates": [
     "immutable: append a capture, never edit one"
   ],
-  "schemas": [],
+  "layer": "purpose",
+  "records": ["raw-source", "raw-text"],
+  "schemas": ["schema/raw-source.schema.json"],
   "templates": [],
-  "checks": [],
+  "checks": ["schema/check-data-packages.mjs"],
   "skill": null,
   "use_model": []
 }

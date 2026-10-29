@@ -1114,6 +1114,77 @@
         }
       ],
       "note": "The map of strategic foundation by the Five Ws and How plus whether (EE-051)"
+    },
+    {
+      "id": "customer",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/customers/*.json",
+        "schema/examples/**/customers/*.json"
+      ],
+      "note": "A customer master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "investor",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/investors/*.json",
+        "schema/examples/**/investors/*.json"
+      ],
+      "note": "An investor master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "money-account",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/money/*.json",
+        "schema/examples/**/money/*.json"
+      ],
+      "note": "A money master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "data-stream",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/stream.schema.json",
+      "paths": [
+        "instance/**/customers/_streams/*/stream.json",
+        "instance/**/investors/_streams/*/stream.json",
+        "instance/**/money/_streams/*/stream.json",
+        "schema/examples/**/customers/_streams/*/stream.json",
+        "schema/examples/**/investors/_streams/*/stream.json",
+        "schema/examples/**/money/_streams/*/stream.json"
+      ],
+      "note": "Declares one append-only stream and whether it is sensitive (EE-070)."
+    },
+    {
+      "id": "raw-source",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/raw-source.schema.json",
+      "paths": [
+        "instance/**/raw/sources/*/source.json",
+        "schema/examples/**/raw/sources/*/source.json"
+      ],
+      "note": "Where a founder-supplied source came from. Raw is immutable (EE-070)."
+    },
+    {
+      "id": "raw-text",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/raw/sources/*/text.md",
+        "schema/examples/**/raw/sources/*/text.md"
+      ],
+      "note": "The text of a raw source. original.* stays out of git (EE-070)."
     }
   ],
   "ignore": [

@@ -134,8 +134,8 @@ const layerOf = (t) => types.get(t)?.layer;
 const edges = new Map();
 const edge = (from, to, t) => { if (!from || from === to) return; const key = `${from}>${to}`; edges.set(key, [...(edges.get(key) ?? []), t]); };
 for (const k of kits.values()) {
-  for (const t of k.reads) edge(layerOf(t), k.layer, t);
-  for (const t of k.writes) edge(k.layer, layerOf(t), t);
+  for (const t of k.reads ?? []) edge(layerOf(t), k.layer, t);
+  for (const t of k.writes ?? []) edge(k.layer, layerOf(t), t);
 }
 
 if (process.argv.includes("--md")) {
