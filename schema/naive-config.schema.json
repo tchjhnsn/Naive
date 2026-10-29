@@ -178,6 +178,28 @@
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
+    },
+    "product_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Product alignment lint (route product/lint). Each rule is fail-open unless its mode is fail-closed.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
