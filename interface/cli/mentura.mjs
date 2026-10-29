@@ -37,6 +37,9 @@
 //          --value <query> finds items in any of them (EE-037)
 //          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;
 //          --as-is runs it anyway (EE-050)
+//          [--where status=active|trial,phase=build] filters a read; --hierarchy shows how it resolved
+//          a package's own route (validation, packages/product) reads its state; (go-to-market) is a
+//          route group; venture read is the manifest, venture check runs every boundary
 //   mentura baseline --venture <id>                 adopt existing records into the provenance log
 //   mentura revalidate <tag:route|path:folder|package:name|route> --venture <id> [--pivot] [--reason <text>]
 //                                                   mark records stale on demand; a plain folder is refused for exact tags (Revalidating)
@@ -52,6 +55,7 @@
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
 // record written by an agent lands in <venture>/_drafts/ for a person to accept.
 
+import "./guard.mjs"; // wf/writes hook: a broken framework file answers with recovery steps (E-8)
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -83,7 +87,7 @@ const here = !argv.includes("--venture") && !argv.includes("--workspace") ? find
 if (here) { argv.push("--venture", asRouted(here).venture, "--workspace", asRouted(here).workspace); process.env.MENTURA_WORKSPACE = asRouted(here).workspace; }
 const opt = (name) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (name) => argv.includes(`--${name}`);
-const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["json"].includes(argv[i - 1].slice(2))));
+const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["json", "hierarchy"].includes(argv[i - 1].slice(2))));
 const workspace = opt("workspace") ? resolve(opt("workspace")) : undefined;
 const out = (x) => console.log(typeof x === "string" ? x : JSON.stringify(x, null, 2));
 
@@ -288,6 +292,9 @@ const src = opt("input");
 if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
 if (opt("value")) input = { ...(input ?? {}), value: Number.isNaN(Number(opt("value"))) ? opt("value") : Number(opt("value")) };
 if (flag("as-is")) input = { ...(input ?? {}), as_is: true };
+// wf/writes hook: --where k=v[,k=v] filters a read (L-10); --hierarchy returns its resolution levels (P-28).
+if (["read", "view"].includes(action) && opt("where")) input = { ...(input ?? {}), where: Object.fromEntries(opt("where").split(",").map((kv) => kv.split("=")).map(([k, ...v]) => [k, v.join("=").includes("|") ? v.join("=").split("|") : v.join("=")])) };
+if (["read", "view"].includes(action) && flag("hierarchy")) input = { ...(input ?? {}), hierarchy: true };
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
 // Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
 if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
@@ -306,5 +313,5 @@ if (r.ok && r.needs_input && !flag("json")) {
 }
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);
-const extra = ["not_found", "pending_draft", "fix", "needs_input"].some((k) => r[k]);
+const extra = ["not_found", "pending_draft", "fix", "needs_input", "errors", "filtered_out", "hierarchy"].some((k) => r[k]);
 out(flag("json") || extra ? r : r.result);

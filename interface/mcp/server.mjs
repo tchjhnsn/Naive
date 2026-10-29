@@ -26,6 +26,7 @@ export const TOOLS = [
     task: { type: "string", description: "What you are doing; a route it names is prefetched in full" },
     prefetch: { description: "false turns prefetch off; a list of routes prefetches those in full", oneOf: [{ type: "boolean" }, { type: "array", items: { type: "string" } }] },
     header_only: { type: "boolean", description: "Return only the header, to decide whether to read on" },
+    where: { type: "object", description: "For a list: keep only records whose fields match these values" },
     agent_id: { type: "string", description: "Your role in the team plan, so its read routes apply" } }, required: ["venture", "route"] } },
   { name: "mentura_write", description: "Write one record of a venture. The record must match its schema. A gated record is written as a draft under _drafts/ for a person to accept. Every write is logged in the venture's provenance log: say what the content came from and the decision it acts under.", inputSchema: { type: "object", properties: { venture, route, record: { type: "object", description: "The whole record" },
     derived_from: { type: "array", items: { type: "string" }, description: "What the content came from: venture-relative paths, URLs or decision ids" },
@@ -90,7 +91,8 @@ export async function handle(msg, notify = () => {}) {
         case "mentura_layout": r = await call({ venture: a.venture, route: a.route, action: "layout" }); break;
         case "mentura_view": r = await call({ venture: a.venture, route: a.route, action: "view" }); break;
         // Context hook (interface/context.mjs): a read is a navigation, header first, its parts streamed as progress.
-        case "mentura_read": r = await call({ venture: a.venture, route: a.route, action: "navigate", actor_id: a.agent_id, via: "mcp",
+        // A filtered list (where) is a plain read (interface/writes.mjs); anything else is a navigation.
+        case "mentura_read": r = a.where ? await call({ venture: a.venture, route: a.route, action: "read", actor_id: a.agent_id, via: "mcp", input: { where: a.where } }) : await call({ venture: a.venture, route: a.route, action: "navigate", actor_id: a.agent_id, via: "mcp",
           input: { session: a.session, task: a.task, prefetch: a.prefetch, header_only: a.header_only, ...(progress ? { onPart: ({ part, data }) => progress({ message: `${part}: ${JSON.stringify(data)}` }) } : {}) } }); break;
         case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, confidence: a.confidence, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;

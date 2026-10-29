@@ -24,6 +24,11 @@
 //                 record (escalate -> an agent's write is a draft), and the role's allowed routes
 //   robots        a team-plan role may list the routes it may read and write; system/robots shows them
 //   aliases       interface/route-aliases.json maps a renamed route to its new one, with a note
+//   hierarchy     a read resolves layout, template, error, loading, not-found, then page (P-28);
+//                 resolved_by names the level that answered (interface/reads.mjs)
+//   writes        a write answers with what it changed and the next route to act on; a layout lists
+//                 the actions open to the actor; package, group and venture routes; global errors
+//                 (interface/writes.mjs wraps call)
 //   storage       a record is read and written through the connector for the source its record
 //                 type lives in (knowledge/connectors, EE-037): the venture's own folder unless its
 //                 knowledge/sources.json names another, such as a GitHub repository, where a write
@@ -51,6 +56,11 @@ import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connec
 import { actionScope, cacheRoutes, command as cachedCommand, forget, internal as cacheInternal, memo } from "../schema/caching.mjs";
 // Context hook: instrumentation of every call and judgment (interface/instrumentation.mjs, P-4, F-4).
 import { instrumented, judgment } from "./instrumentation.mjs";
+// Hooks for writes, reads and boundaries (wf/writes): the wrapper around call, per-record containment and private folders.
+import { around } from "./writes.mjs";
+import { contain } from "./boundaries.mjs";
+import { packageSlots } from "./package-routes.mjs";
+import { routable } from "../schema/structure.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -193,14 +203,15 @@ export function ventureDir(id, workspace = defaultWorkspace()) {
     }
     return null;
   }
-  for (const d of walkVentures(workspace)) if (load(join(d, "venture.json")).id === id) return d;
+  // A broken venture.json is found by its folder name, so its global error can answer (E-8, interface/boundaries.mjs).
+  for (const d of walkVentures(workspace)) { let vid; try { vid = load(join(d, "venture.json")).id; } catch { vid = basename(d); } if (vid === id) return d; }
   return null;
 }
 
 /** The ventures under a workspace: id, name, phase, path (the [...venture] segment) and folder. */
 export function ventures(workspace = defaultWorkspace()) {
   const root = existsSync(join(workspace, "ventures")) ? join(workspace, "ventures") : workspace;
-  return walkVentures(workspace).map((d) => { const v = load(join(d, "venture.json")); return { id: v.id, name: v.name, phase: v.phase, path: relative(root, d), dir: d }; });
+  return walkVentures(workspace).map((d) => { let v; try { v = load(join(d, "venture.json")); } catch { return { id: basename(d), name: null, phase: null, path: relative(root, d), dir: d, broken: true }; } return { id: v.id, name: v.name, phase: v.phase, path: relative(root, d), dir: d }; });
 }
 
 // The venture's decision rights: the template, tightened by the venture's own file.
@@ -221,7 +232,7 @@ export function gateOf(r, dir) {
 }
 
 // Robots: a team-plan role may list the routes it may read and write (globs over routes).
-function allowed(dir, actorId, action, route) {
+export function allowed(dir, actorId, action, route) {
   if (!actorId || !dir) return true;
   const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
   if (!plan) return true;
@@ -339,7 +350,8 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
 // Context hook: every call is timed and measured for agent vitals (interface/instrumentation.mjs).
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
-export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, callInAction, ventureDir), ventureDir));
+// Writes hook (interface/writes.mjs): adds what reads, layouts and writes answer.
+export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
 async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const requested = route;
   const { r, params, alias } = resolve(route);
@@ -402,14 +414,15 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
-      const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => !/(^|\/)_[^/]*$/.test(f) && patterns.some((g) => glob(g).test(f))) : patterns; // a file named _* is never an item
+      // a file named _* is never an item; routable: private _folders (P-22)
+      const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => !/(^|\/)_[^/]*$/.test(f) && patterns.some((g) => glob(g).test(f) && routable(f, g))) : patterns;
       // Caching hook (F-2): each record is read once per action and shared.
       items = (await Promise.all(paths.map((f) => memo(`read:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
       // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
       if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
-    const draft = !remote && r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
+    const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
     if (remote) {
       const prs = provEntries(dir).filter((e) => e.source?.pull_request && found.concat(patterns).some((f) => e.entity === address(src.id, f)));
@@ -449,7 +462,9 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
         }
         return path;
       };
-      return { ok: true, result: Object.fromEntries(items.map((x) => [idOf(x.path), parseWith(x)])), sources: Object.fromEntries(items.map((x) => [idOf(x.path), cite(x)])), ...fresh, ...deprecated };
+      // Per-record containment (E-6): an item that does not parse is named in errors; the rest come back.
+      const { values, errors } = contain(items, parseWith, idOf);
+      return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...deprecated };
     }
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
     return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...deprecated };
@@ -586,6 +601,7 @@ async function overview(venture, workspace) {
       slot("@need-now", async () => (await run("system/need-now")).rows.filter((x) => x.status === "suggest now").map((x) => ({ record: x.type, now: x.now, why: x.why }))),
       slot("@ready", async () => { const t = await run("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
       slot("@team", async () => { const p = await read("people/team-plan"); if (typeof p === "string") return p; return p.roles.map((x) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
+      slot("@packages", () => packageSlots(dir, venture)), // P-17: a package with nothing in it shows its default
       slot("@provenance", () => provEntries(dir).slice(-5).reverse().map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, by: `${e.agent.kind}${e.agent.id ? ` ${e.agent.id}` : ""} via ${e.agent.via}` }))),
     ]),
   };
