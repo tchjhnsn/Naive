@@ -30,6 +30,8 @@ const fw = JSON.parse(readFileSync(join(framework, "package.json"), "utf8"));
 const { layers: PHASE_LAYERS } = JSON.parse(readFileSync(join(framework, "schema/scaffold/defaults.json"), "utf8"));
 const PHASES = Object.keys(PHASE_LAYERS);
 const LAYERS = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
+// The legal forms venture.json accepts, from its schema, so the question can only offer valid answers.
+const FORMS = JSON.parse(readFileSync(join(framework, "schema/venture.schema.json"), "utf8")).properties.form.properties.legal_form.enum;
 
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
@@ -86,7 +88,7 @@ else if (interactive) {
     answers.phase = await choose("Which phase is the venture in?", PHASES, "discovery");
     const l = await ask(`Which layers should be on? (comma separated, from ${LAYERS.join(", ")}; empty for the phase's defaults: ${PHASE_LAYERS[answers.phase].join(", ")})`, "");
     answers.layers = l || null;
-    const f = await choose("Is the venture a legal entity yet?", ["none", "llc", "corporation", "partnership", "nonprofit"], "none");
+    const f = await choose("Is the venture a legal entity yet?", FORMS, "none");
     answers.legalForm = f === "none" ? null : f;
     const d = await ask("Paste the path of an idea dump to start from (optional)", "");
     answers.dump = d || null;
@@ -94,6 +96,7 @@ else if (interactive) {
 }
 if (!PHASES.includes(answers.phase)) fail(`unknown phase ${answers.phase}: one of ${PHASES.join(", ")}`);
 if (answers.dump && !existsSync(resolve(answers.dump))) fail(`no idea dump at ${answers.dump}`);
+if (answers.legalForm && !FORMS.includes(answers.legalForm)) fail(`unknown legal form ${answers.legalForm}: one of ${FORMS.join(", ")}`);
 
 // 3. The package manager: the flag, else whichever ran this (npm_config_user_agent), else npm.
 const pm = ["npm", "pnpm", "yarn", "bun"].find((p) => flag(`use-${p}`)) ?? (process.env.npm_config_user_agent ?? "").split("/")[0].replace(/^npx$/, "npm") ?? "npm";

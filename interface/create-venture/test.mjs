@@ -81,6 +81,11 @@ if (process.env.NAIVE_REGISTRY_TEST === "1") t("from the registry: create-ventur
   ok(c.status === 0 && /all passing/.test(c.stdout), c.stdout + c.stderr);
 });
 
+t("a legal form venture.json does not accept is refused before anything is written", () => {
+  const r = create(["badform", "--yes", "--legal-form", "corporation", "--skip-install", "--no-git"]);
+  ok(r.status === 1 && /unknown legal form corporation/.test(r.stderr) && !existsSync(join(base, "badform")), r.stderr);
+});
+
 t("a directory that is not empty is refused", () => {
   const r = create(["kettle", "--yes"]);
   ok(r.status === 1 && /not empty/.test(r.stderr));
