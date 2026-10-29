@@ -23,6 +23,7 @@ import { scan } from "../harness/site.mjs";
 import { MATRIX } from "../../operations/marketing/site/presence.mjs";
 import { plan } from "../../operations/marketing/site/plan.mjs";
 import { packages, write as writePackage, OUT as PACKAGE } from "../../schema/packages.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));
@@ -31,14 +32,14 @@ const venture = arg("venture", ventures()[0]?.id);
 function state(id) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
-  const log = existsSync(join(dir, "provenance.jsonl")) ? readFileSync(join(dir, "provenance.jsonl"), "utf8").trim().split("\n").filter(Boolean).slice(-8).map((l) => JSON.parse(l)).reverse() : [];
+  const log = existsSync(join(ventureFile(dir, "provenance.jsonl"))) ? readFileSync(join(ventureFile(dir, "provenance.jsonl")), "utf8").trim().split("\n").filter(Boolean).slice(-8).map((l) => JSON.parse(l)).reverse() : [];
   // The kit for now (EE-028): what need-now says this venture needs in its phase, and which kit holds it.
   const nn = spawnSync("node", [new URL("../../schema/need-now.mjs", import.meta.url).pathname, dir, "--json"], { encoding: "utf8" });
   const kitOf = new Map(routes().filter((r) => r.record).map((r) => [r.record, { kit: r.kit, route: r.route.replace(/\/\[id\]$/, "") }]));
   const rows = nn.status === 0 ? JSON.parse(nn.stdout).rows : [];
   const kit = rows.filter((r) => r.now >= 0.5 || r.status === "coming soon").map((r) => ({ type: r.type, status: r.status, now: r.now, next: r.next, why: r.why, ...(kitOf.get(r.type) ?? {}) }));
   // Money (EE-070): only the summary, never the transactions stream; the source stays the system of record.
-  const money = existsSync(join(dir, "money/_summary.json")) ? JSON.parse(readFileSync(join(dir, "money/_summary.json"), "utf8")) : null;
+  const money = existsSync(join(ventureFile(dir, "money/_summary.json"))) ? JSON.parse(readFileSync(join(ventureFile(dir, "money/_summary.json")), "utf8")) : null;
   return { ...decisions(dir), kit, money, log: log.map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, who: `${e.agent?.kind ?? "?"}${e.agent?.id ? ` ${e.agent.id}` : ""}`, via: e.agent?.via })) };
 }
 
@@ -46,9 +47,9 @@ function state(id) {
 function ideas(id) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
-  if (!existsSync(join(dir, MAP))) return { venture: id, waiting: "no idea dump yet" };
+  if (!existsSync(ventureFile(dir, MAP))) return { venture: id, waiting: "no idea dump yet" };
   const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
-  const map = parse(readFileSync(join(dir, MAP), "utf8"));
+  const map = parse(readFileSync(ventureFile(dir, MAP), "utf8"));
   return { venture: id, name: v.name, phase: v.phase, meta: map.meta, ideas: map.ideas, summary: summary(map, v.phase), pillars: CONVENTIONS.pillars, departments: CONVENTIONS.departments };
 }
 
@@ -132,8 +133,8 @@ ReactDOM.createRoot(document.getElementById("flow")).render(h(App));
 function graph(id) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
-  if (!existsSync(join(dir, GRAPH))) return { venture: id, waiting: "no idea graph yet" };
-  return { venture: id, name: JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).name, ...JSON.parse(readFileSync(join(dir, GRAPH), "utf8")) };
+  if (!existsSync(ventureFile(dir, GRAPH))) return { venture: id, waiting: "no idea graph yet" };
+  return { venture: id, name: JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).name, ...JSON.parse(readFileSync(ventureFile(dir, GRAPH), "utf8")) };
 }
 
 const GRAPH_PAGE = MAP_PAGE.replace("<title>Idea map</title>", "<title>Idea graph</title>").replace(/<script>\nconst h=React[\s\S]*<\/script><\/body>/, `<script>
@@ -500,7 +501,7 @@ async function vendor(path) {
 function packageOf(dir, writeIt = false) {
   const r = packages(dir);
   if (writeIt) writePackage(dir, r);
-  const has = (f) => existsSync(join(dir, f));
+  const has = (f) => existsSync(ventureFile(dir, f));
   let rt = null; try { rt = route(dir); } catch {}
   const d = decisions(dir).decisions;
   const settled = d.filter((x) => ["decided", "accepted"].includes(x.status)).length;
@@ -537,7 +538,7 @@ export function serve(p = port, id = venture) {
     if (u.pathname === "/routes.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(routesOf(u.searchParams.get("venture") ?? id))); return; }
     if (u.pathname === "/site") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(SITE_PAGE); return; }
     if (u.pathname === "/site.json") {
-      const dir = ventureDir(u.searchParams.get("venture") ?? id), f = dir && join(dir, "operations/marketing/site-presence.json");
+      const dir = ventureDir(u.searchParams.get("venture") ?? id), f = dir && join(ventureFile(dir, "operations/marketing/site-presence.json"));
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(f && existsSync(f) ? readFileSync(f) : "{}"); return;
     }
     if (u.pathname === "/site/plan.json") {

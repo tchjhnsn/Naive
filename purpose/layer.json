@@ -29,7 +29,9 @@
     "idea-dump",
     "idea-map",
     "idea-map-conventions",
-    "idea-graph"
+    "idea-graph",
+    "playbook",
+    "profile-attributes"
   ],
   "reads": [
     "venture",

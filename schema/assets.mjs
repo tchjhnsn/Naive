@@ -22,6 +22,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import { entries } from "../interface/provenance.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const REGISTER = "public/assets.json";
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -124,11 +125,11 @@ export function publicFiles(dir) {
   return walk(root).map((f) => f.slice(dir.length + 1)).filter((f) => f !== REGISTER).sort();
 }
 
-export const registerOf = (dir) => existsSync(join(dir, REGISTER)) ? load(join(dir, REGISTER)) : null;
+export const registerOf = (dir) => existsSync(ventureFile(dir, REGISTER)) ? load(ventureFile(dir, REGISTER)) : null;
 
 /** The facts code reads from every file in public/. */
 export function facts(dir) {
-  return publicFiles(dir).map((path) => ({ path, ...factsOf(readFileSync(join(dir, path))) }));
+  return publicFiles(dir).map((path) => ({ path, ...factsOf(readFileSync(ventureFile(dir, path))) }));
 }
 
 /** Which alt texts a person has confirmed, from the provenance log. */
@@ -156,8 +157,8 @@ export function checkAssets(dir) {
   for (const a of reg.assets ?? []) {
     if (seen.has(a.path)) errors.push(`${a.path}: listed twice`);
     seen.add(a.path);
-    if (!existsSync(join(dir, a.path))) { errors.push(`${a.path}: listed in ${REGISTER} but the file is not there`); continue; }
-    const real = factsOf(readFileSync(join(dir, a.path)));
+    if (!existsSync(ventureFile(dir, a.path))) { errors.push(`${a.path}: listed in ${REGISTER} but the file is not there`); continue; }
+    const real = factsOf(readFileSync(ventureFile(dir, a.path)));
     if (String(a.license).trim().toLowerCase() === "unknown") errors.push(`${a.path}: the license is unknown; find it before the venture ships the file (J-2)`);
     if (!a.credit || !String(a.credit).trim()) errors.push(`${a.path}: no credit; say who made it (J-4)`);
     if (real.type !== "unknown" && !extensionFits(a.path, real.type)) errors.push(`${a.path}: the bytes are ${real.type}, the name says otherwise`);
@@ -181,7 +182,7 @@ export function checkAssets(dir) {
     }
   }
   for (const r of reg.remote ?? []) {
-    const src = join(dir, "raw/sources", r.id, "source.json");
+    const src = join(ventureFile(dir, "raw/sources"), r.id, "source.json");
     if (!existsSync(src)) errors.push(`remote ${r.url}: no note in raw/sources/${r.id}/ (J-3)`);
     else if (load(src).origin !== r.url) errors.push(`remote ${r.url}: raw/sources/${r.id}/source.json names another origin`);
     let host = null;

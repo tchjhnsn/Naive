@@ -66,6 +66,7 @@ import { approve, decisions, propose } from "../../schema/decisions.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
 import { asRouted, findVenture } from "./find-venture.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
@@ -255,7 +256,7 @@ if (cmd === "understand") {
   // Mentura got wrong, and confirms the understanding before the ideas are routed.
   const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
-  const hits = ["purpose/ideas/map.mdx", "purpose/ideas/graph.json"].filter((f) => existsSync(join(dir, f)));
+  const hits = ["purpose/ideas/map.mdx", "purpose/ideas/graph.json"].filter((f) => existsSync(ventureFile(dir, f)));
   if (!hits.length) { console.error(`${venture} has no idea map yet: map the idea dump first (purpose/ideas)`); process.exit(1); }
   if (!(await typed("ideas", `Confirming Mentura's understanding of your ideas: ${hits.join(", ")}`, "Your ideas are routed to their records from this understanding."))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
   for (const f of hits) record(dir, { entity: f, route: f.endsWith(".mdx") ? "purpose/ideas" : "purpose/ideas/graph", activity: "confirm", statement: "ideas", agent: agentFromEnv("person", "cli"), note: opt("note") });
@@ -271,10 +272,10 @@ if (cmd === "confirm") {
   const s = FRAME.questions.flatMap((q) => q.statements).find((x) => x.id === id);
   if (!s?.record) { console.error(`${id} is not a foundation statement with a record (see mentura purpose/foundation run)`); process.exit(1); }
   const rt = routes().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
-  const hits = filesOf(dir, s.record).filter((f) => existsSync(join(dir, f)));
+  const hits = filesOf(dir, s.record).filter((f) => existsSync(ventureFile(dir, f)));
   if (!hits.length) { console.error(`${venture} has no ${s.record} record to confirm`); process.exit(1); }
   const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
-  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(join(dir, f), "utf8")), s.attribute) ?? null)}`).join("\n");
+  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), s.attribute) ?? null)}`).join("\n");
   if (!(await typed(id, `Confirming ${id} as yours:\n${shown}`))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
   for (const f of hits) record(dir, { entity: f, route: rt, activity: "confirm", statement: id, agent: agentFromEnv("person", "cli"), note: opt("note") });
   out(`confirmed: ${id}`);

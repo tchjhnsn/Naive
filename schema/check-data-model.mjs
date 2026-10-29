@@ -17,6 +17,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 // EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
@@ -26,7 +27,7 @@ const errors = [];
 const warnings = [];
 
 const files = (dir) => readdirSync(join(root, dir), { withFileTypes: true }).flatMap((e) =>
-  [".git", "node_modules", ".naive"].includes(e.name) ? [] : e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
+  [".git", "node_modules", ".naive"].includes(e.name) ? [] : e.isDirectory() ? files(ventureFile(dir, e.name)) : [ventureFile(dir, e.name)]);
 // The files git would track (so build output and installed packages under .gitignore are left out); a
 // copy outside git, as the tests use, is walked instead.
 const tracked = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" });

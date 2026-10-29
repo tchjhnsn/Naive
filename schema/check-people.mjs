@@ -9,6 +9,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { roles as ROLES, types as TYPES } from "./venture-type.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const ws = process.argv[2];
 if (!ws || !existsSync(ws)) { console.error("usage: node schema/check-people.mjs <workspace>"); process.exit(2); }
@@ -26,28 +27,41 @@ for (const dir of walk(ws)) {
   const at = (m) => errors.push(`${v.id}: ${m}`);
   const type = v.type ? types.get(v.type) : null;
   if (v.type && !type) at(`type ${v.type} is not in schema/venture-types.json`);
-  const rosterFile = join(dir, "people/people.json");
-  const fdir = join(dir, "people/founders");
+  const rosterFile = join(ventureFile(dir, "people/people.json"));
+  const fdir = join(ventureFile(dir, "people/founders"));
   const files = existsSync(fdir) ? readdirSync(fdir).filter((f) => f.endsWith(".json")) : [];
   if (!existsSync(rosterFile)) { if (files.length) at("people/founders/ has files but there is no people/people.json"); continue; }
   rosters++;
   const roster = load(rosterFile);
-  const imported = new Set(v.departments ?? []);
+  // In the structured layout (EE-086) the org chart is venture.json's functions, and a person's hats are the
+  // functions they own there; in the flat layout, the departments venture.json imports, worn as hats in people/.
+  const structured = v.layout === "structured";
+  const imported = new Set(structured ? Object.keys(v.functions ?? {}) : v.departments ?? []);
+  const ids = new Set(roster.people.map((p) => p.id));
+  if (structured) {
+    for (const [fn, f] of Object.entries(v.functions ?? {})) {
+      if (f.owner && !ids.has(f.owner)) at(`venture.json says ${f.owner} owns ${fn}, but people/people.json has no ${f.owner}`);
+      for (const c of f.contributors ?? []) if (!ids.has(c) && !roles.has(c)) at(`${fn} names contributor ${c}, who is neither a person in people/ nor a role`);
+    }
+    for (const p of roster.people) p.hats = Object.entries(v.functions ?? {}).filter(([, f]) => f.owner === p.id).map(([fn]) => fn);
+  }
   for (const p of roster.people) {
     const role = roles.get(p.role);
     if (!role) { at(`${p.id} has role ${p.role}, which is not in governance/venture-template/roles/venture-roles.json`); continue; }
     if (type && !type.roles.includes(p.role)) at(`${p.id} is a ${p.role}, which a ${type.label.toLowerCase()} does not have (${type.roles.join(", ")})`);
-    for (const h of p.hats) if (imported.size && !imported.has(h)) at(`${p.id} wears the ${h} hat, but venture.json does not import ${h}`);
+    for (const h of p.hats ?? []) if (imported.size && !imported.has(h)) at(`${p.id} wears the ${h} hat, but venture.json does not import ${h}`);
+    p.hats ??= [];
     if (!role.owns_when_solo && p.hats.length) at(`${p.id} is a ${p.role}, who owns no function, but wears ${p.hats.join(", ")}`);
     if (role.founder) {
       const f = `people/founders/${p.id}.json`;
       if (p.founder_file !== f) at(`${p.id} is a founder, so founder_file is ${f}`);
-      else if (!existsSync(join(dir, f))) at(`${f} is missing`);
+      else if (!existsSync(ventureFile(dir, f))) at(`${f} is missing`);
       else {
-        const rec = load(join(dir, f));
+        const rec = load(ventureFile(dir, f));
         if (rec.id !== p.id || rec.role !== p.role) at(`${f} says ${rec.id} is a ${rec.role}; the roster says ${p.id} is a ${p.role}`);
-        if (JSON.stringify([...rec.hats].sort()) !== JSON.stringify([...p.hats].sort())) at(`${f} and the roster disagree on ${p.id}'s hats`);
-        if (rec.agreement && !existsSync(join(dir, rec.agreement.path))) at(`${f} links a founder agreement at ${rec.agreement.path}, which does not exist`);
+        if (!structured && JSON.stringify([...(rec.hats ?? [])].sort()) !== JSON.stringify([...p.hats].sort())) at(`${f} and the roster disagree on ${p.id}'s hats`);
+        if (structured && rec.hats) at(`${f} stores hats; in the structured layout they are read from venture.json`);
+        if (rec.agreement && !existsSync(ventureFile(dir, rec.agreement.path))) at(`${f} links a founder agreement at ${rec.agreement.path}, which does not exist`);
       }
     }
   }

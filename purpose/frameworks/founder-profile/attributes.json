@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "note": "The library of founder-profile attributes: components a profile adds, the way a React component adds a hook. Each attribute holds a list of entries; an entry is prose in the founder's words (for reasoning models) with an optional type from the attribute's enumeration (for System 1 models and code). Add an attribute here and any template or profile can use it.",
+  "attributes": [
+    { "id": "puzzles", "label": "Puzzles", "question": "What problems do you keep turning over?", "types": ["personal", "professional", "societal", "intellectual"] },
+    { "id": "passions", "label": "Passions", "question": "What could you work on for years without being asked?", "types": ["craft", "cause", "people", "ideas", "place"] },
+    { "id": "telos", "label": "Telos", "question": "What are you for? What does a good life look like in ten years?", "types": ["life", "work", "family", "community", "legacy"] },
+    { "id": "ambitions", "label": "Ambitions", "question": "What do you want to become or achieve?", "types": ["life", "career", "financial", "creative", "impact", "venture"] },
+    { "id": "strengths", "label": "Strengths", "question": "What do people come to you for?", "types": ["general", "venture-function"] },
+    { "id": "weaknesses", "label": "Weaknesses", "question": "What drains you, or do you avoid?", "types": ["general", "venture-function"] },
+    { "id": "values", "label": "Values", "question": "What will you not compromise on?", "types": ["integrity", "freedom", "craft", "service", "family", "faith", "other"] },
+    { "id": "unfair-advantages", "label": "Unfair advantages", "question": "What access, knowledge or people do you have that others don't?", "types": ["access", "knowledge", "network", "capital", "credibility"] },
+    { "id": "constraints", "label": "Constraints", "question": "What limits your time, money or risk right now?", "types": ["time", "money", "risk", "location", "obligation"] }
+  ],
+  "templates": [
+    { "id": "default", "label": "Default founder profile", "attributes": ["puzzles", "passions", "telos", "ambitions", "strengths", "weaknesses", "values"] },
+    { "id": "torians-playbook", "label": "Torian's playbook", "attributes": ["puzzles", "passions", "telos", "ambitions", "strengths", "weaknesses", "values", "unfair-advantages", "constraints"] }
+  ]
+}

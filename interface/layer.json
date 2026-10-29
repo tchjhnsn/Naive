@@ -10,6 +10,14 @@
     {
       "id": "naive-setup",
       "path": "interface/skills/naive-setup/SKILL.md"
+    },
+    {
+      "id": "choosing-artifacts",
+      "path": "interface/skills/choosing-artifacts/SKILL.md"
+    },
+    {
+      "id": "run-playbook",
+      "path": "interface/skills/run-playbook/SKILL.md"
     }
   ],
   "records": [

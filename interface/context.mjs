@@ -46,6 +46,7 @@ import { dirname, join, relative } from "node:path";
 import { call, draftOf, gateOf, glob, layout as routerLayout, resolve, routes, ventureDir } from "./router.mjs";
 import { entries as provEntries } from "./provenance.mjs";
 import { tokens } from "./instrumentation.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 const here = dirname(new URL(import.meta.url).pathname);
 const repoRoot = join(here, "..");
@@ -58,7 +59,7 @@ export const COMPUTED = ["need_now", "need-now", "next", "ranking", "rank", "ope
 
 /** The venture's context settings: the defaults, overridden by naive.config.json context. */
 export function settings(dir) {
-  const f = dir && join(dir, "naive.config.json");
+  const f = dir && join(ventureFile(dir, "naive.config.json"));
   let c = {};
   try { if (f && existsSync(f)) c = load(f).context ?? {}; } catch {}
   return { ...DEFAULTS, ...c };
@@ -75,8 +76,8 @@ export function budgetFor(set, route) {
 
 /** The state of one venture file: missing, draft waiting, agent-written, confirmed, baseline or unlogged. */
 export function stateOf(dir, file, draft) {
-  if (draft && existsSync(join(dir, draft))) return { state: "draft waiting", draft };
-  if (!file || !existsSync(join(dir, file))) return { state: "missing" };
+  if (draft && existsSync(ventureFile(dir, draft))) return { state: "draft waiting", draft };
+  if (!file || !existsSync(ventureFile(dir, file))) return { state: "missing" };
   let state = "unlogged", last = null;
   for (const e of provEntries(dir).filter((x) => x.entity === file)) {
     last = e;
@@ -102,7 +103,7 @@ export function titleOf(rec) {
 function ownerOf(r, dir, route) {
   const g = r.kind === "record" ? gateOf(r, dir) : null;
   if (g?.owner) return g.owner;
-  const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
+  const plan = [join(ventureFile(dir, "people/team-plan.json")), join(ventureFile(dir, "operations/team-plan.json"))].find((p) => existsSync(p));
   if (!plan) return null;
   try { return load(plan).roles.find((x) => (x.routes?.write ?? []).some((gl) => glob(gl).test(route)))?.id ?? null; } catch { return null; }
 }
@@ -134,7 +135,7 @@ export function headerOf({ r, route, dir, venture, workspace, res }) {
 /** Every AGENTS.md from the venture root down the route's segments, nearest last. */
 export function chainOf(dir, route) {
   const out = [];
-  const add = (rel) => { const f = join(dir, rel); if (existsSync(f)) out.push({ path: rel, text: readFileSync(f, "utf8") }); };
+  const add = (rel) => { const f = ventureFile(dir, rel); if (existsSync(f)) out.push({ path: rel, text: readFileSync(f, "utf8") }); };
   add("AGENTS.md");
   let acc = "";
   for (const p of route.split("/").filter(Boolean)) { acc = acc ? `${acc}/${p}` : p; add(`${acc}/AGENTS.md`); }
@@ -465,7 +466,7 @@ async function measureBudget(dir) {
     : e.isDirectory() ? (existsSync(join(d, rel, e.name, "venture.json")) ? [] : agentsFiles(d, rel ? `${rel}/${e.name}` : e.name)) : e.name === "AGENTS.md" ? [rel ? `${rel}/AGENTS.md` : "AGENTS.md"] : []);
   for (const f of agentsFiles(dir)) {
     const folder = dirname(f) === "." ? "" : dirname(f);
-    const text = readFileSync(join(dir, f), "utf8");
+    const text = readFileSync(ventureFile(dir, f), "utf8");
     for (const line of text.split("\n")) {
       const s = line.match(SCOPED), m = s ? [null, s[2], s[3]] : line.match(PLAIN);
       if (!m) continue;

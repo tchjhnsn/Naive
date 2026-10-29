@@ -26,6 +26,7 @@ import { decisions, propose } from "./decisions.mjs";
 import { kit } from "./kits.mjs";
 import { CONFIG, readConfig, writeConfig } from "./naive-config.mjs";
 import { packages } from "./packages.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const STATE = ".naive/triggers.json";
 export const ERRORS = ".naive/trigger-errors.jsonl";
@@ -63,19 +64,19 @@ export function matches(t, e) {
 }
 
 function readState(dir) {
-  const f = join(dir, STATE);
+  const f = ventureFile(dir, STATE);
   if (existsSync(f)) {
     try { const s = load(f); if (Array.isArray(s.runs) && Array.isArray(s.waiting)) return s; } catch {}
     // A state file that cannot be read is kept beside it, and the failure is raised; runs start again from now.
     const kept = `.naive/triggers.unreadable-${Date.now()}.json`;
-    renameSync(f, join(dir, kept));
+    renameSync(f, ventureFile(dir, kept));
     return { since: now(), cursor: null, runs: [], waiting: [], unreadable: kept };
   }
   // Triggers start with the events after they were configured, not the venture's whole history.
-  const cfg = join(dir, CONFIG);
+  const cfg = ventureFile(dir, CONFIG);
   return { since: existsSync(cfg) ? statSync(cfg).mtime.toISOString() : now(), cursor: null, runs: [], waiting: [] };
 }
-const saveState = (dir, s) => { mkdirSync(join(dir, ".naive"), { recursive: true }); writeFileSync(join(dir, STATE), JSON.stringify(s, null, 2) + "\n"); };
+const saveState = (dir, s) => { mkdirSync(join(dir, ".naive"), { recursive: true }); writeFileSync(ventureFile(dir, STATE), JSON.stringify(s, null, 2) + "\n"); };
 
 const complete = (dir, name) => { try { return packages(dir).complete.includes(name); } catch { return false; } };
 const brief = (x) => (x == null ? null : typeof x === "string" ? x.slice(0, 300) : JSON.stringify(x).slice(0, 300));
@@ -155,7 +156,7 @@ export async function fire(dir, { rounds = 20 } = {}) {
       delete state.unreadable; state.runs.push(run); made.push(run); saveState(dir, state);
     }
     // A crash the provenance hook kept is a failure too.
-    const ef = join(dir, ERRORS);
+    const ef = ventureFile(dir, ERRORS);
     if (existsSync(ef)) {
       for (const l of readFileSync(ef, "utf8").split("\n").filter(Boolean)) {
         const x = JSON.parse(l);
@@ -211,7 +212,7 @@ export async function fire(dir, { rounds = 20 } = {}) {
 export function report(dir) {
   const { triggers, problems } = triggersOf(dir);
   // Read only: a listing never moves an unreadable state file aside (the next run does, and raises it).
-  const s = (() => { try { return load(join(dir, STATE)); } catch { return { runs: [], waiting: [] }; } })();
+  const s = (() => { try { return load(ventureFile(dir, STATE)); } catch { return { runs: [], waiting: [] }; } })();
   return { triggers: triggers.map((t) => ({ id: t.id, from: t.from, on: t.on, run: t.run.propose ? { propose: t.run.propose.id } : { route: t.run.route, action: t.run.action }, needs: t.needs ?? null, needs_complete: t.needs ? complete(dir, t.needs) : null, enabled: t.enabled, once: !!t.once })),
     problems, runs: s.runs.slice(-10), waiting: s.waiting, open: s.runs.filter((r) => r.status === "raised").map((r) => ({ run: r.n, trigger: r.trigger, error: r.error, decision: r.decision, decide: `mentura decide ${r.decision} --venture ${load(join(dir, "venture.json")).id} --by <your name> --answer "Retry" (or "Skip this event", "Turn the trigger off")` })) };
 }
