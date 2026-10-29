@@ -42,6 +42,10 @@ import { holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
 // Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.
 import { readFlag as freshnessFlag } from "../schema/freshness.mjs";
+// Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
+// the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
+import { actingCall, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
+import { checkPlan, gateWrite, heldDraft } from "./gate-hooks.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 // Caching (schema/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { actionScope, cacheRoutes, command as cachedCommand, forget, internal as cacheInternal, memo } from "../schema/caching.mjs";
@@ -333,7 +337,8 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
  */
 // Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
 // Context hook: every call is timed and measured for agent vitals (interface/instrumentation.mjs).
-export const call = (args) => actionScope(() => instrumented(args, callInAction, ventureDir));
+// Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
+export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, callInAction, ventureDir), ventureDir));
 async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const requested = route;
   const { r, params, alias } = resolve(route);
@@ -349,7 +354,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
   const act = action === "write" ? "write" : "read";
-  if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route)) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
+  // Gate group hook (F-5): a role that may read some items of a collection may read its list, filtered below.
+  if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route) && !(act === "read" && r.collection === "list" && mayReadSome(dir, actor_id, route))) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
   // An activity a decision unlocks stays closed to agents until a person makes that decision (EE-058).
   const lock = actor !== "person" && (action === "write" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
   if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
@@ -398,6 +404,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => patterns.some((g) => glob(g).test(f))) : patterns;
       // Caching hook (F-2): each record is read once per action and shared.
       items = (await Promise.all(paths.map((f) => memo(`read:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
+      // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
+      if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
     const draft = !remote && r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
@@ -447,9 +455,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   }
 
   if (action === "check") {
-    const outs = r.checks.map((c) => ({ check: c, ...spawnSync("node", [join(repo, c), dir], { encoding: "utf8" }) }));
-    const ok = outs.every((o) => o.status === 0);
-    return { ok, result: outs.map((o) => ({ check: o.check, passed: o.status === 0, output: (o.stdout + o.stderr).trim() })), ...(ok ? {} : { fix: fix(r) }), ...deprecated };
+    // Gate group hook (P-7): the checks settings in naive.config.json turn a check off or make it warn only.
+    const plan = checkPlan(dir, r.checks);
+    const outs = plan.filter((p) => p.mode !== "off").map((p) => ({ check: p.check, mode: p.mode, ...spawnSync("node", [join(repo, p.check), dir], { encoding: "utf8" }) }));
+    const ok = outs.every((o) => o.status === 0 || o.mode === "warn");
+    return { ok, result: [...outs.map((o) => ({ check: o.check, passed: o.status === 0, ...(o.mode === "warn" ? { warn_only: true } : {}), output: (o.stdout + o.stderr).trim() })), ...plan.filter((p) => p.mode === "off").map((p) => ({ check: p.check, passed: null, off: true }))], ...(ok ? {} : { fix: fix(r) }), ...deprecated };
   }
 
   if (action === "write") {
@@ -479,7 +489,9 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // (EE-054): an agent's write becomes a draft, as for a gated record.
     const held = !remote && actor !== "person" ? holding(dir, file) : null;
     // The venture's own fail-closed routes (naive.config.json, the gate, EE-073) hold an agent's write too.
-    const configured = !remote ? hold(configOf(dir), r.route, actor) : null;
+    // Gate group hook (X-1 to X-6, U-4): the venture's gate decides; a refusal stops the write here.
+    const configured = !remote ? gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate }) : null;
+    if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
     const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
@@ -517,13 +529,12 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     }
 
     const draft = gatedDraft;
-    if (draft) {
-      const dest = join(dir, draftPath(file));
-      mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, text);
-    } else await store.write(file, recordText);
-    const entry = log(draft ? draftPath(file) : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : `${configured.rule} fails closed in naive.config.json: written as a draft for a person to accept`) : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule } : {}), ...attributesOut }, ...deprecated };
+    // Gate group hook (X-2): the held draft, the owner it was sent to and any variants kept side by side.
+    let held2 = null;
+    if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent });
+    else await store.write(file, recordText);
+    const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write");
+    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured.why) : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }

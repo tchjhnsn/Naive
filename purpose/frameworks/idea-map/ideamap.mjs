@@ -19,6 +19,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { answersFor, configFor, questionsFor, threshold } from "../../../schema/naive-config.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../..");
@@ -163,8 +164,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const opt = (n) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
   const json = (x) => console.log(JSON.stringify(x, null, 2));
   if (a === "split") json(split(readFileSync(b, "utf8")));
-  else if (a === "request") json(request(split(readFileSync(join(b, DUMP), "utf8")), ventureOf(b)));
-  else if (a === "answers") json(fromAnswers(load(c).answers ?? load(c)));
+  // Gate group hook (P-2): the venture's naive.config.json says which System 1 questions run and the tag threshold.
+  else if (a === "request") json(questionsFor(request(split(readFileSync(join(b, DUMP), "utf8")), ventureOf(b)), configFor(b), "idea-map"));
+  else if (a === "answers") { const cfg = configFor(b); json(fromAnswers(answersFor(load(c).answers ?? load(c), cfg, "idea-map"), threshold(cfg, "idea-map", CONVENTIONS.threshold))); }
   else if (a === "write") {
     const ideas = split(readFileSync(join(b, DUMP), "utf8"));
     mkdirSync(join(b, dirname(MAP)), { recursive: true });
