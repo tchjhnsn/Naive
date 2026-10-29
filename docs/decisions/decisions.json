@@ -842,8 +842,8 @@
         "EE-011",
         "EE-030"
       ],
-      "decision": "naive init creates new ventures only (Torian, 2026-10-29): like create-next-app it refuses a directory that exists and is not empty, so it never writes over a founder's files. Adopting an existing project is held back as a later feature; when built it starts with a dry run listing every file it would add, never overwrites, and maps existing files through knowledge/sources.json instead of moving them.",
-      "why": "Running init on an important existing venture could overwrite its profile, pillars and layer READMEs; the old guard only checked venture.json."
+      "decision": "naive init creates new ventures only (Torian, 2026-10-29): like create-next-app it refuses a directory that exists and is not empty, so it never writes over a founder's files. Existing work comes in by porting, not by restructuring in place (Torian, 02:40Z): the founder creates a new venture and points it at an existing venture or project, which is opened read-only; a language model reads it and proposes a port plan (each source file or section, the route or record it maps to, how it must be reshaped, and what is left behind); the founder settles the plan as decisions, function by function; things that should stay where they are (a code repo, a live document) become pointers in knowledge/sources.json, and every ported record carries derived_from. Like moving a web app between frameworks, this is expected to be hard, and is a later feature with its own verb (port), distinct from mentura migrate.",
+      "why": "Running init on an important existing venture could overwrite its profile, pillars and layer READMEs; the old guard only checked venture.json. A read-only source and a reviewed plan mean nothing of the founder's can be corrupted."
     },
     {
       "id": "EE-080",
