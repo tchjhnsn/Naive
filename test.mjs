@@ -40,6 +40,7 @@ const steps = [
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["schema/setup-test.mjs"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["interface/writes-test.mjs"]],
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["schema/brand-test.mjs"]],
+  ["finance lint: spend, price below cost, metric targets", "node", ["schema/lint-finance-test.mjs"]],
   ["upgrades: migrations, pins, early adoption, canary, staged agent upgrades", "node", ["schema/upgrades-test.mjs"]],
   ["kits", "node", ["platform/kits/test.mjs"]],
   ["webhooks", "node", ["platform/webhooks/test.mjs"]],
