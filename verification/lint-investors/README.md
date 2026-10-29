@@ -4,6 +4,8 @@ A TLA+ model of `schema/lint-investors.mjs` (route `investors/lint`). An investo
 
 The model is the behavior of one `lint()` run after each change. It is not a second copy of the matcher. What counts as a raise, a conflict, or a confirmed number is the code, replayed by `schema/lint-investors-test.mjs`.
 
+Confirmed against `schema/lint-investors.mjs` at `ef26b886faf13a2a5c78e908c19dd5e589496e0c`. Move that commit forward only after checking that each action in `InvestorLint.tla` still matches `lint()`.
+
 ## Regenerate
 
 From the repo, with the pstack `statechart` skill. The first run installs TLC and Java with mise. This check used TLC 1.7.4 (`tla2tools.jar`, sha256 `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`) and Java 21.0.12.1, with `TLA2TOOLS` and `JAVA` set, because mise was not installed.
