@@ -77,8 +77,11 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
     const m = load(summaryFile);
     const age = (Date.now() - Date.parse(m.synced_at)) / 864e5;
     add("money_fresh", age <= 7 ? 1 : 0, `money synced from ${m.source} ${age.toFixed(1)} days ago (7 at most); activity as of ${m.as_of}`);
-    const citing = [...agentDrafted, ...(problem ? [{ problem: load(problem) }] : [])].filter((d) => JSON.stringify(d).includes("money/summary"));
-    add("money_cited", citing.length ? 1 : 0, citing.length ? `${citing.length} agent records cite money/summary.json` : "no agent proposal or record cites the money summary");
+    // Only what touches money has to cite it: pricing, spend, hiring, runway, fundraising, cash.
+    const records = [...agentDrafted, ...(problem ? [{ problem: load(problem) }] : [])].map((d) => JSON.stringify(d));
+    const touching = records.filter((x) => /money\/summary|\b(pric(e|ing)|spend|budget|hir(e|ing)|runway|burn|fundrais|cash|revenue)\b/i.test(x));
+    const citing = touching.filter((x) => x.includes("money/summary"));
+    add("money_cited", frac(citing.length, touching.length), touching.length ? `${citing.length} of ${touching.length} agent records that touch money cite money/summary.json` : "no agent record touches money, so none needs to cite it");
     const leaked = walk(dir).filter((f) => !f.includes("/money/_streams/") && f.endsWith(".json") && /:transaction:/.test(readFileSync(f, "utf8")));
     add("money_private", leaked.length ? 0 : 1, leaked.length ? `transaction pointers outside the money stream: ${leaked.map((f) => f.slice(dir.length + 1)).join(", ")}` : "transactions stay in their sensitive stream");
   }
