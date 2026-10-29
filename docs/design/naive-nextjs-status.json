@@ -159,13 +159,16 @@
   {
    "id": "I-17",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
     "interface/cli/naive.mjs",
-    "interface/create-venture/test.mjs"
+    "interface/create-venture/test.mjs",
+    "schema/build-release.mjs",
+    "schema/start-release.mjs",
+    "schema/releases-test.mjs"
    ],
    "page": "get-started/install",
-   "note": "dev and check are built; build and start call schema/build-release.mjs and schema/start-release.mjs, which the Chapter 17 work writes"
+   "note": "naive dev, build, start and check all run: build writes .release/ through schema/build-release.mjs and start serves it read-only through schema/start-release.mjs"
   },
   {
    "id": "I-18",

@@ -11,6 +11,8 @@ const base = mkdtempSync(join(tmpdir(), "create-venture-test-"));
 const home = join(base, "home");
 mkdirSync(home);
 const env = { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, ".config"), npm_config_user_agent: "" };
+// The generator calls a real model when TYPESAFE_API_KEY is set; these tests use the stand-in or the list.
+for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
 delete env.MENTURA_WORKSPACE;
 const create = (args, cwd = base) => spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), ...args], { cwd, env, encoding: "utf8" });
 const naive = (args, cwd) => spawnSync("node", [join(base, "kettle/node_modules/.bin/naive"), ...args], { cwd, env, encoding: "utf8" });
