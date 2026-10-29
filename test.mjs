@@ -34,6 +34,7 @@ const steps = [
   ["context: header first, session layouts, prefetch, context budget, agent vitals", "node", ["interface/context-test.mjs"]],
   ["model steps: use model, judgments, kit boundaries, uncertain routing", "node", ["schema/model-steps-test.mjs"]],
   ["the gate: naive.config.json, one gate per venture, who is acting", "node", ["schema/gate-test.mjs"]],
+  ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["interface/dev/test.mjs"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["interface/create-venture/test.mjs"]],
   ["the Next.js translation status (every concept has a status, its evidence exists, the page is current)", "node", ["schema/check-nextjs-status.mjs"]],
   ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],

@@ -21,6 +21,8 @@ const model = JSON.parse(readFileSync(join(root, "schema/data-model.json"), "utf
 const ventureTypes = new Set(model.records.filter((r) => r.level === "venture").map((r) => r.id));
 const PINNED = new Set(["venture", "provenance", "knowledge-sources"]);
 const reg = registry();
+// The systems a function's truth can live in (EE-083); a connected one must have code that reads it.
+const catalog = JSON.parse(readFileSync(join(root, "schema/systems-catalog.json"), "utf8"));
 const errors = [];
 let maps = 0;
 
@@ -57,10 +59,16 @@ for (const v of walk(dir)) {
     if (!ids.has(rule.system_of_record)) errors.push(`${where}: system of record ${rule.system_of_record} is not one of its sources`);
     for (const s of rule.survivorship?.also_in ?? []) if (!ids.has(s) || s === rule.system_of_record) errors.push(`${where}: survivorship names ${s}, which is not another of its sources`);
   });
+  for (const [fn, f] of Object.entries(m.functions ?? {})) for (const s of f.systems) {
+    const sys = catalog.systems[s.system];
+    if (!sys) { errors.push(`${id}: ${fn} keeps its truth in ${s.system}, which is not in schema/systems-catalog.json`); continue; }
+    if (s.status === "connected" && !sys.connect) errors.push(`${id}: ${fn} says ${s.system} is connected, but no code reads ${sys.label} yet; it is pointed`);
+    if (s.source && !ids.has(s.source)) errors.push(`${id}: ${fn} names source ${s.source}, which is not in sources`);
+  }
   const overlap = (a, b) => a.record === b.record && ["attribute", ...CONTEXT].every((k) => a[k] === ANY || b[k] === ANY || a[k] === b[k]);
   for (let i = 0; i < rules.length; i++) for (let j = i + 1; j < rules.length; j++)
     if (overlap(rules[i], rules[j]) && specificity(rules[i]) === specificity(rules[j]) && rules[i].attribute === rules[j].attribute)
       errors.push(`${id}: rules ${i + 1} and ${j + 1} (${rules[i].record}) can both hold and tie at the same specificity; narrow one`);
 }
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`${maps} source maps: every source has a connector, every record type a source, and no two matrix rules tie.`);
+console.log(`${maps} source maps: every source has a connector, every record type a source, every function's systems are known, and no two matrix rules tie.`);

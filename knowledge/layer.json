@@ -22,7 +22,8 @@
     "where-used",
     "freshness-profiles",
     "freshness-log",
-    "judgment"
+    "judgment",
+    "systems-catalog"
   ],
   "reads": [
     "venture",

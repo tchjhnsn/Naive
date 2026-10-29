@@ -104,8 +104,12 @@ t("the answers are kept for the next venture, and --reset-preferences forgets th
 const prompts = (args, lines, extra = {}) => spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), ...args, "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
 
 t("the setup questions: nothing is scaffolded until the type and role are set; customize asks layers, legal form and a dump", () => {
-  // name, what (Enter: the list), type 1 (software startup), role, your name, solo, phase, customize, layers, legal form, dump
-  const r = prompts([], ["clinic", "", "1", "founder", "Pat Doe", "solo", "validation", "customize", "purpose,knowledge", "llc", "dump.md"]);
+  // name, what (Enter: the list), type 1 (software startup), role, your name, solo, phase,
+  // where each function keeps its truth (products, marketing and sales, customer service, IT, finance, legal),
+  // then customize, layers, legal form, dump
+  const r = prompts([], ["clinic", "", "1", "founder", "Pat Doe", "solo", "validation",
+    "local-repo:../clinic-app,github:pat/clinic", "vercel:pat/clinic", "none", "none", "stripe:acct_123", "Not set up yet; our lawyer has the papers",
+    "customize", "purpose,knowledge", "llc", "dump.md"]);
   ok(r.status === 0, r.stdout + r.stderr);
   const c = load(join(base, "clinic/venture.json"));
   ok(c.type === "software-startup" && c.phase === "validation" && c.form?.legal_form === "llc", JSON.stringify(c));
@@ -113,11 +117,16 @@ t("the setup questions: nothing is scaffolded until the type and role are set; c
   ok(existsSync(join(base, "clinic/raw/dump.md")));
   const people = load(join(base, "clinic/people/people.json"));
   ok(people.mode === "solo" && people.people[0].role === "founder" && people.people[0].hats.length === c.departments.length, JSON.stringify(people));
+  const fns = load(join(base, "clinic/knowledge/sources.json")).functions;
+  ok(fns.products.systems.map((s) => s.system).join() === "local-repo,github" && fns.products.systems[1].address === "pat/clinic", JSON.stringify(fns.products));
+  ok(fns.finance.systems[0].system === "stripe" && fns.finance.systems[0].status === "pointed" && !fns["customer-service"], JSON.stringify(fns));
+  ok(fns.legal.systems.length === 0 && /our lawyer/.test(fns.legal.note), "a function answered in prose keeps the founder's words");
 });
 
 t("a VC fund with a team: an investor role, one file per founder, each function asked once", () => {
   // name, what, type 2 (VC fund), role, your name, team, other founders, phase, then who owns each of 5 functions, then recommended
-  const r = prompts([], ["northstar", "", "2", "general-partner", "Torian Johnson", "team", "Ada Lovelace", "discovery", "torian-johnson", "ada-lovelace", "ada-lovelace", "torian-johnson", "torian-johnson", "recommended"]);
+  // ... then where finance, external relationships, risk and compliance, and legal documents keep their truth
+  const r = prompts([], ["northstar", "", "2", "general-partner", "Torian Johnson", "team", "Ada Lovelace", "discovery", "torian-johnson", "ada-lovelace", "ada-lovelace", "torian-johnson", "torian-johnson", "none", "none", "none", "none", "recommended"]);
   ok(r.status === 0, r.stdout + r.stderr);
   const v = load(join(base, "northstar/venture.json"));
   ok(v.type === "vc-fund" && v.layers.purpose, JSON.stringify(v));
@@ -131,7 +140,7 @@ t("a VC fund with a team: an investor role, one file per founder, each function 
 });
 
 t("described in a few words, a model picks the type, and the founder confirms it", () => {
-  const r = prompts([], ["syndicate", "an angel syndicate for climate founders", "yes", "general-partner", "Sam Lee", "solo", "discovery", "recommended"], { MENTURA_TYPE_CMD: `node ${join(repo, "schema/examples/venture-type/jev.mjs")}` });
+  const r = prompts([], ["syndicate", "an angel syndicate for climate founders", "yes", "general-partner", "Sam Lee", "solo", "discovery", "none", "none", "none", "none", "recommended"], { MENTURA_TYPE_CMD: `node ${join(repo, "schema/examples/venture-type/jev.mjs")}` });
   ok(r.status === 0, r.stdout + r.stderr);
   ok(/That sounds like a vc fund or firm/.test(r.stdout), r.stdout);
   ok(load(join(base, "syndicate/venture.json")).type === "vc-fund");
@@ -142,6 +151,20 @@ t("without a model key, describing it falls back to the list; an unclear descrip
   ok(r.status === 1 && /pass --type/.test(r.stderr), r.stderr);
   const u = spawnSync("node", [join(repo, "schema/venture-type.mjs"), "classify", "something hard to name"], { env: { ...env, MENTURA_TYPE_CMD: `node ${join(repo, "schema/examples/venture-type/jev.mjs")}` }, encoding: "utf8" });
   ok(u.status === 0 && JSON.parse(u.stdout).uncertain === true, u.stdout);
+});
+
+t("--source points functions at systems; Rho syncs from its saved answer and is marked a fixture; bad pointers are refused", () => {
+  const r = create(["shop", "--type", "ecommerce", "--name", "Lee Park", "--source", "marketing-and-sales=shopify:shop.myshopify.com", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install"]);
+  ok(r.status === 0 && /Rho: synced from a saved sandbox answer \(a fixture/.test(r.stdout) && /Legal documents: none connected yet/.test(r.stdout), r.stdout + r.stderr);
+  const fns = load(join(base, "shop/knowledge/sources.json")).functions;
+  ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(join(base, "shop/money/summary.json")), JSON.stringify(fns));
+  ok(fns["marketing-and-sales"].systems[0].status === "pointed");
+  // The transactions Rho synced are sensitive: git must ignore them. (Where Rho writes account records,
+  // money/accounts/ against the data model's money/<id>.json, is the Rho integration's open question.)
+  const packs = spawnSync("node", [join(repo, "schema/check-data-packages.mjs"), join(base, "shop")], { encoding: "utf8" });
+  ok(!/sensitive stream/.test(packs.stdout + packs.stderr), `the synced transactions stay out of git: ${packs.stdout}${packs.stderr}`);
+  const bad = create(["shop2", "--type", "ecommerce", "--source", "finance=vercel", "--yes", "--skip-install", "--no-git"]);
+  ok(bad.status === 1 && /vercel is not offered for finance/.test(bad.stderr) && !existsSync(join(base, "shop2")), bad.stderr);
 });
 
 t("flags: --type, --role and --team; a role the type does not have is refused", () => {
