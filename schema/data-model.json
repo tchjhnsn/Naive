@@ -429,6 +429,16 @@
       "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node schema/decisions.mjs renders the matrix. The decision log keeps the history"
     },
     {
+      "id": "nextjs-status",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/nextjs-status.schema.json",
+      "paths": [
+        "docs/design/naive-nextjs-status.json"
+      ],
+      "note": "Whether each concept of the Next.js translation ledger is built, with evidence and the docs page that explains it; checked by schema/check-nextjs-status.mjs, which writes the What's built page"
+    },
+    {
       "id": "design-document",
       "layer": "knowledge",
       "level": "method",

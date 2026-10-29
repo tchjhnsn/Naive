@@ -39,6 +39,7 @@ import { basename, dirname, join, relative } from "node:path";
 import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
 import { holding, locked } from "../schema/decisions.mjs";
+import { configOf, hold } from "../schema/gate.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
@@ -442,7 +443,9 @@ export async function call({ venture, route, action, input, actor = "agent", act
     // A decision record that is open and fails closed, or waits on one that is, holds the record
     // (EE-054): an agent's write becomes a draft, as for a gated record.
     const held = !remote && actor !== "person" ? holding(dir, file) : null;
-    const gatedDraft = !remote && (!!gate?.drafts || !!held) && actor !== "person";
+    // The venture's own fail-closed routes (naive.config.json, the gate, EE-073) hold an agent's write too.
+    const configured = !remote ? hold(configOf(dir), r.route, actor) : null;
+    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
       for (const a of split) {
@@ -485,7 +488,7 @@ export async function call({ venture, route, action, input, actor = "agent", act
       writeFileSync(dest, text);
     } else await store.write(file, recordText);
     const entry = log(draft ? draftPath(file) : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : `decision ${held.id} ${held.why}: written as a draft for a person to accept`) : "written", ...(held ? { held_by: held.id } : {}), ...attributesOut }, ...deprecated };
+    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : `${configured.rule} fails closed in naive.config.json: written as a draft for a person to accept`) : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
