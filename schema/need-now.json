@@ -410,6 +410,16 @@
       },
       "why": "Once one fact (a price, a product name, a plan's limits) is repeated in several places, such as a site, newsletters and a payment provider; before launch there is rarely more than one copy"
     },
+    "freshness-log": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.7,
+        "platform": 0.8
+      },
+      "why": "Written by mentura revalidate, verify and phase; costs nothing until a fact changes outside the venture, a record is checked without changing it, or the venture changes phase or pivots"
+    },
     "department": {
       "base": {
         "discovery": 0.3,

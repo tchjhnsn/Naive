@@ -104,19 +104,20 @@ Each arrow is a record type one layer owns and another reads, or one layer write
 | Layer | Skills | Owns | Takes from | Gives to |
 | --- | --- | --- | --- | --- |
 | purpose | 3 | product, account, anatomy-framework, anatomy-answers, anatomy-input, telos, icp, alignment, strategic-foundation, idea-dump, idea-map, idea-map-conventions, idea-graph | system (venture); governance (exit) | knowledge (product); operations (icp, product, telos); governance (telos); system (product, account) |
-| knowledge | 2 | venture-profile, decision, design-document, nextjs-status, knowledge-sources, where-used | system (venture); purpose (product); governance (decision) | system (reference, decision); operations (decision); evidence (design-document, venture-profile, decision) |
+| knowledge | 2 | venture-profile, decision, design-document, nextjs-status, knowledge-sources, where-used, freshness-profiles, freshness-log | system (venture, provenance); purpose (product); governance (decision-record, decision) | system (reference, decision); operations (decision); evidence (design-document, venture-profile, decision) |
 | operations | 3 | team-plan, handoff, department-catalog, department, marketing-matrix, site-presence, marketing-sitemap, marketing-content | evidence (agent-capability); governance (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision); purpose (icp, product, telos); system (integration, venture) | evidence (evidence, handoff); governance (handoff) |
 | evidence | 6 | evidence, eval-suite, design-documents-registry, benchmark, agent-capability | operations (evidence, handoff); knowledge (design-document, venture-profile, decision) | operations (agent-capability); governance (evidence) |
-| governance | 15 | decision-rights, role, pillar, ownership, board, founder-agreement, exit, publication-policy, decision-record | operations (handoff); evidence (evidence); system (venture); purpose (telos) | purpose (exit); operations (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision) |
+| governance | 15 | decision-rights, role, pillar, ownership, board, founder-agreement, exit, publication-policy, decision-record | operations (handoff); evidence (evidence); system (venture); purpose (telos) | purpose (exit); knowledge (decision-record, decision); operations (board, decision-rights, ownership, publication-policy, role, handoff) |
 | interface | 1 | route-aliases | system (integration) | none |
-| system | 0 | workspace, venture, ontology, reference, integration, business-models, scaffold, data-model, kit-manifest, need-now, provenance, venture-packages, venture-package, release | knowledge (reference, decision); purpose (product, account) | purpose (venture); knowledge (venture); operations (integration, venture); governance (venture); interface (integration) |
+| system | 0 | workspace, venture, ontology, reference, integration, business-models, scaffold, data-model, kit-manifest, need-now, provenance, venture-packages, venture-package, release | knowledge (reference, decision); purpose (product, account) | purpose (venture); knowledge (venture, provenance); operations (integration, venture); governance (venture); interface (integration) |
 
 ```mermaid
 flowchart LR
   system -->|venture| purpose
   governance -->|exit| purpose
-  system -->|venture| knowledge
+  system -->|venture, provenance| knowledge
   purpose -->|product| knowledge
+  governance -->|decision-record, decision| knowledge
   knowledge -->|reference, decision| system
   evidence -->|agent-capability| operations
   governance -->|board, decision-rights, ownership, publication-policy, role, handoff| operations
@@ -129,7 +130,6 @@ flowchart LR
   evidence -->|evidence| governance
   system -->|venture| governance
   purpose -->|telos| governance
-  governance -->|decision| knowledge
   system -->|integration| interface
   purpose -->|product, account| system
 ```

@@ -1,0 +1,85 @@
+{
+  "$schema": "../schema/freshness-profiles.schema.json",
+  "note": "Default freshness profiles (Revalidating, V-1 to V-3): how long a record stays fresh, by record type, after Next.js cacheLife profiles. A venture overrides any of them under freshness in its naive.config.json, as a Next.js app defines cacheLife profiles in next.config.js. stale: how long an agent may reuse what it read without reading it again. revalidate: after this the record is stale, still readable with a stale flag, and should be checked or redone. expire: after this it is expired and not frozen into a release. per_phase: the record is stale once the venture changes phase after it was last checked. live: a fast-changing record, never frozen into a release; it stays a live hole. Durations are seconds, or a number with s, m, h, d or w. Version 0.x: ours and unevaluated.",
+  "version": "0.1.0",
+  "default": "max",
+  "profiles": {
+    "live": {
+      "live": true,
+      "stale": "0s",
+      "revalidate": "7d",
+      "note": "Pipeline, money and streams: read from their system of record every time, synced at least weekly, never frozen"
+    },
+    "feedback": {
+      "stale": "1d",
+      "revalidate": "30d",
+      "expire": "90d",
+      "note": "What customers said: stale after 30 days, too old to rely on after 90"
+    },
+    "research": {
+      "stale": "1d",
+      "revalidate": "90d",
+      "expire": "365d",
+      "note": "Market research, product cards and site measurements: stale after 90 days"
+    },
+    "assumption": {
+      "per_phase": true,
+      "stale": "1d",
+      "revalidate": "90d",
+      "expire": "365d",
+      "note": "What the venture believes about its problem, solution, price and market: tested again each phase, and stale after 90 days"
+    },
+    "foundation": {
+      "per_phase": true,
+      "stale": "1d",
+      "revalidate": "365d",
+      "note": "The strategic foundation: tested again each phase; in Discovery even confirmed statements are"
+    },
+    "max": {
+      "stale": "1d",
+      "revalidate": "365d",
+      "note": "Governance and other slow records: looked at again once a year"
+    },
+    "none": {
+      "note": "Generated or configuration records: never stale by time, only when what they depend on changes"
+    }
+  },
+  "records": {
+    "customer": "live",
+    "investor": "live",
+    "money-account": "live",
+    "data-stream": "live",
+    "raw-source": "feedback",
+    "raw-text": "feedback",
+    "evidence": "feedback",
+    "product": "research",
+    "account": "research",
+    "site-presence": "research",
+    "anatomy-input": "research",
+    "anatomy-answers": "research",
+    "validation-problem": "assumption",
+    "validation-solution": "assumption",
+    "validation-product-market-fit": "assumption",
+    "validation-pricing": "assumption",
+    "validation-go-to-market": "assumption",
+    "validation-team": "assumption",
+    "validation-operations-readiness": "assumption",
+    "telos": "foundation",
+    "icp": "foundation",
+    "alignment": "foundation",
+    "idea-dump": "none",
+    "idea-map": "none",
+    "idea-graph": "none",
+    "venture-profile": "max",
+    "provenance": "none",
+    "freshness-log": "none",
+    "venture-package": "none",
+    "knowledge-sources": "none",
+    "where-used": "none",
+    "decision-record": "none",
+    "decision-rights": "none",
+    "team-plan": "max",
+    "marketing-sitemap": "none",
+    "marketing-content": "none"
+  }
+}
