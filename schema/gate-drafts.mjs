@@ -14,6 +14,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { approve } from "./decisions.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 const LETTERS = "abcdefghijklmnopqrstuvwxyz";
@@ -42,7 +43,7 @@ export function sidecar(dir, draft) {
  * Returns { written, variant, variants, decision }.
  */
 export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }) {
-  const dest = join(dir, draft);
+  const dest = ventureFile(dir, draft);
   mkdirSync(dirname(dest), { recursive: true });
   const at = new Date().toISOString();
   const by = agent.id ?? agent.kind ?? "agent";
@@ -64,7 +65,7 @@ export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }
   const next = LETTERS[variants.length];
   if (!next) throw new Error(`${route} already holds ${variants.length} drafts side by side; accept one first`);
   const vfile = variantPath(draft, next);
-  writeFileSync(join(dir, vfile), text);
+  writeFileSync(ventureFile(dir, vfile), text);
   variants.push({ variant: next, file: vfile, by, at, sha256: sha(text) });
   const dec = variantsDecision(file);
   const record = {
@@ -79,8 +80,8 @@ export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }
     note: `The gate kept ${variants.length} differing drafts side by side (rule ${verdict.rule}). Accept one: mentura accept ${route} --pick <letter>`,
     provenance: { drafted_by: { kind: "framework" } },
   };
-  mkdirSync(dirname(join(dir, dec.path)), { recursive: true });
-  writeFileSync(join(dir, dec.path), JSON.stringify(record, null, 2) + "\n");
+  mkdirSync(dirname(ventureFile(dir, dec.path)), { recursive: true });
+  writeFileSync(ventureFile(dir, dec.path), JSON.stringify(record, null, 2) + "\n");
   writeFileSync(join(dir, sidecarOf(draft)), JSON.stringify({ ...(meta ?? { route, file, rule: verdict.rule, source: verdict.source, then: verdict.then, ...(verdict.owner ? { owner: verdict.owner, function: verdict.function ?? null } : {}) }), variants, decision: dec.id }, null, 2) + "\n");
   return { written: vfile, variant: next, variants: variants.map((v) => v.variant), decision: dec.id };
 }
@@ -99,8 +100,8 @@ export function pick(dir, draft, letter) {
 /** After a person accepts a draft: removes every variant and the sidecar, and decides the variants decision. */
 export function settle(dir, draft, { picked = "a", by } = {}) {
   const meta = sidecar(dir, draft);
-  for (const v of meta?.variants ?? []) rmSync(join(dir, v.file), { force: true });
-  rmSync(join(dir, draft), { force: true });
+  for (const v of meta?.variants ?? []) rmSync(ventureFile(dir, v.file), { force: true });
+  rmSync(ventureFile(dir, draft), { force: true });
   rmSync(join(dir, sidecarOf(draft)), { force: true });
   if (!meta?.decision) return { picked };
   const d = approve(dir, meta.decision, { by: by ?? process.env.MENTURA_PERSON ?? "founder", answer: picked, note: `accepted draft ${picked} of ${meta.route}` });
@@ -109,7 +110,7 @@ export function settle(dir, draft, { picked = "a", by } = {}) {
 
 /** The drafts waiting in a venture: route, rule, owner and variants. A draft with no sidecar was held by its decision class. */
 export function inbox(dir, owner) {
-  const d = join(dir, "_drafts");
+  const d = join(ventureFile(dir, "_drafts"));
   if (!existsSync(d)) return [];
   return readdirSync(d).filter((f) => f.endsWith(".draft")).sort().map((f) => {
     const draft = `_drafts/${f}`;

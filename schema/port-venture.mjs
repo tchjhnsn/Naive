@@ -20,6 +20,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSyn
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { record } from "../interface/provenance.mjs";
 import { SECRET } from "./migrate-venture.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const PLAN = ".release/port-plan.json";
 const SKIP = new Set([".git", "node_modules", ".next", ".turbo", "dist", "build", ".venv", "__pycache__", ".DS_Store"]);
@@ -96,7 +97,7 @@ export function plan(from, dir) {
     if (p.action === "port") {
       // Two files with one name in one package: the second keeps its folder name in front.
       if (taken.has(p.to)) p.to = `${dirname(p.to)}/${slug(basename(dirname(f)))}-${basename(f)}`;
-      if (taken.has(p.to) || existsSync(join(dir, p.to))) Object.assign(p, { action: "leave", reason: `${p.to} already exists in the venture; a port never overwrites` });
+      if (taken.has(p.to) || existsSync(ventureFile(dir, p.to))) Object.assign(p, { action: "leave", reason: `${p.to} already exists in the venture; a port never overwrites` });
       else taken.add(p.to);
     }
     items.push({ from: f, sha256: sha(join(src, f)), ...p });
@@ -111,18 +112,18 @@ export function apply(dir, p, agent = { kind: "person", via: "cli" }) {
   const src = p.from;
   for (const i of p.items.filter((x) => x.action === "port")) {
     if (!existsSync(join(src, i.from)) || sha(join(src, i.from)) !== i.sha256) throw new Error(`${i.from} changed since the plan was written; write the plan again`);
-    if (existsSync(join(dir, i.to))) throw new Error(`${i.to} already exists in the venture; a port never overwrites`);
+    if (existsSync(ventureFile(dir, i.to))) throw new Error(`${i.to} already exists in the venture; a port never overwrites`);
   }
   const done = { ported: [], pointed: [] };
   for (const i of p.items.filter((x) => x.action === "port")) {
-    mkdirSync(dirname(join(dir, i.to)), { recursive: true });
-    copyFileSync(join(src, i.from), join(dir, i.to));
+    mkdirSync(dirname(ventureFile(dir, i.to)), { recursive: true });
+    copyFileSync(join(src, i.from), ventureFile(dir, i.to));
     record(dir, { entity: i.to, activity: "port", agent, derived_from: [`file://${join(src, i.from)}`], note: `ported unchanged: ${i.reason}` });
     done.ported.push(i.to);
   }
   const points = p.items.filter((x) => x.action === "point");
   if (points.length) {
-    const f = join(dir, "knowledge/sources.json");
+    const f = join(ventureFile(dir, "knowledge/sources.json"));
     const map = existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : { sources: [], records: {} };
     for (const i of points) {
       if (map.sources.some((s) => s.id === i.source)) continue;
@@ -144,18 +145,18 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   try {
     if (args.includes("--apply")) {
       if (opt("confirm") !== "port") { console.error("type --confirm port to carry out the plan"); process.exit(1); }
-      if (!existsSync(join(dir, PLAN))) { console.error(`no plan at ${join(dir, PLAN)}: run with --from first`); process.exit(1); }
-      const d = apply(dir, JSON.parse(readFileSync(join(dir, PLAN), "utf8")));
+      if (!existsSync(ventureFile(dir, PLAN))) { console.error(`no plan at ${ventureFile(dir, PLAN)}: run with --from first`); process.exit(1); }
+      const d = apply(dir, JSON.parse(readFileSync(ventureFile(dir, PLAN), "utf8")));
       console.log(`ported ${d.ported.length} files unchanged; pointed to ${d.pointed.length} source${d.pointed.length === 1 ? "" : "s"}`);
     } else {
       const from = opt("from");
       if (!from) { console.error("--from <project> is needed to write a plan"); process.exit(2); }
       const p = plan(from, dir);
-      mkdirSync(join(dir, ".release"), { recursive: true });
-      writeFileSync(join(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
+      mkdirSync(join(ventureFile(dir, ".release")), { recursive: true });
+      writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
       for (const i of p.items) console.log(`${i.action.padEnd(5)}  ${i.from}${i.to ? `  ->  ${i.to}` : i.source ? `  ->  source ${i.source}` : ""}   (${i.reason})`);
       console.log(`\n${p.summary.port} to port, ${p.summary.point} to point to, ${p.summary.leave} left behind. Nothing has changed yet.`);
-      console.log(`Read ${relative(process.cwd(), join(dir, PLAN))}, set any item's action to port, point or leave, then run with --apply --confirm port.`);
+      console.log(`Read ${relative(process.cwd(), ventureFile(dir, PLAN))}, set any item's action to port, point or leave, then run with --apply --confirm port.`);
     }
   } catch (e) { console.error(e.message); process.exit(1); }
 }

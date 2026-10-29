@@ -32,6 +32,7 @@ import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
 import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
+import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -47,7 +48,9 @@ export function recordOf(file) {
 
 // Every *.decision.json in a venture, outside drafts, hidden folders and nested ventures.
 function decisionFiles(dir, sub = "") {
-  return readdirSync(join(dir, sub), { withFileTypes: true }).flatMap((e) => {
+  // A structured venture (EE-086): its decision files by their logical paths.
+  if (!sub && layoutOf(dir) === "structured") return logicalFiles(dir).filter((r) => r.endsWith(".decision.json") && r.split("/").at(-2) === "decisions" && !r.split("/").some((s) => s.startsWith(".") || s.startsWith("_")));
+  return readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.isDirectory()) return e.name.startsWith(".") || e.name.startsWith("_") || existsSync(join(dir, rel, "venture.json")) ? [] : decisionFiles(dir, rel);
     return e.name.endsWith(".decision.json") && sub.split("/").at(-1) === "decisions" ? [rel] : [];
@@ -74,7 +77,7 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
       status: settled ? "decided" : "open", decided_at: null, needed_in: venture.phase },
   ];
   for (const f of decisionFiles(dir)) {
-    const d = load(join(dir, f));
+    const d = load(ventureFile(dir, f));
     // decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/.
     const at = f.split("/").slice(0, -2).join("/"), base = f.split("/").at(-1).split(".")[0];
     const path = d.decides?.path ?? (at ? `${at}/${base}.json` : `${base}.json`);
@@ -107,7 +110,7 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
   }
   const statementFor = (record) => list.find((x) => x.part_of === "foundation" && x.status === "open" && x.decides?.record === record);
   // An agent's draft of a gated record waits for a person to accept it.
-  const drafts = existsSync(join(dir, "_drafts")) ? readdirSync(join(dir, "_drafts")).filter((f) => f.endsWith(".draft")) : [];
+  const drafts = existsSync(join(ventureFile(dir, "_drafts"))) ? readdirSync(join(ventureFile(dir, "_drafts"))).filter((f) => f.endsWith(".draft")) : [];
   for (const d of drafts) {
     const path = d.replace(/\.draft$/, "").replace(/__/g, "/");
     const record = recordOf(path);
@@ -240,7 +243,7 @@ const routeGlob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&")
 /** The decision that keeps a route closed to an actor (EE-058): an undecided decision that unlocks it. */
 export function locked(dir, route, actorId) {
   if (!existsSync(join(dir, "venture.json"))) return null;
-  const files = decisionFiles(dir).map((f) => load(join(dir, f)));
+  const files = decisionFiles(dir).map((f) => load(ventureFile(dir, f)));
   const d = files.find((x) => x.status !== "decided" && x.status !== "withdrawn" && (x.unlocks ?? []).some((u) =>
     (u.routes ?? []).some((g) => routeGlob(g).test(route)) && (!u.for?.length || !actorId || u.for.includes(actorId))));
   return d ? { id: d.id, question: d.question } : null;
@@ -254,7 +257,7 @@ const validate = (d) => {
   rmSync(scratch, { recursive: true, force: true });
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 };
-const fileOf = (dir, id) => decisionFiles(dir).find((f) => load(join(dir, f)).id === id);
+const fileOf = (dir, id) => decisionFiles(dir).find((f) => load(ventureFile(dir, f)).id === id);
 
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
  *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
@@ -263,16 +266,16 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
   if (!rest.id || !rest.question) return { ok: false, error: "a decision needs an id and a question" };
   if (rest.status && rest.status !== "open") return { ok: false, error: "an agent may only propose an open decision; a person approves it" };
   const existing = fileOf(dir, rest.id);
-  if (existing && load(join(dir, existing)).status === "decided") return { ok: false, error: `${rest.id} is decided; only a person can change it` };
+  if (existing && load(ventureFile(dir, existing)).status === "decided") return { ok: false, error: `${rest.id} is decided; only a person can change it` };
   const file = existing ?? `${at ? `${at}/` : ""}decisions/${name ?? rest.id}.decision.json`;
   if (!existing && !/^([a-z0-9-]+\/)*decisions\/[a-z0-9.-]+\.decision\.json$/.test(file)) return { ok: false, error: `${file} is not a decisions/ path` };
   // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
-  const before = existing ? load(join(dir, existing)) : {};
+  const before = existing ? load(ventureFile(dir, existing)) : {};
   const d = { ...before, ...rest, status: "open", provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
   const bad = validate(d);
   if (bad) return { ok: false, error: `does not match schema/decision-record.schema.json:\n${bad}` };
-  mkdirSync(dirname(join(dir, file)), { recursive: true });
-  writeFileSync(join(dir, file), JSON.stringify(d, null, 2) + "\n");
+  mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
+  writeFileSync(ventureFile(dir, file), JSON.stringify(d, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "draft", agent: agentFromEnv("agent", via, { ...(agentId ? { id: agentId } : {}), ...(harness ? { harness } : {}), ...(model ? { model } : {}) }), note: `proposed decision ${d.id}` });
   return { ok: true, result: { proposed: d.id, file, awaiting: "approval", provenance: e.hash } };
 }
@@ -282,7 +285,7 @@ export function approve(dir, id, { by, answer, via = "cli", note } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
-  const d = load(join(dir, file));
+  const d = load(ventureFile(dir, file));
   if (d.status === "decided") return { ok: false, error: `${id} is already decided` };
   if (!answer && !d.answer) return { ok: false, error: `${id} has no wording to approve; give an answer` };
   const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
@@ -291,7 +294,7 @@ export function approve(dir, id, { by, answer, via = "cli", note } = {}) {
   const out = { ...d, status: "decided", answer: answer ?? d.answer, provenance: { ...d.provenance, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
-  writeFileSync(join(dir, file), JSON.stringify(out, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: note ?? `approved decision ${id} (${wording})` });
   return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity) } };
 }

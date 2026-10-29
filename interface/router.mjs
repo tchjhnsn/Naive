@@ -65,6 +65,7 @@ import { routable } from "../schema/structure.mjs";
 import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../schema/stale.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -223,7 +224,7 @@ export function ventures(workspace = defaultWorkspace()) {
 function decisionRights(dir) {
   const t = load(join(repo, "governance/venture-template/decision-rights.json"));
   const classes = new Map(t.classes.map((c) => [c.id, c]));
-  const own = join(dir, "governance/decision-rights.json");
+  const own = join(ventureFile(dir, "governance/decision-rights.json"));
   if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c, level: classes.get(c.id)?.level === "escalate" ? "escalate" : c.level });
   return classes;
 }
@@ -239,7 +240,7 @@ export function gateOf(r, dir) {
 // Robots: a team-plan role may list the routes it may read and write (globs over routes).
 export function allowed(dir, actorId, action, route) {
   if (!actorId || !dir) return true;
-  const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
+  const plan = [join(ventureFile(dir, "people/team-plan.json")), join(ventureFile(dir, "operations/team-plan.json"))].find((p) => existsSync(p));
   if (!plan) return true;
   const role = load(plan).roles.find((x) => x.id === actorId);
   if (!role?.routes) return true;
@@ -264,11 +265,11 @@ const PACKAGE_ROUTE = {
 const fileFor = (r, params, dir) => {
   const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", params.id)) : r.files).filter((f) => !f.includes("*"));
   if (dir) {
-    const hit = cands.find((f) => existsSync(join(dir, f)));
+    const hit = cands.find((f) => existsSync(ventureFile(dir, f)));
     if (hit) return hit;
     // A new collection item joins the folder the venture already keeps that collection in.
     if (r.collection === "item") {
-      const lived = cands.find((f) => { const d = join(dir, dirname(f)); return existsSync(d) && readdirSync(d).some((n) => n.endsWith(".json") || n.endsWith(".md") || n.endsWith(".mdx")); });
+      const lived = cands.find((f) => { const d = ventureFile(dir, dirname(f)); return existsSync(d) && readdirSync(d).some((n) => n.endsWith(".json") || n.endsWith(".md") || n.endsWith(".mdx")); });
       if (lived) return lived;
     }
   }
@@ -289,7 +290,7 @@ export function draftOf(route, venture, workspace) {
 function agentsChain(dir, route) {
   if (!dir) return [];
   const chain = [];
-  const add = (rel) => { const f = join(dir, rel); if (existsSync(f)) chain.push({ path: rel, text: readFileSync(f, "utf8") }); };
+  const add = (rel) => { const f = ventureFile(dir, rel); if (existsSync(f)) chain.push({ path: rel, text: readFileSync(f, "utf8") }); };
   add("AGENTS.md");
   const parts = route.split("/").filter(Boolean);
   let acc = "";
@@ -392,7 +393,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (r.internal === "robots") return { ok: true, result: robots(dir), ...deprecated };
     // Caching hook: system/cache, system/judge and system/answer are handled in schema/caching.mjs.
     if (["cache", "judge", "answer"].includes(r.internal)) return { ...(await cacheInternal(r.internal, { dir, venture, workspace, input, actor, actor_id, via, provenance }, { call, resolve, draftOf })), ...deprecated };
-    const lacking = (r.needs ?? []).filter((f) => !existsSync(join(dir, f)));
+    const lacking = (r.needs ?? []).filter((f) => !existsSync(ventureFile(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };
     if (r.value_flag && !input?.value) return { ok: false, error: `${route} needs a value (${r.note})` };
     const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(input.value), "--json"] : [dir, ...(r.args ?? []), ...(r.as_is && input?.as_is ? ["--as-is"] : []), "--json"];
@@ -430,7 +431,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
-    const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
+    const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
     if (remote) {
       const prs = provEntries(dir).filter((e) => e.source?.pull_request && found.concat(patterns).some((f) => e.entity === address(src.id, f)));
@@ -493,7 +494,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
-    if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(join(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
+    if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
     const gate = gateOf(r, dir);
     const text = JSON.stringify(input, null, 2) + "\n";
     // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
@@ -619,7 +620,7 @@ async function overview(venture, workspace) {
 
 // Robots: per role, the routes it may read and write.
 function robots(dir) {
-  const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
+  const plan = [join(ventureFile(dir, "people/team-plan.json")), join(ventureFile(dir, "operations/team-plan.json"))].find((p) => existsSync(p));
   if (!plan) return { note: "no team plan: every actor may reach every route; gates still apply", roles: [] };
   return { note: "a role without routes may reach every route; gates still apply", roles: load(plan).roles.map((r) => ({ role: r.id, occupant: r.occupant, read: (r.routes?.read ?? ["**"]).join(", "), write: (r.routes?.write ?? (r.routes ? [] : ["**"])).join(", ") || "none" })) };
 }

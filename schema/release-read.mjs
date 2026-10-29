@@ -16,6 +16,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join, normalize } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const RELEASE_DIR = ".release";
 export const MANIFEST = ".release/release.json";
@@ -24,7 +25,7 @@ export const RECORDS = ".release/records";
 
 /** The release manifest of a venture, or null when it has none. */
 export function readRelease(dir) {
-  const f = join(dir, MANIFEST);
+  const f = ventureFile(dir, MANIFEST);
   return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
 }
 
@@ -32,7 +33,7 @@ export function readRelease(dir) {
 export function frozenText(dir, file) {
   const rel = normalize(file);
   if (rel.startsWith("..") || rel.startsWith("/")) return null;
-  const f = join(dir, RECORDS, rel);
+  const f = join(ventureFile(dir, RECORDS), rel);
   return existsSync(f) ? readFileSync(f, "utf8") : null;
 }
 
@@ -94,10 +95,10 @@ export function answer(dir, method, path, { draw } = {}) {
   if (p.split("/").includes("..")) return json(400, { error: "no .. in a release path" });
   if (p === "/" || p === "") return json(200, index(m));
   if (p === "/release.json") return json(200, m);
-  if (p === "/card.json") return existsSync(join(dir, CARD)) ? json(200, JSON.parse(readFileSync(join(dir, CARD), "utf8"))) : json(404, { error: "this release has no card" });
+  if (p === "/card.json") return existsSync(ventureFile(dir, CARD)) ? json(200, JSON.parse(readFileSync(ventureFile(dir, CARD), "utf8"))) : json(404, { error: "this release has no card" });
   if (p === "/card.svg") {
     if (!draw) return json(404, { error: "no card drawing here" });
-    return { status: 200, type: "image/svg+xml; charset=utf-8", body: draw(JSON.parse(readFileSync(join(dir, CARD), "utf8"))) };
+    return { status: 200, type: "image/svg+xml; charset=utf-8", body: draw(JSON.parse(readFileSync(ventureFile(dir, CARD), "utf8"))) };
   }
   if (p.startsWith("/records/")) {
     const file = p.slice("/records/".length);

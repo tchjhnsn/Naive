@@ -47,6 +47,7 @@ import { call as routerCall, files as ventureFiles, glob, routes } from "../inte
 import { agentFromEnv, entries as provEntries, record as prov } from "../interface/provenance.mjs";
 import { decisions as decisionsOf, propose } from "./decisions.mjs";
 import { loadPackages } from "./load-packages.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -264,7 +265,7 @@ async function context(dir, { call = routerCall, workspace } = {}) {
   let byId = null;
   const recordById = (id) => {
     byId ??= new Map(ventureFiles(dir).filter((f) => f.endsWith(".json") && !f.startsWith("knowledge/judgments/")).flatMap((f) => {
-      try { const r = load(join(dir, f)); return r && typeof r.id === "string" ? [[r.id, { file: f, record: r }]] : []; } catch { return []; }
+      try { const r = load(ventureFile(dir, f)); return r && typeof r.id === "string" ? [[r.id, { file: f, record: r }]] : []; } catch { return []; }
     }));
     return byId.get(id) ?? null;
   };
@@ -583,8 +584,8 @@ function confirmedBy(dir, file) {
   return c ? c.agent.id ?? "a person" : null;
 }
 const isModelJudgment = (dir, f) => {
-  if (!glob(`${JUDGMENTS}/*.json`).test(f) || !existsSync(join(dir, f))) return false;
-  try { return load(join(dir, f)).by?.kind === "model"; } catch { return false; }
+  if (!glob(`${JUDGMENTS}/*.json`).test(f) || !existsSync(ventureFile(dir, f))) return false;
+  try { return load(ventureFile(dir, f)).by?.kind === "model"; } catch { return false; }
 };
 
 /**
@@ -603,12 +604,12 @@ export async function provenanceOf(dir, file, { checks = false, call = routerCal
   if (last.agent.kind === "person" || confirmed) return { entity: file, status: "person", model: false, downstream_of_model: [],
     why: confirmed ? `confirmed by ${confirmed.agent.id ?? "a person"}` : `${last.activity === "accept" ? "accepted" : "written"} by ${last.agent.id ?? "a person"}` };
   const upstream = [];
-  for (const d of (last.derived_from ?? []).map((x) => x.split("#")[0]).filter((x) => !seen.has(x) && existsSync(join(dir, x)))) {
+  for (const d of (last.derived_from ?? []).map((x) => x.split("#")[0]).filter((x) => !seen.has(x) && existsSync(ventureFile(dir, x)))) {
     const u = await provenanceOf(dir, d, { seen });
     if (u.model) upstream.push(d); else upstream.push(...u.downstream_of_model);
   }
   const res = { entity: file, status: "agent", model, downstream_of_model: [...new Set(upstream)], why: model ? `a model's judgment (${last.note ?? "use model"}); a person confirms it` : upstream.length ? "an agent wrote it from a model's output" : "an agent wrote it" };
-  if (checks && !(model && load(join(dir, file)).kind === "draft") && last.route) {
+  if (checks && !(model && load(ventureFile(dir, file)).kind === "draft") && last.route) {
     const venture = load(join(dir, "venture.json")).id;
     const r = await call({ venture, workspace: workspace ?? dirname(dir), route: last.route, action: "check" });
     if (r.ok && r.result?.length) return { ...res, status: "clear", why: `${res.why}; its checks pass (${r.result.map((x) => x.check).join(", ")})` };
@@ -620,8 +621,8 @@ export async function provenanceOf(dir, file, { checks = false, call = routerCal
 export function confirm(dir, id, { by, note } = {}) {
   if (!by) throw new Expected("confirming needs the person's name (--by)", "refused");
   const file = `${JUDGMENTS}/${id}.json`;
-  if (!existsSync(join(dir, file))) throw new Expected(`no judgment ${id}`, "missing record");
-  const j = load(join(dir, file));
+  if (!existsSync(ventureFile(dir, file))) throw new Expected(`no judgment ${id}`, "missing record");
+  const j = load(ventureFile(dir, file));
   if (j.outcome === "uncertain") throw new Expected(`${id} is uncertain: answer its decision ${j.decision} instead`, "refused");
   const e = prov(dir, { entity: file, route: `knowledge/judgment/${id}`, activity: "confirm", agent: agentFromEnv("person", "cli", { id: by }), note: note ?? `confirmed ${j.package}/${j.step}${j.item ? ` for ${j.item}` : ""}` });
   return { confirmed: id, by, provenance: e.hash };

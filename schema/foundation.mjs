@@ -15,6 +15,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -30,15 +31,15 @@ export function filesOf(dir, type) {
   const gs = (r?.paths ?? []).filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
   const found = [];
   for (const g of gs) {
-    if (!g.includes("*")) { if (existsSync(join(dir, g))) found.push(g); continue; }
+    if (!g.includes("*")) { if (existsSync(ventureFile(dir, g))) found.push(g); continue; }
     const star = g.indexOf("*");
     const folder = g.slice(0, star), rest = g.slice(star + 1);
     if (rest.includes("*")) continue;
-    const d = join(dir, folder);
+    const d = ventureFile(dir, folder);
     if (existsSync(d)) for (const f of readdirSync(d)) if (f.endsWith(rest)) found.push(folder + f);
   }
   if (found.length) return found;
-  const drafted = gs.filter((g) => !g.includes("*") && existsSync(join(dir, `_drafts/${g.replace(/\//g, "__")}.draft`)));
+  const drafted = gs.filter((g) => !g.includes("*") && existsSync(ventureFile(dir, `_drafts/${g.replace(/\//g, "__")}.draft`)));
   return drafted.length ? drafted : gs.slice(0, 1);
 }
 
@@ -47,7 +48,7 @@ export function filesOf(dir, type) {
 export function confirmedIn(dir, file, id, seen = new Set()) {
   if (seen.has(file)) return false;
   seen.add(file);
-  const log = join(dir, "provenance.jsonl");
+  const log = join(ventureFile(dir, "provenance.jsonl"));
   if (!existsSync(log)) return false;
   const draft = `_drafts/${file.replace(/\//g, "__")}.draft`;
   const es = readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => e.entity === file || e.entity === draft);
@@ -64,8 +65,8 @@ export function foundation(dir) {
     if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
     const files = filesOf(dir, s.record);
     // A retired product no longer answers for the venture.
-    const values = files.filter((f) => existsSync(join(dir, f)) && load(join(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(join(dir, f)), s.attribute) })).filter((x) => filled(x.v));
-    const drafts = files.filter((f) => existsSync(join(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
+    const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), s.attribute) })).filter((x) => filled(x.v));
+    const drafts = files.filter((f) => existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
     if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing" };
     // A record with no log entry existed before the log; a person's baseline or write confirms it.
     const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
@@ -87,7 +88,7 @@ export function foundation(dir) {
 
 export function problems(dir) {
   const out = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !MODEL.records.some((r) => r.id === s.record)).map((s) => `frame: ${s.id} names record type ${s.record}, which the data model lacks`);
-  const there = (...fs) => fs.map((f) => join(dir, f)).find((p) => existsSync(p));
+  const there = (...fs) => fs.map((f) => ventureFile(dir, f)).find((p) => existsSync(p));
   const icp = there("foundation/icp.json", "purpose/icp.json"), prob = there("foundation/problem.json", "purpose/validation/problem.json");
   if (icp) {
     const forms = new Set(existsSync(prob) ? (load(prob).forms ?? []).map((f) => f.id) : []);

@@ -11,6 +11,7 @@ import { DUMP, MAP, parse } from "../../purpose/frameworks/idea-map/ideamap.mjs"
 import { GRAPH } from "../../purpose/frameworks/idea-map/graph.mjs";
 import { ideasOf } from "../../purpose/frameworks/idea-map/route.mjs";
 import { createHash } from "node:crypto";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const norm = (s) => s.replace(/\s+/g, " ").trim();
@@ -22,29 +23,29 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
   const add = (key, score, comment) => out.push({ key, score, comment });
 
   // The founder's ideas stay theirs: every idea on the map is their text, unchanged.
-  const dump = norm(readFileSync(join(dir, DUMP), "utf8"));
-  const ideas = existsSync(join(dir, MAP)) ? parse(readFileSync(join(dir, MAP), "utf8")).ideas : [];
+  const dump = norm(readFileSync(ventureFile(dir, DUMP), "utf8"));
+  const ideas = existsSync(ventureFile(dir, MAP)) ? parse(readFileSync(ventureFile(dir, MAP), "utf8")).ideas : [];
   const changed = ideas.filter((i) => !dump.includes(norm(i.text)));
   add("ideas_verbatim", ideas.length ? frac(ideas.length - changed.length, ideas.length) : 0, changed.length ? `rewritten: ${changed.map((i) => i.id).join(", ")}` : `${ideas.length} ideas, all verbatim`);
   add("ideas_tagged", frac(ideas.filter((i) => i.departments?.length).length, ideas.length), `${ideas.filter((i) => !i.departments?.length).length} ideas without a department`);
 
   // The idea graph is a Merkle DAG: every hash recomputes from the idea's text and what it builds on.
-  if (existsSync(join(dir, GRAPH))) {
-    const g = load(join(dir, GRAPH));
+  if (existsSync(ventureFile(dir, GRAPH))) {
+    const g = load(ventureFile(dir, GRAPH));
     const byId = Object.fromEntries(g.nodes.map((n) => [n.id, n]));
     const bad = g.nodes.filter((n) => createHash("sha256").update(JSON.stringify({ text: n.text, parents: n.builds_on.map((p) => byId[p]?.hash).sort() })).digest("hex").slice(0, 16) !== n.hash);
     add("graph_merkle", bad.length ? 0 : 1, bad.length ? `hashes that do not recompute: ${bad.map((n) => n.id).join(", ")}` : `${g.nodes.length} hashes recompute; root ${g.root}`);
   }
 
   // Agents propose; people decide. No accept, confirm or decision is an agent's.
-  const log = existsSync(join(dir, "provenance.jsonl")) ? readFileSync(join(dir, "provenance.jsonl"), "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
+  const log = existsSync(join(ventureFile(dir, "provenance.jsonl"))) ? readFileSync(join(ventureFile(dir, "provenance.jsonl")), "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
   const byAgent = log.filter((e) => ["accept", "confirm"].includes(e.activity) && e.agent?.kind !== "person");
   const r = decisions(dir);
   const decidedByAgent = r.decisions.filter((d) => d.status === "decided" && d.provenance && d.provenance.approved_by && log.some((e) => e.activity === "accept" && e.entity === d.file && e.agent?.kind !== "person"));
   add("people_decide", byAgent.length || decidedByAgent.length ? 0 : 1, byAgent.length ? `${byAgent.length} accept or confirm entries by an agent` : "every accept, confirm and decision is a person's");
 
   // Evidence is cited: each item names a URL, and the URL came from a research result in this run.
-  const problem = [join(dir, "purpose/validation/problem.json"), join(dir, "_drafts/purpose__validation__problem.json.draft")].find(existsSync);
+  const problem = [join(ventureFile(dir, "purpose/validation/problem.json")), join(ventureFile(dir, "_drafts/purpose__validation__problem.json.draft"))].find(existsSync);
   const items = problem ? load(problem).evidence ?? [] : [];
   const urlOf = (e) => e.url ?? e.source?.url ?? e.source ?? null;
   const cited = items.filter((e) => typeof urlOf(e) === "string" && /^https?:\/\//.test(urlOf(e)));
@@ -72,7 +73,7 @@ export function evaluate(dir, { researched = [], settled = [] } = {}) {
   add("founder_settled", settled.length ? 1 : 0, settled.length ? `settled: ${settled.join(", ")}` : "the founder settled nothing");
   // Money (EE-070): when the venture has a money summary, it is fresh, the agent cites it, and no raw
   // transaction leaves its sensitive stream for another record.
-  const summaryFile = join(dir, "money/_summary.json");
+  const summaryFile = join(ventureFile(dir, "money/_summary.json"));
   if (existsSync(summaryFile)) {
     const m = load(summaryFile);
     const age = (Date.now() - Date.parse(m.synced_at)) / 864e5;

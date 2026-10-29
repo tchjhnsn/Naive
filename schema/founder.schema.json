@@ -8,7 +8,6 @@
     "id",
     "name",
     "role",
-    "hats",
     "joined"
   ],
   "additionalProperties": false,
@@ -46,7 +45,8 @@
           "capabilities"
         ]
       },
-      "uniqueItems": true
+      "uniqueItems": true,
+      "description": "The functions this founder owns, in the flat layout. In the structured layout (EE-086) they are read from venture.json"
     },
     "joined": {
       "type": "string",

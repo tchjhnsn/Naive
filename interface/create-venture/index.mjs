@@ -47,7 +47,7 @@ const FORMS = JSON.parse(readFileSync(join(framework, "schema/venture.schema.jso
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
@@ -149,13 +149,23 @@ let answers = { ...recommended };
 const given = opt("phase") || opt("layers") || opt("legal-form") || opt("dump");
 if (given) answers = { phase: opt("phase") ?? "discovery", layers: opt("layers") ?? null, legalForm: opt("legal-form") ?? null, dump: opt("dump") ?? null };
 else if (interactive) answers.phase = await choose("Which phase is the venture in?", PHASES, prefs?.phase ?? "discovery");
-// A solo founder owns every function the type imports; on a team, each function is asked once.
+// The layout (EE-086): structured (knowledge/, meta/, the org chart in venture.json) unless --layout flat.
+const layout = opt("layout") ?? "structured";
+if (!["flat", "structured"].includes(layout)) fail(`unknown layout ${layout}: structured or flat`);
+const structured = layout === "structured";
+// A solo founder owns every function; on a team, each function is asked once. In the structured layout the
+// functions are the org chart's (one per package, flat) and ownership goes in venture.json; in the flat one,
+// the catalog's departments, worn as hats in people/.
+const fnIds = structured ? vtype.packages : vtype.departments;
+const fnLabel = (f) => (structured ? f : deptLabel(f));
 const owners = people.filter((p) => roleOf(p.role)?.owns_when_solo);
+const ownerOf = {};
 for (const p of people) p.hats = [];
-if (owners.length === 1 || !interactive) for (const d of vtype.departments) (owners[0] ?? { hats: [] }).hats.push(d);
-else for (const d of vtype.departments) {
-  const who = await choose(`Who owns ${deptLabel(d)}?`, owners.map((p) => p.id), owners[0].id);
-  owners.find((p) => p.id === who).hats.push(d);
+if (owners.length === 1 || !interactive) for (const f of fnIds) { ownerOf[f] = owners[0]?.id ?? null; owners[0]?.hats.push(f); }
+else for (const f of fnIds) {
+  const who = await choose(`Who owns ${fnLabel(f)}?`, owners.map((p) => p.id), owners[0].id);
+  ownerOf[f] = who;
+  owners.find((p) => p.id === who).hats.push(f);
 }
 // 6. Where each function keeps its truth (EE-083): pointers to its systems of record, in the founder's words when none fits.
 const CATALOG = JSON.parse(readFileSync(join(framework, "schema/systems-catalog.json"), "utf8"));
@@ -207,30 +217,34 @@ rl?.close();
 
 // 4. The venture itself, by the framework's own scaffold.
 console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
-const init = spawnSync("node", [join(framework, "schema/init-venture.mjs"), dir, id, "--phase", answers.phase, "--type", vtype.id,
+const init = spawnSync("node", [join(framework, "schema/init-venture.mjs"), dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
   ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");
 const venture = JSON.parse(readFileSync(vfile, "utf8"));
 venture.name = basename(dir);
 if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.role === "general-partner" ? "partner" : p.role, kind: "person" }));
+// The org chart (EE-086): each function's owner. Hats are read from here, never stored twice.
+if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
 writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
+// Where each logical file sits in this venture's layout (schema/venture-paths.mjs).
+const { ventureFile: vf, physical } = await import(join(framework, "schema/venture-paths.mjs"));
 
 // people/: the roster and one file per founder, the venture.json of human capital (EE-082).
 const { agentFromEnv, record } = await import(join(framework, "interface/provenance.mjs"));
 const today = new Date().toISOString().slice(0, 10);
-mkdirSync(join(dir, "people/founders"), { recursive: true });
+mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const asPerson = agentFromEnv("person", "cli", { id: people[0].id });
 for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
   p.founder_file = `people/founders/${p.id}.json`;
-  writeFileSync(join(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, hats: p.hats, joined: today }, null, 2) + "\n");
+  writeFileSync(vf(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, ...(structured ? {} : { hats: p.hats }), joined: today }, null, 2) + "\n");
   record(dir, { entity: p.founder_file, route: `people/founders/${p.id}`, activity: "write", agent: asPerson, note: `${p.name}, ${p.role}, as answered at create-venture` });
 }
-writeFileSync(join(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, hats, ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
+writeFileSync(vf(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, ...(structured ? {} : { hats }), ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
 record(dir, { entity: "people/people.json", route: "people", activity: "write", agent: asPerson, note: `${mode}: ${people.map((p) => `${p.name} (${p.role})`).join(", ")}` });
 if (answers.dump) {
-  mkdirSync(join(dir, "raw"), { recursive: true });
-  copyFileSync(resolve(answers.dump), join(dir, "raw/dump.md"));
+  mkdirSync(vf(dir, "raw"), { recursive: true });
+  copyFileSync(resolve(answers.dump), vf(dir, "raw/dump.md"));
   record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv("person", "cli"), note: `the founder's idea dump, verbatim, from ${resolve(answers.dump)}` });
 }
 
@@ -250,7 +264,7 @@ for (const f of Object.values(functions)) for (const s of f.systems) {
   } else rhoNote = `Rho: could not sync (${(r.stderr || r.stdout).trim().split("\n").at(-1)}); recorded as pointed`;
 }
 if (Object.keys(functions).length) {
-  const map = join(dir, "knowledge/sources.json");
+  const map = vf(dir, "knowledge/sources.json");
   mkdirSync(dirname(map), { recursive: true });
   writeFileSync(map, JSON.stringify({ sources: [], records: {}, truth: "local", functions }, null, 2) + "\n");
   record(dir, { entity: "knowledge/sources.json", route: "knowledge/knowledge-sources", activity: "write", agent: asPerson,
@@ -266,12 +280,12 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
   devDependencies: { [fw.name]: spec },
 }, null, 2) + "\n");
-writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n");
+writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/knowledge/*/_streams/*/*\n!/knowledge/*/_streams/*/stream.json\n!/knowledge/*/_streams/*/summary.md\n");
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(join(framework, "interface/router.mjs"));
 const schemas = new Map();
-for (const r of routes()) if (r.kind === "record" && r.schema && r.form !== "md") for (const f of r.files ?? []) if (f.endsWith(".json")) schemas.set(r.schema, [...(schemas.get(r.schema) ?? []), `/${f}`]);
+for (const r of routes()) if (r.kind === "record" && r.schema && r.form !== "md") for (const f of r.files ?? []) if (f.endsWith(".json")) schemas.set(r.schema, [...(schemas.get(r.schema) ?? []), `/${physical(dir, f)}`]);
 mkdirSync(join(dir, ".vscode"), { recursive: true });
 writeFileSync(join(dir, ".vscode/settings.json"), JSON.stringify({
   "json.schemas": [...schemas].map(([schema, fileMatch]) => ({ fileMatch: [...new Set(fileMatch)], url: `./node_modules/${fw.name}/${schema}` })),

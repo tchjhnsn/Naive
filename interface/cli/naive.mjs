@@ -30,6 +30,8 @@ import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:
 import { createServer } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
+import { logical } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -83,15 +85,18 @@ async function dev(dir) {
   console.log(`\n  ▲ Naive ${version()}\n  - Venture:  ${name} (${relative(process.cwd(), dir) || "."})\n  - Setup:    http://127.0.0.1:${port}/setup\n  - Board:    http://127.0.0.1:${port}/\n  - Map:      http://127.0.0.1:${port}/map\n\n  Watching for changes. Each saved record is checked against its schema. Ctrl-C to stop.\n`);
   // Live feedback on save (I-24): a record that no longer matches its schema says so at once.
   const pending = new Map();
-  watch(dir, { recursive: true }, (_, f) => {
-    if (!f || !f.endsWith(".json") || f.startsWith("node_modules") || f.startsWith(".naive") || f.startsWith("_private")) return;
+  watch(dir, { recursive: true }, (_, raw) => {
+    if (!raw || !raw.endsWith(".json") || raw.startsWith("node_modules") || raw.startsWith(".naive")) return;
+    // The record's logical path (schema/venture-paths.mjs): knowledge/foundation/icp.json is foundation/icp.json.
+    const physicalPath = raw, f = logical(dir, raw);
+    if (f.startsWith("_private")) return;
     clearTimeout(pending.get(f));
     pending.set(f, setTimeout(async () => {
       pending.delete(f);
-      if (!existsSync(join(dir, f))) return;
+      if (!existsSync(ventureFile(dir, physicalPath))) return;
       const schema = await schemaFor(f);
       if (!schema) return;
-      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema.replace(/^schema\//, ""), "--file", join(dir, f)], { encoding: "utf8" });
+      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema.replace(/^schema\//, ""), "--file", ventureFile(dir, physicalPath)], { encoding: "utf8" });
       const out = (v.stdout + v.stderr).trim();
       if (v.status === 0) console.log(`  ✓ ${f}`);
       else if (/needs jsonschema/.test(out)) console.log(`  - ${f} changed (install python3's jsonschema package to check it as you save)`);
@@ -129,7 +134,7 @@ function info(dir) {
     `Platform     ${process.platform} ${process.arch}`,
     `python3      ${spawnSync("python3", ["-c", "import jsonschema; print('jsonschema ' + __import__('importlib.metadata').metadata.version('jsonschema'))"], { encoding: "utf8" }).stdout.trim() || "jsonschema missing (needed by schema checks)"}`,
     `Venture      ${v ? `${v.name ?? v.id} (${v.phase}) at ${dir}` : "none here"}`,
-    "Agents       " + agents.map(([name, f, ok]) => `${name}: ${dir && ok(read(join(dir, f))) ? "connected" : "not connected"}`).join(", "),
+    "Agents       " + agents.map(([name, f, ok]) => `${name}: ${dir && ok(read(ventureFile(dir, f))) ? "connected" : "not connected"}`).join(", "),
   ];
   console.log(lines.join("\n"));
 }

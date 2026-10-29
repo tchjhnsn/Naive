@@ -8,6 +8,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const day = (t) => (t ? String(t).slice(0, 10) : "");
@@ -36,7 +37,7 @@ export function svg(card) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  const f = dir && join(dir, ".release/card.json");
+  const f = dir && join(ventureFile(dir, ".release/card.json"));
   if (!f || !existsSync(f)) { console.error("usage: node interface/release-card.mjs <venture dir> (after node schema/build-release.mjs)"); process.exit(2); }
   process.stdout.write(svg(JSON.parse(readFileSync(f, "utf8"))));
 }

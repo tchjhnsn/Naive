@@ -19,6 +19,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -33,7 +34,7 @@ export const packageDef = (n) => load(join(repo, "packages", n, "package.json"))
 
 /** The venture's route groups: the framework's, then its own from naive.config.json. */
 export function groupsOf(dir) {
-  const f = dir && join(dir, "naive.config.json");
+  const f = dir && join(ventureFile(dir, "naive.config.json"));
   const own = f && existsSync(f) ? load(f).groups ?? {} : {};
   return { ...GROUPS, ...own };
 }
@@ -78,7 +79,7 @@ export const routeOfType = async (type) => {
 async function pendingIn(dir, types, venture) {
   const { recordOf } = await import("../schema/decisions.mjs");
   const { entries } = await import("./provenance.mjs");
-  const d = join(dir, "_drafts");
+  const d = join(ventureFile(dir, "_drafts"));
   if (!existsSync(d)) return [];
   const log = entries(dir);
   const out = [];
@@ -179,7 +180,7 @@ export async function specialCall({ venture, route, action, workspace }) {
     const g = gs[sp.id];
     if (!g) return { ok: false, error: `no route group (${sp.id}): the groups are ${Object.keys(gs).map((x) => `(${x})`).join(", ")}` };
     const lay = groupLayout(g.packages[0], dir);
-    if (action === "layout" || !dir) return { ok: true, result: { ...lay, chain: lay.agents && dir ? [{ path: lay.agents, text: readFileSync(join(dir, lay.agents), "utf8") }] : [] } };
+    if (action === "layout" || !dir) return { ok: true, result: { ...lay, chain: lay.agents && dir ? [{ path: lay.agents, text: readFileSync(ventureFile(dir, lay.agents), "utf8") }] : [] } };
     const states = [];
     for (const n of g.packages.filter((x) => packageNames().includes(x))) states.push(await packageState(dir, n, venture));
     const res = { group: `(${sp.id})`, context: g.context ?? null, packages: states.map((s) => ({ package: s.package, state: s.state, progress: s.progress ?? null, pending: s.loading?.drafts.length ?? 0 })) };
