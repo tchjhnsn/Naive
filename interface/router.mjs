@@ -41,6 +41,8 @@ import { address } from "../knowledge/connectors/contract.mjs";
 import { holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
+// Caching (schema/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
+import { actionScope, cacheRoutes, command as cachedCommand, forget, internal as cacheInternal, memo } from "../schema/caching.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -70,7 +72,9 @@ export function kits() {
 const needNowPriors = () => load(join(repo, "schema/need-now.json"));
 
 /** The route table, generated from schema/data-model.json, the kit manifests and schema/need-now.json. */
-export function routes() {
+// Caching hook (F-12): built once per action and shared.
+export function routes() { return memo("routes", buildRoutes); }
+function buildRoutes() {
   const model = load(join(repo, "schema/data-model.json"));
   const ks = kits();
   const owner = new Map(ks.flatMap((k) => k.records.map((r) => [r, k])));
@@ -127,6 +131,7 @@ export function routes() {
     cmd("knowledge/catalog", "knowledge/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "knowledge/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
   );
+  out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (schema/caching.mjs).
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
 
@@ -294,7 +299,8 @@ export function layout(r, dir) {
   if (r.kind === "record") Object.assign(out, { schema: r.schema, template: r.template, checks: r.checks, gate: gateOf(r, dir) });
   if (dir && r.kind === "record") {
     try {
-      const nn = JSON.parse(spawnSync("node", [join(repo, "schema/need-now.mjs"), dir, "--json"], { encoding: "utf8" }).stdout);
+      // Caching hook (O-5): shared with the system/need-now command in the same action.
+      const nn = JSON.parse(memo(`cmd:schema/need-now.mjs ${dir} --json`, () => spawnSync("node", [join(repo, "schema/need-now.mjs"), dir, "--json"], { encoding: "utf8" }), { dir }).stdout);
       const row = nn.rows.find((x) => x.type === r.record);
       if (row) out.need_now = { phase: nn.phase, status: row.status, now: row.now, next: row.next, why: row.why };
     } catch {}
@@ -311,7 +317,9 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
  * routes; via: the interface (cli, mcp, api; default router); provenance: { derived_from,
  * decision, note, agent } for the log.
  */
-export async function call({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+// Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
+export const call = (args) => actionScope(() => callInAction(args));
+async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const requested = route;
   const { r, params, alias } = resolve(route);
   if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
@@ -337,15 +345,19 @@ export async function call({ venture, route, action, input, actor = "agent", act
   if (r.kind === "command") {
     if (r.internal === "overview") return { ok: true, result: await overview(venture, workspace), ...deprecated };
     if (r.internal === "robots") return { ok: true, result: robots(dir), ...deprecated };
+    // Caching hook: system/cache, system/judge and system/answer are handled in schema/caching.mjs.
+    if (["cache", "judge", "answer"].includes(r.internal)) return { ...(await cacheInternal(r.internal, { dir, venture, workspace, input, actor, actor_id, via, provenance }, { call, resolve, draftOf })), ...deprecated };
     const lacking = (r.needs ?? []).filter((f) => !existsSync(join(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };
     if (r.value_flag && !input?.value) return { ok: false, error: `${route} needs a value (${r.note})` };
     const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(input.value), "--json"] : [dir, ...(r.args ?? []), ...(r.as_is && input?.as_is ? ["--as-is"] : []), "--json"];
-    const p = spawnSync("node", [join(repo, r.script), ...args], { encoding: "utf8" });
+    // Caching hook (C-3, H-3): a declared command's result comes from the record-level cache; the spawn is memoized per action (O-5).
+    const p = await cachedCommand({ dir, route, script: r.script, args, input, actor, actor_id }, () => memo(`cmd:${r.script} ${args.join(" ")}`, () => spawnSync("node", [join(repo, r.script), ...args], { encoding: "utf8" }), { dir }));
+    const cache = p.cache ? { cache: p.cache } : {};
     if (p.status !== 0) return { ok: false, error: (p.stderr || p.stdout).trim() };
     // A command that needs input first (EE-050) answers needs_input: the caller asks the person
     // whether to fill the record in or run as is, and runs again with input as_is to go on.
-    try { const out = JSON.parse(p.stdout); return { ok: true, result: out.needs_input ? null : out, ...(out.needs_input ? { needs_input: out.needs_input } : {}), ...deprecated }; } catch { return { ok: true, result: p.stdout, ...deprecated }; }
+    try { const out = JSON.parse(p.stdout); return { ok: true, result: out.needs_input ? null : out, ...(out.needs_input ? { needs_input: out.needs_input } : {}), ...cache, ...deprecated }; } catch { return { ok: true, result: p.stdout, ...cache, ...deprecated }; }
   }
 
   // Storage: the connector for the source this record type lives in.
@@ -366,7 +378,8 @@ export async function call({ venture, route, action, input, actor = "agent", act
     let items;
     try {
       const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => patterns.some((g) => glob(g).test(f))) : patterns;
-      items = (await Promise.all(paths.map((f) => store.read(f)))).filter(Boolean);
+      // Caching hook (F-2): each record is read once per action and shared.
+      items = (await Promise.all(paths.map((f) => memo(`read:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
     const draft = !remote && r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
@@ -419,6 +432,7 @@ export async function call({ venture, route, action, input, actor = "agent", act
   }
 
   if (action === "write") {
+    forget(dir); // Caching hook (H-3): a write never uses the cache, and what this action memoized for the venture is read again after it.
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
