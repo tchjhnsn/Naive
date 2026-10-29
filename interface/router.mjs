@@ -519,7 +519,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Gate group hook (X-1 to X-6, U-4): the venture's gate decides; a refusal stops the write here.
     const configured = !remote ? gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate }) : null;
     if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
-    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured) && actor !== "person";
+    // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
+    // approved it, is a draft whatever the decision's class.
+    const settles = /^(decision|decision-record)$/.test(r.record) && (input?.status === "decided" || input?.approved_by != null);
+    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
       for (const a of split) {
