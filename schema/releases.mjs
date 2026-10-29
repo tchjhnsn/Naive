@@ -165,6 +165,7 @@ export function commandPlan() {
     if (r.internal === "robots") return { route: r.route, in: "release", why: "reads only the team plan" };
     if (!r.actions.includes("run")) return { route: r.route, in: "hole", why: "no run action" };
     if (r.value_flag) return { route: r.route, in: "hole", why: "takes its input per call" };
+    if (!r.script) return { route: r.route, in: "hole", why: "computed inside the router at call time" };
     const reads = runtimeReads(r.script);
     return reads.length ? { route: r.route, in: "hole", why: `reads ${reads.join(", ")}`, reads } : { route: r.route, in: "release", why: "reads only the venture's records" };
   });

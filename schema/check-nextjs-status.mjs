@@ -38,7 +38,9 @@ const counts = Object.fromEntries(STATES.map((s) => [s, count(s)]));
 
 function page() {
   const chapters = [...new Set(data.rows.map((r) => r.chapter))];
-  const cell = (s) => String(s ?? "").replace(/\|/g, "\\|");
+  // MDX reads { and < as code outside backticks, so they are escaped there.
+  const mdx = (t) => t.split(/(`[^`]*`)/).map((x, i) => i % 2 ? x : x.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, "&lt;").replace(/>/g, "&gt;")).join("");
+  const cell = (s) => mdx(String(s ?? "")).replace(/\|/g, "\\|");
   const lines = [
     "---",
     "title: What's built",

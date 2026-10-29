@@ -132,7 +132,14 @@
   {
    "id": "I-17",
    "chapter": "Chapter 1: Installation",
-   "status": "not built"
+   "status": "partial",
+   "evidence": [
+    "schema/build-release.mjs",
+    "schema/start-release.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "The release scripts are built: node schema/build-release.mjs <venture dir> [--port n] (--port is accepted and ignored) and node schema/start-release.mjs <venture dir> [--port n] [--get <path>]. Wiring the naive build and naive start commands to them is another session's job, as are naive dev and naive check, so the row as a whole is partial from this group."
   },
   {
    "id": "I-18",
@@ -247,13 +254,17 @@
   {
    "id": "P-2",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/gate.mjs",
-    "interface/router.mjs"
+    "schema/naive-config.mjs",
+    "schema/naive-config.schema.json",
+    "schema/check-config.mjs",
+    "purpose/frameworks/idea-map/ideamap.mjs",
+    "schema/data-model.json",
+    "schema/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
-   "note": "naive.config.json holds only the gate (fail_closed) so far"
+   "note": "naive.config.json is now a record type (naive-config, system layer, route system/naive-config, decision class security-loosening, so an agent's write becomes a draft). Defaults are merged with the venture's overrides: gate, owners, checks, thresholds, questions, packages and acting. Thresholds and System 1 questions take effect in the idea-map request and answers commands. A config file that is not valid JSON fails closed for agents."
   },
   {
    "id": "P-3",
@@ -268,12 +279,16 @@
   {
    "id": "P-4",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
+    "interface/instrumentation.mjs",
+    "interface/provenance.mjs",
+    "interface/vitals.mjs",
+    "platform/integrations/langsmith.mjs",
+    "interface/context-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Opt-in via naive.config.json instrumentation.events (or NAIVE_INSTRUMENT=1/0); register() listeners; calls, judgments and every provenance entry (write, draft, accept, confirm, decisions) emit events to .naive/events.jsonl (gitignored). vitals --trace builds a trace that the existing platform LangSmith uploader ships; the test runs that uploader against a local stand-in server. A live LangSmith upload was not run (needs LANGSMITH_API_KEY). Decision analytics from events is still the separate governance/analytics route."
   },
   {
    "id": "P-5",
@@ -299,7 +314,15 @@
   {
    "id": "P-7",
    "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/naive-config.mjs",
+    "interface/gate-hooks.mjs",
+    "interface/router.mjs",
+    "schema/gate-test.mjs"
+   ],
+   "page": "get-started/the-gate",
+   "note": "checks.off skips a route's check and reports it as off:true. checks.warn runs a check but its failure does not fail the router's check action. check-config refuses a check path that does not exist."
   },
   {
    "id": "P-8",
@@ -458,7 +481,15 @@
   {
    "id": "P-25",
    "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "interface/release-card.mjs",
+    "schema/start-release.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "The cover card is .release/card.json. It is served at /card.json, and at /card.svg as a 1200x630 SVG (link-preview size) drawn by the interface."
   },
   {
    "id": "P-26",
@@ -508,12 +539,13 @@
   {
    "id": "P-31",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-publication.mjs"
+    "schema/releases.mjs",
+    "schema/releases-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/releases",
+   "note": "Only confirmed records ship. Drafts, _private/, raw inputs, notes and readmes (files that are not records), agent-written records, and records hand-edited after confirmation (sha256 mismatch) never enter. Private records are withheld by count only, and private_fields are stripped by name. left_out lists each excluded non-private file with the reason."
   },
   {
    "id": "P-32",
@@ -607,7 +639,13 @@
   {
    "id": "L-2",
    "chapter": "Chapter 3: Layouts and Pages",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "With a session (--session, MCP session arg, or MENTURA_SESSION) the layout is sent once and only changed parts afterward; the template is sent fresh every time. Session state lives in NAIVE_SESSION_DIR (default os tmpdir/naive-sessions), never in the venture."
   },
   {
    "id": "L-3",
@@ -685,7 +723,13 @@
   {
    "id": "L-12",
    "chapter": "Chapter 3: Layouts and Pages",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Refs (e.g. product part_of) resolve to item routes and are prefetched as short summaries so the agent does not spend calls fetching them."
   },
   {
    "id": "L-13",
@@ -748,17 +792,37 @@
   {
    "id": "N-3",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/router.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "navigate/mentura_read prefetch: refs (data-model refs), links (strings that are routes), 'reads first' and 'waits on this' from packages/catalog.json after links, and the need-now next step; code only, no model. --no-prefetch / prefetch:false turns it off."
   },
   {
    "id": "N-4",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Confirmed records (person write, accept or confirm in provenance) come in full under full_max tokens; agent-written, drafts, baseline and unlogged records send only their state."
   },
   {
    "id": "N-5",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/mcp/server.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "runStreaming (child process through the CLI, so gates apply) and batch report progress; the MCP server sends notifications/progress for mentura_run and mentura_read when _meta.progressToken is set; CLI --stream prints NDJSON parts. Progress for a single command is a heartbeat plus any 'progress n/t msg' stderr lines from the script; existing scripts emit none yet."
   },
   {
    "id": "R-4",
@@ -773,12 +837,25 @@
   {
    "id": "N-6",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/vitals.mjs",
+    "interface/instrumentation.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "calls_per_task, tokens_per_call, time_to_useful_ms (from the events log) and decision_hours (from provenance.jsonl) at p75; route system/vitals. Feeding a hosted analytics product is not built; the trace export feeds the platform LangSmith uploader."
   },
   {
    "id": "N-7",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Layout parts are hashed per session; a sibling route keeps stack, AGENTS.md and instructions parts and receives only its record: part."
   },
   {
    "id": "N-8",
@@ -788,17 +865,25 @@
   {
    "id": "N-9",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "navigate on a command route (need-now, assess) sends its header with state computing and the last cached result with as_of first, then the new result."
   },
   {
    "id": "N-10",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs",
-    "interface/provenance.mjs"
+    "schema/releases.mjs",
+    "schema/release-read.mjs",
+    "schema/releases-test.mjs"
    ],
-   "page": "get-started/routes-and-records"
+   "page": "get-started/releases",
+   "note": "Collection items known at build time are enumerated in manifest.items, one frozen entry each. List routes serve them and item routes serve each one. Items unknown at build time fall back as C-18 describes."
   },
   {
    "id": "N-11",
@@ -808,12 +893,25 @@
   {
    "id": "N-12",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Collections above context.large_collection (20) send a count only, unless --task names the route or it is asked for with --prefetch."
   },
   {
    "id": "N-13",
    "chapter": "Chapter 4: Linking and Navigating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/router.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Per-route context budget in tokens (naive.config.json context.budget and context.routes globs); every navigation reports used tokens by part; route system/context and node interface/context.mjs <dir> budget --check report every route with its largest part and advice, and flag AGENTS.md files over a quarter of the budget."
   },
   {
    "id": "N-14",
@@ -838,12 +936,14 @@
   {
    "id": "S-2",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs",
+    "packages/customers/package.json"
    ],
-   "page": "get-started/agents-and-people"
+   "page": "get-started/agents-and-people",
+   "note": "Five step kinds (classify, noul, choice, score, draft), checked by checkStep and typed by typed(); one atomic question per item. packages/customers declares two real steps (stage: choice, summary: draft)."
   },
   {
    "id": "S-3",
@@ -858,68 +958,116 @@
   {
    "id": "S-4",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "Code assembles each question's state from the named field paths only (item.<path>, <route>#<path>, <record id>.<path>); the test asserts the state holds only item.notes and never the customer's name."
   },
   {
    "id": "S-5",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
    ],
-   "page": "get-started/agents-and-people"
+   "page": "get-started/agents-and-people",
+   "note": "One request per package per wave holding every item's question; packages are sent in parallel (test checks the calls overlap)."
   },
   {
    "id": "S-6",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "interface/router.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "payload(): computed values, a placeholder per pending judgment with waits_on, and the state each receives; no model call, no write. Exposed as the command route system/steps (run) and mentura steps payload."
   },
   {
    "id": "S-7",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "run() emits computed first, then each judgment as its batch arrives, then done; --stream prints them as JSON lines."
   },
   {
    "id": "S-8",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "interface/router.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "New route system/judge (and node schema/caching.mjs judge) reuses stored answers and sends only uncached questions to NAIVE_JUDGE_CMD (for example node platform/integrations/jev.mjs) in one request. Tested with a stand-in judge that logs what it is asked. ideamap and anatomy do not call it yet; they still build Jev requests for the founder to pipe."
   },
   {
    "id": "S-9",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-private.mjs",
-    "schema/use-model.mjs"
+    "schema/model-steps.mjs",
+    "schema/judgment.schema.json",
+    "schema/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
-   "note": "packages declare use_model and check-private keeps private fields out of it; agent writes are recorded as agent; nothing yet clears a record on passing checks"
+   "note": "Model steps are declared in use_model; outputs are judgment records written as the agent (actor model-step, model name in provenance). provenanceOf() reports a judgment, and any agent record derived from it, as the agent's until a person confirms (mentura steps confirm) or its checks pass (--checks). It is a reporter: packages.mjs's confirmed status does not consult it yet."
   },
   {
    "id": "S-10",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "Steps write only judgment records, never the records they read; the test checks the person's customer file is byte-identical and still the person's after a run."
   },
   {
    "id": "S-11",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "Inputs must be field paths (a whole item, record or package is refused); every input must be pointed at by the question; per-step context budget (default 2000 chars) refuses oversized state."
   },
   {
    "id": "S-12",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
    ],
-   "page": "get-started/agents-and-people"
+   "page": "get-started/agents-and-people",
+   "note": "assertJson refuses non-JSON state; questions point at state[\"<key>\"].<path>; checkRequest fails (uncaught) if a pointed-at path is not in the state."
   },
   {
    "id": "S-13",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "packages/customers/package.json",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "keep: the model writes {{name}}, code fills the computed value and verifies it came through; a draft that changes it is uncertain and goes to the founder."
   },
   {
    "id": "R-5",
@@ -934,17 +1082,25 @@
   {
    "id": "S-14",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-private.mjs",
-    "schema/check-data-model.mjs"
+    "interface/context.mjs",
+    "interface/context-test.mjs"
    ],
-   "page": "get-started/agents-and-people"
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Scoped instructions ('[glob] key: value' in any AGENTS.md) reach only matching routes in navigate (the router's plain layout ignores them); one part per stack layer/package; the budget report advises moving a scoped line into the folder it serves."
   },
   {
    "id": "S-15",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/kit-boundary.mjs",
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "kit.json boundary {reads, writes, use_model}; checkKit validates it (steps inside reads, judgments declared in writes); wrap() refuses calls outside it and forces the kit's agent id; mentura steps run --kit runs a kit's steps through the wrapped call. No kit exists under platform/kits yet, so it is exercised with temp kit.json files."
   },
   {
    "id": "S-16",
@@ -958,7 +1114,13 @@
   {
    "id": "S-17",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "Drafts are model-only: deterministic false in the request and payload, no threshold or code check allowed, expectDeterministic() throws on a draft."
   },
   {
    "id": "S-18",
@@ -978,7 +1140,14 @@
   {
    "id": "F-2",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "interface/router.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "AsyncLocalStorage action scope. One top-level router call is one action, and nested calls join it. store.read is memoized per file. A write calls forget(dir), so a later read in the same action is fresh."
   },
   {
    "id": "F-3",
@@ -993,27 +1162,39 @@
   {
    "id": "F-4",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
+   "status": "built",
    "evidence": [
+    "interface/instrumentation.mjs",
     "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
+    "interface/context-test.mjs"
    ],
-   "page": "get-started/routes-and-records"
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Every router call is logged (route, action, ms, tokens, ok, useful, parent for nested calls) and judge(score, threshold, owner, {dir, question, model}) logs judgments, when instrumentation is on. migrate-venture's claude -p call is not yet routed through judgment(); that file belongs to another group."
   },
   {
    "id": "F-5",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
+   "status": "built",
    "evidence": [
+    "schema/access.mjs",
+    "interface/acting.mjs",
     "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
+    "interface/mcp/server.mjs",
+    "schema/gate-test.mjs"
    ],
-   "page": "get-started/routes-and-records"
+   "page": "get-started/the-gate",
+   "note": "Access is now checked at each record on read: a list read returns only the items the role may read, and a role allowed only some items can still read the list. mentura_read in MCP now carries agent_id, so MCP lists are filtered the same way. Read results cite source, address and version only, never a credential. Connector credentials were already kept out of the framework (check-boundary). The page that explains it is the-gate (status json currently points at routes-and-records)."
   },
   {
    "id": "F-6",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "navigate's layout never contains need-now or decisions (those are in the template, computed in parallel child processes under context.template_ms; a timeout returns pending and the read still answers). The budget report fails when an AGENTS.md holds a computed key (need_now, ranking, decisions, ...). The router's own plain layout action still includes need_now (unchanged, to avoid editing contended code)."
   },
   {
    "id": "F-7",
@@ -1043,32 +1224,48 @@
   {
    "id": "F-10",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
    ],
-   "page": "get-started/routes-and-records"
+   "page": "get-started/agents-and-people",
+   "note": "waterfall(): record types in waves from packages/catalog.json after links with waits_on and status (mentura steps waterfall); steps follow their own after links; a cycle in either is uncaught. Page is agents-and-people, not routes-and-records."
   },
   {
    "id": "F-11",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs",
-    "knowledge/connectors/index.mjs"
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
    ],
-   "page": "get-started/routes-and-records"
+   "page": "get-started/agents-and-people",
+   "note": "Independent steps and packages are asked at once (Promise.allSettled); a failed request for one package is reported and the others are written; a low-confidence answer goes to the founder without failing the batch."
   },
   {
    "id": "F-12",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "interface/router.mjs",
+    "schema/decisions.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "Computed once per action and shared: routes(), decisions() when no explicit now is passed, the venture state hash, and each command's spawn output. The foundation report is shared as the purpose/foundation command output; foundation.mjs itself was not edited."
   },
   {
    "id": "F-13",
    "chapter": "Chapter 6: Fetching Data",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "--speculate asks when-steps while code computes and discards the answers whose condition is false; the test measures it faster than the sequential run and checks the discard."
   },
   {
    "id": "F-14",
@@ -1251,38 +1448,74 @@
   {
    "id": "M-18",
    "chapter": "Chapter 7: Mutating Data",
-   "status": "partial",
+   "status": "built",
    "evidence": [
+    "interface/acting.mjs",
     "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
+    "schema/access.mjs",
+    "schema/gate-test.mjs"
    ],
-   "page": "get-started/writing-records"
+   "page": "get-started/the-gate",
+   "note": "router call() now goes through actingCall. Every call checks the actor kind (person or agent) and refuses an agent acting in a role a person holds. acting.unknown_roles: refuse in the config makes the router refuse role ids the team plan does not list. Every answer carries acting {kind, role}. Inside one process (an MCP or API server, keyed by venture and via), a change of identity, or of that role's team-plan entry, makes the next answer carry acting_changed with the new identity's read and write reach. Each CLI command is its own process, so it re-checks who is acting on every call but has nothing to compare against."
   },
   {
    "id": "C-1",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "interface/router.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "Derived records (declared command routes) and judgments are stored in <venture>/.naive/cache/ and reused. Failed runs are never stored. system/cache lists, prunes and clears the store."
   },
   {
    "id": "C-2",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "On by default (DEFAULTS.enabled). naive.config.json {cache:{enabled:false}} or NAIVE_CACHE=off turns it off. init-venture does not write a cache block: the default lives in code, so init stays untouched."
   },
   {
    "id": "C-3",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "packages/foundation/package.json",
+    "packages/decisions/package.json",
+    "packages/validation/package.json",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "use_cache in package definitions (record level), plus a framework list for system/need-now, time-to-ready and package, plus naive.config.json cache.routes per venture. Judgment level is system/judge. No package declares a judgment-level use_cache yet, because no package calls a model (use_model is empty everywhere)."
   },
   {
    "id": "C-4",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "cacheLife profiles (seconds..max, default) or {revalidate, expire}. A cache with no life is refused. Fresh, stale (served only when allowStale is passed in code), revalidate and expired are tested with an injected now. There is no background revalidation."
   },
   {
    "id": "C-5",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "Canonical-JSON sha256 keys. Judgment key: state, question, model, Naive version and package-definition hashes. Record key: venture file-tree hash, framework code hash, args, vary values. Tests show a changed state, model or package set is asked again."
   },
   {
    "id": "C-6",
@@ -1297,12 +1530,25 @@
   {
    "id": "C-7",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "Private requests and routes that vary on actor are stored under private/<hash of person>/. Another person misses and gets their own. An unnamed actor is never stored. A listing shows only shared entries and your own."
   },
   {
    "id": "C-8",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/caching.mjs",
+    "interface/router.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "New route system/answer labels each part (confirmed, agent, unlogged, missing, cached, fresh, plus a judgment part) and counts the mix."
   },
   {
    "id": "C-9",
@@ -1316,52 +1562,108 @@
   {
    "id": "C-10",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "schema/build-release.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "Build walks the venture and freezes what it finds, with no step of its own and no model call (the test's stand-in agent is never called). Now is an input (--now) recorded in the manifest. The release id is a content hash, so the same records give the same id at any --now."
   },
   {
    "id": "C-11",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "schema/release-read.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "The .release/release.json manifest holds the records a person confirmed, frozen in with sha256, as_of and confirmed_by, with copies in .release/records/. It also names live holes: open decisions, _streams/, money accounts, attributes mastered in another source, and command routes that read runtime data."
   },
   {
    "id": "C-12",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/start-release.mjs",
+    "schema/release-read.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "start-release reads only .release/. The test follows its imports to check none of them reaches interface/router.mjs. It still serves as built after the venture's records change. The investor handoff is the --export output (Z-3)."
   },
   {
    "id": "C-13",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "schema/build-release.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "Every package that is open now (schema/packages.mjs) must be releasable. A required record blocks the build, with exit 1 and the file and fix command named, if it is any of these: an agent's unconfirmed write, a draft with nothing confirmed behind it, changed since its last provenance entry, or failing its schema. check-provenance and check-private must also pass. A refused build leaves the previous release untouched. Missing records are reported as gaps and do not block. An unconfirmed optional record is left out of the release instead of blocking."
   },
   {
    "id": "C-14",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "schema/release-read.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "Each hole is the smallest live unit: one decision, one stream, one money account, or one field (an attribute mastered elsewhere is cut from an otherwise frozen record and served as live_fields). Each package reports its shell share (frozen over frozen plus holes), and each hole says how to move it (to_freeze)."
   },
   {
    "id": "C-15",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/vitals.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "node interface/vitals.mjs <dir> --check exits 1 when a vital's p75 exceeds its threshold (defaults overridable by naive.config.json vitals); system/vitals reports passed and failing."
   },
   {
    "id": "C-16",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Every prefetch entry carries a token cost; entries degrade full -> summary -> state and are dropped once context.prefetch_budget is spent; over the route budget prefetch is given back first."
   },
   {
    "id": "C-17",
    "chapter": "Chapter 8: Caching",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs",
-    "schema/decisions.mjs"
+    "schema/releases.mjs",
+    "schema/releases-test.mjs"
    ],
-   "page": "get-started/whats-built"
+   "page": "get-started/releases",
+   "note": "There are three stores. The release lives in .release/, which is meant for git. The local cache lives in .naive/cache/release.json and gets its own .gitignore. The third is the agent's session, which belongs to the harness. Naive builds nothing for it. The key is the framework version, a hash of every package definition, and MENTURA_MODEL. Changing any of them starts the cache fresh and changes the release key. A rebuild with nothing changed has 0 misses. The cache holds schema validations and frozen command answers."
   },
   {
    "id": "C-18",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "schema/release-read.mjs",
+    "schema/build-release.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "An item not known at build time answers 404 with the release's known items and the --add command. build-release --add <route> freezes that one item. Every other entry and frozen file is left untouched (the test checks mtimes) and the change is recorded in manifest.incremental. The server picks the item up at once. Adding an unconfirmed item, or one already in the release, is refused."
   },
   {
    "id": "C-19",
@@ -1371,27 +1673,39 @@
   {
    "id": "V-1",
    "chapter": "Chapter 9: Revalidating",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
+    "schema/freshness.mjs",
+    "knowledge/freshness.json",
+    "interface/cli/freshness.mjs",
+    "schema/freshness-test.mjs"
    ],
-   "page": "get-started/whats-built"
+   "page": "get-started/revalidating",
+   "note": "Both strategies apply to records. By time: freshness profiles, with stale, expired and per-phase states. On demand: a record goes stale when a record it was derived from (provenance derived_from) is written later, when a where-used child drifts from its parent, when a decision above it changes (from decisions.mjs), or when it is marked by tag, path or package. Report: node schema/freshness.mjs, mentura freshness, route system/freshness."
   },
   {
    "id": "V-2",
    "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "knowledge/freshness.json",
+    "schema/freshness-profiles.schema.json",
+    "schema/freshness.mjs",
+    "schema/freshness-test.mjs"
+   ],
+   "page": "get-started/revalidating",
+   "note": "Profiles follow cacheLife (stale, revalidate, expire) and add per_phase and live. The defaults are feedback 30d/90d, research 90d/365d, assumption (per phase), foundation (per phase), live, max and none. A venture overrides them under freshness in naive.config.json, by record type or by route prefix, and an undefined profile or a bad duration is refused. mentura phase <phase> --as person records the phase change (it refuses agents and adds an empty core skeleton when leaving Discovery, as init does), so per-phase records go stale. A phase changed by hand in venture.json counts from the file's mtime, with a warning. 'Now' is an input: --now <iso|+100d> or NAIVE_NOW."
   },
   {
    "id": "V-3",
    "chapter": "Chapter 9: Revalidating",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
+    "schema/freshness.mjs",
+    "schema/freshness-test.mjs"
    ],
-   "page": "get-started/whats-built"
+   "page": "get-started/revalidating",
+   "note": "Records with the live profile (customer, investor, money-account, data-stream) are holes. freeze() / mentura freshness --freeze <dir> copies every other record into a static shell with shell.json (sha256 per record, plus each hole with the route that reads it). It refuses expired records by name, and refuses a target folder inside the venture's routed folders. A read of a live record carries freshness.hole. The full C-11 release (naive build) is not built on main; the caching group can call freshness().shell or freeze() from it."
   },
   {
    "id": "V-4",
@@ -1406,12 +1720,14 @@
   {
    "id": "V-5",
    "chapter": "Chapter 9: Revalidating",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-where-used.mjs",
-    "schema/decisions.mjs"
+    "schema/freshness.mjs",
+    "interface/router.mjs",
+    "schema/freshness-test.mjs"
    ],
-   "page": "get-started/whats-built"
+   "page": "get-started/revalidating",
+   "note": "mentura revalidate tag:<route> (or route system/revalidate) marks the record stale and, transitively, everything that depends on it (derived_from and where-used edges). Stale records stay readable: the router adds a freshness flag (state, reasons, fix) to item and list reads on every interface. A rewrite or mentura verify makes a record fresh again. Where-used children that are not records are listed as stale copies, with who delivers the change. Pushing the change to outside tools is left to the platform: children in non-filesystem sources are listed as unchecked."
   },
   {
    "id": "V-6",
@@ -1426,12 +1742,26 @@
   {
    "id": "V-7",
    "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/freshness.mjs",
+    "interface/cli/freshness.mjs",
+    "schema/freshness-test.mjs"
+   ],
+   "page": "get-started/revalidating",
+   "note": "path:<folder> marks every record under a folder or route prefix. package:<name> marks every record type a package owns. mentura revalidate --pivot is package:validation with pivot: true, so every assumption is tested again. Dependents of the marked records follow."
   },
   {
    "id": "V-8",
    "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/freshness.mjs",
+    "interface/cli/freshness.mjs",
+    "schema/freshness-test.mjs"
+   ],
+   "page": "get-started/revalidating",
+   "note": "A plain target that is a folder is refused (exit 1 on the CLI and in the route). The refusal lists the exact tag:<route> for each record under it and shows the path: form. Exact reasons (tag, changed, drift, decision, depends) sort before path, package, phase and age reasons. The summary counts stale_by_dependency separately from stale_by_folder_only. A tag with no recorded dependents says to pass --derived-from on writes."
   },
   {
    "id": "V-9",
@@ -1441,11 +1771,13 @@
   {
    "id": "E-1",
    "chapter": "Chapter 10: Error Handling",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
    ],
-   "page": "get-started/errors"
+   "page": "get-started/agents-and-people",
+   "note": "outcomeOf() classifies router results and errors as answer, expected (invalid write, missing record, gate holds, refused, failed request), uncaught (cycles, bad requests; CLI prints uncaught: and exits 1) or uncertain; uncertain judgments become open fail-open decisions (judge-<id>) and the founder's answer is written back as theirs on the next run. The errors page (get-started/errors) is not mine and still describes only expected and uncaught; the uncertain kind is explained on agents-and-people."
   },
   {
    "id": "E-2",
@@ -1497,7 +1829,13 @@
   {
    "id": "E-9",
    "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/model-steps.mjs",
+    "schema/model-steps-test.mjs"
+   ],
+   "page": "get-started/agents-and-people",
+   "note": "typed() rejects malformed answers (they become uncertain, answer null); low or missing confidence is uncertain; check.equals lets code overrule a judgment (outcome overruled, both values recorded)."
   },
   {
    "id": "Y-1",
@@ -1609,12 +1947,27 @@
   {
    "id": "O-4",
    "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/router.mjs",
+    "interface/mcp/server.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals",
+   "note": "Router action head (and MCP header_only) returns only the header (what, state, owner, updated, title, size in tokens) plus budget; navigate returns header first."
   },
   {
    "id": "O-5",
    "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/router.mjs",
+    "schema/caching.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "The need-now run in layout() and the system/need-now command share one memo key. The overview runs need-now once where it needs it three times (tested)."
   },
   {
    "id": "O-6",
@@ -1624,7 +1977,14 @@
   {
    "id": "O-7",
    "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "interface/release-card.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisions made, the price from validation-pricing, and live holes. Drawing is in interface/release-card.mjs, and the release itself holds no SVG, CSS or HTML."
   },
   {
    "id": "H-1",
@@ -1651,12 +2011,26 @@
   {
    "id": "H-3",
    "chapter": "Chapter 15: Route Handlers",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/router.mjs",
+    "schema/caching.mjs",
+    "interface/api/server.mjs",
+    "schema/caching-test.mjs"
+   ],
+   "page": "get-started/caching",
+   "note": "Only run (and view over run) uses the cache, and only for declared routes, which is the opt-in. A write never reads or stores it. Input {cache:'no-store'} opts out of one read. Tested through the HTTP API (POST run hits; PUT write has no cache field, and the next run misses). The API server was not edited."
   },
   {
    "id": "H-4",
    "chapter": "Chapter 15: Route Handlers",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "Command routes are classified by following their script's relative imports. Code that reads the clock, calls a model, reaches the network or reads _streams makes the route a live hole, and the hole says why. A route that takes input per call is also a hole. Other routes (currently purpose/foundation, system/need-now, system/time-to-ready, system/robots, operations/marketing/public) run at build time through router.call on a shadow copy that holds only the confirmed records, and their answers are frozen in. The detection is a static text scan, not a sandbox: it is conservative but could miss an indirect clock read."
   },
   {
    "id": "H-5",
@@ -1699,7 +2073,16 @@
   {
    "id": "X-2",
    "chapter": "Chapter 16: Proxy",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/gate.mjs",
+    "schema/gate-drafts.mjs",
+    "interface/gate-hooks.mjs",
+    "interface/cli/mentura.mjs",
+    "schema/gate-test.mjs"
+   ],
+   "page": "get-started/the-gate",
+   "note": "A rule with then:owner holds an agent's write as a draft sent to the function owner. The owner comes from naive.config.json owners (by function or package), then the decision-class owner, then the founder. Each held draft gets a sidecar, and node schema/gate-drafts.mjs --owner lists what waits for an owner. With variants:true, a second agent draft that differs from the first is kept beside it (.draft.b) under one open decision record (decisions/<record>.variants.decision.json). mentura accept --pick b --by <name> accepts that draft, decides the decision and removes the other drafts."
   },
   {
    "id": "X-3",
@@ -1715,34 +2098,41 @@
   {
    "id": "X-4",
    "chapter": "Chapter 16: Proxy",
-   "status": "partial",
+   "status": "built",
    "evidence": [
     "schema/gate.mjs",
-    "interface/router.mjs"
+    "schema/access.mjs",
+    "schema/naive-config.mjs",
+    "interface/gate-hooks.mjs",
+    "schema/gate-test.mjs"
    ],
-   "page": "get-started/the-gate"
+   "page": "get-started/the-gate",
+   "note": "The gate's modules make no process, network or model calls (the test checks their source). 2000 decisions run in well under a second with fetch disabled. Confidence rules read a score the write already carries: CLI --confidence, the MCP confidence field or the x-mentura-confidence header. A write with no score is never held for confidence. The gate checks write access itself, and the router checks access again at the record on every read and write."
   },
   {
    "id": "X-5",
    "chapter": "Chapter 16: Proxy",
-   "status": "partial",
+   "status": "built",
    "evidence": [
     "schema/gate.mjs",
-    "interface/router.mjs"
+    "packages/money/package.json",
+    "packages/validation/package.json",
+    "schema/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
-   "note": "one gate per venture is built; package rules (packageGates) are not yet imported"
+   "note": "Each venture has one gate. It runs fail_closed rules, then the config's rules, then gate_rules imported from packages/<name>/package.json. money ships money-to-finance and validation ships validation-low-confidence. naive.config.json gate.packages can leave out one package's rules or all of them. The free-text package 'gates' (completion gates) are left as they were."
   },
   {
    "id": "X-6",
    "chapter": "Chapter 16: Proxy",
-   "status": "partial",
+   "status": "built",
    "evidence": [
     "schema/gate.mjs",
-    "interface/router.mjs"
+    "schema/check-config.mjs",
+    "schema/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
-   "note": "rules match a route and everything under it, not the router path patterns"
+   "note": "Rule routes use the router's path patterns: [id] and * match one segment, ** matches any depth, and a trailing /** also matches the route above it. A pattern can match the concrete route or its table route. check-config fails any pattern that matches no route in the table."
   },
   {
    "id": "Z-1",
@@ -1762,7 +2152,14 @@
   {
    "id": "Z-3",
    "chapter": "Chapter 17: Deploying",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/releases.mjs",
+    "schema/build-release.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases",
+   "note": "build-release --export <dir> writes README.md, release.json and card.json, plus records/ as JSON and Markdown. The export has no holes: only their count, and no hole names. Every number and record carries its date. It never writes into a non-empty folder. PDF or site rendering is left to an interface, as the ledger says."
   },
   {
    "id": "Z-4",
@@ -1810,7 +2207,15 @@
   {
    "id": "U-4",
    "chapter": "Chapter 18: Upgrading",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/naive-config.mjs",
+    "schema/gate.mjs",
+    "schema/check-config.mjs",
+    "schema/gate-test.mjs"
+   ],
+   "page": "get-started/the-gate",
+   "note": "naive.config.json packages pins a version per package. A package with no version field takes the catalog's version (0.3.0), because no package.json has its own version yet. check-config fails a pin that does not match what is installed. While a pin mismatches, every write (person or agent) to that package's records is refused. check-config --pin moves the pins to the installed versions and logs this in provenance."
   },
   {
    "id": "U-5",
