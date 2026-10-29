@@ -11,13 +11,31 @@
     "freshness"
   ],
   "gate_rules": [
-    { "id": "money-to-finance", "routes": ["money/[id]"], "actors": ["agent"], "then": "owner", "note": "Money master data an agent writes goes to the finance function's owner before it is the record" }
+    {
+      "id": "money-to-finance",
+      "routes": [
+        "money/[id]"
+      ],
+      "actors": [
+        "agent"
+      ],
+      "then": "owner",
+      "note": "Money master data an agent writes goes to the finance function's owner before it is the record"
+    }
   ],
   "layer": "purpose",
-  "records": ["money-account"],
-  "schemas": ["schema/data-master.schema.json"],
+  "records": [
+    "money-account",
+    "money-summary"
+  ],
+  "schemas": [
+    "schema/data-master.schema.json",
+    "schema/money-summary.schema.json"
+  ],
   "templates": [],
-  "checks": ["schema/check-data-packages.mjs"],
+  "checks": [
+    "schema/check-data-packages.mjs"
+  ],
   "skill": null,
   "use_model": [],
   "complete": false

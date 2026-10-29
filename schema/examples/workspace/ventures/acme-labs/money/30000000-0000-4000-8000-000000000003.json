@@ -1,0 +1,12 @@
+{
+  "id": "30000000-0000-4000-8000-000000000003",
+  "name": "Cash (Checking)",
+  "type": "checking",
+  "last_4": "4609",
+  "balance": {
+    "amount": 8711697,
+    "currency": "USD"
+  },
+  "source": "rho-sandbox:account:30000000-0000-4000-8000-000000000003",
+  "synced_at": "2026-10-29T06:34:34.210Z"
+}

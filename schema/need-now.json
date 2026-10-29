@@ -721,6 +721,22 @@
         }
       ],
       "why": "A fund's pipeline, once it is investing"
+    },
+    "money-summary": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Written by the money source's sync; cash and runway once money moves"
     }
   }
 }

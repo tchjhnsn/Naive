@@ -1,0 +1,38 @@
+{
+  "id": "product-exists",
+  "question": "Does a product already exist (in use, for sale, a prototype or a pilot), or is the venture still an idea?",
+  "decides": {
+    "record": "product",
+    "path": "products/"
+  },
+  "statement": "products",
+  "options": [
+    "Yes: one or more products exist",
+    "Partly: a prototype or pilot exists",
+    "No: it is still an idea"
+  ],
+  "unlocks": [
+    {
+      "activity": "Write product cards for what exists or is planned",
+      "routes": [
+        "purpose/product/*"
+      ]
+    }
+  ],
+  "layer": "purpose",
+  "boundary": "fail-closed",
+  "needed_in": "discovery",
+  "status": "decided",
+  "provenance": {
+    "drafted_by": {
+      "kind": "framework",
+      "id": "naive"
+    },
+    "approved_by": "Maya Chen",
+    "approved_at": "2026-10-29T06:29:11Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  },
+  "answer": "Partly: a prototype or pilot exists"
+}

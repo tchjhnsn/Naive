@@ -284,7 +284,9 @@ edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { list.find((t
 { const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
-const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|\.claude|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
+// Files git ignores (such as a synced bank stream's events) are left out, as a clone would leave them out.
+const ignored = new Set((spawnSync("git", ["ls-files", "--others", "--ignored", "--exclude-standard", "--directory"], { cwd: root, encoding: "utf8" }).stdout ?? "").split("\n").filter(Boolean).map((p) => join(root, p).replace(/\/$/, "")));
+const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !ignored.has(s) && !/\/(\.git|\.claude|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
 for (const [name, change, pattern] of [
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],

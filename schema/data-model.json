@@ -53,7 +53,8 @@
         "founder",
         "fund-thesis",
         "fund-terms",
-        "deal"
+        "deal",
+        "money-summary"
       ],
       "refs": [
         {
@@ -1258,6 +1259,17 @@
         "schema/examples/**/money/*.json"
       ],
       "note": "A money master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "money-summary",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/money-summary.schema.json",
+      "paths": [
+        "instance/**/money/_summary.json",
+        "schema/examples/**/money/_summary.json"
+      ],
+      "note": "Cash, monthly flows and runway from the money source's last sync; versioned, and the only money record a model sees (EE-070)"
     },
     {
       "id": "data-stream",
