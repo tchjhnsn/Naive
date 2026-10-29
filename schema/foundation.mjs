@@ -38,6 +38,14 @@ export function filesOf(dir, type) {
     const d = join(dir, folder);
     if (existsSync(d)) for (const f of readdirSync(d)) if (f.endsWith(rest)) found.push(folder + f);
   }
+  // A collection item waiting as a draft counts too: _drafts/foundation__icp__<id>.json.draft.
+  for (const g of gs.filter((x) => x.includes("*") && !x.slice(x.indexOf("*") + 1).includes("*"))) {
+    const star = g.indexOf("*"), pre = g.slice(0, star).replace(/\//g, "__"), rest = `${g.slice(star + 1)}.draft`;
+    if (existsSync(join(dir, "_drafts"))) for (const f of readdirSync(join(dir, "_drafts"))) if (f.startsWith(pre) && f.endsWith(rest)) {
+      const item = g.slice(0, star) + f.slice(pre.length, -".draft".length);
+      if (!found.includes(item)) found.push(item);
+    }
+  }
   if (found.length) return found;
   const drafted = gs.filter((g) => !g.includes("*") && existsSync(join(dir, `_drafts/${g.replace(/\//g, "__")}.draft`)));
   return drafted.length ? drafted : gs.slice(0, 1);
