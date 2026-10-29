@@ -10,7 +10,7 @@
 //                      [--source <function>=<system>[:<address>],... ...] [--rho-fixture]
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
-//                      [--framework <spec>] [--reset-preferences]
+//                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
 //
 // --source says where a function keeps its truth (schema/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
@@ -47,7 +47,7 @@ const FORMS = JSON.parse(readFileSync(join(framework, "schema/venture.schema.jso
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
@@ -75,13 +75,18 @@ const choose = async (q, options, fallback) => {
   return a;
 };
 
-// 1. The name and the directory.
+// 1. The name and the directory. The defaults are "My first venture" in my-first-venture/, and either can
+// be renamed later; a directory given on the command line names the venture unless --venture-name does.
+const FIRST = "My first venture";
+const WORKSPACE_FILE = "naive-workspace.json";
 let target = positional[0];
+let ventureName = opt("venture-name");
 if (!target) {
-  if (!interactive) fail("usage: create-venture <dir> [--yes]: name the directory for the new venture");
-  target = await ask("What is your venture named?", "my-venture");
+  ventureName ??= interactive ? await ask("What is your venture named?", FIRST) : FIRST;
+  target = slug(ventureName);
 }
 const dir = resolve(target);
+ventureName ??= basename(dir);
 const id = slug(basename(dir));
 if (!id) fail(`${basename(dir)} has no letters or digits to make a venture id from`);
 if (existsSync(dir) && readdirSync(dir).length) fail(`${dir} already exists and is not empty. create-venture only creates new ventures; to bring an existing project in, create one here and run naive port or naive migrate.`);
@@ -222,7 +227,7 @@ const init = spawnSync("node", [join(framework, "schema/init-venture.mjs"), dir,
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");
 const venture = JSON.parse(readFileSync(vfile, "utf8"));
-venture.name = basename(dir);
+venture.name = ventureName;
 if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.role === "general-partner" ? "partner" : p.role, kind: "person" }));
 // The org chart (EE-086): each function's owner. Hats are read from here, never stored twice.
 if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
@@ -305,6 +310,24 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
   git = c.status === 0 ? "initialized, with a first commit" : "initialized; the first commit was skipped because git has no user.name and user.email";
 } else if (!flag("no-git")) git = "skipped (already inside a git repository)";
 
+// The workspace (the folder holding the founder's ventures, like a monorepo root): the nearest
+// naive-workspace.json above the venture lists it; with none, the venture's parent folder becomes the
+// workspace, named "Naive workspace" until the founder renames it, with an AGENTS.md for rules that hold
+// across every venture. --no-workspace leaves the parent folder as it is.
+let workspace = null;
+if (!flag("no-workspace")) {
+  let up = dirname(dir);
+  while (!existsSync(join(up, WORKSPACE_FILE)) && dirname(up) !== up) up = dirname(up);
+  const root = existsSync(join(up, WORKSPACE_FILE)) ? up : dirname(dir);
+  const wf = join(root, WORKSPACE_FILE);
+  const ws = existsSync(wf) ? JSON.parse(readFileSync(wf, "utf8")) : { schema: "everything-ecosystem", schema_version: readFileSync(join(framework, "schema/VERSION"), "utf8").trim(), name: "Naive workspace", ventures: [] };
+  const rel = relative(root, dir);
+  if (!ws.ventures.includes(rel)) ws.ventures.push(rel);
+  writeFileSync(wf, JSON.stringify(ws, null, 2) + "\n");
+  if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
+  workspace = { root, name: ws.name };
+}
+
 try { mkdirSync(dirname(prefsFile), { recursive: true }); writeFileSync(prefsFile, JSON.stringify({ type: vtype.id, role, mode, phase: answers.phase, layers: answers.layers, legalForm: answers.legalForm }, null, 2) + "\n"); } catch {}
 
 const runScript = (s) => (manager === "npm" ? `npm run ${s}` : `${manager} ${s}`);
@@ -312,6 +335,7 @@ const cd = relative(process.cwd(), dir) || ".";
 const legal = functions.legal?.systems.length ? null : "Legal documents: none connected yet. Point Naive at them later with --source legal=google-drive:<folder> (or docusign, local-folder), and draft the founder agreement with the founding-agreement kit.";
 console.log(`
 ${bold("Success!")} Created ${basename(dir)} at ${dir}
+Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE})` : "none (--no-workspace)"}
 Git: ${git}${rhoNote ? `\n${rhoNote}` : ""}${legal ? `\n${legal}` : ""}
 
 Inside that directory, you can run:

@@ -38,6 +38,22 @@ t("--yes creates a venture with the recommended defaults, installs the framework
   ok(existsSync(join(v, ".git")), "a git repository");
 });
 
+t("the first venture is My first venture, in a workspace named Naive workspace; both can be named", () => {
+  // Its own folder, outside base: base became a workspace when the first test created kettle in it.
+  const ws = mkdtempSync(join(tmpdir(), "create-venture-ws-"));
+  const r = create(["--yes", "--skip-install", "--no-git"], ws);
+  ok(r.status === 0, r.stderr + r.stdout);
+  const venture = load(join(ws, "my-first-venture/venture.json"));
+  ok(venture.name === "My first venture" && venture.id === "my-first-venture", JSON.stringify(venture.name));
+  const w = load(join(ws, "naive-workspace.json"));
+  ok(w.name === "Naive workspace" && w.ventures.join() === "my-first-venture", JSON.stringify(w));
+  ok(existsSync(join(ws, "AGENTS.md")), "the workspace has its own AGENTS.md");
+  ok(create(["--yes", "--skip-install", "--no-git", "--venture-name", "Acme Labs"], ws).status === 0);
+  ok(load(join(ws, "acme-labs/venture.json")).name === "Acme Labs");
+  ok(load(join(ws, "naive-workspace.json")).ventures.join() === "my-first-venture,acme-labs", "a second venture joins the same workspace");
+  rmSync(ws, { recursive: true, force: true });
+});
+
 t("the venture's package.json has the four scripts and the framework", () => {
   const p = load(join(v, "package.json"));
   ok(["dev", "build", "start", "check"].every((s) => p.scripts[s] === `naive ${s}`));

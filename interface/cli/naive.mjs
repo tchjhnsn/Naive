@@ -17,7 +17,7 @@
 //   naive typegen                                   write .naive/types/ from the route table and the MCP tools
 //   naive upgrade [<venture dir>] [--framework]     move a venture onto the next Naive layout; --framework first
 //                                                   updates the installed framework with the venture's package manager (I-29)
-//   naive port --from <project> --venture <dir>     plan bringing a project in with its files as they are
+//   naive port <folder> --venture <dir> [--to <path>]  plan moving a folder into the venture as it is (repo/<name>)
 //   naive port --venture <dir> --apply --confirm port
 //                                                   carry out that plan (EE-076)
 //   naive migrate --from <project> --venture <dir>  an agent rewrites the project as Naive records, as a plan and decisions
