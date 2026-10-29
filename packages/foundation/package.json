@@ -47,7 +47,10 @@
     "schema/check-validation.mjs",
     "schema/foundation.mjs"
   ],
-  "skill": null,
+  "skill": {
+    "id": "foundation-function",
+    "path": "packages/foundation/skill/SKILL.md"
+  },
   "use_model": [],
   "use_cache": [
     {
