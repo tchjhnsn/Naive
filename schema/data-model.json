@@ -370,6 +370,16 @@
       "note": "Phases, gates and questions of Product Anatomy; self-describing, checked by its runner's tests"
     },
     {
+      "id": "playbook",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/playbook.schema.json",
+      "paths": [
+        "purpose/playbooks/*.json"
+      ],
+      "note": "A step-by-step guide a venture function runs in conversation with the founder; run by interface/skills/run-playbook (a template is one record's empty shape; a playbook is the order of the work)"
+    },
+    {
       "id": "idea-map-conventions",
       "layer": "purpose",
       "level": "method",

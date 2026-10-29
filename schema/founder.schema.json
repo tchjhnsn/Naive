@@ -67,6 +67,53 @@
           "type": "boolean"
         }
       }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Who the founder is, in their own words, as a mentor learns it (Torian's playbook, step know-the-founder): the puzzle of their life and what they are for",
+      "properties": {
+        "puzzles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The problems they keep turning over"
+        },
+        "passions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "telos": {
+          "type": "string",
+          "description": "What a good life looks like for them; what they are for"
+        },
+        "ambitions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What people come to them for"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confirmed": {
+          "type": "boolean",
+          "description": "The founder said the profile reads true"
+        }
+      }
     }
   }
 }
