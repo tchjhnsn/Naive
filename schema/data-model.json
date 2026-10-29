@@ -496,6 +496,43 @@
       "note": "For each fact kept once in its system of record, every place that repeats it; live children must show the parent's value (EE-042)"
     },
     {
+      "id": "freshness-profiles",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/freshness-profiles.schema.json",
+      "form": "json",
+      "paths": [
+        "knowledge/freshness.json"
+      ],
+      "refs": [
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/freshness-test.mjs"
+        }
+      ],
+      "note": "Default freshness profiles by record type (Revalidating V-2): stale, revalidate and expire after Next.js cacheLife, plus per_phase and live; a venture overrides them under freshness in naive.config.json"
+    },
+    {
+      "id": "freshness-log",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/freshness-log.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/knowledge/freshness.jsonl",
+        "schema/examples/**/knowledge/freshness.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "target.value",
+          "to": "(venture file)",
+          "checked_by": "schema/freshness.mjs"
+        }
+      ],
+      "note": "On-demand revalidations (a tag, a path or a package marked stale), checks that a record is still right, and phase changes: one append-only line each (Revalidating V-1, V-5, V-7)"
+    },
+    {
       "id": "department-catalog",
       "layer": "operations",
       "level": "method",

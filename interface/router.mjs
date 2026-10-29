@@ -40,6 +40,8 @@ import { agentFromEnv, entries as provEntries, record as prov } from "./provenan
 import { address } from "../knowledge/connectors/contract.mjs";
 import { holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
+// Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.
+import { readFlag as freshnessFlag } from "../schema/freshness.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
@@ -126,6 +128,9 @@ export function routes() {
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
     cmd("knowledge/catalog", "knowledge/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "knowledge/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
+    // Freshness (Revalidating, V-1 to V-8): schema/freshness.mjs.
+    cmd("system/freshness", "schema/freshness.mjs", "What is fresh, stale or expired, and which records are live holes: by time (freshness profiles, per phase too) and on demand (a dependency changed, a where-used parent drifted, a tag, path or package was revalidated)"),
+    cmd("system/revalidate", "schema/freshness.mjs", "Mark records stale on demand: input value tag:<route> (the record and what depends on it), path:<folder>, package:<name>, or pivot (the validation package); a plain folder is refused in favour of exact tags", { value_flag: "--revalidate" }),
   );
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
@@ -394,6 +399,9 @@ export async function call({ venture, route, action, input, actor = "agent", act
       }
       if (attrs.length) x.attributes = cites;
     }
+    // Freshness (V-5): a stale record is still read, flagged stale until it is redone (stale-while-revalidate).
+    const fresh = remote ? {} : await freshnessFlag(dir, found, r.collection === "list");
+    Object.assign(loading, fresh);
     const parseOne = parse;
     const parseWith = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
     if (r.collection === "list") {
@@ -406,7 +414,7 @@ export async function call({ venture, route, action, input, actor = "agent", act
         }
         return path;
       };
-      return { ok: true, result: Object.fromEntries(items.map((x) => [idOf(x.path), parseWith(x)])), sources: Object.fromEntries(items.map((x) => [idOf(x.path), cite(x)])), ...deprecated };
+      return { ok: true, result: Object.fromEntries(items.map((x) => [idOf(x.path), parseWith(x)])), sources: Object.fromEntries(items.map((x) => [idOf(x.path), cite(x)])), ...fresh, ...deprecated };
     }
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
     return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...deprecated };

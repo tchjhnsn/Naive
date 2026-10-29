@@ -34,6 +34,11 @@
 //          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;
 //          --as-is runs it anyway (EE-050)
 //   mentura baseline --venture <id>                 adopt existing records into the provenance log
+//   mentura revalidate <tag:route|path:folder|package:name|route> --venture <id> [--pivot] [--reason <text>]
+//                                                   mark records stale on demand; a plain folder is refused for exact tags (Revalidating)
+//   mentura verify <route|folder> --venture <id>    checked and still right, unchanged: its age starts again
+//   mentura phase <phase> --venture <id> --as person   change phase; per-phase records go stale
+//   mentura freshness --venture <id> [--freeze <out dir>]   what is fresh, stale, expired or a live hole
 //
 // The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
@@ -238,6 +243,9 @@ if (cmd === "baseline") {
   out(`baseline: ${n} records added to ${venture}'s provenance log`);
   process.exit(0);
 }
+
+// Freshness (Revalidating, V-1 to V-8): revalidate, verify, phase and freshness live in ./freshness.mjs.
+if (["revalidate", "verify", "phase", "freshness"].includes(cmd)) process.exit(await (await import("./freshness.mjs")).main(cmd, argv, workspace));
 
 if (!action) usage();
 const venture = opt("venture");
