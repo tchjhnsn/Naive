@@ -282,6 +282,7 @@ export function draftOf(route, venture, workspace) {
   const dir = ventureDir(venture, workspace);
   if (!r || r.kind !== "record" || r.collection === "list" || !dir) return null;
   const file = fileFor(r, params, dir);
+  if (!file) return null; // a route with no concrete file (a pattern-only slot) has no draft
   return { dir, file, draft: draftPath(file), gate: gateOf(r, dir), route: r.collection === "item" ? r.route.replace("[id]", params.id) : r.route };
 }
 

@@ -47,6 +47,8 @@
     "!**/*.pem",
     "!**/*.key",
     "!**/_private/",
+    "!**/_internal/",
+    "!platform/agents/",
     "!**/.DS_Store"
   ],
   "keywords": [

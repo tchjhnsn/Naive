@@ -164,7 +164,9 @@ else if (cmd === "build" || cmd === "start") {
   // Outside a venture with none named, upgrade-venture.mjs prints its usage.
   const dir = rest[0] && !rest[0].startsWith("--") ? resolve(rest[0]) : (opt("venture") ? here() : findVenture());
   if (dir && rest.includes("--framework") && upgradeFramework(dir) !== 0) process.exit(1);
-  process.exit(run("schema/upgrade-venture.mjs", dir ? [dir] : []));
+  // Flags (--check, --guide, --adopt, --canary, --agent, --accept, --confirm) pass through to upgrade-venture.mjs; --framework and --venture are handled here.
+  const flags = rest.filter((a, i) => !(i === 0 && !a.startsWith("--")) && a !== "--framework" && a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("schema/upgrade-venture.mjs", dir ? [dir, ...flags] : flags));
 } else if (cmd === "frame") {
   // The decision library (schema/frames.mjs): naive frame "<the founder's words>" runs the frame those words fit.
   const sub = rest[0];

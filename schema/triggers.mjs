@@ -97,6 +97,7 @@ async function runOne(dir, t, e, state, extra = {}) {
   try {
     let r;
     if (t.run.propose) r = propose(dir, t.run.propose, { agentId: `trigger-${t.id}`, via: "router" });
+    else if (typeof t.run.route !== "string") throw new Error(`trigger ${t.id} names no route to run`); // a malformed trigger crashes; the router would read it as a broken route table
     else r = await call({ venture: v.id, workspace: dir, route: t.run.route, action: t.run.action, input: t.run.input, actor: "agent", actor_id: `trigger-${t.id}`, via: "router",
       provenance: { derived_from: e?.entity && !/:\/\//.test(e.entity) ? [e.entity] : undefined, note: `trigger ${t.id} on ${e?.activity ?? "retry"} of ${e?.entity ?? "?"}` } });
     run.outcome = r.ok ? "ran" : "failed";

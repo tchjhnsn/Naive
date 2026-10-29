@@ -159,16 +159,14 @@
   {
    "id": "I-17",
    "chapter": "Chapter 1: Installation",
-   "status": "built",
+   "status": "partial",
    "evidence": [
-    "interface/cli/naive.mjs",
-    "interface/create-venture/test.mjs",
     "schema/build-release.mjs",
     "schema/start-release.mjs",
     "schema/releases-test.mjs"
    ],
-   "page": "get-started/install",
-   "note": "naive dev, build, start and check all run: build writes .release/ through schema/build-release.mjs and start serves it read-only through schema/start-release.mjs"
+   "page": "get-started/releases",
+   "note": "The release scripts are built: node schema/build-release.mjs <venture dir> [--port n] (--port is accepted and ignored) and node schema/start-release.mjs <venture dir> [--port n] [--get <path>]. Wiring the naive build and naive start commands to them is another session's job, as are naive dev and naive check, so the row as a whole is partial from this group."
   },
   {
    "id": "I-18",
@@ -315,12 +313,15 @@
   {
    "id": "P-3",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
+    "schema/structure.mjs",
+    "schema/venture.schema.json",
+    "interface/package-routes.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/project-structure",
+   "note": "venture.schema.json gains optional packages, kits ({id, extends}) and functions ({<function>: {owner}}). manifest() fills in packages and owners when they are left out. checkManifest refuses unknown packages or functions, functions without an owner, and kits on packages not in use. 'mentura venture read' returns the manifest. Kits are only named here; the kit code stays on the platform."
   },
   {
    "id": "P-4",
@@ -438,11 +439,14 @@
   {
    "id": "P-15",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "interface/router.mjs",
+    "interface/boundaries.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/errors",
+   "note": "error: a failed check or write already answered with the package's skills and template (kept and tested). global-error: E-8 above."
   },
   {
    "id": "P-16",
@@ -457,12 +461,14 @@
   {
    "id": "P-17",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
+    "interface/package-routes.mjs",
+    "interface/router.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/project-structure",
+   "note": "A new @packages slot in system/overview. A package with records shows its state, progress and what moves. An empty package shows default:true, 'nothing written yet' and the start command (with template only when the route has one). interface/test.mjs now expects eight slots."
   },
   {
    "id": "P-18",
@@ -507,12 +513,14 @@
   {
    "id": "P-22",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
+    "schema/structure.mjs",
+    "interface/router.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/project-structure",
+   "note": "routable(): no route reaches a file under a _folder, or a _file, at any depth unless the data-model pattern names that segment (customers/_streams/*/stream.json is still routed). ** routes never go into _notes/. The structure check lists private folders: _drafts, _private, _notes, _streams."
   },
   {
    "id": "P-23",
@@ -522,7 +530,14 @@
   {
    "id": "P-24",
    "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/brand.mjs",
+    "schema/marketing-brand.schema.json",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "brand.marks lists the logo, icon, apple-icon and favicon, each a registered file in public/. The check enforces that an apple-icon is a 180x180 PNG, an icon is square, a favicon is an ICO, and every mark is registered. mentura brand head and the tokens route give the head links with sizes and types, as Next.js does for icon files."
   },
   {
    "id": "P-25",
@@ -540,7 +555,15 @@
   {
    "id": "P-26",
    "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/brand.mjs",
+    "operations/marketing/site/plan.mjs",
+    "interface/router.mjs",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "The sitemap is the marketing-sitemap record, which the planner writes from the venture's records. marketing/sitemap/xml (and mentura brand sitemap --out) renders sitemaps.org XML from that record, not from the framework's routes, for a release."
   },
   {
    "id": "P-27",
@@ -555,12 +578,15 @@
   {
    "id": "P-28",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
+    "interface/reads.mjs",
+    "interface/writes.mjs",
+    "interface/router.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/routes-and-records",
+   "note": "Every read has resolved_by (error, loading, not-found, page). input.hierarchy or --hierarchy returns the six levels in order with what each holds. The order is written into the router's header spec."
   },
   {
    "id": "P-29",
@@ -596,12 +622,13 @@
   {
    "id": "P-32",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
+    "schema/structure.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/project-structure",
+   "note": "RESERVED has in-use names and future names (layout.md, template.md, error.md, loading.md, not-found.md, default.md, page.md, .naive, @slot, [param]). node schema/structure.mjs <venture> errors on misuse of in-use names (_drafts/.release/naive.config.json/provenance.jsonl away from the root, _streams outside a data package, a (group) folder holding records) and warns on future names."
   },
   {
    "id": "P-33",
@@ -631,17 +658,26 @@
   {
    "id": "P-36",
    "chapter": "Chapter 2: Project Structure",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/package-routes.mjs",
+    "interface/reads.mjs",
+    "interface/writes.mjs",
+    "interface/writes-test.mjs"
+   ],
+   "page": "get-started/project-structure",
+   "note": "The framework defines (go-to-market) for marketing, relationships and customers. A venture adds groups in naive.config.json 'groups', and its own (group)/AGENTS.md sits after the root in the chain. Only member packages get the group layout (opt-in). The (group) route reads the member packages' states and their layout."
   },
   {
    "id": "P-37",
    "chapter": "Chapter 2: Project Structure",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/check-ventures.mjs",
-    "interface/router.mjs"
+    "interface/package-routes.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/routes-and-records",
+   "note": "A package route's loading lists the drafts waiting in that package's own records (not in records it only reads), with when each was drafted and its accept command. It is null when nothing is pending."
   },
   {
    "id": "P-38",
@@ -696,7 +732,13 @@
   {
    "id": "L-3",
    "chapter": "Chapter 3: Layouts and Pages",
-   "status": "not built"
+   "status": "built",
+   "note": "Covered by I-21: The root layout is AGENTS.md; create-venture writes it and naive dev writes a stub when it is missing",
+   "evidence": [
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs"
+   ],
+   "page": "get-started/install"
   },
   {
    "id": "L-4",
@@ -719,11 +761,14 @@
   {
    "id": "L-6",
    "chapter": "Chapter 3: Layouts and Pages",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "interface/package-routes.mjs",
+    "interface/writes.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/layouts"
+   "page": "get-started/routes-and-records",
+   "note": "A package's own route (validation, foundation, or packages/<name> for names that collide with record routes, such as product). read returns records with route, status and moves, plus progress, moves_now, waits, loading, unlocks; view, check and layout also work. Data, folder and raw packages report their items. These routes are resolved outside the generated route table, so ROUTES.md is unchanged."
   },
   {
    "id": "L-7",
@@ -746,20 +791,27 @@
   {
    "id": "L-9",
    "chapter": "Chapter 3: Layouts and Pages",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "interface/reads.mjs",
+    "interface/writes.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/layouts"
+   "page": "get-started/layouts",
+   "note": "Item reads and layouts carry params. The AGENTS.md files in the item's own file folders join the chain (accounts/ada/AGENTS.md for purpose/account/ada), and [id] in an instruction value becomes the id."
   },
   {
    "id": "L-10",
    "chapter": "Chapter 3: Layouts and Pages",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "interface/reads.mjs",
+    "interface/cli/mentura.mjs",
+    "interface/mcp/server.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/layouts"
+   "page": "get-started/routes-and-records",
+   "note": "input.where filters by a field or dot path, or by derived state, function, owner or phase. Values can be lists. The CLI takes --where k=v[,k=v] with | for alternatives. MCP mentura_read takes where. Lists report filtered.matched/of. A single record that does not match returns null with filtered_out. Dynamic rendering stays deferred to its chapter, as the ledger says."
   },
   {
    "id": "L-11",
@@ -1171,7 +1223,14 @@
   {
    "id": "S-18",
    "chapter": "Chapter 5: Server and Client Components",
-   "status": "not built"
+   "status": "built",
+   "note": "Covered by N-5: runStreaming (child process through the CLI, so gates apply) and batch report progress; the MCP server sends notifications/progress for mentura_run and mentura_read when _meta.progressToken is set; CL",
+   "evidence": [
+    "interface/context.mjs",
+    "interface/mcp/server.mjs",
+    "interface/context-test.mjs"
+   ],
+   "page": "get-started/prefetching-and-vitals"
   },
   {
    "id": "F-1",
@@ -1347,13 +1406,14 @@
   {
    "id": "M-3",
    "chapter": "Chapter 7: Mutating Data",
-   "status": "partial",
+   "status": "built",
    "evidence": [
+    "interface/writes.mjs",
     "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/writing-records"
+   "page": "get-started/writing-records",
+   "note": "Every write answers result.changed: the record's state before and after, the packages whose progress or state moved, the records that move now, what it unlocked (completed packages and their unlocks, decisions that stopped waiting) and the need-now rows it settled. It comes from snapshots taken before and after the write."
   },
   {
    "id": "M-4",
@@ -1413,13 +1473,14 @@
   {
    "id": "M-9",
    "chapter": "Chapter 7: Mutating Data",
-   "status": "partial",
+   "status": "built",
    "evidence": [
+    "interface/writes.mjs",
     "interface/router.mjs",
-    "interface/provenance.mjs",
-    "schema/decisions.mjs"
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/writing-records"
+   "page": "get-started/writing-records",
+   "note": "layout.actions lists every route in the folder with its declared actions, the ones this actor may take now, and how a write lands: record, draft (with the gate, decision or naive.config rule that holds it), or null when a decision locks it or the team plan refuses it."
   },
   {
    "id": "M-10",
@@ -1446,7 +1507,18 @@
   {
    "id": "M-12",
    "chapter": "Chapter 7: Mutating Data",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/triggers.mjs",
+    "schema/trigger.schema.json",
+    "schema/kit.schema.json",
+    "interface/provenance.mjs",
+    "platform/kits/validation-kickoff/kit.json",
+    "schema/upgrades-test.mjs",
+    "platform/kits/test.mjs"
+   ],
+   "page": "get-started/bringing-a-project-in",
+   "note": "Triggers come from naive.config.json and from kit automations, which need a package and wait until it is complete. They fire after each provenance write, only on events after the config was written, never on their own writes. They run as agent trigger-<id> through the router, and support once and triggers_off. The CLI is mentura triggers."
   },
   {
    "id": "M-13",
@@ -1489,7 +1561,13 @@
   {
    "id": "M-17",
    "chapter": "Chapter 7: Mutating Data",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/writes.mjs",
+    "interface/writes-test.mjs"
+   ],
+   "page": "get-started/writing-records",
+   "note": "result.next on every write. The order: accept the draft it made, the next required record in the package that moves now, review an agent-written record, a record the write freed, an optional record, the top need-now suggestion, then the top decision."
   },
   {
    "id": "M-18",
@@ -1714,7 +1792,13 @@
   {
    "id": "C-19",
    "chapter": "Chapter 8: Caching",
-   "status": "not built"
+   "status": "built",
+   "note": "Covered by F-7: ",
+   "evidence": [
+    "interface/router.mjs",
+    "knowledge/connectors/index.mjs"
+   ],
+   "page": "get-started/routes-and-records"
   },
   {
    "id": "V-1",
@@ -1812,7 +1896,16 @@
   {
    "id": "V-9",
    "chapter": "Chapter 9: Revalidating",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/stale.mjs",
+    "interface/router.mjs",
+    "platform/webhooks/server.mjs",
+    "platform/webhooks/test.mjs",
+    "schema/upgrades-test.mjs"
+   ],
+   "page": "get-started/bringing-a-project-in",
+   "note": "mentura notify marks stale the records derived from a changed source item (provenance derived_from) and the where-used children. Reads then carry a stale field until the record is written again. mentura stale lists what is stale. Signed HMAC webhooks on the platform call the same notify."
   },
   {
    "id": "E-1",
@@ -1846,31 +1939,62 @@
   {
    "id": "E-4",
    "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
+   "status": "built",
+   "note": "Covered by P-14: ",
+   "evidence": [
+    "schema/check-ventures.mjs",
+    "interface/router.mjs"
+   ],
+   "page": "get-started/routes-and-records"
   },
   {
    "id": "E-5",
    "chapter": "Chapter 10: Error Handling",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "interface/boundaries.mjs",
+    "interface/package-routes.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/errors"
+   "page": "get-started/errors",
+   "note": "boundaries() checks the venture level first (venture.json, structure, manifest), then each package in use, each contained. Output: reached package or venture, contained, proceeds. Reached by mentura venture check, mentura <package> check and node interface/boundaries.mjs check."
   },
   {
    "id": "E-6",
    "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/boundaries.mjs",
+    "interface/router.mjs",
+    "interface/writes.mjs",
+    "interface/writes-test.mjs"
+   ],
+   "page": "get-started/errors",
+   "note": "A list read parses each item on its own: a bad one goes into errors and the others are returned. A single bad record answers an error with its fix instead of a stack trace. Package boundaries also validate each record against its schema one by one."
   },
   {
    "id": "E-7",
    "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/triggers.mjs",
+    "schema/upgrades-test.mjs"
+   ],
+   "page": "get-started/bringing-a-project-in",
+   "note": "A failed or uncaught run is stored in .naive/triggers.json and raised as a fail-open decision trigger-<id>-failed-<n> with options Retry / Skip this event / Turn the trigger off. Deciding settles it. A runner crash is logged by the provenance hook and raised on the next run. An unreadable state file is moved aside and raised."
   },
   {
    "id": "E-8",
    "chapter": "Chapter 10: Error Handling",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/boundaries.mjs",
+    "interface/cli/guard.mjs",
+    "interface/router.mjs",
+    "interface/writes-test.mjs"
+   ],
+   "page": "get-started/errors",
+   "note": "A broken venture.json (does not parse, missing required fields, bad id or phase) answers with the problem (line and column where known), recovery steps and a minimal template. 'boundaries.mjs recover --confirm recover' rebuilds it and keeps the broken file in _private/. One broken venture no longer stops ventureDir/ventures for the others. A broken data model or manifest is caught by the CLI guard before any module loads, and by the call wrapper. Limit: the MCP server and the API import the router directly, so a data model broken at startup still fails at import there. Only the CLI has the guard."
   },
   {
    "id": "E-9",
@@ -1891,25 +2015,42 @@
   {
    "id": "Y-2",
    "chapter": "Chapter 11: CSS",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/brand.mjs",
+    "schema/glossary.schema.json",
+    "schema/check-brand.mjs",
+    "interface/router.mjs",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "Package glossaries live at glossary/<package>.json (record type glossary, knowledge layer). A term stays local unless export is true. glossary/terms shows what one package sees, and a route's layout carries its package's terms. The check fails when two packages export one term with different meanings, and warns when public content uses another package's local term. The file sits in glossary/ rather than in each package folder, so it cannot collide with the <pkg>/*.json collections (investors, money, customers)."
   },
   {
    "id": "Y-3",
    "chapter": "Chapter 11: CSS",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "schema/brand.mjs",
+    "schema/marketing-brand.schema.json",
+    "interface/router.mjs",
+    "interface/brand.mjs",
+    "schema/brand-test.mjs"
    ],
-   "page": "get-started/layouts"
+   "page": "get-started/brand-and-assets",
+   "note": "Brand tokens are in marketing/brand.json (marketing-brand, decision class experience-design). Every layout (CLI, MCP, API) carries the tone, voice rules, fonts and colors. marketing/brand/tokens gives any interface W3C design tokens, CSS custom properties and head links. marketing/voice and the brand check hold marketing content to the voice rules. One gap: the demo HTML board (interface/demo/board.mjs) does not apply a venture's brand CSS yet. Views get the brand only through the tokens route."
   },
   {
    "id": "Y-4",
    "chapter": "Chapter 11: CSS",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/router.mjs"
+    "schema/brand.mjs",
+    "schema/marketing-brand.schema.json",
+    "schema/brand-test.mjs"
    ],
-   "page": "get-started/layouts"
+   "page": "get-started/brand-and-assets",
+   "note": "design_systems entries in the brand are references: an http(s) link, a version and a license. The check fails an entry that is not a link. It also fails a public/ file tagged design_system whose license does not allow a copy."
   },
   {
    "id": "Y-5",
@@ -1933,17 +2074,42 @@
   {
    "id": "J-2",
    "chapter": "Chapter 12: Images",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/assets.mjs",
+    "schema/public-assets.schema.json",
+    "schema/check-assets.mjs",
+    "interface/brand.mjs",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "The public/assets.json register (public-assets) holds a source, license and credit for every file in public/. The check fails an unregistered file, a listed file that is missing, and an unknown license. mentura assets add registers files through the router, so each write is checked against the schema and logged in provenance."
   },
   {
    "id": "J-3",
    "chapter": "Chapter 12: Images",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/brand.mjs",
+    "platform/integrations/remote-image.mjs",
+    "schema/assets.mjs",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "mentura assets remote records a remote image as a link with a note in raw/sources/<id>/ (source.json plus text.md, immutable). A full copy in public/ fails the check unless its license allows a copy. The platform fetcher allows only hosts in remote_hosts, checks again after every redirect, refuses anything that is not an image, keeps the original private in raw/sources/<id>/original.* (gitignored), and copies only with --copy under a license that allows it. The test runs it against a local HTTP server. The allowlist is a field in public/assets.json (mentura assets hosts), not in knowledge/sources.json: a source there needs a store-contract connector, and that seemed the wrong shape."
   },
   {
    "id": "J-4",
    "chapter": "Chapter 12: Images",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/assets.mjs",
+    "interface/brand.mjs",
+    "schema/check-assets.mjs",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "Code reads facts from the bytes: type, width, height, ICO sizes, bytes and sha256, for PNG, GIF, JPEG, WebP, ICO, SVG, woff/woff2/ttf/otf and PDF. The check fails facts that differ from the file, so a guessed value fails. mentura assets fill and the public/assets/facts route supply them. Agent alt text stays pending until a person confirms it. The confirmation is a provenance confirm entry bound to a hash of the path and the exact text, so editing the text makes it pending again, and alt.by=person without that entry fails. A missing credit fails, and so does an image with no alt text unless it is marked decorative."
   },
   {
    "id": "J-5",
@@ -1953,12 +2119,25 @@
   {
    "id": "T-1",
    "chapter": "Chapter 13: Fonts",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/brand.mjs",
+    "schema/marketing-brand.schema.json",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "Typefaces are brand tokens with a license. A self-hosted face's files must be in public/, registered under the same license and be real font files, and the tokens CSS emits a local @font-face for them. A remote typeface fails the check (the reader's browser would make an outside request), and so does a typeface with no license."
   },
   {
    "id": "T-2",
    "chapter": "Chapter 13: Fonts",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "schema/brand.mjs",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets",
+   "note": "Typefaces are defined once. brand.fonts assigns them to roles everywhere, and scopes[].fonts assigns them under one route prefix only. Resolution follows the Y-5 rule (deeper scope over shallower over venture), with set_by saying which scope set each value. The CSS gives each scope a [data-naive-scope] selector."
   },
   {
    "id": "T-3",
@@ -1968,27 +2147,35 @@
   {
    "id": "O-1",
    "chapter": "Chapter 14: Metadata and OG images",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/provenance.mjs",
-    "schema/init-venture.mjs"
+    "interface/reads.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/routes-and-records",
+   "note": "Every record read has metadata.venture (identity from venture.json) and metadata.record (type, route, schema, form), plus the frontmatter of Markdown records or the title or name of JSON records."
   },
   {
    "id": "O-2",
    "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/reads.mjs",
+    "interface/writes-test.mjs"
+   ],
+   "page": "get-started/routes-and-records",
+   "note": "metadata.derived is computed by code: phase, function, owner (from venture.json functions, else the founder for a solo venture), package, state (confirmed, agent, draft, unlogged) and counts of top-level lists. Lists also get a count. by: code."
   },
   {
    "id": "O-3",
    "chapter": "Chapter 14: Metadata and OG images",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/provenance.mjs",
-    "schema/init-venture.mjs"
+    "interface/reads.mjs",
+    "interface/writes-test.mjs"
    ],
-   "page": "get-started/project-structure"
+   "page": "get-started/routes-and-records",
+   "note": "id, created, updated, by (person or agent, id, via), activity and writes come from the provenance log for every record and every list item. Without log entries they come from the file (from: file) with a note pointing to mentura baseline. Added to the read answer, never written into the record, so record schemas are untouched."
   },
   {
    "id": "O-4",
@@ -2018,7 +2205,14 @@
   {
    "id": "O-6",
    "chapter": "Chapter 14: Metadata and OG images",
-   "status": "not built"
+   "status": "built",
+   "note": "Covered by P-24: brand.marks lists the logo, icon, apple-icon and favicon, each a registered file in public/. The check enforces that an apple-icon is a 180x180 PNG, an icon is square, a favicon is an ICO, and every m",
+   "evidence": [
+    "schema/brand.mjs",
+    "schema/marketing-brand.schema.json",
+    "schema/brand-test.mjs"
+   ],
+   "page": "get-started/brand-and-assets"
   },
   {
    "id": "O-7",
@@ -2081,7 +2275,14 @@
   {
    "id": "H-5",
    "chapter": "Chapter 15: Route Handlers",
-   "status": "not built"
+   "status": "built",
+   "note": "Covered by O-7: cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisi",
+   "evidence": [
+    "schema/releases.mjs",
+    "interface/release-card.mjs",
+    "schema/releases-test.mjs"
+   ],
+   "page": "get-started/releases"
   },
   {
    "id": "H-6",
@@ -2210,13 +2411,18 @@
   {
    "id": "Z-4",
    "chapter": "Chapter 17: Deploying",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/cli/mentura.mjs",
-    "interface/mcp/server.mjs"
+    "interface/adapters.mjs",
+    "interface/adapters/claude-code.json",
+    "interface/adapters/codex.json",
+    "interface/adapters/cursor.json",
+    "platform/adapter.json",
+    "schema/adapter.schema.json",
+    "schema/upgrades-test.mjs"
    ],
-   "page": "get-started/typegen-and-mcp",
-   "note": "Mentura is the only adapter, and it is the same repository"
+   "page": "get-started/upgrading",
+   "note": "mentura adapt writes each harness's entry files and copies of the skills of open packages, and never overwrites a file a person wrote or changed. mentura adapters verify runs the framework's suite for a harness adapter, or for mentura spawns the platform's connector, webhook and kit tests. An upgrade refreshes the venture's adapters."
   },
   {
    "id": "Z-5",
@@ -2226,29 +2432,43 @@
   {
    "id": "U-1",
    "chapter": "Chapter 18: Upgrading",
-   "status": "partial",
+   "status": "built",
    "evidence": [
+    "schema/upgrades.mjs",
     "schema/upgrade-venture.mjs",
-    "interface/cli/naive.mjs"
+    "schema/naive-config.mjs",
+    "schema/upgrades-test.mjs"
    ],
    "page": "get-started/upgrading",
-   "note": "naive upgrade moves a venture onto the package layout; it does not update the framework itself"
+   "note": "naive upgrade runs every migration from the venture's pinned version (0.1.0 when it has no pin) up to the installed one. It dry-runs first, so a conflict aborts before anything moves. It records provenance, pins naive.config.json, writes .release/upgrade-<v>.json and is idempotent. --check changes nothing. --framework updates the installed checkout with git pull --ff-only."
   },
   {
    "id": "U-2",
    "chapter": "Chapter 18: Upgrading",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/upgrade-venture.mjs",
-    "interface/route-aliases.json"
+    "schema/upgrades.json",
+    "schema/upgrade-registry.schema.json",
+    "schema/migrations/package-layout.mjs",
+    "schema/migrations/kit-to-package.mjs",
+    "schema/upgrades-test.mjs"
    ],
    "page": "get-started/upgrading",
-   "note": "route aliases cover renamed folders; per-package schema migrations are not built"
+   "note": "Migrations are Naive's codemods. They are listed per version in a registry. kit-to-package rewrites decision unlock routes, team-plan role globs and where-used parents. A glob that spans moved routes is escalated, not rewritten."
   },
   {
    "id": "U-3",
    "chapter": "Chapter 18: Upgrading",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "platform/kits/agent-upgrade/kit.json",
+    "platform/kits/agent-upgrade/run.mjs",
+    "platform/kits/agent-upgrade/stand-in-agent.mjs",
+    "schema/upgrades.mjs",
+    "platform/kits/test.mjs"
+   ],
+   "page": "get-started/upgrading",
+   "note": "--agent works on a staged copy. Files the agent changed are found by hash and logged as agent writes. The framework's checks decide, and the upgrade lands only with --accept --confirm upgrade. Accept is refused when checks fail or the live venture has drifted. The default agent is claude -p; MENTURA_AGENT_CMD overrides it, and the tests and docs use the offline stand-in agent."
   },
   {
    "id": "U-4",
@@ -2266,17 +2486,28 @@
   {
    "id": "U-5",
    "chapter": "Chapter 18: Upgrading",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/upgrade-venture.mjs",
-    "interface/route-aliases.json"
+    "schema/upgrades.mjs",
+    "schema/packages.mjs",
+    "schema/upgrades.json",
+    "schema/upgrades-test.mjs"
    ],
-   "page": "get-started/upgrading"
+   "page": "get-started/upgrading",
+   "note": "--adopt pins a package with early:true, and packages() then opens it now. The experimental packages (legal, operations, relationships, counsel) need --canary. --stable is refused while one of them is adopted."
   },
   {
    "id": "U-6",
    "chapter": "Chapter 18: Upgrading",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "docs/upgrades/0.2.0.md",
+    "docs/upgrades/0.3.0.md",
+    "schema/upgrades.mjs",
+    "schema/upgrades-test.mjs"
+   ],
+   "page": "get-started/upgrading",
+   "note": "Each version has a guide with a 'By hand' section. --guide [v] prints one version's guide, or with no version every guide the next upgrade crosses. The agent-run upgrade gets the guides in its prompt."
   }
  ]
 }
