@@ -12,6 +12,8 @@
 //   mentura migrate --from <project> --venture <id|dir> [--apply]
 //                                                   alias of naive migrate: an agent rewrites a project as Naive records (EE-076)
 //   mentura typegen                                 alias of naive typegen (EE-073)
+//   mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [--answers <file>] [--speculate] [--stream]
+//                                                   model steps (use model, EE-073): schema/model-steps.mjs
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route
@@ -129,6 +131,16 @@ if (cmd === "upgrade" || cmd === "migrate") {
   const d = v && ventureDir(v, workspace);
   if (!d) usage();
   const p = spawnSync("node", [join(repo, "schema/upgrade-venture.mjs"), d], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
+// Model steps hook (use model, EE-073): mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [...].
+// The logic is schema/model-steps.mjs; this passes the venture folder and the other arguments through.
+if (cmd === "steps") {
+  const v = opt("venture"), d = v && ventureDir(v, workspace);
+  if (!d || !action) usage();
+  const pass = argv.slice(argv.indexOf("steps") + 1).filter((a, i, all) => !["--venture", "--workspace"].includes(a) && !["--venture", "--workspace"].includes(all[i - 1]));
+  const p = spawnSync("node", [join(repo, "schema/model-steps.mjs"), d, ...pass], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 

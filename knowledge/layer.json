@@ -21,7 +21,8 @@
     "knowledge-sources",
     "where-used",
     "freshness-profiles",
-    "freshness-log"
+    "freshness-log",
+    "judgment"
   ],
   "reads": [
     "venture",

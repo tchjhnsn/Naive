@@ -1244,6 +1244,29 @@
         "schema/examples/**/raw/sources/*/text.md"
       ],
       "note": "The text of a raw source. original.* stays out of git (EE-070)."
+    },
+    {
+      "id": "judgment",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/judgment.schema.json",
+      "paths": [
+        "instance/**/knowledge/judgments/*.json",
+        "schema/examples/**/knowledge/judgments/*.json"
+      ],
+      "refs": [
+        {
+          "field": "package",
+          "to": "(packages and kits)",
+          "checked_by": "schema/model-steps.mjs"
+        },
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": "schema/model-steps.mjs"
+        }
+      ],
+      "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (schema/model-steps.mjs)"
     }
   ],
   "ignore": [
