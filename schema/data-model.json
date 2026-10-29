@@ -1022,6 +1022,24 @@
       "note": "Venture packages (EE-067, EE-069): the assumed governance model; core packages by department (each record's one home, what it reads, priors per phase with conditions, what completion unlocks); handoff packages by receiver; record-level dependencies; the question matrix"
     },
     {
+      "id": "frame",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/frame.schema.json",
+      "form": "json",
+      "paths": [
+        "packages/*/frames/*.frame.json"
+      ],
+      "refs": [
+        {
+          "field": "emits.*.id",
+          "to": "decision",
+          "checked_by": "schema/frames-test.mjs"
+        }
+      ],
+      "note": "The decision library: one recurring venture problem as a shape (goal, hidden decisions, premises and the attacks on them, a freshness spec, reasoning), never an answer. schema/frames.mjs matches it to the founder's words, judges its premises against the venture and proposes its decisions, open"
+    },
+    {
       "id": "venture-package",
       "layer": "system",
       "level": "venture",

@@ -12,6 +12,8 @@
 //   naive mcp                                       serve the venture to an agent over MCP (stdio)
 //   naive setup [state|artifact|answer|point|confirm]  set the venture up: the state, an artifact of it, and
 //                                                   confirming the answers the model relayed (EE-083)
+//   naive frame "<the founder's words>"             match the words to a frame in the decision library, judge its
+//                                                   premises against the venture and propose its decisions, open
 //   naive typegen                                   write .naive/types/ from the route table and the MCP tools
 //   naive upgrade [<venture dir>] [--framework]     move a venture onto the next Naive layout; --framework first
 //                                                   updates the installed framework with the venture's package manager (I-29)
@@ -163,6 +165,12 @@ else if (cmd === "build" || cmd === "start") {
   const dir = rest[0] && !rest[0].startsWith("--") ? resolve(rest[0]) : (opt("venture") ? here() : findVenture());
   if (dir && rest.includes("--framework") && upgradeFramework(dir) !== 0) process.exit(1);
   process.exit(run("schema/upgrade-venture.mjs", dir ? [dir] : []));
+} else if (cmd === "frame") {
+  // The decision library (schema/frames.mjs): naive frame "<the founder's words>" runs the frame those words fit.
+  const sub = rest[0];
+  if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("schema/frames.mjs", rest));
+  const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
+  process.exit(run("schema/frames.mjs", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));

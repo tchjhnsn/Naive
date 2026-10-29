@@ -50,6 +50,12 @@ export const TOOLS = [
     system: { type: "string", description: "A system the catalog offers for that function" },
     address: { type: "string", description: "Where in that system, such as acme/app" },
     agent_id: { type: "string", description: "Your role in the team plan" } }, required: ["venture", "function", "system"] } },
+  // The decision library (schema/frames.mjs): a founder's problem matched to a frame, its premises judged, its decisions proposed.
+  { name: "mentura_frame", description: "When the founder states a problem in their own words (\"I need investors to scale but I don't want to give up control\"), match it to a frame in the decision library, judge the premises their sentence assumes against the venture's records, and propose the decisions hidden in it, open, with options. The result says which premises hold, whether the trade is false, real or a sequence, and the better question to ask. Never pick an option for the founder, and never name an instrument as the answer: options for how to do something come from a dated, cited lookup.", inputSchema: { type: "object", properties: { venture,
+    text: { type: "string", description: "The founder's words, verbatim" },
+    frame: { type: "string", description: "A frame id, when you already know it; otherwise the founder's words pick one" },
+    lookup: { type: "object", description: "Options a lookup found: { options: [{ option, source, as_of }] }; only dated, cited options within the frame's freshness are kept" },
+    agent_id: { type: "string", description: "Your role in the team plan" }, model: { type: "string" } } } },
   { name: "mentura_check", description: "Run the checks for one record of a venture.", inputSchema: { type: "object", properties: { venture, route }, required: ["venture", "route"] } },
   { name: "mentura_template", description: "The fill-in template for a record, where its kit has one.", inputSchema: { type: "object", properties: { route }, required: ["route"] } },
   { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/assess (what the problem's evidence is strong enough for), governance/payouts, knowledge/catalog (index every source the venture keeps records in), knowledge/search (find items in any of them). A result with needs_input lists what is missing: ask the person whether to fill it in or run as is, and only then call again with as_is.", inputSchema: { type: "object", properties: { venture, route, value: { type: ["number", "string"], description: "governance/payouts: a sale value; knowledge/search: the query" },
@@ -92,6 +98,7 @@ export async function handle(msg, notify = () => {}) {
         case "mentura_setup": { const m = await import("../../schema/setup.mjs"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
         case "mentura_setup_answer": r = await (await import("../../schema/setup.mjs")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
         case "mentura_setup_point": r = await (await import("../../schema/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id }); break;
+        case "mentura_frame": r = await (await import("../../schema/frames.mjs")).run(ventureDir(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client, model: a.model }); break;
         case "mentura_decisions": {
           r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
           if (r.ok && a.render?.length) r.result = { ...r.result, decisions: r.result.decisions.filter((d) => a.render.includes(d.render)) };
