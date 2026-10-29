@@ -1,5 +1,4 @@
 {
-  "kit": "operations-kit",
   "layer": "operations",
   "purpose": "Run the business (business operations): the team plan and hiring, handing work to people and agents (handoffs, with decision rights, done-criteria, attempt limits and run caps), and the tools each function uses, such as marketing (including the marketing website, EE-044), sales and research. How software or hardware gets built is MAD's, a separate product that reads these records (EE-038).",
   "skills": [
@@ -20,13 +19,18 @@
     "team-plan",
     "handoff",
     "department-catalog",
-    "department"
+    "department",
+    "marketing-matrix",
+    "site-presence",
+    "marketing-sitemap",
+    "marketing-content"
   ],
   "reads": [
     "agent-capability",
     "board",
     "decision",
     "decision-rights",
+    "icp",
     "integration",
     "ownership",
     "product",
@@ -43,10 +47,14 @@
     "schema/check-ready.mjs",
     "schema/run-handoff.mjs",
     "schema/check-execution.mjs",
-    "schema/check-departments.mjs"
+    "schema/check-departments.mjs",
+    "operations/marketing/site/presence.mjs",
+    "operations/marketing/site/plan.mjs",
+    "operations/marketing/check-public.mjs"
   ],
   "gaps": [
     "No run-handoff skill: the handoff contract is prose (operations/handoff-v2.md) beside three scripts in schema/ (check-ready, run-handoff, check-execution)",
     "Business functions (marketing, sales, finance) have no record types yet; only the team plan and handoffs do"
-  ]
+  ],
+  "name": "operations"
 }

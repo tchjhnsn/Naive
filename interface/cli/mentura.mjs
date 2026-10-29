@@ -6,11 +6,20 @@
 //   mentura ventures [--json]                       ventures in the workspace
 //   mentura init <dir> --id <id> [--phase <phase>] [--layers purpose,governance]
 //                                                   start a venture; --layers turns on only those
-//   mentura add <department> --venture <id> [--group]
-//                                                   import a department: list it and create its folders
+//   mentura add <function> --venture <id> [--group]
+//                                                   import a function (department is the alias for one release): list it and create its folders
+//   mentura migrate --venture <id>                  move the venture onto the package folder layout (EE-070)
+//   mentura typegen                                 alias of naive typegen (EE-073)
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route
+//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--confirm <decision>]
+//                                                   a person makes a decision: approves its wording or gives their own (EE-058)
+//   mentura propose --venture <id> --input <file.json> [--as <role>]
+//                                                   an agent proposes a decision; it stays open until a person decides
+//   mentura understand --venture <id> [--confirm ideas] [--note <corrections made>]
+//                                                   a person confirms Mentura read their ideas right (the map
+//                                                   and graph, after any corrections), before routing (EE-069)
 //   mentura confirm <statement> --venture <id> [--confirm <statement>]
 //                                                   a person confirms one foundation statement as theirs (EE-051)
 //   mentura <route> <action> --venture <id|path> [--input <file>|-] [--as person] [--value <n>] [--json]
@@ -34,12 +43,13 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
+import { approve, decisions, propose } from "../../schema/decisions.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
-async function typed(name, what) {
+async function typed(name, what, why = "This is a foundation statement: changing it changes the venture.") {
   if (opt("confirm") !== undefined) return opt("confirm") === name;
-  console.log(`${what}\nThis is a foundation statement: changing it changes the venture. Type ${name} to confirm.`);
+  console.log(`${what}\n${why} Type ${name} to confirm.`);
   if (!process.stdin.isTTY) { console.log(`(not at a terminal: pass --confirm ${name})`); return false; }
   const { createInterface } = await import("node:readline/promises");
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -80,10 +90,23 @@ if (cmd === "ventures") {
 }
 
 if (cmd === "add") {
-  // Imports one department into a venture (EE-047, EE-048): schema/add-department.mjs.
+  // Imports one function into a venture (EE-047, EE-048, EE-071). department is the alias for function for one release.
   const v = opt("venture");
   if (!action || !v) usage();
   const p = spawnSync("node", [join(repo, "schema/add-department.mjs"), ventureDir(v, workspace), action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
+if (cmd === "typegen") {
+  const p = spawnSync("node", [join(repo, "interface/cli/naive.mjs"), "typegen"], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
+if (cmd === "migrate") {
+  const v = opt("venture");
+  const d = v && ventureDir(v, workspace);
+  if (!d) usage();
+  const p = spawnSync("node", [join(repo, "schema/migrate-venture.mjs"), d], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -113,13 +136,53 @@ if (cmd === "accept") {
     const now = existsSync(join(d.dir, d.file)) ? JSON.parse(readFileSync(join(d.dir, d.file), "utf8")) : {};
     const next = JSON.parse(readFileSync(draft, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
-    if (!(await typed(d.route, `Accepting ${d.route} changes these foundation statements:\n${diff}`))) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
+    const names = new Set([d.route, rt]);
+    const confirmed = opt("confirm") !== undefined ? names.has(opt("confirm")) : await typed(d.route, `Accepting ${d.route} changes these foundation statements:\n${diff}`);
+    if (!confirmed) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
   }
   const w = await call({ venture, route: d.route, action: "write", input: JSON.parse(readFileSync(draft, "utf8")), actor: "person", workspace, via: "cli",
     provenance: { activity: "accept", derived_from: [d.draft], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
   rmSync(draft);
   out(`accepted: ${w.result.written}`);
+  process.exit(0);
+}
+
+if (cmd === "decide") {
+  // A person makes a decision (EE-058): approves the drafted wording, or gives their own with
+  // --answer. Typing the decision's id confirms it. Provenance records who, when and in which phase.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const d = decisions(dir).decisions.find((x) => x.id === id);
+  if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+  if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
+  const r = approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "propose") {
+  // An agent proposes a decision from a JSON file; it stays open until a person decides it.
+  const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
+  if (!dir || !opt("input")) usage();
+  const r = propose(dir, JSON.parse(readFileSync(resolve(opt("input")), "utf8")), { agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID, via: "cli" });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "understand") {
+  // The Understand gate (EE-069): the founder has looked over the map and the graph, corrected what
+  // Mentura got wrong, and confirms the understanding before the ideas are routed.
+  const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const hits = ["purpose/ideas/map.mdx", "purpose/ideas/graph.json"].filter((f) => existsSync(join(dir, f)));
+  if (!hits.length) { console.error(`${venture} has no idea map yet: map the idea dump first (purpose/ideas)`); process.exit(1); }
+  if (!(await typed("ideas", `Confirming Mentura's understanding of your ideas: ${hits.join(", ")}`, "Your ideas are routed to their records from this understanding."))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
+  for (const f of hits) record(dir, { entity: f, route: f.endsWith(".mdx") ? "purpose/ideas" : "purpose/ideas/graph", activity: "confirm", statement: "ideas", agent: agentFromEnv("person", "cli"), note: opt("note") });
+  out("confirmed: ideas");
   process.exit(0);
 }
 

@@ -360,7 +360,7 @@
     {
       "id": "EE-033",
       "date": "2026-10-27",
-      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI).",
+      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI). See EE-080.",
       "why": "The owner wants MDX preferred over Markdown and asked for a convention for when to use MDX versus JSON or other formats. Generated pages in MDX render the repository's data at build time instead of being copied, so they cannot go stale.",
       "status": "in-force",
       "related": [
@@ -372,7 +372,7 @@
     {
       "id": "EE-034",
       "date": "2026-10-27",
-      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props.",
+      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props. See EE-080.",
       "why": "The owner chose Nextra's documentation starter for the developer docs, on the latest Next.js, and asked whether the site belongs in a separate repo; the starter kit itself pins Next.js 13 and the Pages Router, which Nextra 4 no longer supports.",
       "status": "in-force",
       "related": [
@@ -543,6 +543,318 @@
       "related": [
         "EE-014",
         "EE-051"
+      ]
+    },
+    {
+      "id": "EE-053",
+      "date": "2026-10-28",
+      "decision": "Alignment is its own record (purpose/alignment.json, schema/alignment.schema.json): the principles the venture's products and agents must keep, each with a source and the check that holds it. It is gated and a foundation statement under whether, replacing must-not in the frame; venture core.must_not stays as a one-line summary.",
+      "why": "Torian, 2026-10-28: must-not was describing how the framework and platform behave, which is alignment, and alignment could be much longer than one line. He chose a new alignment record on a decision card.",
+      "status": "proposed",
+      "related": [
+        "EE-051",
+        "EE-052"
+      ]
+    },
+    {
+      "id": "EE-054",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-052",
+        "EE-053",
+        "EE-028"
+      ],
+      "decision": "Decisions are a core file type. A decision lives in a *.decision.json file beside the record it decides (file-based routing); the EE/D ledger stays the append-only history. Each decision has a boundary: fail closed or fail open. The venture root and the strategic foundation fail closed; products fail open; any other decision inherits its parent's boundary and may override it. Under an open fail-closed parent, child decisions wait and agents only draft. When a parent changes, its children are marked stale and shown to the owner again. A workspace that is a product without a venture fails open. One decisions route renders every open decision as a matrix of layer by phase, with parent links.",
+      "why": "Torian, 2026-10-28: decisions across a venture's layers affect each other like a matrix, some have parent-child links that need fail-closed or fail-open behavior, and a venture (fail closed) is not a product (fail open). He chose every recommended option in the Decision Docket (file beside what it decides; boundaries inherited; children wait and agents draft; mark children stale and show them; product-only fails open)."
+    },
+    {
+      "id": "EE-055",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054"
+      ],
+      "decision": "Compliance scope: record and connect. Naive records which compliance frameworks apply to a venture and when; Mentura connects vendors such as Drata or Vanta. Neither audits nor monitors controls itself.",
+      "why": "Torian chose \"Record and connect\" in the Decision Docket, 2026-10-28. This settles the discovery exit criterion scope-decided for compliance."
+    },
+    {
+      "id": "EE-056",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054"
+      ],
+      "decision": "Forecasts (the whether statement's weather-like outlook) use both our own priors and optional integrations, such as letsfrank.ai. In a later phase we lean toward building our own forecasting agent.",
+      "why": "Torian, Decision Docket 2026-10-28: both, plus optional integrations or our own agent, leaning toward our own agent later \"because we would better be able to determine its behavior and features.\""
+    },
+    {
+      "id": "EE-057",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-028",
+        "EE-052"
+      ],
+      "decision": "Firmness depends on the phase. In Discovery, a confirmed foundation statement, core promises included, is still a working draft, reviewed at the Discovery exit gate and tested again at each later phase. Every decision names the phase it is needed in (needed_in); a decision needed in a later phase than the venture's is speculative and is held back, the way React renders a component only when it is needed.",
+      "why": "Torian, Decision Docket 2026-10-28: core promises should stay drafts until the venture has truly exited Discovery; a venture goes through its own hero's journey; decide for the current phase and only speculate on later ones; knowing when a decision must be made and when it can wait is the signal-to-noise ratio. He also asked for a set of per-phase guidelines and the study of earlier startups (not yet built)."
+    },
+    {
+      "id": "EE-058",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-057",
+        "EE-032"
+      ],
+      "decision": "Every decision record carries its provenance, its outcomes and the activities it unlocks. Provenance: who drafted the wording (an agent or a person), who approved it or changed it, when, and the venture's phase at that moment, plus the authority delegated to whoever decided. A decision whose wording an agent drafted counts as decided only once a person approves or changes it. Outcomes are what the decision is expected to achieve, each projected and later recorded as what actually happened; they are the evaluations a decision is tested against. Unlocks are the activities the decision opens that were closed before it, for which people or agents. Later, Mentura offers decision analytics from this record, as Vercel offers observability: how often kinds of decisions survive a given scale, how many and what kinds of decisions successful teams make over a period, who and which departments make impactful decisions, and their outcomes, projected against actual.",
+      "why": "Torian, 2026-10-28: an agent may draft the phrasing of a decision he made, which he approves or alters, so provenance should say who approved it, when, and in which phase; this matters most in multi-tenant ventures where founders delegate authority. Outcomes need provenance too, projected versus actual, and are something decisions can be tested against. From a talk he heard the same day, investor Gordon Doughtery asks what outcomes a founder expects from the money, not the activities (hiring, inventory), an example of how a role evaluates decisions. Activities stay useful as what a decision unlocks: some activities are closed to particular agents or people until a decision is made, a boundary for agent harnesses, and delegation lets founders hand decisions to agents and people while keeping outcomes high. Analytics and the research on outcome types are not built."
+    },
+    {
+      "id": "EE-059",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-058",
+        "EE-041",
+        "EE-047"
+      ],
+      "decision": "Discovery starts from the founder's idea dump, not a prompt. The dump is every idea the founder has about the venture, kept verbatim in purpose/ideas/dump.md. Naive splits it into ideas and a tagger (Jev through the platform when a TypeSafe key is set, else the founder's own agent with the same vocabulary) tags each idea with Naive's conventions only: the departments it is mainly about (EE-047), the records it feeds, and whether the founder's product already exists. The result is purpose/ideas/map.mdx, one <Idea> per idea with its text unchanged, drawn as a mind map (React Flow) so the founder sees the whole venture on one canvas, where their ideas cluster and what they never mention. Naive's own product questions come first and fail closed: does a product already exist, then the core product, then the flagship, each waiting on the one before, and agents may not write product cards until the first is answered. A decision about a foundation record waits on that record's open statement, not the whole foundation, and every open decision says how a person settles it. On the platform side, Firecrawl replaces Apify for market research, and LangSmith receives each harness run as a trace with Naive's evals as feedback.",
+      "why": "Torian, 2026-10-28 18:36Z: the demo is not a founder giving Naive a one-line idea; it is the idea dump, which is not a prompt but a raw dump of all the ideas related to the venture. Map each idea to Naive's conventions and the parts of the business; the mind map shows the founder's strengths and weaknesses and lets them see the entire vision on a single canvas. One of the key questions is whether a product exists already, asked with our product conventions, as a strategic foundation for products with a fail-closed method: a core product and flagship products. He named Jev to read the dump and assign tags, .mdx as the format and React Flow for the canvas, and chose Firecrawl over Apify."
+    },
+    {
+      "id": "EE-060",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-059",
+        "EE-054",
+        "EE-028"
+      ],
+      "decision": "Ideas move through a pipeline: idea dump, idea map, idea graph, roadmap. The dump and the map stay loose and carry no decisions. The idea graph is the first structured form, a Merkle DAG at purpose/ideas/graph.json: an idea builds on the ideas that must be worked out before it (judged by Jev per ordered pair, else by Naive's record order), and its hash covers its text and the hashes of what it builds on. Each idea gets a signal (version 0.x: what the phase needs of the records it feeds, what builds on it, how concrete it is, how much of the dump circles it). Ideas tied by dependencies form a lane that moves in order (synchronous); a lane tied to nothing moves on its own (asynchronous), beside the others. The graph is laid out left to right by dependency and top down by signal. Decisions carry the same distinction: fail-closed decisions are on the ordered path, fail-open ones can move on their own. Naive asks a team question in Discovery, failing open: solo, cofounders or looking. A founding team gets the founder-agreement kit beside validation at a lower priority (0.6 against the problem's 0.9), a founder looking for cofounders gets it early, and a solo founder is not handed it. Kits render as the venture needs them, as React renders components.",
+      "why": "Torian, 2026-10-28 19:15Z: an idea dump and a mind map are meant to be loose, with no decisions yet; convert the mind map into a very structured format (a Merkle DAG, then left to right and top down by highest-signal ideas), then into other documents such as roadmaps with timelines, as a pipeline. SAD was his first iteration of a pipeline from idea to shipping with an iterative loop. A venture has many ideas; some develop asynchronously and others need synchronous order, and telling them apart should be a key feature. Ask about teams: founding agreements may be on a founding team's mind in Discovery; they rank below validating the idea but can move asynchronously, and Naive will create kits for founding agreements that render as needed."
+    },
+    {
+      "id": "EE-061",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-060",
+        "EE-059",
+        "EE-057",
+        "EE-054"
+      ],
+      "decision": "After the idea graph, Naive routes each tagged idea to the records it feeds: the framework's destinations (purpose/frameworks/idea-map/conventions.json records, each with a title, a route and the decisions it settles). A destination's stage comes from the decision matrix and the records on disk: routed (ideas, nothing drafted: an agent drafts it), drafted (an agent's draft or wording awaits the founder), yours (a decision only a person can make), waiting (held), done. Each destination carries one next step from the framework, and moves in order or on its own. The decision docket uses the same stages, and every decision traces to the ideas it comes from (a new `ideas` field on decision records, or the i-NN ids it cites); agent proposals must cite ideas (eval decisions_traced). Both render as Kanban boards in plain columns at /kanban; React Flow stays for the map and the graph. Guidelines for parsing the dump, building the graph and routing live in conventions.json `guidelines` (sent to Jev as state.guidelines) and the idea-map README. Time-oriented features (roadmaps) are deferred past the hackathon.",
+      "why": "Torian, 2026-10-28 19:36Z: each step needs a payoff. The dump's is seeing the ideas on a mind map, the graph's is seeing structure applied to them, and the next must turn that structure into executable next steps by routing ideas to their destinations in the framework, visualised as Kanban boards, with the decision docket as a Kanban board too. Hold off on time-oriented features for the deadline."
+    },
+    {
+      "id": "EE-062",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-044",
+        "EE-045",
+        "EE-041",
+        "EE-025",
+        "EE-061"
+      ],
+      "decision": "For the demo there are no connections: a founder pastes a link to their website and Naive reads it. The platform reads the home page and the pages it links to (Firecrawl when keyed, plain fetch otherwise; platform/integrations/site.mjs). Jev judges which pages state which item. Naive scores site presence against a marketing matrix (operations/marketing/site/matrix.json, version 0.x, unevaluated): six audiences (customers, investors, candidates, contributors, partners, press) weighted by the venture's facts (raising, hiring, inviting contributors) and its ICPs; fifteen public items (publish true by default), each tied to the record it comes from; each item's need is its strongest weighted audience, and need sets the prominence it requires: on the home page, in the navigation, linked from the home page, or anywhere. Investor information counts only while the venture is raising. Score 0 to 100, per audience, with what to fix first. New records marketing-matrix (method) and site-presence (venture, schema/site-presence.schema.json); router command operations/marketing/site; board page /site with a paste-a-link form.",
+      "why": "Torian, 2026-10-28 19:46Z: no connections for the demo, but participants should be able to drop in a link to their marketing site or product, have it scraped for marketing-related records, and get a score for how present the public records are. Where information belongs depends on startup type, product and industry; route ICPs into a marketing matrix that decides which public materials are needed, what each ICP wants to know, how important each ICP is, and so how prominent information is in the sitemap. If investors are not an ICP, investor information is not prominent. Still to do: research best practices, skills, and kits for organizing marketing content."
+    },
+    {
+      "id": "EE-063",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-062",
+        "EE-045"
+      ],
+      "decision": "What customers look for on a site depends on who they are, and every rating shows why. The marketing matrix gains customer types (consumers, small-business owners, teams inside companies, enterprise buyers, developers, regulated professionals, creators, public sector), each with how much each item matters to it and the reason, a claim to test rather than a finding. The ICP comes from the founder's own sentence, the venture's ICP record, or failing both the home page (marked inferred). Jev places it into types (a type counts at 0.25 or more and within 0.6 of the strongest, since Jev answers 'mainly' conservatively), and the customer's need for an item is the strongest of its types'. Every item carries its evidence: each audience's weight, the item's importance to it and why. Site presence is shown as the site's sitemap (React Flow): the home page, the pages in its navigation, the pages linked elsewhere (the footer), and each page's own routes, each read route rated on the items that belong there, with ghost routes for pages the venture's priorities call for and the site lacks. Clicking a route shows what belongs there, what is missing and why.",
+      "why": "Torian, 2026-10-28 20:02Z: 'who is behind it' is not something customers of every product type care about; it depends on the customer. The rating must give evidence for who the ICP is, what they prefer, and why we believe they look for this information. Present site presence as the layout of the sitemap, with a rating for each route, shown visually as its structure."
+    },
+    {
+      "id": "EE-064",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-063",
+        "EE-062",
+        "EE-025",
+        "EE-021",
+        "EE-051"
+      ],
+      "decision": "Site presence runs in reverse: a marketing agent plans the public site from the venture's records (operations/marketing/site/plan.mjs, route operations/marketing/sitemap, record marketing-sitemap). The product decides the audience: a product's offered_to names the ICP profiles it is offered to (who buys or adopts it), and serves names those it reaches through them; an ICP profile may be reached_through another (a channel partner in B2B2C) and carries its buying-center roles (Webster and Wind 1972: user, influencer, decider, buyer, gatekeeper; initiator, Bonoma 1982). In a partner-led venture the partners are the site's customers. Services need no new product type: offering already includes service beside product, platform, content and marketplace, so the product card covers it and drives the ICPs and the site. Pages follow topics, not audiences (audience-based navigation tends to hurt usability, NN/g), except that an audience with content of its own (candidates, investors, contributors, press) gets its own page, and only while it is a priority; otherwise the plan says when it would appear. Each page lists its sections in order of need with the MDX component, the audiences and why, any condition, the internal record it draws on and the public variant to write. Records have variants: marketing content (operations/marketing/content/**/*.mdx, record marketing-content) is always a public variant of a named internal record, written by a marketing agent in its own words; the public gate (operations/marketing/check-public.mjs) requires variant_of, audience, publish and, when published, a person's approval (EE-025), and blocks any run of ten words copied from the internal record except public fields. This keeps internal content out of public pages and generic text off them.",
+      "why": "Torian, 2026-10-28 20:25Z: the site presence tool used in reverse is what marketing agents use to decide what is displayed where, how and when, based on who, by reading the venture's records. ICPs should be categorized by venture type and by who the product is offered to (a service company whose primary audience is partners with customers of their own markets to the partners). Consider services as a product type, so the product determines the ICPs and the marketing pages. Marketing records are variations of internal records: a gate that prevents internal content leaking into public publishing and reduces AI slop, since marketing agents produce unique .mdx files according to skills. Research basis: buying center roles (Webster and Wind 1972; Bonoma 1982), B2B2C, NN/g on audience-based navigation."
+    },
+    {
+      "id": "EE-065",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-044",
+        "EE-064",
+        "EE-038"
+      ],
+      "decision": "Amends EE-044 (Torian withdrew the part that made marketing responsible for web design). Marketing designs the elements a site uses: the sitemap, the content variants, the MDX components and their order, and the brand assets including the brand voice. Engineering implements the web design and builds the site. The marketing package is the handoff between the business side and the engineering side: the sitemap (marketing-sitemap), the public content variants (marketing-content) and the brand, handed to an engineering agent that builds from it and does not decide what goes where. Planning the sitemap and designing the site are separate agents. 'Team' here means record conventions: how files and folders are organized and routed; agents live in those folders and are triggered by commands.",
+      "why": "Torian, 2026-10-28 20:25Z: 'I want to redact that decision and say that the marketing team is designed for certain elements that are utilized within the web design. However, the engineering team should still be responsible for the actual implementation.' The sitemap is a marketing record handed to engineering; separate agents develop the sitemap and design the website; marketing records hold the brand assets including the voice; the marketing kit is a handoff between the business and engineering sides."
+    },
+    {
+      "id": "EE-066",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-026",
+        "EE-065"
+      ],
+      "decision": "Rename kit to package, one to one with Next.js and npm packages, and define a complete package as one ready to hand to an agent for its engineering or operational implementation. Held until after the AITX hackathon (submissions close 2026-10-29 22:00Z): the rename touches every layer's kit.json, the data model, the checks, the router and the docs, and is not worth the risk the night before submission.",
+      "why": "Torian, 2026-10-28 20:25Z: 'We could possibly change the name to package. That way it is a one-to-one comparison with Next.js. A complete package would be a package that is ready to be handed off to an agent for its engineering implementations or its operational implementations.' Ontology already glosses kit as a package (EE-026)."
+    },
+    {
+      "id": "EE-067",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-028",
+        "EE-061",
+        "EE-064",
+        "EE-065",
+        "EE-066"
+      ],
+      "decision": "The pipeline's end outcome is the venture package: every business document a venture needs now, grouped into packages by receiver (strategic foundation, validation, marketing, investor, cofounder and team, partner, ownership and governance, operations). Which packages fit depends on the phase and the venture's situation: priors per phase with conditions (the need-now form), and a question matrix per phase that a reasoning model (Jev, or the founder's agent) answers only where the records are silent, leaving the rest open for the founder. A package is ready to hand off when a person has confirmed every required record. Agents never come in a package; an agent that works a package is a package enhancement. The hackathon demo includes routing (each record shows where the founder's ideas for it stand and the step that moves it) and the harness agent's passes. Venture packages are the founder-facing deliverable and are distinct from kits (a layer's records, skills and checks); if EE-066 renames kits to packages, the two names must be reconciled first.",
+      "why": "Torian, 2026-10-28 20:43Z: 'In the end, I believe someone should be able to walk away with a full venture package for all of the business related documents for their venture. For the demo, we will include routing. However, for naive, agents will not come included in the packages. That is a package enhancement.' 20:45Z: 'we should definitely discuss what kits slash packages are necessary at each phase of a business's development... dependent on the type of venture. We could include the questions matrix for each phase that a reasoning model would interact with to determine what packages are the best fit.' Packages, priors and questions are ours and unevaluated (version 0.1.0)."
+    },
+    {
+      "id": "EE-068",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-062",
+        "EE-063"
+      ],
+      "decision": "Site presence reads the ICP from the site, never from a box the founder fills in: what the site says outright about who it is for (built for, trusted by, used by...) first, else what its opening implies, marked as inferred. The ICP the venture's records state is kept beside it, unscored, for a later clarity score that compares who the founder says the customers are with who the site seems to be for.",
+      "why": "Torian, 2026-10-28 20:43Z: 'we shouldn't have that section for the user to enter their ICPs. We should be able to find their ICPs on their site... a tool for users to evaluate their websites based off who they say their ICPs are versus what their ICPs seem to be... some sort of clarity rating or clarity score... or we can wait until later.' The clarity score waits."
+    },
+    {
+      "id": "EE-069",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-047",
+        "EE-060",
+        "EE-061",
+        "EE-067",
+        "EE-068"
+      ],
+      "decision": "The founder's pipeline is seven stages by what the founder does: capture, understand, route, decide, write, confirm, package. Understand is a gate: the founder confirms (and first corrects) Mentura's reading of their ideas before routing. Route shows the packages taking shape and what can move on its own. The venture package is the venture's business source of truth, not an export: the records in place, versioned (a new version when a package completes or the phase changes), growing as work lands in it. Packages split two ways: core packages by department, where each record has one home and other packages read it; handoff packages by receiver, snapshots of core packages. A package is complete when a person has confirmed its required records and every record it reads; completion opens MAD's automation tier for the work that depends on it, per package. Inside a package a record moves on its own once what it reads first is confirmed, and waits otherwise. Naive assumes one governance model: a solo founder or small founding team who decide, confirm and do everything, engineering included, in Discovery and Validation. Packages that matter only under other models or later phases (legal and governance, operations, relationships, the counsel handoff) are kept and marked not modeled. The sitemap is a marketing record, not a stage. Amends EE-067.",
+      "why": "Torian, 2026-10-28 21:07Z: 'A sitemap is an element of the marketing files. It is not a completion gate within the pipeline.' 21:18Z: the understand stage is where the founder confirms their ideas are captured correctly before routing; route needs visual progress feedback toward 100% of a package; 'A package is a gate between idea and automation, or operations'; the package is the source of truth for the business side, versioned, likely in git, built on over time. 21:23Z: gates per package; routing determines what moves asynchronously. 21:35Z: 'how packages are split is actually dependent on the governance model... start out with very small teams of solo founders in mind first... the framework in its current iteration is hyper specific to ventures that are still in those first two phases.' He agreed with the inventory doc https://claude.ai/artifact/Na3zCgYrxorBaDQMeHAmib (21:32Z)."
+    },
+    {
+      "id": "EE-070",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-032",
+        "EE-037",
+        "EE-041",
+        "EE-066",
+        "EE-069"
+      ],
+      "decision": "A venture's folders are its packages, the way Next.js documents a project structure (structure doc https://claude.ai/artifact/Jh4pQmq1ZtgeukjP2EwGs8). Top level: venture.json, raw/ (the founder's own words, one file per capture, and founder-supplied sources: blogs, articles, podcasts; immutable, LLM Wiki style), ideas/ (the map compiled from raw, citing raw ids; input, not package progress), one folder per core package (foundation, validation, product/[id], marketing, finance, people), data packages by subject (customers, investors, money: [id].json master data plus append-only _streams/ activity data, never complete, gated by coverage and freshness, pointers and summaries when a CRM, Ramp or Mercury is the system of record, sensitive streams out of git), decisions/ (one docket), evidence/ (graded, cited), _private and .generated folders. Routes follow folders, so the first segment is the package (validation/pricing). Layers become a property of record types, not venture folders. Venture packages are defined per phase; later phases are off by default and a founder may turn one on early. Transcripts: on the platform Mentura fetches official ones first and transcribes only when none exist; source.json records the origin. The pipeline is AI-powered software in TypeSafe's System 1 sense: code owns the workflow and Choice, Noul and Score answer atomic judgments (Write drafts with a stronger model, then System 1 checks). Decide offers Noul decision help behind an off switch (nothing computed when off); Score plus code ranks the docket and what is missing. 'Package' is the only word: 'kit' is retired, including inside the framework (supersedes the EE-066 naming question). Migration happens after the hackathon deadline through route aliases.",
+      "why": "Torian, 2026-10-28 21:54Z: package structures must be defined like Next.js project structures, because routes depend on them. 22:04Z: master and activity data need their own packages ('Yes, this is perfect', 22:07Z). 22:10Z: keep a raw version of ideas, building on the LLM Wiki raw folder, with references such as blogs, articles and podcasts; 22:12Z: fetch official transcripts when possible, a platform job. 22:19Z: packages are determined by phase, a founder may adopt a more mature one early; the pipeline should be TypeSafe AI-powered software on System 1. 22:27Z: Noul for decision help with a switch to turn it off; Score to rank decisions and missing packages (confirmed 22:33Z). 22:34Z: agreed to all remaining recommendations, 'we can just use the term packages... packages will sound more familiar to most people.'"
+    },
+    {
+      "id": "EE-071",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-024",
+        "EE-026",
+        "EE-041",
+        "EE-047",
+        "EE-066",
+        "EE-069",
+        "EE-070"
+      ],
+      "decision": "A venture is Naive's project, one to one with a Next.js project. A package belongs to Naive: the open definition of part of a venture (record schemas, templates, deterministic checks, and at most one minimal skill on how to write its records), offline and naming no vendor, listed in venture.json the way package.json lists dependencies, at packages/<name>/package.json. A kit belongs to Mentura: an enhanced package that adds automations, agent workflows, richer skills and connectors, at platform/kits/<name>/kit.json; each kit names the one package it extends and never replaces it, so every kit runs on a package that works without it. A venture's folders split by function (like Next.js splitting by feature); a layer is a cross-cutting property of a record type, not a venture folder, so decisions, evidence and raw become packages and layers stay only as a classification and as how the framework repository is organized. Departments become functions, the standard business-function term: each function has one accountable owner, and one person may own several (a solo founder owns them all); a department is a function with its own team, a later-phase idea. Decision rights and the team plan point to function owners. The versioned deliverable is a release (v<n> of the venture), with handoff releases for investors and partners, replacing 'venture package'. Withdraws EE-066 and amends EE-069 and EE-070's naming. The code rename waits until after the hackathon deadline.",
+      "why": "Torian, 2026-10-28 22:47Z: kits may be a loaded definition that means more than packages. 22:53Z: 'Kits are actually better versions of packages... a kit could actually contain automations and agent workflows and skills, whereas a package would mainly just contain the schema... the term venture for naive is synonymous with the term project for next... Kits can actually belong to Mentura, whereas packages can belong to Naive.' 22:58Z: agreed to the recommendations (layers out of the venture tree, minimal skill per package, release, layout) and said departments are a conceptual tool: for a solo founder or flat org they are functions, people wear multiple hats, and every one still needs an owner. 23:08Z: agreed to functions with owners."
+    },
+    {
+      "id": "EE-072",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-041",
+        "EE-054",
+        "EE-058",
+        "EE-070",
+        "EE-071"
+      ],
+      "decision": "Decision analytics start in the framework as data: schema/decision-analytics.mjs and the route governance/analytics count a venture's decisions by function (the core package holding what each decides; foundation statements and venture.json decisions belong to Foundation) and by type (the record type or statement decided, or the decision's own type field), open against decided, whose words (approved, changed, own), who decided, in which phase, on which day, and outcomes met, partly, missed or pending. Ranking the highest-impact decisions over time (a System 1 Score of impact combined in code with outcomes), projected against actual outcomes, and how long decisions survive are listed as next, not computed. Views are not the framework's: a page that renders Naive data is the platform's (Mentura), and inside another harness (Claude Code, Codex, Cursor) it is a visualization skill; so no analytics view is built, and the demo board's pages are platform work. Vocabulary from the Next.js translation (chapters 1 and 2): npx create-venture, with naive init for an existing folder; the framework CLI is naive and mentura is kept for platform commands; venture/ is the optional source folder; public/ holds assets a release ships as-is; naive.config.json; instrumentation; gate for checks that run before a write (Next.js proxy); release card for how a shared release previews; access for what each role and agent may read and write (Next.js robots); folders Naive does not know are allowed in a venture and never routed or released. Which library plays React's part under Naive stays open.",
+      "why": "Torian, 2026-10-28 23:08Z and 23:11Z: analytics for judging decision outcomes, the highest-impact decisions over time, and how many decisions of what types each function has made; build it if there is time, or foreshadow it. 23:18Z: 'let's take all of your recommendations for the vocabulary, except on the one that you said was open. And yes, let's build that decision analytics.' 23:21Z: 'let's actually not build any views right now, because all of the views we've been creating are technically for the platform. If they're not for the platform, then they would be skills, specifically visualization skills for certain elements of Naive whenever rendering it inside of another harness like Claude Code, Codex, or Cursor.'"
+    },
+    {
+      "id": "EE-073",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-072"
+      ],
+      "decision": "Vocabulary and design additions from translating the Next.js Getting Started docs (chapters 3 to 18, docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md). Words: AGENTS.md is the file agents read in any folder of a venture and 'layout' is the concept (the router assembles the chain of AGENTS.md files from the root down plus what the package definition supplies); naive typegen; agent vitals (calls per task, context per call, time to a useful answer, time for a decision to be decided); context budget; \"use model\" for a package's declared model steps; private for a record or field that never reaches a model; uncertain for a judgment below its confidence threshold, routed to a person (a third outcome beside expected and uncaught errors); brand tokens; action for what a route supports; export for a release frozen as files; adapter for what runs Naive on a platform or harness (Mentura first). Design additions, built in this order after the deadline: the layout chain, use model, private and its check, uncertain, the gate's rules (fast, no model call, one per venture), the release as a static shell with live holes and freshness profiles, the judgment cache, header-first reads and agent vitals, naive typegen with a venture served over MCP, adapters, and agent-run upgrades with record migrations. Which library plays React's part stays open. Implementation is handed to Grokbot (handoff naive-packages-and-design-additions).",
+      "why": "Torian, 2026-10-28 23:30Z to 23:54Z: chose AGENTS.md over a new layout file ('agents.md is already a standard practice'), naive typegen, agent vitals and context budget, use model and private ('let's go with your recommendation and let's continue all the way through'), and at 23:54Z the remaining words ('let's go with your recommendation on naming'), then 'I'm going to have you make the pull request with instructions for Grokbot to implement it' (2026-10-29 00:01Z: 'Go.')."
+    },
+    {
+      "id": "EE-074",
+      "date": "2026-10-29",
+      "status": "proposed",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-072",
+        "EE-073"
+      ],
+      "decision": "Implement handoff naive-packages-and-design-additions. Venture packages live at packages/<name>/package.json with use_model. Layer manifests are <layer>/layer.json. A kit is Mentura only, at platform/kits/, and none are built. The instance venture uses the package folder layout, and old routes stay as aliases for one release. Data packages (customers, investors, money) and raw/ are scaffolded and checked. The layout action returns the AGENTS.md chain, nearest last, plus the package skill, template and gates. check-private refuses a private record or field named in a use_model step. A judgment below its threshold returns uncertain. The gate reads naive.config.json and package gates and does not call a model. naive typegen writes .naive/types/ and mentura typegen is the same command. Stage D, moving the board to platform/board, is not done. Items 6, 7, 8, 10 and 11 of the translation design additions (the release shell, the judgment cache, header-first reads and agent vitals, adapters, agent-run upgrades) are not started. Which library plays React part stays open.",
+      "why": "Torian, 2026-10-28, 7:17 PM CDT: go ahead and start now. Ignore that message that said wait until Thursday. That drops the not-before-2026-10-29 22:00Z wait. The same evening at 7:24 PM CDT he said to skip stage D entirely and not move the board. Implementation is the handoff naive-packages-and-design-additions, stacked on PR #23."
+    },
+    {
+      "id": "EE-075",
+      "date": "2026-10-29",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-057",
+        "EE-058",
+        "EE-070",
+        "EE-072"
+      ],
+      "decision": "The decision docket ranks across functions, not only within them (Torian, 2026-10-29): which function of the venture needs the founder's attention most at this moment, then its highest-priority decisions. schema/docket.mjs computes it in code: a decision's own weight (open, deadline, staleness, unlocks, foundation, a draft to approve, outcomes to test), its value (own weight plus the own weight of every decision it holds, transitively, so a fail-closed gate carries what waits behind it), a function's attention (its actionable decisions' values, highest first, each worth half the one before), and dominance (one decision worth more than every other function together). The harness settles the docket's next decision and records each step's docket in the trace; a replay settles the top decision again and again in a copy to show the leading function change through a day. Evidence that the ranking is right comes from invariant tests, an independent judge (Jev in LangSmith: was the chosen decision the best next step, was the leading function the right one) whose doubts go to the founder's review queue, and later recorded outcomes. Matching the founder's words stays a check but is no longer a gate: founders write with AI and let its words stand.",
+      "why": "The docket is the demo's emphasis and the product's non-obvious claim: that at every moment it names the right next step for the founder across the whole venture. Founders' words are important but obvious, and gating on them works against founders who write with AI."
+    },
+    {
+      "id": "EE-076",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-030"
+      ],
+      "decision": "naive init creates new ventures only (Torian, 2026-10-29): like create-next-app it refuses a directory that exists and is not empty, so it never writes over a founder's files. Existing work comes in by porting, not by restructuring in place (Torian, 02:40Z): the founder creates a new venture and points it at an existing venture or project, which is opened read-only; a language model reads it and proposes a port plan (each source file or section, the route or record it maps to, how it must be reshaped, and what is left behind); the founder settles the plan as decisions, function by function; things that should stay where they are (a code repo, a live document) become pointers in knowledge/sources.json, and every ported record carries derived_from. Like moving a web app between frameworks, this is expected to be hard, and is a later feature with its own verb (port), distinct from mentura migrate.",
+      "why": "Running init on an important existing venture could overwrite its profile, pillars and layer READMEs; the old guard only checked venture.json. A read-only source and a reviewed plan mean nothing of the founder's can be corrupted."
+    },
+    {
+      "id": "EE-080",
+      "date": "2026-10-28",
+      "decision": "The developer docs move from Nextra to Fumadocs in site/. This supersedes the Nextra sentence of EE-034. This venture's marketing pages live in the same app. They may read only the facts named in the Naive docs handoff (the problem statement and the segment), written by site/scripts/venture-facts.mjs to site/generated/venture-facts.json. site/scripts/data.mjs still reads no instance venture. This supersedes EE-034's \"never an instance venture\" for that one file only. test.mjs and the site CI job run npm run check:content instead of site/scripts/check-mdx.mjs. This supersedes that clause of EE-033. The zod 4.1.12 pin may be removed once Nextra is gone and the build passes. This supersedes the zod sentence of EE-034. These marketing pages are added to the existing docs app and do not start from a Vercel template. The template stays the default for a later standalone marketing site. This supersedes that clause of proposed EE-044.",
+      "why": "The handoff naive-docs-and-marketing-site carries this migration, and Torian accepts it by merging. Draft PR #19 uses EE-053 through EE-070 and is about to take EE-071. EE-049 stays unused. This entry is EE-080 so that pull request has room. A gap in the ledger is fine.",
+      "status": "proposed",
+      "related": [
+        "EE-033",
+        "EE-034",
+        "EE-044"
       ]
     }
   ]

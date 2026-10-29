@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stream.schema.json",
+  "title": "Data stream",
+  "description": "Declares one append-only stream under a data package's _streams/<id>/ (EE-070). sensitive true means the stream's events stay out of git and only summary.md is versioned.",
+  "type": "object",
+  "required": ["id", "sensitive"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "sensitive": { "type": "boolean" },
+    "summary": { "type": "string", "description": "What the versioned summary.md covers, when sensitive is true" }
+  }
+}

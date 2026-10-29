@@ -21,6 +21,11 @@ const steps = [
   ["nouns", "node", ["schema/check-nouns.mjs"]],
   ["integrations and interfaces", "node", ["schema/check-integrations.mjs"]],
   ["data model and kits", "node", ["schema/check-data-model.mjs"]],
+  ["data packages and raw", "node", ["schema/check-data-packages.mjs", "instance"]],
+  ["data packages and raw: examples", "node", ["schema/check-data-packages.mjs", "schema/examples/workspace"]],
+  ["data packages and raw (sensitive streams, originals, idea citations)", "node", ["schema/data-packages-test.mjs"]],
+  ["private records stay off the model", "node", ["schema/check-private.mjs", "instance"]],
+  ["design additions (use model, gate, uncertain)", "node", ["schema/design-additions-test.mjs"]],
   ["governance: instance", "node", ["schema/check-governance.mjs", "instance"]],
   ["governance: examples", "node", ["schema/check-governance.mjs", "schema/examples/workspace"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
@@ -45,12 +50,24 @@ const steps = [
   ["strategic foundation: instance", "node", ["schema/foundation.mjs", "instance"]],
   ["strategic foundation: examples", "node", ["schema/foundation.mjs", "schema/examples/workspace"]],
   ["foundation statement behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/features/strategic-foundation.feature"]],
+  ["decisions: instance", "node", ["schema/decisions.mjs", "instance"]],
+  ["decisions: examples", "node", ["schema/decisions.mjs", "schema/examples/workspace"]],
+  ["decision behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "governance/features/decisions.feature"]],
+  ["decision harness demo (an agent over MCP, paused until the founder decides)", "node", ["interface/demo/decision-harness.mjs", "--auto"]],
   ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "operations/handoffs"))).map((v) =>
     [`handoffs: ${v.slice(root.length)}`, "node", ["schema/check-execution.mjs", v]]),
   ["Product Anatomy runner", "node", ["purpose/frameworks/product-anatomy/test.mjs"]],
+  ["idea map (ideas verbatim, tags within the conventions)", "node", ["purpose/frameworks/idea-map/test.mjs"]],
+  ["site presence (weights, prominence, score)", "node", ["operations/marketing/site/test.mjs"]],
+  ["venture packages (fit by phase, question matrix, completeness)", "node", ["schema/packages-test.mjs"]],
+  ["decision analytics (by function and type, wording, outcomes)", "node", ["schema/decision-analytics-test.mjs"]],
+  ["decision docket across functions (value, attention, dominance, replay)", "node", ["schema/docket-test.mjs"]],
+  ["decision docket against the scenario evidence set (reports agreement; does not gate on it)", "node", ["schema/docket-eval.mjs"]],
+  ["site reader (links and text, offline)", "node", ["platform/integrations/site-test.mjs"]],
+  ["Rho money source (package, append-only, read-only client, offline)", "node", ["platform/integrations/rho-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
-  ...(existsSync(join(root, "site/node_modules")) ? [["site pages compile as MDX", "node", ["site/scripts/check-mdx.mjs"]]] : []),
+  ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
 
 // Generated files: the committed copy must equal a fresh render.

@@ -1,0 +1,47 @@
+{
+  "name": "counsel",
+  "title": "Counsel",
+  "kind": "handoff",
+  "purpose": "lawyers and accountants",
+  "for": "lawyers and accountants",
+  "from": [
+    "legal",
+    "people",
+    "finance"
+  ],
+  "base": {
+    "discovery": 0,
+    "validation": 0.05,
+    "beachhead": 0.3,
+    "scale": 0.6,
+    "platform": 0.7
+  },
+  "when": [
+    {
+      "if": "founders>=2",
+      "at_least": 0.6
+    },
+    {
+      "if": "funding:venture-capital",
+      "at_least": 0.8
+    },
+    {
+      "if": "regulated",
+      "at_least": 0.6
+    }
+  ],
+  "why": "Once there are co-owners, outside money or a regulated field",
+  "unlocks": [
+    "incorporation",
+    "agreements"
+  ],
+  "not_modeled": "Matters with co-owners, outside money or a regulated field; kept for later, not computed (EE-069).",
+  "gates": [
+    "every core package it draws on is complete"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}

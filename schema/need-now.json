@@ -278,9 +278,27 @@
         {
           "if": "founders>=2",
           "at_least": 1
+        },
+        {
+          "if": "team:cofounders",
+          "at_least": 1
+        },
+        {
+          "if": "team:cofounders",
+          "phase": "discovery",
+          "at_most": 0.6
+        },
+        {
+          "if": "founders>=2",
+          "phase": "discovery",
+          "at_most": 0.6
+        },
+        {
+          "if": "team:looking",
+          "at_least": 0.5
         }
       ],
-      "why": "Required once two or more founders share ownership"
+      "why": "Required once two or more founders share ownership. In Discovery a founding team works on it beside validation, at a lower priority than proving the problem, and a founder looking for cofounders gets the kit early (EE-060)"
     },
     "board": {
       "base": {
@@ -412,6 +430,172 @@
         "platform": 0.8
       },
       "why": "Who you serve is a foundation statement: say it early and keep it in front of you (EE-051)"
+    },
+    "alignment": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "How your products and agents must behave is a foundation statement; say it before you delegate to agents (EE-053)"
+    },
+    "anatomy-input": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "products>=2",
+          "at_least": 0.7
+        }
+      ],
+      "why": "Only when one product has parts that need their own roles, as Naive and Mentura do; follows the anatomy answers prior"
+    },
+    "decision-record": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "The decisions still owed, with what each depends on; useful once a venture has more than a handful of open questions (EE-054)"
+    },
+    "idea-dump": {
+      "base": {
+        "discovery": 0.9,
+        "validation": 0.6,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Everything the founder already thinks about the venture, before any framework asks; the cheapest way to start Discovery (EE-059)"
+    },
+    "idea-map": {
+      "base": {
+        "discovery": 0.8,
+        "validation": 0.6,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Shows where the founder's ideas cluster and what the dump never mentions, on one canvas (EE-059)"
+    },
+    "idea-graph": {
+      "base": {
+        "discovery": 0.8,
+        "validation": 0.6,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Which ideas to develop next, which must move in order and which can move on their own (EE-060)"
+    },
+    "site-presence": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.6,
+        "beachhead": 0.8,
+        "scale": 0.7,
+        "platform": 0.6
+      },
+      "why": "Whether the public site says what the audiences the venture courts now need to learn, once it has a site (EE-062)"
+    },
+    "marketing-sitemap": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.7,
+        "platform": 0.6
+      },
+      "why": "Which information the public site shows where, for whom and why, before engineering builds it (EE-064)"
+    },
+    "marketing-content": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.8,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "Public variants of the venture's records, gated before they are published (EE-064)"
+    },
+    "venture-package": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "What the founder walks away with; written at the end of each pipeline run, cheap to refresh"
+    },
+    "customer": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named customer exists. Never a completion gate (EE-070)."
+    },
+    "investor": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named investor exists. Never a completion gate (EE-070)."
+    },
+    "money-account": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named account of money exists. Never a completion gate (EE-070)."
+    },
+    "data-stream": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "An activity stream beside a master record. Held until that record exists (EE-070)."
+    },
+    "raw-source": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "A founder-supplied source. Held until the founder brings one in (EE-070)."
+    },
+    "raw-text": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "The text of a raw source, beside source.json (EE-070)."
     }
   }
 }

@@ -63,6 +63,22 @@ Feature: Strategic foundation
 
   Rule: Strategic foundation agree with each other
 
+    Scenario: Promised-to shows the ICP's short form and takes its status
+      Given the example venture "tandem"
+      And an agent writes an ICP for "tandem"
+      When the founder asks for the strategic foundation
+      Then "promised-to" is "draft"
+      And the founder accepts "purpose/icp" by typing "purpose/icp"
+      And the founder asks for the strategic foundation
+      And "promised-to" is "confirmed"
+      And "promised-to" shows "Owners of small service shops"
+
+    Scenario: A hand-written promised-to that differs from the ICP fails the check
+      Given the example venture "tandem"
+      And an ICP for "tandem" that names no problem form
+      When the strategic foundation are checked
+      Then the check fails naming "promised_to"
+
     Scenario: An ICP that names a problem form the problem record lacks fails the check
       Given the example venture "tandem"
       And an ICP for "tandem" that names the problem form "nope"

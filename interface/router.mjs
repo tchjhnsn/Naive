@@ -38,6 +38,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
+import { holding, locked } from "../schema/decisions.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
@@ -50,14 +51,19 @@ export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&
 export const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name.startsWith(".") ? [] : e.isDirectory() ? (existsSync(join(d, e.name, "venture.json")) || (d === base && e.name.startsWith("_")) ? [] : files(join(d, e.name), base)) : [join(d, e.name).slice(base.length + 1)]) : [];
 
+const skillsOf = (k) => (k.skills?.length ? k.skills : k.skill ? [k.skill] : []);
+
+/** Layer manifests and any package that owns record types. `kit` is the name, kept so the board still groups routes. */
 export function kits() {
   const model = load(join(repo, "schema/data-model.json"));
-  const paths = [...model.layers.map((l) => `${l}/kit.json`), "schema/kit.json"];
-  for (const l of model.layers) {
-    const k = join(repo, l, "kits");
-    if (existsSync(k)) for (const d of readdirSync(k)) if (existsSync(join(k, d, "kit.json"))) paths.push(`${l}/kits/${d}/kit.json`);
-  }
-  return paths.filter((p) => existsSync(join(repo, p))).map((p) => ({ path: p, ...load(join(repo, p)) }));
+  const paths = [...model.layers.map((l) => `${l}/layer.json`), "schema/layer.json"];
+  const pkgDir = join(repo, "packages");
+  if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`packages/${d}/package.json`);
+  return paths.filter((p) => existsSync(join(repo, p))).map((p) => {
+    const k = load(join(repo, p));
+    const name = k.name ?? k.kit;
+    return { path: p, ...k, name, kit: name };
+  }).filter((k) => k.path.endsWith("/layer.json") || (k.records ?? []).length);
 }
 
 const needNowPriors = () => load(join(repo, "schema/need-now.json"));
@@ -71,22 +77,24 @@ export function routes() {
   const out = [];
   for (const r of model.records.filter((x) => x.level === "venture" && x.id !== "venture")) {
     const k = owner.get(r.id);
-    const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1];
+    const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
     const short = sub && r.id.startsWith(`${sub}-`) ? r.id.slice(sub.length + 1) : r.id;
     const filesOf = r.paths.filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
-    // The template is <kit folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
-    const tdir = k ? join(dirname(k.path), "templates") : null;
+    // The template is the package's template dir, or <manifest folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
+    const tdir = k?.template_dir ?? (k && !k.path.startsWith("packages/") ? join(dirname(k.path), "templates") : null);
     const tname = tdir && existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
     const template = tname ? `${tdir}/${tname}` : null;
     const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && c.startsWith("schema/check-") && c !== "schema/check-data-model.mjs"))];
-    const base = [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/");
+    const legacy = [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/");
+    const base = PACKAGE_ROUTE[r.id] ?? legacy;
     const form = r.form ?? "json";
-    const writable = r.schema && form === "json" && filesOf.length === 1;
     const groups = PHASES.map((p) => p.id).filter((p) => (N.records[r.id]?.base?.[p] ?? 0) >= N.suggest).map((p) => `(${p})`);
-    const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.kit ?? null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
+    const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
       decision_class: r.decision_class ?? null, groups, note: r.note ?? "" };
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
-    const collection = filesOf.length === 1 && (filesOf[0].match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(filesOf[0]) && !filesOf[0].includes("**");
+    const collection = filesOf.length >= 1 && filesOf.every((p) => (p.match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(p) && !p.includes("**"));
+    const concrete = filesOf.every((f) => !f.includes("*"));
+    const writable = !!(r.schema && form === "json" && (collection || concrete));
     if (collection) {
       out.push({ ...common, route: base, files: filesOf, collection: "list", actions: ["read", "view", "layout", ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
       out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item",
@@ -98,9 +106,18 @@ export function routes() {
   }
   const cmd = (route, script, note, extra = {}) => ({ route, kind: "command", actions: ["run", "view", "layout"], script, groups: [], note, ...extra });
   out.push(
+    cmd("system/package", "schema/packages.mjs", "The venture package (EE-067, EE-069): the core packages open now and the handoffs, each record confirmed, to review or to write, what moves on its own and what waits, and what completion unlocks; --write renders the view and records a version. Assumes a solo founder or small founding team in Discovery and Validation; agents are a package enhancement"),
     cmd("system/need-now", "schema/need-now.mjs", "What the venture needs now, soon, or should hold back (EE-028)"),
     cmd("system/time-to-ready", "schema/time-to-ready.mjs", "Time to running, and to ready per layer and MAD tier"),
     cmd("purpose/validation/assess", "schema/assess-problem.mjs", "What the problem's evidence is strong enough for: each assumption labelled demonstrated, inferred, assumed, unknown or contradicted, the commitment it supports and the next test (EE-050). Asks first when the record is incomplete; input as_is runs it anyway", { as_is: true }),
+    cmd("governance/analytics", "schema/decision-analytics.mjs", "Decision analytics (EE-072): how many decisions of each type each function has made, open against decided, in whose words, in which phase, and their outcomes. Data only; a view is the platform's, or a visualization skill's", { actions: ["run", "layout"] }),
+    cmd("governance/decisions", "schema/decisions.mjs", "The decision matrix: every decision the venture owes by layer and phase, with its parent and boundary, and whether it renders now, waits, comes later, is stale or deferred (EE-054, EE-057)"),
+    cmd("operations/marketing/sitemap", "operations/marketing/site/plan.mjs", "Plan the public site from the venture's records: the product decides whom it is offered to, that decides the audiences, and each page gets its sections in order with the MDX component, need, audience, reason, condition, source record and the public variant to write (EE-064)"),
+    cmd("operations/marketing/public", "operations/marketing/check-public.mjs", "The public gate: every marketing content file is a variant of a named internal record, says its audience and whether it is published, has a person's approval when published, and copies no run of ten words from its internal record (EE-064)"),
+    cmd("operations/marketing/site", "operations/marketing/site/presence.mjs", "How present the venture's public records are on its marketing site: a score weighed by who the site must speak to now (raising, hiring, contributors, ICPs), and each item missing, not prominent enough or present, with where it belongs (EE-062). Read the site first with interface/harness/site.mjs"),
+    cmd("purpose/ideas/routes", "purpose/frameworks/idea-map/route.mjs", "Where each idea goes in the framework: the records it feeds, each destination's stage (routed, drafted, your decision, waiting, done), whether it moves in order or on its own, and the one step that moves it; plus the decision docket traced to the ideas (EE-061)"),
+    cmd("purpose/ideas/graph", "purpose/frameworks/idea-map/graph.mjs", "The idea graph: which ideas build on which, each idea's signal, the lanes that move in order and the ones that can move on their own, and the ideas to develop next (EE-060)"),
+    cmd("purpose/ideas", "purpose/frameworks/idea-map/ideamap.mjs", "The founder's idea dump mapped onto Naive's conventions: each idea verbatim with its departments, records and whether it exists, where the ideas cluster, what the dump never mentions, and what it says about whether a product exists (EE-059)"),
     cmd("purpose/foundation", "schema/foundation.mjs", "The venture's strategic foundation by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051)"),
     cmd("purpose/validation/score", "schema/check-validation.mjs", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
     cmd("governance/payouts", "schema/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
@@ -184,15 +201,39 @@ export function gateOf(r, dir) {
 // Robots: a team-plan role may list the routes it may read and write (globs over routes).
 function allowed(dir, actorId, action, route) {
   if (!actorId || !dir) return true;
-  const plan = join(dir, "operations/team-plan.json");
-  if (!existsSync(plan)) return true;
+  const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
+  if (!plan) return true;
   const role = load(plan).roles.find((x) => x.id === actorId);
   if (!role?.routes) return true;
   const list = action === "write" ? role.routes.write ?? [] : role.routes.read ?? ["**"];
   return list.some((g) => glob(g).test(route));
 }
 
-const fileFor = (r, params) => r.collection === "item" ? r.files[0].replace("*", params.id) : r.files[0];
+const PACKAGE_ROUTE = {
+  "validation-problem": "foundation/problem", icp: "foundation/icp", telos: "foundation/telos", alignment: "foundation/alignment",
+  "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-go-to-market": "validation/go-to-market",
+  "validation-product-market-fit": "validation/product-market-fit", "validation-operations-readiness": "validation/operations-readiness",
+  "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content",
+  "idea-dump": "raw/dump", "idea-map": "ideas/map", "idea-graph": "ideas/graph", product: "product", evidence: "evidence",
+  "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
+  "decision-record": "decisions",
+  customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
+};
+
+// Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
+const fileFor = (r, params, dir) => {
+  const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", params.id)) : r.files).filter((f) => !f.includes("*"));
+  if (dir) {
+    const hit = cands.find((f) => existsSync(join(dir, f)));
+    if (hit) return hit;
+    // A new collection item joins the folder the venture already keeps that collection in.
+    if (r.collection === "item") {
+      const lived = cands.find((f) => { const d = join(dir, dirname(f)); return existsSync(d) && readdirSync(d).some((n) => n.endsWith(".json") || n.endsWith(".md") || n.endsWith(".mdx")); });
+      if (lived) return lived;
+    }
+  }
+  return cands[0];
+};
 const draftPath = (file) => join("_drafts", `${file.replace(/\//g, "__")}.draft`);
 
 /** Where an agent's draft of a gated record waits: { dir, file, draft, gate } or null. */
@@ -200,19 +241,55 @@ export function draftOf(route, venture, workspace) {
   const { r, params } = resolve(route);
   const dir = ventureDir(venture, workspace);
   if (!r || r.kind !== "record" || r.collection === "list" || !dir) return null;
-  const file = fileFor(r, params);
+  const file = fileFor(r, params, dir);
   return { dir, file, draft: draftPath(file), gate: gateOf(r, dir), route: r.collection === "item" ? r.route.replace("[id]", params.id) : r.route };
 }
 
-/** The layout wrapping a route: system, layer and kit context, references, skills, the gate and need-now. */
+function agentsChain(dir, route) {
+  if (!dir) return [];
+  const chain = [];
+  const add = (rel) => { const f = join(dir, rel); if (existsSync(f)) chain.push({ path: rel, text: readFileSync(f, "utf8") }); };
+  add("AGENTS.md");
+  const parts = route.split("/").filter(Boolean);
+  let acc = "";
+  for (const p of parts) { acc = acc ? `${acc}/${p}` : p; add(`${acc}/AGENTS.md`); }
+  return chain;
+}
+function instructionsOf(chain) {
+  const out = {};
+  for (const file of chain) for (const line of file.text.split("\n")) {
+    const m = line.match(/^([a-z][a-z0-9_-]*)\s*:\s*(.+)$/);
+    if (m) out[m[1]] = m[2].trim();
+  }
+  return out;
+}
+
+/** A score below its threshold is uncertain: not an error and not an answer. It routes to the function owner. */
+export function judge(score, threshold, owner) {
+  if (typeof score !== "number" || score < threshold) return { outcome: "uncertain", owner, result: null };
+  return { outcome: "answer", result: score };
+}
+
+/** Runs fn. A throw is the uncaught outcome. */
+export function capture(fn) {
+  try { fn(); return { outcome: "answer" }; }
+  catch (e) { return { outcome: "uncaught", error: String(e.message ?? e) }; }
+}
+
+/** The layout wrapping a route: system layer, the record's layer, and its package when one owns it.
+ *  chain is the AGENTS.md files from the venture root down to the route, nearest last. */
 export function layout(r, dir) {
   const ks = kits();
-  const stack = [ks.find((k) => k.path === "schema/kit.json"), ks.find((k) => k.path === `${r.layer ?? r.route.split("/")[0]}/kit.json`), r.kit_path && r.kit_path.includes("/kits/") ? ks.find((k) => k.path === r.kit_path) : null]
+  const owned = r.kit_path && (r.kit_path.startsWith("packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
+  const stack = [ks.find((k) => k.path === "schema/layer.json"), ks.find((k) => k.path === `${r.layer ?? r.route.split("/")[0]}/layer.json`), owned]
     .filter(Boolean).map((k) => {
-      const refs = [join(dirname(k.path), "references/references.json"), join(dirname(k.path), "references")].find((p) => existsSync(join(repo, p)));
-      return { kit: k.kit, path: k.path, purpose: k.purpose, skills: k.skills.map((s) => s.path), references: refs ?? null, gaps: k.gaps ?? [] };
+      const refs = (k.references && existsSync(join(repo, k.references)) ? k.references : null)
+        ?? [join(dirname(k.path), "references/references.json"), join(dirname(k.path), "references")].find((p) => existsSync(join(repo, p)));
+      return { name: k.name, kit: k.name, path: k.path, purpose: k.purpose, skills: skillsOf(k).map((s) => s.path), references: refs ?? null, gaps: k.gaps ?? [] };
     });
-  const out = { route: r.route, stack, note: r.note, groups: r.groups ?? [] };
+  const chain = agentsChain(dir, r.route);
+  const pkg = owned ? { skill: skillsOf(owned).map((s) => s.path), template: r.template ?? null, gates: owned.gates ?? [] } : null;
+  const out = { route: r.route, stack, chain, instructions: instructionsOf(chain), package: pkg, note: r.note, groups: r.groups ?? [] };
   if (r.kind === "record") Object.assign(out, { schema: r.schema, template: r.template, checks: r.checks, gate: gateOf(r, dir) });
   if (dir && r.kind === "record") {
     try {
@@ -224,7 +301,7 @@ export function layout(r, dir) {
   return out;
 }
 
-const fix = (r) => ({ skills: r.kit_path ? kits().find((k) => k.path === r.kit_path)?.skills.map((s) => s.path) ?? [] : [], template: r.template ?? null, schema: r.schema ?? null });
+const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path === r.kit_path) ?? {}).map((s) => s.path) : [], template: r.template ?? null, schema: r.schema ?? null });
 
 /**
  * Runs one action on one route for one venture. Returns { ok, result } or { ok: false, error }.
@@ -234,8 +311,9 @@ const fix = (r) => ({ skills: r.kit_path ? kits().find((k) => k.path === r.kit_p
  * decision, note, agent } for the log.
  */
 export async function call({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+  const requested = route;
   const { r, params, alias } = resolve(route);
-  if (!r) return { ok: false, error: `no route ${route}` };
+  if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
   route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
@@ -243,7 +321,12 @@ export async function call({ venture, route, action, input, actor = "agent", act
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
-  if (!allowed(dir, actor_id, action === "write" ? "write" : "read", route)) return { ok: false, error: `${actor_id} may not ${action === "write" ? "write" : "read"} ${route} (team plan routes)` };
+  const act = action === "write" ? "write" : "read";
+  if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route)) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
+  // An activity a decision unlocks stays closed to agents until a person makes that decision (EE-058).
+  const lock = actor !== "person" && (action === "write" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
+  if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
+    fix: { who: "a person, not an agent", command: `mentura decide ${lock.id} --venture ${venture} --by <their name> [--answer "<their wording>"]`, then: "retry this call" } };
 
   if (action === "view") {
     const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance });
@@ -278,14 +361,14 @@ export async function call({ venture, route, action, input, actor = "agent", act
   const cite = (x) => ({ source: src.id, address: address(src.id, x.path), version: x.version, ...(x.commit ? { commit: x.commit } : {}), ...(x.permalink ? { permalink: x.permalink } : {}), ...(x.attributes ? { attributes: x.attributes } : {}) });
 
   if (action === "read") {
-    const patterns = r.collection === "item" ? [fileFor(r, params)] : r.files;
+    const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
       const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => patterns.some((g) => glob(g).test(f))) : patterns;
       items = (await Promise.all(paths.map((f) => store.read(f)))).filter(Boolean);
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
-    const draft = !remote && r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params)))) ? draftPath(fileFor(r, params)) : null;
+    const draft = !remote && r.collection !== "list" && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
     if (remote) {
       const prs = provEntries(dir).filter((e) => e.source?.pull_request && found.concat(patterns).some((f) => e.entity === address(src.id, f)));
@@ -313,8 +396,16 @@ export async function call({ venture, route, action, input, actor = "agent", act
     const parseOne = parse;
     const parseWith = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
     if (r.collection === "list") {
-      const re = new RegExp("^" + r.files[0].split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$");
-      return { ok: true, result: Object.fromEntries(items.map((x) => [x.path.match(re)[1], parseWith(x)])), sources: Object.fromEntries(items.map((x) => [x.path.match(re)[1], cite(x)])), ...deprecated };
+      const idOf = (path) => {
+        for (const g of r.files) {
+          if (!g.includes("*")) continue;
+          const re = new RegExp("^" + g.split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$");
+          const m = path.match(re);
+          if (m) return m[1];
+        }
+        return path;
+      };
+      return { ok: true, result: Object.fromEntries(items.map((x) => [idOf(x.path), parseWith(x)])), sources: Object.fromEntries(items.map((x) => [idOf(x.path), cite(x)])), ...deprecated };
     }
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
     return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...deprecated };
@@ -329,7 +420,8 @@ export async function call({ venture, route, action, input, actor = "agent", act
   if (action === "write") {
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
-    const file = fileFor(r, params);
+    const file = fileFor(r, params, dir);
+    if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(join(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
     const gate = gateOf(r, dir);
     const text = JSON.stringify(input, null, 2) + "\n";
     // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
@@ -347,7 +439,10 @@ export async function call({ venture, route, action, input, actor = "agent", act
     // the fact lives in one place. The whole record was checked against its schema above. A gated
     // agent write stays whole, as a draft, until a person accepts it.
     const split = attrs.filter((a) => a.attribute in input);
-    const gatedDraft = !remote && !!gate?.drafts && actor !== "person";
+    // A decision record that is open and fails closed, or waits on one that is, holds the record
+    // (EE-054): an agent's write becomes a draft, as for a gated record.
+    const held = !remote && actor !== "person" ? holding(dir, file) : null;
+    const gatedDraft = !remote && (!!gate?.drafts || !!held) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
       for (const a of split) {
@@ -390,7 +485,7 @@ export async function call({ venture, route, action, input, actor = "agent", act
       writeFileSync(dest, text);
     } else await store.write(file, recordText);
     const entry = log(draft ? draftPath(file) : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "written", ...attributesOut }, ...deprecated };
+    return { ok: true, result: { written: draft ? draftPath(file) : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : `decision ${held.id} ${held.why}: written as a draft for a person to accept`) : "written", ...(held ? { held_by: held.id } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
@@ -440,7 +535,7 @@ async function overview(venture, workspace) {
       slot("@validation", async () => { const r = await call({ venture, route: "purpose/validation/assess", action: "run", input: { as_is: true }, workspace }); if (!r.ok) throw new Error(r.error); const a = r.result; return { supports: a.supports, next: a.next, assumptions: a.assumptions.map((x) => `${x.assumption}: ${x.label}`).join(", "), missing: a.missing.length }; }),
       slot("@need-now", async () => (await run("system/need-now")).rows.filter((x) => x.status === "suggest now").map((x) => ({ record: x.type, now: x.now, why: x.why }))),
       slot("@ready", async () => { const t = await run("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
-      slot("@team", async () => { const p = await read("operations/team-plan"); if (typeof p === "string") return p; return p.roles.map((x) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
+      slot("@team", async () => { const p = await read("people/team-plan"); if (typeof p === "string") return p; return p.roles.map((x) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
       slot("@provenance", () => provEntries(dir).slice(-5).reverse().map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, by: `${e.agent.kind}${e.agent.id ? ` ${e.agent.id}` : ""} via ${e.agent.via}` }))),
     ]),
   };
@@ -448,8 +543,8 @@ async function overview(venture, workspace) {
 
 // Robots: per role, the routes it may read and write.
 function robots(dir) {
-  const plan = join(dir, "operations/team-plan.json");
-  if (!existsSync(plan)) return { note: "no team plan: every actor may reach every route; gates still apply", roles: [] };
+  const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
+  if (!plan) return { note: "no team plan: every actor may reach every route; gates still apply", roles: [] };
   return { note: "a role without routes may reach every route; gates still apply", roles: load(plan).roles.map((r) => ({ role: r.id, occupant: r.occupant, read: (r.routes?.read ?? ["**"]).join(", "), write: (r.routes?.write ?? (r.routes ? [] : ["**"])).join(", ") || "none" })) };
 }
 

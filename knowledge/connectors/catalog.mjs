@@ -40,8 +40,12 @@ async function routeOf(path) {
   for (const { r, res } of table) {
     if (!res.some((re) => re.test(path))) continue;
     if (r.collection !== "item") return { route: r.route, record: r.record };
-    const m = path.match(new RegExp("^" + r.files[0].split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$"));
-    return { route: r.route.replace("[id]", m[1]), record: r.record };
+    for (const g of r.files) {
+      if (!g.includes("*")) continue;
+      const m = path.match(new RegExp("^" + g.split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$"));
+      if (m) return { route: r.route.replace("[id]", m[1]), record: r.record };
+    }
+    return { route: r.route, record: r.record };
   }
   return { route: null, record: null };
 }

@@ -1,0 +1,4 @@
+{
+  "alias_of": "packages/",
+  "note": "Split into packages/<name>/package.json and packages/catalog.json (EE-071). This file remains as the alias for one release. Loaders read the package files, not this stub."
+}

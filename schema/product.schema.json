@@ -203,6 +203,20 @@
     "repo": {
       "type": "string",
       "description": "The id of the repository in the venture's (or a parent's) repos that holds its code"
+    },
+    "offered_to": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The ICP profiles (purpose/icp.json ids) the product is offered to: who buys or adopts it, and so whom its marketing addresses first (EE-064). In a B2B2C or partner-led venture these are the partners, not the partners' customers."
+    },
+    "serves": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ICP profiles the product ultimately serves through those it is offered to, such as a partner's own customers (EE-064)"
     }
   },
   "additionalProperties": false

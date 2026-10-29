@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "kit.schema.json",
-  "title": "Kit manifest",
-  "description": "What one kit holds, at <layer>/kit.json for a layer kit and schema/kit.json for the system kit (EE-018): its skills, the record types it owns, the record types it reads and writes, and the checks that run on them. A kit offered as a product points at its product card. Layer relationships are derived from reads and writes, never written by hand. schema/check-data-model.mjs checks it.",
+  "$id": "layer.schema.json",
+  "title": "Layer manifest",
+  "description": "What one layer of the framework repository holds, at <layer>/layer.json and schema/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. schema/check-data-model.mjs checks this file.",
   "type": "object",
   "required": [
-    "kit",
+    "name",
     "layer",
     "purpose",
     "skills",
@@ -16,10 +16,6 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "kit": {
-      "type": "string",
-      "pattern": "^[a-z0-9-]+$"
-    },
     "layer": {
       "enum": [
         "system",
@@ -37,7 +33,7 @@
     },
     "product": {
       "type": "string",
-      "description": "The product card that offers this kit, as <venture id>/<product id>"
+      "description": "The product card that offers this layer's work, as <venture id>/<product id>"
     },
     "skills": {
       "type": "array",
@@ -67,11 +63,11 @@
           },
           "standalone": {
             "type": "boolean",
-            "description": "Useful without the rest of the kit"
+            "description": "Useful without the rest of the layer"
           },
           "move_to": {
             "type": "string",
-            "description": "A proposed owning kit, when the skill is filed in the wrong layer"
+            "description": "A proposed owning layer or package, when the skill is filed in the wrong place"
           },
           "why": {
             "type": "string"
@@ -84,28 +80,28 @@
       "items": {
         "type": "string"
       },
-      "description": "Record types this kit owns (data-model ids)"
+      "description": "Record types this layer owns (data-model ids). Venture records that a package owns are listed on the package, not here."
     },
     "reads": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Record types of other kits its skills and checks read today"
+      "description": "Record types owned elsewhere that this layer's skills and checks read"
     },
     "writes": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Record types of other kits its skills write today"
+      "description": "Record types owned elsewhere that this layer's skills write"
     },
     "checks": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Scripts that check or run this kit's records, from the repo root"
+      "description": "Scripts that check or run this layer's records, from the repo root"
     },
     "gaps": {
       "type": "array",
@@ -113,6 +109,11 @@
         "type": "string"
       },
       "description": "Known missing parts"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The layer's name"
     }
   }
 }

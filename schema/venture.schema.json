@@ -21,6 +21,14 @@
     "name": {
       "type": "string"
     },
+    "kind": {
+      "enum": [
+        "venture",
+        "product"
+      ],
+      "default": "venture",
+      "description": "venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054)."
+    },
     "parent": {
       "type": [
         "string",
@@ -131,7 +139,10 @@
     "departments": {
       "type": "array",
       "description": "The departments this venture imports, by id from operations/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048).",
-      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
       "uniqueItems": true
     },
     "brand": {

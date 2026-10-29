@@ -46,7 +46,9 @@
         {
           "id": "promised-to",
           "record": "venture",
-          "attribute": "core.promised_to"
+          "attribute": "core.promised_to",
+          "derived_from": "icp",
+          "note": "The ICP's short form: the primary profile's short, or its who. It takes the ICP's status and is never confirmed on its own, so the two cannot drift (Torian, 2026-10-28)"
         }
       ]
     },
@@ -103,15 +105,16 @@
       "ask": "Whether to do it, given what is true now?",
       "statements": [
         {
-          "id": "must-not",
-          "record": "venture",
-          "attribute": "core.must_not"
+          "id": "alignment",
+          "record": "alignment",
+          "attribute": "principles",
+          "note": "Replaces must-not (Torian, 2026-10-28): must-not described how the framework and platform behave, which is alignment, and alignment is longer than one line (EE-053). venture core.must_not stays as a one-line summary"
         },
         {
           "id": "whether-review",
           "record": null,
           "attribute": null,
-          "note": "Not settled (Torian, 2026-10-28): go/kill is too narrow. Open question: whether the review should answer persevere, pivot, pause or stop. No design is agreed"
+          "note": "Not settled (Torian, 2026-10-28): go/kill is too narrow. Persevere, pivot, pause and stop stay draft frameworks, not the default. No design is agreed"
         }
       ]
     },

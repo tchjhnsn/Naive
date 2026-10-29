@@ -1,5 +1,4 @@
 {
-  "kit": "purpose-kit",
   "layer": "purpose",
   "purpose": "Say why the venture exists and what it offers: core product, ambition, product cards, accounts, and each product's role by phase (Product Anatomy).",
   "skills": [
@@ -10,6 +9,11 @@
     {
       "id": "telos",
       "path": "purpose/skills/telos/SKILL.md"
+    },
+    {
+      "id": "validation-score",
+      "path": "purpose/kits/validation/skills/validation-score/SKILL.md",
+      "why": "Held (EE-050). A package has at most one skill, so the score skill stays on the purpose layer. The problem-validation skill is the validation package's skill."
     }
   ],
   "records": [
@@ -17,9 +21,15 @@
     "account",
     "anatomy-framework",
     "anatomy-answers",
+    "anatomy-input",
     "telos",
     "icp",
-    "strategic-foundation"
+    "alignment",
+    "strategic-foundation",
+    "idea-dump",
+    "idea-map",
+    "idea-map-conventions",
+    "idea-graph"
   ],
   "reads": [
     "venture",
@@ -30,10 +40,14 @@
     "purpose/frameworks/product-anatomy/anatomy.mjs",
     "purpose/frameworks/product-anatomy/test.mjs",
     "schema/check-telos.mjs",
-    "schema/foundation.mjs"
+    "schema/foundation.mjs",
+    "purpose/frameworks/idea-map/ideamap.mjs",
+    "purpose/frameworks/idea-map/graph.mjs",
+    "purpose/frameworks/idea-map/route.mjs"
   ],
   "gaps": [
     "ambition-tier still uses the old tiers (hobby, side-project, open-source-tool, venture, enterprise); venture.json uses hobby, survival, lifestyle, managed-growth, aggressive-growth",
     "Exit criteria per phase exist in the telos, but nothing yet reads evidence to say a criterion is met"
-  ]
+  ],
+  "name": "purpose"
 }

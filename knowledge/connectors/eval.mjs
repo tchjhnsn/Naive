@@ -104,7 +104,7 @@ const { stats } = await build(tandem);
 const cat = load(tandem);
 expect("catalog: indexes every item in both sources", cat.items.some((x) => x.source === "shared" && x.path === "notes/launch.md") && cat.items.some((x) => x.source === "venture" && x.path === "purpose/validation/problem.json") && stats.errors.length === 0, JSON.stringify(stats));
 expect("catalog: every item has an address and its version", cat.items.every((x) => x.address === `${x.source}://${x.path}` && /^[0-9a-f]{40}$/.test(x.version)));
-expect("catalog: records are tied to their routes, wherever they live", cat.items.find((x) => x.address === "shared://products/kettle.json")?.route === "purpose/product/kettle" && cat.items.find((x) => x.path === "purpose/validation/problem.json")?.route === "purpose/validation/problem");
+expect("catalog: records are tied to their routes, wherever they live", cat.items.find((x) => x.address === "shared://products/kettle.json")?.route === "product/kettle" && cat.items.find((x) => x.path === "purpose/validation/problem.json")?.route === "foundation/problem");
 const s1 = search(cat, "kettle subscription spring");
 expect("catalog: search finds an item in the mapped source", s1[0]?.address === "shared://notes/launch.md" && s1[0].title === "Launch plan", JSON.stringify(s1.slice(0, 2)));
 const research = readFileSync(join(tandem, "knowledge/research/pilot-2026-10.md"), "utf8");

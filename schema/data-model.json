@@ -86,6 +86,8 @@
       "level": "venture",
       "schema": "schema/product.schema.json",
       "paths": [
+        "instance/**/product/*.json",
+        "schema/examples/**/product/*.json",
         "instance/**/products/*.json",
         "schema/examples/**/products/*.json"
       ],
@@ -131,6 +133,8 @@
       "level": "venture",
       "schema": "schema/telos.schema.json",
       "paths": [
+        "instance/**/foundation/telos.json",
+        "schema/examples/**/foundation/telos.json",
         "instance/**/purpose/telos.json",
         "schema/examples/**/purpose/telos.json"
       ],
@@ -155,11 +159,54 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "idea-dump",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "prose",
+      "paths": [
+        "instance/**/raw/dump.md",
+        "schema/examples/**/raw/dump.md",
+        "instance/**/purpose/ideas/dump.md",
+        "schema/examples/**/purpose/ideas/dump.md"
+      ],
+      "note": "The founder's raw idea dump: every idea about the venture, verbatim and unprompted. Never rewritten by an agent (EE-059)"
+    },
+    {
+      "id": "idea-map",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/ideas/map.mdx",
+        "schema/examples/**/ideas/map.mdx",
+        "instance/**/purpose/ideas/map.mdx",
+        "schema/examples/**/purpose/ideas/map.mdx"
+      ],
+      "note": "The idea dump mapped onto Naive's conventions: one <Idea> per idea, its text unchanged, tagged with departments, records and whether it exists (purpose/frameworks/idea-map); drawn as a mind map (EE-059)"
+    },
+    {
+      "id": "idea-graph",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/idea-graph.schema.json",
+      "paths": [
+        "instance/**/ideas/graph.json",
+        "schema/examples/**/ideas/graph.json",
+        "instance/**/purpose/ideas/graph.json",
+        "schema/examples/**/purpose/ideas/graph.json"
+      ],
+      "note": "The idea map as a Merkle DAG: each idea with the ideas it builds on, a hash over its text and theirs, its signal, and its lane (in order or on its own); laid out left to right by dependency and top down by signal (EE-060)"
+    },
+    {
       "id": "validation-problem",
       "layer": "purpose",
       "level": "venture",
       "schema": "schema/validation-problem.schema.json",
       "paths": [
+        "instance/**/foundation/problem.json",
+        "schema/examples/**/foundation/problem.json",
         "instance/**/purpose/validation/problem.json",
         "schema/examples/**/purpose/validation/problem.json"
       ],
@@ -179,6 +226,8 @@
       "level": "venture",
       "schema": "schema/validation-solution.schema.json",
       "paths": [
+        "instance/**/validation/solution.json",
+        "schema/examples/**/validation/solution.json",
         "instance/**/purpose/validation/solution.json",
         "schema/examples/**/purpose/validation/solution.json"
       ],
@@ -197,6 +246,8 @@
       "level": "venture",
       "schema": "schema/validation-product-market-fit.schema.json",
       "paths": [
+        "instance/**/validation/product-market-fit.json",
+        "schema/examples/**/validation/product-market-fit.json",
         "instance/**/purpose/validation/product-market-fit.json",
         "schema/examples/**/purpose/validation/product-market-fit.json"
       ],
@@ -215,6 +266,8 @@
       "level": "venture",
       "schema": "schema/validation-pricing.schema.json",
       "paths": [
+        "instance/**/validation/pricing.json",
+        "schema/examples/**/validation/pricing.json",
         "instance/**/purpose/validation/pricing.json",
         "schema/examples/**/purpose/validation/pricing.json"
       ],
@@ -233,6 +286,8 @@
       "level": "venture",
       "schema": "schema/validation-go-to-market.schema.json",
       "paths": [
+        "instance/**/validation/go-to-market.json",
+        "schema/examples/**/validation/go-to-market.json",
         "instance/**/purpose/validation/go-to-market.json",
         "schema/examples/**/purpose/validation/go-to-market.json"
       ],
@@ -251,6 +306,8 @@
       "level": "venture",
       "schema": "schema/validation-team.schema.json",
       "paths": [
+        "instance/**/people/team.json",
+        "schema/examples/**/people/team.json",
         "instance/**/purpose/validation/team.json",
         "schema/examples/**/purpose/validation/team.json"
       ],
@@ -269,6 +326,8 @@
       "level": "venture",
       "schema": "schema/validation-operations-readiness.schema.json",
       "paths": [
+        "instance/**/validation/operations-readiness.json",
+        "schema/examples/**/validation/operations-readiness.json",
         "instance/**/purpose/validation/operations-readiness.json",
         "schema/examples/**/purpose/validation/operations-readiness.json"
       ],
@@ -305,12 +364,25 @@
       "note": "Phases, gates and questions of Product Anatomy; self-describing, checked by its runner's tests"
     },
     {
+      "id": "idea-map-conventions",
+      "layer": "purpose",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/idea-map/conventions.json"
+      ],
+      "note": "The tags an idea map may use: departments, records, pillars and the exists judgment, with the threshold (EE-059); checked by the idea-map runner"
+    },
+    {
       "id": "anatomy-answers",
       "layer": "purpose",
       "level": "venture",
       "schema": null,
       "form": "json",
       "paths": [
+        "instance/**/product/anatomy/answers*.json",
+        "instance/**/product/anatomy.answers*.json",
         "instance/**/purpose/anatomy.answers*.json",
         "purpose/frameworks/product-anatomy/examples/*.json"
       ],
@@ -324,6 +396,18 @@
       "note": "Scores per product per question; the matrix is rendered from them"
     },
     {
+      "id": "anatomy-input",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/product/anatomy/*.json",
+        "instance/**/purpose/anatomy/*.json"
+      ],
+      "note": "Product Anatomy input for one product with parts (venture, core, products, flows), such as Naive or Mentura; read by purpose/frameworks/product-anatomy/anatomy.mjs"
+    },
+    {
       "id": "decision",
       "layer": "knowledge",
       "level": "method",
@@ -332,6 +416,17 @@
         "docs/decisions/decisions.json"
       ],
       "note": "A decision log. The schema's own is EE-NNN; a venture keeps its own log under its knowledge layer"
+    },
+    {
+      "id": "decision-record",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-record.schema.json",
+      "paths": [
+        "instance/**/decisions/*.decision.json",
+        "schema/examples/**/decisions/*.decision.json"
+      ],
+      "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node schema/decisions.mjs renders the matrix. The decision log keeps the history"
     },
     {
       "id": "design-document",
@@ -496,10 +591,9 @@
       "id": "kit-manifest",
       "layer": "system",
       "level": "method",
-      "schema": "schema/kit.schema.json",
+      "schema": "schema/layer.schema.json",
       "paths": [
-        "*/kit.json",
-        "*/kits/*/kit.json"
+        "*/layer.json"
       ],
       "refs": [
         {
@@ -523,7 +617,7 @@
           "checked_by": "schema/check-data-model.mjs"
         }
       ],
-      "note": "What one kit holds: skills, record types it owns, record types it reads and writes, checks. A layer may hold more kits under <layer>/kits/<kit>/ (EE-026)"
+      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are packages/<name>/package.json. A kit is Mentura's, at platform/kits/."
     },
     {
       "id": "handoff",
@@ -789,6 +883,55 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "marketing-matrix",
+      "layer": "operations",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "operations/marketing/site/matrix.json"
+      ],
+      "note": "The marketing matrix: the audiences a public site speaks to, what each needs to learn and from which record, where it belongs, and how prominent it must be by need; weighted by whether the venture is raising, hiring or inviting contributors, and by its ICPs (EE-062). Version 0.x, unevaluated"
+    },
+    {
+      "id": "site-presence",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/site-presence.schema.json",
+      "paths": [
+        "instance/**/operations/marketing/site-presence.json",
+        "schema/examples/**/operations/marketing/site-presence.json"
+      ],
+      "note": "How present the venture's public records are on its marketing site, item by item, with a score weighed by who the site must speak to now (EE-062)"
+    },
+    {
+      "id": "marketing-sitemap",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/marketing-sitemap.schema.json",
+      "paths": [
+        "instance/**/marketing/sitemap.json",
+        "schema/examples/**/marketing/sitemap.json",
+        "instance/**/operations/marketing/sitemap.json",
+        "schema/examples/**/operations/marketing/sitemap.json"
+      ],
+      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on and the public variant to write; part of the marketing package handed to engineering (EE-064, EE-065)"
+    },
+    {
+      "id": "marketing-content",
+      "layer": "operations",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/marketing/content/**/*.mdx",
+        "schema/examples/**/marketing/content/**/*.mdx",
+        "instance/**/operations/marketing/content/**/*.mdx",
+        "schema/examples/**/operations/marketing/content/**/*.mdx"
+      ],
+      "note": "Public variants of internal records, written by marketing agents as their own MDX: each names the record it is a variant of, its audience, whether it is published and who approved it; checked by the public gate (EE-064)"
+    },
+    {
       "id": "need-now",
       "layer": "system",
       "level": "method",
@@ -807,11 +950,46 @@
       "note": "Need-now priors per venture record type and phase, with conditions that raise or lower them (EE-028)"
     },
     {
+      "id": "venture-packages",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/packages.json",
+        "packages/catalog.json",
+        "packages/*/package.json"
+      ],
+      "refs": [
+        {
+          "field": "core.*.required",
+          "to": "(record types)",
+          "checked_by": "schema/packages-test.mjs"
+        }
+      ],
+      "note": "Venture packages (EE-067, EE-069): the assumed governance model; core packages by department (each record's one home, what it reads, priors per phase with conditions, what completion unlocks); handoff packages by receiver; record-level dependencies; the question matrix"
+    },
+    {
+      "id": "venture-package",
+      "layer": "system",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/.release/venture-package.json",
+        "instance/**/.release/layout.json",
+        "instance/**/package/venture-package.json"
+      ],
+      "note": "The venture package view (EE-067, EE-069): the open core packages and handoffs, each record confirmed, to review or to write, what moves now and what waits, with its versions; the records themselves stay in place"
+    },
+    {
       "id": "team-plan",
       "layer": "operations",
       "level": "venture",
       "schema": "schema/team-plan.schema.json",
       "paths": [
+        "instance/**/people/team-plan.json",
+        "schema/examples/**/people/team-plan.json",
         "instance/**/operations/team-plan.json",
         "schema/examples/**/operations/team-plan.json"
       ],
@@ -891,6 +1069,8 @@
       "level": "venture",
       "schema": "schema/icp.schema.json",
       "paths": [
+        "instance/**/foundation/icp.json",
+        "schema/examples/**/foundation/icp.json",
         "instance/**/purpose/icp.json",
         "schema/examples/**/purpose/icp.json"
       ],
@@ -902,6 +1082,20 @@
         }
       ],
       "note": "Who the venture serves: ideal customer profiles, one primary (EE-051); a foundation statement, gated",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "alignment",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/alignment.schema.json",
+      "paths": [
+        "instance/**/foundation/alignment.json",
+        "schema/examples/**/foundation/alignment.json",
+        "instance/**/purpose/alignment.json",
+        "schema/examples/**/purpose/alignment.json"
+      ],
+      "note": "How the venture's products and agents must behave: principles with a source and a check (EE-053); a foundation statement, gated",
       "decision_class": "strategy-or-constitution"
     },
     {
@@ -920,6 +1114,77 @@
         }
       ],
       "note": "The map of strategic foundation by the Five Ws and How plus whether (EE-051)"
+    },
+    {
+      "id": "customer",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/customers/*.json",
+        "schema/examples/**/customers/*.json"
+      ],
+      "note": "A customer master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "investor",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/investors/*.json",
+        "schema/examples/**/investors/*.json"
+      ],
+      "note": "An investor master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "money-account",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/money/*.json",
+        "schema/examples/**/money/*.json"
+      ],
+      "note": "A money master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "data-stream",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/stream.schema.json",
+      "paths": [
+        "instance/**/customers/_streams/*/stream.json",
+        "instance/**/investors/_streams/*/stream.json",
+        "instance/**/money/_streams/*/stream.json",
+        "schema/examples/**/customers/_streams/*/stream.json",
+        "schema/examples/**/investors/_streams/*/stream.json",
+        "schema/examples/**/money/_streams/*/stream.json"
+      ],
+      "note": "Declares one append-only stream and whether it is sensitive (EE-070)."
+    },
+    {
+      "id": "raw-source",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/raw-source.schema.json",
+      "paths": [
+        "instance/**/raw/sources/*/source.json",
+        "schema/examples/**/raw/sources/*/source.json"
+      ],
+      "note": "Where a founder-supplied source came from. Raw is immutable (EE-070)."
+    },
+    {
+      "id": "raw-text",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/raw/sources/*/text.md",
+        "schema/examples/**/raw/sources/*/text.md"
+      ],
+      "note": "The text of a raw source. original.* stays out of git (EE-070)."
     }
   ],
   "ignore": [
@@ -930,6 +1195,46 @@
     {
       "path": "site/package-lock.json",
       "reason": "npm lockfile for the developer-docs site; generated by npm"
+    },
+    {
+      "path": "platform/integrations/fixtures/rho-sandbox.json",
+      "reason": "What Rho's sandbox (a fictional company) answered to one sync, replayed offline by platform/integrations/rho-test.mjs and the harness's --money; vendor data, not a record"
+    },
+    {
+      "path": "schema/examples/docket-scenarios.json",
+      "reason": "Venture states with a source-argued next step, the evidence set schema/docket-eval.mjs scores the docket against (EE-075); test data, not a record"
+    },
+    {
+      "path": "site/tsconfig.json",
+      "reason": "TypeScript config for the Fumadocs site (EE-080); not a record"
+    },
+    {
+      "path": "site/brand/tokens.json",
+      "reason": "W3C design tokens for the site theme (EE-080); not a venture record"
+    },
+    {
+      "path": "site/content/docs/meta.json",
+      "reason": "Fumadocs sidebar order for the docs collection (EE-080); not a record"
+    },
+    {
+      "path": "site/content/docs/get-started/meta.json",
+      "reason": "Fumadocs sidebar order (EE-080); not a record"
+    },
+    {
+      "path": "site/content/docs/guides/meta.json",
+      "reason": "Fumadocs sidebar order (EE-080); not a record"
+    },
+    {
+      "path": "site/content/docs/concepts/meta.json",
+      "reason": "Fumadocs sidebar order (EE-080); not a record"
+    },
+    {
+      "path": "site/content/docs/reference/meta.json",
+      "reason": "Fumadocs sidebar order (EE-080); not a record"
+    },
+    {
+      "path": "site/content/marketing/meta.json",
+      "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
     }
   ]
 }

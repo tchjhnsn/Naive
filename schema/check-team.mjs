@@ -45,7 +45,7 @@ const cap = new Map(caps.capabilities.map((c) => [c.id, c]));
 let checked = 0;
 for (const root of walk(dir)) {
   const v = load(join(root, "venture.json"));
-  const pPath = join(root, "operations/team-plan.json");
+  const pPath = [join(root, "people/team-plan.json"), join(root, "operations/team-plan.json")].find((p) => existsSync(p)) ?? join(root, "operations/team-plan.json");
   if (!existsSync(pPath)) continue;
   checked++;
   const plan = load(pPath), at = `${v.id}/operations/team-plan.json`;

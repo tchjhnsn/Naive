@@ -8,7 +8,7 @@ authority: advisory
 status: DRAFT
 governed-by: EE-018 (proposed)
 tags: [everything-ecosystem, layers, kits, data-model, schema]
-description: "How the seven layers relate, which skills and schemas (kits) belong to which layer, and whether the ecosystem has a master schema. Machine form: schema/data-model.json and <layer>/kit.json; the relationship table at the end is generated from them."
+description: "How the seven layers relate, which skills and schemas belong to which layer, and whether the ecosystem has a master schema. Machine form: schema/data-model.json and <layer>/layer.json; the relationship table at the end is generated from them. Venture packages are packages/<name>/package.json (EE-071)."
 ---
 
 # Layers, kits and the master schema
@@ -53,11 +53,11 @@ Shared records (workspace, venture, nouns, references, tooling) belong to the **
 
 ## Kits
 
-A kit is a layer's bundle: its skills, the record types it owns, the record types of other kits it reads and writes, and its checks. Each layer has a manifest at `<layer>/kit.json`, and the system kit is at `schema/kit.json`. Three rules, enforced by `node schema/check-data-model.mjs`:
+A layer manifest lists its skills, the record types it still owns, the record types it reads and writes, and its checks. Each layer has a manifest at `<layer>/layer.json`, and the system layer is at `schema/layer.json` (was `<layer>/kit.json`). A venture package, at `packages/<name>/package.json`, owns the venture records it lists. A kit is Mentura's enhanced package and is not built yet (EE-071). Three rules, enforced by `node schema/check-data-model.mjs`:
 
-- Every record type is owned by exactly one kit, and that kit is in the record's layer.
-- Every skill (`SKILL.md`) belongs to exactly one kit.
-- A kit lists what it reads and writes from other kits. **The relationships between layers are derived from these lists, never drawn by hand**, so the picture cannot drift from the files.
+- Every record type is owned by exactly one layer or one package. A layer that owns a record is of that record's layer.
+- Every skill (`SKILL.md`) belongs to exactly one layer or package. A package has at most one skill.
+- A manifest lists what it reads and writes from other owners. **The relationships between layers are derived from these lists, never drawn by hand**, so the picture cannot drift from the files.
 
 **Placement rule:** a skill lives in the layer whose records it writes. If it writes none, it lives in the layer whose records it reads most.
 
@@ -103,13 +103,13 @@ Each arrow is a record type one layer owns and another reads, or one layer write
 
 | Layer | Skills | Owns | Takes from | Gives to |
 | --- | --- | --- | --- | --- |
-| purpose | 2 | product, account, anatomy-framework, anatomy-answers, telos, icp, strategic-foundation | system (venture); governance (exit) | knowledge (product); operations (product, telos); governance (telos); system (product, account) |
+| purpose | 3 | product, account, anatomy-framework, anatomy-answers, anatomy-input, telos, icp, alignment, strategic-foundation, idea-dump, idea-map, idea-map-conventions, idea-graph | system (venture); governance (exit) | knowledge (product); operations (icp, product, telos); governance (telos); system (product, account) |
 | knowledge | 2 | venture-profile, decision, design-document, knowledge-sources, where-used | system (venture); purpose (product); governance (decision) | system (reference, decision); operations (decision); evidence (design-document, venture-profile, decision) |
-| operations | 3 | team-plan, handoff, department-catalog, department | evidence (agent-capability); governance (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision); system (integration, venture); purpose (product, telos) | evidence (evidence, handoff); governance (handoff) |
+| operations | 3 | team-plan, handoff, department-catalog, department, marketing-matrix, site-presence, marketing-sitemap, marketing-content | evidence (agent-capability); governance (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision); purpose (icp, product, telos); system (integration, venture) | evidence (evidence, handoff); governance (handoff) |
 | evidence | 6 | evidence, eval-suite, design-documents-registry, benchmark, agent-capability | operations (evidence, handoff); knowledge (design-document, venture-profile, decision) | operations (agent-capability); governance (evidence) |
-| governance | 15 | decision-rights, role, pillar, ownership, board, founder-agreement, exit, publication-policy | operations (handoff); evidence (evidence); system (venture); purpose (telos) | purpose (exit); operations (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision) |
+| governance | 15 | decision-rights, role, pillar, ownership, board, founder-agreement, exit, publication-policy, decision-record | operations (handoff); evidence (evidence); system (venture); purpose (telos) | purpose (exit); operations (board, decision-rights, ownership, publication-policy, role, handoff); knowledge (decision) |
 | interface | 1 | route-aliases | system (integration) | none |
-| system | 0 | workspace, venture, ontology, reference, integration, business-models, scaffold, data-model, kit-manifest, need-now, provenance | knowledge (reference, decision); purpose (product, account) | purpose (venture); knowledge (venture); operations (integration, venture); governance (venture); interface (integration) |
+| system | 0 | workspace, venture, ontology, reference, integration, business-models, scaffold, data-model, kit-manifest, need-now, provenance, venture-packages, venture-package | knowledge (reference, decision); purpose (product, account) | purpose (venture); knowledge (venture); operations (integration, venture); governance (venture); interface (integration) |
 
 ```mermaid
 flowchart LR
@@ -121,8 +121,8 @@ flowchart LR
   evidence -->|agent-capability| operations
   governance -->|board, decision-rights, ownership, publication-policy, role, handoff| operations
   knowledge -->|decision| operations
+  purpose -->|icp, product, telos| operations
   system -->|integration, venture| operations
-  purpose -->|product, telos| operations
   operations -->|evidence, handoff| evidence
   knowledge -->|design-document, venture-profile, decision| evidence
   operations -->|handoff| governance

@@ -25,6 +25,11 @@ export const steps = [
     ok(r.status === 0, r.stderr);
   }],
   [/^the founder asks for the strategic foundation$/, (w) => { w.report = report(w); }],
+  [/^"([a-z-]+)" shows "([^"]+)"$/, (w, id, v) => {
+    const s = JSON.parse(node(w, "schema/foundation.mjs", w.dir, "--json").stdout).flatMap((q) => q.statements).find((x) => x.id === id);
+    ok(s?.value === v, `${id} shows ${JSON.stringify(s?.value)}`);
+  }],
+  [/^an ICP for "([a-z-]+)" that names no problem form$/, (w, id) => { mkdirSync(join(w.dir, "purpose"), { recursive: true }); writeFileSync(join(w.dir, "purpose/icp.json"), JSON.stringify(icp(id))); }],
   [/^it answers "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)" and "([a-z]+)"$/, (w, ...qs) => {
     const got = JSON.parse(node(w, "schema/foundation.mjs", w.dir, "--json").stdout).map((q) => q.question);
     ok(got.join() === qs.join(), `questions: ${got.join()}`);

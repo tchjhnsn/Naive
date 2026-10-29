@@ -28,12 +28,12 @@ const handoff = (dir, id) => join(dir, "operations/handoffs", `${id}.json`);
 
 expect("check-ventures passes on the instance", run("check-ventures.mjs", [join(root, "instance")]).status === 0);
 expect("check-ventures passes on the examples", run("check-ventures.mjs", [join(root, "schema/examples/workspace")]).status === 0);
-broken("a flows_to to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "products/mad.json"), (p) => { p.flows_to = ["nope"]; }), /flows_to unknown product nope/);
-broken("a part_of to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "products/five-step-algorithm.json"), (p) => { p.part_of = ["nope"]; }), /part_of unknown product nope/);
+broken("a flows_to to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/mad.json"), (p) => { p.flows_to = ["nope"]; }), /flows_to unknown product nope/);
+broken("a part_of to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/five-step-algorithm.json"), (p) => { p.part_of = ["nope"]; }), /part_of unknown product nope/);
 broken("a missing layer folder fails", "check-ventures.mjs", (d) => rmSync(join(d, "operations"), { recursive: true }), /operations layer location/);
 broken("a tier scope outside operations fails", "check-ventures.mjs", (d) => edit(join(d, "products/kit.json"), (p) => { p.scope = { level: "tier", layer: "knowledge", tier: "delivery" }; }), /tier-scoped/);
 broken("software with no repository fails", "check-ventures.mjs", (d) => edit(join(d, "venture.json"), (v) => { delete v.repos; }), /builds software, so the venture \(or a parent\) needs a repository/);
-broken("several markets with no primary fail", "check-ventures.mjs", (d) => edit(join(d, "products/mad.json"), (p) => { p.market = [p.market, p.market]; }), /exactly one primary/);
+broken("several markets with no primary fail", "check-ventures.mjs", (d) => edit(join(d, "product/mad.json"), (p) => { p.market = [p.market, p.market]; }), /exactly one primary/);
 
 expect("check-execution passes on the EE venture", run("check-execution.mjs", [venture]).status === 0);
 broken("a class the role does not own fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-json-output"), (h) => { h.decision_classes.push("new-structure"); }), /belongs to architect/);
@@ -220,7 +220,7 @@ function teamBroken(name, change, pattern) {
   const r = run("check-team.mjs", [dir]);
   expect(name, r.status !== 0 && pattern.test(r.stderr));
 }
-const planOf = (d) => join(d, "operations/team-plan.json");
+const planOf = (d) => join(d, "people/team-plan.json");
 expect("check-team passes on the instance", run("check-team.mjs", [join(root, "instance")]).status === 0);
 teamBroken("an agent holding an escalate class fails", (d) => edit(planOf(d), (p) => { p.roles[1].authority.push("spend-money"); }), /holds spend-money, which decision rights give to founder|an escalate class/);
 teamBroken("an agent doing an unknown task with no human loop fails", (d) => edit(planOf(d), (p) => { delete p.roles[3].tasks[0].human_loop; }), /names a human loop/);
@@ -267,7 +267,7 @@ knowBroken("a department folder without its tag fails", "check-departments.mjs",
 
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
-cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) });
+cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) });
 expect("check-integrations passes on the repository", run("check-integrations.mjs", [], { EE_ROOT: repo }).status === 0);
 edit(join(repo, "interface/tooling/integrations.json"), (list) => { list.push({ id: "obsidian", name: "Obsidian", layer: "interface", role: "notes", interfaces: ["app"], reach: ["knowledge"], interface_kind: "custom", status: "in-use" }); });
 { const r = run("check-integrations.mjs", [], { EE_ROOT: repo }); expect("a single-layer tool listed as an interface fails", r.status !== 0 && /reaches 1 layers/.test(r.stderr)); }
@@ -284,19 +284,27 @@ edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { list.find((t
 { const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
-const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
+const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
 for (const [name, change, pattern] of [
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
   ["a schema no record type names fails", (d) => writeFileSync(join(d, "schema/stray.schema.json"), "{}"), /a schema no record type names/],
-  ["a skill no kit lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no kit lists this skill/],
-  ["a kit owning another layer's record fails", (d) => edit(join(d, "purpose/kit.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
-  ["a kit reading an unknown record type fails", (d) => edit(join(d, "operations/kit.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
+  ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
+  ["a layer owning another layer's record fails", (d) => edit(join(d, "purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
+  ["a layer reading an unknown record type fails", (d) => edit(join(d, "operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
 ]) {
   const d = copy(`dm${++n}`);
   change(d);
   const r = run("check-data-model.mjs", [], { EE_ROOT: d });
   expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+{
+  const d = copy("priv");
+  edit(join(d, "packages/customers/package.json"), (p) => { p.use_model = [{ step: "summarize", inputs: ["ada.note"] }]; });
+  mkdirSync(join(d, "instance/ventures/everything-ecosystem/customers"), { recursive: true });
+  writeFileSync(join(d, "instance/ventures/everything-ecosystem/customers/ada.json"), JSON.stringify({ id: "ada", private_fields: ["note"] }));
+  const r = run("check-private.mjs", [join(d, "instance")], { EE_ROOT: d });
+  expect("check-private catches a private field named in use_model", r.status !== 0 && /ada\.note is private/.test(r.stderr));
 }
 
 rmSync(tmp, { recursive: true, force: true });

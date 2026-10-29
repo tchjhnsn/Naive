@@ -9,7 +9,8 @@
 //   MENTURA_WORKSPACE=<dir> sets the workspace; the default is this repository's instance/.
 
 import { createInterface } from "node:readline";
-import { call, routes, routesMd, ventures } from "../router.mjs";
+import { call, routes, routesMd, ventureDir, ventures } from "../router.mjs";
+import { propose } from "../../schema/decisions.mjs";
 
 const PROTOCOL = "2025-06-18";
 const venture = { type: "string", description: "The venture's id, or its folder path for a nested venture (see mentura_ventures)" };
@@ -23,11 +24,18 @@ export const TOOLS = [
   { name: "mentura_write", description: "Write one record of a venture. The record must match its schema. A gated record is written as a draft under _drafts/ for a person to accept. Every write is logged in the venture's provenance log: say what the content came from and the decision it acts under.", inputSchema: { type: "object", properties: { venture, route, record: { type: "object", description: "The whole record" },
     derived_from: { type: "array", items: { type: "string" }, description: "What the content came from: venture-relative paths, URLs or decision ids" },
     decision: { type: "string", description: "The decision the write acts under, such as EE-026" },
-    model: { type: "string", description: "Your model, for the provenance log" }, note: { type: "string" } }, required: ["venture", "route", "record"] } },
+    model: { type: "string", description: "Your model, for the provenance log" }, note: { type: "string" },
+    agent_id: { type: "string", description: "Your role in the team plan, so its routes and unlocks apply" } }, required: ["venture", "route", "record"] } },
+  { name: "mentura_decisions", description: "The decisions a venture owes (EE-054): each with its parent, boundary, phase, due time and whether it renders now, is overdue, waits, comes later, is stale or deferred. Work on what renders now or overdue; a decision that waits is held by an open fail-closed decision above it. A route a pending decision unlocks is refused until a person decides it.", inputSchema: { type: "object", properties: { venture,
+    render: { type: "array", items: { type: "string" }, description: "Only these states, such as [\"overdue\", \"now\"]" } }, required: ["venture"] } },
+  { name: "mentura_propose_decision", description: "Propose a decision, or new wording for an open one. It stays open until a person approves it in the CLI (mentura decide); you can never mark a decision decided. Put it beside what it decides with at (a venture folder such as operations) and name (<record>[.<topic>]).", inputSchema: { type: "object", properties: { venture,
+    decision: { type: "object", description: "id, question, and optionally answer (your proposed wording), decides, layer, parent, needed_in, due, outcomes, unlocks, note, plus at and name for where it goes" },
+    agent_id: { type: "string", description: "Your role in the team plan" }, model: { type: "string" } }, required: ["venture", "decision"] } },
   { name: "mentura_check", description: "Run the checks for one record of a venture.", inputSchema: { type: "object", properties: { venture, route }, required: ["venture", "route"] } },
   { name: "mentura_template", description: "The fill-in template for a record, where its kit has one.", inputSchema: { type: "object", properties: { route }, required: ["route"] } },
   { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/assess (what the problem's evidence is strong enough for), governance/payouts, knowledge/catalog (index every source the venture keeps records in), knowledge/search (find items in any of them). A result with needs_input lists what is missing: ask the person whether to fill it in or run as is, and only then call again with as_is.", inputSchema: { type: "object", properties: { venture, route, value: { type: ["number", "string"], description: "governance/payouts: a sale value; knowledge/search: the query" },
-    as_is: { type: "boolean", description: "purpose/validation/assess: run even though the record is incomplete. Set it only after the person chose to run as is" } }, required: ["venture", "route"] } },
+    as_is: { type: "boolean", description: "purpose/validation/assess: run even though the record is incomplete. Set it only after the person chose to run as is" },
+    agent_id: { type: "string", description: "Your role in the team plan" } }, required: ["venture", "route"] } },
 ];
 
 let client = null; // the harness, as it named itself at initialize
@@ -40,7 +48,7 @@ export async function handle(msg) {
     case "initialize":
       client = params.clientInfo ? [params.clientInfo.name, params.clientInfo.version].filter(Boolean).join(" ") : null;
       return reply({ protocolVersion: PROTOCOL, capabilities: { tools: {}, resources: {} }, serverInfo: { name: "mentura", version: "0.1.0" },
-        instructions: "Start with mentura_run on system/need-now to see what a venture needs now, so you build only that. Read before you write. Gated records are drafts until a person accepts them." });
+        instructions: "Start with mentura_decisions to see which decisions are due and what is held, then mentura_run on system/need-now to see what a venture needs now, so you build only that. Read before you write. Gated records are drafts until a person accepts them." });
     case "notifications/initialized": case "notifications/cancelled": return null;
     case "ping": return reply({});
     case "tools/list": return reply({ tools: TOOLS });
@@ -53,11 +61,21 @@ export async function handle(msg) {
         case "mentura_layout": r = await call({ venture: a.venture, route: a.route, action: "layout" }); break;
         case "mentura_view": r = await call({ venture: a.venture, route: a.route, action: "view" }); break;
         case "mentura_read": r = await call({ venture: a.venture, route: a.route, action: "read" }); break;
-        case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", via: "mcp",
+        case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
+        case "mentura_decisions": {
+          r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
+          if (r.ok && a.render?.length) r.result = { ...r.result, decisions: r.result.decisions.filter((d) => a.render.includes(d.render)) };
+          break;
+        }
+        case "mentura_propose_decision": {
+          const dir = ventureDir(a.venture);
+          r = dir ? propose(dir, a.decision, { agentId: a.agent_id, via: "mcp", harness: client, model: a.model }) : { ok: false, error: `no venture ${a.venture}` };
+          break;
+        }
         case "mentura_check": r = await call({ venture: a.venture, route: a.route, action: "check" }); break;
         case "mentura_template": r = await call({ route: a.route, action: "template" }); break;
-        case "mentura_run": r = await call({ venture: a.venture, route: a.route, action: "run", input: a.value !== undefined || a.as_is ? { ...(a.value !== undefined ? { value: a.value } : {}), ...(a.as_is ? { as_is: true } : {}) } : undefined }); break;
+        case "mentura_run": r = await call({ venture: a.venture, route: a.route, action: "run", actor_id: a.agent_id, input: a.value !== undefined || a.as_is ? { ...(a.value !== undefined ? { value: a.value } : {}), ...(a.as_is ? { as_is: true } : {}) } : undefined }); break;
         default: return fail(-32602, `unknown tool ${params.name}`);
       }
       if (r.ok && r.needs_input) return reply({ content: [{ type: "text", text: `Ask the person before running. ${r.needs_input.ask}\n${JSON.stringify(r.needs_input, null, 2)}` }], isError: false });

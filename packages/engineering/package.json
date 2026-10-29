@@ -1,0 +1,41 @@
+{
+  "name": "engineering",
+  "title": "Engineering",
+  "kind": "handoff",
+  "purpose": "you, or your own coding agent, when you build the site and the product",
+  "for": "you, or your own coding agent, when you build the site and the product",
+  "from": [
+    "product",
+    "marketing"
+  ],
+  "base": {
+    "discovery": 0.2,
+    "validation": 0.6,
+    "beachhead": 0.9,
+    "scale": 0.9,
+    "platform": 0.9
+  },
+  "when": [
+    {
+      "if": "software",
+      "at_least": 0.7
+    },
+    {
+      "if": "site",
+      "at_least": 0.7
+    }
+  ],
+  "why": "Founders build it themselves (the assumed model): this is what they, or their coding agent, build from",
+  "unlocks": [
+    "the site build",
+    "the product build"
+  ],
+  "gates": [
+    "every core package it draws on is complete"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}
