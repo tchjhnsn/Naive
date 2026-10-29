@@ -7,6 +7,8 @@
 //   naive port --from <project> --venture <dir>     plan bringing a project in with its files as they are
 //   naive port --venture <dir> --apply --confirm port
 //                                                   carry out that plan (EE-076)
+//   naive migrate --from <project> --venture <dir>  an agent rewrites the project as Naive records, as a plan and decisions
+//   naive migrate --venture <dir> --apply           write what a person decided (EE-076)
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -20,6 +22,7 @@ const run = (script, args) => process.exit(spawnSync("node", [join(repo, script)
 
 if (cmd === "upgrade") run("schema/upgrade-venture.mjs", rest);
 else if (cmd === "port") run("schema/port-venture.mjs", rest);
+else if (cmd === "migrate") run("schema/migrate-venture.mjs", rest);
 else if (cmd === "typegen") {
   const out = join(repo, ".naive/types");
   mkdirSync(out, { recursive: true });
@@ -27,6 +30,6 @@ else if (cmd === "typegen") {
   writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
   console.log(`wrote ${out}`);
 } else {
-  console.error("usage: node interface/cli/naive.mjs typegen | upgrade <venture dir> | port --from <project> --venture <dir> [--apply --confirm port]");
+  console.error("usage: node interface/cli/naive.mjs typegen | upgrade <venture dir> | port --from <project> --venture <dir> [--apply --confirm port] | migrate --from <project> --venture <dir> [--apply]");
   process.exit(cmd ? 1 : 2);
 }
