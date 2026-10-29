@@ -1,6 +1,6 @@
 {
   "name": "naive-framework",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Naive, a venture development framework: conventions, routes, records, checks and an agent interface for building a venture.",
   "type": "module",
   "license": "MIT",
@@ -22,6 +22,7 @@
     "AGENTS.md",
     "README.md",
     "LICENSE",
+    ".claude-plugin/plugin.json",
     "interface/",
     "schema/",
     "packages/",
