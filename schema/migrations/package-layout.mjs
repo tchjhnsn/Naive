@@ -8,16 +8,20 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "../venture-paths.mjs";
+import { layoutOf } from "../venture-paths.mjs";
 
 export const id = "package-layout";
 export const describe = "Moves records from the layer folders (purpose/, pillars/, products/, knowledge/) into package folders (foundation/, validation/, product/, marketing/, people/, decisions/)";
 
 export function apply(dir, ctx) {
+  // A venture in the structured layout (EE-086) is already past this layout: nothing to move.
+  if (layoutOf(dir) === "structured") return;
   const load = (p) => JSON.parse(readFileSync(p, "utf8"));
   // A decision file infers its target from the folder it sits in. Stamp that path before the file
   // moves, so the decision still points at the same record.
   const stampDecisions = (folder) => {
-    const d = join(dir, folder);
+    const d = ventureFile(dir, folder);
     if (!existsSync(d)) return;
     for (const f of readdirSync(d).filter((x) => x.endsWith(".decision.json"))) {
       const rec = load(join(d, f));
@@ -45,7 +49,7 @@ export function apply(dir, ctx) {
   ];
   for (const [a, b] of pairs) ctx.mv(a, b);
 
-  const list = (rel, ext) => existsSync(join(dir, rel)) ? readdirSync(join(dir, rel)).filter((f) => f.endsWith(ext)) : [];
+  const list = (rel, ext) => existsSync(ventureFile(dir, rel)) ? readdirSync(ventureFile(dir, rel)).filter((f) => f.endsWith(ext)) : [];
   for (const f of list("products", ".json")) ctx.mv(`products/${f}`, `product/${f}`);
   for (const f of list("purpose/anatomy", ".json")) ctx.mv(`purpose/anatomy/${f}`, `product/anatomy/${f}`);
 
@@ -55,7 +59,7 @@ export function apply(dir, ctx) {
   }
 
   for (const f of ["product.md", "business.md"]) {
-    if (existsSync(join(dir, "pillars", f))) {
+    if (existsSync(join(ventureFile(dir, "pillars"), f))) {
       ctx.mv(`pillars/${f}`, `_private/pillars/${f}`);
       ctx.escalate(`${f.replace(".md", "")} pillar: the brief names a home only for brand (marketing/). Archived at _private/pillars/${f} rather than guessed.`);
     }
@@ -68,8 +72,8 @@ export function apply(dir, ctx) {
   for (const gone of ["purpose", "pillars", "knowledge", "products"]) ctx.removeEmpty(gone);
 
   const policy = "governance/publication-policy.json";
-  if (existsSync(join(dir, policy))) {
-    const text = readFileSync(join(dir, policy), "utf8");
+  if (existsSync(ventureFile(dir, policy))) {
+    const text = readFileSync(ventureFile(dir, policy), "utf8");
     if (text.includes("pillars/brand.md")) ctx.write(policy, text.replaceAll("pillars/brand.md", "marketing/brand.md"), { note: "the brand pillar moved to marketing/brand.md (EE-070)" });
   }
 

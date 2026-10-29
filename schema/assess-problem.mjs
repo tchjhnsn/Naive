@@ -26,6 +26,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const ASSUMPTIONS = [
   { id: "exists", says: "the problem is real", field: "statement", test: "Find people already paying for or building a workaround (search, forums, competitors' customers)" },
@@ -97,7 +98,7 @@ export const ASK = "Some things the assessment reads are missing. Fill them in f
 
 /** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. */
 export function assess(dir, { as_is = false, today = new Date() } = {}) {
-  const f = join(dir, "purpose/validation/problem.json");
+  const f = join(ventureFile(dir, "purpose/validation/problem.json"));
   const rec = existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
   const missing = preflight(rec);
   if (missing.length && !as_is) return { needs_input: { ask: ASK, missing, options: [
@@ -117,7 +118,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   if (!dir) { console.error("usage: node schema/assess-problem.mjs <venture dir> [--json] [--preflight] [--as-is]"); process.exit(2); }
   const flag = (f) => process.argv.includes(f);
-  const out = flag("--preflight") ? { missing: preflight(existsSync(join(dir, "purpose/validation/problem.json")) ? JSON.parse(readFileSync(join(dir, "purpose/validation/problem.json"), "utf8")) : null) } : assess(dir, { as_is: flag("--as-is") });
+  const out = flag("--preflight") ? { missing: preflight(existsSync(join(ventureFile(dir, "purpose/validation/problem.json"))) ? JSON.parse(readFileSync(join(ventureFile(dir, "purpose/validation/problem.json")), "utf8")) : null) } : assess(dir, { as_is: flag("--as-is") });
   if (flag("--json")) { console.log(JSON.stringify(out, null, 2)); process.exit(0); }
   const list = (m) => m.map((x) => `  - ${x.field}${x.items ? ` (${x.items.join(", ")})` : ""}: ${x.why}. As is: ${x.as_is}`).join("\n");
   if (out.needs_input) { console.log(`${out.needs_input.ask}\n${list(out.needs_input.missing)}\nFill in: ${out.needs_input.options[0].how}\nRun as is: ${out.needs_input.options[1].how}`); process.exit(0); }

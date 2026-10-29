@@ -25,13 +25,14 @@ import { call, ventureDir } from "./router.mjs";
 import { agentFromEnv, record as prov } from "./provenance.mjs";
 import { altStatement, checkAssets, facts as allFacts, factsOf, REGISTER, registerOf } from "../schema/assets.mjs";
 import { brandOf, checkBrand, resolveBrand, sitemapOf, sitemapXml, termsFor, tokens, voice } from "../schema/brand.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 const VERSION = "0.1.0";
 const today = () => new Date().toISOString();
 
 /** The facts code reads, in the register's shape. */
 export const factsFor = (dir, path) => {
-  const f = factsOf(readFileSync(join(dir, path)));
+  const f = factsOf(readFileSync(ventureFile(dir, path)));
   return Object.fromEntries(Object.entries({ type: f.type, width: f.width, height: f.height, sizes: f.sizes, bytes: f.bytes, sha256: f.sha256, filled_at: today() }).filter(([, v]) => v !== undefined));
 };
 
@@ -47,7 +48,7 @@ export async function addAsset({ venture, workspace, path, source, license, cred
   const dir = ventureDir(venture, workspace);
   if (!dir) return { ok: false, error: `no venture ${venture}` };
   if (!path?.startsWith("public/")) return { ok: false, error: `${path} is not in public/` };
-  if (!existsSync(join(dir, path))) return { ok: false, error: `${path} is not in ${venture}` };
+  if (!existsSync(ventureFile(dir, path))) return { ok: false, error: `${path} is not in ${venture}` };
   const reg = registerOf(dir) ?? emptyRegister();
   const entry = Object.fromEntries(Object.entries({ path, source, license, credit, alt: alt ? { text: alt, by: actor === "person" ? "person" : "agent" } : undefined, decorative: decorative || undefined, origin_url, design_system, facts: factsFor(dir, path) }).filter(([, v]) => v !== undefined));
   reg.assets = [...reg.assets.filter((a) => a.path !== path), entry].sort((a, b) => a.path.localeCompare(b.path));
@@ -64,7 +65,7 @@ export async function fill({ venture, workspace }) {
   if (!reg) return { ok: false, error: `${venture} has no ${REGISTER}; register a file first: mentura assets add public/<file> ...` };
   const changed = [], missing = [];
   for (const a of reg.assets) {
-    if (!existsSync(join(dir, a.path))) { missing.push(a.path); continue; }
+    if (!existsSync(ventureFile(dir, a.path))) { missing.push(a.path); continue; }
     const f = factsFor(dir, a.path);
     if (!a.facts || ["type", "width", "height", "bytes", "sha256"].some((k) => (a.facts[k] ?? null) !== (f[k] ?? null))) { a.facts = f; changed.push(a.path); }
   }
@@ -116,12 +117,12 @@ export async function addRemote({ venture, workspace, url, license, credit, id, 
   try { new URL(url); } catch { return { ok: false, error: `${url} is not a URL` }; }
   const rid = id ?? rawId(url);
   const reg = registerOf(dir) ?? emptyRegister();
-  if (!existsSync(join(dir, "raw/sources", rid, "source.json"))) {
+  if (!existsSync(join(ventureFile(dir, "raw/sources"), rid, "source.json"))) {
     const w = await call({ venture, route: `raw/sources/${rid}`, action: "write", input: { id: rid, origin: url, title: `Remote image at ${new URL(url).host}`, fetched: today().slice(0, 10) }, actor, workspace, via: "cli", provenance: { note: "a remote image, kept as a link (J-3)" } });
     if (!w.ok) return w;
     const text = [`# Remote image`, "", `- Link: ${url}`, `- Host: ${new URL(url).host}`, `- License: ${license}`, `- Credit: ${credit ?? "(missing)"}`, ...(fetched ? [`- Fetched: ${fetched.type}${fetched.width ? `, ${fetched.width}x${fetched.height}` : ""}, ${fetched.bytes} bytes, sha256 ${fetched.sha256}`] : []), "",
       copy ? `A copy is kept at ${copy}: the license allows it.` : "The venture links to this image. A full copy stays private (raw/sources/<id>/original.*, out of git) unless the license allows one.", ...(note ? ["", note] : []), ""].join("\n");
-    writeFileSync(join(dir, "raw/sources", rid, "text.md"), text);
+    writeFileSync(join(ventureFile(dir, "raw/sources"), rid, "text.md"), text);
     prov(dir, { entity: `raw/sources/${rid}/text.md`, route: `raw/sources/${rid}`, activity: "write", agent: agentFromEnv(actor === "person" ? "person" : "agent", "cli"), note: "the note beside a remote image (J-3)" });
   }
   const entry = Object.fromEntries(Object.entries({ id: rid, url, license, credit, alt: alt ? { text: alt, by: actor === "person" ? "person" : "agent" } : undefined, fetched, copy }).filter(([, v]) => v !== undefined));

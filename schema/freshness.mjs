@@ -39,6 +39,7 @@ import { agentFromEnv, entries as provEntries, record as prov } from "../interfa
 import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "../interface/router.mjs";
 import { connect, LOCAL, sourcesOf } from "../knowledge/connectors/index.mjs";
 import { decisions as decisionMatrix, PHASES } from "./decisions.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -83,7 +84,7 @@ const human = (s) => s % 604800 === 0 && s ? `${s / 604800}w` : s % 86400 === 0 
  */
 export function profiles(dir) {
   const base = load(join(repo, DEFAULTS));
-  const cfg = dir && existsSync(join(dir, "naive.config.json")) ? load(join(dir, "naive.config.json")).freshness ?? {} : {};
+  const cfg = dir && existsSync(join(ventureFile(dir, "naive.config.json"))) ? load(join(ventureFile(dir, "naive.config.json"))).freshness ?? {} : {};
   const out = { default: cfg.default ?? base.default, profiles: { ...base.profiles, ...(cfg.profiles ?? {}) }, records: { ...base.records, ...(cfg.records ?? {}) }, overridden: Object.keys(cfg).length > 0 };
   const where = (k) => (cfg.profiles?.[k] || cfg.records?.[k] || k === "default") && out.overridden ? "naive.config.json freshness" : DEFAULTS;
   for (const [name, p] of Object.entries(out.profiles)) {
@@ -124,7 +125,7 @@ export function recordFiles(dir) {
 
 /** The freshness log: revalidate, verify and phase events, oldest first. */
 export function events(dir) {
-  const f = join(dir, LOG);
+  const f = ventureFile(dir, LOG);
   return existsSync(f) ? readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : [];
 }
 
@@ -172,7 +173,7 @@ const at = (obj, pointer) => pointer.split("/").slice(1).map((k) => k.replace(/~
 // parent record; a child that does not show the parent's value has drifted. Children elsewhere
 // are read through their connector when it is a file system, else left to the platform.
 async function whereUsed(dir, byRoute, byPath, unchecked) {
-  const f = join(dir, "knowledge/where-used.json");
+  const f = join(ventureFile(dir, "knowledge/where-used.json"));
   if (!existsSync(f)) return [];
   const ids = new Map(sourcesOf(dir).sources.map((s) => [s.id, s]));
   const out = [];
@@ -181,13 +182,13 @@ async function whereUsed(dir, byRoute, byPath, unchecked) {
     const route = r ? (r.collection === "item" ? r.route.replace("[id]", params.id) : r.route) : fact.parent.route;
     const parent = byRoute.get(route);
     if (!parent || !parent.endsWith(".json")) { unchecked.push(`${fact.id}: parent ${fact.parent.route} is not a JSON record in the venture folder`); continue; }
-    const value = at(load(join(dir, parent)), fact.parent.pointer);
+    const value = at(load(ventureFile(dir, parent)), fact.parent.pointer);
     for (const child of fact.children) {
       if (child.status === "frozen") continue;
       const s = ids.get(child.source);
       if (!s || s.connector !== "filesystem") { unchecked.push(`${fact.id} -> ${child.source}://${child.path}: needs the platform to check`); continue; }
       let content;
-      if (s.id === LOCAL) content = existsSync(join(dir, child.path)) ? readFileSync(join(dir, child.path), "utf8") : null;
+      if (s.id === LOCAL) content = existsSync(ventureFile(dir, child.path)) ? readFileSync(ventureFile(dir, child.path), "utf8") : null;
       else content = (await (await connect(s, dir)).read(child.path))?.content ?? null;
       const shows = content === null ? false : child.match.kind === "json"
         ? (() => { try { return JSON.stringify(at(JSON.parse(content), child.match.pointer)) === JSON.stringify(value); } catch { return false; } })()
@@ -217,17 +218,17 @@ export async function freshness(dir, { now, light = false } = {}) {
   const change = phaseChange(dir, venture, evs, warnings);
   const lastOf = (path, kinds) => { const e = log.filter((x) => x.entity === path && kinds.has(x.activity)).at(-1); return e ? Date.parse(e.at) : null; };
   // The last time a file's content changed: its last logged write, else its file time.
-  const changedAt = (path) => lastOf(path, CONTENT) ?? (existsSync(join(dir, path)) ? statSync(join(dir, path)).mtimeMs : null);
+  const changedAt = (path) => lastOf(path, CONTENT) ?? (existsSync(ventureFile(dir, path)) ? statSync(ventureFile(dir, path)).mtimeMs : null);
 
   for (const i of items) {
     const write = lastOf(i.path, CONTENT), confirmed = lastOf(i.path, CHECKED);
     const verified = evs.filter((e) => e.event === "verify" && e.target && covers(e.target, i, dir)).map((e) => Date.parse(e.at)).at(-1) ?? null;
     const known = [[write, "provenance log: written"], [confirmed, "provenance log: confirmed"], [verified, "freshness log: verified"]].filter(([x]) => x !== null).sort((a, b) => b[0] - a[0]);
-    i.checked_at = known.length ? known[0][0] : statSync(join(dir, i.path)).mtimeMs;
+    i.checked_at = known.length ? known[0][0] : statSync(ventureFile(dir, i.path)).mtimeMs;
     i.basis = known.length ? known[0][1] : "file time (not in the provenance log)";
-    i.changed_at = write ?? statSync(join(dir, i.path)).mtimeMs;
+    i.changed_at = write ?? statSync(ventureFile(dir, i.path)).mtimeMs;
     const latest = log.filter((x) => x.entity === i.path && x.derived_from?.length && CONTENT.has(x.activity)).at(-1);
-    i.depends_on = normalizeDeps(latest?.derived_from, byRoute, log).filter((d) => d !== i.path && (byPath.has(d) || existsSync(join(dir, d))));
+    i.depends_on = normalizeDeps(latest?.derived_from, byRoute, log).filter((d) => d !== i.path && (byPath.has(d) || existsSync(ventureFile(dir, d))));
     i.profile = profileFor(P, i.record, i.route);
     i.reasons = [];
   }
@@ -356,7 +357,7 @@ function append(dir, event, by) {
   rmSync(scratch, { recursive: true, force: true });
   if (v.status !== 0) throw new Error(`does not match schema/freshness-log.schema.json:\n${(v.stdout + v.stderr).trim()}`);
   mkdirSync(join(dir, dirname(LOG)), { recursive: true });
-  appendFileSync(join(dir, LOG), JSON.stringify(line) + "\n");
+  appendFileSync(ventureFile(dir, LOG), JSON.stringify(line) + "\n");
   const what = event.target ? `${event.target.kind}:${event.target.value}` : `${event.from} -> ${event.to}`;
   const entry = prov(dir, { entity: LOG, route: "knowledge/freshness-log", activity: "write", agent: by, note: `${event.event} ${what}${event.reason ? `: ${event.reason}` : ""}` });
   return { line, provenance: entry.hash };
@@ -437,10 +438,10 @@ export async function freeze(dir, out, { now } = {}) {
   if (!rel.startsWith("..") && !isAbsolute(rel) && !rel.split("/")[0].startsWith(".")) return { ok: false, error: `${out} is inside the venture: freeze into a folder outside it, or under a dot folder such as .release/` };
   const byPath = new Map(f.items.map((i) => [i.path, i]));
   mkdirSync(target, { recursive: true });
-  for (const p of f.shell.frozen) { mkdirSync(dirname(join(target, p)), { recursive: true }); copyFileSync(join(dir, p), join(target, p)); }
+  for (const p of f.shell.frozen) { mkdirSync(dirname(join(target, p)), { recursive: true }); copyFileSync(ventureFile(dir, p), join(target, p)); }
   const manifest = {
     venture: f.venture, phase: f.phase, frozen_at: f.now,
-    frozen: f.shell.frozen.map((p) => { const i = byPath.get(p); return { path: p, route: i.route, record: i.record, state: i.state, sha256: createHash("sha256").update(readFileSync(join(dir, p))).digest("hex"), ...(i.state === "stale" ? { reasons: i.reasons.map((r) => r.note) } : {}) }; }),
+    frozen: f.shell.frozen.map((p) => { const i = byPath.get(p); return { path: p, route: i.route, record: i.record, state: i.state, sha256: createHash("sha256").update(readFileSync(ventureFile(dir, p))).digest("hex"), ...(i.state === "stale" ? { reasons: i.reasons.map((r) => r.note) } : {}) }; }),
     holes: f.shell.holes.map((p) => { const i = byPath.get(p); return { path: p, route: i.route, record: i.record, profile: i.profile, read: `mentura ${i.route} read --venture ${f.venture}` }; }),
   };
   writeFileSync(join(target, "shell.json"), JSON.stringify(manifest, null, 2) + "\n");

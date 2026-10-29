@@ -43,6 +43,9 @@
   "schemas": [],
   "templates": [],
   "checks": [],
-  "skill": null,
+  "skill": {
+    "id": "finance-function",
+    "path": "packages/finance/skill/SKILL.md"
+  },
   "use_model": []
 }

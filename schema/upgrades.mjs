@@ -25,6 +25,7 @@ import { agentFromEnv, record } from "../interface/provenance.mjs";
 import { routes, glob } from "../interface/router.mjs";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.mjs";
 import { packages as packageFit } from "./packages.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 export const STAGE = ".naive/upgrade";
@@ -106,26 +107,26 @@ function context(dir, { dry, git, cfg, at, onConfig }) {
   return {
     at, config: cfg, moved, writes, escalated, notes, kept,
     mv(a, b) {
-      if (!existsSync(join(dir, a))) return;
-      if (existsSync(join(dir, b)) && !moved.some(([, t]) => t === b)) throw new Error(`${b} already exists, so ${a} cannot move there; move one of them yourself and upgrade again`);
+      if (!existsSync(ventureFile(dir, a))) return;
+      if (existsSync(ventureFile(dir, b)) && !moved.some(([, t]) => t === b)) throw new Error(`${b} already exists, so ${a} cannot move there; move one of them yourself and upgrade again`);
       if (!dry) {
-        mkdirSync(dirname(join(dir, b)), { recursive: true });
+        mkdirSync(dirname(ventureFile(dir, b)), { recursive: true });
         if (tracked(a)) execFileSync("git", ["mv", a, b], { cwd: dir, stdio: "pipe" });
-        else renameSync(join(dir, a), join(dir, b));
+        else renameSync(ventureFile(dir, a), ventureFile(dir, b));
       }
       moved.push([a, b]);
     },
     write(rel, text, { activity = "write", note, derived_from, log = true } = {}) {
-      if (!dry) { mkdirSync(dirname(join(dir, rel)), { recursive: true }); writeFileSync(join(dir, rel), text); }
+      if (!dry) { mkdirSync(dirname(ventureFile(dir, rel)), { recursive: true }); writeFileSync(ventureFile(dir, rel), text); }
       writes.push({ path: rel, activity, note, derived_from, log });
     },
     escalate: (msg) => escalated.push(msg),
     note: (msg) => notes.push(msg),
     configChanged: () => onConfig(),
-    removeEmpty: (rel) => { if (!dry) removeEmpty(join(dir, rel)); },
+    removeEmpty: (rel) => { if (!dry) removeEmpty(ventureFile(dir, rel)); },
     keep(sub) {
-      if (existsSync(join(dir, sub))) return;
-      if (!dry) { mkdirSync(join(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
+      if (existsSync(ventureFile(dir, sub))) return;
+      if (!dry) { mkdirSync(ventureFile(dir, sub), { recursive: true }); writeFileSync(join(ventureFile(dir, sub), ".gitkeep"), ""); }
       kept.push(sub);
     },
   };
@@ -177,8 +178,8 @@ export async function upgrade(dir, { reg = registry(), dry = false, git = true }
     if (!dry && (p.pending || configChanged)) {
       if (configChanged) { writeConfig(dir, cfg); record(dir, { entity: CONFIG, activity: "write", agent, note: `pinned Naive ${p.to} and ${Object.keys(cfg.packages).length} packages (U-1)` }); }
       const rel = `.release/upgrade-${p.to}.json`;
-      mkdirSync(join(dir, ".release"), { recursive: true });
-      writeFileSync(join(dir, rel), JSON.stringify(release, null, 2) + "\n");
+      mkdirSync(join(ventureFile(dir, ".release")), { recursive: true });
+      writeFileSync(ventureFile(dir, rel), JSON.stringify(release, null, 2) + "\n");
       record(dir, { entity: rel, activity: "release", agent, derived_from: [...new Set([...ran.flatMap((r) => [...r.moves.map((m) => m.to), ...r.rewrote]), ...(configChanged ? [CONFIG] : [])])], note: `upgraded from Naive ${p.from} to ${p.to}` });
       // Adapters installed in the venture (Z-4) are refreshed, so their copies of package skills follow the upgrade.
       release.adapters = await refreshAdapters(dir);
@@ -264,18 +265,18 @@ export function updateFramework(root = repo) {
 export function snapshot(dir, { skipPrivate = true } = {}) {
   const out = {};
   const walk = (rel) => {
-    for (const e of readdirSync(join(dir, rel), { withFileTypes: true })) {
+    for (const e of readdirSync(ventureFile(dir, rel), { withFileTypes: true })) {
       const r = rel ? `${rel}/${e.name}` : e.name;
       if (!rel && (r === ".naive" || r === ".git" || (skipPrivate && r === "_private"))) continue;
       if (e.isDirectory()) { if (!existsSync(join(dir, r, "venture.json"))) walk(r); }
-      else if (e.isFile()) out[r] = sha(readFileSync(join(dir, r)));
+      else if (e.isFile()) out[r] = sha(readFileSync(ventureFile(dir, r)));
     }
   };
   walk("");
   return out;
 }
 
-const writeDraft = (dir, d) => { mkdirSync(join(dir, STAGE), { recursive: true }); writeFileSync(join(dir, DRAFT), JSON.stringify(d, null, 2) + "\n"); return d; };
+const writeDraft = (dir, d) => { mkdirSync(ventureFile(dir, STAGE), { recursive: true }); writeFileSync(ventureFile(dir, DRAFT), JSON.stringify(d, null, 2) + "\n"); return d; };
 /** Adds to the staged upgrade's draft record (what an agent did, say). */
 export function annotate(dir, extra) {
   const d = draft(dir);
@@ -283,16 +284,16 @@ export function annotate(dir, extra) {
   return writeDraft(dir, { ...d, ...extra });
 }
 /** The staged upgrade's draft record, or null. */
-export const draft = (dir) => (existsSync(join(dir, DRAFT)) ? load(join(dir, DRAFT)) : null);
+export const draft = (dir) => (existsSync(ventureFile(dir, DRAFT)) ? load(ventureFile(dir, DRAFT)) : null);
 
 /** Copies the venture to .naive/upgrade/venture and upgrades the copy. Nothing in the venture changes. */
 export async function stage(dir, { reg = registry(), by = "naive" } = {}) {
-  if (existsSync(join(dir, STAGE))) throw new Error(`an upgrade is already staged in ${STAGE}: accept it (--accept --confirm ${CONFIRM}) or reject it (--reject)`);
+  if (existsSync(ventureFile(dir, STAGE))) throw new Error(`an upgrade is already staged in ${STAGE}: accept it (--accept --confirm ${CONFIRM}) or reject it (--reject)`);
   const p = plan(dir, { reg });
   if (!p.pending) throw new Error(`${p.venture} is already on Naive ${p.to} with every package pinned: nothing to stage`);
   const base = snapshot(dir);
-  const out = join(dir, STAGED);
-  for (const f of Object.keys(base)) { mkdirSync(dirname(join(out, f)), { recursive: true }); copyFileSync(join(dir, f), join(out, f)); }
+  const out = ventureFile(dir, STAGED);
+  for (const f of Object.keys(base)) { mkdirSync(dirname(join(out, f)), { recursive: true }); copyFileSync(ventureFile(dir, f), join(out, f)); }
   const result = await upgrade(out, { reg, git: false });
   return writeDraft(dir, { status: "staged", from: p.from, to: p.to, staged_at: now(), by, base, migrations: result.release.migrations.map((m) => ({ id: m.id, moves: m.moves.length, rewrote: m.rewrote.length })), escalated: result.release.escalated, guides: result.release.guides });
 }
@@ -310,7 +311,7 @@ export function runChecks(vdir, { reg = registry() } = {}) {
   for (const r of routes().filter((x) => x.kind === "record" && x.schema && (x.form ?? "json") === "json")) {
     for (const f of files.filter((f) => r.files.some((g) => glob(g).test(f)))) {
       n++;
-      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", join(vdir, f)], { encoding: "utf8" });
+      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", ventureFile(vdir, f)], { encoding: "utf8" });
       if (v.status !== 0) bad.push(`${f} does not match ${r.schema}: ${(v.stdout + v.stderr).trim().split("\n")[0]}`);
     }
   }
@@ -323,10 +324,10 @@ export function runChecks(vdir, { reg = registry() } = {}) {
 
 /** What the staged copy changes: files added, changed and removed (the venture's _private/ is never removed). */
 export function changes(dir) {
-  const live = snapshot(dir), staged = snapshot(join(dir, STAGED), { skipPrivate: false });
+  const live = snapshot(dir), staged = snapshot(ventureFile(dir, STAGED), { skipPrivate: false });
   return {
-    added: Object.keys(staged).filter((f) => !(f in live) && !existsSync(join(dir, f))).sort(),
-    changed: Object.keys(staged).filter((f) => (f in live && live[f] !== staged[f]) || (!(f in live) && existsSync(join(dir, f)) && sha(readFileSync(join(dir, f))) !== staged[f])).sort(),
+    added: Object.keys(staged).filter((f) => !(f in live) && !existsSync(ventureFile(dir, f))).sort(),
+    changed: Object.keys(staged).filter((f) => (f in live && live[f] !== staged[f]) || (!(f in live) && existsSync(ventureFile(dir, f)) && sha(readFileSync(ventureFile(dir, f))) !== staged[f])).sort(),
     removed: Object.keys(live).filter((f) => !(f in staged)).sort(),
   };
 }
@@ -335,7 +336,7 @@ export function changes(dir) {
 export function check(dir, { reg = registry() } = {}) {
   const d = draft(dir);
   if (!d) throw new Error("no upgrade is staged: stage one with --stage or --agent");
-  const checks = runChecks(join(dir, STAGED), { reg });
+  const checks = runChecks(ventureFile(dir, STAGED), { reg });
   const ok = checks.every((c) => c.passed);
   return writeDraft(dir, { ...d, status: ok ? "ready" : "checks-failed", checked_at: now(), checks, changes: changes(dir) });
 }
@@ -357,13 +358,13 @@ export async function accept(dir, { confirm, by, reg = registry() } = {}) {
   const ch = checked.changes;
   const clash = ch.changed.filter((f) => f.startsWith("_private/"));
   if (clash.length) throw new Error(`not accepted: the upgrade would overwrite private files that differ (${clash.join(", ")}); move them aside, reject and stage again`);
-  const src = join(dir, STAGED);
-  for (const f of [...ch.added, ...ch.changed]) { mkdirSync(dirname(join(dir, f)), { recursive: true }); copyFileSync(join(src, f), join(dir, f)); }
-  for (const f of ch.removed) rmSync(join(dir, f));
+  const src = ventureFile(dir, STAGED);
+  for (const f of [...ch.added, ...ch.changed]) { mkdirSync(dirname(ventureFile(dir, f)), { recursive: true }); copyFileSync(join(src, f), ventureFile(dir, f)); }
+  for (const f of ch.removed) rmSync(ventureFile(dir, f));
   // Folders the upgrade emptied go too, unless the copy still has them.
   const dirs = [...new Set(ch.removed.flatMap((f) => f.split("/").slice(0, -1).map((_, i, a) => a.slice(0, i + 1).join("/"))))].sort((a, b) => b.length - a.length);
-  for (const x of dirs) if (existsSync(join(dir, x)) && !existsSync(join(src, x)) && readdirSync(join(dir, x)).length === 0) rmSync(join(dir, x), { recursive: true });
-  rmSync(join(dir, STAGE), { recursive: true, force: true });
+  for (const x of dirs) if (existsSync(ventureFile(dir, x)) && !existsSync(join(src, x)) && readdirSync(ventureFile(dir, x)).length === 0) rmSync(ventureFile(dir, x), { recursive: true });
+  rmSync(ventureFile(dir, STAGE), { recursive: true, force: true });
   return landed(dir, d, ch, by);
 }
 
@@ -373,13 +374,13 @@ async function refreshAdapters(dir) {
 
 async function landed(dir, d, ch, by) {
   const rel = `.release/upgrade-${d.to}.json`;
-  const e = existsSync(join(dir, rel)) ? record(dir, { entity: rel, activity: "accept", agent: agentFromEnv("person", "cli", by ? { id: by } : {}), note: `accepted the staged upgrade to Naive ${d.to}${d.by && d.by !== "naive" ? ` (worked by ${d.by})` : ""}` }) : null;
+  const e = existsSync(ventureFile(dir, rel)) ? record(dir, { entity: rel, activity: "accept", agent: agentFromEnv("person", "cli", by ? { id: by } : {}), note: `accepted the staged upgrade to Naive ${d.to}${d.by && d.by !== "naive" ? ` (worked by ${d.by})` : ""}` }) : null;
   return { accepted: d.to, from: d.from, added: ch.added.length, changed: ch.changed.length, removed: ch.removed.length, provenance: e?.hash ?? null, adapters: await refreshAdapters(dir) };
 }
 
 /** Discards a staged upgrade. The venture never changed, so nothing is logged. */
 export function reject(dir) {
-  if (!existsSync(join(dir, STAGE))) throw new Error("no upgrade is staged");
-  rmSync(join(dir, STAGE), { recursive: true, force: true });
+  if (!existsSync(ventureFile(dir, STAGE))) throw new Error("no upgrade is staged");
+  rmSync(ventureFile(dir, STAGE), { recursive: true, force: true });
   return { rejected: true };
 }

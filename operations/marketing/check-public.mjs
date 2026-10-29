@@ -10,6 +10,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 export const CONTENT = "operations/marketing/content";
 const RUN = 10;
@@ -27,24 +28,24 @@ export function frontmatter(text) {
 
 function files(dir) {
   if (!existsSync(dir)) return [];
-  return readdirSync(dir).flatMap((f) => statSync(join(dir, f)).isDirectory() ? files(join(dir, f)) : f.endsWith(".mdx") ? [join(dir, f)] : []);
+  return readdirSync(dir).flatMap((f) => statSync(ventureFile(dir, f)).isDirectory() ? files(ventureFile(dir, f)) : f.endsWith(".mdx") ? [ventureFile(dir, f)] : []);
 }
 
 export function check(dir) {
   const venture = existsSync(join(dir, "venture.json")) ? JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) : {};
   const publicText = [venture.name, venture.brand?.tagline].filter(Boolean);
-  const pdir = join(dir, "products");
+  const pdir = join(ventureFile(dir, "products"));
   if (existsSync(pdir)) for (const f of readdirSync(pdir).filter((f) => f.endsWith(".json"))) publicText.push(JSON.parse(readFileSync(join(pdir, f), "utf8")).name ?? "");
   const allowed = new Set(publicText.flatMap((t) => [...runs(t)]));
-  const results = files(join(dir, CONTENT)).map((f) => {
+  const results = files(ventureFile(dir, CONTENT)).map((f) => {
     const rel = relative(dir, f), { meta, body } = frontmatter(readFileSync(f, "utf8")), errors = [];
     if (!meta.variant_of) errors.push("names no internal record (variant_of): marketing content is a variant of an internal record");
-    else if (!existsSync(join(dir, meta.variant_of))) errors.push(`variant_of ${meta.variant_of} does not exist`);
+    else if (!existsSync(ventureFile(dir, meta.variant_of))) errors.push(`variant_of ${meta.variant_of} does not exist`);
     if (!meta.audience) errors.push("names no audience");
     if (meta.publish === undefined) errors.push("does not say whether it is published (publish: true or false)");
     if (meta.publish === true && !meta.approved_by) errors.push("is published without a person's approval (approved_by, EE-025)");
-    if (meta.variant_of && existsSync(join(dir, meta.variant_of))) {
-      const src = join(dir, meta.variant_of);
+    if (meta.variant_of && existsSync(ventureFile(dir, meta.variant_of))) {
+      const src = ventureFile(dir, meta.variant_of);
       const raw = readFileSync(src, "utf8");
       const internal = new Set(strings(src.endsWith(".json") ? JSON.parse(raw) : raw).flatMap((s) => [...runs(s)]));
       const leaks = [...runs(body)].filter((r) => internal.has(r) && !allowed.has(r));

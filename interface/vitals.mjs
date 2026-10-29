@@ -21,6 +21,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { events } from "./instrumentation.mjs";
 import { entries } from "./provenance.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 export const THRESHOLDS = { calls_per_task: 25, tokens_per_call: 6000, time_to_useful_ms: 10000, decision_hours: 72 };
 const DECISION = /(^|\/)decisions\/[^/]+\.decision\.json$/;
@@ -28,7 +29,7 @@ const DECISION = /(^|\/)decisions\/[^/]+\.decision\.json$/;
 /** The 75th percentile, nearest rank. */
 export const p75 = (xs) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); return s[Math.ceil(0.75 * s.length) - 1]; };
 const startOf = (e) => Date.parse(e.at) - (e.ms ?? 0);
-const config = (dir) => { const f = join(dir, "naive.config.json"); try { return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {}; } catch { return {}; } };
+const config = (dir) => { const f = join(ventureFile(dir, "naive.config.json")); try { return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {}; } catch { return {}; } };
 
 /** Top-level calls grouped by session: one task per session. */
 export function tasks(dir) {
@@ -55,7 +56,7 @@ export function decisionLatency(dir, now = Date.now()) {
   }
   return [...by.values()].map((d) => {
     let id = d.file.split("/").at(-1).replace(/\.decision\.json$/, "");
-    try { id = JSON.parse(readFileSync(join(dir, d.file), "utf8")).id ?? id; } catch {}
+    try { id = JSON.parse(readFileSync(ventureFile(dir, d.file), "utf8")).id ?? id; } catch {}
     const end = d.decided ? Date.parse(d.decided) : now;
     return { id, ...d, open: !d.decided, hours: Math.round(((end - Date.parse(d.opened)) / 36e5) * 100) / 100 };
   });

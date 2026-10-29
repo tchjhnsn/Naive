@@ -34,6 +34,31 @@
       "pattern": "^[a-z0-9-]+$",
       "description": "The venture type, an id from schema/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082)"
     },
+    "layout": {
+      "enum": [
+        "flat",
+        "structured"
+      ],
+      "default": "flat",
+      "description": "Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top."
+    },
+    "functions": {
+      "type": "object",
+      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from operations/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "owner"
+        ],
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "A role or a person's name; no personal details"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "parent": {
       "type": [
         "string",
@@ -176,23 +201,6 @@
           "extends": {
             "type": "string",
             "pattern": "^[a-z0-9-]+$"
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "functions": {
-      "type": "object",
-      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from operations/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
-      "additionalProperties": {
-        "type": "object",
-        "required": [
-          "owner"
-        ],
-        "properties": {
-          "owner": {
-            "type": "string",
-            "description": "A role or a person's name; no personal details"
           }
         },
         "additionalProperties": false

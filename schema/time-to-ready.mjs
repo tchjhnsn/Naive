@@ -15,6 +15,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { needNow } from "./need-now.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const day = (d) => d ? d.slice(0, 10) : null;
@@ -43,19 +44,19 @@ export function timeToReady(dir) {
     const rels = (model.records.find((r) => r.id === type)?.paths ?? []).filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
     return here.filter((x) => rels.some((g) => glob(g).test(x)));
   };
-  const seen = (type) => { const fs = where(type); return fs.length ? fs.map((f) => firstSeen(join(dir, f))).sort()[0] : null; };
+  const seen = (type) => { const fs = where(type); return fs.length ? fs.map((f) => firstSeen(ventureFile(dir, f))).sort()[0] : null; };
 
   // Running.
   const nn = needNow(dir);
-  const products = where("product").map((f) => ({ f, p: load(join(dir, f)) }));
+  const products = where("product").map((f) => ({ f, p: load(ventureFile(dir, f)) }));
   const offered = products.filter(({ p }) => p.status === "live");
   const telosFile = where("telos")[0];
-  const telos = telosFile ? load(join(dir, telosFile)) : null;
+  const telos = telosFile ? load(ventureFile(dir, telosFile)) : null;
   const conditions = {
     promise: v.core?.promise ? firstSeen(join(dir, "venture.json")) : null,
-    product_offered: offered.length ? offered.map(({ f }) => firstSeen(join(dir, f))).sort()[0] : null,
+    product_offered: offered.length ? offered.map(({ f }) => firstSeen(ventureFile(dir, f))).sort()[0] : null,
     first_account: seen("account"),
-    next_exit_criteria: nn.next && telos?.phases?.some((p) => p.phase === nn.next) ? firstSeen(join(dir, telosFile)) : null,
+    next_exit_criteria: nn.next && telos?.phases?.some((p) => p.phase === nn.next) ? firstSeen(ventureFile(dir, telosFile)) : null,
   };
   const missing = Object.entries(conditions).filter(([, d]) => !d).map(([k]) => k);
   const runningOn = missing.length ? null : Object.values(conditions).sort().at(-1);
@@ -75,7 +76,7 @@ export function timeToReady(dir) {
 
   // MAD tiers.
   const opsFile = where("validation-operations-readiness")[0];
-  const tiers = opsFile ? load(join(dir, opsFile)).tiers.map((t) => ({ tier: t.tier, ready_on: t.ready_on ?? null, days: days(start, t.ready_on) })) : [];
+  const tiers = opsFile ? load(ventureFile(dir, opsFile)).tiers.map((t) => ({ tier: t.tier, ready_on: t.ready_on ?? null, days: days(start, t.ready_on) })) : [];
 
   return { venture: v.id, phase: nn.phase, started: start, running: { on: runningOn, days: days(start, runningOn), missing, conditions }, layers: layerRows, tiers };
 }

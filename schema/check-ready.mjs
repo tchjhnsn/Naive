@@ -13,19 +13,20 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const [dir, id] = process.argv.slice(2);
 if (!dir || !id) { console.error("usage: node schema/check-ready.mjs <venture dir> <handoff id> [--record --by <who>]"); process.exit(2); }
 const opt = (k) => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
 const root = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const hPath = join(dir, "operations/handoffs", `${id}.json`);
+const hPath = join(ventureFile(dir, "operations/handoffs"), `${id}.json`);
 const h = load(hPath);
 const items = [];
 const item = (name, ok, why = "") => items.push({ name, ok, why });
 
 // 1. The brief says what done looks like and what to do, with no placeholders left.
-const bPath = join(dir, "operations/handoffs", h.brief);
+const bPath = join(ventureFile(dir, "operations/handoffs"), h.brief);
 const brief = existsSync(bPath) ? readFileSync(bPath, "utf8") : "";
 item("brief exists", !!brief, bPath);
 const section = (name) => { const m = brief.match(new RegExp(`^##\\s+(?:\\d+\\.\\s*)?${name}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, "mi")); return m ? m[1].trim() : null; };
@@ -34,10 +35,10 @@ const holes = brief.match(/\b(TBD|TODO|FIXME)\b|\?\?\?|<(?:title|role|entity|out
 item("brief has no placeholders left", !holes.length, holes.slice(0, 3).join(", "));
 
 // 2. Everything it names exists.
-const products = new Set(["products", "product"].flatMap((folder) => existsSync(join(dir, folder)) ? readdirSync(join(dir, folder)).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : []));
+const products = new Set(["products", "product"].flatMap((folder) => existsSync(ventureFile(dir, folder)) ? readdirSync(ventureFile(dir, folder)).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : []));
 const missingProducts = (h.products ?? []).filter((p) => !products.has(p));
 item("every product it serves exists", !missingProducts.length, missingProducts.join(", "));
-const logs = [join(root, "docs/decisions/decisions.json"), join(dir, "knowledge/decisions.json")].filter(existsSync).flatMap((f) => load(f).decisions);
+const logs = [join(root, "docs/decisions/decisions.json"), join(ventureFile(dir, "knowledge/decisions.json"))].filter(existsSync).flatMap((f) => load(f).decisions);
 const decisions = new Map(logs.map((d) => [d.id, d]));
 const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || ["withdrawn", "superseded"].includes(decisions.get(d).status));
 item("every governing decision exists and is in force or proposed", !badDecisions.length, badDecisions.join(", "));
@@ -49,7 +50,7 @@ item("every input it needs exists", !missingInputs.length, missingInputs.join(",
 // 3. The holder can act inside its rights.
 const roles = new Set(load(join(root, "governance/venture-template/roles/agent-roles.json")).roles.map((r) => r.id));
 const classes = new Map(load(join(root, "governance/venture-template/decision-rights.json")).classes.map((c) => [c.id, c]));
-const own = join(dir, "governance/decision-rights.json");
+const own = join(ventureFile(dir, "governance/decision-rights.json"));
 if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
 item(`role ${h.role} exists`, roles.has(h.role));
 const foreign = h.decision_classes.filter((c) => classes.get(c)?.owner !== h.role);

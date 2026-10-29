@@ -38,6 +38,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { entries as provEntries } from "../interface/provenance.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -127,7 +128,7 @@ export const DEFAULTS = { enabled: true, life: "default", judgment_life: "max", 
 
 /** The venture's cache settings: the recommended defaults, then naive.config.json's cache, then NAIVE_CACHE. */
 export function configOf(dir) {
-  const f = dir && join(dir, "naive.config.json");
+  const f = dir && join(ventureFile(dir, "naive.config.json"));
   const own = f && existsSync(f) ? load(f).cache ?? {} : {};
   const off = /^(0|off|false|no)$/i.test(process.env.NAIVE_CACHE ?? "");
   return { ...DEFAULTS, ...own, routes: { ...(own.routes ?? {}) }, enabled: !off && own.enabled !== false };
@@ -372,7 +373,7 @@ function walkEntries(root) {
 
 /** The entries one actor may see: the shared ones and their own private ones, never another person's (C-7). */
 export function entries(dir, { identity = null, level } = {}) {
-  const base = join(dir, CACHE_DIR);
+  const base = ventureFile(dir, CACHE_DIR);
   const roots = [join(base, "shared"), ...(identity ? [join(base, scopeOf(true, identity))] : [])];
   return roots.flatMap(walkEntries).flatMap((f) => { try { const e = load(f); return [{ file: f.slice(dir.length + 1), bytes: statSync(f).size, ...e }]; } catch { return []; } })
     .filter((e) => !level || e.level === level);
@@ -392,7 +393,7 @@ export function stats(dir, { identity = null, now = Date.now() } = {}) {
 /** Removes expired entries in every scope. Returns how many. */
 export function prune(dir, { now = Date.now() } = {}) {
   let n = 0;
-  for (const f of walkEntries(join(dir, CACHE_DIR))) {
+  for (const f of walkEntries(ventureFile(dir, CACHE_DIR))) {
     try { const e = load(f); if (e.expires_at && Date.parse(e.expires_at) <= now) { rmSync(f); n++; } } catch { rmSync(f, { force: true }); n++; }
   }
   return n;
@@ -401,7 +402,7 @@ export function prune(dir, { now = Date.now() } = {}) {
 /** Removes entries, all or one level, in every scope. Returns how many. */
 export function clear(dir, { level } = {}) {
   let n = 0;
-  for (const f of walkEntries(join(dir, CACHE_DIR))) {
+  for (const f of walkEntries(ventureFile(dir, CACHE_DIR))) {
     let e = null;
     try { e = load(f); } catch {}
     if (!level || e?.level === level) { rmSync(f, { force: true }); n++; }

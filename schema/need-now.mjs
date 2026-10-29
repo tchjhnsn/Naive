@@ -15,6 +15,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { catalog } from "./departments.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -27,14 +28,14 @@ const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").repl
 /** Facts about a venture that the need-now conditions test. */
 export function factsOf(dir) {
   const v = load(join(dir, "venture.json"));
-  const json = (p) => existsSync(join(dir, p)) ? load(join(dir, p)) : null;
-  const products = existsSync(join(dir, "products")) ? readdirSync(join(dir, "products")).filter((f) => f.endsWith(".json")).map((f) => load(join(dir, "products", f))) : [];
+  const json = (p) => existsSync(ventureFile(dir, p)) ? load(ventureFile(dir, p)) : null;
+  const products = existsSync(join(ventureFile(dir, "products"))) ? readdirSync(join(ventureFile(dir, "products"))).filter((f) => f.endsWith(".json")).map((f) => load(join(ventureFile(dir, "products"), f))) : [];
   const members = (v.members ?? []).map((m) => typeof m === "string" ? { kind: "person", role: m } : m);
   const own = json("governance/ownership.json");
-  const hDir = join(dir, "operations/handoffs");
+  const hDir = join(ventureFile(dir, "operations/handoffs"));
   const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => load(join(hDir, f))) : [];
   // The founding team, as the founder answered Naive's team question (EE-060): solo, cofounders or looking.
-  const teamFile = join(dir, "decisions/venture.team.decision.json");
+  const teamFile = join(ventureFile(dir, "decisions/venture.team.decision.json"));
   const td = existsSync(teamFile) ? load(teamFile) : null;
   const team = td?.status === "decided" ? ["solo", "cofounders", "looking"].find((t) => (td.answer ?? "").toLowerCase().startsWith(t)) ?? null : null;
   return {

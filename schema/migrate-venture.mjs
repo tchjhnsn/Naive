@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url";
 import { call, routes } from "../interface/router.mjs";
 import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
 import { propose } from "./decisions.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const PLAN = ".release/migrate-plan.json";
 const MAX_FILE = 512 * 1024;
@@ -117,7 +118,7 @@ Files: ${JSON.stringify(Object.fromEntries(given.map((f) => [f.path, f.text])))}
 /** Writes the plan into the venture and proposes one open decision per function it touches. */
 export function proposeDecisions(dir, p) {
   mkdirSync(join(dir, dirname(PLAN)), { recursive: true });
-  writeFileSync(join(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
   prov(dir, { entity: PLAN, activity: "draft", agent: agentFromEnv("agent", "migrate", { id: "naive-migrate" }), note: `migrate plan from ${p.from}: ${p.items.length} records, ${p.left_behind.length} left behind` });
   const groups = new Map();
   for (const it of p.items) groups.set(functionOf(it.route), [...(groups.get(functionOf(it.route)) ?? []), it]);
@@ -139,8 +140,8 @@ const answerOf = (d) => { const a = String(d?.answer ?? "").toLowerCase(); retur
 
 /** Writes what a person decided, through the router. Open decisions wait. */
 export async function apply(dir) {
-  const p = load(join(dir, PLAN));
-  const decisionOf = (fn) => { const f = join(dir, "decisions", `migrate-${fn}.decision.json`); return existsSync(f) ? load(f) : null; };
+  const p = load(ventureFile(dir, PLAN));
+  const decisionOf = (fn) => { const f = join(ventureFile(dir, "decisions"), `migrate-${fn}.decision.json`); return existsSync(f) ? load(f) : null; };
   const done = { brought: 0, drafted: 0, pointed: 0, left: 0, waiting: 0, failed: 0 };
   let pointed = false;
   for (const it of p.items.filter((x) => x.status === "planned")) {
@@ -157,7 +158,7 @@ export async function apply(dir) {
     done[it.status]++;
   }
   if (pointed) {
-    const f = join(dir, "knowledge/sources.json");
+    const f = join(ventureFile(dir, "knowledge/sources.json"));
     const s = existsSync(f) ? load(f) : { sources: [], records: {} };
     const id = slug(basename(p.from));
     if (!s.sources.some((x) => x.id === id)) s.sources.push({ id, connector: "filesystem", writes: "none", root: p.from, note: "migrate: a person chose to point to these files rather than rewrite them" });
@@ -165,7 +166,7 @@ export async function apply(dir) {
     writeFileSync(f, JSON.stringify(s, null, 2) + "\n");
     prov(dir, { entity: "knowledge/sources.json", activity: "write", agent: agentFromEnv("agent", "migrate", { id: "naive-migrate" }), note: `points to ${p.from}, read-only` });
   }
-  writeFileSync(join(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
   return done;
 }
 
@@ -176,7 +177,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node schema/migrate-venture.mjs --from <project> --venture <dir> | --venture <dir> --apply"); process.exit(2); }
   try {
     if (args.includes("--apply")) {
-      if (!existsSync(join(dir, PLAN))) { console.error(`no plan at ${join(dir, PLAN)}: run with --from first`); process.exit(1); }
+      if (!existsSync(ventureFile(dir, PLAN))) { console.error(`no plan at ${ventureFile(dir, PLAN)}: run with --from first`); process.exit(1); }
       const d = await apply(dir);
       console.log(Object.entries(d).filter(([, n]) => n).map(([k, n]) => `${n} ${k}`).join(", ") || "nothing to do");
     } else {
@@ -186,7 +187,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       for (const i of p.items) console.log(`${i.id}  ${i.from.join(", ")}  ->  ${i.route}   (${i.reshaping})`);
       for (const l of p.left_behind) console.log(`left  ${l.from}   (${l.why})`);
       console.log(`\n${p.items.length} records planned, ${p.left_behind.length} left behind. Nothing is written yet.`);
-      if (decisions.length) console.log(`Read ${relative(process.cwd(), join(dir, PLAN))}, then decide ${decisions.join(", ")} with mentura decide (answer "bring in", "point to them" or "leave them"), then run with --apply.`);
+      if (decisions.length) console.log(`Read ${relative(process.cwd(), ventureFile(dir, PLAN))}, then decide ${decisions.join(", ")} with mentura decide (answer "bring in", "point to them" or "leave them"), then run with --apply.`);
     }
   } catch (e) { console.error(e.message); process.exit(1); }
 }

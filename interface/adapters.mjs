@@ -19,6 +19,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 export const STATE = ".naive/adapters.json";
@@ -45,7 +46,7 @@ export async function skillsFor(dir) {
   });
 }
 
-const readState = (dir) => (existsSync(join(dir, STATE)) ? load(join(dir, STATE)) : { adapters: {} });
+const readState = (dir) => (existsSync(ventureFile(dir, STATE)) ? load(ventureFile(dir, STATE)) : { adapters: {} });
 
 /**
  * Writes a harness adapter's files into a venture: its entry files, and a copy of each open package's
@@ -61,7 +62,7 @@ export async function adapt(dir, name) {
   if (a.skills) for (const s of await skillsFor(dir)) want.push({ path: `${a.skills}/${s.id}/SKILL.md`, text: readFileSync(join(repo, s.path), "utf8"), skill: s.id, package: s.package });
   const written = [], current = [], kept = [], files = {};
   for (const w of want) {
-    const f = join(dir, w.path);
+    const f = ventureFile(dir, w.path);
     const now = existsSync(f) ? readFileSync(f, "utf8") : null;
     if (now === w.text) { current.push(w.path); files[w.path] = sha(w.text); continue; }
     // Never overwrite a file a person wrote, or one they changed after the adapter wrote it.
@@ -74,12 +75,12 @@ export async function adapt(dir, name) {
   // A skill copy for a package that is no longer open goes, if the adapter wrote it and nobody changed it.
   const removed = [];
   for (const [p, h] of Object.entries(mine)) {
-    if (want.some((w) => w.path === p) || !existsSync(join(dir, p))) continue;
-    if (sha(readFileSync(join(dir, p), "utf8")) === h) { rmSync(join(dir, p)); removed.push(p); } else kept.push({ path: p, why: "no longer needed, but changed by a person, so kept" });
+    if (want.some((w) => w.path === p) || !existsSync(ventureFile(dir, p))) continue;
+    if (sha(readFileSync(ventureFile(dir, p), "utf8")) === h) { rmSync(ventureFile(dir, p)); removed.push(p); } else kept.push({ path: p, why: "no longer needed, but changed by a person, so kept" });
   }
   state.adapters[name] = { at: new Date().toISOString(), files };
   mkdirSync(join(dir, ".naive"), { recursive: true });
-  writeFileSync(join(dir, STATE), JSON.stringify(state, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, STATE), JSON.stringify(state, null, 2) + "\n");
   return { adapter: name, written, current, kept, removed, skills: want.filter((w) => w.skill).map((w) => w.skill) };
 }
 
@@ -102,7 +103,7 @@ async function harnessSuite(a) {
     const up = spawnSync("node", [join(repo, "schema/upgrade-venture.mjs"), dir], { encoding: "utf8" });
     t("a new venture is created and upgraded to the installed framework", init.status === 0 && up.status === 0, init.stderr + up.stderr);
     const first = await adapt(dir, a.name);
-    t("every entry file is written with the adapter's text", a.files.every((f) => existsSync(join(dir, f.path)) && readFileSync(join(dir, f.path), "utf8") === f.text), JSON.stringify(first.written));
+    t("every entry file is written with the adapter's text", a.files.every((f) => existsSync(ventureFile(dir, f.path)) && readFileSync(ventureFile(dir, f.path), "utf8") === f.text), JSON.stringify(first.written));
     t("the harness reaches the venture's AGENTS.md (it reads it, or an entry file imports or names it)", a.reads.includes("AGENTS.md") || a.files.some((f) => /(^|\s)@AGENTS\.md\b|AGENTS\.md/.test(f.text)));
     t("no entry file is private or outside the venture", a.files.every((f) => !f.path.startsWith("_private/") && !f.path.includes("..") && !f.path.startsWith("/")));
     const { call } = await import("./router.mjs");
