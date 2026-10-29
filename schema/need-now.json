@@ -636,6 +636,91 @@
         "platform": 0.05
       },
       "why": "Never written by hand: a judgment is what a package's model step answers when mentura steps run asks it, so there is nothing to suggest"
+    },
+    "people": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.7,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Who is in the venture and which functions each owns; create-venture writes it"
+    },
+    "founder": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.6,
+        "beachhead": 0.7,
+        "scale": 0.7,
+        "platform": 0.7
+      },
+      "when": [
+        {
+          "if": "team:cofounders",
+          "at_least": 0.8
+        }
+      ],
+      "why": "One file per founder, written by create-venture; links to the founder agreement"
+    },
+    "fund-thesis": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "at_least": 0.9
+        }
+      ],
+      "why": "A fund's foundation: what it invests in and why it wins"
+    },
+    "fund-terms": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "at_least": 0.9
+        }
+      ],
+      "why": "What the fund raises under; LPs ask for it first"
+    },
+    "deal": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "phase": "validation",
+          "at_least": 0.7
+        },
+        {
+          "if": "type:vc-fund",
+          "phase": "beachhead",
+          "at_least": 0.9
+        },
+        {
+          "if": "type:vc-fund",
+          "phase": "scale",
+          "at_least": 0.9
+        }
+      ],
+      "why": "A fund's pipeline, once it is investing"
     }
   }
 }

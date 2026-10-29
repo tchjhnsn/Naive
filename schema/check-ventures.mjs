@@ -21,8 +21,9 @@ const models = (() => {
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-ventures.mjs <dir>"); process.exit(2); }
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
-  e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [join(d, e.name)] : []);
+// node_modules is skipped, as the other checks skip it: an installed framework carries example ventures.
+const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+  : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [join(d, e.name)] : []);
 const jsonIn = (d) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => join(d, f)) : [];
 const accountsIn = (d) => existsSync(d) ? readdirSync(d).map((c) => join(d, c, "account.json")).filter(existsSync) : [];
 

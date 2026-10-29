@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deal.schema.json",
+  "title": "Deal",
+  "description": "One company in the fund's pipeline (deals/<id>.json), from sourced to invested or passed. An investment it makes becomes a nested venture under portfolio/.",
+  "type": "object",
+  "required": [
+    "id",
+    "company",
+    "round",
+    "status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "company": {
+      "type": "string"
+    },
+    "round": {
+      "enum": [
+        "pre-seed",
+        "seed",
+        "series-a",
+        "series-b",
+        "growth",
+        "late"
+      ],
+      "description": "The financing round the company is raising"
+    },
+    "status": {
+      "enum": [
+        "sourced",
+        "screening",
+        "diligence",
+        "term-sheet",
+        "invested",
+        "passed"
+      ]
+    },
+    "sector": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "check": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "thesis_fit": {
+      "type": "string",
+      "description": "How the company fits fund/thesis.json, in a sentence"
+    },
+    "portfolio": {
+      "type": "string",
+      "pattern": "^portfolio/[a-z0-9-]+$",
+      "description": "The nested venture, once invested"
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

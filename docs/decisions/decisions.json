@@ -856,6 +856,20 @@
         "EE-034",
         "EE-044"
       ]
+    },
+    {
+      "id": "EE-082",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-047",
+        "EE-048",
+        "EE-060",
+        "EE-070",
+        "EE-076"
+      ],
+      "decision": "A venture has a type (venture.json `type`, from schema/venture-types.json), and create-venture scaffolds nothing until the type and the founder's role are set. The founder describes the venture in a few words and Jev classifies it (one Noul per type, uncertain below 0.5), or picks from the list; without TYPESAFE_API_KEY the list is the only way. The type decides the starting packages, the first decisions, the layers it needs and the functions it imports (as departments, with folders). Roles a person can hold are in governance/venture-template/roles/venture-roles.json; investors are roles too (general partner, limited partner), so an investor creates a venture of type vc-fund, which starts with a thesis, terms, deals and a portfolio of nested ventures instead of product questions. people/ holds the venture's human capital: people/people.json (who is in it, in which role, and the functions, or hats, each owns; a solo founder owns every function) and one file per founder in people/founders/, linked to the founder agreement. schema/check-people.mjs checks that roles, hats and founder files agree.",
+      "why": "Torian, 2026-10-29: the app should not be scaffolded until a role is chosen and the type of venture is selected; an investor can be a role, and a VC fund needs a thesis and other templates than a software startup; a solo founder owns every function by default; people needs a top-level folder that is to human capital what venture.json is to the venture, with one file per founder linked to founding agreements. Defaults (one file per founder, the type list, investor split into general and limited partner, the folder name people/, the model only with a key) were chosen by the coordinator on Torian's go-ahead and stay open to change."
     }
   ]
 }

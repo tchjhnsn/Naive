@@ -33,17 +33,26 @@ if "--file" in sys.argv:
     errs = [f"{'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}" for e in v.iter_errors(one)]
     print("\n".join(errs) if errs else "valid")
     sys.exit(1 if errs else 0)
+# A file matched by two record types' globs is validated once, by the more specific glob (the one with
+# more literal characters): .../departments/products/department.json is a department, not a product.
+best = {}
 for name, schema, form, globs in RULES:
-    v = jsonschema.Draft202012Validator(schemas[Path(schema).name], registry=registry, format_checker=jsonschema.FormatChecker())
     for g in globs:
-        for f in sorted(glob.glob(str(root / g), recursive=True)):
-            text = Path(f).read_text()
-            docs = [json.loads(l) for l in text.splitlines() if l.strip()] if form == "json-lines" else json.loads(text)
-            docs = docs if form != "json" else [docs]
-            for d in docs:
-                checked += 1
-                for e in v.iter_errors(d):
-                    failed += 1
-                    print(f"{Path(f).relative_to(root)}: {'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}")
+        weight = len(g.replace("**/", "").replace("*", ""))
+        for f in glob.glob(str(root / g), recursive=True):
+            if f not in best or weight > best[f][0]:
+                best[f] = (weight, schema, form)
+validators = {}
+for f in sorted(best):
+    _, schema, form = best[f]
+    v = validators.setdefault(schema, jsonschema.Draft202012Validator(schemas[Path(schema).name], registry=registry, format_checker=jsonschema.FormatChecker()))
+    text = Path(f).read_text()
+    docs = [json.loads(l) for l in text.splitlines() if l.strip()] if form == "json-lines" else json.loads(text)
+    docs = docs if form != "json" else [docs]
+    for d in docs:
+        checked += 1
+        for e in v.iter_errors(d):
+            failed += 1
+            print(f"{Path(f).relative_to(root)}: {'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}")
 print(f"{checked} records checked against their schemas: {'all valid' if not failed else f'{failed} error(s)'}.")
 sys.exit(1 if failed else 0)

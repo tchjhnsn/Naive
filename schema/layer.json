@@ -18,7 +18,8 @@
     "venture-packages",
     "venture-package",
     "release",
-    "naive-config"
+    "naive-config",
+    "venture-types"
   ],
   "reads": [
     "product",

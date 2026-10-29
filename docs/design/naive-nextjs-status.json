@@ -5,34 +5,38 @@
   {
    "id": "I-1",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
+    "interface/create-venture/index.mjs",
+    "interface/create-venture/test.mjs",
+    "schema/init-venture.mjs"
    ],
    "page": "get-started/install",
-   "note": "mentura init and schema/init-venture.mjs create a venture; the create-venture command name is still open"
+   "note": "create-venture is on npm: npx create-venture@latest (also pnpm create venture, yarn create venture) creates the venture, writes package.json, installs naive-framework from npm and starts git. From a clone, node interface/create-venture/index.mjs does the same with the clone's framework"
   },
   {
    "id": "I-2",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs",
+    "interface/demo/board.mjs",
+    "interface/cli/find-venture.mjs"
    ],
-   "page": "get-started/quickstart",
-   "note": "naive dev and the local board are not built; the quickstart uses need-now and overview instead"
+   "page": "get-started/install",
+   "note": "create-venture, cd, npm run dev, open 127.0.0.1:4331: naive dev serves the board for the venture it runs in"
   },
   {
    "id": "I-3",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
+    "interface/create-venture/index.mjs",
+    "interface/create-venture/test.mjs"
    ],
-   "page": "get-started/install"
+   "page": "get-started/install",
+   "note": "--yes: the discovery phase, the phase's packages, the checks and AGENTS.md"
   },
   {
    "id": "I-4",
@@ -50,20 +54,34 @@
    "chapter": "Chapter 1: Installation",
    "status": "built",
    "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
+    "package.json",
+    "interface/create-venture/index.mjs",
+    "interface/create-venture/test.mjs"
    ],
-   "page": "get-started/install"
+   "page": "get-started/install",
+   "note": "Node 20 or later and any package manager (npm, pnpm, yarn, bun); python3 with jsonschema for schema checks"
   },
   {
    "id": "I-6",
    "chapter": "Chapter 1: Installation",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs"
+   ],
+   "note": "Supported agents: Claude Code and Cursor over MCP, any MCP client, and HTTP; naive info shows which a venture is connected to",
+   "page": "get-started/install"
   },
   {
    "id": "I-7",
    "chapter": "Chapter 1: Installation",
-   "status": "not built"
+   "status": "partial",
+   "evidence": [
+    "interface/create-venture/index.mjs",
+    "interface/create-venture/test.mjs"
+   ],
+   "note": "Name, then recommended / previous / customize (phase, layers, legal form, idea dump), with answers kept for the next venture. Missing: the AI-native option where System 1 answers the setup questions from a pasted idea dump",
+   "page": "get-started/install"
   },
   {
    "id": "I-8",
@@ -78,11 +96,13 @@
   {
    "id": "I-9",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "test.mjs"
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs"
    ],
-   "page": "get-started/install"
+   "page": "get-started/install",
+   "note": "naive check runs every check that reads a venture"
   },
   {
    "id": "I-10",
@@ -97,7 +117,8 @@
   {
    "id": "I-12",
    "chapter": "Chapter 1: Installation",
-   "status": "not built"
+   "status": "not built",
+   "note": "Waits on the venture layout decision: a venture directory with knowledge/ and code/ beside each other, which Torian is weighing"
   },
   {
    "id": "I-13",
@@ -127,19 +148,24 @@
   {
    "id": "I-16",
    "chapter": "Chapter 1: Installation",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "package.json",
+    "interface/cli/naive.mjs"
+   ],
+   "note": "Manual installation: install naive-framework as a dev dependency, add the scripts and write venture.json. The ledger's open question (what Naive's React is) stays a design question, not a missing feature",
+   "page": "get-started/install"
   },
   {
    "id": "I-17",
    "chapter": "Chapter 1: Installation",
    "status": "partial",
    "evidence": [
-    "schema/build-release.mjs",
-    "schema/start-release.mjs",
-    "schema/releases-test.mjs"
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs"
    ],
-   "page": "get-started/releases",
-   "note": "The release scripts are built: node schema/build-release.mjs <venture dir> [--port n] (--port is accepted and ignored) and node schema/start-release.mjs <venture dir> [--port n] [--get <path>]. Wiring the naive build and naive start commands to them is another session's job, as are naive dev and naive check, so the row as a whole is partial from this group."
+   "page": "get-started/install",
+   "note": "dev and check are built; build and start call schema/build-release.mjs and schema/start-release.mjs, which the Chapter 17 work writes"
   },
   {
    "id": "I-18",
@@ -169,12 +195,13 @@
   {
    "id": "I-21",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs"
    ],
-   "page": "get-started/install"
+   "page": "get-started/install",
+   "note": "The root layout is AGENTS.md; create-venture writes it and naive dev writes a stub when it is missing"
   },
   {
    "id": "I-22",
@@ -191,40 +218,54 @@
    "chapter": "Chapter 1: Installation",
    "status": "partial",
    "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
+    "schema/init-venture.mjs"
    ],
-   "page": "get-started/install"
+   "page": "get-started/install",
+   "note": "init makes public/. Torian has since said public should be a reserved route name in each function, not a directory, so this waits on that design"
   },
   {
    "id": "I-24",
    "chapter": "Chapter 1: Installation",
-   "status": "not built"
+   "status": "partial",
+   "evidence": [
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs"
+   ],
+   "note": "Edit a record and the board updates; naive dev checks each saved record against its schema and prints what does not match. Missing: System 1 (Noul) checks per field on save",
+   "page": "get-started/install"
   },
   {
    "id": "I-25",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "schema/init-venture.mjs",
-    "interface/cli/mentura.mjs"
+    "interface/create-venture/index.mjs",
+    "interface/create-venture/test.mjs",
+    "schema/validate.py"
    ],
-   "page": "get-started/install"
+   "page": "get-started/install",
+   "note": "Every record type has a schema and every write is checked. The editor map in .vscode/settings.json stands in for a $schema field, which the schemas' additionalProperties would refuse"
   },
   {
    "id": "I-26",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
-    "interface/mcp/server.mjs",
-    "interface/cli/naive.mjs"
+    "interface/create-venture/index.mjs",
+    "interface/create-venture/test.mjs"
    ],
-   "page": "get-started/install"
+   "page": "get-started/install",
+   "note": "create-venture maps every record file to its JSON Schema in .vscode/settings.json, so editors complete and check records; the MCP server gives agents the same routes"
   },
   {
    "id": "I-27",
    "chapter": "Chapter 1: Installation",
-   "status": "not built"
+   "status": "built",
+   "evidence": [
+    "site/content/docs/get-started/install.mdx"
+   ],
+   "note": "Installation gives a copyable prompt for your coding agent on the quick start and on connecting the agent",
+   "page": "get-started/install"
   },
   {
    "id": "I-28",
@@ -234,12 +275,14 @@
   {
    "id": "I-29",
    "chapter": "Chapter 1: Installation",
-   "status": "partial",
+   "status": "built",
    "evidence": [
+    "interface/cli/naive.mjs",
+    "interface/create-venture/test.mjs",
     "schema/upgrade-venture.mjs"
    ],
    "page": "get-started/install",
-   "note": "naive upgrade moves a venture onto the package layout; it does not update the framework itself"
+   "note": "naive upgrade --framework reinstalls the framework with the venture's package manager, then moves the venture onto the new layout"
   },
   {
    "id": "P-1",

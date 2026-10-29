@@ -48,7 +48,12 @@
         "exit",
         "telos",
         "provenance",
-        "knowledge-sources"
+        "knowledge-sources",
+        "people",
+        "founder",
+        "fund-thesis",
+        "fund-terms",
+        "deal"
       ],
       "refs": [
         {
@@ -1296,6 +1301,81 @@
         }
       ],
       "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (schema/model-steps.mjs)"
+    },
+    {
+      "id": "venture-types",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/venture-types.schema.json",
+      "paths": [
+        "schema/venture-types.json"
+      ],
+      "note": "The venture types create-venture scaffolds, and what each starts with (EE-082)"
+    },
+    {
+      "id": "venture-role",
+      "layer": "governance",
+      "level": "method",
+      "schema": "schema/venture-role.schema.json",
+      "paths": [
+        "governance/venture-template/roles/venture-roles.json"
+      ],
+      "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
+    },
+    {
+      "id": "people",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/people.schema.json",
+      "paths": [
+        "instance/**/people/people.json",
+        "schema/examples/**/people/people.json"
+      ],
+      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)"
+    },
+    {
+      "id": "founder",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/founder.schema.json",
+      "paths": [
+        "instance/**/people/founders/*.json",
+        "schema/examples/**/people/founders/*.json"
+      ],
+      "note": "One file per founder, linked to the founder agreement (EE-082)"
+    },
+    {
+      "id": "fund-thesis",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/fund-thesis.schema.json",
+      "paths": [
+        "instance/**/fund/thesis.json",
+        "schema/examples/**/fund/thesis.json"
+      ],
+      "note": "A fund's thesis (EE-082)"
+    },
+    {
+      "id": "fund-terms",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/fund-terms.schema.json",
+      "paths": [
+        "instance/**/fund/terms.json",
+        "schema/examples/**/fund/terms.json"
+      ],
+      "note": "A fund's terms and closes (EE-082)"
+    },
+    {
+      "id": "deal",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/deal.schema.json",
+      "paths": [
+        "instance/**/deals/*.json",
+        "schema/examples/**/deals/*.json"
+      ],
+      "note": "A company in a fund's pipeline (EE-082)"
     }
   ],
   "ignore": [
@@ -1346,6 +1426,14 @@
     {
       "path": "site/content/marketing/meta.json",
       "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
+    },
+    {
+      "path": "package.json",
+      "reason": "The framework's npm manifest: the naive and mentura commands (I-1, I-17); not a record"
+    },
+    {
+      "path": "interface/create-venture/package.json",
+      "reason": "The create-venture generator's npm manifest (I-1); not a record"
     }
   ]
 }

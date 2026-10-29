@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "founder.schema.json",
+  "title": "Founder",
+  "description": "One founder of the venture (people/founders/<id>.json): role, the functions they own, when they joined, and where their founder agreement is. One file per founder, so each founder's record changes on its own.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "role",
+    "hats",
+    "joined"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "founder",
+        "co-founder",
+        "general-partner"
+      ]
+    },
+    "hats": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "strategy",
+          "products",
+          "marketing-and-sales",
+          "supply-chain",
+          "service-delivery",
+          "customer-service",
+          "human-capital",
+          "it",
+          "finance",
+          "assets",
+          "risk-and-compliance",
+          "external-relationships",
+          "capabilities"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "joined": {
+      "type": "string",
+      "format": "date"
+    },
+    "agreement": {
+      "type": "object",
+      "required": [
+        "path",
+        "signed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "signed": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "venture-role.schema.json",
+  "title": "Venture roles",
+  "description": "The roles a person can hold in a venture (governance/venture-template/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which.",
+  "type": "object",
+  "required": [
+    "version",
+    "roles"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "description",
+          "founder",
+          "owns_when_solo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "builder",
+              "investor",
+              "operator",
+              "advisor",
+              "governor"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "founder": {
+            "type": "boolean",
+            "description": "Whether the holder is a founder of this venture, with a file in people/founders/ and a place in the founder agreement"
+          },
+          "owns_when_solo": {
+            "type": "boolean",
+            "description": "Whether a person alone in this role owns every function the venture imports"
+          }
+        }
+      }
+    }
+  }
+}

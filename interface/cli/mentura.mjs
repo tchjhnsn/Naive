@@ -61,6 +61,7 @@ import { FRAME, filesOf } from "../../schema/foundation.mjs";
 import { approve, decisions, propose } from "../../schema/decisions.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
+import { asRouted, findVenture } from "./find-venture.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
@@ -77,6 +78,9 @@ async function typed(name, what, why = "This is a foundation statement: changing
 const foundationOf = (recordType) => FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record === recordType);
 
 const argv = process.argv.slice(2);
+// Inside a venture, --venture and the workspace default to it (I-2): `cd my-venture && mentura system/overview view`.
+const here = !argv.includes("--venture") && !argv.includes("--workspace") ? findVenture() : null;
+if (here) { argv.push("--venture", asRouted(here).venture, "--workspace", asRouted(here).workspace); process.env.MENTURA_WORKSPACE = asRouted(here).workspace; }
 const opt = (name) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (name) => argv.includes(`--${name}`);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["json"].includes(argv[i - 1].slice(2))));

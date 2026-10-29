@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fund-terms.schema.json",
+  "title": "Fund terms",
+  "description": "The fund's economics and structure (fund/terms.json): target size, vintage, fees, carry and term, and the closes so far.",
+  "type": "object",
+  "required": [
+    "venture",
+    "target_size",
+    "vintage",
+    "management_fee",
+    "carry",
+    "term_years"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "target_size": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "vintage": {
+      "type": "integer",
+      "minimum": 1900
+    },
+    "structure": {
+      "enum": [
+        "limited-partnership",
+        "llc",
+        "rolling-fund",
+        "syndicate",
+        "evergreen"
+      ]
+    },
+    "management_fee": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Annual fee as a fraction of commitments"
+    },
+    "carry": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "term_years": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "gp_commit": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "closes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "date",
+          "committed"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "committed": {
+            "type": "object",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "amount": {
+                "type": "number",
+                "minimum": 0
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

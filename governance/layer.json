@@ -72,7 +72,8 @@
     "founder-agreement",
     "exit",
     "publication-policy",
-    "decision-record"
+    "decision-record",
+    "venture-role"
   ],
   "reads": [
     "handoff",
