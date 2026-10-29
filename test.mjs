@@ -24,6 +24,8 @@ const steps = [
   ["data packages and raw", "node", ["schema/check-data-packages.mjs", "instance"]],
   ["data packages and raw: examples", "node", ["schema/check-data-packages.mjs", "schema/examples/workspace"]],
   ["data packages and raw (sensitive streams, originals, idea citations)", "node", ["schema/data-packages-test.mjs"]],
+  ["private records stay off the model", "node", ["schema/check-private.mjs", "instance"]],
+  ["design additions (use model, gate, uncertain)", "node", ["schema/design-additions-test.mjs"]],
   ["governance: instance", "node", ["schema/check-governance.mjs", "instance"]],
   ["governance: examples", "node", ["schema/check-governance.mjs", "schema/examples/workspace"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],

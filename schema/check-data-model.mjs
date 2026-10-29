@@ -26,7 +26,7 @@ const errors = [];
 const warnings = [];
 
 const files = (dir) => readdirSync(join(root, dir), { withFileTypes: true }).flatMap((e) =>
-  [".git", "node_modules"].includes(e.name) ? [] : e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
+  [".git", "node_modules", ".naive"].includes(e.name) ? [] : e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
 // The files git would track (so build output and installed packages under .gitignore are left out); a
 // copy outside git, as the tests use, is walked instead.
 const tracked = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" });

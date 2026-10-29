@@ -245,7 +245,39 @@ export function draftOf(route, venture, workspace) {
   return { dir, file, draft: draftPath(file), gate: gateOf(r, dir), route: r.collection === "item" ? r.route.replace("[id]", params.id) : r.route };
 }
 
-/** The layout wrapping a route: system layer, the record's layer, and its package when one owns it. */
+function agentsChain(dir, route) {
+  if (!dir) return [];
+  const chain = [];
+  const add = (rel) => { const f = join(dir, rel); if (existsSync(f)) chain.push({ path: rel, text: readFileSync(f, "utf8") }); };
+  add("AGENTS.md");
+  const parts = route.split("/").filter(Boolean);
+  let acc = "";
+  for (const p of parts) { acc = acc ? `${acc}/${p}` : p; add(`${acc}/AGENTS.md`); }
+  return chain;
+}
+function instructionsOf(chain) {
+  const out = {};
+  for (const file of chain) for (const line of file.text.split("\n")) {
+    const m = line.match(/^([a-z][a-z0-9_-]*)\s*:\s*(.+)$/);
+    if (m) out[m[1]] = m[2].trim();
+  }
+  return out;
+}
+
+/** A score below its threshold is uncertain: not an error and not an answer. It routes to the function owner. */
+export function judge(score, threshold, owner) {
+  if (typeof score !== "number" || score < threshold) return { outcome: "uncertain", owner, result: null };
+  return { outcome: "answer", result: score };
+}
+
+/** Runs fn. A throw is the uncaught outcome. */
+export function capture(fn) {
+  try { fn(); return { outcome: "answer" }; }
+  catch (e) { return { outcome: "uncaught", error: String(e.message ?? e) }; }
+}
+
+/** The layout wrapping a route: system layer, the record's layer, and its package when one owns it.
+ *  chain is the AGENTS.md files from the venture root down to the route, nearest last. */
 export function layout(r, dir) {
   const ks = kits();
   const owned = r.kit_path && (r.kit_path.startsWith("packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
@@ -255,7 +287,9 @@ export function layout(r, dir) {
         ?? [join(dirname(k.path), "references/references.json"), join(dirname(k.path), "references")].find((p) => existsSync(join(repo, p)));
       return { name: k.name, kit: k.name, path: k.path, purpose: k.purpose, skills: skillsOf(k).map((s) => s.path), references: refs ?? null, gaps: k.gaps ?? [] };
     });
-  const out = { route: r.route, stack, note: r.note, groups: r.groups ?? [] };
+  const chain = agentsChain(dir, r.route);
+  const pkg = owned ? { skill: skillsOf(owned).map((s) => s.path), template: r.template ?? null, gates: owned.gates ?? [] } : null;
+  const out = { route: r.route, stack, chain, instructions: instructionsOf(chain), package: pkg, note: r.note, groups: r.groups ?? [] };
   if (r.kind === "record") Object.assign(out, { schema: r.schema, template: r.template, checks: r.checks, gate: gateOf(r, dir) });
   if (dir && r.kind === "record") {
     try {
@@ -279,7 +313,7 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 export async function call({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const requested = route;
   const { r, params, alias } = resolve(route);
-  if (!r) return { ok: false, error: `no route ${route}` };
+  if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
   route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };

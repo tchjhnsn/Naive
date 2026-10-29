@@ -806,6 +806,19 @@
       ],
       "decision": "Vocabulary and design additions from translating the Next.js Getting Started docs (chapters 3 to 18, docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md). Words: AGENTS.md is the file agents read in any folder of a venture and 'layout' is the concept (the router assembles the chain of AGENTS.md files from the root down plus what the package definition supplies); naive typegen; agent vitals (calls per task, context per call, time to a useful answer, time for a decision to be decided); context budget; \"use model\" for a package's declared model steps; private for a record or field that never reaches a model; uncertain for a judgment below its confidence threshold, routed to a person (a third outcome beside expected and uncaught errors); brand tokens; action for what a route supports; export for a release frozen as files; adapter for what runs Naive on a platform or harness (Mentura first). Design additions, built in this order after the deadline: the layout chain, use model, private and its check, uncertain, the gate's rules (fast, no model call, one per venture), the release as a static shell with live holes and freshness profiles, the judgment cache, header-first reads and agent vitals, naive typegen with a venture served over MCP, adapters, and agent-run upgrades with record migrations. Which library plays React's part stays open. Implementation is handed to Grokbot (handoff naive-packages-and-design-additions).",
       "why": "Torian, 2026-10-28 23:30Z to 23:54Z: chose AGENTS.md over a new layout file ('agents.md is already a standard practice'), naive typegen, agent vitals and context budget, use model and private ('let's go with your recommendation and let's continue all the way through'), and at 23:54Z the remaining words ('let's go with your recommendation on naming'), then 'I'm going to have you make the pull request with instructions for Grokbot to implement it' (2026-10-29 00:01Z: 'Go.')."
+    },
+    {
+      "id": "EE-074",
+      "date": "2026-10-29",
+      "status": "proposed",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-072",
+        "EE-073"
+      ],
+      "decision": "Implement handoff naive-packages-and-design-additions. Venture packages live at packages/<name>/package.json with use_model. Layer manifests are <layer>/layer.json. A kit is Mentura only, at platform/kits/, and none are built. The instance venture uses the package folder layout, and old routes stay as aliases for one release. Data packages (customers, investors, money) and raw/ are scaffolded and checked. The layout action returns the AGENTS.md chain, nearest last, plus the package skill, template and gates. check-private refuses a private record or field named in a use_model step. A judgment below its threshold returns uncertain. The gate reads naive.config.json and package gates and does not call a model. naive typegen writes .naive/types/ and mentura typegen is the same command. Stage D, moving the board to platform/board, is not done. Items 6, 7, 8, 10 and 11 of the translation design additions (the release shell, the judgment cache, header-first reads and agent vitals, adapters, agent-run upgrades) are not started. Which library plays React part stays open.",
+      "why": "Torian, 2026-10-28, 7:17 PM CDT: go ahead and start now. Ignore that message that said wait until Thursday. That drops the not-before-2026-10-29 22:00Z wait. The same evening at 7:24 PM CDT he said to skip stage D entirely and not move the board. Implementation is the handoff naive-packages-and-design-additions, stacked on PR #23."
     }
   ]
 }

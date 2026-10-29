@@ -267,7 +267,7 @@ knowBroken("a department folder without its tag fails", "check-departments.mjs",
 
 // check-integrations and check-nouns read a whole repository: run them on a copy.
 const repo = join(tmp, "repo");
-cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) });
+cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) });
 expect("check-integrations passes on the repository", run("check-integrations.mjs", [], { EE_ROOT: repo }).status === 0);
 edit(join(repo, "interface/tooling/integrations.json"), (list) => { list.push({ id: "obsidian", name: "Obsidian", layer: "interface", role: "notes", interfaces: ["app"], reach: ["knowledge"], interface_kind: "custom", status: "in-use" }); });
 { const r = run("check-integrations.mjs", [], { EE_ROOT: repo }); expect("a single-layer tool listed as an interface fails", r.status !== 0 && /reaches 1 layers/.test(r.stderr)); }
@@ -284,7 +284,7 @@ edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { list.find((t
 { const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
-const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
+const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
 for (const [name, change, pattern] of [
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
@@ -297,6 +297,14 @@ for (const [name, change, pattern] of [
   change(d);
   const r = run("check-data-model.mjs", [], { EE_ROOT: d });
   expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+{
+  const d = copy("priv");
+  edit(join(d, "packages/customers/package.json"), (p) => { p.use_model = [{ step: "summarize", inputs: ["ada.note"] }]; });
+  mkdirSync(join(d, "instance/ventures/everything-ecosystem/customers"), { recursive: true });
+  writeFileSync(join(d, "instance/ventures/everything-ecosystem/customers/ada.json"), JSON.stringify({ id: "ada", private_fields: ["note"] }));
+  const r = run("check-private.mjs", [join(d, "instance")], { EE_ROOT: d });
+  expect("check-private catches a private field named in use_model", r.status !== 0 && /ada\.note is private/.test(r.stderr));
 }
 
 rmSync(tmp, { recursive: true, force: true });

@@ -9,6 +9,7 @@
 //   mentura add <function> --venture <id> [--group]
 //                                                   import a function (department is the alias for one release): list it and create its folders
 //   mentura migrate --venture <id>                  move the venture onto the package folder layout (EE-070)
+//   mentura typegen                                 alias of naive typegen (EE-073)
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route
@@ -93,6 +94,11 @@ if (cmd === "add") {
   const v = opt("venture");
   if (!action || !v) usage();
   const p = spawnSync("node", [join(repo, "schema/add-department.mjs"), ventureDir(v, workspace), action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
+  process.exit(p.status ?? 1);
+}
+
+if (cmd === "typegen") {
+  const p = spawnSync("node", [join(repo, "interface/cli/naive.mjs"), "typegen"], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
