@@ -129,7 +129,11 @@ function finish(code = 0) {
   trace.end = iso();
   const evals = existsSync(join(dir, DUMP)) ? evaluate(dir, { researched, settled }) : [];
   trace.feedback = evals;
-  trace.outputs = { settled, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
+  // What the run drafted, so a judge reading only the root run (LangSmith's online evaluators, Jev)
+  // sees the problem record and the agent's reports beside the founder's dump in the inputs.
+  const problem = join(dir, "purpose/validation/problem.json");
+  const drafted = { problem: existsSync(problem) ? JSON.parse(readFileSync(problem, "utf8")) : null, reports: trace.children.filter((c) => c.outputs?.report).map((c) => ({ pass: c.name, report: c.outputs.report })) };
+  trace.outputs = { settled, drafted, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
   writeFileSync(join(ws, "trace.json"), JSON.stringify(trace, null, 2) + "\n");
   console.log(`\nEvals:\n${evals.map((e) => `   ${e.score === 1 ? "pass" : e.score === 0 ? "FAIL" : "part"}  ${e.key.padEnd(26)} ${e.score}  ${e.comment}`).join("\n")}`);
   if (process.env.LANGSMITH_API_KEY) {
