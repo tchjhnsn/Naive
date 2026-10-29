@@ -64,7 +64,7 @@ const steps = [
   ["site reader (links and text, offline)", "node", ["platform/integrations/site-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
-  ...(existsSync(join(root, "site/node_modules")) ? [["site pages compile as MDX", "node", ["site/scripts/check-mdx.mjs"]]] : []),
+  ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
 
 // Generated files: the committed copy must equal a fresh render.
