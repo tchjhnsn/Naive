@@ -537,6 +537,16 @@
       },
       "why": "What the founder walks away with; written at the end of each pipeline run, cheap to refresh"
     },
+    "release": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.7,
+        "platform": 0.7
+      },
+      "why": "A release to hand someone (an investor, a partner, a hire): the confirmed records frozen in, with named live holes (C-11, I-17). Built with node schema/build-release.mjs when someone outside needs it"
+    },
     "customer": {
       "base": {
         "discovery": 0.2,

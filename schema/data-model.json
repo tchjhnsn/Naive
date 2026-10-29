@@ -993,6 +993,18 @@
       "note": "The venture package view (EE-067, EE-069): the open core packages and handoffs, each record confirmed, to review or to write, what moves now and what waits, with its versions; the records themselves stay in place"
     },
     {
+      "id": "release",
+      "layer": "system",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/.release/release.json",
+        "instance/**/.release/card.json"
+      ],
+      "note": "A release (C-11, I-17): the venture's static shell, written by node schema/build-release.mjs. release.json is the manifest (confirmed records frozen in with their sha256, date and who confirmed them; named live holes; the route table as the release holds it; frozen command answers); card.json is the release card's data (P-25, O-7). The frozen copies under .release/records/ keep their own record types. Read without the router by node schema/start-release.mjs"
+    },
+    {
       "id": "team-plan",
       "layer": "operations",
       "level": "venture",
