@@ -45,7 +45,8 @@
     "schema/check-telos.mjs",
     "schema/validate.py",
     "schema/check-validation.mjs",
-    "schema/foundation.mjs"
+    "schema/foundation.mjs",
+    "schema/lint-foundation.mjs"
   ],
   "skill": {
     "id": "foundation-function",
