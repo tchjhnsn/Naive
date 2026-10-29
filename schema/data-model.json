@@ -1542,7 +1542,7 @@
     },
     {
       "path": "site/tsconfig.json",
-      "reason": "TypeScript config for the Fumadocs site (EE-080); not a record"
+      "reason": "TypeScript config for the Nextra site (EE-087); not a record"
     },
     {
       "path": "site/brand/tokens.json",
@@ -1550,27 +1550,27 @@
     },
     {
       "path": "site/content/docs/meta.json",
-      "reason": "Fumadocs sidebar order for the docs collection (EE-080); not a record"
+      "reason": "Sidebar order for the docs collection (EE-087); not a record"
     },
     {
       "path": "site/content/docs/get-started/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-087); not a record"
     },
     {
       "path": "site/content/docs/guides/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-087); not a record"
     },
     {
       "path": "site/content/docs/concepts/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-087); not a record"
     },
     {
       "path": "site/content/docs/reference/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-087); not a record"
     },
     {
       "path": "site/content/marketing/meta.json",
-      "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
+      "reason": "Sidebar order for marketing pages (EE-087); not a record"
     },
     {
       "path": "package.json",

@@ -883,6 +883,19 @@
       ],
       "decision": "Setup asks where each of the venture's functions keeps its truth, and records the answers as pointers in knowledge/sources.json under `functions` (the source-of-truth matrix, EE-042, not a second file), with `truth` naming where the venture's source of truth as a whole lives (local by default). schema/systems-catalog.json lists the systems offered per function (a local repo, GitHub, Vercel, Cloudflare, Stripe, Square, Shopify, Rho, Google Drive, DocuSign, a local folder). A system Naive reads through code is connected (Rho, through its MCP API: sandbox, live with RHO_API_TOKEN, or a saved fixture marked as one); the rest are pointed until a connector exists. A function with no system keeps the founder's words. naive dev serves a setup page at /setup (interface/dev/setup.mjs) that walks through people and hats, sources of truth, the strategic foundation and first decisions (each answer an approved decision; a foundation statement as a decision with `statement`), and a goal for discovery, and says when the structure is established and what comes next. A new venture's .gitignore keeps sensitive stream activity out of git.",
       "why": "Torian, 2026-10-29: when scaffolding, ask the user to point Naive to the source of truth for each function (the repo, GitHub and Vercel for a software product; analytics from the host; Stripe, Square or Shopify for sales; Rho for financials in the demo; legal documents, with the connections to set them up if missing), let a function default or be answered in prose, and ship a local setup experience like the one Next.js gives, essentially the strategic foundation and a version of the decision docket, ending by setting a goal for the discovery phase. After setup a founder has the structure of the venture and a way of routing decisions; operating it is Mentura's, as deploying is Vercel's after Next.js."
+    },
+    {
+      "id": "EE-087",
+      "date": "2026-10-29",
+      "decision": "The developer docs in site/ move from Fumadocs back to Nextra 4 (docs theme, App Router, nextra-theme-docs) on Next.js. This supersedes the Fumadocs sentence of EE-080 and restores the docs-theme sentence of EE-034. Every existing docs and marketing URL stays. MDX, frontmatter, meta.json order, llms.txt, llms-full.txt, per-page Markdown, and Markdown on Accept stay. The site-wide shell (header, footer, and the docs chrome around Nextra) follows the Next.js site: Docs, Blog, Templates, Showcase, and the pages already on the site. Blog, Templates, and Showcase are their own routes; this decision only leaves them linked. The site stays unpublished (noindex) until the owner approves a channel (EE-025). The rest of EE-080 stays in force: marketing pages in this app, the one venture-facts file, check:content in test.mjs and the site CI job, and dropping the zod pin.",
+      "why": "Torian prefers Nextra for Naive's website. EE-080 moved the docs to Fumadocs; this puts them back on Nextra 4 without moving a published URL. He accepts this by merging. The next free id above the open pull requests (through EE-086) is EE-087.",
+      "status": "proposed",
+      "related": [
+        "EE-025",
+        "EE-033",
+        "EE-034",
+        "EE-080"
+      ]
     }
   ]
 }

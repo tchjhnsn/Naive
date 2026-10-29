@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="pele pele-state" viewBox="0 0 2034 630" width="2034" height="630" style="max-width:100%;height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_tw:var(--pele-title-weight,bold);--_fm:var(--pele-font-mono,monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="state"><style>.pele {
+  --pele-bg: #ffffff;
+  --pele-fg: #1c1c1c;
+  --pele-muted: #656565;
+  --pele-line: #808080;
+  --pele-surface: #fcfcfc;
+  --pele-surface-alt: #f1f1f1;
+  --pele-border: #c9c9c9;
+}
+.pele .blue rect { fill: #c3e0ff; }
+.pele .orange rect { fill: #f0d3bf; }
+.pele .purple rect { fill: #e3d5ff; }
+.pele .yellow rect { fill: #f0dcbf; }
+.pele .teal rect { fill: #bfe3df; }
+.pele .tan rect { fill: #e5d9ce; }
+.pele .pink rect { fill: #ffcbe6; }
+.pele .breaks rect {
+  fill: #ffecee !important;
+  stroke: #e72e3b !important;
+  stroke-width: 2.5px !important;
+}
+.pele .breaks text {
+  fill: #cd2834 !important;
+}
+.pele .mayBreak rect {
+  fill: #fff3e6 !important;
+  stroke: #e8730c !important;
+  stroke-width: 2.5px !important;
+}
+.pele .mayBreak text {
+  fill: #b85a06 !important;
+}
+.pele .bugPath rect {
+  stroke: #1680f3 !important;
+  stroke-width: 2.5px !important;
+}
+.pele .repeats rect {
+  stroke: #9b35d6 !important;
+  stroke-width: 2.5px !important;
+  stroke-dasharray: 6 3;
+}
+@media (prefers-color-scheme: dark) {
+  .pele {
+    --pele-bg: #1f1f1f;
+    --pele-fg: #f5f5f5;
+    --pele-muted: #acacac;
+    --pele-line: #939393;
+    --pele-surface: #121212;
+    --pele-surface-alt: #2c2c2c;
+    --pele-border: #4e4e4e;
+  }
+  .pele .blue rect { fill: #1b3857; }
+  .pele .orange rect { fill: #573117; }
+  .pele .purple rect { fill: #3c2e57; }
+  .pele .yellow rect { fill: #573d17; }
+  .pele .teal rect { fill: #174641; }
+  .pele .tan rect { fill: #3d3127; }
+  .pele .pink rect { fill: #57233e; }
+  .pele .breaks rect {
+    fill: #2e2021 !important;
+    stroke: #cf2b35 !important;
+  }
+  .pele .breaks text {
+    fill: #ff6463 !important;
+  }
+  .pele .mayBreak rect {
+    fill: #2e2619 !important;
+    stroke: #d0700f !important;
+  }
+  .pele .mayBreak text {
+    fill: #ffa257 !important;
+  }
+  .pele .bugPath rect {
+    stroke: #116dd2 !important;
+  }
+  .pele .repeats rect {
+    stroke: #9a3fcf !important;
+  }
+}
+</style><text class="pele-title" font-weight="var(--_tw)" text-anchor="middle" xml:space="preserve"><tspan x="1017" y="25.6">What you get back when you ask the Naive site for a page</tspan></text><g transform="translate(0,36)"><g class="pele-clusters"><g class="pele-cluster pele-state-composite" data-id="legend"><rect x="1083.57" y="8" width="600.06" height="112" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M1083.57,44H1683.64" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="1383.61" y="31.6" text-anchor="middle">Legend</text></g></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-transition" data-id="edge0"><path d="M1036.57,120L1036.57,157"/><path class="pele-marker" d="M1036.57,164L1033.21,156L1039.93,156Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge1"><path d="M968.54,208L968.54,221C968.54,234.02 804.25,242 536.2,242C268.15,242 103.87,273.16 103.87,324L103.87,379"/><path class="pele-marker" d="M103.87,386L100.51,378L107.23,378Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge2"><path d="M1005.65,208L1005.65,221C1005.65,248.9 920.83,266 782.43,266C644.04,266 559.22,288.04 559.22,324L559.22,364C559.22,369.63 610.36,369.63 610.36,375.25L610.36,379"/><path class="pele-marker" d="M610.36,386L607,378L613.72,378Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge3"><path d="M1030.39,208L1030.39,221C1030.39,263.78 1011.61,290 980.96,290C950.31,290 931.53,302.92 931.53,324L931.53,364C931.53,369.63 982.67,369.63 982.67,375.25L982.67,379"/><path class="pele-marker" d="M982.67,386L979.31,378L986.03,378Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge4"><path d="M993.28,208L993.28,221C993.28,277.5 474.59,277.5 474.59,334L474.59,430C474.59,468.34 1486.78,490.16 1486.78,528.5L1486.78,534.5"/><path class="pele-marker" d="M1486.78,541.5L1483.42,533.5L1490.14,533.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge5"><path d="M1055.13,208L1055.13,221C1055.13,260.06 1102.09,284 1178.71,284C1255.33,284 1302.3,299.2 1302.3,324L1302.3,379"/><path class="pele-marker" d="M1302.3,386L1298.94,378L1305.66,378Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge6"><path d="M1079.87,208L1079.87,221C1079.87,245.18 1188.36,260 1365.38,260C1542.4,260 1650.89,284.32 1650.89,324L1650.89,379"/><path class="pele-marker" d="M1650.89,386L1647.53,378L1654.25,378Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge7"><path d="M223.8,386L223.8,376.38C223.8,370.19 304.99,370.19 304.99,364L304.99,324C304.99,280.6 433.41,254 642.95,254C852.49,254 980.91,241.46 980.91,221L980.91,215"/><path class="pele-marker" d="M980.91,208L984.27,216L977.55,216Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge8"><path d="M626.36,386L626.36,376.38C626.36,370.19 721.44,370.19 721.44,364L721.44,324C721.44,295.48 777.79,278 869.73,278C961.67,278 1018.02,256.34 1018.02,221L1018.02,215"/><path class="pele-marker" d="M1018.02,208L1021.38,216L1014.66,216Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge9"><path d="M998.67,386L998.67,376.38C998.67,372.09 1141.62,368.29 1141.62,364L1141.62,324C1141.62,306.64 1122.84,296 1092.19,296C1061.54,296 1042.76,267.5 1042.76,221L1042.76,215"/><path class="pele-marker" d="M1042.76,208L1046.12,216L1039.4,216Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge10"><path d="M1518.78,541.5L1518.78,529.25C1518.78,519.49 1598.07,513.5 1727.42,513.5C1856.78,513.5 1936.06,495.93 1936.06,467.25L1936.06,334C1936.06,273.24 1778.09,236 1520.33,236C1262.58,236 1104.61,230.01 1104.61,220.25L1104.61,215"/><path class="pele-marker" d="M1104.61,208L1107.97,216L1101.25,216Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge11"><path d="M1405.49,386L1405.49,376.38C1405.49,370.19 1462.98,370.19 1462.98,364L1462.98,324C1462.98,291.76 1387.83,272 1265.24,272C1142.64,272 1067.5,252.62 1067.5,221L1067.5,215"/><path class="pele-marker" d="M1067.5,208L1070.86,216L1064.14,216Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge12"><path d="M1756.31,386L1756.31,376.38C1756.31,370.19 1838.8,370.19 1838.8,364L1838.8,324C1838.8,276.88 1696.96,248 1465.52,248C1234.08,248 1092.24,237.74 1092.24,221L1092.24,215"/><path class="pele-marker" d="M1092.24,208L1095.6,216L1088.88,216Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge13"><path d="M1710.03,430L1710.03,473.5C1710.03,490.86 1670.65,501.5 1606.41,501.5C1542.16,501.5 1502.78,511.76 1502.78,528.5L1502.78,534.5"/><path class="pele-marker" d="M1502.78,541.5L1499.42,533.5L1506.14,533.5Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="edge1"><rect x="10" y="326" width="187.73" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="103.87" y="339.9">you ask for Markdown or you</tspan><tspan x="103.87" y="357.9">open the .md address</tspan></text></g><g class="pele-edge-label" data-id="edge2"><rect x="504.26" y="333.5" width="109.92" height="21" rx="3" fill="var(--_bg)"/><text x="559.22" y="348.9" text-anchor="middle">you read llms.txt</text></g><g class="pele-edge-label" data-id="edge3"><rect x="828.7" y="326" width="205.67" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="931.53" y="339.9">you open a docs address that is</tspan><tspan x="931.53" y="357.9">not a page</tspan></text></g><g class="pele-edge-label" data-id="edge4"><rect x="401.71" y="397.5" width="145.76" height="21" rx="3" fill="var(--_bg)"/><text x="474.59" y="412.9" text-anchor="middle">you open a docs page</text></g><g class="pele-edge-label" data-id="edge5"><rect x="1248.88" y="333.5" width="106.84" height="21" rx="3" fill="var(--_bg)"/><text x="1302.3" y="348.9" text-anchor="middle">you use the nav</text></g><g class="pele-edge-label" data-id="edge6"><rect x="1570.23" y="333.5" width="161.31" height="21" rx="3" fill="var(--_bg)"/><text x="1650.89" y="348.9" text-anchor="middle">you open an old address</text></g><g class="pele-edge-label" data-id="edge7"><rect x="217.73" y="333.5" width="174.52" height="21" rx="3" fill="var(--_bg)"/><text x="304.99" y="348.9" text-anchor="middle">you ask for something else</text></g><g class="pele-edge-label" data-id="edge8"><rect x="634.18" y="333.5" width="174.52" height="21" rx="3" fill="var(--_bg)"/><text x="721.44" y="348.9" text-anchor="middle">you ask for something else</text></g><g class="pele-edge-label" data-id="edge9"><rect x="1054.36" y="333.5" width="174.52" height="21" rx="3" fill="var(--_bg)"/><text x="1141.62" y="348.9" text-anchor="middle">you ask for something else</text></g><g class="pele-edge-label" data-id="edge10"><rect x="1848.8" y="397.5" width="174.52" height="21" rx="3" fill="var(--_bg)"/><text x="1936.06" y="412.9" text-anchor="middle">you ask for something else</text></g><g class="pele-edge-label" data-id="edge11"><rect x="1375.72" y="333.5" width="174.52" height="21" rx="3" fill="var(--_bg)"/><text x="1462.98" y="348.9" text-anchor="middle">you ask for something else</text></g><g class="pele-edge-label" data-id="edge12"><rect x="1751.55" y="333.5" width="174.52" height="21" rx="3" fill="var(--_bg)"/><text x="1838.8" y="348.9" text-anchor="middle">you ask for something else</text></g><g class="pele-edge-label" data-id="edge13"><rect x="1637.95" y="450.5" width="144.16" height="21" rx="3" fill="var(--_bg)"/><text x="1710.03" y="465.9" text-anchor="middle">you follow the redirect</text></g></g><g class="pele-nodes"><g class="pele-node pele-state tan" data-id="s0" transform="translate(1036.57,186)"><rect x="-80.03" y="-22" width="160.06" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Nothing asked yet</text></g><g class="pele-node pele-state blue" data-id="s1" transform="translate(176.21,408)"><rect x="-99.59" y="-22" width="199.18" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">The page as Markdown</text></g><g class="pele-node pele-state blue" data-id="s2" transform="translate(618.36,408)"><rect x="-40.89" y="-22" width="81.78" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">llms.txt</text></g><g class="pele-node pele-state pink" data-id="s3" transform="translate(990.67,408)"><rect x="-50.69" y="-22" width="101.38" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Not found</text></g><g class="pele-node pele-state teal" data-id="s4" transform="translate(1499.96,563.5)"><rect x="-60.47" y="-22" width="120.94" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">A docs page</text></g><g class="pele-node pele-state teal" data-id="s5" transform="translate(1361.44,408)"><rect x="-96.05" y="-22" width="192.1" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">A page the nav names</text></g><g class="pele-node pele-state orange" data-id="s6" transform="translate(1710.03,408)"><rect x="-98.28" y="-22" width="196.56" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Sent on to a docs page</text></g><g class="pele-node pele-state-start" data-id="root_start" transform="translate(1036.57,113)"><circle r="7" fill="var(--_l)"/></g><g class="pele-node pele-state tan" data-id="lg0" transform="translate(1131.13,82)"><rect x="-31.56" y="-22" width="63.12" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">start</text></g><g class="pele-node pele-state teal" data-id="lg1" transform="translate(1236.49,82)"><rect x="-33.79" y="-22" width="67.58" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">page</text></g><g class="pele-node pele-state blue" data-id="lg2" transform="translate(1363.17,82)"><rect x="-52.9" y="-22" width="105.79" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">markdown</text></g><g class="pele-node pele-state orange" data-id="lg3" transform="translate(1498.74,82)"><rect x="-42.67" y="-22" width="85.34" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">redirect</text></g><g class="pele-node pele-state pink" data-id="lg4" transform="translate(1624.53,82)"><rect x="-43.11" y="-22" width="86.22" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">missing</text></g></g></g></svg>
