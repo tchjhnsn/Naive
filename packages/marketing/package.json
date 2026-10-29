@@ -58,6 +58,9 @@
     "schema/check-brand.mjs",
     "schema/check-assets.mjs"
   ],
-  "skill": null,
+  "skill": {
+    "id": "marketing-function",
+    "path": "packages/marketing/skill/SKILL.md"
+  },
   "use_model": []
 }
