@@ -1,0 +1,42 @@
+{
+  "name": "cofounder",
+  "title": "Cofounder and hire",
+  "kind": "handoff",
+  "purpose": "cofounders and first hires",
+  "for": "cofounders and first hires",
+  "from": [
+    "foundation",
+    "people",
+    "legal"
+  ],
+  "base": {
+    "discovery": 0.1,
+    "validation": 0.2,
+    "beachhead": 0.4,
+    "scale": 0.5,
+    "platform": 0.5
+  },
+  "when": [
+    {
+      "if": "team:looking",
+      "at_least": 0.9
+    },
+    {
+      "if": "hiring",
+      "at_least": 0.85
+    }
+  ],
+  "why": "When looking for a cofounder or hiring",
+  "unlocks": [
+    "recruiting pitch",
+    "offer terms"
+  ],
+  "gates": [
+    "every core package it draws on is complete"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}

@@ -61,7 +61,7 @@ expect("[id]: an id with a path in it is refused", !(await call({ venture: "tand
 expect("[...venture]: a nested venture is reached by its folder path", (await call({ venture: "studio/print", route: "system/need-now", action: "run" })).ok
   && !(await call({ venture: "studio/nothing", route: "system/need-now", action: "run" })).ok);
 const lay = (await call({ venture: "tandem", route: "purpose/validation/problem", action: "layout" })).result;
-expect("layout: the system, layer and kit context, in that order", lay.stack.map((k) => k.kit).join() === "system-kit,purpose-kit,validation-kit" && lay.stack[2].skills.length > 0);
+expect("layout: the system layer, the record's layer and its package, in that order", lay.stack.map((k) => k.name).join() === "system,purpose,validation" && lay.stack[2].skills.length > 0);
 expect("layout: names the template and need-now status", lay.template === "purpose/kits/validation/templates/problem.md" && lay.need_now?.status === "held");
 expect("layout: works without a venture", (await call({ route: "governance/ownership", action: "layout" })).result.gate.class === "ownership-or-control");
 expect("loading: a read says when an agent's draft is waiting", (await call({ venture: "tandem", route: "governance/ownership", action: "read" })).pending_draft?.file === "_drafts/governance__ownership.json.draft");

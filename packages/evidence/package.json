@@ -1,0 +1,17 @@
+{
+  "name": "evidence",
+  "title": "Evidence",
+  "kind": "folder",
+  "purpose": "Graded, cited evidence (EE-070). The evidence record's venture home in the fit model stays the validation package until the folder move.",
+  "required": [],
+  "optional": [],
+  "refs": [],
+  "gates": [
+    "present"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}

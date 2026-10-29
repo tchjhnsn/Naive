@@ -564,10 +564,9 @@
       "id": "kit-manifest",
       "layer": "system",
       "level": "method",
-      "schema": "schema/kit.schema.json",
+      "schema": "schema/layer.schema.json",
       "paths": [
-        "*/kit.json",
-        "*/kits/*/kit.json"
+        "*/layer.json"
       ],
       "refs": [
         {
@@ -591,7 +590,7 @@
           "checked_by": "schema/check-data-model.mjs"
         }
       ],
-      "note": "What one kit holds: skills, record types it owns, record types it reads and writes, checks. A layer may hold more kits under <layer>/kits/<kit>/ (EE-026)"
+      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are packages/<name>/package.json. A kit is Mentura's, at platform/kits/."
     },
     {
       "id": "handoff",
@@ -926,7 +925,9 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "schema/packages.json"
+        "schema/packages.json",
+        "packages/catalog.json",
+        "packages/*/package.json"
       ],
       "refs": [
         {

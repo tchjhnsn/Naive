@@ -28,9 +28,11 @@ import { factsOf as needFacts, probability } from "./need-now.mjs";
 import { confirmedIn, filesOf } from "./foundation.mjs";
 import { route } from "../purpose/frameworks/idea-map/route.mjs";
 
+import { loadPackages } from "./load-packages.mjs";
+
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-export const PACKAGES = load(join(repo, "schema/packages.json"));
+export const PACKAGES = loadPackages(repo);
 export const OUT = "package";
 const MODEL = load(join(repo, "schema/data-model.json"));
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];

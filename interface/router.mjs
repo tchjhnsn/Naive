@@ -51,14 +51,19 @@ export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&
 export const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name.startsWith(".") ? [] : e.isDirectory() ? (existsSync(join(d, e.name, "venture.json")) || (d === base && e.name.startsWith("_")) ? [] : files(join(d, e.name), base)) : [join(d, e.name).slice(base.length + 1)]) : [];
 
+const skillsOf = (k) => (k.skills?.length ? k.skills : k.skill ? [k.skill] : []);
+
+/** Layer manifests and any package that owns record types. `kit` is the name, kept so the board still groups routes. */
 export function kits() {
   const model = load(join(repo, "schema/data-model.json"));
-  const paths = [...model.layers.map((l) => `${l}/kit.json`), "schema/kit.json"];
-  for (const l of model.layers) {
-    const k = join(repo, l, "kits");
-    if (existsSync(k)) for (const d of readdirSync(k)) if (existsSync(join(k, d, "kit.json"))) paths.push(`${l}/kits/${d}/kit.json`);
-  }
-  return paths.filter((p) => existsSync(join(repo, p))).map((p) => ({ path: p, ...load(join(repo, p)) }));
+  const paths = [...model.layers.map((l) => `${l}/layer.json`), "schema/layer.json"];
+  const pkgDir = join(repo, "packages");
+  if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`packages/${d}/package.json`);
+  return paths.filter((p) => existsSync(join(repo, p))).map((p) => {
+    const k = load(join(repo, p));
+    const name = k.name ?? k.kit;
+    return { path: p, ...k, name, kit: name };
+  }).filter((k) => k.path.endsWith("/layer.json") || (k.records ?? []).length);
 }
 
 const needNowPriors = () => load(join(repo, "schema/need-now.json"));
@@ -72,11 +77,11 @@ export function routes() {
   const out = [];
   for (const r of model.records.filter((x) => x.level === "venture" && x.id !== "venture")) {
     const k = owner.get(r.id);
-    const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1];
+    const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
     const short = sub && r.id.startsWith(`${sub}-`) ? r.id.slice(sub.length + 1) : r.id;
     const filesOf = r.paths.filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
-    // The template is <kit folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
-    const tdir = k ? join(dirname(k.path), "templates") : null;
+    // The template is the package's template dir, or <manifest folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
+    const tdir = k?.template_dir ?? (k && !k.path.startsWith("packages/") ? join(dirname(k.path), "templates") : null);
     const tname = tdir && existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
     const template = tname ? `${tdir}/${tname}` : null;
     const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && c.startsWith("schema/check-") && c !== "schema/check-data-model.mjs"))];
@@ -84,7 +89,7 @@ export function routes() {
     const form = r.form ?? "json";
     const writable = r.schema && form === "json" && filesOf.length === 1;
     const groups = PHASES.map((p) => p.id).filter((p) => (N.records[r.id]?.base?.[p] ?? 0) >= N.suggest).map((p) => `(${p})`);
-    const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.kit ?? null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
+    const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
       decision_class: r.decision_class ?? null, groups, note: r.note ?? "" };
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
     const collection = filesOf.length === 1 && (filesOf[0].match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(filesOf[0]) && !filesOf[0].includes("**");
@@ -214,13 +219,15 @@ export function draftOf(route, venture, workspace) {
   return { dir, file, draft: draftPath(file), gate: gateOf(r, dir), route: r.collection === "item" ? r.route.replace("[id]", params.id) : r.route };
 }
 
-/** The layout wrapping a route: system, layer and kit context, references, skills, the gate and need-now. */
+/** The layout wrapping a route: system layer, the record's layer, and its package when one owns it. */
 export function layout(r, dir) {
   const ks = kits();
-  const stack = [ks.find((k) => k.path === "schema/kit.json"), ks.find((k) => k.path === `${r.layer ?? r.route.split("/")[0]}/kit.json`), r.kit_path && r.kit_path.includes("/kits/") ? ks.find((k) => k.path === r.kit_path) : null]
+  const owned = r.kit_path && (r.kit_path.startsWith("packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
+  const stack = [ks.find((k) => k.path === "schema/layer.json"), ks.find((k) => k.path === `${r.layer ?? r.route.split("/")[0]}/layer.json`), owned]
     .filter(Boolean).map((k) => {
-      const refs = [join(dirname(k.path), "references/references.json"), join(dirname(k.path), "references")].find((p) => existsSync(join(repo, p)));
-      return { kit: k.kit, path: k.path, purpose: k.purpose, skills: k.skills.map((s) => s.path), references: refs ?? null, gaps: k.gaps ?? [] };
+      const refs = (k.references && existsSync(join(repo, k.references)) ? k.references : null)
+        ?? [join(dirname(k.path), "references/references.json"), join(dirname(k.path), "references")].find((p) => existsSync(join(repo, p)));
+      return { name: k.name, kit: k.name, path: k.path, purpose: k.purpose, skills: skillsOf(k).map((s) => s.path), references: refs ?? null, gaps: k.gaps ?? [] };
     });
   const out = { route: r.route, stack, note: r.note, groups: r.groups ?? [] };
   if (r.kind === "record") Object.assign(out, { schema: r.schema, template: r.template, checks: r.checks, gate: gateOf(r, dir) });
@@ -234,7 +241,7 @@ export function layout(r, dir) {
   return out;
 }
 
-const fix = (r) => ({ skills: r.kit_path ? kits().find((k) => k.path === r.kit_path)?.skills.map((s) => s.path) ?? [] : [], template: r.template ?? null, schema: r.schema ?? null });
+const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path === r.kit_path) ?? {}).map((s) => s.path) : [], template: r.template ?? null, schema: r.schema ?? null });
 
 /**
  * Runs one action on one route for one venture. Returns { ok, result } or { ok: false, error }.

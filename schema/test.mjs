@@ -289,9 +289,9 @@ expect("check-data-model passes on the repository", run("check-data-model.mjs", 
 for (const [name, change, pattern] of [
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
   ["a schema no record type names fails", (d) => writeFileSync(join(d, "schema/stray.schema.json"), "{}"), /a schema no record type names/],
-  ["a skill no kit lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no kit lists this skill/],
-  ["a kit owning another layer's record fails", (d) => edit(join(d, "purpose/kit.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
-  ["a kit reading an unknown record type fails", (d) => edit(join(d, "operations/kit.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
+  ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
+  ["a layer owning another layer's record fails", (d) => edit(join(d, "purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
+  ["a layer reading an unknown record type fails", (d) => edit(join(d, "operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
 ]) {
   const d = copy(`dm${++n}`);
   change(d);

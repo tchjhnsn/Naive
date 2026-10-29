@@ -28,7 +28,7 @@
     {
       "noun": "venture development framework",
       "level": "system",
-      "meaning": "Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages that plug in (kits). The builder's venture calls on it, and its checks call back on the venture's records",
+      "meaning": "Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages (packages/<name>/package.json, EE-071). The builder's venture calls on it, and its checks call back on the venture's records",
       "standard": "software framework (Johnson and Foote 1988; Rails' convention over configuration) applied to venture development (venture building, venture studios)",
       "status": "new"
     },
@@ -63,7 +63,7 @@
     {
       "noun": "layer",
       "level": "system",
-      "meaning": "One of the six: purpose, knowledge, operations, evidence, governance, interface (execution folded into operations, EE-038)",
+      "meaning": "One of the six: purpose, knowledge, operations, evidence, governance, interface (execution folded into operations, EE-038). A layer organizes the framework repository (its manifest is <layer>/layer.json). It is a property of a record type, not a venture folder (EE-071)",
       "standard": "ours",
       "status": "kept"
     },
@@ -425,9 +425,9 @@
     {
       "noun": "kit",
       "level": "venture",
-      "meaning": "A package a layer offers: skills, record types (schemas), checks, templates and references, used together. Each layer has one at <layer>/kit.json and may hold more under <layer>/kits/ (EE-026). As an offering it is a bundle; a part can also be its own product",
-      "standard": "product bundling (Adams and Yellen 1976); package, as in a framework's packages",
-      "status": "new"
+      "meaning": "Mentura's word (EE-071): an enhanced package that adds automations, agent workflows, richer skills and connectors, at platform/kits/<name>/kit.json. A kit names the one package it extends and never replaces it, so the package works without the kit. The framework does not use kit for its own manifests (was the layer bundle at <layer>/kit.json)",
+      "standard": "product bundling (Adams and Yellen 1976), kept for the platform",
+      "status": "kept"
     },
     {
       "noun": "sphere",
@@ -525,9 +525,9 @@
       "status": "new"
     },
     {
-      "noun": "kit manifest",
+      "noun": "layer manifest",
       "level": "system",
-      "meaning": "The file (<layer>/kit.json) that lists what one kit holds: its skills, the record types it owns, those of other kits it reads and writes, and its checks. Layer relationships are derived from manifests",
+      "meaning": "The file (<layer>/layer.json, system layer at schema/layer.json) that lists what one layer of the framework repository holds: its skills, the record types it still owns, those it reads and writes, and its checks. Layer relationships are derived from manifests (EE-018, EE-071)",
       "standard": "package manifest (common software usage)",
       "status": "new"
     },

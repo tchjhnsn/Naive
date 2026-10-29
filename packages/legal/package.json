@@ -1,0 +1,73 @@
+{
+  "name": "legal",
+  "title": "Legal and governance",
+  "kind": "core",
+  "purpose": "Who owns what, who decides what, what may be published, and how the venture ends.",
+  "department": "risk-and-compliance",
+  "required": [
+    "ownership",
+    "decision-rights"
+  ],
+  "optional": [
+    "board",
+    "exit",
+    "publication-policy"
+  ],
+  "refs": [
+    "founder-agreement"
+  ],
+  "planned": [],
+  "base": {
+    "discovery": 0,
+    "validation": 0.1,
+    "beachhead": 0.4,
+    "scale": 0.8,
+    "platform": 0.9
+  },
+  "when": [
+    {
+      "if": "founders>=2",
+      "at_least": 0.7
+    },
+    {
+      "if": "funding:venture-capital",
+      "at_least": 0.8
+    },
+    {
+      "if": "regulated",
+      "at_least": 0.6
+    },
+    {
+      "if": "exit_intent",
+      "phase": "scale",
+      "at_least": 0.9
+    }
+  ],
+  "why": "Once ownership is shared, outside money comes in, or the field is regulated",
+  "unlocks": [
+    "agreements",
+    "filings",
+    "reminders"
+  ],
+  "not_modeled": "Matters after Validation or under another governance model; kept for later, not computed (EE-069).",
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [
+    "schema/ownership.schema.json",
+    "schema/decision-rights.schema.json",
+    "schema/board.schema.json",
+    "schema/exit.schema.json",
+    "schema/publication-policy.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "schema/check-execution.mjs",
+    "schema/check-governance.mjs",
+    "schema/payouts.mjs",
+    "schema/check-telos.mjs",
+    "schema/check-publication.mjs"
+  ],
+  "skill": null,
+  "use_model": []
+}
