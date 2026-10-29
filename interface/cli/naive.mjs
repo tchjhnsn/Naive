@@ -17,6 +17,9 @@
 //   naive typegen                                   write .naive/types/ from the route table and the MCP tools
 //   naive upgrade [<venture dir>] [--framework]     move a venture onto the next Naive layout; --framework first
 //                                                   updates the installed framework with the venture's package manager (I-29)
+//   naive phase [<next phase>] [--meet <criterion> --evidence <text>] [--reason] [--override <why>]
+//                                                   the venture development lifecycle: where the venture is, its gate's exit
+//                                                   criteria, and moving to the next phase once a person has met them
 //   naive port <folder> --venture <dir> [--to <path>]  plan moving a folder into the venture as it is (codebase/<name>)
 //   naive port --venture <dir> --apply --confirm port
 //                                                   carry out that plan (EE-076)
@@ -178,6 +181,12 @@ else if (cmd === "build" || cmd === "start") {
   if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("schema/frames.mjs", rest));
   const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
   process.exit(run("schema/frames.mjs", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
+} else if (cmd === "phase") {
+  // The venture development lifecycle (schema/lifecycle.mjs): where the venture is, its gate, and moving on.
+  // naive phase | naive phase --meet <criterion> [--evidence <text>] | naive phase <next> [--reason] [--override]
+  const target = rest.find((a, i) => !a.startsWith("--") && !["--venture", "--meet", "--evidence", "--reason", "--override", "--by"].includes(rest[i - 1]));
+  const pass = ["evidence", "reason", "override", "by"].flatMap((k) => opt(k) !== undefined ? [`--${k}`, opt(k)] : []);
+  process.exit(run("schema/lifecycle.mjs", [here(), ...(opt("meet") ? ["meet", opt("meet")] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
