@@ -1496,7 +1496,8 @@
           "checked_by": "schema/check-brand.mjs"
         }
       ],
-      "note": "A package's own terms, at glossary/<package>.json (Y-2): local to the package unless exported, so an agent in another package sees only exported terms; glossary/terms shows what one package sees"
+      "note": "A package's own terms, at glossary/<package>.json (Y-2): local to the package unless exported, so an agent in another package sees only exported terms; glossary/terms shows what one package sees",
+      "decision_class": "public-commitment"
     },
     {
       "id": "marketing-design-system",
@@ -1524,7 +1525,7 @@
           "checked_by": "schema/design-system.mjs"
         }
       ],
-      "decision_class": "experience-design",
+      "decision_class": "public-commitment",
       "note": "The design system in the marketing package: the ethos read from the strategic foundation and every brand choice with why and the records it rests on (mission, ICP profiles, market, founders), inherited through marketing/design-system/inputs. The values stay in marketing/brand.json"
     },
     {
@@ -1548,7 +1549,7 @@
           "checked_by": "schema/check-brand.mjs"
         }
       ],
-      "decision_class": "experience-design",
+      "decision_class": "public-commitment",
       "note": "Brand tokens in the marketing package (Y-3): colors, licensed self-hosted typefaces (T-1), the font each role uses with scopes where nearer context wins (Y-5, T-2), voice rules (the global stylesheet for words), the logo and marks (P-24) and outside design systems by reference (Y-4). Read by every agent's layout; marketing/brand/tokens renders it for interfaces"
     },
     {

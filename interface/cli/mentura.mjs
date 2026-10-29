@@ -200,17 +200,17 @@ if (cmd === "accept") {
   // Any held draft can be accepted: one gated by its decision class, held by an open decision, or held by
   // the venture's naive.config.json gate.
   if (!d) { console.error(`${rt} is not a record route, or no venture ${venture}`); process.exit(1); }
-  const draft = join(d.dir, d.draft);
+  const draft = ventureFile(d.dir, d.draft);
   if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
   // Gate group hook (X-2): drafts kept side by side are accepted one at a time with --pick <letter>.
   let chosen;
   try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error(e.message); process.exit(1); }
-  const chosenFile = join(d.dir, chosen);
+  const chosenFile = ventureFile(d.dir, chosen);
   const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
   const touched = foundationOf(recType);
   if (touched.length) {
     const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
-    const now = existsSync(join(d.dir, d.file)) ? JSON.parse(readFileSync(join(d.dir, d.file), "utf8")) : {};
+    const now = existsSync(ventureFile(d.dir, d.file)) ? JSON.parse(readFileSync(ventureFile(d.dir, d.file), "utf8")) : {};
     const next = JSON.parse(readFileSync(chosenFile, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
     const names = new Set([d.route, rt]);

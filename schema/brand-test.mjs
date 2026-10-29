@@ -162,8 +162,10 @@ const brand = {
   ],
 };
 {
-  const w = await R("marketing/brand", "write", brand);
-  expect("Y-3: the brand is a marketing record written through the router", w.ok && w.result.written === "marketing/brand.json" && w.result.gate === "experience-design", w.error);
+  const held = await R("marketing/brand", "write", brand, { actor: "agent" });
+  expect("an agent's brand is a draft for a person: the brand is a public commitment", held.ok && held.result.draft && held.result.gate === "public-commitment", JSON.stringify(held.result ?? held.error));
+  const w = await R("marketing/brand", "write", brand, { actor: "person" });
+  expect("Y-3: the brand is a marketing record written through the router", w.ok && w.result.written === "marketing/brand.json" && w.result.gate === "public-commitment", w.error);
   const c = checkBrand(dir);
   expect("Y-3, T-1, P-24, Y-4: a well-formed brand checks out", c.ok, c.errors);
   expect("Y-3: the marketing/brand route's check runs schema/check-brand.mjs", (await R("marketing/brand", "check")).ok);
@@ -206,13 +208,13 @@ const brand = {
   const b = JSON.parse(JSON.stringify(brand));
   b.typefaces[0].license = "Apache-2.0";
   b.typefaces.push({ id: "remote", family: "Roboto", source: "remote", url: "https://fonts.googleapis.com/css2?family=Roboto", license: "OFL-1.1" }, { id: "nolicense", family: "Mystery", source: "self-hosted", files: ["public/fonts/missing.woff2"] });
-  await R("marketing/brand", "write", b);
+  await R("marketing/brand", "write", b, { actor: "person" });
   const e = checkBrand(dir).errors;
   expect("T-1: a typeface's license must match its registered files", has(e, /typeface inter: licensed Apache-2.0, but public\/assets\.json says public\/fonts\/inter\.woff2 is OFL-1.1/));
   expect("T-1: a remote typeface fails: the browser would make an outside request", has(e, /typeface remote: served from https:\/\/fonts\.googleapis\.com/));
   expect("T-1: a typeface with no license fails, and so does a missing file", has(e, /typeface nolicense: no license/) && has(e, /missing\.woff2 is not there/));
   b.typefaces = brand.typefaces; b.fonts = { body: "ghost" }; b.scopes = [{ for: "investors", fonts: { body: "phantom" } }, { for: "investors" }];
-  await R("marketing/brand", "write", b);
+  await R("marketing/brand", "write", b, { actor: "person" });
   const e2 = checkBrand(dir).errors;
   expect("T-2: a font role naming no typeface fails, at the root and in a scope", has(e2, /fonts\.body: no typeface ghost/) && has(e2, /scope investors: fonts\.body names no typeface phantom/));
   expect("Y-5: a scope declared twice fails", has(e2, /scope investors is declared twice/));
@@ -224,7 +226,7 @@ const brand = {
   mentura("assets", "add", "public/big.png", "--venture", "acme", "--source", "Acme", "--license", "owned", "--credit", "Acme", "--decorative");
   put("public/unlisted.svg", svg('width="10" height="10"'));
   b.marks = [{ kind: "apple-icon", asset: "public/big.png" }, { kind: "icon", asset: "public/big.png" }, { kind: "favicon", asset: "public/icon.png" }, { kind: "logo", asset: "public/unlisted.svg" }];
-  await R("marketing/brand", "write", b);
+  await R("marketing/brand", "write", b, { actor: "person" });
   const e = checkBrand(dir).errors;
   expect("P-24: an apple-icon is 180x180", has(e, /apple-icon: public\/big\.png is 200x100/));
   expect("P-24: an icon is square", has(e, /mark icon: public\/big\.png is 200x100; an icon is square/));
@@ -236,7 +238,7 @@ const brand = {
 {
   const b = JSON.parse(JSON.stringify(brand));
   b.design_systems = [{ id: "acme-ds", name: "Big Corp DS", url: "vendor/bigcorp", license: "proprietary" }, { id: "radix", name: "Radix Colors", url: "https://www.radix-ui.com/colors", license: "MIT" }];
-  await R("marketing/brand", "write", b);
+  await R("marketing/brand", "write", b, { actor: "person" });
   put("public/ds-button.svg", svg('width="10" height="10"'));
   put("public/radix.svg", svg('width="10" height="10"'));
   mentura("assets", "add", "public/ds-button.svg", "--venture", "acme", "--source", "Big Corp", "--license", "proprietary", "--credit", "Big Corp", "--decorative", "--design-system", "acme-ds");
@@ -244,13 +246,13 @@ const brand = {
   const e = checkBrand(dir).errors;
   expect("Y-4: a design system must be a link", has(e, /design system acme-ds: vendor\/bigcorp is not a link/));
   expect("Y-4: a file copied from a design system whose license does not allow it fails", has(e, /public\/ds-button\.svg: a copy from design system acme-ds/) && !has(e, /radix\.svg/));
-  await R("marketing/brand", "write", brand);
+  await R("marketing/brand", "write", brand, { actor: "person" });
   const x = reg(); x.assets = x.assets.filter((q) => !["public/ds-button.svg", "public/radix.svg"].includes(q.path)); await R("public/assets", "write", x);
   rmSync(join(dir, "public/ds-button.svg")); rmSync(join(dir, "public/radix.svg"));
 }
 // Y-2: package glossaries.
 {
-  const g = (pkg, terms) => R(`glossary/${pkg}`, "write", { package: pkg, terms });
+  const g = (pkg, terms) => R(`glossary/${pkg}`, "write", { package: pkg, terms }, { actor: "person" });
   let w = await g("finance", [{ term: "burn multiple", meaning: "net burn divided by net new ARR" }, { term: "runway", meaning: "months of cash at the current burn", export: true }]);
   expect("Y-2: a package glossary is written at glossary/<package>.json", w.ok && w.result.written === "glossary/finance.json", w.error);
   await g("marketing", [{ term: "hero", meaning: "the first section of a page" }, { term: "runway", meaning: "the strip models walk on" }]);
