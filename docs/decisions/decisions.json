@@ -883,6 +883,21 @@
       ],
       "decision": "Setup asks where each of the venture's functions keeps its truth, and records the answers as pointers in knowledge/sources.json under `functions` (the source-of-truth matrix, EE-042, not a second file), with `truth` naming where the venture's source of truth as a whole lives (local by default). schema/systems-catalog.json lists the systems offered per function (a local repo, GitHub, Vercel, Cloudflare, Stripe, Square, Shopify, Rho, Google Drive, DocuSign, a local folder). A system Naive reads through code is connected (Rho, through its MCP API: sandbox, live with RHO_API_TOKEN, or a saved fixture marked as one); the rest are pointed until a connector exists. A function with no system keeps the founder's words. naive dev serves a setup page at /setup (interface/dev/setup.mjs) that walks through people and hats, sources of truth, the strategic foundation and first decisions (each answer an approved decision; a foundation statement as a decision with `statement`), and a goal for discovery, and says when the structure is established and what comes next. A new venture's .gitignore keeps sensitive stream activity out of git.",
       "why": "Torian, 2026-10-29: when scaffolding, ask the user to point Naive to the source of truth for each function (the repo, GitHub and Vercel for a software product; analytics from the host; Stripe, Square or Shopify for sales; Rho for financials in the demo; legal documents, with the connections to set them up if missing), let a function default or be answered in prose, and ship a local setup experience like the one Next.js gives, essentially the strategic foundation and a version of the decision docket, ending by setting a goal for the discovery phase. After setup a founder has the structure of the venture and a way of routing decisions; operating it is Mentura's, as deploying is Vercel's after Next.js."
+    },
+    {
+      "id": "EE-086",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-047",
+        "EE-070",
+        "EE-071",
+        "EE-082",
+        "EE-083",
+        "EE-085"
+      ],
+      "decision": "The venture project structure (docs/design/VENTURE_STRUCTURE_2026-10-29.md). At the top: venture.json, README.md (was profile.md), AGENTS.md, knowledge/ (the knowledge base), meta/ (sources.json, naive.config.json, provenance.jsonl, releases) and an optional repo/ for code. Packages sit flat in knowledge/. venture.json declares the business functions once (the org chart, flat by default with one function per package owned by the founder); packages and records inherit their function from it, a founder composes functions over several packages, (group)/ folders are an optional view, and hats derive from function ownership. A record's route is its path inside knowledge/, with groups and the extension dropped: no name table, no reserved route names. Skills teach where files go; code guarantees schema, the person-only gate, private data, provenance and outside systems. A function's publishable items are in public.json where it has any.",
+      "why": "Torian, 2026-10-29: the folder structure is a visual aid and an educational device for how a founder should think about the business; put the knowledge base in a knowledge folder, code in an optional repo folder like src, and add a meta folder; let people group and merge functions their own way, starting from a flat org chart declared in the venture file that everything inherits from; routes were overcomplicated, and agents can handle file conventions with skills. Answers marked default in the design note are Claude's recommendations until Torian changes them."
     }
   ]
 }
