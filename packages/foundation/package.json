@@ -48,5 +48,12 @@
     "schema/foundation.mjs"
   ],
   "skill": null,
-  "use_model": []
+  "use_model": [],
+  "use_cache": [
+    {
+      "route": "purpose/foundation",
+      "level": "record",
+      "life": "hours"
+    }
+  ]
 }

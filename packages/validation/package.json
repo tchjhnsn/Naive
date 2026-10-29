@@ -72,6 +72,16 @@
     "path": "purpose/kits/validation/skills/problem-validation/SKILL.md"
   },
   "use_model": [],
+  "use_cache": [
+    {
+      "route": "purpose/validation/assess",
+      "level": "record",
+      "life": "hours",
+      "vary": [
+        "day"
+      ]
+    }
+  ],
   "layer": "purpose",
   "records": [
     "validation-problem",

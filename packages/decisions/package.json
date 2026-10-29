@@ -13,5 +13,16 @@
   "templates": [],
   "checks": [],
   "skill": null,
-  "use_model": []
+  "use_model": [],
+  "use_cache": [
+    {
+      "route": "governance/decisions",
+      "level": "record",
+      "life": "minutes",
+      "vary": [
+        "hour",
+        "env:DECISIONS_NOW"
+      ]
+    }
+  ]
 }
