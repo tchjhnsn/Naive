@@ -45,6 +45,16 @@ await t("init --venture: Naive workspace by default, with its clock, calendar an
   ok(sh(["workspace", "init", "ws", "--venture", "Again", ...FLAGS]).status !== 0, "an existing workspace is not initiated twice");
 });
 
+await t("a failed init is finished by running it again", () => {
+  const r = sh(["workspace", "init", "half", "--venture", "Kettle", "--type", "no-such-type", ...FLAGS]);
+  ok(r.status !== 0 && /run the same naive workspace init again/.test(r.stderr), r.stderr);
+  ok(!existsSync(join(base, "half/kettle")), "the half-made venture folder is removed");
+  const again = sh(["workspace", "init", "half", "--venture", "Kettle", ...FLAGS]);
+  ok(again.status === 0, again.stderr + again.stdout);
+  ok(load(join(base, "half/naive-workspace.json")).ventures.join() === "kettle", "the re-run lists the venture");
+  ok(load(join(base, "half/kettle/venture.json")).name === "Kettle");
+});
+
 await t("interactive init with no flags: Naive workspace and My first venture", () => {
   const r = sh(["workspace", "init", "asked", ...FLAGS], { env: { ...env, CREATE_VENTURE_PROMPTS: "1" }, input: "\n\n\n" });
   ok(r.status === 0, r.stderr + r.stdout);

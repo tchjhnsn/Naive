@@ -13,13 +13,14 @@
 // workspace rename). <dir> defaults to a folder named after the workspace in the current directory.
 // The venture is made by create-venture (interface/create-venture/index.mjs), so both ways in match; a
 // port or migrate then plans the move or the rewrite into that venture (schema/port-venture.mjs,
-// schema/migrate-venture.mjs). A port moves files only with --apply --confirm port.
+// schema/migrate-venture.mjs). A port moves files only with --apply --confirm port. If the venture cannot be
+// made, its half-made folder is removed and the workspace kept; the same command run again finishes it.
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
-import { DEFAULT_NAME, WORKSPACE_FILE, ensureWorkspace, findWorkspace } from "./workspace.mjs";
+import { DEFAULT_NAME, WORKSPACE_FILE, ensureWorkspace, findWorkspace, loadWorkspace } from "./workspace.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 export const FIRST_VENTURE = "My first venture";
@@ -57,8 +58,8 @@ ventureName ??= mode === "venture" ? FIRST_VENTURE : title(basename(source));
 wsName ??= DEFAULT_NAME;
 
 const root = resolve(positional[0] ?? slug(wsName));
-const above = findWorkspace(root);
-if (above === root) fail(`${root} is already a workspace (${WORKSPACE_FILE}); add a venture to it with create-venture, or rename it with naive workspace rename`);
+// A workspace left without a venture by a failed init is finished by running init again; one that holds a venture is not re-initiated.
+if (findWorkspace(root) === root && loadWorkspace(root).ws.ventures?.length) fail(`${root} is already a workspace (${WORKSPACE_FILE}); add a venture to it with create-venture, or rename it with naive workspace rename`);
 
 // 1. The workspace, its clock and its calendar.
 let w;
@@ -68,9 +69,13 @@ console.log(`Created ${w.ws.name} at ${root}: clock in ${w.ws.timeZone}, calenda
 // 2. The venture, by create-venture, inside the workspace.
 const vdir = join(root, slug(ventureName) || "venture");
 const pass = [["type"], ["role"], ["layout"], ["founder", "name"]].flatMap(([k, as]) => (opt(k) !== undefined ? [`--${as ?? k}`, opt(k)] : []));
+const fresh = !existsSync(vdir);
 const cv = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), vdir, "--venture-name", ventureName, "--yes", ...pass,
   ...(flag("skip-install") ? ["--skip-install"] : []), ...(flag("no-git") ? ["--no-git"] : [])], { encoding: "utf8", cwd: root, env: { ...process.env, CREATE_VENTURE_PROMPTS: "" } });
-if (cv.status !== 0) fail(`the workspace is made, but its venture is not: ${(cv.stderr || cv.stdout).trim()}`);
+if (cv.status !== 0) {
+  if (fresh) rmSync(vdir, { recursive: true, force: true });
+  fail(`the workspace is made, but its venture is not: ${(cv.stderr || cv.stdout).trim()}\nFix that and run the same naive workspace init again; it finishes this workspace.`);
+}
 console.log(`Created the venture ${ventureName} at ${vdir}`);
 
 // 3. Port or migrate into it.
