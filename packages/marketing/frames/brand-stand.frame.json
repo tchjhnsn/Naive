@@ -1,0 +1,75 @@
+{
+  "id": "brand-stand",
+  "title": "Take a public stand",
+  "functions": [
+    "marketing"
+  ],
+  "triggers": [
+    "should we take a stand",
+    "should our brand be political",
+    "we want to stand for something publicly"
+  ],
+  "goal": "{goal}",
+  "premises": [
+    {
+      "id": "stand-from-ethos",
+      "claim": "The stand follows from the ethos rather than from the news.",
+      "attack": "test-the-goal",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    },
+    {
+      "id": "stand-costs-customers",
+      "claim": "Taking the stand will cost some customers.",
+      "attack": "invert",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    },
+    {
+      "id": "stand-is-permanent",
+      "claim": "Once taken, the stand cannot be walked back without damage.",
+      "attack": "invert",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    }
+  ],
+  "attacks": [
+    "test-the-goal",
+    "invert",
+    "who-solved-this"
+  ],
+  "reframe": "Which stand follows from the ethos, and is the venture ready to keep it at the cost it will carry?",
+  "props": [
+    "phase",
+    "goal"
+  ],
+  "freshness": {
+    "look_for": [
+      "ventures that faced the same brand problem, and what it cost them"
+    ],
+    "max_age_days": 365,
+    "cite": true
+  },
+  "reasoning": [
+    "Read the venture's goal and phase.",
+    "Judge each premise against the facts alone.",
+    "Propose the decision open; never pick an option."
+  ],
+  "emits": [
+    {
+      "id": "brand-stand",
+      "question": "What public stand does the venture take, if any, knowing it cannot be undone?",
+      "options": [
+        "a stand that follows from the ethos",
+        "no public stand yet"
+      ],
+      "layer": "purpose"
+    }
+  ]
+}
