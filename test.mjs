@@ -105,6 +105,7 @@ const steps = [
   ["types (tsc checkJs, outside the pending folders)", "node", ["schema/check-types.ts"]],
   ["the type gate fails on what it must catch", "node", ["schema/check-types-test.ts"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
+  ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["schema/record-types-test.ts"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
