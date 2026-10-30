@@ -266,20 +266,31 @@ export function locked(dir, route, actorId) {
   return d ? { id: d.id, question: d.question } : null;
 }
 
-const validate = (d) => {
+const runValidator = (d, schema) => {
   const scratch = mkdtempSync(join(tmpdir(), "decision-"));
   const f = join(scratch, "d.json");
   writeFileSync(f, JSON.stringify(d));
-  const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "decision-record.schema.json", "--file", f], { encoding: "utf8" });
+  const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" });
   rmSync(scratch, { recursive: true, force: true });
+  return v;
+};
+const validate = (d, schema = "decision-record.schema.json") => {
+  const v = runValidator(d, schema);
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
+};
+/** The schema errors of a record, one per line, or null when the validator could not run: validate.py
+ *  prints schema errors to stdout and exits 1, and anything else is a failure to check. */
+const schemaErrors = (d, schema) => {
+  const v = runValidator(d, schema);
+  if (v.status === 0) return [];
+  return v.status === 1 && v.stdout.trim() && !v.stderr.trim() ? v.stdout.trim().split("\n") : null;
 };
 const fileOf = (dir, id) => decisionFiles(dir).find((f) => load(ventureFile(dir, f)).id === id);
 /** The venture-relative file of a decision record, by id. */
 export const decisionFile = fileOf;
 
-/** Whether an applies_to file is a relative path that stays inside the venture (no "..", not absolute). */
-const inside = (f) => typeof f === "string" && f !== "" && !isAbsolute(f) && !/^[a-zA-Z]:/.test(f) && !f.split(/[\\/]/).includes("..");
+/** Whether an applies_to file is a relative path that stays inside the venture (no ".", "..", or empty segment, not absolute), so it has one spelling. */
+const inside = (f) => typeof f === "string" && f !== "" && !isAbsolute(f) && !/^[a-zA-Z]:/.test(f) && !f.split(/[\\/]/).some((x) => ["", ".", ".."].includes(x));
 
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
  *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
@@ -341,14 +352,32 @@ export function merge(dir, id, { by, role, via = "cli", note, today } = {}) {
   if (!may.ok) return may;
   by = by ?? role;
   const actor = role ? agentFromEnv("agent", via, { id: role }) : agentFromEnv("person", via, { id: by });
-  const files = [];
   const outside = d.applies_to.find((t) => !inside(t?.file));
   if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
+  // Every target is built and checked against its record type's schema before any is written.
+  const recs = new Map();
   for (const t of d.applies_to) {
     const f = ventureFile(dir, t.file);
-    const rec = existsSync(f) ? load(f) : {};
+    const rec = recs.get(t.file) ?? (existsSync(f) ? load(f) : {});
     setField(rec, t.field, d.answer);
-    writeFileSync(f, JSON.stringify(rec, null, 2) + "\n");
+    recs.set(t.file, rec);
+  }
+  // Gaps the record already had (a field not written yet) do not block a merge; errors the answer adds
+  // do. A record that does not exist yet has no gaps, so a new record must pass whole. A validator that
+  // cannot run proves nothing, so it refuses the merge.
+  for (const [rel, rec] of recs) {
+    const schema = MODEL.records.find((r) => r.id === recordOf(rel))?.schema?.replace(/^schema\//, "");
+    if (!schema) continue;
+    const f = ventureFile(dir, rel);
+    const before = existsSync(f) ? schemaErrors(load(f), schema) : [];
+    const after = schemaErrors(rec, schema);
+    if (!before || !after) return { ok: false, error: `could not check ${rel} against schema/${schema}; nothing was written` };
+    const added = after.filter((l) => !before.includes(l));
+    if (added.length) return { ok: false, error: `merging ${id} would make ${rel} not match schema/${schema}; nothing was written:\n${added.join("\n")}` };
+  }
+  const files = [];
+  for (const t of d.applies_to) {
+    writeFileSync(ventureFile(dir, t.file), JSON.stringify(recs.get(t.file), null, 2) + "\n");
     prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: actor, decision: id, note: `merged ${id} version ${version} into ${t.field}` });
     files.push(t.file);
   }
@@ -445,6 +474,8 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   if (old.status !== "decided") return { ok: false, error: `${id} version ${to} was never decided; only a decided version can be restored` };
   const n = nextVersion(d);
   const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...(old.provenance ?? {}), drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
+  if (old.provenance?.reasons) out.reasons = old.provenance.reasons;
+  else delete out.reasons;
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
@@ -476,11 +507,15 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
   const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
   const wording = !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
   const phase = load(join(dir, "venture.json")).phase;
-  // Reasons given at approval join the drafted ones; all are frozen, each local citation with its sha256
-  // now, into this version's provenance. A new version starts from no frozen reasons of its own.
-  const given = [...(d.reasons ?? []), ...(reasons ?? [])];
+  // Reasons given at approval join the drafted ones and freeze into this version's provenance, each local
+  // citation with its sha256 now. On a later version every reason in d.reasons is inherited and keeps the
+  // hash it was frozen at, so a citation that changed since still makes this version stale. A reason given
+  // now with the same claim replaces the inherited one, which is how staleness is cleared.
+  const restated = new Set((reasons ?? []).map((x) => x.claim));
+  const kept = (d.reasons ?? []).filter((x) => !restated.has(x.claim));
+  const given = [...(d.versions?.length ? kept : stamp(dir, kept, { keep: false })), ...stamp(dir, reasons ?? [], { keep: false })];
   const { reasons: _old, ...pv } = d.provenance ?? {};
-  const frozen = given.length ? stamp(dir, given, { keep: false }) : null;
+  const frozen = given.length ? given : null;
   const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
