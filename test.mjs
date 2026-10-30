@@ -62,7 +62,7 @@ const steps = [
   ["publications: instance", "node", ["schema/check-publications.mjs", "instance"]],
   ["publications: examples", "node", ["schema/check-publications.mjs", "schema/examples/workspace"]],
   ["decision versions: propose, approve, merge, rollback", "node", ["schema/decision-versions-test.mjs"]],
-  ["decision index: open-decision impact, phase weight and requirements, incremental updates with bounded propagation, rank history", "node", ["schema/decision-index-test.mjs"]],
+  ["decision index: open-decision impact, phase weight and requirements, updates equal to a rebuild, rank history", "node", ["schema/decision-index-test.mjs"]],
   ["decision impact: a merge maps what depends on it across functions, marks it stale, proposes follow-ups", "node", ["schema/decision-impact-test.mjs"]],
   ["decision reasons: cited reasons frozen at approval; a changed citation makes the decision stale", "node", ["schema/decision-reasons-test.mjs"]],
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
