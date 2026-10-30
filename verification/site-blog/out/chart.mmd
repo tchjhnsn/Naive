@@ -1,0 +1,58 @@
+---
+title: "A post on the Naive blog"
+---
+stateDiagram-v2
+  direction LR
+  state "Legend" as legend {
+    lg0: draft
+    lg1: published
+  }
+  class lg0 orange
+  class lg1 teal
+  state "At the same time" as all {
+    state "Newer post" as r0 {
+      s0: Not written
+      s1: Draft, off the site
+      s2: Published, first
+      s3: Dated ahead, off the site
+      [*] --> s0
+      s0 --> s1: you mark the newer post as a draft
+      s0 --> s2: you publish the newer post [unless Published, first]
+      s0 --> s3: you date the newer post in the future
+      s0 --> s2: you publish the newer post, and the older one moves down [when Published, first]
+      s1 --> s2: you publish the newer post [unless Published, first]
+      s2 --> s1: you mark the newer post as a draft [unless Published, second]
+      s2 --> s3: you date the newer post in the future [unless Published, second]
+      s3 --> s2: you publish the newer post [unless Published, first]
+      s1 --> s2: you publish the newer post, and the older one moves down [when Published, first]
+      s2 --> s1: you mark the newer post as a draft, and the older one moves up [when Published, second]
+      s2 --> s3: you date the newer post in the future, and the older one moves up [when Published, second]
+      s3 --> s2: you publish the newer post, and the older one moves down [when Published, first]
+    }
+    --
+    state "Older post" as r1 {
+      s4: Not written
+      s5: Draft, off the site
+      s6: Published, first
+      s7: Dated ahead, off the site
+      s8: Published, second
+      [*] --> s4
+      s4 --> s5: you mark the older post as a draft
+      s4 --> s6: you publish the older post [unless Published, first]
+      s4 --> s7: you date the older post in the future
+      s5 --> s6: you publish the older post [unless Published, first]
+      s6 --> s5: you mark the older post as a draft
+      s6 --> s7: you date the older post in the future
+      s6 --> s8: you publish the newer post, and the older one moves down
+      s7 --> s6: you publish the older post [unless Published, first]
+      s4 --> s8: you publish the older post [when Published, first]
+      s5 --> s8: you publish the older post [when Published, first]
+      s8 --> s6: you mark the newer post as a draft, and the older one moves up or you date the newer post in the future, and the older one moves up
+      s8 --> s5: you mark the older post as a draft
+      s8 --> s7: you date the older post in the future
+      s7 --> s8: you publish the older post [when Published, first]
+    }
+  }
+  class s1 orange
+  class s5 orange
+  class s8 teal
