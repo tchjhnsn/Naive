@@ -41,7 +41,14 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-data-packages.mjs`: coverage and freshness. Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `schema/check-data-packages.mjs` (coverage and freshness) and `schema/lint-money.mjs` (route `money/lint`).
+
+`node schema/lint-money.mjs <venture dir> [--json]` warns on two rules. Both are fail-open unless `naive.config.json` sets `money_lint.rules.<id>.mode` to `"fail-closed"`. The run exits 1 only when a fail-closed rule has findings.
+
+- `transfer-no-approver`: a transfer decision names no person in `provenance.approved_by` or `decided_by`. A transfer decision is `transfer.decision.json` or `<record>.transfer.decision.json` in a `decisions/` folder, or a decision whose id is `transfer` or starts with `transfer-`. The lint reads it as proposed, then approved, then executed (`status` `executed`, or an outcome id `executed` whose result is not pending). A proposal with no name is a warning. So is approved or executed with no name.
+- `account-no-owner`: a money account (`money/<id>.json`, not the summary and not a stream) has no `owner` string.
+
+It reads records through `ventureFile`. It does not read transaction streams, print balances or account numbers, or move money. A missing or malformed record is skipped. Run it after each write, and fix a fail-closed finding before you report the work done.
 
 ## Actions and artifacts
 
