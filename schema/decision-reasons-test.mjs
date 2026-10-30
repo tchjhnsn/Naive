@@ -3,7 +3,7 @@
 // decision stale ("the reason you decided <id> changed"), and rank carries the cites. Also the CLI.
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../interface/router.mjs";
@@ -105,6 +105,23 @@ try {
   const raw = await call({ venture: "rop", route: "decisions/pick", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { id: "pick", question: "Which?", answer: "this", status: "open", reasons: cited } });
   expect("an agent's raw write that reopens a decided decision is only a draft", raw.ok && raw.result.draft === true && readFileSync(recordPath, "utf8") === before, raw);
   expect("so the decision stays stale and nothing re-freezes", rendered() === "stale", rendered());
+
+  // One id, one file: a sibling cannot take over a decided id, so the draft rule cannot be walked around.
+  const write = (route, input, actor = "agent") => call({ venture: "rop", route, action: "write", actor, ...(actor === "agent" ? { actor_id: "builder" } : {}), workspace: ws, input });
+  const sibling = { question: "Which?", answer: "other", status: "open" };
+  propose(o, { id: "aside", question: "Aside?", answer: "a" }, { agentId: "cos" });
+  const asideBefore = readFileSync(join(o, "decisions/aside.decision.json"), "utf8");
+  expect("a write whose id differs from the file it lands in is refused", !(await write("decisions/aside", { ...sibling, id: "pick" })).ok && readFileSync(join(o, "decisions/aside.decision.json"), "utf8") === asideBefore);
+  expect("a person's is refused too, so a draft cannot be accepted past it", !(await write("decisions/aside", { ...sibling, id: "pick" }, "person")).ok);
+  expect("a new file cannot carry another id", !(await write("decisions/fresh", { ...sibling, id: "pick" })).ok && !existsSync(join(o, "decisions/fresh.decision.json")));
+  expect("a topic name cannot carry a decided id", !(await write("decisions/x.pick", { ...sibling, id: "pick" })).ok);
+  writeFileSync(join(o, "decisions/terms.decision.json"), JSON.stringify({ id: "fund-terms", question: "Terms?", status: "open" }));
+  const named = await write("decisions/terms", { id: "fund-terms", question: "Terms now?", status: "open" });
+  expect("a shipped record whose id predates the rule stays writable under its own id", named.ok, named);
+
+  // The roster grants founder authority, so an agent's write to it waits for a person, as delegation's does.
+  const roster = await call({ venture: "rop", route: "people", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { venture: "rop", mode: "solo", people: [{ id: "claude", name: "claude", role: "founder" }], updated: "2026-10-30" } });
+  expect("an agent's write to the roster is only a draft", roster.ok && roster.result.draft === true && !existsSync(join(o, "people/people.json")), roster);
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

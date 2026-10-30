@@ -32,6 +32,7 @@ import { actingAgent, agentFromEnv, record as prov } from "../interface/provenan
 import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
+import { roles as ventureRoles } from "./venture-type.mjs";
 import { impact } from "./impact.mjs";
 import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
@@ -406,20 +407,30 @@ export function oneWayClasses() {
   return oneWayDefault;
 }
 
-/** The venture's founders: named in governance/delegation.json, or role founder in people/people.json. */
+const rosterOf = (dir) => { const pf = ventureFile(dir, "people/people.json"); return existsSync(pf) ? load(pf).people ?? [] : []; };
+/** Whether a role is a founding one, by the roles register (founder, co-founder, general partner). */
+const founding = (role) => ventureRoles().some((r) => r.founder && r.id === role);
+
+/** The venture's founders: named in governance/delegation.json, or holding a founding role in people/people.json. */
 function foundersOf(dir, del) {
   const out = new Set([del?.founder ?? []].flat());
-  const pf = ventureFile(dir, "people/people.json");
-  if (existsSync(pf)) for (const p of load(pf).people ?? []) if (p.role === "founder") for (const k of [p.id, p.name]) if (k) out.add(k);
+  for (const p of rosterOf(dir)) if (founding(p.role)) for (const k of [p.id, p.name]) if (k) out.add(k);
   return out;
+}
+
+/** The name setup acts as: the first founder the venture names, else its first person. */
+export function founderName(dir) {
+  let del = null;
+  try { del = delegationOf(dir); } catch {} // approve reports a delegation file that does not parse.
+  const roster = rosterOf(dir);
+  return [del?.founder ?? []].flat()[0] ?? roster.find((p) => founding(p.role))?.name ?? roster[0]?.name ?? "Founder";
 }
 
 /** The people who may act as a person in this venture: ids and names in people/people.json, and the
  *  founders named in governance/delegation.json. Empty when the venture records no one. */
 function peopleOf(dir) {
   const out = new Set();
-  const pf = ventureFile(dir, "people/people.json");
-  if (existsSync(pf)) for (const p of load(pf).people ?? []) for (const k of [p.id, p.name]) if (k) out.add(k);
+  for (const p of rosterOf(dir)) for (const k of [p.id, p.name]) if (k) out.add(k);
   const founders = delegationOf(dir)?.founder;
   for (const f of [founders ?? []].flat()) if (f) out.add(f);
   return out;
@@ -492,6 +503,10 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "rolling back needs the person's name (--by)" };
+  let del;
+  try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${e.message}: no one rolls back until it is fixed` }; }
+  const refused = notAPerson(dir, del, by, { rosterRequired: false });
+  if (refused) return { ok: false, error: `only a person rolls back a decision: ${refused}` };
   const d = load(ventureFile(dir, file));
   const old = (d.versions ?? []).find((v) => v.version === Number(to));
   if (!old) return { ok: false, error: `${id} has no version ${to}` };
