@@ -1949,8 +1949,8 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (schema/triggers.mjs) */
   triggers?: unknown[];
-  /** Per-rule mode for the money lint (schema/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed. */
-  money_lint?: {
+  /** Per-rule mode for the product lint (schema/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed. */
+  product_lint?: {
     rules?: {
       [key: string]: {
         mode?: "fail-open" | "fail-closed";
@@ -1973,6 +1973,14 @@ export type NaiveConfig = {
       conflict?: "off" | "warn" | "error";
       dependency?: "off" | "warn" | "error";
       "phase-mismatch"?: "off" | "warn" | "error";
+    };
+  };
+  /** Per-rule mode for the money lint (schema/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed. */
+  money_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
     };
   };
   /** Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open. */
@@ -2245,6 +2253,13 @@ export type Product = {
   repo?: string;
   /** The ICP profiles (purpose/icp.json ids) the product is offered to: who buys or adopts it, and so whom its marketing addresses first (EE-064). In a B2B2C or partner-led venture these are the partners, not the partners' customers. */
   offered_to?: string[];
+  /** What the product does. Each feature names the job it serves: a job of an ICP profile in offered_to. The jobs stay on the ICP record and are read by id, not copied here. */
+  features?: {
+    id: string;
+    name?: string;
+    /** The job this feature serves. It must be a job of an ICP profile this product is offered to. */
+    job?: string;
+  }[];
   /** ICP profiles the product ultimately serves through those it is offered to, such as a partner's own customers (EE-064) */
   serves?: string[];
 };
