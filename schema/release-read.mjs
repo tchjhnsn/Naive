@@ -86,6 +86,10 @@ export function resolveRoute(dir, m, route) {
 /**
  * Answers one request against a venture's release. draw, when given, turns the card's data into an
  * image (the interface's job, O-7): draw(card) -> SVG text.
+ * @param {string} dir
+ * @param {string} method
+ * @param {string} path
+ * @param {{ draw?: (card: *) => string }} [opts]
  */
 export function answer(dir, method, path, { draw } = {}) {
   if (method !== "GET" && method !== "HEAD") return { ...json(405, { error: "a release is read-only: only GET and HEAD" }), allow: "GET, HEAD" };

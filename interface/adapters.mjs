@@ -84,7 +84,7 @@ export async function adapt(dir, name) {
   return { adapter: name, written, current, kept, removed, skills: want.filter((w) => w.skill).map((w) => w.skill) };
 }
 
-/** Re-adapts every adapter the venture has, after an upgrade. */
+/** Re-adapts every adapter the venture has, after an upgrade. @returns {Promise<{ adapter: string, written?: string[], error?: string }[]>} */
 export async function refresh(dir) {
   const names = Object.keys(readState(dir).adapters);
   const out = [];

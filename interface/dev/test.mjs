@@ -14,6 +14,7 @@ const base = mkdtempSync(join(tmpdir(), "setup-test-"));
 const dir = join(base, "acme");
 let failed = 0;
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
+/** @type {NodeJS.ProcessEnv} */
 const env = { ...process.env, HOME: base };
 delete env.MENTURA_WORKSPACE;
 const made = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
@@ -21,9 +22,10 @@ if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); pro
 
 const server = createServer(async (req, res) => { if (!(await handle(req, res, dir))) { res.writeHead(404); res.end(); } }).listen(0, "127.0.0.1");
 await new Promise((r) => server.once("listening", r));
-const at = `http://127.0.0.1:${server.address().port}`;
+const at = `http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}`;
+/** @param {string} p @returns {Promise<*>} */
 const get = (p) => fetch(at + p).then((r) => r.json());
-const post = (p, b) => fetch(at + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(async (r) => ({ status: r.status, ...(await r.json()) }));
+const post = (p, b) => fetch(at + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(async (r) => ({ status: r.status, .../** @type {*} */ (await r.json()) }));
 const t = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
 
 await t("the page and its state answer; people and the Rho source of truth from create-venture are there", async () => {

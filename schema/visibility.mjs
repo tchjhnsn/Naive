@@ -54,11 +54,12 @@ export function isPerson(dir, id) {
 /** A record as the public may see it: each top-level field that is public or has an approved variant. */
 export function publicView(dir, rel, rec) {
   if (!rec || typeof rec !== "object" || Array.isArray(rec)) return null;
-  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, v.value]));
+  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, /** @type {*} */ (v).value]));
 }
 
 /** A person approves a field as public: pins its current wording by sha256 in the record's sidecar. An
- *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry. */
+ *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry.
+ *  @param {string} dir @param {string} rel @param {string} field @param {{ by?: string, propose?: boolean, agentId?: string }} [opts] */
 export function setPublic(dir, rel, field, { by, propose = false, agentId } = {}) {
   const f = ventureFile(dir, rel);
   if (!existsSync(f)) return { ok: false, error: `no record ${rel}` };
@@ -123,7 +124,12 @@ export function confidentialityOf(dir, rel) {
   return r?.visibility === "confidential" ? { level: CONFIDENTIAL_LEVELS.includes(r.level) ? r.level : "C2", access: r.access ?? [] } : null;
 }
 
-/** Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id. */
+/**
+ * Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id.
+ * @param {string} dir
+ * @param {string} rel
+ * @param {{ actor?: string, id?: string }} [opts]
+ */
 export function mayKnow(dir, rel, { actor = "agent", id } = {}) {
   const c = confidentialityOf(dir, rel);
   if (!c || c.level === "C1") return true;

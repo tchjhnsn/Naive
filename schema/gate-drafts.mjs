@@ -41,6 +41,8 @@ export function sidecar(dir, draft) {
  * Stores a held write. dir: the venture; draft: _drafts/<file>.draft; file: the record's path; text:
  * the record; verdict: the gate's, or null when only a decision class held it; route; agent: who wrote it.
  * Returns { written, variant, variants, decision }.
+ * @param {string} dir
+ * @param {{ draft: string, file?: string, text?: string, verdict?: *, route?: string, agent?: { id?: string, kind?: string } }} held
  */
 export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }) {
   const dest = ventureFile(dir, draft);
@@ -97,14 +99,20 @@ export function pick(dir, draft, letter) {
   return v.file;
 }
 
-/** After a person accepts a draft: removes every variant and the sidecar, and decides the variants decision. */
+/**
+ * After a person accepts a draft: removes every variant and the sidecar, and decides the variants decision.
+ * @param {string} dir
+ * @param {string} draft
+ * @param {{ picked?: string, by?: string }} [opts]
+ *  @returns {{ picked: string, decision?: string, decided?: boolean, error?: string }}
+ */
 export function settle(dir, draft, { picked = "a", by } = {}) {
   const meta = sidecar(dir, draft);
   for (const v of meta?.variants ?? []) rmSync(ventureFile(dir, v.file), { force: true });
   rmSync(ventureFile(dir, draft), { force: true });
   rmSync(join(dir, sidecarOf(draft)), { force: true });
   if (!meta?.decision) return { picked };
-  const d = approve(dir, meta.decision, { by: by ?? process.env.MENTURA_PERSON ?? "founder", answer: picked, note: `accepted draft ${picked} of ${meta.route}` });
+  const d = approve(dir, meta.decision, /** @type {Parameters<typeof approve>[2]} */ ({ by: by ?? process.env.MENTURA_PERSON ?? "founder", answer: picked, note: `accepted draft ${picked} of ${meta.route}` }));
   return { picked, decision: meta.decision, decided: d.ok, ...(d.ok ? {} : { error: d.error }) };
 }
 
