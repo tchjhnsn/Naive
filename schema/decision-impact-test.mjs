@@ -22,6 +22,7 @@ put("venture.json", { id: "imp", name: "Imp", type: "software-startup", phase: "
 put("product/shop.json", { id: "shop", name: "Shop" });
 put("accounts/acme/account.json", { id: "acme", product: "shop" });
 put("people/team-plan.json", { roles: ["engineer"] });
+put("people/people.json", { venture: "imp", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] });
 put("marketing/notes.json", { unrelated: true });
 
 try {
