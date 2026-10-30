@@ -20,6 +20,27 @@ import { join, relative, sep } from "node:path";
 /** A delegation record as it binds: when it extends a template, the template's never_redelegated and
  *  one_way_doors are unioned in, so a venture can only add to them. Grants are never inherited.
  *  Throws on an extends it cannot honor; a caller that catches it must refuse. */
+export const liveGrant = (g, today) => g.expires == null || g.expires >= today;
+// Scopes are paths compared by whole segments: engineering/ holds engineering/api, never engineering-secrets/.
+const segments = (scope) => scope.split("/").filter(Boolean);
+export const scopeWithin = (inner, outer) => outer === "venture" || (inner !== "venture"
+  && segments(outer).every((s, i) => segments(inner)[i] === s));
+const endsNoLater = (a, b) => b == null || (a != null && a <= b);
+
+/** Is grant g backed all the way to the root of delegation record d? seen guards against cycles. */
+export function grantBacked(d, g, today, seen = new Set()) {
+  if (g.from === d.root) return { ok: true };
+  if (seen.has(g)) return { ok: false, why: "its chain loops" };
+  seen.add(g);
+  for (const c of g.classes) {
+    if ((d.never_redelegated ?? []).includes(c)) return { ok: false, why: `${c} is never re-delegated` };
+    const up = d.grants.filter((h) => h.to === g.from && h.classes.includes(c) && h.may_redelegate && liveGrant(h, today)
+      && scopeWithin(g.scope, h.scope) && (!g.may_merge || h.may_merge) && endsNoLater(g.expires, h.expires) && grantBacked(d, h, today, new Set(seen)).ok);
+    if (!up.length) return { ok: false, why: `${g.from} holds no live, re-delegable grant of ${c} at least this wide that reaches ${d.root}` };
+  }
+  return { ok: true };
+}
+
 export function readDelegation(file) {
   const d = JSON.parse(readFileSync(file, "utf8"));
   if (d.extends === undefined) return d;
