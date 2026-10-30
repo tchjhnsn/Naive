@@ -1361,6 +1361,17 @@
       "note": "Where a founder-supplied source came from. Raw is immutable (EE-070)."
     },
     {
+      "id": "artifact",
+      "layer": "interface",
+      "level": "venture",
+      "schema": "schema/artifact.schema.json",
+      "paths": [
+        "instance/**/artifacts/*.json",
+        "schema/examples/**/artifacts/*.json"
+      ],
+      "note": "A view built from records for a reader (document, deck, dashboard, design, page, file, site), naming the records it read; artifacts are what get published, records never are. schema/check-artifacts.mjs flags one stale when a record it cites changes"
+    },
+    {
       "id": "raw-text",
       "layer": "purpose",
       "level": "venture",
