@@ -6,7 +6,8 @@
 //   --flag after a naive command  the command (or the script it runs) reads that flag
 //   schema/..., interface/..., purpose/..., packages/..., docs/...   the repository path exists
 //   foundation/problem            a record route in the route table (interface/router.mjs routes())
-//   [text](../other/README.md)    a relative link resolves to a file or folder next to the doc
+//   [text](../other/README.md)    a relative Markdown link, inline or reference-style, resolves to a file or folder
+//                                 next to the doc (HTML href and src are not checked)
 //
 // Venture-relative paths (k-base/, meta/, codebase/, artifacts/, ...) and placeholders (<id>) are allowed.
 // A line describing something not built says "not built", or carries <!-- claim-ok: reason -->.
@@ -104,6 +105,19 @@ function checkCommand(f, n, line) {
   }
 }
 
+const INLINE_LINK = /\]\(\s*(?:<([^>\n]+)>|((?:[^()\s]|\([^()\s]*\))+))(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*\)/g;
+const LINK_DEFINITION = /^ {0,3}\[(?!\^)[^\]]+\]:\s*(?:<([^>\n]+)>|(\S+))/g;
+
+function checkLink(f, n, t) {
+  if (/^([a-z][a-z0-9+.-]*:|#|\/)/i.test(t)) return;
+  claims++;
+  let path;
+  try { path = decodeURIComponent(t.split(/[?#]/)[0]); } catch { return fail(f, n, t, "the link has malformed percent-encoding"); }
+  const to = join(f, "..", path);
+  const targets = f.endsWith(".mdx") ? [to, `${to}.mdx`, join(to, "index.mdx")] : [to];
+  if (!targets.some((x) => existsSync(x))) fail(f, n, t, "the link points at nothing");
+}
+
 function checkInline(f, n, c) {
   c = c.trim();
   if (/^(naive|mentura|npx) /.test(c)) return checkCommand(f, n, c);
@@ -129,12 +143,8 @@ for (const f of docs) {
     if (/claim-ok:|not built/i.test(line)) return;
     if (fence) { if (!/^(json|ts|js|tsx|jsx|yaml|mermaid)$/.test(fence)) checkCommand(f, n, line); return; }
     for (const [, c] of line.matchAll(/`([^`\n]+)`/g)) checkInline(f, n, c);
-    for (const [, t] of line.replace(/`[^`\n]+`/g, "").matchAll(/\]\(([^)\s]+)\)/g)) {
-      if (/^([a-z]+:|#|\/)/.test(t)) continue;
-      claims++;
-      const to = join(f, "..", decodeURI(t.split("#")[0]));
-      if (![to, `${to}.mdx`, join(to, "index.mdx")].some((x) => existsSync(x))) fail(f, n, t, "the link points at nothing");
-    }
+    const prose = line.replace(/`[^`\n]+`/g, "");
+    for (const [, angled, bare] of [...prose.matchAll(INLINE_LINK), ...prose.matchAll(LINK_DEFINITION)]) checkLink(f, n, angled ?? bare);
   });
 }
 

@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 // Cases for schema/check-docs-claims.mjs: claims the code has pass, claims it lacks fail, and the docs pass.
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const repo = new URL("..", import.meta.url).pathname;
 const dir = mkdtempSync(join(tmpdir(), "docs-claims-"));
-const run = (text) => { const f = join(dir, `${Math.random().toString(36).slice(2)}.md`); writeFileSync(f, text); return spawnSync("node", ["schema/check-docs-claims.mjs", f], { cwd: repo, encoding: "utf8" }); };
+const run = (text, ext = ".md") => { const f = join(dir, `${Math.random().toString(36).slice(2)}${ext}`); writeFileSync(f, text); return spawnSync("node", ["schema/check-docs-claims.mjs", f], { cwd: repo, encoding: "utf8" }); };
 let failed = 0;
-const expect = (name, text, ok, pattern) => {
-  const r = run(text);
+const expect = (name, text, ok, pattern, ext) => {
+  const r = run(text, ext);
   const good = (r.status === 0) === ok && (!pattern || pattern.test(r.stdout));
   if (!good) failed++;
-  console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n${r.stdout}`}`);
+  console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n${r.stdout}${r.stderr}`}`);
 };
 expect("a built command, flag, file and route pass", "Run `naive phase --meet x --evidence y`, see `schema/check-docs-claims.mjs`, read `foundation/problem`, keep `k-base/raw/` and `artifacts/<id>.json`.\n", true);
 expect("an unknown naive command fails", "Run `naive teleport`.\n", false, /naive teleport: interface\/cli\/naive.mjs has no such command/);
@@ -28,16 +28,35 @@ writeFileSync(join(dir, "README.md"), "");
 expect("a relative link to a real file passes", "See [the folder's README](./README.md#top).\n", true);
 expect("a broken relative link fails", "See [nothing](./no-such-readme.md).\n", false, /the link points at nothing/);
 expect("web, anchor and site links are not checked", "[a](https://example.com) [b](#top) [c](/docs/reference)\n", true);
+expect("malformed percent-encoding is a normal failure with file and line", "line one\n[a](./50%.md)\n", false, /\.md:2: \.\/50%\.md: the link has malformed percent-encoding/);
+expect("malformed percent-encoding does not hide other findings", "[a](./x%zz.md)\n`naive teleport`\n", false, /malformed percent-encoding[\s\S]*naive teleport/);
+writeFileSync(join(dir, "c#.md"), "");
+writeFileSync(join(dir, "foo(1).md"), "");
+expect("percent-encoded, query and parenthesised links resolve", "[a](./c%23.md) [b](./README.md?plain=1) [c](./foo(1).md)\n", true);
+expect("a titled link is checked", '[a](./missing.md "T")\n', false, /the link points at nothing/);
+expect("an angle-bracket link is checked", "[a](<./no such file.md>)\n", false, /the link points at nothing/);
+expect("a broken reference-style link is checked", "See [a][r].\n\n[r]: ./missing.md\n", false, /:3: \.\/missing\.md: the link points at nothing/);
+expect("a good reference-style link passes", '[a][r]\n\n[r]: ./README.md "T"\n', true);
+expect("a footnote is not a link", "[^1]: ./missing.md\n", true);
+expect("any URL scheme is not checked", "[a](HTTPS://example.com) [b](git+ssh://x)\n[r]: mailto:a@example.com\n", true);
+writeFileSync(join(dir, "onlymdx.mdx"), "");
+mkdirSync(join(dir, "section"));
+writeFileSync(join(dir, "section", "index.mdx"), "");
+expect("a README link does not fall back to .mdx", "[a](./onlymdx)\n", false, /the link points at nothing/);
+expect("an .mdx doc falls back to .mdx and index.mdx", "[a](./onlymdx) [b](./section)\n", true, null, ".mdx");
 const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\nschema/README.md\nREADME.md\n" }).stdout.trim().split("\n");
 const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md,schema/README.md,README.md";
 if (!scannedOk) failed++;
 console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
-const owedOf = (input) => spawnSync("node", ["schema/check-docs-claims.mjs", "--readmes"], { cwd: repo, encoding: "utf8", input }).stdout.trim();
+const tree = join(dir, "tree");
+for (const d of ["schema", "purpose/deep", "interface"]) mkdirSync(join(tree, d), { recursive: true });
+for (const r of ["schema/README.md", "purpose/README.md", "purpose/deep/README.md"]) writeFileSync(join(tree, r), "");
+const owedOf = (input) => spawnSync("node", ["schema/check-docs-claims.mjs", "--readmes", "--root", tree], { cwd: repo, encoding: "utf8", input }).stdout.trim();
 const owed = [
-  ["code next to a README owes that README", "schema/check-nouns.mjs\n", "schema/README.md"],
-  ["changing the README pays it", "schema/check-nouns.mjs\nschema/README.md\n", ""],
-  ["the nearest README is the one owed", "purpose/frameworks/idea-map/x.mjs\n", "purpose/frameworks/idea-map/README.md"],
-  ["code with no README in its top folder owes none", "interface/cli/naive.mjs\n", ""],
+  ["code next to a README owes that README", "schema/x.mjs\n", "schema/README.md"],
+  ["changing the README pays it", "schema/x.mjs\nschema/README.md\n", ""],
+  ["the nearest README is the one owed", "purpose/deep/x.mjs\n", "purpose/deep/README.md"],
+  ["code with no README in its top folder owes none", "interface/x.mjs\n", ""],
   ["a doc is not code", "schema/notes.md\n", ""],
 ];
 for (const [name, input, want] of owed) {
@@ -49,8 +68,29 @@ const workflow = readFileSync(join(repo, ".github/workflows/docs-required.yml"),
 const wired = workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --scanned') && workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --readmes');
 if (!wired) failed++;
 console.log(`${wired ? "pass" : "FAIL"}  the docs-required workflow asks this linter which changes are docs`);
+const check = (name, good, detail) => { if (!good) failed++; console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n  ${detail}`}`); };
+const escapePattern = workflow.match(/grep -qE '([^']+)'/)?.[1] ?? "";
+const escapes = (body) => spawnSync("grep", ["-qE", escapePattern], { input: body }).status === 0;
+const message = workflow.split("\n").find((l) => l.includes("or start a line")) ?? "";
+const example = message.match(/for example: (.+?)\.?"$/)?.[1] ?? "";
+for (const [name, body, ok] of [
+  ["a real reason", "Summary\nNo docs change: only comments changed\n", true],
+  ["an indented real reason", "  No docs change: only comments changed\n", true],
+  ["the placeholder", "No docs change: <why>\n", false],
+  ["the rule quoted in prose", "PRs say No docs change: why in the body\n", false],
+  ["the rule in backticks", "`No docs change: why`\n", false],
+  ["an HTML comment", "<!-- No docs change: hint -->\n", false],
+  ["a blank reason", "No docs change: \n", false],
+  ["a blank reason before CR", "No docs change: \r\n", false],
+  ["a blank reason after a tab", "No docs change:\t\n", false],
+  ["the failure message's own example", example, true],
+]) check(`the escape line ${ok ? "takes" : "rejects"} ${name}`, escapes(body) === ok, `pattern ${escapePattern}`);
+check("the failure message never offers the placeholder", message !== "" && !workflow.includes("'No docs change: <"), message);
+const codeLine = workflow.split("\n").find((l) => l.trim().startsWith("code="))?.trim() ?? "";
+const codeOf = (changed) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$code"`], { encoding: "utf8", env: { ...process.env, changed } }).stdout;
+check("the workflow's code is any non-Markdown file", codeOf("schema/notes.md\npurpose/x.mdx\ndocs/a.mjs") === "" && codeOf("schema/data.json\nschema/notes.md") === "schema/data.json", codeLine);
 const all = spawnSync("node", ["schema/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });
 if (all.status !== 0) failed++;
-console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}`}`);
+console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}${all.stderr}`}`);
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);
