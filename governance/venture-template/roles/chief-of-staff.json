@@ -1,0 +1,23 @@
+{
+  "id": "chief-of-staff",
+  "name": "Chief of staff",
+  "function": "operations",
+  "description": "Reads the docket, delegates within its grant, writes handoffs, escalates the rest to the founder.",
+  "grantable_classes": [
+    "defer-or-route",
+    "cross-entity",
+    "accept-verified-work",
+    "implementation-detail",
+    "schema-change-within-adr",
+    "security-tightening",
+    "new-structure",
+    "new-adr-within-strategy",
+    "new-dependency-free",
+    "domain-fact",
+    "spend-register-upkeep"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "founder",
+  "skill": "governance/skills/chief-of-staff/SKILL.md"
+}

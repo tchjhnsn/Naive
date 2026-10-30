@@ -1,0 +1,96 @@
+{
+  "$schema": "../schema/beta-capabilities.schema.json",
+  "version": "0.1.0",
+  "note": "The plugin beta's capabilities in unlock order (validation study, section 5). Core starts unlocked: creating the venture, the docket and the foundation records. Each later capability unlocks once the tester has given the checkpoint feedback of the capability before it. The gate is on only when naive.config.json has beta.enabled true.",
+  "always_open": ["validation/feedback/**", "product/bugs/**"],
+  "capabilities": [
+    {
+      "id": "venture",
+      "title": "Create a venture",
+      "core": true,
+      "routes": ["system/**", "knowledge/**", "product", "product/[id]", "people", "people/founders/**"],
+      "checkpoint": {
+        "id": "venture-created",
+        "questions": [
+          { "id": "time_to_running", "ask": "How long did it take from install to a venture you could open?", "kind": "text", "required": true },
+          { "id": "confusing", "ask": "What, if anything, confused you while setting it up?", "kind": "text" },
+          { "id": "ease", "ask": "How easy was it, from 1 (very hard) to 5 (very easy)?", "kind": "scale-1-5", "required": true }
+        ]
+      }
+    },
+    {
+      "id": "docket",
+      "title": "The decision docket",
+      "core": true,
+      "routes": ["decisions/**", "governance/decisions", "governance/decision-rights", "governance/analytics"],
+      "checkpoint": {
+        "id": "docket-used",
+        "questions": [
+          { "id": "right_next", "ask": "Was the top of the docket the decision you should make next?", "kind": "yes-no", "required": true },
+          { "id": "missing", "ask": "Which decision you owe was missing from it?", "kind": "text" }
+        ]
+      }
+    },
+    {
+      "id": "foundation",
+      "title": "Foundation records",
+      "core": true,
+      "routes": ["foundation/**", "purpose/foundation"],
+      "checkpoint": {
+        "id": "foundation-written",
+        "questions": [
+          { "id": "sounds_like_you", "ask": "Do the foundation records say what you would say, in your words?", "kind": "scale-1-5", "required": true },
+          { "id": "wrong", "ask": "What did it get wrong?", "kind": "text" }
+        ]
+      }
+    },
+    {
+      "id": "ideas",
+      "title": "Ideas and capture",
+      "routes": ["ideas/**", "purpose/ideas/**", "raw/**", "purpose/raw/**"],
+      "checkpoint": {
+        "id": "ideas-mapped",
+        "questions": [
+          { "id": "found_home", "ask": "Did each idea land where you expected?", "kind": "yes-no", "required": true },
+          { "id": "lost", "ask": "Did any idea get lost or misfiled? Which?", "kind": "text" }
+        ]
+      }
+    },
+    {
+      "id": "validation",
+      "title": "Validation",
+      "routes": ["validation/**", "purpose/validation/**", "evidence/**", "customers/**"],
+      "checkpoint": {
+        "id": "validation-assessed",
+        "questions": [
+          { "id": "next_test", "ask": "Was the next test it named one you would run?", "kind": "yes-no", "required": true },
+          { "id": "trust", "ask": "How much do you trust its read of your evidence, from 1 to 5?", "kind": "scale-1-5", "required": true }
+        ]
+      }
+    },
+    {
+      "id": "operations",
+      "title": "People and operations",
+      "routes": ["people/team", "people/team-plan", "operations/**"],
+      "checkpoint": {
+        "id": "team-planned",
+        "questions": [
+          { "id": "useful", "ask": "Did the team plan change who you will hire or hand work to?", "kind": "yes-no", "required": true },
+          { "id": "why", "ask": "Why or why not?", "kind": "text" }
+        ]
+      }
+    },
+    {
+      "id": "marketing",
+      "title": "Marketing and publishing",
+      "routes": ["marketing/**", "public/**", "glossary/**", "governance/publication-policy", "governance/publications"],
+      "checkpoint": {
+        "id": "site-planned",
+        "questions": [
+          { "id": "would_publish", "ask": "Would you publish what it planned?", "kind": "yes-no", "required": true },
+          { "id": "change", "ask": "What would you change first?", "kind": "text" }
+        ]
+      }
+    }
+  ]
+}
