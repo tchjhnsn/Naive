@@ -29,7 +29,14 @@
     "idea-dump",
     "idea-map",
     "idea-map-conventions",
-    "idea-graph"
+    "idea-graph",
+    "playbook",
+    "profile-attributes",
+    "framework",
+    "goal",
+    "requirement",
+    "exit-criteria",
+    "constraints"
   ],
   "reads": [
     "venture",

@@ -1,0 +1,16 @@
+{
+  "id": "builder",
+  "name": "Builder",
+  "function": "engineering",
+  "description": "Implements handoffs; proves done with conformance checks.",
+  "grantable_classes": [
+    "implementation-detail",
+    "accept-verified-work",
+    "schema-change-within-adr",
+    "security-tightening"
+  ],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "architect",
+  "skill": "operations/skills/team-design/SKILL.md"
+}

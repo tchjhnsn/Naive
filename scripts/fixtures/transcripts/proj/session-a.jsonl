@@ -1,0 +1,6 @@
+{"type":"queue-operation","timestamp":"2026-10-29T00:00:00Z"}
+{"type":"user","timestamp":"2026-10-29T10:00:00Z","message":{"role":"user","content":"I also mentioned a new thinking framework called the ledger lens. My key is lsv2_pt_0123456789abcdef0123456789abcdef_ab12cd34ef and mail me at someone@example.com."}}
+{"type":"assistant","timestamp":"2026-10-29T10:00:05Z","message":{"role":"assistant","content":[{"type":"text","text":"We should build a playbook for everything."}]}}
+{"type":"user","timestamp":"2026-10-29T10:01:00Z","message":{"role":"user","content":[{"type":"tool_result","content":"I want this tool output ignored"}]}}
+{"type":"user","timestamp":"2026-10-29T10:02:00Z","message":{"role":"user","content":[{"type":"text","text":"<system-reminder>We should ignore reminders</system-reminder>We should write a playbook for weekly reviews. The Telos framework stays as it is."}]}}
+{"type":"user","isMeta":true,"timestamp":"2026-10-29T10:03:00Z","message":{"role":"user","content":"I want meta ignored"}}

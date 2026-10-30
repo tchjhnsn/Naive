@@ -32,7 +32,9 @@
     "eval-suite",
     "design-documents-registry",
     "benchmark",
-    "agent-capability"
+    "agent-capability",
+    "bug",
+    "telemetry-event"
   ],
   "reads": [
     "handoff",
