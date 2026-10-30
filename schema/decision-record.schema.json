@@ -154,9 +154,10 @@
               "enum": [
                 "person",
                 "agent",
-                "framework"
+                "framework",
+                "unverified"
               ],
-              "description": "framework: Naive asked the question itself, as a convention (the product foundation); a person still answers it"
+              "description": "framework: Naive asked the question itself, as a convention (the product foundation); a person still answers it. unverified: a door with no sign-in (the console) said a person wrote it"
             },
             "id": {
               "type": "string",
@@ -187,9 +188,10 @@
           "enum": [
             "approved",
             "changed",
-            "own"
+            "own",
+            "unverified"
           ],
-          "description": "approved: the drafted wording as it was; changed: the approver altered it; own: the approver wrote it"
+          "description": "approved: the drafted wording as it was; changed: the approver altered it; own: the approver wrote it; unverified: settled through a door with no sign-in, so who worded it is not known"
         },
         "authority": {
           "type": "string",

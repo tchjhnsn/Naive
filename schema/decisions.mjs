@@ -527,8 +527,10 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   return { ok: true, result: { decided: id, version: out.version, restored: Number(to), provenance: e.hash, next: out.applies_to?.length ? `mentura merge ${id}` : null } };
 }
 
-/** A person approves a decision: as worded, or with their own answer. @param {string} dir @param {string} id @param {{ by?: string, answer?: string, via?: string, note?: string, reasons?: object[] }} [opts] */
-export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}) {
+/** A person approves a decision: as worded, or with their own answer. @param {string} dir @param {string} id @param {{ by?: string, answer?: string, via?: string, note?: string, reasons?: object[], verified?: boolean }} [opts]
+ *  verified: false is a door with no sign-in. by is then a claimed name, so the records say unverified, not person. */
+export function approve(dir, id, { by, answer, via = "cli", note, reasons, verified = true } = {}) {
+  const kind = verified ? "person" : "unverified";
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
@@ -550,11 +552,11 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
     // else the person approving their own answer. Its predecessor's wording no longer counts as a draft.
     d.answer = pending?.answer === answer ? answer : null;
     if (pending?.answer === answer && pending.options) d.options = pending.options;
-    d.provenance = { drafted_by: pending?.answer === answer ? pending.drafted_by : { kind: "person", id: by } };
+    d.provenance = { drafted_by: pending?.answer === answer ? pending.drafted_by : { kind, id: by } };
   }
   if (!answer && !d.answer) return { ok: false, error: `${id} has no wording to approve; give an answer` };
-  const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
-  const wording = !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
+  const drafted = d.provenance?.drafted_by ?? { kind, id: by };
+  const wording = !verified ? "unverified" : !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
   const phase = load(join(dir, "venture.json")).phase;
   // Reasons given at approval join the drafted ones and freeze into this version's provenance, each local
   // citation with its sha256 now. On a later version every reason in d.reasons is inherited and keeps the
@@ -569,7 +571,7 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: note ?? `approved decision ${id} (${wording})` }));
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv(kind, via, { id: by }), note: note ?? `approved decision ${id} (${wording})` }));
   return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
 }
 
