@@ -245,4 +245,13 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
   rmSync(ws, { recursive: true, force: true });
 }
 
+{
+  const ws = mkdtempSync(join(tmpdir(), "legal-config-"));
+  put(ws, "venture.json", JSON.stringify({ id: "acme", name: "Acme", phase: "discovery" }));
+  put(ws, "naive.config.json", JSON.stringify({ legal_lint: { rules: { "unsourced-public-claim": { mode: "fail-closed" } } } }));
+  const r = spawnSync(process.execPath, [join(repo, "schema/check-config.mjs"), ws], { encoding: "utf8" });
+  expect("naive.config.json accepts legal_lint", r.status === 0, r.stdout + r.stderr);
+  rmSync(ws, { recursive: true, force: true });
+}
+
 process.exit(failed ? 1 : 0);
