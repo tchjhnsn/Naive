@@ -16,9 +16,9 @@ jobs:
           git fetch origin ${{ github.base_ref }}
           changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           code=$(echo "$changed" | grep -E '^(schema|interface|packages|purpose)/' || true)
-          docs=$(echo "$changed" | grep -E '^(site/content/docs/|docs/)|SKILL\.md$' || true)
+          docs=$(echo "$changed" | node schema/check-docs-claims.mjs --scanned)
           if [ -z "$code" ] || [ -n "$docs" ]; then echo "ok"; exit 0; fi
           if printf '%s' "$BODY" | grep -qE 'No docs change: *[^ ]'; then echo "ok: the PR says why no docs change"; exit 0; fi
           echo "This PR changes code but no docs:"; echo "$code"
-          echo "Update site/content/docs/, docs/ or a SKILL.md, or add 'No docs change: <why>' to the PR body."
+          echo "Update site/content/docs/*.mdx, docs/master/*.md or a SKILL.md (the docs check-docs-claims scans), or add 'No docs change: <why>' to the PR body."
           exit 1

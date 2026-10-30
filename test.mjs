@@ -44,9 +44,11 @@ const steps = [
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["schema/brand-test.mjs"]],
   ["upgrades: migrations, pins, early adoption, canary, staged agent upgrades", "node", ["schema/upgrades-test.mjs"]],
   ["naive upgrade --layout structured: a flat venture moves onto k-base/ and meta/", "node", ["schema/structured-layout-test.mjs"]],
+  ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["schema/structure-checks-test.mjs"]],
   ["kits", "node", ["platform/kits/test.mjs"]],
   ["webhooks", "node", ["platform/webhooks/test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["schema/frames-test.mjs"]],
+  ["premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)", "node", ["schema/premise-lint-test.mjs"]],
   ["frames: instance", "node", ["schema/frames.mjs", "check"]],
   ["decision roadmaps and lifecycle playbooks (no cycles, known frames, a decider per step, one-way doors the founder's; installs propose open; gate evidence from the playbook)", "node", ["schema/roadmap-test.mjs"]],
   ["roadmaps: instance", "node", ["schema/check-roadmap.mjs"]],
@@ -117,6 +119,9 @@ const steps = [
   ["validation study: interviews, feedback, bugs, telemetry, the beta gate and feedback routing", "node", ["schema/validation-study-test.mjs"]],
   ["validation study records: instance", "node", ["schema/check-validation-study.mjs", "instance"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
+  ["PR review agent (content findings from fixture markdown, screenshot mode, preview noindex)", "node", ["scripts/pr-review/pr-review-test.mjs"]],
+  // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.
+  ...(existsSync(join(root, "node_modules/eslint")) ? [["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]]] : []),
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];

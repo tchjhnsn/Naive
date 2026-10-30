@@ -40,6 +40,9 @@
 //   naive beta status|feedback <capability>|unlock  the plugin beta: which capabilities are open, the checkpoint feedback
 //                                                   that unlocks the next, and unlocking it (beta.enabled in naive.config.json)
 //   naive bugs [--all]                              open P0 and P1 bugs; stable means none
+//   naive lint premises [<route>] [--drafts] [--json] [--propose]
+//                                                   attack the premises of the venture's goals, requirements, exit criteria,
+//                                                   constraints and decisions; --propose writes findings as open decisions
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -238,19 +241,19 @@ else if (cmd === "build" || cmd === "start") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
 } else if (cmd === "publish") {
-  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  if (args[0] === "check") {
+    // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
+    const v = opt("venture") ?? findVenture();
+    process.exit(run("schema/publish-lint.mjs", [...args, ...(v ? ["--venture", v] : [])]));
+  }
+  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
   process.exit(run("schema/publish.mjs", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
   process.exit(run(`schema/${cmd}-venture.mjs`, args));
-} else if (cmd === "publish") {
-  // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
-  const args = rest[0] === "check" ? rest.slice(1) : rest;
-  const v = opt("venture") ?? findVenture();
-  process.exit(run("schema/publish-lint.mjs", ["check", ...args.filter((a, i) => a !== "--venture" && args[i - 1] !== "--venture"), ...(v ? ["--venture", v] : [])]));
 } else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
   // The workspace (schema/workspace.mjs): the one above the venture this runs in, else above this folder.
   const venture = opt("venture") ? here() : findVenture();
@@ -264,6 +267,10 @@ else if (cmd === "build" || cmd === "start") {
   // The plugin beta's gate (schema/beta-gate.mjs) and the bug summary (schema/bugs.mjs).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run(cmd === "beta" ? "schema/beta-gate.mjs" : "schema/bugs.mjs", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
+} else if (cmd === "lint") {
+  const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
+  process.exit(run("schema/premise-lint.mjs", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");
