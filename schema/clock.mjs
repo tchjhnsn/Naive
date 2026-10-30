@@ -10,6 +10,8 @@
 //   localDateTime(instant, zone)  "YYYY-MM-DDTHH:MM:SS" in that zone (a JSCalendar LocalDateTime)
 //   toInstant(local, zone)        the instant a local date-time names in that zone
 //   inDays(when, zone, from)      whole calendar days from today to when, in that zone (negative: past)
+//   daysBetween(a, b)             whole calendar days from day a to day b ("YYYY-MM-DD")
+//   addDays(day, n)               the day n calendar days after day
 //   due(when, zone, from)         true when when is today or past; overdue(...) when strictly past
 
 import { existsSync, readFileSync } from "node:fs";
@@ -63,5 +65,7 @@ const dayNumber = (ymd) => Math.round(Date.parse(`${ymd}T00:00:00Z`) / 864e5);
 export function inDays(when, zone = systemZone(), from = now()) {
   return dayNumber(localDate(asInstant(when, zone), zone)) - dayNumber(localDate(from, zone));
 }
+export const daysBetween = (a, b) => dayNumber(b) - dayNumber(a);
+export const addDays = (day, n) => new Date((dayNumber(day) + n) * 864e5).toISOString().slice(0, 10);
 export const due = (when, zone = systemZone(), from = now()) => asInstant(when, zone).getTime() <= from.getTime() || inDays(when, zone, from) <= 0;
 export const overdue = (when, zone = systemZone(), from = now()) => asInstant(when, zone).getTime() < from.getTime() && (String(when).length > 10 || inDays(when, zone, from) < 0);

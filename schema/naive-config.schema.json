@@ -249,14 +249,82 @@
       "additionalProperties": false,
       "description": "The publish lint (schema/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived",
       "properties": {
-        "rules": { "type": "object", "propertyNames": { "enum": ["copy-distance", "leaks", "brand", "claims", "marks", "personal-data", "secrets"] }, "additionalProperties": { "enum": ["off", "warn", "error"] } },
-        "marks": { "type": "array", "items": { "type": "string" } },
-        "waived": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["rule"], "properties": { "rule": { "type": "string" }, "file": { "type": "string" }, "text": { "type": "string" }, "why": { "type": "string" }, "by": { "type": "string" } } } }
+        "rules": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "copy-distance",
+              "leaks",
+              "brand",
+              "claims",
+              "marks",
+              "personal-data",
+              "secrets"
+            ]
+          },
+          "additionalProperties": {
+            "enum": [
+              "off",
+              "warn",
+              "error"
+            ]
+          }
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "waived": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rule"
+            ],
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              },
+              "by": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     },
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
+    },
+    "diagnose": {
+      "type": "object",
+      "description": "naive diagnose --if-due: a full diagnosis runs only when the founder's transcripts since the cursor reach threshold estimated tokens (characters / 4), or a new session is older than stale_hours",
+      "additionalProperties": false,
+      "properties": {
+        "threshold": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 20000
+        },
+        "stale_hours": {
+          "type": "number",
+          "minimum": 0,
+          "default": 24
+        }
+      }
     },
     "premise_lint": {
       "type": "object",

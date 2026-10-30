@@ -78,7 +78,7 @@
     },
     "timeZone": {
       "type": "string",
-      "description": "The venture's IANA time zone, when it differs from its workspace's (schema/clock.mjs); its dates and derived calendar events are read in it"
+      "description": "The venture's IANA time zone, when it differs from its workspace's (schema/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's"
     },
     "lifecycle_playbook": {
       "type": "string",

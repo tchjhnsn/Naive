@@ -26,6 +26,7 @@
     ".claude-plugin/plugin.json",
     "interface/",
     "schema/",
+    "scripts/diagnose-transcripts.mjs",
     "packages/",
     "purpose/",
     "knowledge/",

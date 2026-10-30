@@ -37,6 +37,7 @@
     "owner": { "type": "string", "description": "The person or role who owns the goal" },
     "framework": { "type": "string", "description": "The framework for thinking the goal was written through (frameworks/<id>), if any" },
     "updated": { "type": "string" },
+    "conversation": { "type": "array", "description": "The founder's messages this record was made from (naive diagnose catches)", "items": { "$ref": "conversation-ref.schema.json" } },
     "decision": { "type": "string" }
   }
 }
