@@ -247,7 +247,7 @@ if (cmd === "merge") {
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
   // --role merges as a role under a delegation grant that names may_merge (an agent with no --by merges as its role).
-  const by = opt("by") ?? process.env.MENTURA_PERSON;
+  const by = opt("by") ?? (opt("role") ? undefined : process.env.MENTURA_PERSON);
   const r = merge(dir, id, { by, role: opt("role") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);

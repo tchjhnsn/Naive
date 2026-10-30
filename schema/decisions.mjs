@@ -351,8 +351,27 @@ export function merge(dir, id, { by, role, via = "cli", note, today } = {}) {
 
 /** The venture's delegation record (governance/delegation.json, the delegation suite), or null. */
 const delegationOf = (dir) => { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? load(f) : null; };
-// Classes that are one-way doors when a venture names none: they are never delegated.
-const ONE_WAY = ["irreversible-data-change", "ownership-or-control", "legal-or-terms", "continue-or-stop", "change-direction", "contradicts-ledger", "production-ship"];
+// Classes that are one-way doors: every class the decision-rights register marks escalate (the
+// founder decides), plus production-ship. Built from the register so a class it escalates can never
+// be merged by a role, and a venture's one_way_doors only adds to them.
+let oneWayDefault;
+export function oneWayClasses() {
+  if (oneWayDefault) return oneWayDefault;
+  const f = join(new URL("..", import.meta.url).pathname, "governance/venture-template/decision-rights.json");
+  oneWayDefault = new Set(["production-ship", ...(load(f).classes ?? []).filter((c) => c.level === "escalate").map((c) => c.id)]);
+  return oneWayDefault;
+}
+
+/** The people who may act as a person in this venture: ids and names in people/people.json, and the
+ *  founders named in governance/delegation.json. Empty when the venture records no one. */
+function peopleOf(dir) {
+  const out = new Set();
+  const pf = ventureFile(dir, "people/people.json");
+  if (existsSync(pf)) for (const p of load(pf).people ?? []) for (const k of [p.id, p.name]) if (k) out.add(k);
+  const founders = delegationOf(dir)?.founder;
+  for (const f of [founders ?? []].flat()) if (f) out.add(f);
+  return out;
+}
 
 /** Who may merge a decided version. A person may (with no grant, only the founder merges). A role
  *  (an agent or a delegate acting as one) may only under a live delegation grant to that role that
@@ -360,11 +379,15 @@ const ONE_WAY = ["irreversible-data-change", "ownership-or-control", "legal-or-t
 export function mayMerge(dir, d, { by, role, today = new Date().toISOString().slice(0, 10) } = {}) {
   const del = delegationOf(dir);
   const roles = new Set([...(del?.grants ?? []).flatMap((g) => [g.to, g.from]), ...agentRoleIds()].filter((r) => r && r !== del?.root));
+  if (by && role) return { ok: false, error: "merge as a person (--by) or as a role (--role), not both" };
   if (!role) {
     if (roles.has(by)) return { ok: false, error: `${by} is a role, not a person: a role merges only under a delegation grant (--role ${by})` };
+    const people = peopleOf(dir);
+    if (!people.size) return { ok: false, error: "the venture names no people (people/people.json) or founder (governance/delegation.json): no one can merge as a person" };
+    if (!people.has(by)) return { ok: false, error: `${by} is not a person in people/people.json or a founder in governance/delegation.json: only they merge` };
     return { ok: true };
   }
-  const oneWay = new Set(del?.one_way_doors ?? ONE_WAY);
+  const oneWay = new Set([...oneWayClasses(), ...(del?.one_way_doors ?? [])]);
   if (!d.class) return { ok: false, error: `${d.id} names no decision class, so no grant can cover it: only the founder merges it` };
   if (oneWay.has(d.class)) return { ok: false, error: `${d.id} is a ${d.class} decision, a one-way door: it is never delegated, only the founder merges it` };
   const g = (del?.grants ?? []).find((g) => g.to === role && g.may_merge === true && (g.classes ?? []).includes(d.class) && (g.expires == null || g.expires >= today));

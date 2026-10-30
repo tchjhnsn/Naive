@@ -16,6 +16,8 @@ const json = (rel) => JSON.parse(readFileSync(join(v, rel), "utf8"));
 mkdirSync(join(v, "marketing/decisions"), { recursive: true });
 writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "vers", name: "Vers", type: "software-startup", phase: "discovery" }, null, 2));
 const F = "marketing/decisions/mission.decision.json";
+mkdirSync(join(v, "people"), { recursive: true });
+writeFileSync(join(v, "people/people.json"), JSON.stringify({ venture: "vers", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] }, null, 2));
 
 try {
   const p = propose(v, { at: "marketing", id: "mission", question: "What is the mission?", answer: "We help founders.", applies_to: [{ file: "venture.json", field: "core.promise" }] }, { agentId: "cos" });
@@ -23,6 +25,8 @@ try {
   const a1 = approve(v, "mission", { by: "Founder" });
   expect("a person approves it", a1.ok && json(F).status === "decided", a1);
   expect("approving does not merge: the venture is unchanged", !json("venture.json").core, json("venture.json"));
+  expect("a name the venture does not record cannot merge", /not a person/.test(merge(v, "mission", { by: "Mallory" }).error ?? "") && !json("venture.json").core);
+  expect("--by and --role together are refused", /not both/.test(merge(v, "mission", { by: "Founder", role: "chief-of-staff" }).error ?? ""));
   const m1 = merge(v, "mission", { by: "Founder" });
   expect("merging writes the answer into applies_to", m1.ok && json("venture.json").core?.promise === "We help founders.", m1);
   expect("a version cannot be merged twice", !merge(v, "mission", { by: "Founder" }).ok);
@@ -76,6 +80,17 @@ try {
   grants(true, ["production-ship"]);
   expect("a one-way door is never merged by a role, even with a grant", /one-way door/.test(merge(v, "headline", { role: "chief-of-staff" }).error ?? ""));
   expect("the founder merges a one-way door", merge(v, "headline", { by: "Founder" }).ok);
+  // Every class the decision-rights register escalates is a one-way door, even when the venture's own
+  // one_way_doors leaves it out: a grant naming it never lets a role merge.
+  for (const cls of ["spend-money", "public-commitment", "strategy-or-constitution"]) {
+    const id = `esc-${cls}`;
+    propose(v, { at: "marketing", id, question: `Escalated ${cls}?`, answer: "Yes.", applies_to: [{ file: "marketing/esc.json", field: cls }] }, { agentId: "cos" });
+    const ef = `marketing/decisions/${id}.decision.json`;
+    writeFileSync(join(v, ef), JSON.stringify({ ...json(ef), class: cls }, null, 2));
+    approve(v, id, { by: "Founder" });
+    grants(true, [cls]);
+    expect(`an escalate class (${cls}) is a one-way door a grant cannot merge`, /one-way door/.test(merge(v, id, { role: "chief-of-staff" }).error ?? ""));
+  }
 
   // Known gap A, through the router: a decided decision is never written without who decided it.
   const ws = mkdtempSync(join(tmpdir(), "gapa-"));
