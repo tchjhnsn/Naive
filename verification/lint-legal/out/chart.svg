@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="pele pele-state" viewBox="0 0 1701 850" width="1701" height="850" style="max-width:100%;height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_tw:var(--pele-title-weight,bold);--_fm:var(--pele-font-mono,monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="state"><style>.pele {
+  --pele-bg: #ffffff;
+  --pele-fg: #1c1c1c;
+  --pele-muted: #656565;
+  --pele-line: #808080;
+  --pele-surface: #fcfcfc;
+  --pele-surface-alt: #f1f1f1;
+  --pele-border: #c9c9c9;
+}
+.pele .blue rect { fill: #c3e0ff; }
+.pele .orange rect { fill: #f0d3bf; }
+.pele .purple rect { fill: #e3d5ff; }
+.pele .yellow rect { fill: #f0dcbf; }
+.pele .teal rect { fill: #bfe3df; }
+.pele .tan rect { fill: #e5d9ce; }
+.pele .pink rect { fill: #ffcbe6; }
+.pele .breaks rect {
+  fill: #ffecee !important;
+  stroke: #e72e3b !important;
+  stroke-width: 2.5px !important;
+}
+.pele .breaks text {
+  fill: #cd2834 !important;
+}
+.pele .mayBreak rect {
+  fill: #fff3e6 !important;
+  stroke: #e8730c !important;
+  stroke-width: 2.5px !important;
+}
+.pele .mayBreak text {
+  fill: #b85a06 !important;
+}
+.pele .bugPath rect {
+  stroke: #1680f3 !important;
+  stroke-width: 2.5px !important;
+}
+.pele .repeats rect {
+  stroke: #9b35d6 !important;
+  stroke-width: 2.5px !important;
+  stroke-dasharray: 6 3;
+}
+@media (prefers-color-scheme: dark) {
+  .pele {
+    --pele-bg: #1f1f1f;
+    --pele-fg: #f5f5f5;
+    --pele-muted: #acacac;
+    --pele-line: #939393;
+    --pele-surface: #121212;
+    --pele-surface-alt: #2c2c2c;
+    --pele-border: #4e4e4e;
+  }
+  .pele .blue rect { fill: #1b3857; }
+  .pele .orange rect { fill: #573117; }
+  .pele .purple rect { fill: #3c2e57; }
+  .pele .yellow rect { fill: #573d17; }
+  .pele .teal rect { fill: #174641; }
+  .pele .tan rect { fill: #3d3127; }
+  .pele .pink rect { fill: #57233e; }
+  .pele .breaks rect {
+    fill: #2e2021 !important;
+    stroke: #cf2b35 !important;
+  }
+  .pele .breaks text {
+    fill: #ff6463 !important;
+  }
+  .pele .mayBreak rect {
+    fill: #2e2619 !important;
+    stroke: #d0700f !important;
+  }
+  .pele .mayBreak text {
+    fill: #ffa257 !important;
+  }
+  .pele .bugPath rect {
+    stroke: #116dd2 !important;
+  }
+  .pele .repeats rect {
+    stroke: #9a3fcf !important;
+  }
+}
+</style><text class="pele-title" font-weight="var(--_tw)" text-anchor="middle" xml:space="preserve"><tspan x="850.5" y="25.6">Legal lint (not legal advice)</tspan></text><g transform="translate(0,36)"><g class="pele-clusters"><g class="pele-cluster pele-state-composite" data-id="legend"><rect x="867.8" y="8" width="557.41" height="112" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M867.8,44H1425.21" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="1146.51" y="31.6" text-anchor="middle">Legend</text></g></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-transition" data-id="edge0"><path d="M818.67,120L818.67,157"/><path class="pele-marker" d="M818.67,164L815.31,156L822.03,156Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge1"><path d="M818.67,208L818.67,285"/><path class="pele-marker" d="M818.67,292L815.31,284L822.03,284Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge2"><path d="M778.8,336C778.8,353.36 646.71,364 431.19,364C215.67,364 83.58,383.76 83.58,416L83.58,501.5"/><path class="pele-marker" d="M83.58,508.5L80.22,500.5L86.94,500.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge3"><path d="M794.8,336C794.8,360.8 702.58,376 552.12,376C401.66,376 309.44,391.2 309.44,416L309.44,501.5"/><path class="pele-marker" d="M309.44,508.5L306.08,500.5L312.8,500.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge4"><path d="M810.8,336C810.8,368.24 769.66,388 702.54,388C635.42,388 594.29,398.64 594.29,416L594.29,492.5"/><path class="pele-marker" d="M594.29,499.5L590.93,491.5L597.65,491.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge5"><path d="M826.8,336L826.8,501.5"/><path class="pele-marker" d="M826.8,508.5L823.44,500.5L830.16,500.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge6"><path d="M842.8,336C842.8,376 1079.32,376 1079.32,416L1079.32,501.5"/><path class="pele-marker" d="M1079.32,508.5L1075.96,500.5L1082.68,500.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge7"><path d="M83.58,552.5L83.58,681.5C83.58,715 297.44,715 297.44,748.5L297.44,754.5"/><path class="pele-marker" d="M297.44,761.5L294.08,753.5L300.8,753.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge8"><path d="M309.44,552.5L309.44,754.5"/><path class="pele-marker" d="M309.44,761.5L306.08,753.5L312.8,753.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge9"><path d="M623.65,561.5C623.65,593.74 727.33,613.5 896.49,613.5C1065.65,613.5 1169.33,624.14 1169.33,641.5L1169.33,681.5C1169.33,715 1328.34,715 1328.34,748.5L1328.34,754.5"/><path class="pele-marker" d="M1328.34,761.5L1324.98,753.5L1331.7,753.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge10"><path d="M564.92,561.5C564.92,601.5 513.59,601.5 513.59,641.5L513.59,681.5C513.59,698.86 477.08,709.5 417.52,709.5C357.95,709.5 321.44,724.32 321.44,748.5L321.44,754.5"/><path class="pele-marker" d="M321.44,761.5L318.08,753.5L324.8,753.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge11"><path d="M885.94,552.5C885.94,582.88 980.14,601.5 1133.84,601.5C1287.54,601.5 1381.74,616.7 1381.74,641.5L1381.74,681.5C1381.74,715 1344.34,715 1344.34,748.5L1344.34,754.5"/><path class="pele-marker" d="M1344.34,761.5L1340.98,753.5L1347.7,753.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge12"><path d="M745.67,552.5L745.67,681.5C745.67,706.3 667.35,721.5 539.56,721.5C411.77,721.5 333.45,731.76 333.45,748.5L333.45,754.5"/><path class="pele-marker" d="M333.45,761.5L330.09,753.5L336.81,753.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge13"><path d="M1128.69,552.5C1128.69,575.44 1217.13,589.5 1361.42,589.5C1505.71,589.5 1594.15,609.26 1594.15,641.5L1594.15,681.5C1594.15,710.02 1549.72,727.5 1477.24,727.5C1404.76,727.5 1360.34,735.48 1360.34,748.5L1360.34,754.5"/><path class="pele-marker" d="M1360.34,761.5L1356.98,753.5L1363.7,753.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge14"><path d="M1029.94,552.5C1029.94,575.44 1016.14,589.5 993.62,589.5C971.11,589.5 957.31,609.26 957.31,641.5L957.31,681.5C957.31,713.74 841.05,733.5 651.38,733.5C461.7,733.5 345.45,739.49 345.45,749.25L345.45,754.5"/><path class="pele-marker" d="M345.45,761.5L342.09,753.5L348.81,753.5Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="edge1"><rect x="732.8" y="228.5" width="171.76" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="818.67" y="242.4">the lint reads the venture's</tspan><tspan x="818.67" y="260.4">records</tspan></text></g><g class="pele-edge-label" data-id="edge2"><rect x="13.83" y="434.5" width="139.5" height="21" rx="3" fill="var(--_bg)"/><text x="83.58" y="449.9" text-anchor="middle">the records are clean</text></g><g class="pele-edge-label" data-id="edge3"><rect x="207" y="427" width="204.88" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="309.44" y="440.9">a record could not be read, so it</tspan><tspan x="309.44" y="458.9">is skipped</tspan></text></g><g class="pele-edge-label" data-id="edge4"><rect x="522.19" y="427" width="144.19" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="594.29" y="440.9">the agreement has no</tspan><tspan x="594.29" y="458.9">counterparty record</tspan></text></g><g class="pele-edge-label" data-id="edge5"><rect x="728.65" y="434.5" width="196.3" height="21" rx="3" fill="var(--_bg)"/><text x="826.8" y="449.9" text-anchor="middle">the public claim has no source</text></g><g class="pele-edge-label" data-id="edge6"><rect x="985.06" y="418" width="188.52" height="54" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="1079.32" y="431.9">a public claim has no source,</tspan><tspan x="1079.32" y="449.9">and an agreement has no</tspan><tspan x="1079.32" y="467.9">counterparty</tspan></text></g><g class="pele-edge-label" data-id="edge7"><rect x="35.62" y="651" width="95.93" height="21" rx="3" fill="var(--_bg)"/><text x="83.58" y="666.4" text-anchor="middle">the run exits 0</text></g><g class="pele-edge-label" data-id="edge8"><rect x="261.47" y="651" width="95.93" height="21" rx="3" fill="var(--_bg)"/><text x="309.44" y="666.4" text-anchor="middle">the run exits 0</text></g><g class="pele-edge-label" data-id="edge9"><rect x="1073.13" y="643.5" width="192.41" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="1169.33" y="657.4">a fail-closed rule has findings,</tspan><tspan x="1169.33" y="675.4">so the run fails</tspan></text></g><g class="pele-edge-label" data-id="edge10"><rect x="417.77" y="643.5" width="191.64" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="513.59" y="657.4">the findings stay warnings, so</tspan><tspan x="513.59" y="675.4">the run exits 0</tspan></text></g><g class="pele-edge-label" data-id="edge11"><rect x="1285.53" y="643.5" width="192.41" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="1381.74" y="657.4">a fail-closed rule has findings,</tspan><tspan x="1381.74" y="675.4">so the run fails</tspan></text></g><g class="pele-edge-label" data-id="edge12"><rect x="649.85" y="643.5" width="191.64" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="745.67" y="657.4">the findings stay warnings, so</tspan><tspan x="745.67" y="675.4">the run exits 0</tspan></text></g><g class="pele-edge-label" data-id="edge13"><rect x="1497.94" y="643.5" width="192.41" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="1594.15" y="657.4">a fail-closed rule has findings,</tspan><tspan x="1594.15" y="675.4">so the run fails</tspan></text></g><g class="pele-edge-label" data-id="edge14"><rect x="861.49" y="643.5" width="191.64" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="957.31" y="657.4">the findings stay warnings, so</tspan><tspan x="957.31" y="675.4">the run exits 0</tspan></text></g></g><g class="pele-nodes"><g class="pele-node pele-state blue" data-id="s0" transform="translate(818.67,186)"><rect x="-60.46" y="-22" width="120.93" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Ready to lint</text></g><g class="pele-node pele-state blue" data-id="s1" transform="translate(818.67,314)"><rect x="-74.69" y="-22" width="149.38" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Reading records</text></g><g class="pele-node pele-state teal" data-id="s2" transform="translate(83.58,530.5)"><rect x="-75.58" y="-22" width="151.17" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Nothing to report</text></g><g class="pele-node pele-state teal" data-id="s3" transform="translate(309.44,530.5)"><rect x="-110.27" y="-22" width="220.54" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">A record could not be read</text></g><g class="pele-node pele-state yellow" data-id="s4" transform="translate(594.29,530.5)"><rect x="-81.37" y="-31" width="162.74" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Agreement has no</tspan><tspan x="0" y="16.1">counterparty</tspan></text></g><g class="pele-node pele-state yellow" data-id="s5" transform="translate(826.8,530.5)"><rect x="-111.14" y="-22" width="222.29" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Public claim has no source</text></g><g class="pele-node pele-state yellow" data-id="s6" transform="translate(1079.32,530.5)"><rect x="-101.38" y="-22" width="202.75" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Both rules have findings</text></g><g class="pele-node pele-state teal" data-id="s7" transform="translate(321.44,783.5)"><rect x="-36.01" y="-22" width="72.02" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Exit 0</text></g><g class="pele-node pele-state orange" data-id="s8" transform="translate(1344.34,783.5)"><rect x="-36.01" y="-22" width="72.02" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Exit 1</text></g><g class="pele-node pele-state-start" data-id="root_start" transform="translate(818.67,113)"><circle r="7" fill="var(--_l)"/></g><g class="pele-node pele-state blue" data-id="lg0" transform="translate(926.48,82)"><rect x="-42.68" y="-22" width="85.36" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">running</text></g><g class="pele-node pele-state yellow" data-id="lg1" transform="translate(1052.73,82)"><rect x="-43.57" y="-22" width="87.14" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">findings</text></g><g class="pele-node pele-state teal" data-id="lg2" transform="translate(1169.63,82)"><rect x="-33.34" y="-22" width="66.67" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">clear</text></g><g class="pele-node pele-state teal" data-id="lg3" transform="translate(1270.97,82)"><rect x="-28" y="-22" width="56" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">ok</text></g><g class="pele-node pele-state orange" data-id="lg4" transform="translate(1374.09,82)"><rect x="-35.12" y="-22" width="70.24" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">failed</text></g></g></g></svg>
