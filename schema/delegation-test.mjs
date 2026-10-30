@@ -8,7 +8,8 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { mayMerge } from "./decisions.mjs";
+import { approve, decisions, mayMerge, merge, propose, rollback } from "./decisions.mjs";
+import { decide } from "./setup.mjs";
 import { independent, reviewIsIndependent, verificationErrors } from "./verify.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -125,6 +126,68 @@ expect("mayMerge refuses a one-way door that comes only from extends", /one-way 
 const broken = merger({ extends: "governance/venture-template/gone.json", grants: [mergeGrant("implementation-detail")] });
 expect("mayMerge refuses a role when extends cannot be honored", !mayMerge(broken, decision("implementation-detail"), { role: "builder" }).ok);
 expect("mayMerge refuses the founder too when extends cannot be honored", !mayMerge(broken, decision("implementation-detail"), { by: "Torian" }).ok);
+
+// Merge authority: a role stays inside its grant's scope and chain; only a founder merges a one-way door.
+const inScope = { ...decision("implementation-detail"), applies_to: [{ file: "engineering/x.json", field: "a" }] };
+const scoped = merger({ grants: [{ ...mergeGrant("implementation-detail"), id: "g", scope: "engineering/" }] });
+expect("mayMerge lets a role merge inside its grant's scope", mayMerge(scoped, inScope, { role: "builder" }).ok);
+expect("mayMerge refuses a role outside its grant's scope", /outside the scope/.test(mayMerge(scoped, { ...inScope, applies_to: [{ file: "engineering-secrets/x.json", field: "a" }] }, { role: "builder" }).error ?? ""));
+expect("mayMerge refuses a role when any one target is outside its scope", !mayMerge(scoped, { ...inScope, applies_to: [...inScope.applies_to, { file: "finance/x.json", field: "a" }] }, { role: "builder" }).ok);
+const stray = merger({ grants: [{ ...mergeGrant("implementation-detail"), from: "people-lead" }] });
+expect("mayMerge refuses a grant the chain check rejects", /exceeds its grantor's authority/.test(mayMerge(stray, inScope, { role: "builder" }).error ?? ""));
+const peopled = (grants = []) => { const dir = merger({ grants }); mkdirSync(join(dir, "people")); writeFileSync(join(dir, "people/people.json"), JSON.stringify({ people: [{ id: "ana", name: "Ana" }] })); return dir; };
+const door = decision("production-ship");
+expect("a non-founder person merges an ordinary class", mayMerge(peopled(), decision("implementation-detail"), { by: "Ana" }).ok);
+expect("a non-founder person never merges a one-way door", /one-way door/.test(mayMerge(peopled(), door, { by: "Ana" }).error ?? ""));
+expect("a founder merges a one-way door", mayMerge(peopled(), door, { by: "Torian" }).ok);
+
+// An agent cannot name a person. The check reads the environment, so it is restored after each case.
+const asActor = (vars, fn) => { Object.assign(process.env, vars); try { return fn(); } finally { for (const k of Object.keys(vars)) delete process.env[k]; } };
+for (const [what, vars] of [["MENTURA_ACTOR=agent", { MENTURA_ACTOR: "agent" }], ["MENTURA_MODEL", { MENTURA_MODEL: "m" }], ["another MENTURA_ACTOR_ID", { MENTURA_ACTOR_ID: "chief-of-staff" }]])
+  expect(`an agent (${what}) cannot merge as the founder`, /is acting/.test(asActor(vars, () => mayMerge(peopled(), door, { by: "Torian" })).error ?? ""));
+expect("a person whose MENTURA_ACTOR_ID is their own name still merges", asActor({ MENTURA_ACTOR_ID: "Torian" }, () => mayMerge(peopled(), door, { by: "Torian" })).ok);
+
+// Provenance after the refusal: nothing is recorded as person/Torian.
+const pv = peopled();
+mkdirSync(join(pv, "operations"));
+writeFileSync(join(pv, "venture.json"), JSON.stringify({ id: "pv", name: "Pv", type: "software-startup", phase: "discovery" }));
+propose(pv, { id: "d-a", question: "A?", answer: "a", class: "implementation-detail", applies_to: [{ file: "operations/a.json", field: "a" }] }, { agentId: "cos" });
+const decided = approve(pv, "d-a", { by: "Torian" });
+const provBefore = readFileSync(join(pv, "provenance.jsonl"), "utf8");
+expect("an agent's merge as the founder is refused and logs nothing", decided.ok && !asActor({ MENTURA_ACTOR: "agent" }, () => merge(pv, "d-a", { by: "Torian" })).ok && readFileSync(join(pv, "provenance.jsonl"), "utf8") === provBefore, decided);
+
+// approve checks by the same way, and a raw agent write cannot reopen a decided decision.
+propose(pv, { id: "d-b", question: "B?", answer: "b" }, { agentId: "cos" });
+expect("approve refuses a name not on the venture's list", /Mallory is not a person/.test(approve(pv, "d-b", { by: "Mallory" }).error ?? ""));
+expect("approve refuses a role named as a person", /role, not a person/.test(approve(pv, "d-b", { by: "chief-of-staff" }).error ?? ""));
+expect("approve refuses an agent naming the founder", /is acting/.test(asActor({ MENTURA_ACTOR: "agent" }, () => approve(pv, "d-b", { by: "Torian" })).error ?? ""));
+expect("the refused approvals leave the decision open", decisions(pv).decisions.find((x) => x.id === "d-b").status === "open");
+expect("approve accepts a person on the list", approve(pv, "d-b", { by: "Ana" }).ok);
+
+// Founding roles count from the roles register, and a venture created as a fund has someone who can merge a door.
+const rostered = (role) => { const dir = merger({ grants: [] }); mkdirSync(join(dir, "people")); writeFileSync(join(dir, "people/people.json"), JSON.stringify({ people: [{ id: "cole", name: "Cole", role }] })); return dir; };
+expect("a co-founder merges a one-way door", mayMerge(rostered("co-founder"), door, { by: "Cole" }).ok);
+expect("a general partner merges a one-way door", mayMerge(rostered("general-partner"), door, { by: "Cole" }).ok);
+expect("a non-founding role does not", /one-way door/.test(mayMerge(rostered("operator"), door, { by: "Cole" }).error ?? ""));
+const fund = join(tmp, "fund");
+const made = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), fund, "--type", "vc-fund", "--name", "Gia Moss", "--yes", "--skip-install", "--no-git"], { encoding: "utf8", input: "", env: { ...process.env, HOME: tmp } });
+expect("a vc-fund from create-venture has someone who merges a one-way door", made.status === 0 && mayMerge(fund, door, { by: "Gia Moss" }).ok, made.stderr);
+
+// Setup acts as the founder a venture names, also when it names one only in delegation.json.
+const noRoster = merger({ grants: [] });
+writeFileSync(join(noRoster, "venture.json"), JSON.stringify({ id: "nr", name: "Nr", type: "software-startup", phase: "discovery" }));
+const answered = await decide(noRoster, { id: "discovery-goal", answer: "Ten paying customers" });
+expect("setup answers as the founder delegation.json names", answered.ok, JSON.stringify(answered));
+
+// Rollback is a person's act, checked as approve checks it.
+propose(pv, { id: "d-r", question: "R?", answer: "one" }, { agentId: "cos" });
+approve(pv, "d-r", { by: "Torian" });
+approve(pv, "d-r", { by: "Torian", answer: "two" });
+expect("rollback refuses a name not on the venture's list", /Mallory is not a person/.test(rollback(pv, "d-r", 1, { by: "Mallory" }).error ?? ""));
+expect("rollback refuses a role named as a person", /role, not a person/.test(rollback(pv, "d-r", 1, { by: "chief-of-staff" }).error ?? ""));
+expect("rollback refuses an agent naming the founder", /is acting/.test(asActor({ MENTURA_ACTOR: "agent" }, () => rollback(pv, "d-r", 1, { by: "Torian" })).error ?? ""));
+expect("the refused rollbacks leave the answer", decisions(pv).decisions.find((x) => x.id === "d-r").answer === "two");
+expect("rollback accepts a person on the list", rollback(pv, "d-r", 1, { by: "Torian" }).ok);
 
 // The verification substrate.
 expect("a verifier other than the builder is independent", independent("builder", "architect"));
