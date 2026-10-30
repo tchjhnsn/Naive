@@ -183,6 +183,12 @@
           ],
           "description": "The venture's phase when it was approved"
         },
+        "signer": {
+          "enum": [
+            "unverified"
+          ],
+          "description": "unverified: the approval came through a door with no sign-in (the venture console beta), so approved_by is the venture's founder by default, not a checked identity, and no wording is claimed"
+        },
         "wording": {
           "enum": [
             "approved",
