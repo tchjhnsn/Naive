@@ -9,9 +9,6 @@
 EXTENDS Sequences, FiniteSets, Integers
 
 Catalog == <<
-  [id |-> "everything-ecosystem", example |-> FALSE, featured |-> TRUE, phase |-> "discovery",
-    pieces |-> {"foundation", "product", "validation", "people", "legal", "operations", "product-anatomy", "docket"},
-    source |-> "instance/ventures/everything-ecosystem/venture.json", sourceOk |-> TRUE],
   [id |-> "acme-labs", example |-> TRUE, featured |-> TRUE, phase |-> "discovery",
     pieces |-> {"foundation", "people", "money", "operations", "docket"},
     source |-> "schema/examples/workspace/ventures/acme-labs/venture.json", sourceOk |-> TRUE],
