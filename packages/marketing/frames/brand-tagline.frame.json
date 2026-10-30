@@ -1,0 +1,66 @@
+{
+  "id": "brand-tagline",
+  "title": "Say the ethos in a line",
+  "functions": [
+    "marketing"
+  ],
+  "triggers": [
+    "we need a tagline",
+    "what's our slogan",
+    "how do we say what we do in one line"
+  ],
+  "goal": "{goal}",
+  "premises": [
+    {
+      "id": "ethos-decided",
+      "claim": "The ethos the tagline compresses is already decided.",
+      "attack": "test-the-goal",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    },
+    {
+      "id": "line-serves-audience",
+      "claim": "A single line can speak to the first audience without losing the ethos.",
+      "attack": "false-dichotomy",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    }
+  ],
+  "attacks": [
+    "test-the-goal",
+    "false-dichotomy"
+  ],
+  "reframe": "What line says the venture's ethos to its first audience?",
+  "props": [
+    "phase",
+    "goal"
+  ],
+  "freshness": {
+    "look_for": [
+      "ventures that faced the same brand problem, and what it cost them"
+    ],
+    "max_age_days": 365,
+    "cite": true
+  },
+  "reasoning": [
+    "Read the venture's goal and phase.",
+    "Judge each premise against the facts alone.",
+    "Propose the decision open; never pick an option."
+  ],
+  "emits": [
+    {
+      "id": "brand-tagline",
+      "question": "What line carries the ethos to the first audience?",
+      "options": [
+        "a line about the belief",
+        "a line about the audience",
+        "a line about the action asked of them"
+      ],
+      "layer": "purpose"
+    }
+  ]
+}

@@ -14,6 +14,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { ventureFile } from "./venture-paths.mjs";
+import { independent, reviewIsIndependent } from "./verify.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-execution.mjs <venture dir>"); process.exit(2); }
@@ -58,7 +59,7 @@ for (const f of jsonIn(join(ventureFile(dir, "operations/handoffs")))) {
   const kinds = new Set(h.done_criteria.map((d) => d.kind));
   if (!kinds.has("conformance")) errors.push(`${at}: no conformance criterion`);
   if (!kinds.has("self-proof")) errors.push(`${at}: no self-proof criterion (EE-006)`);
-  for (const d of h.done_criteria) if (d.kind === "review" && (!roles.has(d.reviewer) || d.reviewer === h.role)) errors.push(`${at}/${d.id}: review needs a reviewer role other than the holder's`);
+  for (const d of h.done_criteria) if (d.kind === "review" && !reviewIsIndependent(d, h.role, roles)) errors.push(`${at}/${d.id}: review needs a reviewer role other than the holder's`);
   if (h.attempts > h.max_attempts) errors.push(`${at}: ${h.attempts} attempts exceed max_attempts ${h.max_attempts}`);
   if (h.attempts === h.max_attempts && !["done", "escalated"].includes(h.status)) errors.push(`${at}: attempts used up, so it is done or escalated`);
   const open = (h.escalations ?? []).filter((e) => !e.answer);
@@ -74,7 +75,7 @@ for (const f of jsonIn(join(ventureFile(dir, "operations/handoffs")))) {
       if (e.subject.kind !== "handoff" || e.subject.id !== h.id) errors.push(`${at}: evidence ${e.id} is about ${e.subject.kind} ${e.subject.id}`);
       for (const r of e.results.filter((x) => x.passed)) {
         const c = h.done_criteria.find((d) => d.id === r.criterion);
-        if (c?.kind === "review" && (r.by !== c.reviewer || r.by === h.role)) { errors.push(`${at}: review ${c.id} must be passed by ${c.reviewer}, not ${r.by ?? "nobody named"}`); continue; }
+        if (c?.kind === "review" && (r.by !== c.reviewer || !independent(h.role, r.by))) { errors.push(`${at}: review ${c.id} must be passed by ${c.reviewer}, not ${r.by ?? "nobody named"}`); continue; }
         proved.add(r.criterion);
       }
     }

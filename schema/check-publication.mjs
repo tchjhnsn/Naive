@@ -16,6 +16,7 @@
 //
 //   node schema/check-publication.mjs <workspace or venture dir>
 
+import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -29,11 +30,11 @@ const errors = [], warnings = [];
 let checked = 0;
 
 for (const root of walk(dir)) {
-  const v = load(join(root, "venture.json"));
-  const pPath = join(root, "governance/publication-policy.json");
+  const v = load(ventureFile(root, "venture.json"));
+  const pPath = ventureFile(root, "governance/publication-policy.json");
   const policy = existsSync(pPath) ? load(pPath) : null;
   const at = `${v.id}/governance/publication-policy.json`;
-  const hDir = join(root, "operations/handoffs");
+  const hDir = ventureFile(root, "operations/handoffs");
   const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => [f, load(join(hDir, f))]) : [];
 
   for (const [f, h] of handoffs) {
@@ -58,7 +59,7 @@ for (const root of walk(dir)) {
   }
   const guidelines = new Map((policy.guidelines ?? []).map((g) => [g.id, g]));
   for (const g of guidelines.values()) {
-    if (g.path && !existsSync(join(root, g.path))) errors.push(`${at}: guideline ${g.id} not found at ${g.path} (paths are relative to the venture folder)`);
+    if (g.path && !existsSync(ventureFile(root, g.path))) errors.push(`${at}: guideline ${g.id} not found at ${g.path} (paths are relative to the venture folder)`);
     if (!g.path && !g.url) errors.push(`${at}: guideline ${g.id} needs a path or a url`);
     if (g.url && !g.checked) warnings.push(`${at}: guideline ${g.id} has a url but no checked date`);
   }
@@ -77,7 +78,7 @@ for (const root of walk(dir)) {
       for (const id of ds) if (!roles.has(id) && !teams.has(id)) errors.push(`${at}: channel ${c.id} delegates replies to unknown role or team ${id}`);
       if (ds.length && !ds.some((id) => person(id) || teams.get(id)?.members.some(person))) errors.push(`${at}: channel ${c.id} delegates replies to agents only; a person answers for the venture`);
     }
-    if (c.config && !existsSync(join(root, c.config))) errors.push(`${at}: channel ${c.id} config not found at ${c.config}`);
+    if (c.config && !existsSync(ventureFile(root, c.config))) errors.push(`${at}: channel ${c.id} config not found at ${c.config}`);
     for (const r of c.rules) {
       const rule = `${at}: ${c.id} "${r.content}"`;
       for (const id of [...(r.drafters ?? []), ...r.approvers]) if (!roles.has(id) && !teams.has(id)) errors.push(`${rule}: unknown role or team ${id}`);

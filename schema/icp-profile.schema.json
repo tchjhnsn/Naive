@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "icp-profile.schema.json",
+  "title": "Ideal customer profile",
+  "description": "One ideal customer profile (EE-051), at <venture>/foundation/icp/<id>.json: the 'who' foundation statement is the enumeration of these records, one primary. Each is specific enough to go and find ten of them: two founders who differ in what they can do (an excellent engineer, a founder who cannot code) are two profiles, not one. Gated like the telos: an agent's write is a draft the founder accepts. Replaces the single foundation/icp.json, which the icp-profiles migration splits.",
+  "type": "object",
+  "required": [
+    "id",
+    "who"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "decision": {
+      "type": "string",
+      "description": "The decision that set it, such as EE-045"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The profile's id: unique in the venture and equal to its file name (foundation/icp/<id>.json)"
+    },
+    "who": {
+      "type": "string",
+      "description": "Who they are, specifically enough to find ten of them"
+    },
+    "short": {
+      "type": "string",
+      "description": "One line naming who they are; the venture's promised-to statement shows it (EE-052)"
+    },
+    "primary": {
+      "type": "boolean",
+      "description": "Exactly one profile is primary"
+    },
+    "customer": {
+      "enum": [
+        "b2b",
+        "b2c",
+        "b2g"
+      ]
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "discovery",
+          "validation",
+          "beachhead",
+          "scale",
+          "platform"
+        ]
+      },
+      "description": "The phases of their own venture they are in, when they are founders"
+    },
+    "traits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What must be true of them"
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What they are trying to get done (jobs to be done)"
+    },
+    "problem_forms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "description": "Ids of the problem record's forms they have"
+    },
+    "where_to_find": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Where to reach them: communities, channels, events"
+    },
+    "not": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Who is out of scope, and why"
+    },
+    "buying_roles": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "initiator",
+          "user",
+          "influencer",
+          "decider",
+          "buyer",
+          "gatekeeper"
+        ]
+      },
+      "description": "The parts this profile plays in a purchase (the buying center: Webster and Wind 1972; initiator added by Bonoma 1982). One person may hold several; a solo founder or a consumer usually holds them all."
+    },
+    "reached_through": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Other profiles (ids) through whom the venture reaches this one, such as a channel partner in a B2B2C venture (EE-064)"
+    },
+    "customer_type": {
+      "type": "string",
+      "description": "The customer type from the marketing matrix (operations/marketing/site/matrix.json customer_types), when the founder sets it; otherwise it is judged from who (EE-063)"
+    },
+    "conversation": {
+      "type": "array",
+      "description": "The founder's messages this record was made from (naive diagnose catches)",
+      "items": {
+        "$ref": "conversation-ref.schema.json"
+      }
+    }
+  }
+}

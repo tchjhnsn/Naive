@@ -33,6 +33,13 @@
       "status": "new"
     },
     {
+      "noun": "central data management structure",
+      "level": "venture",
+      "meaning": "What a venture's scaffolding is (EE-085): one structure for everything the venture knows, under one set of conventions, with pointers to the systems of record that keep the rest. It suits solo founders and small founding teams, for whom one central structure replaces separate SaaS silos and gives agents the whole picture",
+      "standard": "master data management, centralized style (DAMA-DMBOK)",
+      "status": "new"
+    },
+    {
       "noun": "method",
       "level": "system",
       "meaning": "What to do: Product Anatomy, handoffs; MAD, the method for building software, is a separate product (EE-038)",
