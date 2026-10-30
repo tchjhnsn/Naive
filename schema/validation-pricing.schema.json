@@ -57,6 +57,11 @@
             "type": "number",
             "minimum": 0
           },
+          "cost": {
+            "type": "number",
+            "minimum": 0,
+            "description": "What it costs to deliver this point, in the same currency as amount. finance/lint warns when amount is below this cost."
+          },
           "currency": {
             "type": "string",
             "pattern": "^[A-Z]{3}$"
