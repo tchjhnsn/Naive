@@ -47,6 +47,7 @@ const steps = [
   ["kits", "node", ["platform/kits/test.mjs"]],
   ["webhooks", "node", ["platform/webhooks/test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["schema/frames-test.mjs"]],
+  ["premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)", "node", ["schema/premise-lint-test.mjs"]],
   ["frames: instance", "node", ["schema/frames.mjs", "check"]],
   ["decision roadmaps and lifecycle playbooks (no cycles, known frames, a decider per step, one-way doors the founder's; installs propose open; gate evidence from the playbook)", "node", ["schema/roadmap-test.mjs"]],
   ["roadmaps: instance", "node", ["schema/check-roadmap.mjs"]],

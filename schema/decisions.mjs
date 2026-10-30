@@ -50,7 +50,7 @@ export function recordOf(file) {
 }
 
 // Every *.decision.json in a venture, outside drafts, hidden folders and nested ventures.
-function decisionFiles(dir, sub = "") {
+export function decisionFiles(dir, sub = "") {
   // A structured venture (EE-086): its decision files by their logical paths.
   if (!sub && layoutOf(dir) === "structured") return logicalFiles(dir).filter((r) => r.endsWith(".decision.json") && r.split("/").at(-2) === "decisions" && !r.split("/").some((s) => s.startsWith(".") || s.startsWith("_")));
   return readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {

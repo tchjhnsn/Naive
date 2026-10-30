@@ -37,6 +37,9 @@
 //                                                   venture it fits, or in the workspace inbox when unsure
 //   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
 //   naive read <venture> <path>                     read another venture's published artifact, if the workspace allows
+//   naive lint premises [<route>] [--drafts] [--json] [--propose]
+//                                                   attack the premises of the venture's goals, requirements, exit criteria,
+//                                                   constraints and decisions; --propose writes findings as open decisions
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -257,6 +260,10 @@ else if (cmd === "build" || cmd === "start") {
   // naive read names the venture this session is in as the one reading.
   const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
   process.exit(run("schema/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
+} else if (cmd === "lint") {
+  const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
+  process.exit(run("schema/premise-lint.mjs", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");
