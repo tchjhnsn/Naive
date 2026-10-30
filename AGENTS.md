@@ -4,7 +4,7 @@ The map of this repo, loaded by every agent.
 
 ## What this is
 
-The Everything Ecosystem methodology, packaged as one private repo (EE-001). Proposed genus: a venture development framework, in the same genus as web development frameworks (EE-024). Four layers (purpose, knowledge, operations, evidence) plus governance and interface. Knowledge is the memory layer where every record is stored, and the other layers define the records they write to it; SAD is no longer part of the system (EE-036). Operations is business operations (team, hiring, handoffs); execution folded into it, and MAD, the method for building software, left to be its own product (EE-038).
+The Everything Ecosystem methodology, packaged as one private repo (EE-001). Proposed genus: a venture development framework, in the same genus as web development frameworks (EE-024). Four layers (purpose, knowledge, operations, evidence) plus governance and interface. Knowledge is the memory layer where every record is stored, and the other layers define the records they write to it; SAD is no longer part of the system (EE-036). Operations is business operations (team, hiring, handoffs); execution folded into it, and MAD, the method for building software, left to be its own product (EE-038). A venture's scaffolding is a central data management structure: one place for everything the venture knows, with pointers to the systems that keep the rest. Naive is built for solo founders and small founding teams, for whom central data beats separate tools and gives agents the whole picture. It is not a software engineering framework: it leans toward a monorepo and asks only that the code be connected to the knowledge base, and it is opinionated about file conventions (EE-085).
 
 ## Where things are
 
