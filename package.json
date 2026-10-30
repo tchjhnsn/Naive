@@ -43,6 +43,7 @@
     "!**/*.feature",
     "!interface/create-venture/",
     "!platform/integrations/fixtures/",
+    "!platform/research/",
     "!schema/examples/docket-scenarios.json",
     "!**/.env*",
     "!**/*.pem",

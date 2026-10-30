@@ -194,6 +194,13 @@
         "via": {
           "type": "string",
           "description": "Where the approval was given, such as the Decision Docket or a decision card"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reason"
+          },
+          "description": "The reasons this version was approved on, frozen at approval with each local citation's sha256. If a cited file changes later the decision renders stale: the reason it was decided changed"
         }
       }
     },
@@ -291,6 +298,329 @@
       "description": "The founder's messages this record was made from (naive diagnose catches)",
       "items": {
         "$ref": "conversation-ref.schema.json"
+      }
+    },
+    "publish": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "artifact",
+        "sha256",
+        "door",
+        "exposure",
+        "reversibility"
+      ],
+      "description": "A publish decision (class public-commitment), written by naive publish before anything goes out. One-way doors (hard to undo) are decided by the founder; two-way doors by the founder or a role delegated in governance/delegation.json. An agent never approves.",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "artifact": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "url": {
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "publish",
+            "rollback"
+          ]
+        },
+        "door": {
+          "enum": [
+            "one-way",
+            "two-way"
+          ],
+          "description": "two-way: easy to undo (a private artifact, a draft page). one-way: hard to undo (a public post, an email sent, a launch, anything indexed or cached). After Bezos's Type 1 and Type 2 decisions (2015 shareholder letter)."
+        },
+        "exposure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "level"
+          ],
+          "properties": {
+            "level": {
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "who": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "competitor",
+                  "investor",
+                  "customer",
+                  "legal-regulatory",
+                  "brand",
+                  "public"
+                ]
+              }
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "reversibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "how"
+          ],
+          "properties": {
+            "how": {
+              "type": "string"
+            },
+            "takes": {
+              "type": "string"
+            }
+          }
+        },
+        "approver_role": {
+          "type": "string",
+          "description": "founder, or the role delegated under governance/delegation.json"
+        },
+        "not_before": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reason"
+      },
+      "description": "Why: claims for and against the decision and the context it rests on, each with citations. Approving freezes them into provenance.reasons"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "This wording's version. Changing a decided decision makes a new version; earlier ones stay in versions (decision versions, 2026-10-29)"
+    },
+    "versions": {
+      "type": "array",
+      "description": "Earlier versions, oldest first, kept so any of them can be rolled back to. Each is the decision as it stood, without its own versions",
+      "items": {
+        "type": "object",
+        "required": [
+          "version",
+          "status"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "answer": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provenance": {
+            "type": "object"
+          },
+          "merged": {
+            "type": "object"
+          },
+          "superseded_at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "proposed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "answer",
+        "drafted_by"
+      ],
+      "description": "An agent's new wording for a decided decision, waiting for a person. The decided version stays current; approving promotes this to the next version (EE-058: an agent never decides or un-decides)",
+      "properties": {
+        "answer": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "drafted_by": {
+          "type": "object"
+        },
+        "proposed_at": {
+          "type": "string"
+        }
+      }
+    },
+    "applies_to": {
+      "type": "array",
+      "description": "Where a merge writes the decided answer: a venture-relative file and a dotted field, such as venture.json core.promise",
+      "items": {
+        "type": "object",
+        "required": [
+          "file",
+          "field"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "merged": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The version a merge applied to applies_to, and who merged it. Approving and merging are separate steps, and merging may be delegated",
+      "required": [
+        "version",
+        "by",
+        "at"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer"
+        },
+        "by": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rolled_back_from": {
+      "type": "integer",
+      "description": "When this version restores an earlier one, the version it restores"
+    },
+    "door": {
+      "enum": [
+        "one-way",
+        "two-way"
+      ],
+      "description": "How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (schema/decision-index.mjs)."
+    },
+    "requirements": {
+      "type": "array",
+      "description": "The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (schema/decision-index.mjs).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "relation"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "relation": {
+            "enum": [
+              "satisfies",
+              "constrains",
+              "violates"
+            ]
+          }
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of decisions that cannot be made until this one is. An edge in the decision index."
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of decisions whose answers may conflict with this one. An edge in the decision index."
+    }
+  },
+  "$defs": {
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "kind"
+      ],
+      "description": "One reason for or against a decision, or context it rests on, with the records it cites (dynamic decision index, item 4)",
+      "properties": {
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "for",
+            "against",
+            "context"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "description": "A venture-relative record path, an evidence id, a research cell id or a decision id"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "description": "sha256 of the cited file when it was cited; computed in code for a local file"
+              },
+              "locator": {
+                "type": "string",
+                "description": "Where in the cited record, such as a field path or a line"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     }
   }
