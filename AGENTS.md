@@ -17,14 +17,15 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 | `governance/` | Company vault template, roles, decision rights, pillar skills |
 | `interface/` | Interfaces: the router (`router.mjs`) and the CLI, MCP server and HTTP API over it; the install skill; agent harnesses and the operator console |
 | `platform/` | The platform side (EE-041): connectors that reach a vendor (GitHub so far) and, later, hosting, integrations that call outside services and the template gallery. Everything else is framework; framework code never imports from here (`node schema/check-boundary.mjs`). See `platform/README.md` |
-| `site/` | Naive's docs and marketing pages: a Fumadocs site on Next.js, unpublished (EE-034, EE-080); see `site/AGENTS.md` |
+| `site/` | Naive's docs and marketing pages: a Nextra site on Next.js, unpublished (EE-034, EE-088); see `site/AGENTS.md` |
 | `docs/reference/` | Generated reference: `ROUTES.md`, every route a venture has |
 | `docs/design/` | The ecosystem's own domain and systems design |
 
 ## Build and test
 
 - `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` (TypeScript is the one dev dependency, with its Node types), and python3 with `jsonschema` for `schema/validate.py`.
-- `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors except those under the folders in its `PENDING` list, which are counted and reported until their own PR clears them. A new top-level folder is checked from its first commit, and a syntax error anywhere fails the run, because tsc stops type-checking when it finds one. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
+- `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
+- `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale.
 - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
 - `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules.
 - `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).

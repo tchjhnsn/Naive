@@ -43,6 +43,8 @@ const steps = [
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["schema/setup-test.mjs"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["interface/writes-test.mjs"]],
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["schema/brand-test.mjs"]],
+  ["legal lint: a public claim with no source, an agreement with no counterparty", "node", ["schema/lint-legal-test.mjs"]],
+  ["foundation lint: mission, ICP jobs, alignment checks, problem forms", "node", ["schema/lint-foundation-test.mjs"]],
   ["upgrades: migrations, pins, early adoption, canary, staged agent upgrades", "node", ["schema/upgrades-test.mjs"]],
   ["naive upgrade --layout structured: a flat venture moves onto k-base/ and meta/", "node", ["schema/structured-layout-test.mjs"]],
   ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["schema/structure-checks-test.mjs"]],
@@ -90,6 +92,7 @@ const steps = [
   ["team: instance", "node", ["schema/check-team.mjs", "instance"]],
   ["venture types and people: instance", "node", ["schema/check-people.mjs", "instance"]],
   ["venture types and people: examples", "node", ["schema/check-people.mjs", "schema/examples/workspace"]],
+  ["people lint: role, hire, decision", "node", ["schema/lint-people-test.mjs"]],
   ["provenance: instance", "node", ["schema/check-provenance.mjs", "instance"]],
   ["provenance: examples", "node", ["schema/check-provenance.mjs", "schema/examples/workspace"]],
   ["sources: instance", "node", ["schema/check-sources.mjs", "instance"]],
@@ -99,8 +102,9 @@ const steps = [
   ["departments: instance", "node", ["schema/check-departments.mjs", "instance"]],
   ["departments: examples", "node", ["schema/check-departments.mjs", "schema/examples/workspace"]],
   ["framework/platform boundary", "node", ["schema/check-boundary.mjs"]],
-  ["types (tsc checkJs, outside the pending folders)", "node", ["schema/check-types.ts"]],
+  ["types (tsc checkJs, every file)", "node", ["schema/check-types.ts"]],
   ["the type gate fails on what it must catch", "node", ["schema/check-types-test.ts"]],
+  ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
@@ -132,6 +136,7 @@ const steps = [
   // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.
   ...(existsSync(join(root, "node_modules/eslint")) ? [["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]]] : []),
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
+  ...(existsSync(join(root, "site/node_modules")) ? [["site page gate: internal wording, drafts, blog approval, showcase fixtures", "node", ["site/scripts/gate-pages-test.ts"]]] : []),
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
 

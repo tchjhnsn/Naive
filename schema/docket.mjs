@@ -56,7 +56,7 @@ export function rankDocket(all, phase, now = Date.now()) {
   });
   const functions = [...new Set(rows.map((x) => x.function_id))].map((id) => {
     const xs = rows.filter((x) => x.function_id === id).sort((a, b) => b.value - a.value || a.id.localeCompare(b.id));
-    return { id, function: xs[0].function, attention: Math.round(xs.reduce((s, x, i) => s + x.value / 2 ** i, 0)), decisions: xs };
+    return { id, function: xs[0].function, attention: Math.round(xs.reduce((s, x, i) => s + x.value / 2 ** i, 0)), decisions: xs, share: 0 };
   // A tie goes to the function that fits the phase better (schema/packages.json, base), not to the alphabet.
   }).sort((a, b) => b.attention - a.attention || (PACKAGES.core[b.id]?.base?.[phase] ?? 0) - (PACKAGES.core[a.id]?.base?.[phase] ?? 0) || a.id.localeCompare(b.id));
   const total = functions.reduce((s, f) => s + f.attention, 0);

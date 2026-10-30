@@ -26,9 +26,9 @@ put("people/people.json", { venture: "imp", mode: "solo", people: [{ id: "founde
 put("marketing/notes.json", { unrelated: true });
 
 try {
-  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, { entity: f, route: "x", activity: "write", agent });
+  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: f, route: "x", activity: "write", agent }));
   // The team plan was written from the product: provenance says it reads it.
-  record(v, { entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] });
+  record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] }));
 
   propose(v, { at: "product", id: "shop-price", question: "What does Shop sell?", answer: "A shop for makers.", applies_to: [{ file: "product/shop.json", field: "description" }] }, { agentId: "cos" });
   approve(v, "shop-price", { by: "Founder" });

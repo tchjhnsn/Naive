@@ -20,7 +20,7 @@ const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "validation-study-test-"));
-const env = { ...process.env, MENTURA_WORKSPACE: ws };
+const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: ws });
 delete env.MENTURA_ACTOR_ID; delete env.TYPESAFE_API_KEY;
 delete process.env.MENTURA_ACTOR_ID;
 const cli = (...a) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
@@ -201,7 +201,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   writeFileSync(tf, readFileSync(tf, "utf8") + [JSON.stringify({ ...ev, at, venture, note: "SECRET" }), JSON.stringify({ ...ev, at, venture: "SECRET" }), "not json", good].join("\n") + "\n");
   const flushed = [];
   const fl = await flush(dir, { send: (b) => flushed.push(...b) });
-  expect("flush skips bad lines and sends the good one", fl.sent === 1 && fl.skipped === 3 && JSON.stringify(flushed) === `[${good}]`, JSON.stringify(fl));
+  expect("flush skips bad lines and sends the good one", fl.sent === 1 && /** @type {*} */ (fl).skipped === 3 && JSON.stringify(flushed) === `[${good}]`, JSON.stringify(fl));
   expect("flush does not retry skipped lines", (await flush(dir, { send: () => { throw new Error("resent"); } })).sent === 0);
   put(join(dir, "naive.config.json"), conf);
 

@@ -36,6 +36,7 @@ export function frontmatter(text) {
   for (const line of m[1].split("\n")) {
     const kv = line.match(/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
     if (!kv) continue;
+    /** @type {string | string[]} */
     let v = kv[2].trim().replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
     if (/^\[.*\]$/.test(v)) v = v.slice(1, -1).split(",").map((x) => x.trim()).filter(Boolean);
     out[kv[1]] = v;

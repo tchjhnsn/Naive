@@ -64,6 +64,8 @@ writeFileSync(process.env.NAIVE_PUBLISH_OUT + "/artifact/bad.html", "<p>" + p.se
   expect("an unknown channel is refused", !build("nope", v, { out }).ok);
   const cli = spawnSync("node", [join(repo, "operations/marketing/publish-build.mjs"), "site", v, "--out", out], { encoding: "utf8" });
   expect("the command line runs the build", cli.status === 0 && /built site for canary/.test(cli.stdout), cli.stdout + cli.stderr);
+  expect("every published fact is confirmed by construction, so no fact carries a status", !Object.values(JSON.parse(readFileSync(join(out, "generated/venture-facts.json"), "utf8"))).some((f) => f && typeof f === "object" && "status" in f));
+  expect("a marketing page cannot use the removed Term component", !readFileSync(join(repo, "site/scripts/check-content.mjs"), "utf8").includes('"Term"'));
   const repoVenture = spawnSync("node", [join(repo, "operations/marketing/publish-build.mjs"), "foundation", join(repo, "instance/ventures/everything-ecosystem"), "--out", out], { encoding: "utf8" });
   expect("the repository's own venture builds its foundation one-pager through the gate", repoVenture.status === 0, repoVenture.stdout + repoVenture.stderr);
 } finally {
