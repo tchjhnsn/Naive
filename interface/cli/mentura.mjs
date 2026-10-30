@@ -21,6 +21,7 @@
 //   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
 //                                                   a new --answer on a decided decision makes its next version; --rollback restores one
 //   mentura merge <decision> --venture <id> --by <name> [--confirm <decision>]
+//   mentura impact <decision> --venture <id>       rebuild a merged decision's impact map across the functions
 //                                                   apply a decided version to the records it decides (applies_to)
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
 //   mentura propose --venture <id> --input <file.json> [--as <role>]
@@ -66,6 +67,7 @@ import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir,
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
 import { approve, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
+import { impact } from "../../schema/impact.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
 import { asRouted, findVenture } from "./find-venture.mjs";
@@ -239,6 +241,18 @@ if (cmd === "merge") {
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
   const r = merge(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "impact") {
+  // Which records in each function depend on what a merged decision changed; marks them stale and
+  // proposes an open follow-up decision per function (merge runs this itself).
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const r = impact(dir, id, { via: "cli" });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);

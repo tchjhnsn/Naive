@@ -32,6 +32,7 @@ import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
 import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
+import { impact } from "./impact.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -258,6 +259,8 @@ const validate = (d) => {
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 };
 const fileOf = (dir, id) => decisionFiles(dir).find((f) => load(ventureFile(dir, f)).id === id);
+/** The venture-relative file of a decision record, by id. */
+export const decisionFile = fileOf;
 
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
  *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
@@ -293,7 +296,8 @@ const setField = (o, path, v) => { const ks = path.split("."); let x = o; for (c
 
 /** Merge: apply a decided version's answer to the records it decides (applies_to). A separate step from
  *  approving, so it can be delegated: only a person may merge unless a delegation grant names merge for
- *  this decision's class (the delegation suite). Logged as a merge in provenance. */
+ *  this decision's class (the delegation suite). Logged as a merge in provenance. Ends by building the
+ *  decision's impact map (schema/impact.mjs) and returns its summary. */
 export function merge(dir, id, { by, via = "cli", note } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
@@ -315,7 +319,8 @@ export function merge(dir, id, { by, via = "cli", note } = {}) {
   const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: agentFromEnv("person", via, { id: by }), note: note ?? `merged ${id} version ${version}` });
-  return { ok: true, result: { merged: id, version, files, provenance: e.hash } };
+  const im = impact(dir, id, { via });
+  return { ok: true, result: { merged: id, version, files, provenance: e.hash, impact: im.ok ? im.result : { error: im.error } } };
 }
 
 /** Rollback: make an earlier version current again, as a new version, so history is never rewritten.

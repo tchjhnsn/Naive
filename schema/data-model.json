@@ -455,6 +455,24 @@
       "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node schema/decisions.mjs renders the matrix. The decision log keeps the history"
     },
     {
+      "id": "decision-impact",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-impact.schema.json",
+      "paths": [
+        "instance/**/decisions/*.impact.json",
+        "schema/examples/**/decisions/*.impact.json"
+      ],
+      "refs": [
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": null
+        }
+      ],
+      "note": "The impact map of a merged decision version: per function, the records that depend on what changed, which were marked stale, and the follow-up decisions proposed (schema/impact.mjs)"
+    },
+    {
       "id": "nextjs-status",
       "layer": "knowledge",
       "level": "method",

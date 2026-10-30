@@ -52,6 +52,7 @@ const steps = [
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["decision versions: propose, approve, merge, rollback", "node", ["schema/decision-versions-test.mjs"]],
+  ["decision impact: a merge maps what depends on it across functions, marks it stale, proposes follow-ups", "node", ["schema/decision-impact-test.mjs"]],
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
   ["publication: examples", "node", ["schema/check-publication.mjs", "schema/examples/workspace"]],
   ["team: instance", "node", ["schema/check-team.mjs", "instance"]],
