@@ -885,6 +885,19 @@
       "why": "Torian, 2026-10-29: when scaffolding, ask the user to point Naive to the source of truth for each function (the repo, GitHub and Vercel for a software product; analytics from the host; Stripe, Square or Shopify for sales; Rho for financials in the demo; legal documents, with the connections to set them up if missing), let a function default or be answered in prose, and ship a local setup experience like the one Next.js gives, essentially the strategic foundation and a version of the decision docket, ending by setting a goal for the discovery phase. After setup a founder has the structure of the venture and a way of routing decisions; operating it is Mentura's, as deploying is Vercel's after Next.js."
     },
     {
+      "id": "EE-085",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-024",
+        "EE-038",
+        "EE-042",
+        "EE-083"
+      ],
+      "decision": "Naive's project scaffolding is a central data management structure: everything a venture knows sits in one structure under one set of conventions, with pointers to the systems of record that keep the rest. Naive is for solo founders and small founding teams. It is not a software engineering framework (MAD is, EE-038): it leans toward a monorepo for most software and otherwise asks only that the code be connected, with a pointer between the knowledge base and the code base, and it is opinionated about file conventions. README.md, AGENTS.md, the docs introduction and the ontology say so.",
+      "why": "Torian, 2026-10-29: with SaaS commoditized, much of what would sit in separate data silos can be centralized, which is ideal for a solo founder and still for a small team; central data gives AI-native work an edge, since agents move faster with better context and reasoning for their decisions. Lean Startup names Ries's build-measure-learn method rather than team size, so the docs say solo founders and small founding teams."
+      },
+      {
       "id": "EE-086",
       "date": "2026-10-29",
       "status": "in-force",

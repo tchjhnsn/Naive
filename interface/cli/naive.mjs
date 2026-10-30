@@ -14,6 +14,7 @@
 //                                                   confirming the answers the model relayed (EE-083)
 //   naive frame "<the founder's words>"             match the words to a frame in the decision library, judge its
 //                                                   premises against the venture and propose its decisions, open
+//   naive roadmap [list | install <id>]             a decision roadmap: propose each step's frame decisions, open, in order
 //   naive typegen                                   write .naive/types/ from the route table and the MCP tools
 //   naive upgrade [<venture dir>] [--framework]     move a venture onto the next Naive layout; --framework first
 //                                                   updates the installed framework with the venture's package manager (I-29)
@@ -194,6 +195,10 @@ else if (cmd === "build" || cmd === "start") {
   if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("schema/frames.mjs", rest));
   const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
   process.exit(run("schema/frames.mjs", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
+} else if (cmd === "roadmap") {
+  // Decision roadmaps (schema/roadmaps.mjs): naive roadmap install <id> proposes each step's decisions, open.
+  if (rest[0] === "install") process.exit(run("schema/roadmaps.mjs", ["install", here(), rest[1]]));
+  process.exit(run("schema/roadmaps.mjs", ["list"]));
 } else if (cmd === "phase") {
   // The venture development lifecycle (schema/lifecycle.mjs): where the venture is, its gate, and moving on.
   // naive phase | naive phase --meet <criterion> [--evidence <text>] | naive phase <next> [--reason] [--override]
