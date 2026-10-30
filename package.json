@@ -16,7 +16,8 @@
     "mentura": "interface/cli/mentura.mjs"
   },
   "scripts": {
-    "test": "node test.mjs"
+    "test": "node test.mjs",
+    "typecheck": "node schema/check-types.ts"
   },
   "files": [
     "AGENTS.md",
@@ -51,6 +52,7 @@
     "!**/_private/",
     "!**/_internal/",
     "!platform/agents/",
+    "!schema/check-types.ts",
     "!**/.DS_Store"
   ],
   "keywords": [
@@ -59,5 +61,9 @@
     "startup",
     "agents",
     "mcp"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "22.19.1",
+    "typescript": "5.9.3"
+  }
 }

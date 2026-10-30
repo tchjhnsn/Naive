@@ -2,7 +2,7 @@
 //
 //   node test.mjs
 //
-// Needs Node 20 or later and python3 with the jsonschema package. Exit code 1 if any fails.
+// Needs Node 22.18 or later, npm install (typescript), and python3 with the jsonschema package. Exit code 1 if any fails.
 // Generated files are checked for staleness by regenerating them into memory and comparing.
 
 import { spawnSync } from "node:child_process";
@@ -79,6 +79,7 @@ const steps = [
   ["departments: instance", "node", ["schema/check-departments.mjs", "instance"]],
   ["departments: examples", "node", ["schema/check-departments.mjs", "schema/examples/workspace"]],
   ["framework/platform boundary", "node", ["schema/check-boundary.mjs"]],
+  ["types (tsc checkJs, in the folders checked so far)", "node", ["schema/check-types.ts"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],

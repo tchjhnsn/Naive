@@ -23,7 +23,8 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 ## Build and test
 
-- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs python3 with `jsonschema` for `schema/validate.py`.
+- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` (TypeScript is the one dev dependency, with its Node types), and python3 with `jsonschema` for `schema/validate.py`.
+- `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Only the folders listed in its `CHECKED` must be free of errors; the rest are counted until their PR fixes them.
 - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
 - `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules.
 - `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
@@ -48,6 +49,15 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 - Ideas go through `naive capture`, not into the docs.
 - Every PR updates the docs or says "No docs change: <why>" in its body; .github/workflows/docs-required.yml enforces it.
 - `node schema/check-docs-claims.mjs` must pass: every command, flag, repository path and route the docs name exists in the code.
+
+## TypeScript
+
+Naive is moving from JavaScript to TypeScript in four phases: type-check the JavaScript, generate record types from `schema/*.schema.json`, rename modules to `.ts` folder by folder, then publish compiled JavaScript. Until that is done:
+
+- New files are `.ts`. They run under Node's type stripping, so they use erasable syntax only: no `enum`, no `namespace`, no parameter properties (`erasableSyntaxOnly` in `tsconfig.json` enforces it). Import another `.ts` file by its `.ts` name.
+- A record's type comes from its JSON Schema, never typed by hand.
+- No `any` in new code. Use `unknown` and narrow it.
+- Existing `.mjs` files are converted in their phase, not inside unrelated PRs.
 
 ## Rules
 
