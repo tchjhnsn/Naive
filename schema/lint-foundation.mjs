@@ -105,9 +105,10 @@ export function lint(dir) {
   const venture = loadRecord(dir, ["venture.json"]);
   const promise = venture.status === "ok" && typeof venture.value.core?.promise === "string" ? venture.value.core.promise.trim() : "";
   if (promise && icp.status !== "skipped") {
-    const named = profiles.some((p) => hasPhrase(promise, p.id) || hasPhrase(promise, p.short));
+    const mission = [promise, venture.value.core?.promised_to].filter((t) => typeof t === "string").join("\n");
+    const named = profiles.some((p) => hasPhrase(mission, p.id) || hasPhrase(mission, p.short));
     const looked = profiles.map((p) => (typeof p.short === "string" && p.short.trim()) || p.id).filter(Boolean);
-    if (!named) add("mission-names-no-icp", "venture.json", `the mission names no ICP${looked.length ? ` (${looked.join(", ")})` : ""}`, "name an ICP in core.promise by its id or its short line");
+    if (!named) add("mission-names-no-icp", "venture.json", `the mission names no ICP${looked.length ? ` (${looked.join(", ")})` : ""}`, "name an ICP in core.promise or core.promised_to by its id or its short line");
   }
 
   if (icp.status === "ok") {

@@ -208,4 +208,11 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   expect("a folder with no venture.json exits 2", missing.status === 2, missing.stderr);
 }
 
+// ---- The mission names its ICP in core.promised_to, not only in the promise.
+{
+  const dir = venture({ core: { promise: "We help builders decide.", promised_to: "early founders", must_not: "", competence: "" } });
+  put(dir, "foundation/icp.json", icp());
+  expect("an ICP named in core.promised_to counts as named", !rulesOf(cli(dir, "--json")).has("mission-names-no-icp"));
+}
+
 process.exit(failed ? 1 : 0);
