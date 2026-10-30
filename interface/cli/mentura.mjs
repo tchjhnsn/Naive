@@ -255,6 +255,7 @@ if (cmd === "visibility") {
     out(r.result);
     process.exit(0);
   }
+  if (!existsSync(ventureFile(dir, file))) { console.error(`no record ${file} in ${venture}`); process.exit(1); }
   const rec = JSON.parse(readFileSync(ventureFile(dir, file), "utf8"));
   out(Object.fromEntries(Object.keys(rec).filter((k) => !field || k === field).map((k) => [k, visibilityOf(dir, file, k)])));
   process.exit(0);
