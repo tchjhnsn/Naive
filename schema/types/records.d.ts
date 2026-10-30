@@ -1975,6 +1975,54 @@ export type NaiveConfig = {
       "phase-mismatch"?: "off" | "warn" | "error";
     };
   };
+  /** Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open. */
+  customers_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the validation lint (schema/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
+  validation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
+  finance_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
+  legal_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Foundation lint (foundation/lint): per-rule mode overrides. A rule stays fail-open unless its mode is fail-closed. */
+  foundation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the people lint (schema/lint-people.mjs, route people/lint). A rule stays fail-open unless its mode is fail-closed. */
+  people_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
 };
 
 export type NaiveConfigRule = {
@@ -3073,6 +3121,8 @@ export type ValidationPricing = {
   points?: {
     name: string;
     amount: number;
+    /** What it costs to deliver this point, in the same currency as amount. finance/lint warns when amount is below this cost. */
+    cost?: number;
     currency: string;
     period?: "once" | "day" | "week" | "month" | "year" | "use";
   }[];
