@@ -1,0 +1,10 @@
+{
+  "@type": "Event",
+  "uid": "2b1f4c0e-8a8d-4f0e-9c55-5d1d8f3a7e21",
+  "title": "Customer interviews, round two",
+  "start": "2026-11-04T10:00:00",
+  "timeZone": "America/New_York",
+  "duration": "PT2H",
+  "calendar": "default",
+  "created": "2026-10-30T00:00:00Z"
+}

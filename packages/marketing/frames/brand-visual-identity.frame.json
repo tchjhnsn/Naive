@@ -1,0 +1,67 @@
+{
+  "id": "brand-visual-identity",
+  "title": "Give the brand a look",
+  "functions": [
+    "marketing"
+  ],
+  "triggers": [
+    "we need a logo designed for the company",
+    "what should our brand look like",
+    "pick colors and fonts"
+  ],
+  "goal": "{goal}",
+  "premises": [
+    {
+      "id": "look-follows-ethos",
+      "claim": "The look can be derived from the ethos and audience rather than chosen by taste.",
+      "attack": "test-the-goal",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    },
+    {
+      "id": "look-is-reversible",
+      "claim": "Changing the look later costs little at this phase.",
+      "attack": "invert",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    }
+  ],
+  "attacks": [
+    "test-the-goal",
+    "invert"
+  ],
+  "reframe": "What look expresses the ethos to the first audience, and how costly is it to change in the {phase} phase?",
+  "props": [
+    "phase",
+    "goal"
+  ],
+  "freshness": {
+    "look_for": [
+      "ventures that faced the same brand problem, and what it cost them"
+    ],
+    "max_age_days": 365,
+    "cite": true
+  },
+  "reasoning": [
+    "Read the venture's goal and phase.",
+    "Judge each premise against the facts alone.",
+    "Propose the decision open; never pick an option."
+  ],
+  "emits": [
+    {
+      "id": "brand-visual-identity",
+      "question": "What visual identity expresses the ethos?",
+      "options": [
+        "a mark",
+        "a palette",
+        "a typeface",
+        "a way images are made"
+      ],
+      "layer": "purpose"
+    }
+  ]
+}

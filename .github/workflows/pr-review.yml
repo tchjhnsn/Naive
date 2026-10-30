@@ -1,0 +1,115 @@
+# The PR review agent (handoff 2026-10-29, item 7), unprivileged half. It lints and tests the PR, then reads the Vercel
+# preview: content (markdown of the changed pages, checked for internal terms and secrets) and design (computed styles,
+# screenshots only with the `screenshots` label or naive.config.json pr_review.screenshots "always"). This workflow runs
+# the PR's own code. This file asks for no secrets and a read-only token, but that is not a guarantee: a deployment_status
+# run uses the deployed commit's copy of this file, which that commit can change. Treat those runs as able to reach what
+# GitHub gives the repo's workflows, and confirm Vercel's fork protection before this repo goes public. It uploads its findings as the `pr-review` artifact;
+# pr-review-comment.yml posts them. Neither workflow merges, approves or pushes.
+name: pr-review
+
+on:
+  pull_request:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number to comment on
+        required: true
+      preview_url:
+        description: Preview URL (PREVIEW_URL)
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  deployments: read
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number || github.event.deployment.sha || github.event.inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema
+      - run: npm ci
+      - run: npm run lint
+      - run: node test.mjs
+
+  preview:
+    # Runs when Vercel reports a successful preview deployment, or by hand with a PREVIEW_URL. Dispatch from the PR's
+    # branch (gh workflow run pr-review --ref <branch>): the comment workflow posts only when the run's head is the PR's.
+    if: >-
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
+        && github.event.deployment.environment != 'Production')
+      || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      PREVIEW_URL: ${{ github.event.deployment_status.environment_url || github.event.inputs.preview_url }}
+    steps:
+      - name: Find the PR
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let number = context.payload.inputs?.pr;
+            if (!number) {
+              const sha = context.payload.deployment.sha;
+              const { data } = await github.rest.repos.listPullRequestsAssociatedWithCommit({ ...context.repo, commit_sha: sha });
+              number = data.find((p) => p.state === "open")?.number;
+            }
+            if (!number) { core.notice("No open PR for this deployment."); return; }
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: Number(number) });
+            core.setOutput("number", String(pr.number));
+            core.setOutput("head", pr.head.sha);
+            core.setOutput("base", pr.base.ref);
+            core.setOutput("labels", pr.labels.map((l) => l.name).join(","));
+      - uses: actions/checkout@v4
+        if: steps.pr.outputs.number
+        with:
+          ref: ${{ steps.pr.outputs.head }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        if: steps.pr.outputs.number
+        with:
+          node-version: 22
+      - name: Install Playwright (Chromium only)
+        if: steps.pr.outputs.number
+        run: npm install --no-save playwright && npx playwright install --with-deps chromium
+      - name: Content
+        if: steps.pr.outputs.number
+        run: |
+          mkdir -p pr-review-out
+          node scripts/pr-review/content.mjs --preview "$PREVIEW_URL" --base "origin/${{ steps.pr.outputs.base }}" > pr-review-out/content.md \
+            || printf '### Content\n\nThe content pass failed to run.\n' > pr-review-out/content.md
+      - name: Design
+        if: steps.pr.outputs.number
+        env:
+          PR_LABELS: ${{ steps.pr.outputs.labels }}
+        run: |
+          node scripts/pr-review/design.mjs --preview "$PREVIEW_URL" --base "origin/${{ steps.pr.outputs.base }}" --shots pr-review-out/screenshots > pr-review-out/design.md \
+            || printf '### Design\n\nThe design pass failed to run.\n' > pr-review-out/design.md
+      - name: Hand off to the comment workflow
+        if: steps.pr.outputs.number
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_HEAD: ${{ steps.pr.outputs.head }}
+        run: |
+          printf '{"pr": %s, "head": "%s", "preview": "%s"}\n' "$PR_NUMBER" "$PR_HEAD" "$PREVIEW_URL" > pr-review-out/pr.json
+      - uses: actions/upload-artifact@v4
+        if: steps.pr.outputs.number
+        with:
+          name: pr-review
+          path: pr-review-out/
+          retention-days: 14
