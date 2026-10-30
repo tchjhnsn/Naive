@@ -541,7 +541,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
     // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
     // approved it, is a draft whatever the decision's class.
-    const settles = /^(decision|decision-record)$/.test(r.record) && (input?.status === "decided" || input?.approved_by != null);
+    const isDecision = /^(decision|decision-record)$/.test(r.record);
+    const settles = isDecision && (input?.status === "decided" || input?.approved_by != null || input?.provenance?.approved_by != null);
+    // Known gap A: a decided decision names who decided it, whoever writes it; a person's write without one is refused.
+    if (isDecision && actor === "person" && input?.status === "decided" && !input?.provenance?.approved_by) return { ok: false, error: `a decided decision names who decided it (provenance.approved_by); approve it with mentura decide ${input?.id ?? "<id>"} --by <name>` };
     const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
@@ -584,7 +587,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent });
     else await store.write(file, recordText);
     const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured.why) : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
+    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
