@@ -16,7 +16,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { readDelegation } from "./venture-paths.mjs";
+import { grantBacked, liveGrant, readDelegation } from "./venture-paths.mjs";
 import { independent } from "./verify.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
@@ -61,29 +61,10 @@ for (const r of roles.values()) {
 const delegators = [...roles.values()].filter((r) => r.chief_delegator).map((r) => r.id);
 if (delegators.length !== 1 || delegators[0] !== d.root) errors.push(`root ${d.root} must be the one chief delegator (found ${delegators.join(", ") || "none"})`);
 
-const oneWay = new Set(d.one_way_doors ?? []), fixed = new Set(d.never_redelegated ?? []);
-const live = (g) => g.expires === null || g.expires >= today;
-// Scopes are paths compared by whole segments: engineering/ holds engineering/api, never engineering-secrets/.
-const segments = (scope) => scope.split("/").filter(Boolean);
-const within = (inner, outer) => outer === "venture" || (inner !== "venture"
-  && segments(outer).every((s, i) => segments(inner)[i] === s));
+const oneWay = new Set(d.one_way_doors ?? []);
+const live = (g) => liveGrant(g, today);
 const SCOPE = new RegExp(load(join(root, "schema/delegation.schema.json")).properties.grants.items.properties.scope.pattern);
-const later = (a, b) => b === null || (a !== null && a <= b); // a ends no later than b
 const name = (g, i) => `grant/${g.id ?? i}`;
-
-// Is grant g backed all the way to the root? seen guards against cycles.
-const backed = (g, seen = new Set()) => {
-  if (g.from === d.root) return { ok: true };
-  if (seen.has(g)) return { ok: false, why: "its chain loops" };
-  seen.add(g);
-  for (const c of g.classes) {
-    if (fixed.has(c)) return { ok: false, why: `${c} is never re-delegated` };
-    const up = d.grants.filter((h) => h.to === g.from && h.classes.includes(c) && h.may_redelegate && live(h)
-      && within(g.scope, h.scope) && (!g.may_merge || h.may_merge) && later(g.expires, h.expires) && backed(h, new Set(seen)).ok);
-    if (!up.length) return { ok: false, why: `${g.from} holds no live, re-delegable grant of ${c} at least this wide that reaches ${d.root}` };
-  }
-  return { ok: true };
-};
 
 d.grants.forEach((g, i) => {
   const at = name(g, i);
@@ -98,7 +79,7 @@ d.grants.forEach((g, i) => {
     const to = roles.get(g.to);
     if (to && !to.grantable_classes.includes(c)) errors.push(`${at}: ${c} is not grantable to ${g.to}`);
   }
-  const b = backed(g);
+  const b = grantBacked(d, g, today);
   if (!b.ok) errors.push(`${at}: exceeds its grantor's authority: ${b.why}`);
 });
 
