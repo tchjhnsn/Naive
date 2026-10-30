@@ -29,7 +29,7 @@ node verification/cursor/playbook-hubspot-inbound/replay.mjs
 
 ## What TLC found
 
-The earlier run reported 18 distinct states, 19 steps, and search depth 12, with no rule failing. `out/report.md` repeats the state and step counts, but that run has no saved `tlc.out`. TLC was not re-run after main moved ICP to one record per profile. The spec did not change, and it reads the `foundation/icp` list route, which still exists. The chart draws 16 states and 14 arrows. The view hides 4 steps: `Done` on the four end states (no sitemap, no ICP, checks passed, a check failed). Those steps stay put, so the chart has no arrow for them.
+The earlier run reported 18 distinct states, 19 steps, and search depth 12, with no rule failing. Re-run on 30 October 2026 with TLC 2.19 on OpenJDK 21: the same result, saved in `out/tlc.out`. The spec did not change, and it reads the `foundation/icp` list route, which still exists. The chart draws 16 states and 14 arrows. The view hides 4 steps: `Done` on the four end states (no sitemap, no ICP, checks passed, a check failed). Those steps stay put, so the chart has no arrow for them.
 
 A scratch copy that set `AudienceOutcome` to always `"pass"` reportedly made TLC report `The invariant of ChecksCanPassOrFail is equal to FALSE`. That copy and its output were not kept. That result shows only that the outcome tables are not constant. It says nothing about the checks.
 
