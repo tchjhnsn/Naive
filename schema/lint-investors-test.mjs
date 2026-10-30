@@ -15,6 +15,7 @@ import { lint } from "./lint-investors.mjs";
 const repo = new URL("..", import.meta.url).pathname;
 const script = new URL("./lint-investors.mjs", import.meta.url).pathname;
 let failed = 0;
+/** @type {(name: string, ok: unknown, detail?: unknown) => void} */
 const expect = (name, ok, detail = "") => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
@@ -138,9 +139,9 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
     const failClosedHit = body.findings.some((f) => f.mode === "fail-closed");
     return cli.status === (failClosedHit ? 1 : 0) && body.ok === !failClosedHit && body.findings.some((f) => f.rule === id && f.mode === "fail-closed");
   };
-  expect("closing the raise rule fails the run", close("raise-no-use-of-funds") || saw("raise-no-use-of-funds"));
-  expect("closing the terms rule fails the run", close("terms-conflict-alignment") || saw("terms-conflict-alignment"));
-  expect("closing the update rule fails the run", close("update-unconfirmed-numbers") || saw("update-unconfirmed-numbers"));
+  expect("closing the raise rule fails the run", (close("raise-no-use-of-funds"), saw("raise-no-use-of-funds")));
+  expect("closing the terms rule fails the run", (close("terms-conflict-alignment"), saw("terms-conflict-alignment")));
+  expect("closing the update rule fails the run", (close("update-unconfirmed-numbers"), saw("update-unconfirmed-numbers")));
   put(dir, "naive.config.json", { investors_lint: { rules: { "raise-no-use-of-funds": { mode: "strict" } } } });
   const ignored = run(dir, ["--json"]);
   expect("a mode that is not fail-open or fail-closed stays fail-open", ignored.status === 0 && JSON.parse(ignored.stdout).rules.every((r) => r.mode === "fail-open"));
