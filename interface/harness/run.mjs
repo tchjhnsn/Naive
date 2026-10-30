@@ -119,7 +119,9 @@ async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", 
   const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--tools", "", ...(tools ? ["--mcp-config", mcp, "--strict-mcp-config", "--allowedTools", tools] : ["--strict-mcp-config"])];
   const child = spawn("claude", args, { stdio: ["ignore", "pipe", "inherit"], env: { ...process.env, MENTURA_WORKSPACE: ws } });
   const open = new Map();
-  let result = null, buf = "";
+  /** @type {*} */
+  let result = null;
+  let buf = "";
   child.stdout.on("data", (chunk) => {
     buf += chunk;
     let nl;

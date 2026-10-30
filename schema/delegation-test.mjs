@@ -21,7 +21,7 @@ const tmp = mkdtempSync(join(tmpdir(), "delegation-"));
 
 // A venture with the template's delegation, changed by edit(d, roles dir); returns the check's result.
 let n = 0;
-function venture(edit = () => {}, today = "2026-10-29") {
+function venture(/** @type {(d: *, roles: string) => void} */ edit = () => {}, today = "2026-10-29") {
   const dir = join(tmp, `v${n++}`), gov = join(dir, "governance");
   mkdirSync(gov, { recursive: true });
   cpSync(join(template, "roles"), join(gov, "roles"), { recursive: true });
@@ -154,7 +154,7 @@ writeFileSync(join(pv, "venture.json"), JSON.stringify({ id: "pv", name: "Pv", t
 propose(pv, { id: "d-a", question: "A?", answer: "a", class: "implementation-detail", applies_to: [{ file: "operations/a.json", field: "a" }] }, { agentId: "cos" });
 const decided = approve(pv, "d-a", { by: "Torian" });
 const provBefore = readFileSync(join(pv, "provenance.jsonl"), "utf8");
-expect("an agent's merge as the founder is refused and logs nothing", decided.ok && !asActor({ MENTURA_ACTOR: "agent" }, () => merge(pv, "d-a", { by: "Torian" })).ok && readFileSync(join(pv, "provenance.jsonl"), "utf8") === provBefore, decided);
+expect("an agent's merge as the founder is refused and logs nothing", decided.ok && !asActor({ MENTURA_ACTOR: "agent" }, () => merge(pv, "d-a", { by: "Torian" })).ok && readFileSync(join(pv, "provenance.jsonl"), "utf8") === provBefore, /** @type {*} */ (decided));
 
 // approve checks by the same way, and a raw agent write cannot reopen a decided decision.
 propose(pv, { id: "d-b", question: "B?", answer: "b" }, { agentId: "cos" });
