@@ -2,7 +2,7 @@
 // framework bundles). Patterns, not a guarantee: anything that looks like a credential is replaced.
 
 // A name that holds a secret: the word anywhere in it (clientSecret, PGPASSWORD, x_auth_token), or one that ends in _key or _pass.
-const SECRET_NAME = String.raw`[A-Za-z0-9_-]*(?:api[_-]?key|access[_-]?key|private[_-]?key|secret|token|password|passwd|passphrase|pwd)(?:[_-]?(?:key|value|string))?|pass|[A-Za-z0-9]+(?:[_-][A-Za-z0-9]+)*[_-](?:key|pass)`;
+const SECRET_NAME = String.raw`[A-Za-z0-9_-]*(?:api[_-]?key|access[_-]?key|private[_-]?key|secret|token|password|passwd|passphrase|pwd)(?:[_-]?(?:key|value|string|base))*|pass|[A-Za-z0-9]+(?:[_-][A-Za-z0-9]+)*[_-](?:key|pass)`;
 const QUOTED = String.raw`\\"(?:[^"\\]|\\[^"])*\\"|"[^"]*"|'[^']*'`;
 
 const PATTERNS = [
@@ -26,6 +26,9 @@ const PATTERNS = [
   ["cookie", /\b((?:Set-)?Cookie["']?\s*:\s*)[^\n]+/gi],
   ["cli-flag", new RegExp(String.raw`(--[a-z-]*(?:password|passwd|passphrase|token|secret|api-?key)[a-z-]*[ =])(?:${QUOTED}|\S+)`, "gi")],
   ["cli-user", /((?:\s-u\s*|\s--user[ =]))[^\s:]*:\S+/g],
+  // These clients take a password straight after -p, so the rest of the command stays readable. A bare mysql -p prompts and holds nothing.
+  ["mysql-password", new RegExp(String.raw`(\b(?:mysql|mariadb)[a-z-]*\b[^\n|;&]*?\s-p)(?:${QUOTED}|[^\s"'\\]\S*)`, "g")],
+  ["sshpass-password", new RegExp(String.raw`(\bsshpass\b[^\n|;&]*?\s-p\s*)(?:${QUOTED}|\S+)`, "g")],
   // An unquoted password can hold spaces, so it runs to the end of the line.
   ["password-line", /(\b[A-Za-z0-9_-]*(?:password|passwd|passphrase)(?:\s*[=:]\s*|\s+is\s+))(?!\\?["'])[^\n]+/gi],
   // NAME=value, name: value, "name": "value" in any case, where the name is a secret's.
@@ -42,7 +45,7 @@ export function findSecrets(text) {
 }
 
 const SECRET = "[REDACTED:secret]";
-const KEEP_PREFIX = new Set(["url-credentials", "cookie", "cli-flag", "cli-user", "password-line"]);
+const KEEP_PREFIX = new Set(["url-credentials", "cookie", "cli-flag", "cli-user", "mysql-password", "sshpass-password", "password-line"]);
 
 export function redact(text) {
   let out = String(text);

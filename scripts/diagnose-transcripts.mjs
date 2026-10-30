@@ -305,7 +305,7 @@ export function reredactSources(root) {
 }
 
 // A citation's path, or the transcripts folder in the header, is long enough to look like a base64 secret and its hash like a hex one, so those lines keep both.
-const CITATION = /^(?:The founder's own messages .+ redacted before reading\. .+|## \S+ \(.+\.jsonl, sha256 [0-9a-f]{64}\)|  - .+\.jsonl, \S+(?: timestamp)?, (?:heuristic|model)(?:, sha256 [0-9a-f]{12})?(?:; matches .*)?)$/;
+const CITATION = /^(?:The founder's own messages .+ redacted before reading\. .+|## \S+ \(.+\.jsonl, sha256 [0-9a-f]{64}\)| {2}- .+\.jsonl, \S+(?: timestamp)?, (?:heuristic|model)(?:, sha256 [0-9a-f]{12})?(?:; matches .*)?)$/;
 const redactKeepingCitations = (text) => text.split("\n").map((line) => (CITATION.test(line) ? line : redact(line))).join("\n");
 
 // The day's redacted founder messages as a raw source: raw/sources/conversations-<date>/. An existing folder gets no

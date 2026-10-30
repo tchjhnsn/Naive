@@ -41,6 +41,17 @@ for (const [t, gone] of [
   ["https://hooks.slack.com/services/TFAKE0000/BFAKE0000/" + "a".repeat(24), "TFAKE0000"], ["eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0." + "a".repeat(30), "eyJzdWIiOiIxIn0"],
   ["-----BEGIN PGP PRIVATE KEY BLOCK-----\nfakebody\n-----END PGP PRIVATE KEY BLOCK-----", "fakebody"], ['{\\"password\\": \\"fake Val9Qz\\"}', "Val9Qz"],
 ]) { const once = redact(t); assert.ok(!once.includes(gone) && once.includes("[REDACTED"), `${t} -> ${once}`); assert.equal(redact(once), once, `redacting twice: ${t}`); }
+for (const [t, want] of [
+  ["SECRET_KEY_BASE=fake-base-1", "SECRET_KEY_BASE=[REDACTED:secret]"],
+  ["export secret_key_base: fake-base-2", "export secret_key_base: [REDACTED:secret]"],
+  ["mysql -pfake-pw-3 app", "mysql -p[REDACTED:secret] app"],
+  ["mysql -u root -h db.local -pfake-pw-4 app", "mysql -u root -h db.local -p[REDACTED:secret] app"],
+  ["mysqldump -uroot -p'fake pw 5' app", "mysqldump -uroot -p[REDACTED:secret] app"],
+  ["sshpass -p fake-pw-6 ssh me.local", "sshpass -p [REDACTED:secret] ssh me.local"],
+  ["sshpass -pfake-pw-7 ssh me.local", "sshpass -p[REDACTED:secret] ssh me.local"],
+  ['sshpass -p "fake pw 8" ssh me.local', "sshpass -p [REDACTED:secret] ssh me.local"],
+]) { assert.equal(redact(t), want); assert.equal(redact(want), want, `redacting twice: ${t}`); }
+for (const plain of ["mysql -p app", "mysql -u root -p", "mysql -P 3306 app", "mkdir -p src/app"]) assert.equal(redact(plain), plain);
 for (const plain of ["tokens_in: 120", "secretary: Jane", "pass the salt", "our token is expired"]) assert.equal(redact(plain), plain);
 // shell lines the founder ran are not the founder's words
 assert.equal(humanText({ type: "user", message: { role: "user", content: "<bash-input>ls -la</bash-input><bash-stdout>secret.txt</bash-stdout><bash-stderr>warn</bash-stderr>keep the ledger" } }), "keep the ledger");
