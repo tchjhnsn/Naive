@@ -1632,6 +1632,10 @@
       "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
     },
     {
+      "path": "schema/internal-terms.json",
+      "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
+    },
+    {
       "path": "package.json",
       "reason": "The framework's npm manifest: the naive and mentura commands (I-1, I-17); not a record"
     },
