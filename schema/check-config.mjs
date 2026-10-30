@@ -60,7 +60,7 @@ export function check(dir) {
   return { errors, warnings };
 }
 
-/** What the gate would do with a write to a route, without writing. */
+/** What the gate would do with a write to a route, without writing. @param {string} dir @param {string} route @param {{ actor?: string, role?: string, confidence?: number }} [opts] */
 export function explain(dir, route, { actor = "agent", role, confidence } = {}) {
   const { r, params } = resolve(route);
   if (!r || r.kind !== "record" || !r.actions.includes("write")) throw new Error(`${route} is not a writable record route`);
@@ -68,7 +68,7 @@ export function explain(dir, route, { actor = "agent", role, confidence } = {}) 
   const cls = gateOf(r, dir);
   const files = (r.collection === "item" ? r.files.map((x) => x.replace("*", params.id)) : r.files);
   const exists = files.some((x) => existsSync(ventureFile(dir, x)));
-  const verdict = evaluate({ config: configFor(dir), dir, route: concrete, table: r.route, record: r.record, actor, role, confidence, exists, decisionOwner: cls?.owner ?? undefined });
+  const verdict = evaluate(/** @type {Parameters<typeof evaluate>[0]} */ ({ config: configFor(dir), dir, route: concrete, table: r.route, record: r.record, actor, role, confidence, exists, decisionOwner: cls?.owner ?? undefined }));
   return { route: concrete, record: r.record, actor, role: role ?? null, confidence: confidence ?? null, decision_class: cls ? { class: cls.class, level: cls.level, drafts: cls.drafts && actor !== "person" } : null, gate: verdict };
 }
 
@@ -80,7 +80,7 @@ export function pin(dir, names) {
   if (unknown.length) throw new Error(`not installed: ${unknown.join(", ")}`);
   raw.packages = { ...(raw.packages ?? {}), ...Object.fromEntries(chosen.map((n) => [n, have[n]])) };
   writeFileSync(ventureFile(dir, CONFIG), JSON.stringify(raw, null, 2) + "\n");
-  record(dir, { entity: CONFIG, route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli"), note: `pinned ${chosen.join(", ")} at the installed versions` });
+  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: CONFIG, route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli"), note: `pinned ${chosen.join(", ")} at the installed versions` }));
   return raw.packages;
 }
 
