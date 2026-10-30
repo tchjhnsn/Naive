@@ -183,8 +183,8 @@ expect("F-4 a call made inside another names its parent", ev.some((e) => e.kind 
 expect("F-4 a judgment is logged with its score and outcome", ev.some((e) => e.kind === "judgment" && e.outcome === "uncertain" && e.score === 0.4 && e.question === "is the problem real?"));
 expect("P-4 a registered listener gets every event", seen.some((e) => e.kind === "call") && seen.some((e) => e.kind === "judgment"));
 expect("P-4 every provenance entry is an event", ev.some((e) => e.kind === "provenance" && e.activity === "write" && e.entity === "products/shop-lite.json"));
-const p1 = propose(tandem, { id: "pricing-tier", question: "Charge per shop or per seat?", answer: "Per shop", at: "purpose" }, { agentId: "builder" });
-const a1 = approve(tandem, "pricing-tier", { by: "Torian" });
+const p1 = propose(tandem, { id: "pricing-tier", question: "Charge per shop or per seat?", answer: "Per shop", at: "purpose" }, /** @type {*} */ ({ agentId: "builder" }));
+const a1 = approve(tandem, "pricing-tier", /** @type {*} */ ({ by: "Torian" }));
 expect("P-4 a decision proposed and decided emits draft and accept events", p1.ok && a1.ok && events(tandem).some((e) => e.kind === "provenance" && e.activity === "accept" && /pricing-tier/.test(e.entity)), p1.error ?? a1.error);
 const before = events(tandem).length;
 process.env.NAIVE_INSTRUMENT = "0";
@@ -220,10 +220,10 @@ const trace = JSON.parse(tr.stdout);
 expect("P-4 the trace has a run per call, nested calls under their parent, and the vitals as feedback", trace.children.length === s1.calls && trace.feedback.length >= 3);
 const got = [];
 const server = createServer((req, res) => { let body = ""; req.on("data", (d) => { body += d; }); req.on("end", () => { got.push({ url: req.url, body: body ? JSON.parse(body) : null }); res.setHeader("content-type", "application/json"); res.end(req.url.startsWith("/sessions") ? "[]" : "{}"); }); });
-await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
+await /** @type {Promise<void>} */ (new Promise((ok) => server.listen(0, "127.0.0.1", ok)));
 const up = await new Promise((done) => {
   const p = spawn("node", [join(repo, "platform/integrations/langsmith.mjs"), join(tmp, "trace.json"), "--project", "naive-vitals"],
-    { env: { ...process.env, LANGSMITH_API_KEY: "stand-in", LANGSMITH_ENDPOINT: `http://127.0.0.1:${server.address().port}` } });
+    { env: { ...process.env, LANGSMITH_API_KEY: "stand-in", LANGSMITH_ENDPOINT: `http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}` } });
   let out = ""; p.stdout.on("data", (d) => { out += d; }); p.on("close", (code) => done({ code, out }));
 });
 server.close();
