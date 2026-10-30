@@ -17,14 +17,17 @@
   },
   "scripts": {
     "test": "node test.mjs",
-    "typecheck": "node schema/check-types.ts"
+    "typecheck": "node schema/check-types.ts",
+    "lint": "eslint ."
   },
   "files": [
     "AGENTS.md",
     "README.md",
     "LICENSE",
+    ".claude-plugin/plugin.json",
     "interface/",
     "schema/",
+    "scripts/diagnose-transcripts.mjs",
     "packages/",
     "purpose/",
     "knowledge/",
@@ -42,7 +45,7 @@
     "!**/test.mjs",
     "!**/*.steps.mjs",
     "!**/*.feature",
-    "!interface/create-venture/",
+    "!interface/create-venture/package.json",
     "!platform/integrations/fixtures/",
     "!platform/research/",
     "!schema/examples/docket-scenarios.json",
@@ -53,6 +56,7 @@
     "!**/_internal/",
     "!platform/agents/",
     "!schema/check-types.ts",
+    "!schema/check-types-test.ts",
     "!**/.DS_Store"
   ],
   "keywords": [
@@ -64,6 +68,10 @@
   ],
   "devDependencies": {
     "@types/node": "22.19.1",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "typescript-eslint": "^8.72.1",
     "typescript": "5.9.3"
   }
 }

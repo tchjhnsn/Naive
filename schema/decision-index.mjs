@@ -11,16 +11,14 @@
 //   3. requirements (foundation/requirements/<id>.json, when a venture has them): a decision that
 //      violates one is flagged now, whatever phase the requirement holds in (a structural check only:
 //      relation "violates", or an answer that fails the requirement's check pattern);
-//   4. incremental update: each provenance event since the cursor re-scores only the decisions that
-//      touch the changed record, and the update spreads to linked decisions with damping. Each hop
-//      multiplies the weight by the link's strength and the target's phase weight; heavy targets carry
-//      it further; it stops below THRESHOLD. The rest come from the cache;
+//   4. update: every run re-scores every active decision (a score moves with time, as a due date
+//      passes, and with files outside provenance, so no cached entry is reused); the cursor only
+//      counts the provenance events since the last run;
 //   5. rank history: each re-score appends {at, decision, rank, score, why, cause} to
 //      .naive/decision-index-history.jsonl.
 //
-// The index is a cache (.naive/decision-index.json, gitignored), rebuilt whenever its cursor no longer
-// matches the log, and never written to provenance. Qualitative notes are an agent's draft: note is
-// null until one writes it, and only decisions above the threshold get one.
+// The index is a cache (.naive/decision-index.json, gitignored), recomputed in full on every run and
+// never written to provenance. Qualitative notes are an agent's draft: note is null until one writes it, and only decisions above the threshold get one.
 //
 //   node schema/decision-index.mjs <venture dir> [update | rebuild | read] [--since <iso>] [--json]
 //   mentura index --venture <id> [--since <iso>] [--rebuild]
@@ -142,26 +140,6 @@ export function links(id, ctx) {
   return [...best.values()];
 }
 
-/** Bounded propagation from seed decisions: weight times link strength times the target's phase
- *  weight, carried further by heavy targets, stopping below the threshold. Returns id -> weight. */
-export function propagate(seeds, ctx, { threshold = THRESHOLD } = {}) {
-  const reach = new Map(seeds.filter((s) => ctx.byId.has(s)).map((s) => [s, 1]));
-  const queue = [...reach.keys()];
-  while (queue.length) {
-    const id = queue.shift();
-    const w = reach.get(id);
-    for (const l of links(id, ctx)) {
-      const t = ctx.byId.get(l.to);
-      const wt = weigh(t, ctx.raw.get(l.to) ?? {}, ctx.m.phase, ctx.reqs);
-      const carry = Math.min(1, w * l.strength * wt.phase * (wt.heavy > 1 ? 1.25 : 1));
-      if (carry < threshold || carry <= (reach.get(l.to) ?? 0)) continue;
-      reach.set(l.to, Math.round(carry * 1000) / 1000);
-      queue.push(l.to);
-    }
-  }
-  return reach;
-}
-
 /** One decision's index entry: the docket's score wrapped with impact, weight and requirements. */
 function entry(d, ctx, now) {
   const raw = ctx.raw.get(d.id) ?? {};
@@ -214,44 +192,23 @@ export function rebuild(dir, { now = Date.now(), cause = "rebuild" } = {}) {
     cursor: { events: log.length, hash: log.at(-1)?.hash ?? null }, last_update: { mode: "rebuild", events: log.length, seeds: [], touched: entries.map((e) => ({ id: e.id, weight: 1 })) }, entries });
 }
 
-/** The decisions an event touches directly: the decision file itself, a record it changes or reads,
- *  or a requirement it links to. */
-export function touching(entity, ctx) {
-  const out = new Set();
-  for (const d of ctx.m.decisions) {
-    const im = ctx.impacts.get(d.id);
-    if (d.file === entity || im.changed.includes(entity) || im.records.includes(entity)) out.add(d.id);
-    if (entity.startsWith(`${REQUIREMENTS}/`) && (ctx.raw.get(d.id)?.requirements ?? []).some((r) => ctx.reqs.get(r.id)?.file === entity)) out.add(d.id);
-  }
-  return [...out];
-}
-
-/** Updates the index from the provenance events since its cursor (or since a time). Rebuilds when
- *  there is no index, the log was rewritten, or the venture changed phase.
- *  @param {string} dir @param {{ now?: number, since?: string }} [opts] */
+/** Re-scores every active decision, as a rebuild does: scores depend on time (due, overdue) and on
+ *  files outside provenance, so no cached entry can be reused. Appends history only for decisions
+ *  whose rank or score moved, and counts the provenance events since the cursor (or since a time). */
 export function update(dir, { now = Date.now(), since } = {}) {
   const idx = read(dir);
+  if (!idx) return rebuild(dir, { now, cause: "first build" });
   const log = provenance(dir);
-  if (!idx || !idx.cursor || log.length < idx.cursor.events || (idx.cursor.events && log[idx.cursor.events - 1]?.hash !== idx.cursor.hash)) return rebuild(dir, { now, cause: idx ? "the provenance log changed under the cursor" : "first build" });
-  const events = since ? log.filter((e) => e.at >= since) : log.slice(idx.cursor.events);
-  if (events.some((e) => e.entity === "venture.json")) return rebuild(dir, { now, cause: "venture.json changed" });
+  const events = since ? log.filter((e) => e.at >= since) : log.slice(Math.min(idx.cursor?.events ?? 0, log.length));
   const ctx = context(dir, now);
-  if (ctx.m.phase !== idx.phase) return rebuild(dir, { now, cause: `phase is now ${ctx.m.phase}` });
-  const seeds = [...new Set(events.flatMap((e) => touching(e.entity, ctx)))];
-  // A decision new since the last build is a seed too.
-  const known = new Set(idx.entries.map((e) => e.id));
-  for (const d of ctx.m.decisions.filter(ACTIVE)) if (!known.has(d.id)) seeds.push(d.id);
-  const reach = propagate([...new Set(seeds)], ctx);
-  const active = new Map(ctx.m.decisions.filter(ACTIVE).map((d) => [d.id, d]));
   const prior = new Map(idx.entries.map((e) => [e.id, e]));
-  const cause = (id) => events.find((e) => touching(e.entity, ctx).includes(id))?.entity ?? (known.has(id) ? "propagated" : "new decision");
-  const entries = [];
-  for (const [id, d] of active) entries.push(reach.has(id) || !prior.has(id) ? entry(d, ctx, now) : prior.get(id));
-  const ranked = order(entries.map(({ rank, ...e }) => e));
+  const ranked = order(ctx.m.decisions.filter(ACTIVE).map((d) => entry(d, ctx, now)));
+  const moved = ranked.filter((e) => prior.get(e.id)?.rank !== e.rank || prior.get(e.id)?.score !== e.score);
   const at = stamp();
-  history(dir, ranked.filter((e) => reach.has(e.id) || prior.get(e.id)?.rank !== e.rank).map((e) => ({ at, decision: e.id, rank: e.rank, score: e.score, why: e.why, cause: reach.has(e.id) ? cause(e.id) : "rank moved" })));
-  return save(dir, { ...idx, updated_at: at, cursor: { events: log.length, hash: log.at(-1)?.hash ?? null },
-    last_update: { mode: "update", events: events.length, seeds: [...new Set(seeds)], touched: [...reach].map(([id, weight]) => ({ id, weight })), removed: [...prior.keys()].filter((id) => !active.has(id)) }, entries: ranked });
+  history(dir, moved.map((e) => ({ at, decision: e.id, rank: e.rank, score: e.score, why: e.why, cause: prior.has(e.id) ? "rank moved" : "new decision" })));
+  const active = new Set(ranked.map((e) => e.id));
+  return save(dir, { venture: ctx.m.venture, phase: ctx.m.phase, built_at: idx.built_at, updated_at: at, threshold: THRESHOLD, cursor: { events: log.length, hash: log.at(-1)?.hash ?? null },
+    last_update: { mode: "update", events: events.length, seeds: [], touched: moved.map((e) => ({ id: e.id, weight: 1 })), removed: [...prior.keys()].filter((id) => !active.has(id)) }, entries: ranked });
 }
 
 /** A decision's rank over time, from the history. */

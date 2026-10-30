@@ -21,6 +21,7 @@
 //
 //   node schema/check-validation.mjs <workspace or venture dir> [--json] [--score]
 
+import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -109,9 +110,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const errors = [], out = [], scores = [];
   const today = new Date();
   for (const root of walk(dir)) {
-    const v = load(join(root, "venture.json"));
+    const v = load(ventureFile(root, "venture.json"));
     const places = [["foundation/problem.json", "problem"], ["validation", null], ["purpose/validation", null]].flatMap(([rel, name]) => {
-      const p = join(root, rel);
+      const p = ventureFile(root, rel);
       if (name) return existsSync(p) ? [[name, p, `${v.id}/${rel}`]] : [];
       if (!existsSync(p)) return [];
       return readdirSync(p).filter((x) => x.endsWith(".json")).sort().map((f) => [f.replace(/\.json$/, ""), join(p, f), `${v.id}/${rel}/${f}`]);
@@ -130,7 +131,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate evidence ids`);
       for (const e of all) {
         if (e.source.url && !e.source.checked) errors.push(`${at}: ${e.id} cites a url with no checked date`);
-        if (e.source.path && !existsSync(join(root, e.source.path))) errors.push(`${at}: ${e.id} source ${e.source.path} not found (paths are relative to the venture folder)`);
+        if (e.source.path && !existsSync(ventureFile(root, e.source.path))) errors.push(`${at}: ${e.id} source ${e.source.path} not found (paths are relative to the venture folder)`);
         if (new Date(e.collected) > today) errors.push(`${at}: ${e.id} was collected in the future`);
       }
       if (name === "product-market-fit") {
@@ -143,7 +144,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       out.push({ venture: v.id, record: name, grade: r.level, weight: r.weight, why: r.why, probability: rec.probability?.p ?? null, facts: facts(name, rec), tiers: r.tiers,
         items: r.items.map((i) => ({ id: i.e.id, kind: i.e.kind, grade: i.level, why: i.why, supports: i.e.supports !== false })) });
     }
-    const products = ["product", "products"].flatMap((d) => existsSync(join(root, d)) ? readdirSync(join(root, d)).filter((f) => f.endsWith(".json")).map((f) => load(join(root, d, f))) : []);
+    const products = ["product", "products"].flatMap((d) => existsSync(ventureFile(root, d)) ? readdirSync(ventureFile(root, d)).filter((f) => f.endsWith(".json")).map((f) => load(ventureFile(root, `${d}/${f}`))) : []);
     scores.push({ venture: v.id, ...score(graded, W, { path: path ?? "build-first", kind: kindOf(products) }) });
   }
   const wantScore = process.argv.includes("--score");

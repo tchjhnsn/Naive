@@ -29,8 +29,8 @@
 //         reaches the network or reads a stream is a live hole. Any other is run at build time
 //         against the confirmed records alone, and its answer is frozen in.
 //   N-10  Collection items known at build time are enumerated and frozen, one entry each.
-//   P-31  Only confirmed records ship. Drafts, _private/, raw inputs and notes (files that are not
-//         records) never enter a release; private records and private_fields are withheld.
+//   P-31  Only confirmed records ship. Drafts, _private/, raw inputs, study feedback and interviews, and notes
+//         (files that are not records) never enter a release; private records and private_fields are withheld.
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -56,7 +56,7 @@ export const CACHE = ".naive/cache/release.json";
 /** Record types that stay live: never frozen, always a hole (C-11, V-3). */
 export const LIVE = { "money-account": "money moves between builds; read the account live", "data-stream": "a stream is append-only activity; read it live" };
 /** Record types that are inputs or generated views, never shipped (P-31). */
-export const NOT_SHIPPED = { "idea-dump": "raw input: the founder's notes", "raw-source": "raw input", "raw-text": "raw input", "venture-package": "a generated view", provenance: "the log itself", release: "the release itself" };
+export const NOT_SHIPPED = { "idea-dump": "raw input: the founder's notes", "raw-source": "raw input", "raw-text": "raw input", "venture-package": "a generated view", provenance: "the log itself", release: "the release itself", "validation-feedback": "study data: a tester's words stay in the venture", "validation-interview": "study data: an interviewee's words stay in the venture" };
 
 // ---- the cache key (C-17) ----
 

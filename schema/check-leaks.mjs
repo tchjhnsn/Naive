@@ -23,12 +23,12 @@ const visible = (file, text) => file.endsWith(".mdx") || file.endsWith(".md") ? 
 
 const walk = (p) => statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];
 
-/** Each match: { file, pattern, text, why }. @param {string[]} paths @param {{ venture?: string }} [opts] */
+/** Each match: { file, pattern, text, why, severity }. A warn match is reported and does not fail. */
 export function leaks(paths, { venture } = {}) {
   const ps = patterns(venture), out = [];
   for (const file of paths.filter(existsSync).flatMap(walk).filter((f) => /\.(mdx?|json|html|txt)$/.test(f) && !f.endsWith("meta.json"))) {
     const text = visible(file, readFileSync(file, "utf8"));
-    for (const p of ps) for (const m of text.matchAll(p.re)) out.push({ file, pattern: p.id, text: m[0], why: p.why });
+    for (const p of ps) for (const m of text.matchAll(p.re)) out.push({ file, pattern: p.id, text: m[0], why: p.why, severity: p.severity ?? "fail" });
   }
   return out;
 }
@@ -41,6 +41,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!paths.length) { console.error("usage: node schema/check-leaks.mjs <file or folder>... [--venture <dir>] [--json]"); process.exit(2); }
   const found = leaks(paths, { venture });
   if (argv.includes("--json")) console.log(JSON.stringify(found, null, 2));
-  else { for (const l of found) console.error(`FAIL  ${l.file}: ${l.pattern} "${l.text}" (${l.why})`); if (!found.length) console.log(`no internal text in ${paths.join(", ")}`); }
-  process.exit(found.length ? 1 : 0);
+  else { for (const l of found) console.error(`${l.severity === "warn" ? "WARN" : "FAIL"}  ${l.file}: ${l.pattern} "${l.text}" (${l.why})`); if (!found.some((l) => l.severity !== "warn")) console.log(`no internal text in ${paths.join(", ")}${found.length ? ` (${found.length} warnings)` : ""}`); }
+  process.exit(found.some((l) => l.severity !== "warn") ? 1 : 0);
 }

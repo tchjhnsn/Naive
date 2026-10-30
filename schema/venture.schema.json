@@ -76,6 +76,15 @@
       ],
       "description": "How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: purpose/frameworks/product-anatomy/phases.json."
     },
+    "timeZone": {
+      "type": "string",
+      "description": "The venture's IANA time zone, when it differs from its workspace's (schema/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's"
+    },
+    "lifecycle_playbook": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The lifecycle playbook the venture follows (purpose/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default."
+    },
     "ambition": {
       "enum": [
         "hobby",

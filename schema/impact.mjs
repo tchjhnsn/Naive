@@ -84,9 +84,13 @@ export function impact(dir, id, { via = "framework", proposeFollowUps = true } =
   const file = decisionFile(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   const d = load(ventureFile(dir, file));
-  const version = d.merged?.version ?? d.version ?? 1;
-  const changed = d.merged?.files ?? (d.applies_to ?? []).map((t) => t.file);
+  if (!d.merged) return { ok: false, error: `${id} was never merged: nothing changed yet (schema/impact.mjs structural() shows what a merge would touch)` };
+  const { version, files: changed = [] } = d.merged;
   if (!changed.length) return { ok: false, error: `${id} names no applies_to: nothing changed` };
+  const at = join(dirname(file), `${id}.impact.json`);
+  const prior = existsSync(ventureFile(dir, at)) ? load(ventureFile(dir, at)) : null;
+  // The map of this merged version is already built and its records marked: a rerun returns it unchanged.
+  if (prior?.version === version) return { ok: true, result: summary(at, prior.functions) };
   const why = `decision ${id} version ${version}`;
   // Readers by provenance and the where-used list, marked by notify(); readers by data-model refs, marked here.
   const readers = notify(dir, { source: "venture", paths: changed, version: String(version), via }).stale;
@@ -104,10 +108,11 @@ export function impact(dir, id, { via = "framework", proposeFollowUps = true } =
     return { function: fn, affected_records: recs, stale: recs.filter((f) => marked.has(f)), note: null, proposed_decisions: proposed };
   });
   const out = { decision: id, version, changed, functions, built_at: stamp() };
-  const at = join(dirname(file), `${id}.impact.json`);
   writeFileSync(ventureFile(dir, at), JSON.stringify(out, null, 2) + "\n");
-  return { ok: true, result: { file: at, affected: affected.length, functions: functions.filter((f) => f.affected_records.length).map((f) => ({ function: f.function, affected: f.affected_records.length, proposed: f.proposed_decisions })) } };
+  return { ok: true, result: summary(at, functions, affected.length) };
 }
+
+const summary = (file, functions, affected = functions.reduce((n, f) => n + f.affected_records.length, 0)) => ({ file, affected, functions: functions.filter((f) => f.affected_records.length).map((f) => ({ function: f.function, affected: f.affected_records.length, proposed: f.proposed_decisions })) });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, id] = process.argv.slice(2);
