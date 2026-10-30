@@ -72,3 +72,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const out = Object.fromEntries(fields.map((k) => [k, visibilityOf(dir, rel, k)]));
   console.log(process.argv.includes("--json") ? JSON.stringify(out, null, 2) : Object.entries(out).map(([k, v]) => `${k.padEnd(20)} ${v.visibility}${v.stale ? ` (${v.stale})` : ""}`).join("\n"));
 }
+
+// Confidentiality (above internal). A record's sidecar may say
+//   { "record": { "visibility": "confidential", "level": "C3", "access": ["Torian", "cfo"] } }
+// C1 restricted: internal, by role. C2 confidential and C3 secret: only ids in access may know the record
+// exists. C4 founder-only: only a person in access, never an agent. Reads answer "no such record" to anyone
+// else, so existence is not revealed.
+export const CONFIDENTIAL_LEVELS = ["C1", "C2", "C3", "C4"];
+
+export function confidentialityOf(dir, rel) {
+  const f = ventureFile(dir, rel.replace(/\.(json|md|mdx)$/, ".visibility.json"));
+  const r = existsSync(f) ? load(f).record : null;
+  return r?.visibility === "confidential" ? { level: CONFIDENTIAL_LEVELS.includes(r.level) ? r.level : "C2", access: r.access ?? [] } : null;
+}
+
+/** Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id. */
+export function mayKnow(dir, rel, { actor = "agent", id } = {}) {
+  const c = confidentialityOf(dir, rel);
+  if (!c || c.level === "C1") return true;
+  if (!id || !c.access.includes(id)) return false;
+  return c.level !== "C4" || actor === "person";
+}
