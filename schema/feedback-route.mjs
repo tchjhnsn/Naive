@@ -12,6 +12,7 @@
 export const DESTINATIONS = ["product/bugs", "validation/feedback", "decisions", "foundation", "inbox"];
 export const ACCEPT = 0.95;
 
+/** @type {[RegExp, string, number][]} */
 const RULES = [
   [/\b(crash\w*|errors?|broke|broken|bugs?|fails?|failed|exception|stack ?trace|lost (my|the) data)\b/i, "product/bugs", 0.8],
   [/\b(should we|decide|decision|choose between|which option)\b/i, "decisions", 0.7],
@@ -27,6 +28,7 @@ export function keywordFallback(fb) {
   return { destination: "validation/feedback", confidence: 0.5 };
 }
 
+/** @param {*} feedback @param {{ jev?: *, send?: boolean, fallback?: (fb: *) => *, env?: *, accept?: number }} [opts] */
 export async function route(feedback, { jev, send = false, fallback = keywordFallback, env = process.env, accept = ACCEPT } = {}) {
   if (send === true && env.TYPESAFE_API_KEY && typeof jev === "function") {
     try {
