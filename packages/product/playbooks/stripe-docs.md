@@ -94,11 +94,11 @@ Route: read `foundation/icp`.
 node interface/cli/mentura.mjs foundation/icp read --venture <venture> --json
 ```
 
-The venture provides this record. This playbook does not write it. An agent's write of `foundation/icp` is a draft for you to accept, because the route is a strategy-or-constitution record.
+The venture provides this record. This playbook does not write it. `foundation/icp` is the list of profiles and takes no write. Each profile is written at `foundation/icp/<id>`. An agent's write there is a draft for you to accept, because the route is a strategy-or-constitution record.
 
 If `result` is null, stop. There is no profile id to point at, and later steps would be guessing.
 
-If `result` is a record, pick the profile this product is offered to. Write down its `id` only. Call that `<profile-id>`.
+If `result` lists profiles, keyed by id, pick the profile this product is offered to. Write down its `id` only. Call that `<profile-id>`.
 
 ### 2. Read the product list
 
@@ -136,7 +136,7 @@ The schema accepts any string in `offered_to`. It does not check that the id is 
 
 Route: write `decisions/docs-spec`, then read it back.
 
-Use `propose`, which stays `open` until you decide. Do not write this route with `status` set to `decided`. A direct write will store that, with no `provenance.approved_by`. Check 2 fails that record.
+Use `propose`, which stays `open` until you decide. Do not write this route with `status` set to `decided`. An agent's direct write is held as a draft, so the read returns null and Check 2 fails. A person's direct write with no `provenance.approved_by` is refused.
 
 Do not set `at`. `propose` with `at` set to `product` files the decision at `product/decisions/<id>.decision.json`, and `decisions/<id>` does not return it.
 
@@ -174,10 +174,10 @@ Route: write `glossary/product`, which reads the `objects` line from step 4.
 `package` is `product`. Each token in `objects` is a `term`. `meaning` is your sentence for what the caller means by that noun. Leave `export` false unless another package must see the term. Do not use a Stripe object name as a term.
 
 ```bash
-node interface/cli/mentura.mjs glossary/product write --venture <venture> --input <glossary.json> --note "nouns from the docs spec"
+node interface/cli/mentura.mjs glossary/product write --venture <venture> --as person --input <glossary.json> --note "nouns from the docs spec"
 ```
 
-The glossary route exists before a venture is in the beachhead phase. Need-now may still call it "coming soon". The write is the record.
+The glossary route exists before a venture is in the beachhead phase. Need-now may still call it "coming soon". A glossary is a public commitment, so a person's write is the record, and an agent's write is a draft until you run `mentura accept glossary/product --venture <venture>`.
 
 ### 6. Propose the changelog habit
 
@@ -217,7 +217,7 @@ node interface/cli/mentura.mjs propose --venture <venture> --input <entry.json>
 node interface/cli/mentura.mjs decisions/<entry-id> read --venture <venture> --json
 ```
 
-Read `decisions` to see the habit and the entries in one list. That list returns every decision filed at `decisions/*.decision.json`, including decisions the venture already had. It does not return a decision filed under `product/decisions/`.
+Read `decisions` to see the habit and the entries in one list. That list returns every decision filed at `decisions/*.decision.json`, including decisions the venture already had. It also returns a decision filed under `product/decisions/` and the foundation statements still open. The list is the `decisions` array in the output, not `result`.
 
 ## Checks
 
@@ -229,7 +229,7 @@ A check passes or fails from the records on the routes above. A placeholder line
 
 Read `product/<product-id>` and `foundation/icp`.
 
-Pass: `offered_to` has at least one string, and every string equals some `profiles[].id`.
+Pass: `offered_to` has at least one string, and every string is a profile id on that list.
 
 Fail: the product is not on file, `offered_to` is missing or empty, or any id is not a profile.
 

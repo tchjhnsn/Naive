@@ -6,8 +6,8 @@ The chart hides the four `Done` steps. Those are the stutter on "Stopped: no rea
 
 The model leaves out three things the replay still runs, because they are not template steps:
 
-- A direct write of `decisions/[id]` with `status` `decided` and no `provenance.approved_by`. The router stores it. Check 2 fails it. `propose` refuses it.
-- `propose` with `at` set to `product`. The file lands at `product/decisions/<id>.decision.json`. `decisions/<id>` reads `result` null. The template says not to set `at`.
+- A direct write of `decisions/[id]` with `status` `decided` and no `provenance.approved_by`. An agent's write is held as a draft and the read returns null, so Check 2 fails it. A person's write is refused. `propose` refuses it.
+- `propose` with `at` set to `product`. The file lands at `product/decisions/<id>.decision.json`. `decisions/<id>` reads `result` null, though the `decisions` list shows it. The template says not to set `at`.
 - `product/[id] check`. It runs `schema/check-ventures.mjs` on the whole venture. A second card with `software: true` and no `repos` entry fails `product/ledger check` with `docs-probe/ledger-soft: builds software, so the venture (or a parent) needs a repository in repos`. The playbook does not use that action as proof the spec worked.
 
 ## Regenerate
@@ -35,13 +35,13 @@ Then:
 node verification/cursor/playbook-stripe-docs/replay.mjs
 ```
 
-Re-run both after any edit to the playbook's steps, routes, or checks. TLC on this model reached 21 states and 23 steps. The chart draws 15 states and 16 arrows.
+Re-run both after any edit to the playbook's steps, routes, or checks. An earlier TLC run reported 21 states and 23 steps. That output was not saved, so the counts have no file behind them, and TLC has not been re-run since. The TLC column below comes from the same run. The chart draws 15 states and 16 arrows.
 
 ## Rules
 
 | Rule | What it says | TLC | Replay |
 | --- | --- | --- | --- |
-| RouteReal | Every template step reads or writes a route in the router table: `foundation/icp`, `product`, `product/[id]`, `decisions`, `decisions/[id]`, `glossary/[id]`. | PASS | PASS. `node interface/router.mjs` lists all six. The table had 110 routes. |
+| RouteReal | Every template step reads or writes a route in the router table: `foundation/icp`, `product`, `product/[id]`, `decisions`, `decisions/[id]`, `glossary/[id]`. | PASS | PASS. `node interface/router.mjs` lists all six. The table has 135 routes. |
 | NoUnprovidedRead | No step uses a record the venture did not provide and no earlier step wrote. Glossary follows the spec. An entry follows the habit, the card, and the spec. `offered_to` is set only after the profile was read. | PASS | PASS on the main path. `foundation/icp` read with no record returns `result` null and the playbook stops. `glossary/product` is written after `decisions/docs-spec` reads back. `decisions/changelog-first-change` is written after the card and the habit. The `at: product` write is not a template step. Replay of that write returns `result` null on `decisions/docs-spec-nested`. |
-| CheckIsReal | The checks pass only when the spec is complete and the card names the reader, and fail only otherwise. A blank section and a card that names no reader are different failures. | PASS | PASS. Check 1 fails on a missing `offered_to` and on `offered_to: ["no-such-profile"]` (the schema still accepts the write) and passes on `["builders"]`. Check 2 fails on a `versions:` placeholder and on `status: decided` with no `approved_by`, and passes while `open` and after `decide docs-spec --by "Ada Founder" --confirm docs-spec`. Check 3 fails on term `charge` and passes on `transfer`. Check 4 fails when the habit is missing and passes when the four lines are filled. Check 5 fails on `product: no-such-product` and passes on `product: ledger`. |
+| CheckIsReal | The checks pass only when the spec is complete and the card names the reader, and fail only otherwise. A blank section and a card that names no reader are different failures. | PASS | PASS. Check 1 fails on a missing `offered_to` and on `offered_to: ["no-such-profile"]` (the schema still accepts the write) and passes on `["builders"]`. Check 2 fails on a `versions:` placeholder and on an agent's `status: decided` write held as a draft, and passes while `open` and after `decide docs-spec --by "Ada Founder" --confirm docs-spec`. Check 3 fails on term `charge` and passes on `transfer`. Check 4 fails when the habit is missing and passes when the four lines are filled. Check 5 fails on `product: no-such-product` and passes on `product: ledger`. |
 | NoDeadlock | The stop, both check failures, and the decision list are ends, and every other state has a step out. | PASS | The replay ends in those same places: no reader, a failed check, or the `decisions` list after an entry. |

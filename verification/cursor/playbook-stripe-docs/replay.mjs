@@ -51,7 +51,7 @@ function objectsOf(rec) {
   return linesOf(rec?.answer).objects.split(",").map((s) => s.trim()).filter(Boolean);
 }
 function check1(card, icp) {
-  const ids = new Set((icp?.profiles ?? []).map((p) => p.id));
+  const ids = new Set(Object.keys(icp ?? {}));
   return Array.isArray(card?.offered_to) && card.offered_to.length > 0 && card.offered_to.every((id) => ids.has(id));
 }
 function check3(glossary, spec) {
@@ -147,10 +147,10 @@ try {
   const noIcp = mentura(["foundation/icp", "read"]);
   note("No reader yet", noIcp.json?.ok === true && noIcp.json?.result === null && noIcp.json?.not_found, `foundation/icp read before any record: result ${JSON.stringify(noIcp.json?.result)}, not_found ${JSON.stringify(noIcp.json?.not_found?.note)}`);
 
-  const icpFile = writeJson("icp.json", { venture: "docs-probe", profiles: [{ id: "builders", who: "People who call the product from their own software.", primary: true }] });
-  const icpWrite = mentura(["foundation/icp", "write", "--as", "person", "--note", "replay reader"], icpFile);
+  const icpFile = writeJson("icp.json", { id: "builders", who: "People who call the product from their own software.", primary: true });
+  const icpWrite = mentura(["foundation/icp/builders", "write", "--as", "person", "--note", "replay reader"], icpFile);
   const icpRead = mentura(["foundation/icp", "read"]);
-  const profileIds = (icpRead.json?.result?.profiles ?? []).map((p) => p.id);
+  const profileIds = Object.keys(icpRead.json?.result ?? {});
   note("Venture provides the reader", icpWrite.status === 0 && profileIds.includes("builders"), `person write status ${icpWrite.status}; read profiles ${profileIds.join(", ") || "(none)"}`);
 
   const emptyList = mentura(["product", "read"]);
@@ -190,7 +190,10 @@ try {
   });
   const forcedWrite = mentura(["decisions/docs-spec-forced", "write", "--note", "replay decided"], forced);
   const forcedRead = mentura(["decisions/docs-spec-forced", "read"]);
-  note("Check 2 fails when a direct write says decided and approved_by is missing", forcedWrite.status === 0 && check2(forcedRead.json?.result) === false, `write status ${forcedWrite.status}; status ${forcedRead.json?.result?.status}; approved_by ${JSON.stringify(forcedRead.json?.result?.provenance?.approved_by ?? null)}`);
+  note("An agent's direct write of decided is held as a draft, so check 2 fails", forcedWrite.json?.result?.draft === true && forcedRead.json?.result === null && !check2(forcedRead.json?.result), `draft ${forcedWrite.json?.result?.draft}; read result ${JSON.stringify(forcedRead.json?.result)}`);
+
+  const personForced = mentura(["decisions/docs-spec-forced", "write", "--as", "person", "--note", "replay decided"], forced);
+  note("A person's direct write of decided with no approved_by is refused", personForced.status !== 0 && `${personForced.stdout}${personForced.stderr}`.includes("approved_by"), `write status ${personForced.status}`);
 
   const refused = mentura(["propose"], writeJson("refused.json", { ...fullSpec, id: "docs-spec-refused", status: "decided" }));
   note("propose refuses a decided status", refused.status !== 0, `propose status ${refused.status}; ${((refused.stderr || refused.stdout) || "").trim().split("\n")[0]}`);
@@ -200,12 +203,12 @@ try {
   note("A decision filed with at=product is not on decisions/[id]", nested.status === 0 && nested.json?.file === "product/decisions/docs-spec-nested.decision.json" && nestedRead.json?.result === null, `file ${nested.json?.file}; read result ${JSON.stringify(nestedRead.json?.result)}`);
 
   const badTerms = writeJson("bad-glossary.json", { package: "product", terms: [{ term: "charge", meaning: "Not an object on this spec.", export: false }] });
-  mentura(["glossary/product", "write", "--note", "replay bad term"], badTerms);
+  mentura(["glossary/product", "write", "--as", "person", "--note", "replay bad term"], badTerms);
   const badGlossary = mentura(["glossary/product", "read"]);
   note("Check 3 fails when a term is not on the objects line", check3(badGlossary.json?.result, specRead.json?.result) === false, `term ${badGlossary.json?.result?.terms?.[0]?.term}`);
 
   const goodTerms = writeJson("glossary.json", { package: "product", terms: [{ term: "transfer", meaning: "One movement a caller records and reads back.", export: false }] });
-  const glossaryWrite = mentura(["glossary/product", "write", "--note", "replay terms"], goodTerms);
+  const glossaryWrite = mentura(["glossary/product", "write", "--as", "person", "--note", "replay terms"], goodTerms);
   const glossaryRead = mentura(["glossary/product", "read"]);
   note("Check 3 passes when each term is an object on the spec", glossaryWrite.status === 0 && check3(glossaryRead.json?.result, specRead.json?.result) === true, `terms ${(glossaryRead.json?.result?.terms ?? []).map((t) => t.term).join(", ")}`);
 
@@ -227,8 +230,8 @@ try {
   note("Check 5 passes when product is a card id", entryWrite.status === 0 && check5(entryRead.json?.result, productsAgain.json?.result) === true, `product line ${JSON.stringify(linesOf(entryRead.json?.result?.answer).product)}`);
 
   const list = mentura(["decisions", "read"]);
-  const keys = Object.keys(list.json?.result ?? {});
-  note("decisions list returns the habit and the entry", keys.includes("changelog-habit") && keys.includes("changelog-first-change") && !keys.includes("docs-spec-nested"), `keys ${keys.join(", ")}`);
+  const keys = (list.json?.decisions ?? []).map((d) => d.id);
+  note("decisions list returns the habit, the entry and the at=product decision", keys.includes("changelog-habit") && keys.includes("changelog-first-change") && keys.includes("docs-spec-nested"), `${keys.length} ids; nested on the list ${keys.includes("docs-spec-nested")}`);
 
   const decided = mentura(["decide", "docs-spec", "--by", "Ada Founder", "--confirm", "docs-spec"]);
   const decidedRead = mentura(["decisions/docs-spec", "read"]);
