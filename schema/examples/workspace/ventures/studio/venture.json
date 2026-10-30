@@ -1,6 +1,7 @@
 {
   "id": "studio",
   "name": "Alex Studio",
+  "timeZone": "America/Chicago",
   "parent": null,
   "phase": "beachhead",
   "ambition": "managed-growth",

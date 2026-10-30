@@ -37,9 +37,12 @@
         "baseline",
         "confirm",
         "move",
-        "release"
+        "release",
+        "publish",
+        "rollback",
+        "merge"
       ],
-      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release"
+      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity."
     },
     "agent": {
       "type": "object",

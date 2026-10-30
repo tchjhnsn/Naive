@@ -16,6 +16,7 @@
 //
 //   node schema/check-governance.mjs <workspace or venture dir>
 
+import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { payouts } from "./payouts.mjs";
@@ -29,8 +30,8 @@ const errors = [], warnings = [];
 let checked = 0;
 
 for (const root of walk(dir)) {
-  const v = load(join(root, "venture.json"));
-  const g = (f) => { const p = join(root, "governance", f); return existsSync(p) ? load(p) : null; };
+  const v = load(ventureFile(root, "venture.json"));
+  const g = (f) => { const p = ventureFile(root, `governance/${f}`); return existsSync(p) ? load(p) : null; };
   const own = g("ownership.json"), boards = g("board.json"), fa = g("founder-agreement.json"), exit = g("exit.json");
   const at = (f) => `${v.id}/governance/${f}`;
   const people = (v.members ?? []).filter((m) => typeof m === "string" || m.kind !== "agent").length;
@@ -64,7 +65,7 @@ for (const root of walk(dir)) {
     for (const f of listed) if (!founders.includes(f)) errors.push(`${at("founder-agreement.json")}: ${f} is not a founder holder in ownership.json`);
     if (!fa.signed) warnings.push(`${at("founder-agreement.json")}: not signed yet`);
     for (const f of fa.founders) if (!f.ip_assigned) warnings.push(`${at("founder-agreement.json")}: ${f.holder} has not assigned their IP to the venture`);
-    if (!existsSync(join(root, fa.document))) errors.push(`${at("founder-agreement.json")}: document ${fa.document} not found (paths are relative to the venture folder)`);
+    if (!existsSync(ventureFile(root, fa.document))) errors.push(`${at("founder-agreement.json")}: document ${fa.document} not found (paths are relative to the venture folder)`);
   }
 
   if (boards) {
