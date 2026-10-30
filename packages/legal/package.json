@@ -66,8 +66,12 @@
     "schema/check-governance.mjs",
     "schema/payouts.mjs",
     "schema/check-telos.mjs",
-    "schema/check-publication.mjs"
+    "schema/check-publication.mjs",
+    "schema/lint-legal.mjs"
   ],
-  "skill": null,
+  "skill": {
+    "id": "legal-function",
+    "path": "packages/legal/skill/SKILL.md"
+  },
   "use_model": []
 }
