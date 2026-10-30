@@ -37,6 +37,11 @@
 //                                                   venture it fits, or in the workspace inbox when unsure
 //   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
 //   naive read <venture> <path>                     read another venture's published artifact, if the workspace allows
+//   naive workspace init [<dir>] [--name <name>] (--venture <name> | --port <folder> | --migrate <project>)
+//                                                   a workspace with its clock, its calendar and its first venture
+//   naive workspace rename <name>                   rename the workspace this runs in (logged in its meta/provenance.jsonl)
+//   naive calendar [list [--from <date>] [--to <date>] | add --title <t> --start <local time> | export --ics <file>]
+//                                                   the workspace calendar: stored events and those derived from dated records
 //   naive beta status|feedback <capability>|unlock  the plugin beta: which capabilities are open, the checkpoint feedback
 //                                                   that unlocks the next, and unlocking it (beta.enabled in naive.config.json)
 //   naive bugs [--all]                              open P0 and P1 bugs; stable means none
@@ -53,7 +58,7 @@ import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { logical } from "../../schema/venture-paths.mjs";
 import { ventureFile } from "../../schema/venture-paths.mjs";
-import { checkWorkspace, findWorkspace } from "../../schema/workspace.mjs";
+import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../schema/workspace.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -263,6 +268,24 @@ else if (cmd === "build" || cmd === "start") {
   // naive read names the venture this session is in as the one reading.
   const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
   process.exit(run("schema/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
+} else if (cmd === "workspace") {
+  // A workspace (schema/workspace-init.mjs): made with its clock, calendar and first venture; renamed in place.
+  const [sub, ...args] = rest;
+  if (sub === "init") process.exit(run("schema/workspace-init.mjs", args));
+  if (sub === "rename") {
+    const ws = findWorkspace(opt("workspace") ?? process.cwd());
+    if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
+    process.exit(run("schema/workspace.mjs", ["rename", ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
+  }
+  console.error("naive workspace init [<dir>] [--name <name>] (--venture <name> | --port <folder> | --migrate <project>)\nnaive workspace rename <name>");
+  process.exit(2);
+} else if (cmd === "calendar") {
+  const ws = findWorkspace(opt("workspace") ?? process.cwd());
+  if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
+  // A workspace from before the calendar gets its clock and calendar the first time it asks for them.
+  try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error(e.message); process.exit(1); }
+  const [sub = "list", ...args] = rest[0] && !rest[0].startsWith("--") ? rest : ["list", ...rest];
+  process.exit(run("schema/calendar.mjs", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
 } else if (cmd === "beta" || cmd === "bugs") {
   // The plugin beta's gate (schema/beta-gate.mjs) and the bug summary (schema/bugs.mjs).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");

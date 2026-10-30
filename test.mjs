@@ -37,6 +37,7 @@ const steps = [
   ["model steps: use model, judgments, kit boundaries, uncertain routing", "node", ["schema/model-steps-test.mjs"]],
   ["the gate: naive.config.json, one gate per venture, who is acting", "node", ["schema/gate-test.mjs"]],
   ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["interface/dev/test.mjs"]],
+  ["naive workspace init and rename, the clock and the calendar (derived events, .ics)", "node", ["schema/workspace-init-test.mjs"]],
   ["the Claude Code plugin (manifest, skills, MCP server outside a venture, marketplaces)", "node", ["interface/plugin-test.mjs"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["interface/create-venture/test.mjs"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["schema/setup-test.mjs"]],
