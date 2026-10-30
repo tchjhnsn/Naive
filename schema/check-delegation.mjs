@@ -8,6 +8,7 @@
 //     each class with may_redelegate, a scope at least as wide, may_merge if it gives may_merge and
 //     an expiry no earlier; a never-redelegated class is passed on by nobody; every chain reaches
 //     the root without a cycle.
+//   extends: the template's never_redelegated and one_way_doors bind too; one it cannot read fails.
 //
 //   node schema/check-delegation.mjs [venture dir | delegation.json] [--today YYYY-MM-DD]
 //
@@ -15,6 +16,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { readDelegation } from "./venture-paths.mjs";
 import { independent } from "./verify.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
@@ -27,18 +29,19 @@ const arg = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[
 const venture = arg && statSync(arg).isDirectory() ? arg : null;
 const file = !arg ? join(template, "delegation.json") : venture ? join(venture, "governance/delegation.json") : arg;
 if (!existsSync(file)) { console.log(`no delegation record at ${file}: nothing to check`); process.exit(0); }
-// A venture's own roles and decision rights win; the template's fill the gaps.
-const pick = (rel) => venture && existsSync(join(venture, "governance", rel)) ? join(venture, "governance", rel) : join(template, rel);
+const own = (rel) => { const p = venture && join(venture, "governance", rel); return p && existsSync(p) ? p : null; };
 
-const d = load(file);
-const rolesDir = pick("roles");
-const classes = new Set(load(pick("decision-rights.json")).classes.map((c) => c.id));
+let d;
+try { d = readDelegation(file); } catch (e) { console.log(`FAIL  ${e.message}`); process.exit(1); }
+// A venture's own classes and roles overlay the template's, by id, as check-ready.mjs and router.mjs do.
+const classes = new Set(load(join(template, "decision-rights.json")).classes.map((c) => c.id));
+if (own("decision-rights.json")) for (const c of load(own("decision-rights.json")).classes) classes.add(c.id);
 const errors = [];
 // Every file in roles/ is one role template, except the indexes, which list roles in a roles array.
 // A template missing its id or verified_by is reported, never skipped.
 const roles = new Map();
-for (const f of readdirSync(rolesDir).filter((f) => f.endsWith(".json"))) {
-  const r = load(join(rolesDir, f));
+for (const dir of [join(template, "roles"), own("roles")].filter(Boolean)) for (const f of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
+  const r = load(join(dir, f));
   if (Array.isArray(r.roles)) continue;
   if (!r.id) errors.push(`role file ${f}: has no id`);
   else if (r.verified_by === undefined) errors.push(`role/${r.id}: has no verified_by (null only for the chief delegator)`);
@@ -64,6 +67,7 @@ const live = (g) => g.expires === null || g.expires >= today;
 const segments = (scope) => scope.split("/").filter(Boolean);
 const within = (inner, outer) => outer === "venture" || (inner !== "venture"
   && segments(outer).every((s, i) => segments(inner)[i] === s));
+const SCOPE = new RegExp(load(join(root, "schema/delegation.schema.json")).properties.grants.items.properties.scope.pattern);
 const later = (a, b) => b === null || (a !== null && a <= b); // a ends no later than b
 const name = (g, i) => `grant/${g.id ?? i}`;
 
@@ -87,6 +91,7 @@ d.grants.forEach((g, i) => {
   if (g.from === g.to) errors.push(`${at}: grants to itself`);
   if (g.to === d.root) errors.push(`${at}: grants to the root, which holds everything`);
   if (!live(g)) errors.push(`${at}: expired ${g.expires}`);
+  if (!SCOPE.test(g.scope)) errors.push(`${at}: scope ${JSON.stringify(g.scope)} is not "venture" or a plain path`);
   for (const c of g.classes) {
     if (!classes.has(c)) errors.push(`${at}: ${c} is not a decision class`);
     if (oneWay.has(c)) errors.push(`${at}: ${c} is a one-way door and stays with ${d.root}`);

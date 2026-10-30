@@ -7,7 +7,8 @@
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
+import { mayMerge } from "./decisions.mjs";
 import { independent, reviewIsIndependent, verificationErrors } from "./verify.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -74,6 +75,56 @@ fails("only the chief delegator goes unverified", (_, roles) => {
   const p = join(roles, "counsel.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, verified_by: null }));
 }, /only the chief delegator/);
+
+for (const scope of ["engineering/../finance/", "", "/", "./engineering/"]) fails(`scope ${JSON.stringify(scope)} is refused`, (d) => { grant(d, "architect-to-builder").scope = scope; }, /not "venture" or a plain path/);
+expect("the schema refuses a scope with ..", schemaCheck({ ...base, grants: [{ ...grant(base, "architect-to-builder"), scope: "engineering/../finance/" }] }).status !== 0);
+
+// A venture's own files overlay the template's: a partial register or a single role adds, never replaces.
+function overlaid(write) {
+  const dir = join(tmp, `v${n++}`), gov = join(dir, "governance");
+  mkdirSync(join(gov, "roles"), { recursive: true });
+  writeFileSync(join(gov, "delegation.json"), JSON.stringify(base));
+  write(gov);
+  const r = spawnSync("node", [join(repo, "schema/check-delegation.mjs"), dir, "--today", "2026-10-29"], { encoding: "utf8" });
+  return { ok: r.status === 0, out: r.stdout + r.stderr };
+}
+const partial = overlaid((gov) => writeFileSync(join(gov, "decision-rights.json"), JSON.stringify({ classes: [{ id: "implementation-detail", level: "act" }] })));
+expect("a venture's partial decision rights overlay the template's classes", partial.ok, partial.out);
+const oneRole = overlaid((gov) => cpSync(join(template, "roles/builder.json"), join(gov, "roles/builder.json")));
+expect("a venture with one role file keeps the template's other roles", oneRole.ok, oneRole.out);
+
+// extends fails closed: the template's lists bind, and a record that cannot honor extends is refused.
+const EXT = "governance/venture-template/delegation.json";
+const extending = (d) => { d.extends = EXT; delete d.never_redelegated; delete d.one_way_doors; };
+expect("a record extending the template passes", venture(extending).ok);
+fails("a class the template never re-delegates stays so through extends", (d) => {
+  extending(d);
+  grant(d, "founder-to-finance-lead").may_redelegate = true;
+  d.grants.push({ id: "money-on", from: "finance-lead", to: "chief-of-staff", classes: ["spend-register-upkeep"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
+}, /money-on: .*never re-delegated/);
+fails("a one-way door in the template stays one through extends", (d) => { extending(d); grant(d, "founder-to-chief-of-staff").classes.push("contradicts-ledger"); }, /one-way door/);
+fails("an extends that does not exist is refused", (d) => { d.extends = "governance/venture-template/gone.json"; }, /does not exist/);
+fails("an extends of another kind of record is refused", (d) => { d.extends = "governance/venture-template/decision-rights.json"; }, /not a base delegation record/);
+
+function merger(record) {
+  const dir = join(tmp, `v${n++}`);
+  mkdirSync(join(dir, "governance"), { recursive: true });
+  writeFileSync(join(dir, "venture.json"), "{}");
+  writeFileSync(join(dir, "governance/delegation.json"), JSON.stringify({ register: "delegation", root: "founder", founder: ["Torian"], ...record }));
+  return dir;
+}
+const mergeGrant = (cls) => ({ from: "founder", to: "builder", classes: [cls], scope: "venture", may_redelegate: false, may_merge: true, expires: null });
+const decision = (cls) => ({ id: "D-1", class: cls });
+// A class only the template's list names, so the refusal can only come from reading extends.
+const onlyInList = "custom-door";
+const customBase = join(tmp, "custom-base.json");
+writeFileSync(customBase, JSON.stringify({ register: "delegation", root: "founder", one_way_doors: [onlyInList], grants: [] }));
+const extendsPath = relative(repo, customBase);
+expect("mayMerge merges a class a grant names", mayMerge(merger({ grants: [mergeGrant(onlyInList)] }), decision(onlyInList), { role: "builder" }).ok);
+expect("mayMerge refuses a one-way door that comes only from extends", /one-way door/.test(mayMerge(merger({ extends: extendsPath, grants: [mergeGrant(onlyInList)] }), decision(onlyInList), { role: "builder" }).error ?? ""));
+const broken = merger({ extends: "governance/venture-template/gone.json", grants: [mergeGrant("implementation-detail")] });
+expect("mayMerge refuses a role when extends cannot be honored", !mayMerge(broken, decision("implementation-detail"), { role: "builder" }).ok);
+expect("mayMerge refuses the founder too when extends cannot be honored", !mayMerge(broken, decision("implementation-detail"), { by: "Torian" }).ok);
 
 // The verification substrate.
 expect("a verifier other than the builder is independent", independent("builder", "architect"));
