@@ -141,12 +141,9 @@
     },
     "core": {
       "type": "object",
-      "description": "The core product (Product Anatomy): what anyone can claim from this venture. Required once the venture leaves discovery.",
+      "description": "The core product (Product Anatomy): what anyone can claim from this venture. Required once the venture leaves discovery. The mission (promise) can be decided and land on its own; promised_to, must_not and competence follow as they are decided, and the foundation report names any still missing.",
       "required": [
-        "promise",
-        "promised_to",
-        "must_not",
-        "competence"
+        "promise"
       ],
       "properties": {
         "promise": {

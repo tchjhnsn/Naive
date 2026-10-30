@@ -12,7 +12,9 @@
 // advance goes one phase forward; a step back (a venture can return to discovery) needs --reason, and
 // skipping a phase needs --override. The change itself, with its staleness, is schema/freshness.mjs's phase().
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { agentFromEnv, record } from "../interface/provenance.mjs";
@@ -55,6 +57,12 @@ export function meet(dir, id, { evidence, by } = {}) {
   const agent = by ?? agentFromEnv("person", "cli");
   if (agent.kind !== "person") return { ok: false, error: "only a person can say an exit criterion is met; an agent can propose it" };
   c.met = { at: new Date().toISOString(), by: agent.id ?? "person", ...(evidence ? { evidence } : {}) };
+  // Checked against its schema on a scratch copy first, so a bad telos never lands.
+  const scratch = mkdtempSync(join(tmpdir(), "telos-"));
+  writeFileSync(join(scratch, "telos.json"), JSON.stringify(t));
+  const ok = spawnSync("python3", [join(root, "schema/validate.py"), "--schema", "telos.schema.json", "--file", join(scratch, "telos.json")], { encoding: "utf8" });
+  rmSync(scratch, { recursive: true, force: true });
+  if (ok.status !== 0) return { ok: false, error: `the telos would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
   writeFileSync(tf, JSON.stringify(t, null, 2) + "\n");
   record(dir, { entity: tf.slice(dir.length + 1), route: "foundation/telos", activity: "confirm", agent, note: `exit criterion ${v.phase}/${id} met${evidence ? `: ${evidence}` : ""}` });
   return { ok: true, result: lifecycle(dir) };
