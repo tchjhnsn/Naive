@@ -33,8 +33,11 @@ try {
 
   const u = mkdtempSync(join(tmpdir(), "unverified-"));
   mkdirSync(join(u, "marketing/decisions"), { recursive: true });
+  mkdirSync(join(u, "people"), { recursive: true });
   writeFileSync(join(u, "venture.json"), readFileSync(join(v, "venture.json")));
-  propose(u, { at: "marketing", id: "mission", question: "What is the mission?", answer: "We help founders." }, { agentId: "cos" });
+  writeFileSync(join(u, "people/people.json"), readFileSync(join(v, "people/people.json")));
+  const pu = propose(u, { at: "marketing", id: "mission", question: "What is the mission?", answer: "We help founders." }, { agentId: "cos" });
+  expect("the unverified venture's decision is proposed", pu.ok, pu);
   const au = approve(u, "mission", { by: "Founder", via: "console", unverified: true });
   const du = JSON.parse(readFileSync(join(u, F), "utf8"));
   expect("an approval with no sign-in says the signer is unverified and claims no wording", au.ok && du.provenance.signer === "unverified" && !du.provenance.wording && du.provenance.via === "console", du.provenance);
