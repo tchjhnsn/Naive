@@ -31,10 +31,10 @@ function gateExit(files: Record<string, string>): number {
 
 const cases: [string, Record<string, string>, number][] = [
   ["a clean tree passes", { "brand-new/ok.ts": "export const n = 1;\n" }, 0],
-  ["a type error in a pending folder passes", { "schema/bad.ts": BAD_TYPE }, 0],
+  ["a type error in a pending folder passes", { "scripts/bad.ts": BAD_TYPE }, 0],
   ["a type error in a new top-level folder fails", { "brand-new/bad.ts": BAD_TYPE }, 1],
   ["a type error in a root file fails", { "bad.ts": BAD_TYPE }, 1],
-  ["a syntax error in a pending folder fails", { "schema/broken.mjs": "const = ;\n" }, 1],
+  ["a syntax error in a pending folder fails", { "scripts/broken.mjs": "const = ;\n" }, 1],
 ];
 
 let failed = 0;
