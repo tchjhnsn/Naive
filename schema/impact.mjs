@@ -19,6 +19,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { decisionFile, propose, recordOf } from "./decisions.mjs";
 import { HOME } from "./packages.mjs";
+import { entries as provenance } from "../interface/provenance.mjs";
 import { mark, notify } from "./stale.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
 
@@ -41,6 +42,7 @@ export function functionOf(file) {
   return FUNCTIONS.includes(top) ? top : PKG[top] ?? null;
 }
 
+export { files as ventureRecords };
 // Every JSON record in the venture, venture-relative, outside hidden and draft folders and nested ventures.
 function files(dir, sub = "") {
   if (!sub && layoutOf(dir) === "structured") return logicalFiles(dir).filter((f) => f.endsWith(".json") && !f.split("/").some((s) => s.startsWith(".") || s.startsWith("_")));
@@ -52,10 +54,25 @@ function files(dir, sub = "") {
 }
 
 /** The records that refer, by a data-model ref, to the record types of the changed files. */
-function byRefs(dir, changed) {
+function byRefs(dir, changed, list) {
   const types = new Set(changed.map(recordOf).filter(Boolean));
   const dependents = new Set(MODEL.records.filter((r) => r.level === "venture" && (r.refs ?? []).some((x) => types.has(x.to))).map((r) => r.id));
-  return files(dir).filter((f) => !changed.includes(f) && !f.endsWith(".decision.json") && !f.endsWith(".impact.json") && dependents.has(recordOf(f)));
+  if (!dependents.size) return [];
+  return (list ?? files(dir)).filter((f) => !changed.includes(f) && !f.endsWith(".decision.json") && !f.endsWith(".impact.json") && dependents.has(recordOf(f)));
+}
+
+/** The structural impact of any decision, open or decided, without side effects: nothing is marked stale,
+ *  nothing proposed, nothing written. The records it would change (applies_to, or the record it decides),
+ *  the records that read them (provenance derived_from) or refer to their type (data-model refs), and
+ *  the functions those fall in. schema/decision-index.mjs scores open decisions with it. */
+export function structural(dir, d, { all } = {}) {
+  const changed = [...new Set([...(d.merged?.files ?? []), ...(d.applies_to ?? []).map((t) => t.file), ...(d.decides?.path ? [d.decides.path] : [])])];
+  if (!changed.length) return { changed, records: [], functions: [] };
+  const log = all?.provenance ?? provenance(dir);
+  const readers = log.filter((e) => (e.derived_from ?? []).some((x) => changed.includes(x))).map((e) => e.entity).filter((f) => !changed.includes(f) && !f.includes("://"));
+  const records = [...new Set([...readers, ...byRefs(dir, changed, all?.files)])].sort();
+  const functions = [...new Set([...changed, ...records].map(functionOf).filter(Boolean))].sort((a, b) => FUNCTIONS.indexOf(a) - FUNCTIONS.indexOf(b));
+  return { changed, records, functions };
 }
 
 /** Builds, writes and returns the impact map of a decision's merged version. */
