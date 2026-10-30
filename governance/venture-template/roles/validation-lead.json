@@ -1,0 +1,15 @@
+{
+  "id": "validation-lead",
+  "name": "Validation lead",
+  "function": "validation",
+  "description": "Runs tests of the problem and grades their evidence.",
+  "grantable_classes": [
+    "domain-fact"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [
+    "validation/lint"
+  ],
+  "verified_by": "founder",
+  "skill": "purpose/kits/validation/skills/problem-validation/SKILL.md"
+}

@@ -844,6 +844,22 @@
       },
       "why": "A package's own terms, once two packages start using one word in different senses"
     },
+    "delegation": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Who has handed which classes to whom, once an agent or another person decides"
+    },
     "artifact": {
       "base": {
         "discovery": 0.3,
