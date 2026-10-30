@@ -35,7 +35,7 @@ import { memo } from "./caching.mjs";
 import { impact } from "./impact.mjs";
 import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
-import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
+import { layoutOf, logicalFiles, readDelegation, ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -394,7 +394,7 @@ export function merge(dir, id, { by, role, via = "cli", note, today } = {}) {
 }
 
 /** The venture's delegation record (governance/delegation.json, the delegation suite), or null. */
-const delegationOf = (dir) => { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? load(f) : null; };
+const delegationOf = (dir) => { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? readDelegation(f) : null; };
 // Classes that are one-way doors: every class the decision-rights register marks escalate (the
 // founder decides), plus production-ship. Built from the register so a class it escalates can never
 // be merged by a role, and a venture's one_way_doors only adds to them.
@@ -421,7 +421,8 @@ function peopleOf(dir) {
  *  (an agent or a delegate acting as one) may only under a live delegation grant to that role that
  *  names may_merge and the decision's class; a one-way door is never merged by anyone but a person. */
 export function mayMerge(dir, d, { by, role, today = new Date().toISOString().slice(0, 10) } = {}) {
-  const del = delegationOf(dir);
+  let del;
+  try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${e.message}: no one merges until it is fixed` }; }
   const roles = new Set([...(del?.grants ?? []).flatMap((g) => [g.to, g.from]), ...agentRoleIds()].filter((r) => r && r !== del?.root));
   if (by && role) return { ok: false, error: "merge as a person (--by) or as a role (--role), not both" };
   if (!role) {

@@ -1596,6 +1596,65 @@
       "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
     },
     {
+      "id": "role-template",
+      "layer": "governance",
+      "level": "method",
+      "schema": "schema/role-template.schema.json",
+      "paths": [
+        "governance/venture-template/roles/founder.json",
+        "governance/venture-template/roles/chief-of-staff.json",
+        "governance/venture-template/roles/product-design-lead.json",
+        "governance/venture-template/roles/architect.json",
+        "governance/venture-template/roles/builder.json",
+        "governance/venture-template/roles/marketing-lead.json",
+        "governance/venture-template/roles/finance-lead.json",
+        "governance/venture-template/roles/validation-lead.json",
+        "governance/venture-template/roles/people-lead.json",
+        "governance/venture-template/roles/counsel.json"
+      ],
+      "refs": [
+        {
+          "field": "verified_by",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grantable_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "note": "One role a venture can install: function, grantable decision classes, default tier, lint suites, verifier (never itself) and skill"
+    },
+    {
+      "id": "delegation",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/delegation.schema.json",
+      "paths": [
+        "governance/venture-template/delegation.json",
+        "instance/**/governance/delegation.json"
+      ],
+      "refs": [
+        {
+          "field": "grants.from",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.to",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "decision_class": "strategy-or-constitution"
+    },
+    {
       "id": "people",
       "layer": "operations",
       "level": "venture",
