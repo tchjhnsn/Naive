@@ -91,6 +91,7 @@ export function lint(dir) {
   const add = (rule, file, message, suggestion) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
 
   for (const { rel, rec } of productFiles(dir)) {
+    if (rec.status === "retired") continue;
     const offered = strings(rec.offered_to).filter((id) => found[`icp:${id}`]);
     const jobs = new Set(offered.flatMap((id) => found[`icp:${id}`].jobs));
     if (!offered.length) add("product-no-icp", rel, "offered to no ICP profile", "set offered_to to an id from foundation/icp");

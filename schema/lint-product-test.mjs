@@ -139,5 +139,12 @@ const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
   expect("route product/lint fails when a fail-closed rule has a finding", shut.ok === false && /product-no-icp/.test(shut.error ?? ""), shut);
 }
 
+{
+  const { dir } = venture();
+  put(dir, "product/old.json", card({ id: "old", status: "retired", offered_to: [], features: [{ id: "bookings", name: "Bookings" }], business_model: ["subscription"] }));
+  const r = JSON.parse(run(dir, "--json").stdout);
+  expect("a retired product is not linted", r.findings.length === 0, r.findings);
+}
+
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);
