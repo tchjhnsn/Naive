@@ -1,0 +1,65 @@
+---
+title: "Stripe docs playbook: the spec a caller reads, then one changelog entry"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: waiting
+    lg1: product
+    lg2: spec
+    lg3: habit
+    lg4: done
+    lg5: failed
+  }
+  class lg0 tan
+  class lg1 blue
+  class lg2 purple
+  class lg3 yellow
+  class lg4 teal
+  class lg5 orange
+  s0: Start
+  s1: Reader known
+  s2: Stopped: no reader on file
+  s3: Product list read
+  s4: Card names that reader
+  s5: Card names no reader
+  s6: Spec has every section
+  s7: Spec is missing a section
+  s8: Terms written
+  s9: Changelog habit proposed
+  s10: Check failed: a section is blank
+  s11: Check failed: the card names no reader
+  s12: Check passed
+  s13: Changelog entry written
+  s14: Habit and entries listed
+  [*] --> s0
+  s0 --> s1: you read who the product is offered to [when the venture has a reader]
+  s0 --> s2: you look for a reader and there is none [when the venture has no reader]
+  s1 --> s3: you read the product list
+  s3 --> s4: you write the product card and name that reader
+  s3 --> s5: you write the product card and name no reader
+  s4 --> s6: you propose the spec with every section
+  s4 --> s7: you propose the spec and leave a section blank
+  s5 --> s6: you propose the spec with every section
+  s6 --> s8: you write a term for each object in the spec
+  s7 --> s8: you write a term for each object in the spec
+  s8 --> s9: you propose the changelog habit
+  s9 --> s12: you run the checks and they pass [every section is filled and the card names the reader]
+  s9 --> s10: you run the checks and they fail [a spec section is blank]
+  s9 --> s11: you run the checks and they fail [the card names no reader]
+  s12 --> s13: you write a changelog entry
+  s13 --> s14: you read the decision list
+  class s0 tan
+  class s1 blue
+  class s2 tan
+  class s3 blue
+  class s4 blue
+  class s5 blue
+  class s6 purple
+  class s7 purple
+  class s8 purple
+  class s9 yellow
+  class s10 orange
+  class s11 orange
+  class s12 teal
+  class s13 teal
+  class s14 teal
