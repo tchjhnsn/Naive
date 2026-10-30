@@ -43,6 +43,9 @@ const steps = [
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["schema/setup-test.mjs"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["interface/writes-test.mjs"]],
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["schema/brand-test.mjs"]],
+  ["customers lint: ICP match and promises the product keeps", "node", ["schema/lint-customers-test.mjs"]],
+  ["finance lint: spend, price below cost, metric targets", "node", ["schema/lint-finance-test.mjs"]],
+  ["legal lint: a public claim with no source, an agreement with no counterparty", "node", ["schema/lint-legal-test.mjs"]],
   ["foundation lint: mission, ICP jobs, alignment checks, problem forms", "node", ["schema/lint-foundation-test.mjs"]],
   ["upgrades: migrations, pins, early adoption, canary, staged agent upgrades", "node", ["schema/upgrades-test.mjs"]],
   ["naive upgrade --layout structured: a flat venture moves onto k-base/ and meta/", "node", ["schema/structured-layout-test.mjs"]],
@@ -106,6 +109,7 @@ const steps = [
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
+  ["validation lint: claims, shelf life, agent grades, Discovery-grade decisions", "node", ["schema/lint-validation-test.mjs"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
   ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace", "--score"]],
   ["problem assessment behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/kits/validation/features/problem-assessment.feature"]],
@@ -135,6 +139,7 @@ const steps = [
   // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.
   ...(existsSync(join(root, "node_modules/eslint")) ? [["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]]] : []),
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
+  ...(existsSync(join(root, "site/node_modules")) ? [["site page gate: internal wording, drafts, blog approval, showcase fixtures", "node", ["site/scripts/gate-pages-test.ts"]]] : []),
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
 
