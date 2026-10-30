@@ -104,6 +104,7 @@ export function pick(dir, draft, letter) {
  * @param {string} dir
  * @param {string} draft
  * @param {{ picked?: string, by?: string }} [opts]
+ *  @returns {{ picked: string, decision?: string, decided?: boolean, error?: string }}
  */
 export function settle(dir, draft, { picked = "a", by } = {}) {
   const meta = sidecar(dir, draft);

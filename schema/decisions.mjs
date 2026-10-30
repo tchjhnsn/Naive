@@ -341,6 +341,7 @@ const setField = (o, path, v) => { const ks = path.split("."); let x = o; for (c
 /** Merge: apply a decided version's answer to the records it decides (applies_to). A separate step from
  *  approving, so it can be delegated: only a person may merge unless a delegation grant names merge for
  *  this decision's class (the delegation suite). Logged as a merge in provenance. Ends by building the
+ *  @param {string} dir @param {string} id @param {{ by?: string, role?: string, via?: string, note?: string, today?: string }} [opts]
  *  decision's impact map (schema/impact.mjs) and returns its summary. */
 export function merge(dir, id, { by, role, via = "cli", note, today } = {}) {
   const file = fileOf(dir, id);
@@ -453,6 +454,7 @@ function notAPerson(dir, del, by, { rosterRequired }) {
 /** Who may merge a decided version. A person may (with no grant, only the founder merges), and only a
  *  founder merges a one-way door. A role (an agent or a delegate acting as one) may only under a live
  *  delegation grant to that role that names may_merge and the decision's class, whose chain reaches the
+ *  @param {string} dir @param {*} d @param {{ by?: string, role?: string, today?: string }} [opts]
  *  root and whose scope holds every record the decision writes. */
 export function mayMerge(dir, d, { by, role, today = new Date().toISOString().slice(0, 10) } = {}) {
   let del;

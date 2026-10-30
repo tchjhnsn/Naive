@@ -101,7 +101,7 @@ export async function handle(msg, notify = () => {}) {
         case "mentura_setup": { const m = await import("../../schema/setup.mjs"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
         case "mentura_setup_answer": r = await (await import("../../schema/setup.mjs")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
         case "mentura_setup_point": r = await (await import("../../schema/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id }); break;
-        case "mentura_frame": r = await (await import("../../schema/frames.mjs")).run(ventureDir(a.venture), /** @type {*} */ ({ id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client, model: a.model })); break;
+        case "mentura_frame": r = await (await import("../../schema/frames.mjs")).run(ventureDir(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client, model: a.model }); break;
         case "mentura_decisions": {
           r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
           if (r.ok && a.render?.length) r.result = { ...r.result, decisions: r.result.decisions.filter((d) => a.render.includes(d.render)) };
@@ -109,7 +109,7 @@ export async function handle(msg, notify = () => {}) {
         }
         case "mentura_propose_decision": {
           const dir = ventureDir(a.venture);
-          r = dir ? propose(dir, a.decision, /** @type {*} */ ({ agentId: a.agent_id, via: "mcp", harness: client, model: a.model })) : { ok: false, error: `no venture ${a.venture}` };
+          r = dir ? propose(dir, a.decision, { agentId: a.agent_id, via: "mcp", harness: client, model: a.model }) : { ok: false, error: `no venture ${a.venture}` };
           break;
         }
         case "mentura_check": r = await call({ venture: a.venture, route: a.route, action: "check" }); break;

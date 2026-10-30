@@ -116,7 +116,8 @@ export async function relay(dir, { id, answer, agentId, harness, model }) {
   return propose(dir, { id, question: d.question, answer: words, note }, opts);
 }
 
-/** The founder confirms the answers the model relayed, at the keyboard: each becomes a decision they made. */
+/** The founder confirms the answers the model relayed, at the keyboard: each becomes a decision they made.
+ *  @param {string} dir @param {{ by?: string }} [opts] */
 export async function confirm(dir, { by } = {}) {
   by ??= (await import("./decisions.mjs")).founderName(dir);
   const { approve } = await import("./decisions.mjs");

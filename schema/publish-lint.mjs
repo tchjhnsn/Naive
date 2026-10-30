@@ -111,7 +111,7 @@ function textStages(file, text, cfg, venture) {
   return out;
 }
 
-/** @typedef {{ rule: string, file: string, line?: number, text: string, message: string, published: boolean, severity?: string, waived?: boolean }} Finding */
+/** @typedef {{ rule: string, file: string, line?: number, text: string, message: string, published: boolean, severity?: string, term_severity?: string, waived?: boolean }} Finding */
 
 /**
  * Runs every stage in order. Returns { ok, findings, stages }.

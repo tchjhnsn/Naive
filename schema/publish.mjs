@@ -153,7 +153,8 @@ function defaults(ch, door, reversibility) {
     : { how: "naive publish rollback restores the previous version", takes: "minutes" } };
 }
 
-/** naive publish <channel>: the gate. Returns { decision, entry } or throws Refused (the decision is still written). */
+/** naive publish <channel>: the gate. Returns { decision, entry } or throws Refused (the decision is still written).
+ *  @param {string} dir @param {string} channel @param {{ by?: string, as?: string, door?: string, exposure?: string, who?: string[], reversibility?: string, url?: string, now?: Date }} [opts] */
 export async function publish(dir, channel, { by, as = "founder", door, exposure = "low", who = [], reversibility, url, now = new Date() } = {}) {
   const ch = channelOf(dir, channel);
   if (!EXPOSURE.includes(exposure)) refuse(`exposure is low, medium or high, not ${exposure}`);

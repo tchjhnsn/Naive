@@ -53,7 +53,7 @@ export function isPerson(dir, id) {
 /** A record as the public may see it: each top-level field that is public or has an approved variant. */
 export function publicView(dir, rel, rec) {
   if (!rec || typeof rec !== "object" || Array.isArray(rec)) return null;
-  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, v.value]));
+  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, /** @type {*} */ (v).value]));
 }
 
 /** A person approves a field as public: pins its current wording by sha256 in the record's sidecar. An
