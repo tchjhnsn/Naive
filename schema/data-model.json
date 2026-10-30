@@ -1171,6 +1171,36 @@
       "note": "The decision library: one recurring venture problem as a shape (goal, hidden decisions, premises and the attacks on them, a freshness spec, reasoning), never an answer. schema/frames.mjs matches it to the founder's words, judges its premises against the venture and proposes its decisions, open"
     },
     {
+      "id": "decision-roadmap",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/decision-roadmap.schema.json",
+      "form": "json",
+      "paths": [
+        "packages/*/roadmaps/*.json"
+      ],
+      "refs": [
+        {
+          "field": "steps.*.frame",
+          "to": "frame",
+          "checked_by": "schema/check-roadmap.mjs"
+        }
+      ],
+      "note": "A decision roadmap: an ordered set of frames, each step with its phase, dependencies, door and decider. schema/roadmaps.mjs installs it by proposing each step's decisions open; schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder"
+    },
+    {
+      "id": "lifecycle-playbook",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/lifecycle-playbook.schema.json",
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/product-anatomy/playbooks/*.json"
+      ],
+      "refs": [],
+      "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
+    },
+    {
       "id": "venture-package",
       "layer": "system",
       "level": "venture",

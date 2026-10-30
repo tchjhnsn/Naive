@@ -1,0 +1,44 @@
+{
+  "id": "revenue-first",
+  "title": "Revenue first",
+  "version": "0.1.0",
+  "description": "Sell before building: pre-sales, a paid pilot or services first, then the product.",
+  "order": [
+    "pre-sales",
+    "paid-pilot",
+    "product"
+  ],
+  "phases": [
+    {
+      "phase": "discovery",
+      "gate": "Problem-solution fit",
+      "evidence": []
+    },
+    {
+      "phase": "validation",
+      "gate": "People paid",
+      "evidence": [
+        {
+          "id": "people-paid",
+          "statement": "People paid: customers have paid for the offer, through pre-sales, a paid pilot or services",
+          "match": "paid|payment|pre-?sale|pilot|revenue|invoice"
+        }
+      ]
+    },
+    {
+      "phase": "beachhead",
+      "gate": "Repeatability",
+      "evidence": []
+    },
+    {
+      "phase": "scale",
+      "gate": "Market leadership with healthy margins",
+      "evidence": []
+    },
+    {
+      "phase": "platform",
+      "gate": "Others build on it",
+      "evidence": []
+    }
+  ]
+}
