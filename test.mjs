@@ -58,6 +58,7 @@ const steps = [
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["publishing gate: field visibility, leak canaries, internal terms", "node", ["schema/leaks-test.mjs"]],
+  ["leak canaries: every internal record seeded, site facts and both artifacts built, only known leaks", "node", ["schema/canaries-test.mjs"]],
   ["publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop", "node", ["schema/publish-lint-test.mjs"]],
   ["public site carries no internal text", "node", ["schema/check-leaks.mjs", "site/content/marketing"]],
   ["publish build: every public word compiled through the gate; canaries reach no channel", "node", ["operations/marketing/publish-build-test.mjs"]],
