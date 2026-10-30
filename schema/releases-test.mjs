@@ -58,8 +58,8 @@ expect("C-13: an agent's unconfirmed write of a required record blocks its packa
 expect("write the solution again as a person", mentura("validation/solution", "write", "--venture", "kettle", "--input", join(ws, "solution.json"), "--as", "person").status === 0);
 
 // ---- the rest of the venture ----
-writeJson(join(ws, "icp.json"), { venture: "kettle", profiles: [{ id: "cafes", who: "Independent cafe owners" }] });
-mentura("foundation/icp", "write", "--venture", "kettle", "--input", join(ws, "icp.json"), "--as", "person");
+writeJson(join(ws, "icp.json"), { venture: "kettle", id: "cafes", who: "Independent cafe owners" });
+mentura("foundation/icp/cafes", "write", "--venture", "kettle", "--input", join(ws, "icp.json"), "--as", "person");
 writeJson(join(ws, "pricing.json"), { venture: "kettle", product: "kettle", model: "subscription", buyer: "cafe owner", evidence: [], points: [{ name: "Cafe", amount: 49, currency: "USD", period: "month" }] });
 mentura("validation/pricing", "write", "--venture", "kettle", "--input", join(ws, "pricing.json"), "--as", "person");
 // C-14: the product's description is mastered in the shop's own folder; the rest of the product is the venture's.
@@ -86,8 +86,8 @@ writeJson(join(ws, "pmf.json"), { venture: "kettle", product: "kettle", segment:
 const tw = mentura("validation/product-market-fit", "write", "--venture", "kettle", "--input", join(ws, "pmf.json"));
 expect("an agent writes product-market fit (optional in the validation package)", tw.status === 0, tw.stderr);
 // A draft beside a confirmed record: the confirmed one ships, the draft does not.
-writeJson(join(ws, "icp2.json"), { venture: "kettle", profiles: [{ id: "cafes", who: "DRAFT-WHO" }] });
-mentura("foundation/icp", "write", "--venture", "kettle", "--input", join(ws, "icp2.json"));
+writeJson(join(ws, "icp2.json"), { venture: "kettle", id: "cafes", who: "DRAFT-WHO" });
+mentura("foundation/icp/cafes", "write", "--venture", "kettle", "--input", join(ws, "icp2.json"));
 
 b = build(dir, "--now", "2026-10-30T00:00:00Z");
 expect("build passes once every required record is confirmed or not yet written", b.status === 0, b.stderr + b.stdout);
@@ -97,7 +97,7 @@ const all = tree(join(dir, ".release")).map((f) => readFileSync(join(dir, ".rele
 
 // C-11: confirmed records frozen in, holes for what stays live.
 expect("C-11: confirmed records are frozen in with their sha256, date and who confirmed them",
-  ["foundation/problem.json", "foundation/icp.json", "validation/solution.json", "validation/pricing.json", "product/kettle.json", "customers/bean.json"].every((f) => files.includes(f)) && m.records.every((r) => /^[0-9a-f]{64}$/.test(r.sha256) && r.as_of && r.confirmed_by), JSON.stringify(files));
+  ["foundation/problem.json", "foundation/icp/cafes.json", "validation/solution.json", "validation/pricing.json", "product/kettle.json", "customers/bean.json"].every((f) => files.includes(f)) && m.records.every((r) => /^[0-9a-f]{64}$/.test(r.sha256) && r.as_of && r.confirmed_by), JSON.stringify(files));
 expect("C-11: the frozen copy is the record as confirmed", JSON.parse(readFileSync(join(dir, ".release/records/foundation/problem.json"), "utf8")).statement === problem.statement);
 const kinds = new Set(m.holes.map((h) => h.kind));
 expect("C-11: open decisions, streams and money are named live holes", ["decision", "stream", "money", "attribute"].every((k) => kinds.has(k)) && !files.includes("money/bank.json"), JSON.stringify([...kinds]));
@@ -112,7 +112,7 @@ expect("C-14: each hole is one item (one decision, one stream, one account), wit
 expect("C-13: every open package is reported releasable, with the gaps it still has", m.packages.length >= 3 && m.packages.every((p) => p.releasable) && m.packages.find((p) => p.id === "validation").gaps.includes("validation-go-to-market"), JSON.stringify(m.packages.map((p) => [p.id, p.gaps])));
 // P-31: only confirmed records ship.
 expect("P-31: notes, _private/, drafts and an agent's unconfirmed record never ship", !/NOTES-NEVER-SHIP|PRIVATE-TERMS|AGENT-PMF-UNCONFIRMED|DRAFT-WHO/.test(all) && !files.some((f) => f.startsWith("_") || f.includes("_drafts")), files.join(", "));
-expect("P-31: an unconfirmed optional record and a draft beside a confirmed record are listed as left out, with why", m.left_out.some((x) => /validation(\/|__)product-market-fit\.json/.test(x.file) && /agent|draft/.test(x.why)) && m.left_out.some((x) => x.file === "_drafts/foundation__icp.json.draft" && /confirmed version ships/.test(x.why)) && m.left_out.some((x) => x.file === "foundation/notes.md"), JSON.stringify(m.left_out));
+expect("P-31: an unconfirmed optional record and a draft beside a confirmed record are listed as left out, with why", m.left_out.some((x) => /validation(\/|__)product-market-fit\.json/.test(x.file) && /agent|draft/.test(x.why)) && m.left_out.some((x) => x.file === "_drafts/foundation__icp__cafes.json.draft" && /confirmed version ships/.test(x.why)) && m.left_out.some((x) => x.file === "foundation/notes.md"), JSON.stringify(m.left_out));
 expect("P-31: a private record and a private field are withheld, by count and by field name only", !/SECRET-CAFE-NAME|555-0100/.test(all) && m.withheld.private_records === 1 && m.withheld.private_folder_files === 1 && m.records.find((r) => r.file === "customers/bean.json")?.withheld_fields?.[0] === "phone", JSON.stringify(m.withheld));
 // N-10: items known at build time are enumerated.
 expect("N-10: collection items known at build time are enumerated", JSON.stringify(m.items["product/[id]"]) === '["kettle"]' && JSON.stringify(m.items["customers/[id]"]) === '["bean"]', JSON.stringify(m.items));

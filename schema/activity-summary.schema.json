@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "activity-summary.schema.json",
+  "title": "Activity summary",
+  "description": "Days since the founder last touched the venture and the current streak, at operations/activity/_summary.json (naive activity --write); feeds the docket. A long silence is a gentle nudge, never an alarm. Internal by default.",
+  "type": "object",
+  "required": [
+    "venture",
+    "as_of",
+    "time_zone",
+    "streak"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "as_of": {
+      "type": "string",
+      "format": "date"
+    },
+    "time_zone": {
+      "type": "string"
+    },
+    "visibility": {
+      "enum": [
+        "internal",
+        "public"
+      ],
+      "default": "internal"
+    },
+    "last_touch": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "days_since_last_touch": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "streak": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Consecutive days with activity ending today, or yesterday when today has none yet"
+    },
+    "active_days_30": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nudge": {
+      "type": "string"
+    }
+  }
+}
