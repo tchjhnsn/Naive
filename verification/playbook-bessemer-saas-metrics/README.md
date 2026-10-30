@@ -27,7 +27,7 @@ Replay the routes:
 node verification/playbook-bessemer-saas-metrics/replay.mjs
 ```
 
-An earlier run of TLC 1.7.4 (the statechart script's pinned jar) reported 496 states, 520 steps and exit 0. That output was not saved, so these counts have no file behind them, and TLC has not been re-run since. The TLC column below comes from the same run. The chart draws 13 states and 12 arrows.
+An earlier run of TLC 1.7.4 (the statechart script's pinned jar) reported 496 states, 520 steps and exit 0. Re-run on 30 October 2026 with TLC 2.19 on OpenJDK 21: the same result, saved in `out/tlc.out`. The TLC column below comes from the same run. The chart draws 13 states and 12 arrows.
 
 ## Rules
 
