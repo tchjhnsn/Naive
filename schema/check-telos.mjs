@@ -11,6 +11,7 @@
 //
 //   node schema/check-telos.mjs <workspace or venture dir>
 
+import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -23,8 +24,8 @@ const errors = [], warnings = [];
 let checked = 0;
 
 for (const root of walk(dir)) {
-  const v = load(join(root, "venture.json"));
-  const tPath = join(root, "purpose/telos.json");
+  const v = load(ventureFile(root, "venture.json"));
+  const tPath = ventureFile(root, "purpose/telos.json");
   if (!existsSync(tPath)) {
     if (v.phase !== "discovery" && v.ambition && v.ambition !== "hobby") warnings.push(`${v.id}: past Discovery with no purpose/telos.json; the owner should state the end first`);
     continue;
@@ -45,7 +46,7 @@ for (const root of walk(dir)) {
   const path = t.owner_outcome.path;
   if (v.ambition === "aggressive-growth" && path === "hold") warnings.push(`${at}: aggressive growth usually means investors expecting an exit, but the owners intend to hold`);
   if (v.ambition === "hobby" && ["ipo", "acquisition"].includes(path)) warnings.push(`${at}: a hobby that intends ${path}; is the ambition still hobby?`);
-  const ePath = join(root, "governance/exit.json");
+  const ePath = ventureFile(root, "governance/exit.json");
   if (existsSync(ePath)) {
     const paths = load(ePath).paths;
     const preferred = paths.filter((p) => p.stance === "preferred").map((p) => p.kind);
