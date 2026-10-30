@@ -32,6 +32,7 @@ const steps = [
   ["caching: record and judgment caches, lifetimes, per-action memo", "node", ["schema/caching-test.mjs"]],
   ["freshness: revalidate records by time and on demand", "node", ["schema/freshness-test.mjs"]],
   ["the venture development lifecycle: phases, gates, exit criteria met by a person", "node", ["schema/lifecycle-test.mjs"]],
+  ["artifacts: views name their records, stale when one changes", "node", ["schema/artifacts-test.mjs"]],
   ["context: header first, session layouts, prefetch, context budget, agent vitals", "node", ["interface/context-test.mjs"]],
   ["model steps: use model, judgments, kit boundaries, uncertain routing", "node", ["schema/model-steps-test.mjs"]],
   ["the gate: naive.config.json, one gate per venture, who is acting", "node", ["schema/gate-test.mjs"]],
