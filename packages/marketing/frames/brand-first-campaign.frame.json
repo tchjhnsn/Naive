@@ -1,0 +1,67 @@
+{
+  "id": "brand-first-campaign",
+  "title": "Plan the first campaign",
+  "functions": [
+    "marketing"
+  ],
+  "triggers": [
+    "how do we launch the brand",
+    "what's our first campaign",
+    "how do we get the word out"
+  ],
+  "goal": "{goal}",
+  "premises": [
+    {
+      "id": "campaign-has-goal",
+      "claim": "The first campaign has a measurable goal tied to the venture's goal.",
+      "attack": "test-the-goal",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    },
+    {
+      "id": "reach-or-depth",
+      "claim": "The campaign must choose between reaching many people and moving a few deeply.",
+      "attack": "false-dichotomy",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    }
+  ],
+  "attacks": [
+    "test-the-goal",
+    "false-dichotomy",
+    "sequence-not-choose"
+  ],
+  "reframe": "What first campaign, with what measure, carries the tagline to the first audience?",
+  "props": [
+    "phase",
+    "goal"
+  ],
+  "freshness": {
+    "look_for": [
+      "ventures that faced the same brand problem, and what it cost them"
+    ],
+    "max_age_days": 365,
+    "cite": true
+  },
+  "reasoning": [
+    "Read the venture's goal and phase.",
+    "Judge each premise against the facts alone.",
+    "Propose the decision open; never pick an option."
+  ],
+  "emits": [
+    {
+      "id": "brand-first-campaign",
+      "question": "What is the first campaign: its audience, message and measure?",
+      "options": [
+        "the audience it reaches",
+        "the message it carries",
+        "the measure that says it worked"
+      ],
+      "layer": "purpose"
+    }
+  ]
+}

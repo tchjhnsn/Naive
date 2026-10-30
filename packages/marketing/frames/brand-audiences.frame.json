@@ -1,0 +1,67 @@
+{
+  "id": "brand-audiences",
+  "title": "Choose who the brand speaks to first",
+  "functions": [
+    "marketing"
+  ],
+  "triggers": [
+    "who is our brand for",
+    "who should we be talking to",
+    "our message is for everyone"
+  ],
+  "goal": "{goal}",
+  "premises": [
+    {
+      "id": "one-audience-first",
+      "claim": "Speaking to one audience first serves the goal better than speaking to everyone at once.",
+      "attack": "test-the-goal",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    },
+    {
+      "id": "audiences-conflict",
+      "claim": "The audiences the venture could address want different things from it.",
+      "attack": "split-the-dimension",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    }
+  ],
+  "attacks": [
+    "test-the-goal",
+    "split-the-dimension",
+    "sequence-not-choose"
+  ],
+  "reframe": "Which audience, reached first, moves the venture toward its goal in the {phase} phase, and which waits?",
+  "props": [
+    "phase",
+    "goal"
+  ],
+  "freshness": {
+    "look_for": [
+      "ventures that faced the same brand problem, and what it cost them"
+    ],
+    "max_age_days": 365,
+    "cite": true
+  },
+  "reasoning": [
+    "Read the venture's goal and phase.",
+    "Judge each premise against the facts alone.",
+    "Propose the decision open; never pick an option."
+  ],
+  "emits": [
+    {
+      "id": "brand-audiences",
+      "question": "Which audiences does the brand speak to, and in what order?",
+      "options": [
+        "the people who have the problem",
+        "the people who pay",
+        "the people who influence either"
+      ],
+      "layer": "purpose"
+    }
+  ]
+}

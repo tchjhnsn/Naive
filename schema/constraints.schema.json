@@ -18,7 +18,8 @@
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
           "statement": { "type": "string" },
           "why": { "type": "string" },
-          "source": { "type": "string" }
+          "source": { "type": "string" },
+          "conversation": { "type": "array", "description": "The founder's messages this constraint was made from (naive diagnose catches)", "items": { "$ref": "conversation-ref.schema.json" } }
         }
       }
     },
