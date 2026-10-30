@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "naive": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/interface/cli/naive.mjs",
+        "mcp"
+      ],
+      "env": {
+        "MENTURA_HARNESS": "Claude Code"
+      }
+    }
+  }
+}
