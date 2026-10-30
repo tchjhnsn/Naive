@@ -14,11 +14,20 @@
     {
       "id": "naive-create",
       "path": "interface/skills/naive-create/SKILL.md"
+    },
+    {
+      "id": "choosing-artifacts",
+      "path": "interface/skills/choosing-artifacts/SKILL.md"
+    },
+    {
+      "id": "run-playbook",
+      "path": "interface/skills/run-playbook/SKILL.md"
     }
   ],
   "records": [
     "route-aliases",
-    "adapter"
+    "adapter",
+    "artifact"
   ],
   "reads": [
     "integration"

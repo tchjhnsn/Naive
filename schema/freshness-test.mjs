@@ -135,7 +135,9 @@ F.verify(dir, "path:validation"); F.verify(dir, "product/booking");
 // Per phase (V-2).
 const agentPhase = mentura("phase", "validation", "--venture", "clinic");
 expect("phase: an agent may not change the phase", agentPhase.status === 1 && /a person's/.test(agentPhase.stderr));
-const ph = mentura("phase", "validation", "--venture", "clinic", "--as", "person", "--json");
+const gated = mentura("phase", "validation", "--venture", "clinic", "--as", "person");
+expect("phase: the lifecycle gate refuses while discovery has no exit criteria", gated.status === 1 && /gate is not passed/.test(gated.stderr), gated.stderr);
+const ph = mentura("phase", "validation", "--venture", "clinic", "--as", "person", "--override", "no exit criteria in this test", "--json");
 expect("phase: a person moves the venture to validation; venture.json says so", ph.status === 0 && JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase === "validation", ph.stderr);
 expect("phase: leaving Discovery adds the empty core product, as init does, and says to fill it in", JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).core?.promise === "" && /core product/.test(ph.stdout));
 expect("phase: moving to the phase it is already in is refused", mentura("phase", "validation", "--venture", "clinic", "--as", "person").status === 1);

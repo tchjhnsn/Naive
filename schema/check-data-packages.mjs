@@ -10,6 +10,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-data-packages.mjs <workspace or venture dir>"); process.exit(2); }
@@ -32,10 +33,10 @@ for (const v of walk(dir)) {
   const id = load(join(v, "venture.json")).id;
   const git = inGit(v);
   for (const pack of PACKS) {
-    const base = join(v, pack);
+    const base = ventureFile(v, pack);
     if (!existsSync(base)) continue;
     for (const name of readdirSync(base)) {
-      if (name.startsWith("_") || name.startsWith(".")) continue;
+      if (name.startsWith("_") || name.startsWith(".") || name === "README.md" || name === "AGENTS.md") continue;
       const p = join(base, name);
       if (!statSync(p).isFile() || !name.endsWith(".json")) errors.push(`${id}/${pack}/${name}: a master record is <id>.json`);
     }
@@ -56,7 +57,7 @@ for (const v of walk(dir)) {
       }
     }
   }
-  const sources = join(v, "raw/sources");
+  const sources = join(ventureFile(v, "raw/sources"));
   if (existsSync(sources)) for (const s of readdirSync(sources)) {
     const sd = join(sources, s);
     if (!statSync(sd).isDirectory() || s.startsWith(".")) continue;
@@ -64,9 +65,9 @@ for (const v of walk(dir)) {
     if (!existsSync(join(sd, "text.md"))) errors.push(`${id}/raw/sources/${s}: missing text.md`);
     for (const f of readdirSync(sd)) if (f.startsWith("original.") && (!git || tracked(v, join("raw/sources", s, f)))) errors.push(`${id}/raw/sources/${s}/${f}: original.* stays out of git`);
   }
-  const map = ["ideas/map.mdx", "purpose/ideas/map.mdx"].map((f) => join(v, f)).find((p) => existsSync(p));
+  const map = ["ideas/map.mdx", "purpose/ideas/map.mdx"].map((f) => ventureFile(v, f)).find((p) => existsSync(p));
   const rawIds = new Set();
-  const dump = join(v, "raw/dump");
+  const dump = join(ventureFile(v, "raw/dump"));
   if (existsSync(dump)) for (const f of readdirSync(dump)) if (f !== ".gitkeep") rawIds.add(f.replace(/\.[^.]+$/, ""));
   if (existsSync(sources)) for (const s of readdirSync(sources)) if (!s.startsWith(".")) rawIds.add(s);
   if (map && rawIds.size) {

@@ -10,7 +10,7 @@
 //                      [--source <function>=<system>[:<address>],... ...] [--rho-fixture]
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
-//                      [--framework <spec>] [--reset-preferences]
+//                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
 //
 // --source says where a function keeps its truth (schema/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
@@ -47,7 +47,7 @@ const FORMS = JSON.parse(readFileSync(join(framework, "schema/venture.schema.jso
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
@@ -75,13 +75,18 @@ const choose = async (q, options, fallback) => {
   return a;
 };
 
-// 1. The name and the directory.
+// 1. The name and the directory. The defaults are "My first venture" in my-first-venture/, and either can
+// be renamed later; a directory given on the command line names the venture unless --venture-name does.
+const FIRST = "My first venture";
+const WORKSPACE_FILE = "naive-workspace.json";
 let target = positional[0];
+let ventureName = opt("venture-name");
 if (!target) {
-  if (!interactive) fail("usage: create-venture <dir> [--yes]: name the directory for the new venture");
-  target = await ask("What is your venture named?", "my-venture");
+  ventureName ??= interactive ? await ask("What is your venture named?", FIRST) : FIRST;
+  target = slug(ventureName);
 }
 const dir = resolve(target);
+ventureName ??= basename(dir);
 const id = slug(basename(dir));
 if (!id) fail(`${basename(dir)} has no letters or digits to make a venture id from`);
 if (existsSync(dir) && readdirSync(dir).length) fail(`${dir} already exists and is not empty. create-venture only creates new ventures; to bring an existing project in, create one here and run naive port or naive migrate.`);
@@ -149,13 +154,23 @@ let answers = { ...recommended };
 const given = opt("phase") || opt("layers") || opt("legal-form") || opt("dump");
 if (given) answers = { phase: opt("phase") ?? "discovery", layers: opt("layers") ?? null, legalForm: opt("legal-form") ?? null, dump: opt("dump") ?? null };
 else if (interactive) answers.phase = await choose("Which phase is the venture in?", PHASES, prefs?.phase ?? "discovery");
-// A solo founder owns every function the type imports; on a team, each function is asked once.
+// The layout (EE-086): structured (knowledge/, meta/, the org chart in venture.json) unless --layout flat.
+const layout = opt("layout") ?? "structured";
+if (!["flat", "structured"].includes(layout)) fail(`unknown layout ${layout}: structured or flat`);
+const structured = layout === "structured";
+// A solo founder owns every function; on a team, each function is asked once. In the structured layout the
+// functions are the org chart's (one per package, flat) and ownership goes in venture.json; in the flat one,
+// the catalog's departments, worn as hats in people/.
+const fnIds = structured ? vtype.packages : vtype.departments;
+const fnLabel = (f) => (structured ? f : deptLabel(f));
 const owners = people.filter((p) => roleOf(p.role)?.owns_when_solo);
+const ownerOf = {};
 for (const p of people) p.hats = [];
-if (owners.length === 1 || !interactive) for (const d of vtype.departments) (owners[0] ?? { hats: [] }).hats.push(d);
-else for (const d of vtype.departments) {
-  const who = await choose(`Who owns ${deptLabel(d)}?`, owners.map((p) => p.id), owners[0].id);
-  owners.find((p) => p.id === who).hats.push(d);
+if (owners.length === 1 || !interactive) for (const f of fnIds) { ownerOf[f] = owners[0]?.id ?? null; owners[0]?.hats.push(f); }
+else for (const f of fnIds) {
+  const who = await choose(`Who owns ${fnLabel(f)}?`, owners.map((p) => p.id), owners[0].id);
+  ownerOf[f] = who;
+  owners.find((p) => p.id === who).hats.push(f);
 }
 // 6. Where each function keeps its truth (EE-083): pointers to its systems of record, in the founder's words when none fits.
 const CATALOG = JSON.parse(readFileSync(join(framework, "schema/systems-catalog.json"), "utf8"));
@@ -207,30 +222,34 @@ rl?.close();
 
 // 4. The venture itself, by the framework's own scaffold.
 console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
-const init = spawnSync("node", [join(framework, "schema/init-venture.mjs"), dir, id, "--phase", answers.phase, "--type", vtype.id,
+const init = spawnSync("node", [join(framework, "schema/init-venture.mjs"), dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
   ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");
 const venture = JSON.parse(readFileSync(vfile, "utf8"));
-venture.name = basename(dir);
+venture.name = ventureName;
 if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.role === "general-partner" ? "partner" : p.role, kind: "person" }));
+// The org chart (EE-086): each function's owner. Hats are read from here, never stored twice.
+if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
 writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
+// Where each logical file sits in this venture's layout (schema/venture-paths.mjs).
+const { ventureFile: vf, physical } = await import(join(framework, "schema/venture-paths.mjs"));
 
 // people/: the roster and one file per founder, the venture.json of human capital (EE-082).
 const { agentFromEnv, record } = await import(join(framework, "interface/provenance.mjs"));
 const today = new Date().toISOString().slice(0, 10);
-mkdirSync(join(dir, "people/founders"), { recursive: true });
+mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const asPerson = agentFromEnv("person", "cli", { id: people[0].id });
 for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
   p.founder_file = `people/founders/${p.id}.json`;
-  writeFileSync(join(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, hats: p.hats, joined: today }, null, 2) + "\n");
+  writeFileSync(vf(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, ...(structured ? {} : { hats: p.hats }), joined: today }, null, 2) + "\n");
   record(dir, { entity: p.founder_file, route: `people/founders/${p.id}`, activity: "write", agent: asPerson, note: `${p.name}, ${p.role}, as answered at create-venture` });
 }
-writeFileSync(join(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, hats, ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
+writeFileSync(vf(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, ...(structured ? {} : { hats }), ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
 record(dir, { entity: "people/people.json", route: "people", activity: "write", agent: asPerson, note: `${mode}: ${people.map((p) => `${p.name} (${p.role})`).join(", ")}` });
 if (answers.dump) {
-  mkdirSync(join(dir, "raw"), { recursive: true });
-  copyFileSync(resolve(answers.dump), join(dir, "raw/dump.md"));
+  mkdirSync(vf(dir, "raw"), { recursive: true });
+  copyFileSync(resolve(answers.dump), vf(dir, "raw/dump.md"));
   record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv("person", "cli"), note: `the founder's idea dump, verbatim, from ${resolve(answers.dump)}` });
 }
 
@@ -250,7 +269,7 @@ for (const f of Object.values(functions)) for (const s of f.systems) {
   } else rhoNote = `Rho: could not sync (${(r.stderr || r.stdout).trim().split("\n").at(-1)}); recorded as pointed`;
 }
 if (Object.keys(functions).length) {
-  const map = join(dir, "knowledge/sources.json");
+  const map = vf(dir, "knowledge/sources.json");
   mkdirSync(dirname(map), { recursive: true });
   writeFileSync(map, JSON.stringify({ sources: [], records: {}, truth: "local", functions }, null, 2) + "\n");
   record(dir, { entity: "knowledge/sources.json", route: "knowledge/knowledge-sources", activity: "write", agent: asPerson,
@@ -266,12 +285,12 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
   devDependencies: { [fw.name]: spec },
 }, null, 2) + "\n");
-writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n");
+writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(join(framework, "interface/router.mjs"));
 const schemas = new Map();
-for (const r of routes()) if (r.kind === "record" && r.schema && r.form !== "md") for (const f of r.files ?? []) if (f.endsWith(".json")) schemas.set(r.schema, [...(schemas.get(r.schema) ?? []), `/${f}`]);
+for (const r of routes()) if (r.kind === "record" && r.schema && r.form !== "md") for (const f of r.files ?? []) if (f.endsWith(".json")) schemas.set(r.schema, [...(schemas.get(r.schema) ?? []), `/${physical(dir, f)}`]);
 mkdirSync(join(dir, ".vscode"), { recursive: true });
 writeFileSync(join(dir, ".vscode/settings.json"), JSON.stringify({
   "json.schemas": [...schemas].map(([schema, fileMatch]) => ({ fileMatch: [...new Set(fileMatch)], url: `./node_modules/${fw.name}/${schema}` })),
@@ -291,6 +310,27 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
   git = c.status === 0 ? "initialized, with a first commit" : "initialized; the first commit was skipped because git has no user.name and user.email";
 } else if (!flag("no-git")) git = "skipped (already inside a git repository)";
 
+// The workspace (the folder holding the founder's ventures, like a monorepo root): the nearest
+// naive-workspace.json above the venture lists it; with none, the venture's parent folder becomes the
+// workspace, named "Naive workspace" until the founder renames it, with an AGENTS.md for rules that hold
+// across every venture. --no-workspace leaves the parent folder as it is.
+let workspace = null;
+if (!flag("no-workspace")) {
+  let up = dirname(dir);
+  while (!existsSync(join(up, WORKSPACE_FILE)) && dirname(up) !== up) up = dirname(up);
+  const root = existsSync(join(up, WORKSPACE_FILE)) ? up : dirname(dir);
+  const wf = join(root, WORKSPACE_FILE);
+  const ws = existsSync(wf) ? JSON.parse(readFileSync(wf, "utf8")) : { schema: "everything-ecosystem", schema_version: readFileSync(join(framework, "schema/VERSION"), "utf8").trim(), name: "Naive workspace", ventures: [], settings: { cross_venture_reads: true, route_threshold: 0.8 } };
+  const rel = relative(root, dir);
+  if (!ws.ventures.includes(rel)) ws.ventures.push(rel);
+  writeFileSync(wf, JSON.stringify(ws, null, 2) + "\n");
+  if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
+  // The workspace's own folders: raw/ keeps what the founder captures, inbox/ holds what waits for them,
+  // meta/ the logs, founder/ the founder record once.
+  for (const d of ["raw", "inbox", "meta", "founder"]) { mkdirSync(join(root, d), { recursive: true }); if (!readdirSync(join(root, d)).length) writeFileSync(join(root, d, ".gitkeep"), ""); }
+  workspace = { root, name: ws.name };
+}
+
 try { mkdirSync(dirname(prefsFile), { recursive: true }); writeFileSync(prefsFile, JSON.stringify({ type: vtype.id, role, mode, phase: answers.phase, layers: answers.layers, legalForm: answers.legalForm }, null, 2) + "\n"); } catch {}
 
 const runScript = (s) => (manager === "npm" ? `npm run ${s}` : `${manager} ${s}`);
@@ -298,6 +338,7 @@ const cd = relative(process.cwd(), dir) || ".";
 const legal = functions.legal?.systems.length ? null : "Legal documents: none connected yet. Point Naive at them later with --source legal=google-drive:<folder> (or docusign, local-folder), and draft the founder agreement with the founding-agreement kit.";
 console.log(`
 ${bold("Success!")} Created ${basename(dir)} at ${dir}
+Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE})` : "none (--no-workspace)"}
 Git: ${git}${rhoNote ? `\n${rhoNote}` : ""}${legal ? `\n${legal}` : ""}
 
 Inside that directory, you can run:

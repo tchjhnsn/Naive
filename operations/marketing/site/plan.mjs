@@ -19,6 +19,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { customerNeeds, factsOf, MATRIX, needs, typesOf, weights } from "./presence.mjs";
+import { ventureFile } from "../../../schema/venture-paths.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const SITEMAP = "operations/marketing/sitemap.json";
@@ -33,10 +34,10 @@ const RECORD_FILE = { venture: "venture.json", icp: "purpose/icp.json", "validat
 
 /** The offerings: each product, what kind of offering it is, whom it is offered to and whom it serves through them. */
 export function offeringsOf(dir) {
-  const icp = existsSync(join(dir, "purpose/icp.json")) ? load(join(dir, "purpose/icp.json")) : { profiles: [] };
+  const icp = existsSync(join(ventureFile(dir, "purpose/icp.json"))) ? load(join(ventureFile(dir, "purpose/icp.json"))) : { profiles: [] };
   const profiles = new Map(icp.profiles.map((p) => [p.id, p]));
   const primary = icp.profiles.find((p) => p.primary) ?? icp.profiles[0];
-  const pdir = join(dir, "products");
+  const pdir = join(ventureFile(dir, "products"));
   const products = existsSync(pdir) ? readdirSync(pdir).filter((f) => f.endsWith(".json")).map((f) => load(join(pdir, f))).filter((p) => !["retired", "archived", "idea"].includes(p.status)) : [];
   return { profiles, products: products.map((p) => {
     // Who it is offered to: the product says so; otherwise the profiles others are reached through
@@ -104,7 +105,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node plan.mjs <venture> [--raising] [--hiring] [--contributors] [--write] [--json]"); process.exit(2); }
   const has = (n) => process.argv.includes(`--${n}`);
   const r = plan(dir, { flags: Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true])) });
-  if (has("write")) { mkdirSync(join(dir, dirname(SITEMAP)), { recursive: true }); writeFileSync(join(dir, SITEMAP), JSON.stringify(r, null, 2) + "\n"); }
+  if (has("write")) { mkdirSync(join(dir, dirname(SITEMAP)), { recursive: true }); writeFileSync(ventureFile(dir, SITEMAP), JSON.stringify(r, null, 2) + "\n"); }
   if (has("json")) console.log(JSON.stringify(r, null, 2));
   else {
     console.log(`${r.name}: site planned for ${r.audience.offered_to.map((p) => p.id).join(", ") || "no ICP yet"} (${r.audience.types.map((t) => t.label).join(", ") || "customers in general"})${r.audience.partner_led ? "; partner-led" : ""}`);

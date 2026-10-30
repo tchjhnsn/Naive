@@ -11,6 +11,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { LOCAL, MAP, registry } from "../knowledge/connectors/index.mjs";
 import { ANY, CONTEXT, specificity } from "../knowledge/connectors/resolve.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-sources.mjs <workspace or venture dir>"); process.exit(2); }
@@ -27,7 +28,7 @@ const errors = [];
 let maps = 0;
 
 for (const v of walk(dir)) {
-  const f = join(v, MAP);
+  const f = ventureFile(v, MAP);
   if (!existsSync(f)) continue;
   maps++;
   const id = JSON.parse(readFileSync(join(v, "venture.json"), "utf8")).id;

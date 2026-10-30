@@ -25,12 +25,14 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { factsOf as needFacts, probability } from "./need-now.mjs";
-import { confirmedIn, filesOf } from "./foundation.mjs";
+import { confirmedIn, filesOf, icpProfiles } from "./foundation.mjs";
 import { route } from "../purpose/frameworks/idea-map/route.mjs";
 
 import { loadPackages } from "./load-packages.mjs";
 // Upgrades hook (U-5): packages a venture adopted early in naive.config.json open now.
 import { adopted } from "./naive-config.mjs";
+import { ventureFile } from "./venture-paths.mjs";
+import { scale } from "./canonical.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -39,20 +41,19 @@ export const OUT = "package";
 const MODEL = load(join(repo, "schema/data-model.json"));
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const r2 = (x) => Math.round(x * 100) / 100;
-const json = (dir, f) => existsSync(join(dir, f)) ? load(join(dir, f)) : null;
+const json = (dir, f) => existsSync(ventureFile(dir, f)) ? load(ventureFile(dir, f)) : null;
 
 /** The facts the packages test: need-now's, the founder's flags, and the question matrix's answers. */
 export function situation(dir, { flags = {}, answers = null } = {}) {
   const f = needFacts(dir);
   const phase = PHASES.includes(f.phase) ? f.phase : "discovery";
-  const icp = json(dir, "foundation/icp.json") ?? json(dir, "purpose/icp.json");
-  const profiles = icp?.profiles ?? [];
+  const profiles = icpProfiles(dir);
   const products = filesOf(dir, "product").map((p) => json(dir, p)).filter(Boolean);
   // What the records settle, by question; undefined means they do not.
   const settled = {
     raising: flags.raising != null ? !!flags.raising : f.funding === "bootstrapped" ? false : undefined,
     // A site read by site presence; a planned sitemap does not count, since the pipeline plans one for every venture.
-    site: existsSync(join(dir, "operations/marketing/site-presence.json")) || undefined,
+    site: existsSync(join(ventureFile(dir, "operations/marketing/site-presence.json"))) || undefined,
     partner_led: profiles.some((p) => p.reached_through?.length) || products.some((p) => (p.offered_to ?? []).some((id) => profiles.some((y) => y.reached_through?.includes(id)))) || undefined,
     hiring: flags.hiring != null ? !!flags.hiring : f.team === "looking" ? true : undefined,
     regulated: undefined,
@@ -60,7 +61,7 @@ export function situation(dir, { flags = {}, answers = null } = {}) {
   };
   const Q = PACKAGES.questions;
   // Jev's answers from the last written package stand, unless new answers replace them.
-  const last = existsSync(join(dir, OUT, "venture-package.json")) ? Object.fromEntries(load(join(dir, OUT, "venture-package.json")).situation.questions.filter((q) => q.p != null).map((q) => [`q:${q.id}`, { noul: q.p }])) : {};
+  const last = existsSync(join(ventureFile(dir, OUT), "venture-package.json")) ? Object.fromEntries(load(join(ventureFile(dir, OUT), "venture-package.json")).situation.questions.filter((q) => q.p != null).map((q) => [`q:${q.id}`, { noul: q.p }])) : {};
   answers = { ...last, ...(answers ?? {}) };
   const questions = Q.items.filter((q) => q.phases.includes(phase)).map((q) => {
     if (settled[q.id] !== undefined) return { ...q, value: settled[q.id], by: "records" };
@@ -77,11 +78,11 @@ export function request(dir) {
   const { questions } = situation(dir);
   const v = load(join(dir, "venture.json"));
   const say = (o) => o ? JSON.stringify(o).slice(0, 1200) : null;
-  const dumpFile = ["raw/dump.md", "purpose/ideas/dump.md"].find((f) => existsSync(join(dir, f)));
-  const dump = dumpFile ? readFileSync(join(dir, dumpFile), "utf8").slice(0, 2500) : null;
+  const dumpFile = ["raw/dump.md", "purpose/ideas/dump.md"].find((f) => existsSync(ventureFile(dir, f)));
+  const dump = dumpFile ? readFileSync(ventureFile(dir, dumpFile), "utf8").slice(0, 2500) : null;
   const problem = json(dir, "foundation/problem.json") ?? json(dir, "purpose/validation/problem.json");
-  const icpRec = json(dir, "foundation/icp.json") ?? json(dir, "purpose/icp.json");
-  return { state: { venture: say({ name: v.name, phase: v.phase, ambition: v.ambition, form: v.form, core: v.core }), problem: say(problem), icp: say(icpRec),
+  const icpRec = icpProfiles(dir).map(({ file, ...p }) => p);
+  return { state: { venture: say({ name: v.name, phase: v.phase, ambition: scale(dir, v), form: v.form, core: v.core }), problem: say(problem), icp: say(icpRec.length ? { profiles: icpRec } : null),
     products: say(filesOf(dir, "product").map((p) => json(dir, p)).filter(Boolean).map((p) => ({ name: p.name, offering: p.offering, description: p.description }))), ideas: dump,
     guidelines: "These are one venture's own records and its founder's idea dump. Answer only from what they say; when they do not say, answer low." },
     model: "jev-latest", questions: Object.fromEntries(questions.filter((q) => q.by === "open").map((q) => [`q:${q.id}`, { type: "noul", instructions: q.ask, criteria: { true: "Yes, the records say or clearly imply it", false: "No, or the records do not say" } }])) };
@@ -89,9 +90,9 @@ export function request(dir) {
 
 /** A record's state in this venture: confirmed by a person, written by an agent, waiting as a draft, or missing. */
 function stateOf(dir, type) {
-  const files = filesOf(dir, type).filter((f) => existsSync(join(dir, f)) && !(f.endsWith(".json") && ["retired", "archived"].includes(json(dir, f)?.status)));
+  const files = filesOf(dir, type).filter((f) => existsSync(ventureFile(dir, f)) && !(f.endsWith(".json") && ["retired", "archived"].includes(json(dir, f)?.status)));
   const drafts = (filesOf(dir, type).length ? filesOf(dir, type) : [MODEL.records.find((r) => r.id === type)?.paths?.find((p) => p.startsWith("instance/**/"))?.slice(12)].filter(Boolean))
-    .filter((f) => !f.includes("*") && existsSync(join(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
+    .filter((f) => !f.includes("*") && existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
   if (!files.length) return { status: drafts.length ? "draft" : "missing", files: [], drafts };
   const confirmed = files.every((f) => confirmedIn(dir, f, null));
   return { status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", files, drafts };
@@ -174,7 +175,7 @@ const LEAD = ["name", "title", "who", "statement", "question", "label", "id"];
 const lead = (o) => { const k = LEAD.find((k) => typeof o[k] === "string"); return k ? o[k] : ""; };
 const rest = (o) => { const k = LEAD.find((k) => typeof o[k] === "string"); return Object.fromEntries(Object.entries(o).filter(([x]) => x !== k)); };
 const body = (dir, f) => {
-  const t = readFileSync(join(dir, f), "utf8");
+  const t = readFileSync(ventureFile(dir, f), "utf8");
   if (f.endsWith(".json")) return md(JSON.parse(t));
   return t.replace(/^---\n[\s\S]*?\n---\n/, "").replace(/^#\s.*\n/, "").trim();
 };
@@ -183,7 +184,7 @@ const STATE = { complete: "complete: its automation may run", review: "every rec
 
 /** A new version each time a package completes or the phase changes; earlier versions are kept. */
 export function versions(dir, r) {
-  const f = join(dir, OUT, "venture-package.json");
+  const f = join(ventureFile(dir, OUT), "venture-package.json");
   const before = existsSync(f) ? load(f) : null;
   const list = before?.versions ?? [];
   const last = list.at(-1);
@@ -196,7 +197,7 @@ export function versions(dir, r) {
 
 /** Write the readable view: the manifest, the index, and one document per open core package. */
 export function write(dir, r) {
-  const out = join(dir, OUT);
+  const out = ventureFile(dir, OUT);
   mkdirSync(out, { recursive: true });
   r.versions = versions(dir, r);
   writeFileSync(join(out, "venture-package.json"), JSON.stringify(r, null, 2) + "\n");

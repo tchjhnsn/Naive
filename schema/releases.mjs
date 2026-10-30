@@ -43,6 +43,7 @@ import { attributeSources, connect } from "../knowledge/connectors/index.mjs";
 import { FRAME, confirmedIn } from "./foundation.mjs";
 import { HOME, packages } from "./packages.mjs";
 import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "./release-read.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -68,7 +69,7 @@ export function key() {
 
 /** The local cache for a key: { entries, hits, misses, fresh, get(k, f), save() }. A different key starts it fresh. */
 export function openCache(dir, k = key()) {
-  const f = join(dir, CACHE);
+  const f = ventureFile(dir, CACHE);
   const kh = sha(JSON.stringify(k)).slice(0, 16);
   let old = null;
   try { old = existsSync(f) ? load(f) : null; } catch { old = null; }
@@ -87,7 +88,7 @@ export function openCache(dir, k = key()) {
 
 /** Every file of a venture, relative: skips dot folders, nested ventures and _-folders other than _streams. */
 export function ventureFiles(dir, sub = "") {
-  return readdirSync(join(dir, sub), { withFileTypes: true }).flatMap((e) => {
+  return readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.name.startsWith(".") || e.name === "node_modules") return [];
     if (e.isDirectory()) return existsSync(join(dir, rel, "venture.json")) || (e.name.startsWith("_") && e.name !== "_streams") ? [] : ventureFiles(dir, rel);
@@ -121,7 +122,7 @@ export function confirmation(dir, file, type, log) {
   const es = log.filter((e) => e.entity === file);
   if (!es.length) return { ok: false, why: "no provenance entry: written outside the router", fix: "baseline" };
   const last = es.at(-1);
-  const now = sha(readFileSync(join(dir, file)));
+  const now = sha(readFileSync(ventureFile(dir, file)));
   if (last.sha256 && last.sha256 !== now) return { ok: false, why: "changed since its last provenance entry", fix: "rewrite" };
   const statements = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record === type && s.id);
   const ok = confirmedIn(dir, file, null) || (statements.length > 0 && statements.every((s) => confirmedIn(dir, file, s.id)));
@@ -195,7 +196,7 @@ export async function survey(dir, { cache } = {}) {
     const stream = file.match(/^(.*\/_streams\/[^/]+)\//);
     if (stream) { if (!streams.has(stream[1])) streams.set(stream[1], file); continue; }
     if (file.endsWith(".decision.json") && file.split("/").at(-2) === "decisions") {
-      const d = load(join(dir, file));
+      const d = load(ventureFile(dir, file));
       const ro = routeOf(file, ms);
       if (d.status === "decided") frozen.push({ file, record: "decision-record", route: ro?.route ?? `decisions/${d.id}`, route_template: ro?.template ?? "decisions/[id]", ...(ro?.id ? { id: ro.id } : {}),
         as_of: d.provenance?.approved_at ?? null, confirmed_by: d.provenance?.approved_by ?? d.decided_by ?? "a person" });
@@ -209,7 +210,7 @@ export async function survey(dir, { cache } = {}) {
     if (!type) { leftOut.push({ file, why: "not a record: notes and readmes never ship" }); continue; }
     if (NOT_SHIPPED[type]) { leftOut.push({ file, why: NOT_SHIPPED[type] }); continue; }
     if (LIVE[type]) { holes.push({ kind: type === "money-account" ? "money" : "stream", name: ro.id ?? file, file, record: type, route: ro.route, route_template: ro.template, why: LIVE[type], live: `${CLI} ${ro.route} read --venture ${v.id}`, to_freeze: "stays live by design: confirm a dated summary record to freeze a number" }); continue; }
-    const text = readFileSync(join(dir, file), "utf8");
+    const text = readFileSync(ventureFile(dir, file), "utf8");
     let parsed = null;
     if (file.endsWith(".json")) { try { parsed = JSON.parse(text); } catch { blockers.push({ file, route: ro.route, record: type, why: "not valid JSON", fix: `fix ${file}` }); continue; } }
     if (parsed?.private === true) { privateCount.records++; continue; }
@@ -251,9 +252,9 @@ export async function survey(dir, { cache } = {}) {
     const id = d.split("/").at(-1);
     holes.push({ kind: "stream", name: d, file: first, record: "data-stream", stream: id, route: d, route_template: null, why: "a stream is append-only activity; it is never frozen", live: `read ${d}/ in the venture`, to_freeze: "stays live by design" });
   }
-  if (existsSync(join(dir, "_private"))) privateCount.folder = ventureFilesAll(join(dir, "_private")).length;
+  if (existsSync(join(ventureFile(dir, "_private")))) privateCount.folder = ventureFilesAll(join(ventureFile(dir, "_private"))).length;
   // Drafts (P-31): never shipped. One with no confirmed record behind it blocks its package.
-  const drafts = existsSync(join(dir, "_drafts")) ? readdirSync(join(dir, "_drafts")).filter((f) => f.endsWith(".draft")) : [];
+  const drafts = existsSync(join(ventureFile(dir, "_drafts"))) ? readdirSync(join(ventureFile(dir, "_drafts"))).filter((f) => f.endsWith(".draft")) : [];
   for (const d of drafts) {
     const file = d.replace(/\.draft$/, "").replace(/__/g, "/");
     const ro = routeOf(file, ms);
@@ -293,7 +294,7 @@ async function frozenCommands(dir, v, frozen, plan, cache, log) {
   try {
     mkdirSync(shadow, { recursive: true });
     writeFileSync(join(shadow, "venture.json"), JSON.stringify(v, null, 2) + "\n");
-    for (const f of frozen) { mkdirSync(dirname(join(shadow, f.file)), { recursive: true }); writeFileSync(join(shadow, f.file), f.text ?? readFileSync(join(dir, f.file), "utf8")); }
+    for (const f of frozen) { mkdirSync(dirname(join(shadow, f.file)), { recursive: true }); writeFileSync(join(shadow, f.file), f.text ?? readFileSync(ventureFile(dir, f.file), "utf8")); }
     // The log, so confirmations hold in the copy; the release's own entries are left out of the key.
     const kept = log.filter((e) => !(e.activity === "release" && e.entity === MANIFEST));
     writeFileSync(join(shadow, "provenance.jsonl"), log.map((e) => JSON.stringify(e)).join("\n") + (log.length ? "\n" : ""));
@@ -369,19 +370,19 @@ function checks(dir) {
 }
 
 function writeRelease(dir, m, frozen) {
-  const stage = join(dir, RELEASE_DIR, `.stage-${process.pid}`);
+  const stage = join(ventureFile(dir, RELEASE_DIR), `.stage-${process.pid}`);
   rmSync(stage, { recursive: true, force: true });
   for (const f of frozen) {
     const dest = join(stage, "records", f.file);
     mkdirSync(dirname(dest), { recursive: true });
-    writeFileSync(dest, f.text ?? readFileSync(join(dir, f.file), "utf8"));
+    writeFileSync(dest, f.text ?? readFileSync(ventureFile(dir, f.file), "utf8"));
   }
   mkdirSync(join(stage, "records"), { recursive: true });
-  rmSync(join(dir, RECORDS), { recursive: true, force: true });
-  renameSync(join(stage, "records"), join(dir, RECORDS));
+  rmSync(ventureFile(dir, RECORDS), { recursive: true, force: true });
+  renameSync(join(stage, "records"), ventureFile(dir, RECORDS));
   rmSync(stage, { recursive: true, force: true });
-  writeFileSync(join(dir, MANIFEST), JSON.stringify(m, null, 2) + "\n");
-  writeFileSync(join(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
+  writeFileSync(ventureFile(dir, MANIFEST), JSON.stringify(m, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
 }
 
 const strip = ({ text, ...rest }) => ({ ...rest, sha256: sha(text ?? "") });
@@ -435,7 +436,7 @@ export async function add(dir, route, { now = new Date().toISOString(), actor = 
   if (!r) return { ok: false, error: `${route} is not a collection item route (such as product/<id>)` };
   const id = route.slice(r.route.length - 4);
   if (m.records.some((x) => x.route === route)) return { ok: false, error: `${route} is already in release ${m.release}; a full build updates it` };
-  const file = r.files.map((g) => g.replace("*", id)).find((f) => existsSync(join(dir, f)));
+  const file = r.files.map((g) => g.replace("*", id)).find((f) => existsSync(ventureFile(dir, f)));
   if (!file) return { ok: false, error: `no ${r.record} ${id} in the venture` };
   const s = await survey(dir);
   const hit = s.frozen.find((f) => f.file === file);
@@ -451,10 +452,10 @@ export async function add(dir, route, { now = new Date().toISOString(), actor = 
   for (const p of m.packages) if (HOME[r.record] === p.id) { p.frozen = [...p.frozen, file]; p.gaps = p.gaps.filter((g) => g !== r.record); const t = p.frozen.length + p.holes.length; p.shell = t ? Math.round((p.frozen.length / t) * 100) / 100 : null; }
   m.incremental = [...(m.incremental ?? []), { route, file, from: before, at: stamp(now) }];
   m.release = releaseId(m);
-  mkdirSync(dirname(join(dir, RECORDS, file)), { recursive: true });
-  writeFileSync(join(dir, RECORDS, file), hit.text);
-  writeFileSync(join(dir, MANIFEST), JSON.stringify(m, null, 2) + "\n");
-  writeFileSync(join(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
+  mkdirSync(dirname(join(ventureFile(dir, RECORDS), file)), { recursive: true });
+  writeFileSync(join(ventureFile(dir, RECORDS), file), hit.text);
+  writeFileSync(ventureFile(dir, MANIFEST), JSON.stringify(m, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
   prov(dir, { entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: added ${route} to ${before} without rebuilding the rest` });
   return { ok: true, manifest: m, added: { route, file, from: before } };
 }
@@ -476,7 +477,7 @@ export function exportRelease(dir, out) {
   if (!m) return { ok: false, error: `no release in ${dir}: build one first` };
   if (existsSync(out) && readdirSync(out).length) return { ok: false, error: `${out} exists and is not empty: an export never writes over files` };
   mkdirSync(out, { recursive: true });
-  const card = JSON.parse(readFileSync(join(dir, CARD), "utf8"));
+  const card = JSON.parse(readFileSync(ventureFile(dir, CARD), "utf8"));
   const lines = [`# ${m.name}`, "", `Phase: ${m.phase}. Release ${m.release}, built ${m.built_at} as of ${m.now}.`, "", "## Headline numbers", "", "| Number | Value | As of | Confirmed by |", "| --- | --- | --- | --- |",
     ...card.headline.filter((h) => h.label !== "Live holes").map((h) => `| ${h.label} | ${h.value}${h.unit ? ` ${h.unit}` : ""} | ${h.as_of ?? m.now} | ${h.confirmed_by.join(", ") || "none"} |`), "", "## Records", "", "| Record | As of | Confirmed by |", "| --- | --- | --- |"];
   for (const r of m.records) {

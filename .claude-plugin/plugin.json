@@ -1,6 +1,6 @@
 {
   "name": "naive",
-  "version": "0.2.1",
+  "version": "0.6.0",
   "description": "Naive, the venture development framework, in your agent: create a venture in conversation, point it at where each function keeps its truth, and settle its foundation and first decisions, with your progress shown as an artifact.",
   "author": {
     "name": "Torian Johnson",

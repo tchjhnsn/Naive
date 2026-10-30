@@ -36,6 +36,7 @@
 //
 // Partial adoption: a route needs only its own record and what its kit reads.
 
+import { mayKnow } from "../schema/visibility.mjs";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -65,6 +66,9 @@ import { routable } from "../schema/structure.mjs";
 import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../schema/stale.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
+import { telosView } from "../frameworks/telos/adapter.mjs";
+import { scale } from "../schema/canonical.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -223,7 +227,7 @@ export function ventures(workspace = defaultWorkspace()) {
 function decisionRights(dir) {
   const t = load(join(repo, "governance/venture-template/decision-rights.json"));
   const classes = new Map(t.classes.map((c) => [c.id, c]));
-  const own = join(dir, "governance/decision-rights.json");
+  const own = join(ventureFile(dir, "governance/decision-rights.json"));
   if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c, level: classes.get(c.id)?.level === "escalate" ? "escalate" : c.level });
   return classes;
 }
@@ -239,7 +243,7 @@ export function gateOf(r, dir) {
 // Robots: a team-plan role may list the routes it may read and write (globs over routes).
 export function allowed(dir, actorId, action, route) {
   if (!actorId || !dir) return true;
-  const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
+  const plan = [join(ventureFile(dir, "people/team-plan.json")), join(ventureFile(dir, "operations/team-plan.json"))].find((p) => existsSync(p));
   if (!plan) return true;
   const role = load(plan).roles.find((x) => x.id === actorId);
   if (!role?.routes) return true;
@@ -249,6 +253,7 @@ export function allowed(dir, actorId, action, route) {
 
 const PACKAGE_ROUTE = {
   "validation-problem": "foundation/problem", icp: "foundation/icp", telos: "foundation/telos", alignment: "foundation/alignment",
+  goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints",
   "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-go-to-market": "validation/go-to-market",
   "validation-product-market-fit": "validation/product-market-fit", "validation-operations-readiness": "validation/operations-readiness",
   "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content",
@@ -264,11 +269,11 @@ const PACKAGE_ROUTE = {
 const fileFor = (r, params, dir) => {
   const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", params.id)) : r.files).filter((f) => !f.includes("*"));
   if (dir) {
-    const hit = cands.find((f) => existsSync(join(dir, f)));
+    const hit = cands.find((f) => existsSync(ventureFile(dir, f)));
     if (hit) return hit;
     // A new collection item joins the folder the venture already keeps that collection in.
     if (r.collection === "item") {
-      const lived = cands.find((f) => { const d = join(dir, dirname(f)); return existsSync(d) && readdirSync(d).some((n) => n.endsWith(".json") || n.endsWith(".md") || n.endsWith(".mdx")); });
+      const lived = cands.find((f) => { const d = ventureFile(dir, dirname(f)); return existsSync(d) && readdirSync(d).some((n) => n.endsWith(".json") || n.endsWith(".md") || n.endsWith(".mdx")); });
       if (lived) return lived;
     }
   }
@@ -289,7 +294,7 @@ export function draftOf(route, venture, workspace) {
 function agentsChain(dir, route) {
   if (!dir) return [];
   const chain = [];
-  const add = (rel) => { const f = join(dir, rel); if (existsSync(f)) chain.push({ path: rel, text: readFileSync(f, "utf8") }); };
+  const add = (rel) => { const f = ventureFile(dir, rel); if (existsSync(f)) chain.push({ path: rel, text: readFileSync(f, "utf8") }); };
   add("AGENTS.md");
   const parts = route.split("/").filter(Boolean);
   let acc = "";
@@ -392,7 +397,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (r.internal === "robots") return { ok: true, result: robots(dir), ...deprecated };
     // Caching hook: system/cache, system/judge and system/answer are handled in schema/caching.mjs.
     if (["cache", "judge", "answer"].includes(r.internal)) return { ...(await cacheInternal(r.internal, { dir, venture, workspace, input, actor, actor_id, via, provenance }, { call, resolve, draftOf })), ...deprecated };
-    const lacking = (r.needs ?? []).filter((f) => !existsSync(join(dir, f)));
+    const lacking = (r.needs ?? []).filter((f) => !existsSync(ventureFile(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };
     if (r.value_flag && !input?.value) return { ok: false, error: `${route} needs a value (${r.note})` };
     const args = r.venture_arg === "id" ? [dir, ...(input?.value ? [String(input.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(input.value), "--json"] : [dir, ...(r.args ?? []), ...(r.as_is && input?.as_is ? ["--as-is"] : []), "--json"];
@@ -428,13 +433,20 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       items = (await Promise.all(paths.map((f) => memo(`read:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
       // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
       if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
+      // Confidentiality (C2 and above): a record only its access list may know of is left out, as if absent.
+      items = items.filter((x) => mayKnow(dir, x.path, { actor, id: actor === "person" ? process.env.MENTURA_PERSON ?? actor_id : actor_id }));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
-    const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(join(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
+    const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
     if (remote) {
       const prs = provEntries(dir).filter((e) => e.source?.pull_request && found.concat(patterns).some((f) => e.entity === address(src.id, f)));
       if (prs.length) loading.pending_pull_requests = prs.map((e) => ({ entity: e.entity, pull_request: e.source.pull_request, since: e.at }));
+    }
+    // Framework view hook: a migrated venture's telos is rendered from its canonical goals and exit criteria (frameworks/telos).
+    if (!found.length && r.record === "telos" && !remote) {
+      const view = telosView(dir);
+      if (view) return { ok: true, result: view, view: { framework: "telos", from: ["foundation/goals", "foundation/exit-criteria"] }, ...deprecated };
     }
     if (!found.length) {
       const l = layout(r, dir);
@@ -493,7 +505,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
-    if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(join(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
+    if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
     const gate = gateOf(r, dir);
     const text = JSON.stringify(input, null, 2) + "\n";
     // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
@@ -518,7 +530,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Gate group hook (X-1 to X-6, U-4): the venture's gate decides; a refusal stops the write here.
     const configured = !remote ? gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate }) : null;
     if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
-    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured) && actor !== "person";
+    // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
+    // approved it, is a draft whatever the decision's class.
+    const settles = /^(decision|decision-record)$/.test(r.record) && (input?.status === "decided" || input?.approved_by != null);
+    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
       for (const a of split) {
@@ -605,7 +620,7 @@ async function overview(venture, workspace) {
   return {
     venture: v.id,
     slots: await Promise.all([
-      slot("@venture", () => ({ name: v.name, phase: v.phase, ambition: v.ambition ?? null, status: v.status, promise: v.core?.promise ?? null })),
+      slot("@venture", () => ({ name: v.name, phase: v.phase, ambition: scale(dir, v), status: v.status, promise: v.core?.promise ?? null })),
       slot("@telos", async () => { const t = await read("purpose/telos"); return typeof t === "string" ? t : { end: t.end ?? t.statement ?? null, phases: (t.phases ?? []).map((p) => p.phase) }; }),
       slot("@validation", async () => { const r = await call({ venture, route: "purpose/validation/assess", action: "run", input: { as_is: true }, workspace }); if (!r.ok) throw new Error(r.error); const a = r.result; return { supports: a.supports, next: a.next, assumptions: a.assumptions.map((x) => `${x.assumption}: ${x.label}`).join(", "), missing: a.missing.length }; }),
       slot("@need-now", async () => (await run("system/need-now")).rows.filter((x) => x.status === "suggest now").map((x) => ({ record: x.type, now: x.now, why: x.why }))),
@@ -619,7 +634,7 @@ async function overview(venture, workspace) {
 
 // Robots: per role, the routes it may read and write.
 function robots(dir) {
-  const plan = [join(dir, "people/team-plan.json"), join(dir, "operations/team-plan.json")].find((p) => existsSync(p));
+  const plan = [join(ventureFile(dir, "people/team-plan.json")), join(ventureFile(dir, "operations/team-plan.json"))].find((p) => existsSync(p));
   if (!plan) return { note: "no team plan: every actor may reach every route; gates still apply", roles: [] };
   return { note: "a role without routes may reach every route; gates still apply", roles: load(plan).roles.map((r) => ({ role: r.id, occupant: r.occupant, read: (r.routes?.read ?? ["**"]).join(", "), write: (r.routes?.write ?? (r.routes ? [] : ["**"])).join(", ") || "none" })) };
 }

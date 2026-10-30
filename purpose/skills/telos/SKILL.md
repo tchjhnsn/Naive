@@ -50,3 +50,7 @@ The owner. An agent drafts the statement and measures from the core and the vent
 - Robert G. Cooper, Stage-Gate: each stage ends at a gate with exit criteria.
 
 These still need recording with `find-reference`.
+
+## Framework
+
+This skill is the interview for the `telos` framework for thinking (`frameworks/telos/framework.json`). Answers are written to canonical records (`foundation/goals/`, `foundation/exit-criteria/`) through its `maps_to`, not to framework-only files (Torian, 2026-10-30).

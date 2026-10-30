@@ -11,6 +11,7 @@
     "marketing-content",
     "site-presence",
     "marketing-brand",
+    "marketing-design-system",
     "public-assets"
   ],
   "refs": [
@@ -51,13 +52,18 @@
     "schema/marketing-sitemap.schema.json",
     "schema/site-presence.schema.json",
     "schema/marketing-brand.schema.json",
-    "schema/public-assets.schema.json"
+    "schema/public-assets.schema.json",
+    "schema/marketing-design-system.schema.json"
   ],
   "templates": [],
   "checks": [
     "schema/check-brand.mjs",
-    "schema/check-assets.mjs"
+    "schema/check-assets.mjs",
+    "schema/design-system.mjs"
   ],
-  "skill": null,
+  "skill": {
+    "id": "marketing-function",
+    "path": "packages/marketing/skill/SKILL.md"
+  },
   "use_model": []
 }

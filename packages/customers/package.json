@@ -11,30 +11,58 @@
     "freshness"
   ],
   "layer": "purpose",
-  "records": ["customer", "data-stream"],
-  "schemas": ["schema/data-master.schema.json", "schema/stream.schema.json"],
+  "records": [
+    "customer",
+    "data-stream"
+  ],
+  "schemas": [
+    "schema/data-master.schema.json",
+    "schema/stream.schema.json"
+  ],
   "templates": [],
-  "checks": ["schema/check-data-packages.mjs"],
-  "skill": null,
+  "checks": [
+    "schema/check-data-packages.mjs"
+  ],
+  "skill": {
+    "id": "customers-function",
+    "path": "packages/customers/skill/SKILL.md"
+  },
   "use_model": [
     {
       "step": "stage",
       "kind": "choice",
       "for_each": "customers",
       "question": "Which buying stage do the notes {item.notes} put this customer at?",
-      "inputs": ["item.notes"],
-      "options": ["aware", "trying", "paying", "gone"],
+      "inputs": [
+        "item.notes"
+      ],
+      "options": [
+        "aware",
+        "trying",
+        "paying",
+        "gone"
+      ],
       "threshold": 0.7
     },
     {
       "step": "summary",
       "kind": "draft",
       "for_each": "customers",
-      "after": ["stage"],
+      "after": [
+        "stage"
+      ],
       "question": "Write one plain sentence about this customer from the notes {item.notes} and the stage {steps.stage}, with the seat count written as {{seats}}.",
-      "inputs": ["item.notes"],
-      "computed": { "seats": { "item": "seats" } },
-      "keep": ["seats"]
+      "inputs": [
+        "item.notes"
+      ],
+      "computed": {
+        "seats": {
+          "item": "seats"
+        }
+      },
+      "keep": [
+        "seats"
+      ]
     }
   ],
   "complete": false

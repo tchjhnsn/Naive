@@ -12,6 +12,7 @@
 import { execSync, spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const [dir, id] = process.argv.slice(2);
 if (!dir || !id) { console.error("usage: node schema/run-handoff.mjs <venture dir> <handoff id> [--runner <id>]"); process.exit(2); }
@@ -19,7 +20,7 @@ const opt = (k) => process.argv.includes(k) ? process.argv[process.argv.indexOf(
 const runner = opt("--runner") ?? "local";
 const [reviewId, verdict] = (opt("--review") ?? "").split("=");
 const root = new URL("..", import.meta.url).pathname;
-const hPath = join(dir, "operations/handoffs", `${id}.json`);
+const hPath = join(ventureFile(dir, "operations/handoffs"), `${id}.json`);
 const h = JSON.parse(readFileSync(hPath, "utf8"));
 const dirty = execSync("git status --porcelain", { cwd: root, encoding: "utf8" }).trim() ? "+uncommitted" : "";
 const version = execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim() + dirty;
@@ -41,10 +42,10 @@ for (const c of h.done_criteria.filter((d) => d.kind !== "review")) {
 const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
 const eid = `${h.id}-${at.replace(/[-:TZ]/g, "").slice(0, 14)}`;
 const ev = { id: eid, subject: { kind: "handoff", id: h.id, version }, ran_at: at, runner, results, passed: results.every((r) => r.passed) };
-mkdirSync(join(dir, "evidence/results"), { recursive: true });
-const ePath = join(dir, "evidence/results", `${eid}.json`);
+mkdirSync(join(ventureFile(dir, "evidence/results")), { recursive: true });
+const ePath = join(ventureFile(dir, "evidence/results"), `${eid}.json`);
 writeFileSync(ePath, JSON.stringify(ev, null, 2) + "\n");
-h.evidence = [...(h.evidence ?? []), relative(join(dir, "operations/handoffs"), ePath)];
+h.evidence = [...(h.evidence ?? []), relative(join(ventureFile(dir, "operations/handoffs")), ePath)];
 writeFileSync(hPath, JSON.stringify(h, null, 2) + "\n");
 const pending = h.done_criteria.filter((d) => d.kind === "review" && d.id !== reviewId).map((d) => `${d.id} (${d.reviewer})`);
 console.log(`${ev.passed ? "every criterion run passed" : "some criteria failed"}${pending.length ? `; review still owed: ${pending.join(", ")}` : ""}: ${relative(process.cwd(), ePath)}`);
