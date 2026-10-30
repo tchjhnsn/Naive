@@ -88,16 +88,16 @@ function raise(dir, run) {
   const id = `trigger-${run.trigger}-failed-${run.trigger === "runner" ? Date.now().toString(36) : run.n}`.replace(/[^a-z0-9-]+/g, "-").slice(0, 80);
   const r = propose(dir, { id, question: `Trigger ${run.trigger} ${run.outcome === "uncaught" ? "crashed" : "failed"} on ${run.activity ?? "an event"} of ${run.entity ?? "the venture"}: ${String(run.error).split("\n")[0].slice(0, 300)}. Retry it, skip this event, or turn the trigger off?`,
     options: ["Retry", "Skip this event", "Turn the trigger off"], layer: "operations", boundary: "fail-open", needed_in: v.phase, decides: { path: CONFIG },
-    note: `Raised by schema/triggers.mjs (E-7). The run is kept in ${STATE} as run ${run.n}.` }, { agentId: "naive-triggers", via: "router" });
+    note: `Raised by schema/triggers.mjs (E-7). The run is kept in ${STATE} as run ${run.n}.` }, /** @type {Parameters<typeof propose>[2]} */ ({ agentId: "naive-triggers", via: "router" }));
   return r.ok ? id : null;
 }
 
 async function runOne(dir, t, e, state, extra = {}) {
   const v = load(join(dir, "venture.json"));
-  const run = { n: state.runs.length + 1, trigger: t.id, from: t.from, event: e?.hash ?? null, entity: e?.entity ?? null, activity: e?.activity ?? null, at: now(), ...extra };
+  const run = /** @type {{ n: number, trigger: string, from: string, event: string | null, entity: string | null, activity: string | null, at: string, outcome?: string, result?: *, error?: string, status?: string, decision?: string }} */ ({ n: state.runs.length + 1, trigger: t.id, from: t.from, event: e?.hash ?? null, entity: e?.entity ?? null, activity: e?.activity ?? null, at: now(), ...extra });
   try {
     let r;
-    if (t.run.propose) r = propose(dir, t.run.propose, { agentId: `trigger-${t.id}`, via: "router" });
+    if (t.run.propose) r = propose(dir, t.run.propose, /** @type {Parameters<typeof propose>[2]} */ ({ agentId: `trigger-${t.id}`, via: "router" }));
     else if (typeof t.run.route !== "string") throw new Error(`trigger ${t.id} names no route to run`); // a malformed trigger crashes; the router would read it as a broken route table
     else r = await call({ venture: v.id, workspace: dir, route: t.run.route, action: t.run.action, input: t.run.input, actor: "agent", actor_id: `trigger-${t.id}`, via: "router",
       provenance: { derived_from: e?.entity && !/:\/\//.test(e.entity) ? [e.entity] : undefined, note: `trigger ${t.id} on ${e?.activity ?? "retry"} of ${e?.entity ?? "?"}` } });

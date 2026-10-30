@@ -65,6 +65,10 @@ import { packageSlots } from "./package-routes.mjs";
 import { routable } from "../schema/structure.mjs";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from schema/brand.mjs.
 import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
+// Legal lint hook: legal/lint (schema/lint-legal.mjs). A lint, not legal advice.
+import { legalCommands } from "../schema/lint-legal.mjs";
+import { peopleLintCommands } from "../schema/lint-people.mjs";
+import { foundationLintCommands } from "../schema/lint-foundation.mjs";
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../schema/stale.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
@@ -171,6 +175,9 @@ function buildRoutes() {
   );
   out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (schema/caching.mjs).
   out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (schema/brand.mjs).
+  out.push(...legalCommands(cmd)); // Legal lint hook: public claims and agreements (schema/lint-legal.mjs).
+  out.push(...peopleLintCommands(cmd)); // People lint: role, hire and decision alignment (schema/lint-people.mjs).
+  out.push(...foundationLintCommands(cmd)); // Foundation lint: mission, ICP jobs, alignment checks, problem forms (schema/lint-foundation.mjs).
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
 
@@ -448,7 +455,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
       if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
       // Confidentiality (C2 and above): a record only its access list may know of is left out, as if absent.
-      items = items.filter((x) => mayKnow(dir, x.path, /** @type {*} */ ({ actor, id: actor === "person" ? process.env.MENTURA_PERSON ?? actor_id : actor_id })));
+      items = items.filter((x) => mayKnow(dir, x.path, { actor, id: actor === "person" ? process.env.MENTURA_PERSON ?? actor_id : actor_id }));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
     const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
@@ -458,14 +465,15 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       if (prs.length) loading.pending_pull_requests = prs.map((e) => ({ entity: e.entity, pull_request: e.source.pull_request, since: e.at }));
     }
     // Framework view hook: a migrated venture's telos is rendered from its canonical goals and exit criteria (frameworks/telos).
-    if (!found.length && r.record === "telos" && !remote) {
+    if (!found.length && r.record === "telos" && !remote && actor !== "public") {
       const view = telosView(dir);
       if (view) return { ok: true, result: view, view: { framework: "telos", from: ["foundation/goals", "foundation/exit-criteria"] }, ...deprecated };
     }
-    if (!found.length) {
-      const l = layout(r, dir);
-      return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, ...(remote ? { source: src.id } : {}), template: r.template, schema: r.schema, need_now: l.need_now ?? null, skills: fix(r).skills }, ...loading, ...deprecated };
-    }
+    const absent = () => {
+      const pub = actor === "public";
+      return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, ...(remote ? { source: src.id } : {}), template: r.template, schema: r.schema, need_now: pub ? null : layout(r, dir).need_now ?? null, skills: fix(r).skills }, ...(pub ? {} : loading), ...deprecated };
+    };
+    if (!found.length) return absent();
     const parse = (x) => x.path.endsWith(".json") ? JSON.parse(x.content) : x.path.endsWith(".jsonl") ? x.content.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : x.content;
     // Overlay each attribute mastered elsewhere with the value its system of record holds, and
     // cite where it came from. A source that holds nothing for it leaves the record's own value.
@@ -502,12 +510,19 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       };
       // Per-record containment (E-6): an item that does not parse is named in errors; the rest come back.
       const { values, errors } = contain(items, parseWith, idOf);
+      if (actor === "public") {
+        const shown = values.filter(([, v]) => v && Object.keys(v).length);
+        return { ok: true, result: Object.fromEntries(shown.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(shown.map(([x]) => [idOf(x.path), cite(x)])), ...deprecated };
+      }
       return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...deprecated };
     }
+    // A public reader learns nothing of an item with no public field, not even that its id exists.
+    const hidden = (x) => { try { const v = parseWith(x); return !v || !Object.keys(v).length; } catch { return true; } };
+    if (actor === "public" && r.collection === "item" && items.every(hidden)) return absent();
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
     // V-9 hook: a summary whose source changed since it was written is marked stale (schema/stale.mjs).
     const stale = !remote && items.length === 1 ? staleOf(dir, found[0]) : null;
-    return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...(stale ? { stale } : {}), ...deprecated };
+    return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...(actor === "public" ? {} : { ...loading, ...(stale ? { stale } : {}) }), ...deprecated };
   }
 
   if (action === "check") {
