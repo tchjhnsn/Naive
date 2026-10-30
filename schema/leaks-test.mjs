@@ -19,6 +19,7 @@ mkdirSync(v);
 const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
 const CANARY = "CANARY-7f3a internal wording (Torian, 2026-10-28)";
 w("venture.json", { id: "canary", name: "Canary", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery", core: { promise: "We help founders decide what is next." } });
+w("people/people.json", { venture: "canary", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] });
 w("foundation/problem.json", { venture: "canary", statement: CANARY, segment: "Solo founders (EE-045)", evidence: [] });
 
 const facts = () => {

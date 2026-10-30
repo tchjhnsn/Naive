@@ -173,7 +173,63 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true, set_by: { person: "torian", at: "2026-10-30T10:00:00Z" } } } });
   const consented = await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key } });
   expect("send with a named person routes through Jev", sent === 1 && consented.record.routing.model === "jev", JSON.stringify(consented));
+  for (const person of [{ x: 1 }, 1, true, "", "  "]) {
+    put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true, set_by: { person, at: "2026-10-30T10:00:00Z" } } } });
+    sent = 0;
+    await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key } });
+    expect(`Jev refuses set_by.person ${JSON.stringify(person)}`, sent === 0, String(sent));
+  }
   put(join(dir, "naive.config.json"), conf);
+
+  // Telemetry slugs are bounded, and flush re-checks each line.
+  const ev = { name: "route.write", capability: "core", session: "abcd-1234", outcome: "ok" };
+  const at = "2026-10-30T10:00:00Z";
+  const venture = "0123456789abcdef";
+  const bounded = (o) => refuse({ ...ev, at, venture, ...o });
+  expect("telemetry takes a slug at the bound", !bounded({ name: `a${"b".repeat(31)}`, capability: `a${"b".repeat(31)}` }));
+  for (const o of [{ name: "jane-doe-at-x-com-said-pricing-is-too-high" }, { capability: "jane-doe-at-x-com-said-pricing-is-too-high" }, { session: "a".repeat(65) }, { session: "abc" }]) {
+    expect(`telemetry refuses ${Object.keys(o)[0]} ${Object.values(o)[0].slice(0, 12)}`, !!bounded(o) && !valid("telemetry.schema.json", { ...ev, at, venture, ...o }));
+  }
+  for (const person of [{ x: 1 }, " "]) {
+    put(join(dir, "naive.config.json"), { telemetry: { enabled: true, send: true, set_by: { person, at } } });
+    expect(`telemetry refuses set_by.person ${JSON.stringify(person)}`, (await flush(dir, { send: () => { throw new Error("sent"); } })).sent === 0);
+  }
+  put(join(dir, "naive.config.json"), { telemetry: { enabled: true, send: true, set_by: { person: "torian", at } } });
+  await flush(dir, { send: () => {} });
+  const tf = join(dir, ".naive/telemetry.jsonl");
+  const good = JSON.stringify({ ...ev, at, venture });
+  writeFileSync(tf, readFileSync(tf, "utf8") + [JSON.stringify({ ...ev, at, venture, note: "SECRET" }), JSON.stringify({ ...ev, at, venture: "SECRET" }), "not json", good].join("\n") + "\n");
+  const flushed = [];
+  const fl = await flush(dir, { send: (b) => flushed.push(...b) });
+  expect("flush skips bad lines and sends the good one", fl.sent === 1 && fl.skipped === 3 && JSON.stringify(flushed) === `[${good}]`, JSON.stringify(fl));
+  expect("flush does not retry skipped lines", (await flush(dir, { send: () => { throw new Error("resent"); } })).sent === 0);
+  put(join(dir, "naive.config.json"), conf);
+
+  // Study data never reaches a release, confirmed or not.
+  {
+    const name = "rel";
+    const rd = join(ws, "ventures", name);
+    const r = (...a) => cli(...a);
+    expect("release venture created", r("init", rd, "--id", name, "--layers", "purpose").status === 0);
+    const fb = { id: "f-9", at, tester: "t1", capability: "venture", checkpoint: "venture-created", answers: { ease: 4, confusing: "SECRET-FEEDBACK" } };
+    const iv = { id: "i-01", person: "p-01", icp: "solo-founder", consent: { given: true, at, method: "verbal-recorded" }, transcript: { source: "raw/sources/i-01" }, bottlenecks: ["SECRET-INTERVIEW"], current_solutions: [{ for: "x", what_it_does: "a", what_it_doesnt: "b" }], chosen_problem: "x", prediction: { with_naive: "a", status_quo: "b" }, follow_up: { date: "2026-11-13", outcome_vs_prediction: "matched", evidence: ["e-1"] } };
+    expect("a person writes feedback", (await call({ venture: name, route: "validation/feedback/f-9", action: "write", input: fb, actor: "person", workspace: ws })).ok);
+    const wi = await call({ venture: name, route: "validation/interviews/i-01", action: "write", input: iv, actor: "person", workspace: ws });
+    expect("a person writes an interview", wi.ok, JSON.stringify(wi).slice(0, 300));
+    const build = () => spawnSync("node", [join(repo, "schema/build-release.mjs"), rd, "--now", "2026-10-30T00:00:00Z"], { encoding: "utf8", env });
+    const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
+    const leaks = (d) => walk(d).filter((f) => readFileSync(f, "utf8").includes("SECRET-"));
+    const left = () => JSON.parse(readFileSync(join(rd, ".release/release.json"), "utf8")).left_out.map((x) => x.file);
+    const study = ["validation/feedback/f-9.json", "validation/interviews/i-01.json"];
+    const b1 = build();
+    expect("a person's feedback and interview stay out of the release", b1.status === 0 && !leaks(join(rd, ".release")).length && study.every((f) => left().includes(f)), b1.stderr + leaks(join(rd, ".release")));
+    const base = r("baseline", "--venture", name, "--as", "person");
+    const b2 = build();
+    expect("they stay out after mentura baseline --as person", base.status === 0 && b2.status === 0 && !leaks(join(rd, ".release")).length && study.every((f) => left().includes(f)), base.stderr + b2.stderr);
+    const out = join(ws, "release-export");
+    const ex = spawnSync("node", ["-e", `import(${JSON.stringify(join(repo, "schema/releases.mjs"))}).then((m) => m.exportRelease(${JSON.stringify(rd)}, ${JSON.stringify(out)}))`], { encoding: "utf8", env });
+    expect("the export holds neither", ex.status === 0 && !leaks(out).length, ex.stderr);
+  }
 
   // .naive/ is never routed: telemetry stays on this machine.
   expect("system/telemetry is not a route", await call({ venture: "vs", route: "system/telemetry", action: "read", workspace: ws, actor: "person" }).then((r) => !r.ok));

@@ -1822,6 +1822,18 @@
   ],
   "ignore": [
     {
+      "path": "interface/plugin-mcp.json",
+      "reason": "The MCP server the Claude Code plugin starts, from its own copy of the framework (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/plugin.json",
+      "reason": "The Claude Code plugin manifest: Naive's skills and MCP server for an agent (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "reason": "The Claude Code marketplace for a clone of the repository (EE-084); not a record"
+    },
+    {
       "path": "site/package.json",
       "reason": "The developer-docs site's npm manifest (EE-034); not a record"
     },

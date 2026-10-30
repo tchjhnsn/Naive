@@ -36,7 +36,7 @@
 //
 // Partial adoption: a route needs only its own record and what its kit reads.
 
-import { mayKnow } from "../schema/visibility.mjs";
+import { mayKnow, publicView } from "../schema/visibility.mjs";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -371,6 +371,7 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Writes hook (interface/writes.mjs): adds what reads, layouts and writes answer.
 export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
 async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+  if (actor === "public" && action !== "read") return { ok: false, error: `the public reader only reads; ${action} needs a person or an agent` };
   const requested = route;
   const { r, params, alias } = resolve(route);
   if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
@@ -434,6 +435,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const cite = (x) => ({ source: src.id, address: address(src.id, x.path), version: x.version, ...(x.commit ? { commit: x.commit } : {}), ...(x.permalink ? { permalink: x.permalink } : {}), ...(x.attributes ? { attributes: x.attributes } : {}) });
 
   if (action === "read") {
+    // Approvals live in the venture folder's sidecars, so a public reader of another source fails closed.
+    if (actor === "public" && remote) return { ok: false, error: `the public reader reads only records in the venture's own folder; ${route} lives in ${src.id}` };
     const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
@@ -481,7 +484,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const fresh = remote ? {} : await freshnessFlag(dir, found, r.collection === "list");
     Object.assign(loading, fresh);
     const parseOne = parse;
-    const parseWith = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
+    const merged = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
+    // Field visibility: a public reader (actor "public", what a public component reads) sees only the fields
+    // a person approved as public, or their approved variants; every other field is internal and left out.
+    // This is the one place values are made, so list and single reads both pass through it.
+    const parseWith = (x) => actor === "public" ? publicView(dir, x.path, merged(x)) : merged(x);
     if (r.collection === "list") {
       const idOf = (path) => {
         for (const g of r.files) {

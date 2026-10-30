@@ -18,7 +18,7 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { rawConfig } from "./naive-config.mjs";
+import { namedPerson, rawConfig } from "./naive-config.mjs";
 import { patternRe } from "./gate.mjs";
 import { ventureFile } from "./venture-paths.mjs";
 import { route as routeFeedback } from "./feedback-route.mjs";
@@ -40,7 +40,7 @@ export const testerOf = (t) => t || process.env.NAIVE_BETA_TESTER || "tester";
 
 /** Whether this venture lets feedback text go to Jev: a person turned it on, by name. */
 function jevConsented(dir) {
-  try { const j = rawConfig(dir).beta?.jev; return j?.send === true && !!j.set_by?.person; } catch { return false; }
+  try { const j = rawConfig(dir).beta?.jev; return j?.send === true && namedPerson(j.set_by); } catch { return false; }
 }
 
 export function state(dir) {

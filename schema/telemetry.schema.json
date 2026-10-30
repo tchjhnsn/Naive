@@ -7,8 +7,8 @@
   "required": ["name", "capability", "at", "venture", "session", "outcome"],
   "additionalProperties": false,
   "properties": {
-    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$", "description": "The event, e.g. route.write, beta.unlock" },
-    "capability": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "A capability id from beta/capabilities.json, or core" },
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]{0,31}$", "description": "The event, e.g. route.write, beta.unlock" },
+    "capability": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,31}$", "description": "A capability id from beta/capabilities.json, or core" },
     "at": { "type": "string", "format": "date-time" },
     "venture": { "type": "string", "pattern": "^[0-9a-f]{16}$", "description": "A salted hash of the venture id, never the id; the salt stays in the venture's .naive/telemetry-salt and is never sent" },
     "session": { "type": "string", "pattern": "^[A-Za-z0-9-]{4,64}$" },

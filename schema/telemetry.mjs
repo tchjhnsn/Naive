@@ -13,7 +13,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { rawConfig } from "./naive-config.mjs";
+import { namedPerson, rawConfig } from "./naive-config.mjs";
 
 export const FILE = ".naive/telemetry.jsonl";
 const SENT = ".naive/telemetry-sent.json";
@@ -35,7 +35,7 @@ export const ventureHash = (dir, id) => createHash("sha256").update(`${salt(dir)
 export function settings(dir) {
   let t = {};
   try { t = rawConfig(dir).telemetry ?? {}; } catch { t = {}; }
-  const setBy = t.set_by && typeof t.set_by === "object" && t.set_by.person ? t.set_by : null;
+  const setBy = namedPerson(t.set_by) ? t.set_by : null;
   return { enabled: t.enabled === true, send: t.send === true && !!setBy, set_by: setBy };
 }
 
@@ -47,12 +47,13 @@ export function refuse(event) {
     if (typeof v === "object" && v !== null) return `telemetry field ${k} must be a plain value`;
     if (typeof v === "string" && /(^|\/)_private(\/|$)/.test(v)) return `telemetry never names a _private path (${k})`;
   }
-  if (!/^[a-z][a-z0-9_.-]*$/.test(event.name ?? "")) return "telemetry needs a name (route.write, beta.unlock)";
-  if (!/^[a-z][a-z0-9-]*$/.test(event.capability ?? "")) return "telemetry needs a capability id";
+  if (!/^[a-z][a-z0-9_.-]{0,31}$/.test(event.name ?? "")) return "telemetry needs a name (route.write, beta.unlock)";
+  if (!/^[a-z][a-z0-9-]{0,31}$/.test(event.capability ?? "")) return "telemetry needs a capability id";
   if (!ISO.test(event.at ?? "") || Number.isNaN(Date.parse(event.at))) return "at is an ISO date-time";
   if (event.source !== undefined && !SOURCES.includes(event.source)) return `source must be one of ${SOURCES.join(", ")}`;
   if (!OUTCOMES.includes(event.outcome)) return `outcome must be one of ${OUTCOMES.join(", ")}`;
   if (!/^[A-Za-z0-9-]{4,64}$/.test(event.session ?? "")) return "telemetry needs a session id";
+  if (!/^[0-9a-f]{16}$/.test(event.venture ?? "")) return "venture is the salted hash";
   if (event.duration_ms !== undefined && !(Number.isInteger(event.duration_ms) && event.duration_ms >= 0)) return "duration_ms is a whole number of milliseconds";
   return null;
 }
@@ -75,17 +76,19 @@ export function record(dir, input, { now = new Date() } = {}) {
 
 export const events = (dir) => existsSync(join(dir, FILE)) ? readFileSync(join(dir, FILE), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
 
-/** Sends the events not yet sent, through the injected send(events); only when a person turned sending on. */
+const parseLine = (l) => { try { return JSON.parse(l); } catch { return null; } };
+
+/** Sends the events not yet sent, re-checking each line so a hand-edited one is skipped, through the injected send(events); only when a person turned sending on. */
 export async function flush(dir, { send } = {}) {
   const s = settings(dir);
   if (!s.send) return { sent: 0, why: "sending is off: it needs telemetry.send true and telemetry.set_by naming the person who set it" };
   if (typeof send !== "function") return { sent: 0, why: "no sender: sending telemetry is not built yet" };
-  const all = events(dir);
+  const all = existsSync(join(dir, FILE)) ? readFileSync(join(dir, FILE), "utf8").split("\n").filter(Boolean).map(parseLine) : [];
   const f = join(dir, SENT);
   const done = existsSync(f) ? JSON.parse(readFileSync(f, "utf8")).sent ?? 0 : 0;
-  const batch = all.slice(done);
-  if (!batch.length) return { sent: 0 };
-  await send(batch);
-  writeFileSync(f, JSON.stringify({ sent: all.length }) + "\n");
-  return { sent: batch.length };
+  const waiting = all.slice(done);
+  const batch = waiting.filter((e) => e && !refuse(e));
+  if (batch.length) await send(batch);
+  if (waiting.length) writeFileSync(f, JSON.stringify({ sent: all.length }) + "\n");
+  return { sent: batch.length, ...(batch.length < waiting.length ? { skipped: waiting.length - batch.length } : {}) };
 }
