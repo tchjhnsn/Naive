@@ -7,6 +7,7 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { handle } from "./setup.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "setup-test-"));
@@ -36,8 +37,8 @@ await t("the page and its state answer; people and the Rho source of truth from 
 await t("pointing a function at a system writes knowledge/sources.json through the router, with provenance", async () => {
   const r = await post("/setup/point", { fn: "legal", system: "local-folder", address: "~/acme-legal" });
   ok(r.ok && r.result.status === "pointed", JSON.stringify(r));
-  ok(JSON.parse(readFileSync(join(dir, "knowledge/sources.json"), "utf8")).functions.legal.systems[0].address === "~/acme-legal");
-  ok(readFileSync(join(dir, "provenance.jsonl"), "utf8").includes("legal: local-folder"));
+  ok(JSON.parse(readFileSync(ventureFile(dir, "knowledge/sources.json"), "utf8")).functions.legal.systems[0].address === "~/acme-legal");
+  ok(readFileSync(ventureFile(dir, "provenance.jsonl"), "utf8").includes("legal: local-folder"));
   ok((await post("/setup/point", { fn: "legal", system: "stripe" })).status === 400, "a system not offered for the function is refused");
 });
 
@@ -58,7 +59,7 @@ await t("answering every first decision and the discovery goal establishes the s
   ok((await post("/setup/decide", { id: "discovery-goal", answer: "Ten cafe owners confirm the problem by December." })).ok);
   s = await get("/setup/state");
   ok(s.done && s.goal.status === "decided", JSON.stringify(s.steps));
-  const decided = JSON.parse(readFileSync(join(dir, "decisions/statement-problem.decision.json"), "utf8"));
+  const decided = JSON.parse(readFileSync(ventureFile(dir, "decisions/statement-problem.decision.json"), "utf8"));
   ok(decided.status === "decided" && decided.statement === "problem" && decided.provenance.approved_by === "Pat Doe", JSON.stringify(decided));
 });
 

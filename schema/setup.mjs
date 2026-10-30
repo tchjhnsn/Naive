@@ -13,6 +13,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -23,8 +24,8 @@ const GOAL = "discovery-goal";
 export async function state(dir) {
   const { decisions } = await import("./decisions.mjs");
   const v = load(join(dir, "venture.json"));
-  const people = existsSync(join(dir, "people/people.json")) ? load(join(dir, "people/people.json")) : null;
-  const sources = existsSync(join(dir, "knowledge/sources.json")) ? load(join(dir, "knowledge/sources.json")) : { sources: [], records: {} };
+  const people = existsSync(join(ventureFile(dir, "people/people.json"))) ? load(join(ventureFile(dir, "people/people.json"))) : null;
+  const sources = existsSync(join(ventureFile(dir, "knowledge/sources.json"))) ? load(join(ventureFile(dir, "knowledge/sources.json"))) : { sources: [], records: {} };
   const catalog = load(join(repo, "schema/systems-catalog.json"));
   const types = load(join(repo, "schema/venture-types.json")).types;
   const all = decisions(dir).decisions;
@@ -51,16 +52,14 @@ export async function state(dir) {
 // An open decision whose wording an agent wrote: in setup, the founder's words the model relayed.
 const relayed = (d) => d.status !== "decided" && !!d.answer && d.provenance?.drafted_by?.kind === "agent";
 
-const founderName = (dir) => existsSync(join(dir, "people/people.json")) ? load(join(dir, "people/people.json")).people[0]?.name ?? "Founder" : "Founder";
-
 // One answer: a decision on file is approved; a foundation statement (or the goal) becomes a decision a person approves.
 export async function decide(dir, { id, answer, via = "api", where = "/setup" }) {
-  const { approve, decisions, propose } = await import("./decisions.mjs");
+  const { approve, decisions, founderName, propose } = await import("./decisions.mjs");
   if (!answer || !String(answer).trim()) return { ok: false, error: "write an answer first" };
   const by = founderName(dir);
   const d = decisions(dir).decisions.find((x) => x.id === id);
   if (id === GOAL && !d) {
-    const p = propose(dir, { id: GOAL, question: "What must be true for the venture to leave discovery? Name the goal this phase works toward.", decides: { record: "telos", path: "foundation/telos.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }, { via });
+    const p = propose(dir, { id: GOAL, question: "What must be true for the venture to leave discovery? Name the goal this phase works toward.", decides: { record: "exit-criteria", path: "foundation/exit-criteria/discovery.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }, { via });
     if (!p.ok) return p;
     return approve(dir, GOAL, { by, answer: String(answer).trim(), via, note: `set at ${where}` });
   }
@@ -79,7 +78,7 @@ export async function decide(dir, { id, answer, via = "api", where = "/setup" })
 export async function point(dir, { fn, system, address, via = "api", actor = "person", agentId }) {
   const catalog = load(join(repo, "schema/systems-catalog.json"));
   if (!catalog.functions[fn]?.includes(system)) return { ok: false, error: `${system} is not offered for ${fn}` };
-  const file = join(dir, "knowledge/sources.json");
+  const file = join(ventureFile(dir, "knowledge/sources.json"));
   const map = existsSync(file) ? load(file) : { sources: [], records: {}, truth: "local" };
   const f = (map.functions ??= {})[fn] ??= { systems: [] };
   const entry = { system, ...(address ? { address } : {}), status: "pointed" };
@@ -103,7 +102,7 @@ export async function relay(dir, { id, answer, agentId, harness, model }) {
   const note = `the founder's words, relayed from ${harness ?? "the model's harness"} during setup`;
   const opts = { agentId, via: "mcp", harness, model };
   const d = decisions(dir).decisions.find((x) => x.id === id);
-  if (id === GOAL) return propose(dir, { ...(d ? {} : { decides: { record: "telos", path: "foundation/telos.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }), id: GOAL, question: d?.question ?? "What must be true for the venture to leave discovery? Name the goal this phase works toward.", answer: words, note }, opts);
+  if (id === GOAL) return propose(dir, { ...(d ? {} : { decides: { record: "exit-criteria", path: "foundation/exit-criteria/discovery.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }), id: GOAL, question: d?.question ?? "What must be true for the venture to leave discovery? Name the goal this phase works toward.", answer: words, note }, opts);
   if (!d) return { ok: false, error: `no decision ${id}` };
   if (d.status === "decided") return { ok: false, error: `${id} is decided; only the founder can change it` };
   if (d.source === "foundation") {
@@ -114,7 +113,8 @@ export async function relay(dir, { id, answer, agentId, harness, model }) {
 }
 
 /** The founder confirms the answers the model relayed, at the keyboard: each becomes a decision they made. */
-export async function confirm(dir, { by = founderName(dir) } = {}) {
+export async function confirm(dir, { by } = {}) {
+  by ??= (await import("./decisions.mjs")).founderName(dir);
   const { approve } = await import("./decisions.mjs");
   const out = [];
   for (const w of (await state(dir)).waiting) {

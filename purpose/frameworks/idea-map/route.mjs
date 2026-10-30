@@ -25,6 +25,7 @@ import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 import { GRAPH, ORDER } from "./graph.mjs";
 import { confirmedIn } from "../../../schema/foundation.mjs";
 import { loadPackages } from "../../../schema/load-packages.mjs";
+import { ventureFile } from "../../../schema/venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -37,7 +38,7 @@ const HOME = { "venture-core": "foundation", brand: "marketing", ...Object.fromE
 /** Understand is a gate (EE-069): the founder confirms Mentura read the ideas right, after any
  *  corrections, before they are routed. A person's confirm of the map after its last agent write. */
 export function understood(dir) {
-  return existsSync(join(dir, MAP)) && confirmedIn(dir, MAP, "ideas");
+  return existsSync(ventureFile(dir, MAP)) && confirmedIn(dir, MAP, "ideas");
 }
 
 export const STAGES = [["routed", "Routed"], ["drafted", "Drafted"], ["yours", "Your decision"], ["waiting", "Waiting"], ["done", "Done"]];
@@ -62,13 +63,14 @@ function written(dir, key) {
   const rel = m?.paths?.[0]?.replace(/^instance\/\*\*\//, "");
   if (!rel) return null;
   if (rel.includes("*")) { const d = join(dir, dirname(rel)); return existsSync(d) && readdirSync(d).some((f) => f.endsWith(".json")); }
-  return existsSync(join(dir, rel));
+  return existsSync(ventureFile(dir, rel));
 }
 
+/** @param {string} dir @param {{ now?: string | Date }} [opts] */
 export function route(dir, { now } = {}) {
   const venture = load(join(dir, "venture.json"));
-  const g = existsSync(join(dir, GRAPH)) ? load(join(dir, GRAPH)) : null;
-  const nodes = g?.nodes ?? (existsSync(join(dir, MAP)) ? parse(readFileSync(join(dir, MAP), "utf8")).ideas.map((i) => ({ ...i, signal: null, lane: null })) : []);
+  const g = existsSync(ventureFile(dir, GRAPH)) ? load(ventureFile(dir, GRAPH)) : null;
+  const nodes = g?.nodes ?? (existsSync(ventureFile(dir, MAP)) ? parse(readFileSync(ventureFile(dir, MAP), "utf8")).ideas.map((i) => ({ ...i, signal: null, lane: null })) : []);
   if (!nodes.length) return { venture: venture.id, phase: venture.phase, waiting: "no idea map yet: map the idea dump first (purpose/ideas)" };
   const lanes = new Map((g?.lanes ?? []).map((l) => [l.id, l]));
   const m = decisions(dir, now);
@@ -114,8 +116,8 @@ export function route(dir, { now } = {}) {
   });
 
   const routed = new Set(destinations.flatMap((x) => x.ideas.map((i) => i.id)));
-  for (const d of destinations) d.package = HOME[d.id] ?? null;
-  return { venture: venture.id, name: venture.name, phase: venture.phase, graph: g?.root ?? null, understood: understood(dir), stages: STAGES, destinations,
+  return { venture: venture.id, name: venture.name, phase: venture.phase, graph: g?.root ?? null, understood: understood(dir), stages: STAGES,
+    destinations: destinations.map((d) => ({ ...d, package: HOME[d.id] ?? null })),
     loose: nodes.filter((n) => !routed.has(n.id)).map(short),
     gaps: Object.entries(CONVENTIONS.records).filter(([k]) => !destinations.some((x) => x.id === k)).map(([k, c]) => ({ id: k, title: c.title ?? k, about: c.about })),
     docket, counts: Object.fromEntries(STAGES.map(([s]) => [s, destinations.filter((x) => x.stage === s).length])) };

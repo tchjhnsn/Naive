@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "setup-skill-test-"));
@@ -58,7 +59,7 @@ await t("an empty answer or an unknown question is refused", async () => {
 await t("pointing a function through MCP writes knowledge/sources.json as the agent, with provenance", async () => {
   const r = await tool("mentura_setup_point", { venture: "acme", function: "legal", system: "local-folder", address: "~/acme-legal" });
   ok(r.ok && r.result.status === "pointed", JSON.stringify(r));
-  ok(JSON.parse(readFileSync(join(dir, "knowledge/sources.json"), "utf8")).functions.legal.systems[0].address === "~/acme-legal");
+  ok(JSON.parse(readFileSync(ventureFile(dir, "knowledge/sources.json"), "utf8")).functions.legal.systems[0].address === "~/acme-legal");
   ok(!(await tool("mentura_setup_point", { venture: "acme", function: "legal", system: "stripe" })).ok, "a system the catalog does not offer for legal was accepted");
 });
 
@@ -70,7 +71,7 @@ await t("confirming needs the founder: without yes nothing is decided; with it, 
   const d = find("product-exists");
   ok(d.status === "decided" && d.provenance.approved_by === "Pat Doe" && d.provenance.wording === "approved" && d.provenance.drafted_by.kind === "agent", JSON.stringify(d.provenance));
   ok(find("statement-problem").status === "decided" && find("discovery-goal").status === "decided");
-  ok(readFileSync(join(dir, "provenance.jsonl"), "utf8").includes("relayed by the model"));
+  ok(readFileSync(ventureFile(dir, "provenance.jsonl"), "utf8").includes("relayed by the model"));
 });
 
 await t("the artifact shows the progress after each answer", async () => {

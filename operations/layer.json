@@ -27,7 +27,10 @@
     "people",
     "founder",
     "marketing-brand",
-    "public-assets"
+    "marketing-design-system",
+    "public-assets",
+    "activity",
+    "activity-summary"
   ],
   "reads": [
     "agent-capability",

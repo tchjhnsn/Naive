@@ -11,11 +11,20 @@
     "freshness"
   ],
   "layer": "purpose",
-  "records": ["investor"],
-  "schemas": ["schema/data-master.schema.json"],
+  "records": [
+    "investor"
+  ],
+  "schemas": [
+    "schema/data-master.schema.json"
+  ],
   "templates": [],
-  "checks": ["schema/check-data-packages.mjs"],
-  "skill": null,
+  "checks": [
+    "schema/check-data-packages.mjs"
+  ],
+  "skill": {
+    "id": "investors-function",
+    "path": "packages/investors/skill/SKILL.md"
+  },
   "use_model": [],
   "complete": false
 }

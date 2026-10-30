@@ -141,6 +141,29 @@
                 "evidence": {
                   "type": "string",
                   "description": "How it is shown: a check command, an evidence record, or a metric"
+                },
+                "met": {
+                  "type": "object",
+                  "required": [
+                    "at",
+                    "by"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Set when a person says the criterion is met (naive phase --meet); the gate to the next phase passes when every criterion of the current phase has it",
+                  "properties": {
+                    "at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "by": {
+                      "type": "string",
+                      "description": "The person who said it is met"
+                    },
+                    "evidence": {
+                      "type": "string",
+                      "description": "What shows it: a record, a metric, a check"
+                    }
+                  }
                 }
               }
             }

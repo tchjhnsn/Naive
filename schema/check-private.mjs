@@ -7,6 +7,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-private.mjs <venture dir>"); process.exit(2); }
@@ -49,7 +50,7 @@ for (const { package: name, input } of inputs) {
   if (privateTargets.has(input) || privateRecords.has(input.split(".")[0])) errors.push(`${name}: use_model input ${input} is private and must not reach a model`);
 }
 if (readsRelease) {
-  const release = join(dir, ".release");
+  const release = join(ventureFile(dir, ".release"));
   if (existsSync(release) && statSync(release).isDirectory()) {
     for (const f of walk(release).filter((p) => p.endsWith(".json"))) {
       const text = readFileSync(f, "utf8");

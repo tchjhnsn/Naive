@@ -29,8 +29,7 @@
         "required": [
           "id",
           "name",
-          "role",
-          "hats"
+          "role"
         ],
         "additionalProperties": false,
         "properties": {
@@ -65,7 +64,7 @@
               ]
             },
             "uniqueItems": true,
-            "description": "The functions this person owns (operations/departments.json)"
+            "description": "The functions this person owns. In the structured layout (EE-086) hats are read from the org chart in venture.json and not stored here"
           },
           "founder_file": {
             "type": "string",

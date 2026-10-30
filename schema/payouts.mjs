@@ -16,6 +16,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 export function payouts(own, value) {
   const classes = new Map(own.classes.map((c) => [c.id, c]));
@@ -74,8 +75,8 @@ export function payouts(own, value) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, arg] = process.argv.slice(2);
   if (!dir) { console.error("usage: node schema/payouts.mjs <venture dir> [value] [--json]"); process.exit(2); }
-  const own = JSON.parse(readFileSync(join(dir, "governance/ownership.json"), "utf8"));
-  const exitFile = join(dir, "governance/exit.json");
+  const own = JSON.parse(readFileSync(join(ventureFile(dir, "governance/ownership.json")), "utf8"));
+  const exitFile = join(ventureFile(dir, "governance/exit.json"));
   const scenarios = arg && !arg.startsWith("--") ? [{ id: "given", value: Number(arg) }]
     : existsSync(exitFile) ? JSON.parse(readFileSync(exitFile, "utf8")).scenarios ?? [] : [];
   if (!scenarios.length) { console.error("no scenarios: pass a value or add scenarios to governance/exit.json"); process.exit(2); }

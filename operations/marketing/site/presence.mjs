@@ -22,6 +22,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ventureFile } from "../../../schema/venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -34,7 +35,7 @@ const r2 = (x) => Math.round(x * 100) / 100;
 /** The venture's facts: flags the founder gave, else what its ICP record says about who it courts. */
 export function factsOf(dir, flags = {}) {
   const f = { raising: false, hiring: false, contributors: false };
-  const icpFile = dir && join(dir, "purpose/icp.json");
+  const icpFile = dir && join(ventureFile(dir, "purpose/icp.json"));
   if (icpFile && existsSync(icpFile)) {
     const said = JSON.stringify(load(icpFile)).toLowerCase();
     if (/investor|angel|\bvc\b/.test(said)) f.raising = true;
@@ -57,7 +58,7 @@ export function icpOf(dir, site) {
   const who = ok.filter((p) => /customer|solution|who|industr|use-case|about|for-/i.test(p.path));
   const says = [...new Set([home, ...who].filter(Boolean).flatMap((p) => (p.text ?? "").match(SAYS) ?? []).map((x) => x.trim()))].slice(0, 8);
   const opening = (home?.text ?? "").slice(0, 500);
-  const icpFile = dir && join(dir, "purpose/icp.json");
+  const icpFile = dir && join(ventureFile(dir, "purpose/icp.json"));
   const stated = icpFile && existsSync(icpFile) ? (load(icpFile).profiles ?? []).map((p) => p.who ?? p.description ?? p.name).filter(Boolean) : null;
   return { text: [says.join(" | "), opening].filter(Boolean).join(" || "), source: says.length ? "site" : "inferred", says,
     cite: says.length ? `what the site says about who it is for (${says.length} phrase${says.length > 1 ? "s" : ""}), with the home page's opening` : "the home page's opening text (inferred: the site does not say outright who it is for)",
@@ -120,7 +121,8 @@ export function pageType(p) {
 
 const pageText = (p) => `[${p.path}] ${p.title}\n${(p.text ?? "").slice(0, 3000)}`;
 
-/** The Jev request: does each page tell a visitor each item, and which customer types the ICP is. */
+/** The Jev request: does each page tell a visitor each item, and which customer types the ICP is.
+ * @param {*} site @param {{ text: string, source: string, says?: string[], cite?: string, stated?: string[] }} [icp] */
 export function request(site, icp = icpOf(null, site)) {
   const pages = site.pages.filter((p) => !p.error);
   const questions = {};
@@ -237,7 +239,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const answers = opt("answers") ? (load(opt("answers")).answers ?? load(opt("answers"))) : null;
     const facts = factsOf(dir, Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true])));
     const r = score(site, { answers, facts, icp: icpOf(dir, site), venture: dir ? load(join(dir, "venture.json")).id : null });
-    if (dir) { mkdirSync(join(dir, dirname(PRESENCE)), { recursive: true }); writeFileSync(join(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
+    if (dir) { mkdirSync(join(dir, dirname(PRESENCE)), { recursive: true }); writeFileSync(ventureFile(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
     console.log(JSON.stringify(r, null, 2));
   } else if (a && existsSync(join(a, "venture.json"))) {
     if (!existsSync(join(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node interface/harness/site.mjs <url> --venture <dir>)`); process.exit(1); }

@@ -20,6 +20,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -74,7 +75,7 @@ export function routable(file, pattern) {
 
 // Every entry under a folder, as venture-relative paths, stopping at nested ventures and dot folders other than reserved ones.
 function walk(dir, sub = "") {
-  const d = join(dir, sub);
+  const d = ventureFile(dir, sub);
   return readdirSync(d, { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.isDirectory()) {
@@ -105,7 +106,7 @@ export function structure(dir) {
       if (!s.re.test(name)) continue;
       if (s.name === "(group)") {
         if (parent) errors.push(`${e.path}/: a route group folder sits at the venture root (P-36)`);
-        const inside = readdirSync(join(dir, e.path)).filter((f) => f !== "AGENTS.md" && f !== ".gitkeep");
+        const inside = readdirSync(ventureFile(dir, e.path)).filter((f) => f !== "AGENTS.md" && f !== ".gitkeep");
         if (inside.length) errors.push(`${e.path}/: ${s.rule}; move ${inside.join(", ")} into its package`);
       } else warnings.push(`${e.path}/: ${s.name} is ${s.rule} (P-32)`);
     }
@@ -129,7 +130,7 @@ export async function manifest(dir) {
     // The packages that fit the phase now, plus every package that already holds a record.
     const { packages } = await import("./packages.mjs");
     const p = packages(dir);
-    const holding = names.filter((n) => { const k = pkgOf(n); return (k.records ?? []).length && existsSync(join(dir, n)) && readdirSync(join(dir, n)).some((f) => /\.(json|md|mdx)$/.test(f)); });
+    const holding = names.filter((n) => { const k = pkgOf(n); return (k.records ?? []).length && existsSync(ventureFile(dir, n)) && readdirSync(ventureFile(dir, n)).some((f) => /\.(json|md|mdx)$/.test(f)); });
     derived = [...new Set([...p.core.filter((x) => x.in === "now").map((x) => x.id), ...holding])];
   }
   const used = v.packages ?? derived;
@@ -141,7 +142,7 @@ export async function manifest(dir) {
   return {
     identity: { id: v.id, name: v.name, kind: v.kind ?? "venture", parent: v.parent, owner: v.owner, status: v.status },
     phase: v.phase,
-    governance: { governed_by: v.governed_by ?? null, legal_form: v.form?.legal_form ?? "none", members: v.members ?? [], decision_rights: existsSync(join(dir, "governance/decision-rights.json")) ? "governance/decision-rights.json" : "the framework's template" },
+    governance: { governed_by: v.governed_by ?? null, legal_form: v.form?.legal_form ?? "none", members: v.members ?? [], decision_rights: existsSync(join(ventureFile(dir, "governance/decision-rights.json"))) ? "governance/decision-rights.json" : "the framework's template" },
     functions,
     packages: { declared: !!v.packages, list: used.map((n) => ({ name: n, kind: names.includes(n) ? pkgOf(n).kind : null, known: names.includes(n) })) },
     kits: (v.kits ?? []).map((k) => ({ ...k, note: "a kit is Mentura's; the framework checks only that it names a package the venture uses" })),

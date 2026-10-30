@@ -65,12 +65,12 @@ expect("a failing agent stops the migrate and says so, with nothing planned", ba
 const up = mentura("migrate", "--venture", "kettle");
 expect("mentura migrate without --from still runs upgrade for one release, with a notice", /now naive upgrade/.test(up.stderr));
 
-// Port skips secrets the same way.
+// Port opens no file at all: its plan names the folder, never what is in it.
 const pdir = join(ws, "ventures", "kettle3");
 init("kettle3");
-const port = naive("port", "--from", src, "--venture", pdir);
-const pplan = JSON.parse(readFileSync(join(pdir, ".release/port-plan.json"), "utf8"));
-expect("port never opens a secret either", port.status === 0 && pplan.items.filter((i) => /secret/.test(i.reason)).length === 2 && pplan.items.filter((i) => /secret/.test(i.reason)).every((i) => !i.sha256));
+const port = naive("port", src, "--venture", pdir);
+const pplan = readFileSync(join(pdir, ".release/port-plan.json"), "utf8");
+expect("port never opens a secret either", port.status === 0 && !/NOT_A_REAL_KEY|kettles/.test(pplan) && !/sha256/.test(pplan), port.stderr);
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);

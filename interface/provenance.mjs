@@ -9,6 +9,7 @@ import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { emit } from "./instrumentation.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 export const LOG = "provenance.jsonl";
 const sha = (s) => createHash("sha256").update(s).digest("hex");
@@ -17,7 +18,7 @@ export const lineHash = (prev, entry) => { const { hash, ...rest } = entry; retu
 export const contentHash = (file) => sha(readFileSync(file));
 
 export function entries(dir) {
-  const f = join(dir, LOG);
+  const f = ventureFile(dir, LOG);
   return existsSync(f) ? readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : [];
 }
 
@@ -26,6 +27,15 @@ export function agentFromEnv(kind, via, extra = {}) {
   const e = process.env;
   const a = { kind, via, id: e.MENTURA_ACTOR_ID, model: kind === "agent" ? e.MENTURA_MODEL : undefined, session: e.MENTURA_SESSION, harness: e.MENTURA_HARNESS, ...extra };
   return Object.fromEntries(Object.entries(a).filter(([, v]) => v));
+}
+
+/** The agent this process says is acting, when it is not the person named by: MENTURA_ACTOR=agent,
+ *  MENTURA_MODEL, or a MENTURA_ACTOR_ID other than by. These are environment variables anyone can
+ *  unset, so this catches an honest or careless agent; it is not signed identity. */
+export function actingAgent(by) {
+  const e = process.env;
+  if (e.MENTURA_ACTOR === "agent" || e.MENTURA_MODEL) return e.MENTURA_ACTOR_ID ?? e.MENTURA_MODEL ?? "agent";
+  return e.MENTURA_ACTOR_ID && e.MENTURA_ACTOR_ID !== by ? e.MENTURA_ACTOR_ID : null;
 }
 
 /**
@@ -37,9 +47,9 @@ export function record(dir, { entity, route, activity, agent, derived_from, deci
   const prior = entries(dir);
   const prev = prior.length ? prior.at(-1).hash : "genesis";
   const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
-    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, sha256: sha256 ?? contentHash(join(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
   entry.hash = lineHash(prev, entry);
-  appendFileSync(join(dir, LOG), JSON.stringify(entry) + "\n");
+  appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\n");
   // Context hook: every provenance entry (write, draft, accept, confirm, decision) is an instrumentation event (P-4).
   emit(dir, { kind: "provenance", activity: entry.activity, entity: entry.entity, route: entry.route, decision: entry.decision, by: entry.agent?.kind, via: entry.agent?.via });
   fireTriggers(dir);
@@ -52,7 +62,7 @@ export function record(dir, { entity, route, activity, agent, derived_from, deci
 function fireTriggers(dir) {
   if (process.env.NAIVE_TRIGGERS_ACTIVE) return;
   let cfg;
-  try { cfg = JSON.parse(readFileSync(join(dir, "naive.config.json"), "utf8")); } catch { return; }
+  try { cfg = JSON.parse(readFileSync(join(ventureFile(dir, "naive.config.json")), "utf8")); } catch { return; }
   if (!cfg?.triggers?.length && !cfg?.kits?.length) return;
   // The write has landed; nothing here may undo it or throw past it.
   try {

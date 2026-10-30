@@ -42,6 +42,7 @@ import { understood } from "../../purpose/frameworks/idea-map/route.mjs";
 import { createHash } from "node:crypto";
 import { agentFromEnv, record as prov } from "../provenance.mjs";
 import { evaluate } from "./evals.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const repo = new URL("../../", import.meta.url).pathname;
 const argv = process.argv.slice(2);
@@ -71,8 +72,8 @@ if (!existsSync(join(dir, "venture.json"))) {
   if (p.status !== 0) { console.error(p.stderr || p.stdout); process.exit(1); }
   if (opt("name")) { const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")); v.name = opt("name"); writeFileSync(join(dir, "venture.json"), JSON.stringify(v, null, 2) + "\n"); }
 }
-mkdirSync(join(dir, "purpose/ideas"), { recursive: true });
-copyFileSync(dumpFile, join(dir, DUMP));
+mkdirSync(join(ventureFile(dir, "purpose/ideas")), { recursive: true });
+copyFileSync(dumpFile, ventureFile(dir, DUMP));
 prov(dir, { entity: DUMP, route: "purpose/idea-dump", activity: "create", agent: agentFromEnv("person", "harness", { id: founder }), note: "the founder's idea dump, verbatim" });
 lap(`venture ${id} scaffolded in ${ws}; idea dump saved (${readFileSync(dumpFile, "utf8").length} characters)`);
 
@@ -83,8 +84,8 @@ if (opt("money")) {
   const m = opt("money");
   const src = m === "live" ? ["--live"] : m === "sandbox" ? [] : ["--fixture", resolve(m)];
   const p = spawnSync("node", [join(repo, "platform/integrations/rho.mjs"), "sync", "--venture", dir, ...src], { encoding: "utf8" });
-  if (p.status === 0 && existsSync(join(dir, "money/_summary.json"))) {
-    money = JSON.parse(readFileSync(join(dir, "money/_summary.json"), "utf8"));
+  if (p.status === 0 && existsSync(join(ventureFile(dir, "money/_summary.json")))) {
+    money = JSON.parse(readFileSync(join(ventureFile(dir, "money/_summary.json")), "utf8"));
     prov(dir, { entity: "money/_summary.json", route: "money/_summary", activity: "create", agent: agentFromEnv("agent", "harness", { id: "naive-money" }), note: `synced from ${money.source}; ${money.transactions} transactions kept as pointers in a sensitive stream` });
     lap(`money synced from ${money.source}${money.business ? ` (${money.business})` : ""}: cash ${(money.cash.amount / 100).toFixed(2)} ${money.cash.currency}, monthly net ${(money.monthly_net.amount / 100).toFixed(2)}, runway ${money.runway_months ?? "not limited by burn"}, as of ${money.as_of}`);
   } else console.log(`   money sync failed, so the run goes on without it: ${(p.stderr || p.stdout).trim().slice(0, 300)}`);
@@ -100,7 +101,7 @@ if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("
 
 // The trace (EE-058): every step and every tool call the agent made, with timings, for LangSmith.
 const iso = () => new Date().toISOString();
-const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, ideas: readFileSync(join(dir, DUMP), "utf8"), founder, phase }, children: [], metadata: {
+const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, ideas: readFileSync(ventureFile(dir, DUMP), "utf8"), founder, phase }, children: [], metadata: {
   venture: id, venture_id: id, pipeline_step: phase, money: money?.source ?? null,
   // LangSmith groups a founder's runs into one thread by thread_id: one session per venture per day.
   thread_id: process.env.NAIVE_SESSION ?? `${id}-${new Date().toISOString().slice(0, 10)}`,
@@ -155,11 +156,11 @@ async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", 
 // The run's evals and trace: written beside the workspace, and sent to LangSmith when a key is set.
 function finish(code = 0) {
   trace.end = iso();
-  const evals = existsSync(join(dir, DUMP)) ? evaluate(dir, { researched, settled }) : [];
+  const evals = existsSync(ventureFile(dir, DUMP)) ? evaluate(dir, { researched, settled }) : [];
   trace.feedback = evals;
   // What the run drafted, so a judge reading only the root run (LangSmith's online evaluators, Jev)
   // sees the problem record and the agent's reports beside the founder's dump in the inputs.
-  const problem = join(dir, "purpose/validation/problem.json");
+  const problem = join(ventureFile(dir, "purpose/validation/problem.json"));
   const drafted = { problem: existsSync(problem) ? JSON.parse(readFileSync(problem, "utf8")) : null, reports: trace.children.filter((c) => c.outputs?.report).map((c) => ({ pass: c.name, report: c.outputs.report })) };
   trace.outputs = { settled, docket: { steps: docketSteps, now: compact(docket(dir)) }, drafted, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
   writeFileSync(join(ws, "trace.json"), JSON.stringify(trace, null, 2) + "\n");
@@ -180,7 +181,7 @@ const compact = (k) => ({ leading: k.functions[0]?.function ?? null, functions: 
 
 // 1. The idea map: Jev tags each idea with Naive's conventions; without Jev, the agent does, with the
 //    same vocabulary. Either way the ideas stay verbatim and unknown tags are dropped.
-const ideas = split(readFileSync(join(dir, DUMP), "utf8"));
+const ideas = split(readFileSync(ventureFile(dir, DUMP), "utf8"));
 const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
 let tags, tagger;
 const mapNode = { name: "idea map", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
@@ -200,24 +201,24 @@ Ideas: ${JSON.stringify(Object.fromEntries(ideas.map((i) => [i.id, i.section ? `
   tags = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
   tagger = "claude-code";
 }
-writeFileSync(join(dir, MAP), render(ideas, clean(tags), { venture: id, tagger }));
+writeFileSync(ventureFile(dir, MAP), render(ideas, clean(tags), { venture: id, tagger }));
 prov(dir, { entity: MAP, route: "purpose/idea-map", activity: "create", derived_from: [DUMP], agent: agentFromEnv("agent", "harness", { id: tagger }), note: `${ideas.length} ideas tagged with Naive's conventions` });
-const sum = summary(parse(readFileSync(join(dir, MAP), "utf8")), phase);
+const sum = summary(parse(readFileSync(ventureFile(dir, MAP), "utf8")), phase);
 trace.children.push(Object.assign(mapNode, { end: iso(), outputs: { tagger, summary: sum }, metadata: { tagger } }));
 lap(`idea map: ${sum.ideas} ideas; ${Object.entries(sum.by_pillar).map(([k, v]) => `${k} ${v}`).join(", ")}; clusters ${sum.strengths.map((s) => s.department).join(", ")}; ${sum.product.reading}`);
 
 // 1b. The idea graph: the map's structured form. Jev judges which ideas build on which; without Jev,
 //     Naive's record order does. Signal, lanes and layout follow in code.
 const graphNode = { name: "idea graph", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
-const mapIdeas = parse(readFileSync(join(dir, MAP), "utf8")).ideas;
+const mapIdeas = parse(readFileSync(ventureFile(dir, MAP), "utf8")).ideas;
 let graphAnswers = null;
 if (jev) {
   const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(graphRequest(mapIdeas, venture)), encoding: "utf8", maxBuffer: 1 << 26 });
   if (p.status === 0) { const out = JSON.parse(p.stdout); graphAnswers = out.answers; console.log(`   Jev answered ${Object.keys(out.answers).length} dependency and concreteness questions in ${out.ms} ms`); }
   else console.log(`   Jev could not judge the dependencies (${p.stderr.trim().slice(0, 200)}); using Naive's record order`);
 }
-const g = buildGraph(mapIdeas, { answers: graphAnswers, phase, venture: id, source: `${MAP}@${createHash("sha256").update(readFileSync(join(dir, MAP))).digest("hex").slice(0, 16)}` });
-writeFileSync(join(dir, GRAPH), JSON.stringify(g, null, 2) + "\n");
+const g = buildGraph(mapIdeas, { answers: graphAnswers, phase, venture: id, source: `${MAP}@${createHash("sha256").update(readFileSync(ventureFile(dir, MAP))).digest("hex").slice(0, 16)}` });
+writeFileSync(ventureFile(dir, GRAPH), JSON.stringify(g, null, 2) + "\n");
 prov(dir, { entity: GRAPH, route: "purpose/idea-graph", activity: "create", derived_from: [MAP], agent: agentFromEnv("agent", "harness", { id: g.judged_by }), note: `Merkle root ${g.root}` });
 trace.children.push(Object.assign(graphNode, { end: iso(), outputs: { root: g.root, edges: g.edges.length, lanes: g.lanes.map((l) => ({ mode: l.mode, ideas: l.ideas.length })), next: g.next } }));
 lap(`idea graph: ${g.edges.length} dependencies (${g.judged_by}); ${g.lanes.filter((l) => l.mode === "sync").length} lane(s) in order, ${g.lanes.filter((l) => l.mode === "async").length} on their own; develop next: ${g.next.join(", ")}; root ${g.root}`);

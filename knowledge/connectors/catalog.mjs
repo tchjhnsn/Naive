@@ -15,6 +15,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { address, isText, words } from "./contract.mjs";
 import { connectAll } from "./index.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 export const FILE = "_catalog/catalog.json";
 const MAX_BYTES = 1_000_000;
@@ -50,9 +51,10 @@ async function routeOf(path) {
   return { route: null, record: null };
 }
 
-export const load = (dir) => existsSync(join(dir, FILE)) ? JSON.parse(readFileSync(join(dir, FILE), "utf8")) : null;
+export const load = (dir) => existsSync(ventureFile(dir, FILE)) ? JSON.parse(readFileSync(ventureFile(dir, FILE), "utf8")) : null;
 
-/** Builds or refreshes the catalog. Returns it with stats: items, read (items fetched), reused. */
+/** Builds or refreshes the catalog. Returns it with stats: items, read (items fetched), reused.
+ * @param {string} dir @param {{ write?: boolean, sources?: object[] }} [opts] */
 export async function build(dir, { write = true, sources } = {}) {
   const prior = new Map((load(dir)?.items ?? []).map((x) => [x.address, x]));
   const conns = sources ?? await connectAll(dir);
@@ -75,7 +77,7 @@ export async function build(dir, { write = true, sources } = {}) {
   }
   stats.items = items.length;
   const catalog = { built_at: new Date().toISOString(), sources: conns.map(({ source }) => ({ id: source.id, connector: source.connector })), items };
-  if (write) { mkdirSync(join(dir, "_catalog"), { recursive: true }); writeFileSync(join(dir, FILE), JSON.stringify(catalog) + "\n"); }
+  if (write) { mkdirSync(join(dir, "_catalog"), { recursive: true }); writeFileSync(ventureFile(dir, FILE), JSON.stringify(catalog) + "\n"); }
   return { catalog, stats };
 }
 

@@ -11,6 +11,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { catalog, foldersOf } from "./departments.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const args = process.argv.slice(2);
 const group = args.includes("--group");
@@ -27,13 +28,13 @@ const held = foldersOf(dir).filter((f) => f.tag?.department === id).map((f) => f
 const tag = { department: d.id, value_chain: d.value_chain, apqc: d.apqc.id };
 const made = [];
 for (const layer of layersOn.filter((l) => !held.includes(l))) {
-  const rel = join(layer, "departments", ...(group ? [d.value_chain] : []), d.id);
-  if (existsSync(join(dir, rel))) { console.error(`${rel} exists without a department.json; add the tag by hand`); process.exit(1); }
-  mkdirSync(join(dir, rel), { recursive: true });
-  writeFileSync(join(dir, rel, "department.json"), JSON.stringify(tag, null, 2) + "\n");
+  const rel = [layer, "departments", ...(group ? [d.value_chain] : []), d.id].join("/");
+  if (existsSync(ventureFile(dir, rel))) { console.error(`${rel} exists without a department.json; add the tag by hand`); process.exit(1); }
+  mkdirSync(ventureFile(dir, rel), { recursive: true });
+  writeFileSync(join(ventureFile(dir, rel), "department.json"), JSON.stringify(tag, null, 2) + "\n");
   const [file, title, what] = layer === "governance"
     ? ["charter.md", "charter", d.governance] : ["README.md", "operations", d.operations];
-  writeFileSync(join(dir, rel, file), `# ${d.label}: ${title}\n\nHolds: ${what}.\n\nAPQC ${d.apqc.id} ${d.apqc.name}; value chain: ${d.value_chain} (${d.porter}).\n`);
+  writeFileSync(join(ventureFile(dir, rel), file), `# ${d.label}: ${title}\n\nHolds: ${what}.\n\nAPQC ${d.apqc.id} ${d.apqc.name}; value chain: ${d.value_chain} (${d.porter}).\n`);
   made.push(rel);
 }
 venture.departments = [...new Set([...(venture.departments ?? []), d.id])];

@@ -8,6 +8,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const PLANS = ["people/team-plan.json", "operations/team-plan.json"];
 
@@ -16,7 +17,7 @@ export const routeGlob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, 
 
 /** The venture's team plan, or null. Read fresh on every call, so a changed plan is seen at once. */
 export function teamPlan(dir) {
-  const f = dir && PLANS.map((p) => join(dir, p)).find((p) => existsSync(p));
+  const f = dir && PLANS.map((p) => ventureFile(dir, p)).find((p) => existsSync(p));
   return f ? { path: f, ...JSON.parse(readFileSync(f, "utf8")) } : null;
 }
 

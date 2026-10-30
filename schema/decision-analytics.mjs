@@ -19,6 +19,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { decisions } from "./decisions.mjs";
 import { HOME, PACKAGES, TITLES } from "./packages.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const titleOf = (t) => ({ icp: "ICP", "venture-core": "Core product" })[t] ?? TITLES[t] ?? t.replace(/^validation-/, "").replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
@@ -30,7 +31,7 @@ const OPEN = new Set(["now", "overdue", "waiting", "stale", "later"]);
 export function analytics(dir, now) {
   const r = decisions(dir, now);
   const rows = r.decisions.filter((d) => d.source !== "root").map((d) => {
-    const raw = d.file ? load(join(dir, d.file)) : {};
+    const raw = d.file ? load(ventureFile(dir, d.file)) : {};
     const record = d.decides?.record ?? null;
     // A foundation statement belongs to the strategic foundation whatever record holds it; so does a
     // decision about venture.json itself (the core product, the team).

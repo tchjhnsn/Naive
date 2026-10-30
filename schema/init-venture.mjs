@@ -19,6 +19,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { KBASE, ventureFile } from "./venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "..");
@@ -26,6 +27,10 @@ const { layers, formalized, pillars, readme } = JSON.parse(readFileSync(join(her
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };
 const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form"), only = flag("layers"), typeId = flag("type");
+// --layout structured (EE-086): knowledge/, meta/ and an org chart in venture.json; without it, the flat layout.
+const layout = flag("layout") ?? "flat";
+if (!["flat", "structured"].includes(layout)) { console.error(`unknown layout ${layout}: flat or structured`); process.exit(2); }
+const structured = layout === "structured";
 const vtype = typeId ? JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8")).types.find((t) => t.id === typeId) : null;
 if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node schema/venture-type.mjs list`); process.exit(2); }
 const [dir, id] = args;
@@ -41,27 +46,47 @@ mkdirSync(dir, { recursive: true });
 const venture = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase };
 if (legalForm || vtype?.funding) venture.form = { ...(legalForm ? { legal_form: legalForm } : {}), ...(vtype?.funding ? { funding: vtype.funding } : {}) };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
-Object.assign(venture, { owner: "self", status: "active", profile: "profile.md", layers: {} });
-for (const layer of ALL) {
+Object.assign(venture, { owner: "self", status: "active", profile: structured ? "README.md" : "profile.md", layers: {} });
+// The package folders (EE-070); a typed venture gets its type's packages.
+const packageDirs = vtype ? vtype.packages : ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money"];
+if (structured) {
+  // venture.json first, so every path below resolves into k-base/ and meta/. The org chart starts flat:
+  // one function per package, owned by no one until create-venture or the founder names the owner.
+  venture.layout = "structured";
+  venture.functions = Object.fromEntries(packageDirs.map((p) => [p, { owner: null }]));
+  for (const layer of ALL) venture.layers[layer] = on.includes(layer) ? { location: `${KBASE}/` } : false;
+  writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
+  for (const sub of [KBASE, "meta"]) mkdirSync(join(dir, sub), { recursive: true });
+}
+for (const layer of structured ? [] : ALL) {
   if (!on.includes(layer)) { if (only !== null || !["governance", "interface"].includes(layer)) venture.layers[layer] = false; continue; }
-  mkdirSync(join(dir, layer), { recursive: true });
+  mkdirSync(ventureFile(dir, layer), { recursive: true });
   writeFileSync(join(dir, layer, "README.md"), `# ${layer}\n\n${readme[layer]}\n`);
   venture.layers[layer] = { location: `${layer}/` };
 }
-for (const sub of ["products", "accounts"]) { mkdirSync(join(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
+if (!structured) for (const sub of ["products", "accounts"]) { mkdirSync(ventureFile(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
 // The package folder layout (EE-070). Old layer folders above stay for one release.
 // A typed venture gets its type's packages; the rest stay out until need-now suggests them.
-const packageDirs = vtype ? vtype.packages : ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money"];
-for (const sub of ["raw/dump", "raw/sources", "ideas", ...packageDirs, "decisions", "evidence", "public", "_private", "_drafts", ".release"]) {
-  mkdirSync(join(dir, sub), { recursive: true });
+for (const sub of ["raw/dump", "raw/sources", "ideas", ...packageDirs, "decisions", "evidence", ...(structured ? [] : ["public"]), "_private", "_drafts", ".release"]) {
+  mkdirSync(ventureFile(dir, sub), { recursive: true });
 }
-mkdirSync(join(dir, "pillars"), { recursive: true });
-for (const [name, what] of Object.entries(pillars.stubs)) {
-  const guide = relative(join(dir, "pillars"), join(repo, pillars.guides, `${name}.md`));
-  writeFileSync(join(dir, "pillars", `${name}.md`), `# ${name[0].toUpperCase() + name.slice(1)} pillar\n\n${what}\n\nGuide: [${name} pillar](${guide})\n`);
+// Every package folder explains itself (EE-086): a README.md from its package, for people. GitHub and
+// editors show it when the folder is opened; an AGENTS.md beside it is the founder's, for agents.
+if (structured) for (const pkg of packageDirs) {
+  const f = join(repo, "packages", pkg, "package.json");
+  if (!existsSync(f)) continue;
+  const p = JSON.parse(readFileSync(f, "utf8"));
+  const lines = [`# ${p.title ?? pkg}`, "", p.purpose ?? "", ...(p.required?.length ? ["", `What goes in it first: ${p.required.join(", ")}.`] : []), ...(p.optional?.length ? [`Also: ${p.optional.join(", ")}.`] : []),
+    ...(p.gates?.length ? ["", `It is ready when ${p.gates.join("; ")}.`] : []), "", `Owner: whoever owns the ${pkg} function in venture.json.`, ""];
+  writeFileSync(join(ventureFile(dir, pkg), "README.md"), lines.join("\n"));
 }
-writeFileSync(join(dir, "profile.md"), `# ${id}\n\nWhat this venture is, in a few sentences. Its machine fields are in venture.json (EE-011).\n\n## Changelog\n`);
-writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
+if (!structured) mkdirSync(join(ventureFile(dir, "pillars")), { recursive: true });
+for (const [name, what] of Object.entries(structured ? {} : pillars.stubs)) {
+  const guide = relative(join(ventureFile(dir, "pillars")), join(repo, pillars.guides, `${name}.md`));
+  writeFileSync(join(ventureFile(dir, "pillars"), `${name}.md`), `# ${name[0].toUpperCase() + name.slice(1)} pillar\n\n${what}\n\nGuide: [${name} pillar](${guide})\n`);
+}
+writeFileSync(join(ventureFile(dir, "profile.md")), `# ${id}\n\nWhat this venture is, in a few sentences. Its machine fields are in venture.json (EE-011).\n\n## Changelog\n`);
+if (!structured) writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
 // The venture's root layout (EE-072, I-4): every route's layout chain starts here. Lines shaped
 // "key: value" are instructions the router hands an agent with the layout.
 writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${id}
@@ -97,8 +122,8 @@ const productFoundation = [
 ];
 // The team question (EE-060): asked in Discovery, failing open, so validation never waits on it. A
 // founding team, or a founder looking for one, gets the founder-agreement kit beside validation.
-mkdirSync(join(dir, "decisions"), { recursive: true });
-writeFileSync(join(dir, "decisions/venture.team.decision.json"), JSON.stringify({ id: "founding-team", question: "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
+mkdirSync(join(ventureFile(dir, "decisions")), { recursive: true });
+writeFileSync(join(ventureFile(dir, "decisions/venture.team.decision.json")), JSON.stringify({ id: "founding-team", question: "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
   decides: { record: "founder-agreement", path: "governance/founder-agreement.json" }, layer: "governance", boundary: "fail-open", needed_in: phase, status: "open",
   options: ["Solo: I am founding it alone", "Cofounders: we are founding it together", "Looking: I want cofounders"],
   unlocks: [{ activity: "Draft the founder agreement with the founding-agreement kit", routes: ["governance/founder-agreement"] }], provenance: framework }, null, 2) + "\n");
@@ -113,15 +138,18 @@ const fundFoundation = [
 ];
 const decisionSet = vtype?.decisions ?? "product-foundation";
 if (decisionSet === "fund-foundation") {
-  mkdirSync(join(dir, "fund/decisions"), { recursive: true });
-  for (const d of fundFoundation) writeFileSync(join(dir, "fund/decisions", `${d.id === "first-close" ? "terms.first-close" : d.id.replace(/^fund-/, "")}.decision.json`),
+  mkdirSync(join(ventureFile(dir, "fund/decisions")), { recursive: true });
+  for (const d of fundFoundation) writeFileSync(join(ventureFile(dir, "fund/decisions"), `${d.id === "first-close" ? "terms.first-close" : d.id.replace(/^fund-/, "")}.decision.json`),
     JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
 }
-if (decisionSet === "product-foundation") mkdirSync(join(dir, "products/decisions"), { recursive: true });
-if (decisionSet === "product-foundation") for (const d of productFoundation) writeFileSync(join(dir, "products/decisions", `product.${d.id.replace(/^product-/, "")}.decision.json`),
+// The product questions sit beside the products: product/ in the structured layout, products/ in the flat one.
+const productDecisions = structured ? "product/decisions" : "products/decisions";
+if (decisionSet === "product-foundation") mkdirSync(join(ventureFile(dir, productDecisions)), { recursive: true });
+if (decisionSet === "product-foundation") for (const d of productFoundation) writeFileSync(join(ventureFile(dir, productDecisions), `product.${d.id.replace(/^product-/, "")}.decision.json`),
   JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
 // The type's functions are imported like any department (EE-047): listed in venture.json, with their folders.
-if (vtype) for (const d of vtype.departments) {
+// In the structured layout the org chart is venture.json's functions; the flat layout imports departments.
+if (vtype && !structured) for (const d of vtype.departments) {
   const r = spawnSync("node", [join(here, "add-department.mjs"), dir, d], { encoding: "utf8" });
   if (r.status !== 0) { console.error((r.stderr || r.stdout).trim()); process.exit(1); }
 }

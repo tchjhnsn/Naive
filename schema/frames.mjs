@@ -23,6 +23,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -93,9 +94,9 @@ export async function props(dir) {
   const v = load(join(dir, "venture.json"));
   const ds = decisions(dir).decisions;
   const answer = (id) => { const d = ds.find((x) => x.id === id); return d?.status === "decided" ? d.answer : null; };
-  const sum = existsSync(join(dir, "money/_summary.json")) ? load(join(dir, "money/_summary.json")) : null;
-  const own = existsSync(join(dir, "governance/ownership.json")) ? load(join(dir, "governance/ownership.json")) : null;
-  const people = existsSync(join(dir, "people/people.json")) ? load(join(dir, "people/people.json")) : null;
+  const sum = existsSync(join(ventureFile(dir, "money/_summary.json"))) ? load(join(ventureFile(dir, "money/_summary.json"))) : null;
+  const own = existsSync(join(ventureFile(dir, "governance/ownership.json"))) ? load(join(ventureFile(dir, "governance/ownership.json"))) : null;
+  const people = existsSync(join(ventureFile(dir, "people/people.json"))) ? load(join(ventureFile(dir, "people/people.json"))) : null;
   const out = {
     phase: v.phase,
     goal: answer("discovery-goal") ?? NONE,

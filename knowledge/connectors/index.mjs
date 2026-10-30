@@ -17,6 +17,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { conformance } from "./contract.mjs";
 import { ANY, resolve as resolveRule } from "./resolve.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -34,8 +35,8 @@ export function registry() {
 
 /** A venture's source map, with the implicit venture source first. */
 export function sourcesOf(dir) {
-  const own = existsSync(join(dir, MAP)) ? load(join(dir, MAP)) : { sources: [], records: {} };
-  return { sources: [{ id: LOCAL, connector: "filesystem", root: ".", writes: "direct", implicit: true }, ...(own.sources ?? [])], records: own.records ?? {}, rules: own.rules ?? [], mapped: existsSync(join(dir, MAP)) };
+  const own = existsSync(ventureFile(dir, MAP)) ? load(ventureFile(dir, MAP)) : { sources: [], records: {} };
+  return { sources: [{ id: LOCAL, connector: "filesystem", root: ".", writes: "direct", implicit: true }, ...(own.sources ?? [])], records: own.records ?? {}, rules: own.rules ?? [], mapped: existsSync(ventureFile(dir, MAP)) };
 }
 
 /**
