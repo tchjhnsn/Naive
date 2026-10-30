@@ -188,6 +188,75 @@
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
+    },
+    "premise_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The premise-attack linter (schema/premise-lint.mjs): each rule, one per aspect, is off, warn (the default) or error",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "undefined-term": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "unmeasurable": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "no-owner": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "unsupported-premise": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "orphan": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "conflict": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "dependency": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "phase-mismatch": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {

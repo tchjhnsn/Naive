@@ -19,7 +19,7 @@ const put = (rel, o) => { mkdirSync(join(v, rel, ".."), { recursive: true }); wr
 const json = (rel) => JSON.parse(readFileSync(join(v, rel), "utf8"));
 const agent = { kind: "person", id: "Founder", via: "cli" };
 put("venture.json", { id: "imp", name: "Imp", type: "software-startup", phase: "discovery" });
-put("product/shop.json", { id: "shop", name: "Shop" });
+put("product/shop.json", { id: "shop", name: "Shop", description: "A shop." });
 put("accounts/acme/account.json", { id: "acme", product: "shop" });
 put("people/team-plan.json", { roles: ["engineer"] });
 put("people/people.json", { venture: "imp", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] });
@@ -30,7 +30,7 @@ try {
   // The team plan was written from the product: provenance says it reads it.
   record(v, { entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] });
 
-  propose(v, { at: "product", id: "shop-price", question: "What does Shop cost?", answer: "$20/month", applies_to: [{ file: "product/shop.json", field: "price" }] }, { agentId: "cos" });
+  propose(v, { at: "product", id: "shop-price", question: "What does Shop sell?", answer: "A shop for makers.", applies_to: [{ file: "product/shop.json", field: "description" }] }, { agentId: "cos" });
   approve(v, "shop-price", { by: "Founder" });
   const m = merge(v, "shop-price", { by: "Founder" });
   expect("merge returns the impact summary", m.ok && m.result.impact?.affected === 2, m);
@@ -52,8 +52,16 @@ try {
   const s = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "decision-impact.schema.json", "--file", join(v, "product/decisions/shop-price.impact.json")], { encoding: "utf8" });
   expect("the impact record matches schema/decision-impact.schema.json", s.status === 0, s.stdout + s.stderr);
 
+  const marks = () => json(".naive/stale.json").marks.length;
+  const n = marks();
   const again = impact(v, "shop-price");
-  expect("rebuilding the map is idempotent: same follow-ups, no duplicates", again.ok && decisions(v).decisions.filter((d) => d.id.startsWith("revise-")).length === 2, again);
+  expect("rebuilding the map is idempotent: same follow-ups, no duplicates", again.ok && again.result.affected === 2 && decisions(v).decisions.filter((d) => d.id.startsWith("revise-")).length === 2, again);
+  expect("rerunning impact adds no duplicate stale marks", marks() === n, json(".naive/stale.json").marks);
+
+  propose(v, { at: "product", id: "shop-name", question: "What is Shop called?", answer: "Shoppe", applies_to: [{ file: "product/shop.json", field: "name" }] }, { agentId: "cos" });
+  approve(v, "shop-name", { by: "Founder" });
+  const never = impact(v, "shop-name");
+  expect("impact on a decision never merged is refused and marks nothing", !never.ok && /never merged/.test(never.error) && marks() === n, never);
   expect("an unknown decision is refused", !impact(v, "nope").ok);
 } finally {
   rmSync(v, { recursive: true, force: true });

@@ -42,6 +42,9 @@
 //   naive workspace rename <name>                   rename the workspace this runs in (logged in its meta/provenance.jsonl)
 //   naive calendar [list [--from <date>] [--to <date>] | add --title <t> --start <local time> | export --ics <file>]
 //                                                   the workspace calendar: stored events and those derived from dated records
+//   naive lint premises [<route>] [--drafts] [--json] [--propose]
+//                                                   attack the premises of the venture's goals, requirements, exit criteria,
+//                                                   constraints and decisions; --propose writes findings as open decisions
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -280,6 +283,10 @@ else if (cmd === "build" || cmd === "start") {
   try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error(e.message); process.exit(1); }
   const [sub = "list", ...args] = rest[0] && !rest[0].startsWith("--") ? rest : ["list", ...rest];
   process.exit(run("schema/calendar.mjs", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
+} else if (cmd === "lint") {
+  const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
+  process.exit(run("schema/premise-lint.mjs", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");

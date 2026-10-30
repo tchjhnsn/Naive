@@ -66,6 +66,40 @@ try {
   const fj = forged.ok ? json("marketing/decisions/forged.decision.json") : {};
   expect("an agent's propose() drops forged merged, version, versions, rolled_back_from and proposed", forged.ok && !["merged", "version", "versions", "rolled_back_from", "proposed"].some((k) => k in fj), forged.ok ? fj : forged);
 
+  propose(v, { at: "marketing", id: "stage", question: "Which phase are we in?", answer: "growth", applies_to: [{ file: "venture.json", field: "phase" }] }, { agentId: "cos" });
+  approve(v, "stage", { by: "Founder" });
+  const before = readFileSync(join(v, "venture.json"), "utf8");
+  const bad = merge(v, "stage", { by: "Founder" });
+  expect("a merge whose answer breaks the target's schema is refused", !bad.ok && /venture\.schema\.json/.test(bad.error) && /phase/.test(bad.error), bad);
+  expect("a refused merge writes nothing: the record and the decision are unchanged", readFileSync(join(v, "venture.json"), "utf8") === before && !json("marketing/decisions/stage.decision.json").merged);
+  for (const file of ["./venture.json", ".//venture.json", "marketing/./x.json"]) {
+    const sp = propose(v, { at: "marketing", id: `spelled-${file.length}`, question: "Which phase?", answer: "growth", applies_to: [{ file, field: "phase" }] }, { agentId: "cos" });
+    expect(`propose refuses the spelling ${file}, which would skip the schema check`, !sp.ok && /not a path inside/.test(sp.error), sp);
+  }
+  // Merging into a record that does not exist: it has no earlier gaps, so it must pass whole.
+  propose(v, { at: "marketing", id: "new-product", question: "How is it described?", answer: "Desc", applies_to: [{ file: "product/new.json", field: "description" }] }, { agentId: "cos" });
+  approve(v, "new-product", { by: "Founder" });
+  mkdirSync(join(v, "product"), { recursive: true });
+  const nw = merge(v, "new-product", { by: "Founder" });
+  expect("a merge cannot create a record missing its required fields", !nw.ok && /product\.schema\.json/.test(nw.error) && !existsSync(join(v, "product/new.json")), nw);
+  // A validator that cannot run says nothing about the record: the merge is refused.
+  const brokenBin = mkdtempSync(join(tmpdir(), "no-validator-"));
+  writeFileSync(join(brokenBin, "python3"), "#!/bin/sh\necho 'validate.py needs jsonschema' >&2\nexit 1\n", { mode: 0o755 });
+  const path = process.env.PATH;
+  process.env.PATH = `${brokenBin}:${path}`;
+  const nv = merge(v, "stage", { by: "Founder" });
+  process.env.PATH = path;
+  rmSync(brokenBin, { recursive: true, force: true });
+  expect("a merge is refused when the validator cannot run", !nv.ok && /could not check venture\.json/.test(nv.error) && readFileSync(join(v, "venture.json"), "utf8") === before, nv);
+
+  writeFileSync(join(v, "marketing/why.json"), JSON.stringify({ n: 1 }));
+  propose(v, { at: "marketing", id: "tone", question: "What tone?", answer: "Plain.", reasons: [{ claim: "Readers skim", kind: "for", citations: [{ ref: "marketing/why.json" }] }] }, { agentId: "cos" });
+  approve(v, "tone", { by: "Founder" });
+  approve(v, "tone", { by: "Founder", answer: "Warm.", reasons: [{ claim: "Warmth converts", kind: "for" }] });
+  rollback(v, "tone", 1, { by: "Founder" });
+  const t = json("marketing/decisions/tone.decision.json");
+  expect("rollback restores the version's reasons, in step with provenance.reasons", JSON.stringify(t.reasons) === JSON.stringify(t.provenance.reasons) && t.reasons.length === 1 && t.reasons[0].claim === "Readers skim", t);
+
   const log = readFileSync(join(v, "provenance.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
   expect("each merge is a merge line in provenance", log.filter((e) => e.activity === "merge").length === 3, log.map((e) => e.activity));
   // Merge is its own permission, and delegable (governance/delegation.json, may_merge); one-way doors never.
