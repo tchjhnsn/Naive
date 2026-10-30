@@ -87,7 +87,7 @@ function here() {
 }
 
 // A port that is free, starting at the one asked for, the way next dev moves on from 3000.
-const free = (p) => new Promise((ok) => { const s = createServer().once("error", () => ok(free(p + 1))).once("listening", () => { const bound = s.address().port; s.close(() => ok(bound)); }).listen(p, "127.0.0.1"); });
+const free = (p) => new Promise((ok) => { const s = createServer().once("error", () => ok(free(p + 1))).once("listening", () => { const bound = /** @type {import("node:net").AddressInfo} */ (s.address()).port; s.close(() => ok(bound)); }).listen(p, "127.0.0.1"); });
 
 // The schema a venture file is checked against, from the route table (records only).
 async function schemaFor(file) {
