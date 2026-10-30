@@ -143,6 +143,7 @@ export async function around(inner, args) {
   // E-8: a broken venture.json answers with recovery steps, before anything reads it.
   if (dir) { const h = ventureHealth(dir); if (h) return globalError(h, venture); }
   // L-6, P-36, P-3: package, group and venture routes are answered here, outside the route table.
+  if (!res.r && actor === "public") return { ok: false, error: `the public reader reads only record routes; ${route} is a package, group or venture route` };
   if (!res.r) return (await specialCall(args)) ?? inner(args);
   const r = res.r, params = res.params;
   const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;

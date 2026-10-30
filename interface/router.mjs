@@ -501,6 +501,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       };
       // Per-record containment (E-6): an item that does not parse is named in errors; the rest come back.
       const { values, errors } = contain(items, parseWith, idOf);
+      // A public reader learns nothing of an item with no public field, not even that its id exists.
+      if (actor === "public") {
+        const shown = values.filter(([, v]) => v && Object.keys(v).length);
+        return { ok: true, result: Object.fromEntries(shown.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(shown.map(([x]) => [idOf(x.path), cite(x)])), ...deprecated };
+      }
       return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...deprecated };
     }
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));

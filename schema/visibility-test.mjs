@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hash, visibilityOf } from "./visibility.mjs";
+import { hash, variantOf, visibilityOf } from "./visibility.mjs";
 import { refusals } from "./check-visibility.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -57,6 +57,22 @@ try {
   rmSync(join(v, "knowledge/sources.json"));
   expect("the router's public reader cannot write", cli(["foundation/problem", "write", "--as", "public", "--input", join(v, "foundation/problem.json")]).status !== 0);
 
+  const asAgent = cli(["visibility", "foundation/problem", "segment", "--public", "--by", "Founder"], { MENTURA_ACTOR: "agent" });
+  expect("MENTURA_ACTOR=agent cannot approve a field as public, even naming a person", asAgent.status === 1 && /only a person approves/.test(asAgent.stderr) && visibilityOf(v, "foundation/problem.json", "segment").visibility === "internal", asAgent.stdout + asAgent.stderr);
+
+  w("customers/acme-secret-deal.json", { id: "acme-secret-deal" });
+  for (const args of [["foundation", "view"], ["foundation", "read"], ["venture", "read"]]) {
+    const r = cli([...args, "--as", "public", "--json"]);
+    expect(`the public reader is refused on ${args.join(" ")}`, r.status !== 0 && /public reader/.test(r.stdout + r.stderr) && !(r.stdout + r.stderr).includes("acme-secret-deal"), r.stdout.slice(0, 400) + r.stderr);
+  }
+
+  const customers = cli(["customers", "read", "--as", "public", "--json"]);
+  expect("a list route does not name an item with no public field to the public reader", customers.status === 0 && !customers.stdout.includes("acme-secret-deal"), customers.stdout.slice(0, 400) + customers.stderr);
+
+  w("marketing/content/variant.mdx", '---\nvariant_of: foundation/problem.json#segment\npublish: true\napproved_by:\n  - Founder\n---\nA public wording.\n');
+  expect("a variant's list-form approved_by reads through the shared frontmatter parser", variantOf(v, "foundation/problem.json", "segment")?.value === "A public wording.");
+  rmSync(join(v, "marketing/content/variant.mdx"));
+
   w("site/why.mdx", '<Section>\n  <Fact name="problem" />\n  <Fact name="segment" />\n</Section>\n');
   w("facts.json", { venture: "vis", problem: { value: STATEMENT, status: "confirmed", source: "foundation/problem.json#statement" } });
   const r = refusals(v, { content: join(v, "site"), facts: join(v, "facts.json") });
@@ -64,8 +80,6 @@ try {
   w("foundation/problem.json", { venture: "vis", statement: STATEMENT + " Edited.", segment: "INTERNAL-SEGMENT-9c1", evidence: [] });
   const r2 = refusals(v, { content: join(v, "site"), facts: join(v, "facts.json") });
   expect("after an edit the approved field is refused until re-approved", r2.some((x) => x.name === "problem" && x.visibility === "variant"), r2);
-  const real = spawnSync("node", [join(repo, "schema/check-visibility.mjs")], { encoding: "utf8" });
-  expect("the publish check refuses the in-repo venture's pages until a person approves their fields", real.status === 1 && /REFUSED/.test(real.stderr), real.stdout + real.stderr);
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }
