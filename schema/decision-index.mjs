@@ -194,6 +194,7 @@ export function rebuild(dir, { now = Date.now(), cause = "rebuild" } = {}) {
 
 /** Re-scores every active decision, as a rebuild does: scores depend on time (due, overdue) and on
  *  files outside provenance, so no cached entry can be reused. Appends history only for decisions
+ *  @param {string} dir @param {{ now?: number, since?: string }} [opts]
  *  whose rank or score moved, and counts the provenance events since the cursor (or since a time). */
 export function update(dir, { now = Date.now(), since } = {}) {
   const idx = read(dir);

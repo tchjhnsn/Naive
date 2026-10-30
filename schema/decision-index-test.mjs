@@ -27,8 +27,8 @@ put("people/team-plan.json", { roles: ["engineer"] });
 put("marketing/notes.json", { unrelated: true });
 
 try {
-  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, { entity: f, route: "x", activity: "write", agent });
-  record(v, { entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] });
+  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: f, route: "x", activity: "write", agent }));
+  record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] }));
 
   propose(v, { at: "product", id: "shop-price", question: "What does Shop cost?", applies_to: [{ file: "product/shop.json", field: "price" }] }, { agentId: "cos" });
   propose(v, { at: "product", id: "shop-billing", question: "Monthly or yearly?", parent: "shop-price", applies_to: [{ file: "product/shop.json", field: "billing" }] }, { agentId: "cos" });
@@ -74,7 +74,7 @@ try {
 
   // (c) requirements: a heavy one lifts a later decision into this phase; a violation is flagged now
   put("foundation/requirements/scale-to-millions.json", { id: "scale-to-millions", statement: "Serve hundreds of millions of users", derives_from: { ambition: "platform" }, phase: "scale", functions: ["product"], verified_by: "load test evidence", weight: 0.9, check: { answer_must_not_match: "sqlite" } });
-  record(v, { entity: "foundation/requirements/scale-to-millions.json", route: "x", activity: "write", agent });
+  record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: "foundation/requirements/scale-to-millions.json", route: "x", activity: "write", agent }));
   propose(v, { at: "product", id: "shop-scale", question: "Which database?", needed_in: "scale", answer: "a single SQLite file", requirements: [{ id: "scale-to-millions", relation: "constrains" }], applies_to: [{ file: "product/shop.json", field: "store" }] }, { agentId: "cos" });
   idx = update(v);
   const sc = entryOf(idx, "shop-scale");

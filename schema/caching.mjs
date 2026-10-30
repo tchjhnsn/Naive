@@ -64,6 +64,9 @@ export const inAction = () => !!als.getStore();
  * The value of fn, computed once per action and shared by every caller in it. Outside an action
  * fn runs every time. A throw or a rejected promise is not kept. dir scopes the value to a venture,
  * so forget(dir) drops it.
+ * @param {string} key
+ * @param {() => *} fn
+ * @param {{ dir?: string }} [opts]
  */
 export function memo(key, fn, { dir } = {}) {
   const s = als.getStore();
@@ -206,7 +209,7 @@ export function versionsOf(packages) {
   })) };
 }
 
-/** Who a private result belongs to: the person (MENTURA_PERSON, else the actor id) or the agent's role id. */
+/** Who a private result belongs to: the person (MENTURA_PERSON, else the actor id) or the agent's role id. @param {{ actor?: string, actor_id?: string }} [who] */
 export function identityOf({ actor, actor_id } = {}) {
   const id = actor === "person" ? process.env.MENTURA_PERSON ?? actor_id : actor_id;
   return id ? String(id) : null;
@@ -292,6 +295,7 @@ export async function cached(dir, s, compute, { now = Date.now(), allowStale = f
  * Runs a command route through the record-level cache when a declaration names it. run() is the
  * spawn; its { status, stdout, stderr } comes back, from the store on a hit, plus cache. A failing
  * run is returned as it is and never stored. Only the run action uses this; a write never does.
+ * @param {{ dir: string, route: string, script: string, args?: string[], input?: { cache?: string }, actor?: string, actor_id?: string, now?: number }} req
  */
 export async function command({ dir, route, script, args = [], input, actor, actor_id, now = Date.now() }, run) {
   const d = declarationFor(dir, route);
@@ -327,6 +331,9 @@ function judgeCommand(cmd) {
  * reads) with every answer it can reuse, and asks the judge only the rest, in one request. Each
  * question is its own entry, keyed by the request's state, the question, the model and the package
  * versions. Returns { model, answers, cache: { reused, asked, unanswered } }.
+ * @param {string} dir
+ * @param {{ state?: unknown, model?: string, questions: Record<string, unknown>, packages?: string[] }} request
+ * @param {{ cmd?: string | string[], life?: string | { stale?: number, revalidate?: number, expire?: number | null }, actor?: string, actor_id?: string, private?: boolean, packages?: string[], now?: number, allowStale?: boolean }} [opts]
  */
 export async function judge(dir, request, { cmd = process.env.NAIVE_JUDGE_CMD, life, actor, actor_id, private: priv = false, packages, now = Date.now(), allowStale = false } = {}) {
   if (!request || typeof request !== "object" || !request.questions || typeof request.questions !== "object") throw new Error("a judgment request has questions: { state, model, questions }");
@@ -371,7 +378,7 @@ function walkEntries(root) {
   return readdirSync(root, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walkEntries(join(root, e.name)) : e.name.endsWith(".json") ? [join(root, e.name)] : []);
 }
 
-/** The entries one actor may see: the shared ones and their own private ones, never another person's (C-7). */
+/** The entries one actor may see: the shared ones and their own private ones, never another person's (C-7). @param {string} dir @param {{ identity?: string | null, level?: string }} [opts] */
 export function entries(dir, { identity = null, level } = {}) {
   const base = ventureFile(dir, CACHE_DIR);
   const roots = [join(base, "shared"), ...(identity ? [join(base, scopeOf(true, identity))] : [])];
@@ -399,7 +406,7 @@ export function prune(dir, { now = Date.now() } = {}) {
   return n;
 }
 
-/** Removes entries, all or one level, in every scope. Returns how many. */
+/** Removes entries, all or one level, in every scope. Returns how many. @param {string} dir @param {{ level?: string }} [opts] */
 export function clear(dir, { level } = {}) {
   let n = 0;
   for (const f of walkEntries(ventureFile(dir, CACHE_DIR))) {

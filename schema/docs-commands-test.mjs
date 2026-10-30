@@ -27,7 +27,7 @@ for (const p of pages) {
   }
 }
 const home = mkdtempSync(join(tmpdir(), "docs-commands-"));
-const env = { ...process.env, HOME: home, PYTHONUSERBASE: process.env.PYTHONUSERBASE ?? join(homedir(), ".local") };
+const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, HOME: home, PYTHONUSERBASE: process.env.PYTHONUSERBASE ?? join(homedir(), ".local") });
 delete env.MENTURA_WORKSPACE; delete env.MENTURA_AGENT_CMD;
 const r = spawnSync("bash", ["-c", script.join("\n")], { env, encoding: "utf8" });
 const ok = r.status === 0;

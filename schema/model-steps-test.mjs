@@ -49,6 +49,7 @@ const goodAnswers = {
   "customers/summary/ada": { value: "Ada Clinic pays for {{seats}} seats and just added two rooms." },
   "customers/summary/bo": { value: "Bo Physio is trying it on {{seats}} seats and has gone quiet." },
 };
+/** @param {*} answers @param {{ delay?: number, fail?: (key: string) => boolean }} [opts] */
 const recorder = (answers, { delay = 0, fail } = {}) => {
   const calls = [];
   const ask = async (req) => {
@@ -171,7 +172,7 @@ const v3 = await venture("failure-venture");
   expect("E-1 uncertain judgments go to the founder as open decisions", existsSync(join(v3, "knowledge/decisions/judge-customers-stage-bo.decision.json"))
     && load(join(v3, "knowledge/decisions/judge-customers-stage-bo.decision.json")).status === "open" && r.uncertain.length === 2);
   // The founder answers; the next run writes their answer as the judgment and moves on.
-  const a = approve(v3, "judge-customers-stage-bo", { by: "Ana", answer: "trying" });
+  const a = approve(v3, "judge-customers-stage-bo", /** @type {Parameters<typeof approve>[2]} */ ({ by: "Ana", answer: "trying" }));
   const next = recorder(goodAnswers);
   const r2 = await run(v3, customers, { ask: next.ask });
   const jb = load(join(v3, "knowledge/judgments/customers-stage-bo.json"));

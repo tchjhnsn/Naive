@@ -36,6 +36,6 @@ const server = createServer((req, res) => {
 });
 server.listen(port, "127.0.0.1", () => {
   const m = readRelease(dir);
-  console.log(`serving release ${m.release} of ${m.venture} read-only at http://127.0.0.1:${server.address().port}/`);
+  console.log(`serving release ${m.release} of ${m.venture} read-only at http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}/`);
 });
 for (const s of ["SIGINT", "SIGTERM"]) process.on(s, () => server.close(() => process.exit(0)));
