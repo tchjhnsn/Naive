@@ -552,7 +552,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
     // approved it, is a draft whatever the decision's class.
     const isDecision = /^(decision|decision-record)$/.test(r.record);
-    const settles = isDecision && (input?.status === "decided" || input?.approved_by != null || input?.provenance?.approved_by != null);
+    // Rewriting a decided record, to reopen it say, unsettles it, which is a person's act too (approve
+    // would otherwise freeze its reasons afresh and clear their staleness).
+    const unsettles = isDecision && !remote && existsSync(ventureFile(dir, file)) && load(ventureFile(dir, file)).status === "decided";
+    const settles = isDecision && (unsettles || input?.status === "decided" || input?.approved_by != null || input?.provenance?.approved_by != null);
     // Known gap A: a decided decision names who decided it, whoever writes it; a person's write without one is refused.
     if (isDecision && actor === "person" && input?.status === "decided" && !input?.provenance?.approved_by) return { ok: false, error: `a decided decision names who decided it (provenance.approved_by); approve it with mentura decide ${input?.id ?? "<id>"} --by <name>` };
     const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person";

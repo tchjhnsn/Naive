@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { call } from "../interface/router.mjs";
 import { approve, decisions, propose } from "./decisions.mjs";
 import { changedReasons, reasonsFromArgs, shaOf } from "./reasons.mjs";
 
@@ -81,6 +82,29 @@ try {
   writeFileSync(join(v, "evidence/interviews.json"), "{}\n");
   const chk2 = spawnSync("node", [join(repo, "schema/check-reasons.mjs"), v], { encoding: "utf8" });
   expect("check-reasons reports the changed reason and exits 1", chk2.status === 1 && /the reason you decided channel changed: evidence\/interviews\.json/.test(chk2.stdout), chk2.stdout);
+
+  // A stale decision stays stale: a stranger cannot clear it, and an agent's raw write cannot reopen it.
+  const o = join(ws, "rop");
+  mkdirSync(join(o, "decisions"), { recursive: true });
+  mkdirSync(join(o, "evidence"));
+  mkdirSync(join(o, "governance"));
+  writeFileSync(join(o, "venture.json"), JSON.stringify({ id: "rop", name: "Rop", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery" }));
+  writeFileSync(join(o, "governance/delegation.json"), JSON.stringify({ register: "delegation", root: "founder", founder: ["Torian"], grants: [] }));
+  writeFileSync(join(o, "evidence/e.json"), "{\"v\":1}\n");
+  const claim = "The evidence says so";
+  const cited = [{ claim, kind: "for", citations: [{ ref: "evidence/e.json" }] }];
+  propose(o, { id: "pick", question: "Which?", answer: "this", reasons: cited }, { agentId: "cos" });
+  approve(o, "pick", { by: "Torian" });
+  writeFileSync(join(o, "evidence/e.json"), "{\"v\":2}\n");
+  const rendered = () => decisions(o, Date.now()).decisions.find((d) => d.id === "pick").render;
+  expect("a changed citation makes the decision stale", rendered() === "stale", rendered());
+  const stranger = approve(o, "pick", { by: "Mallory", answer: "that", reasons: cited });
+  expect("a name that is no person cannot clear staleness by restating the claim", !stranger.ok && rendered() === "stale", stranger);
+  const recordPath = join(o, "decisions/pick.decision.json");
+  const before = readFileSync(recordPath, "utf8");
+  const raw = await call({ venture: "rop", route: "decisions/pick", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { ...JSON.parse(before), status: "open" } });
+  expect("an agent's raw write that reopens a decided decision is only a draft", raw.ok && raw.result.draft === true && readFileSync(recordPath, "utf8") === before, raw);
+  expect("so the decision stays stale and nothing re-freezes", rendered() === "stale", rendered());
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

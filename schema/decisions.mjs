@@ -28,14 +28,14 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
-import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
+import { actingAgent, agentFromEnv, record as prov } from "../interface/provenance.mjs";
 import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
 import { impact } from "./impact.mjs";
 import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
-import { layoutOf, logicalFiles, readDelegation, ventureFile } from "./venture-paths.mjs";
+import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -348,12 +348,12 @@ export function merge(dir, id, { by, role, via = "cli", note, today } = {}) {
   if (!d.applies_to?.length) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
   const version = d.version ?? 1;
   if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
+  const outside = d.applies_to.find((t) => !inside(t?.file));
+  if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
   const may = mayMerge(dir, d, { by, role, today });
   if (!may.ok) return may;
   by = by ?? role;
   const actor = role ? agentFromEnv("agent", via, { id: role }) : agentFromEnv("person", via, { id: by });
-  const outside = d.applies_to.find((t) => !inside(t?.file));
-  if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
   // Every target is built and checked against its record type's schema before any is written.
   const recs = new Map();
   for (const t of d.applies_to) {
@@ -406,6 +406,14 @@ export function oneWayClasses() {
   return oneWayDefault;
 }
 
+/** The venture's founders: named in governance/delegation.json, or role founder in people/people.json. */
+function foundersOf(dir, del) {
+  const out = new Set([del?.founder ?? []].flat());
+  const pf = ventureFile(dir, "people/people.json");
+  if (existsSync(pf)) for (const p of load(pf).people ?? []) if (p.role === "founder") for (const k of [p.id, p.name]) if (k) out.add(k);
+  return out;
+}
+
 /** The people who may act as a person in this venture: ids and names in people/people.json, and the
  *  founders named in governance/delegation.json. Empty when the venture records no one. */
 function peopleOf(dir) {
@@ -417,26 +425,42 @@ function peopleOf(dir) {
   return out;
 }
 
-/** Who may merge a decided version. A person may (with no grant, only the founder merges). A role
- *  (an agent or a delegate acting as one) may only under a live delegation grant to that role that
- *  names may_merge and the decision's class; a one-way door is never merged by anyone but a person. */
+/** Why by cannot act as a person here, or null. An agent acting, or a role, never can. A venture that
+ *  records people limits it to them; rosterRequired refuses a venture that records no one. */
+function notAPerson(dir, del, by, { rosterRequired }) {
+  const agent = actingAgent(by);
+  if (agent) return `an agent (${agent}) is acting: it cannot act as the person ${by}`;
+  const roles = new Set([...(del?.grants ?? []).flatMap((g) => [g.to, g.from]), ...agentRoleIds()].filter((r) => r && r !== del?.root));
+  if (roles.has(by)) return `${by} is a role, not a person`;
+  const people = peopleOf(dir);
+  if (!people.size) return rosterRequired ? "the venture names no people (people/people.json) or founder (governance/delegation.json): no one can act as a person" : null;
+  return people.has(by) ? null : `${by} is not a person in people/people.json or a founder in governance/delegation.json`;
+}
+
+/** Who may merge a decided version. A person may (with no grant, only the founder merges), and only a
+ *  founder merges a one-way door. A role (an agent or a delegate acting as one) may only under a live
+ *  delegation grant to that role that names may_merge and the decision's class, whose chain reaches the
+ *  root and whose scope holds every record the decision writes. */
 export function mayMerge(dir, d, { by, role, today = new Date().toISOString().slice(0, 10) } = {}) {
   let del;
   try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${e.message}: no one merges until it is fixed` }; }
-  const roles = new Set([...(del?.grants ?? []).flatMap((g) => [g.to, g.from]), ...agentRoleIds()].filter((r) => r && r !== del?.root));
   if (by && role) return { ok: false, error: "merge as a person (--by) or as a role (--role), not both" };
+  const oneWay = new Set([...oneWayClasses(), ...(del?.one_way_doors ?? [])]);
   if (!role) {
-    if (roles.has(by)) return { ok: false, error: `${by} is a role, not a person: a role merges only under a delegation grant (--role ${by})` };
-    const people = peopleOf(dir);
-    if (!people.size) return { ok: false, error: "the venture names no people (people/people.json) or founder (governance/delegation.json): no one can merge as a person" };
-    if (!people.has(by)) return { ok: false, error: `${by} is not a person in people/people.json or a founder in governance/delegation.json: only they merge` };
+    const refused = notAPerson(dir, del, by, { rosterRequired: true });
+    if (refused) return { ok: false, error: `${refused}: merge as a person only as yourself, and a role only under a delegation grant (--role)` };
+    if (oneWay.has(d.class) && !foundersOf(dir, del).has(by)) return { ok: false, error: `${d.id} is a ${d.class} decision, a one-way door: only a founder merges it` };
     return { ok: true };
   }
-  const oneWay = new Set([...oneWayClasses(), ...(del?.one_way_doors ?? [])]);
   if (!d.class) return { ok: false, error: `${d.id} names no decision class, so no grant can cover it: only the founder merges it` };
   if (oneWay.has(d.class)) return { ok: false, error: `${d.id} is a ${d.class} decision, a one-way door: it is never delegated, only the founder merges it` };
-  const g = (del?.grants ?? []).find((g) => g.to === role && g.may_merge === true && (g.classes ?? []).includes(d.class) && (g.expires == null || g.expires >= today));
-  if (!g) return { ok: false, error: `no live grant in governance/delegation.json lets ${role} merge ${d.class} decisions: only the founder merges ${d.id}` };
+  const held = (del?.grants ?? []).filter((g) => g.to === role && g.may_merge === true && (g.classes ?? []).includes(d.class) && liveGrant(g, today));
+  if (!held.length) return { ok: false, error: `no live grant in governance/delegation.json lets ${role} merge ${d.class} decisions: only the founder merges ${d.id}` };
+  const backed = held.filter((g) => grantBacked(del, g, today).ok);
+  if (!backed.length) return { ok: false, error: `${role}'s grant exceeds its grantor's authority (${grantBacked(del, held[0], today).why}): only the founder merges ${d.id}` };
+  const targets = (d.applies_to ?? []).map((t) => t.file);
+  const g = backed.find((g) => targets.every((f) => scopeWithin(f, g.scope)));
+  if (!g) return { ok: false, error: `${d.id} writes outside the scope of ${role}'s grant: only the founder merges it` };
   return { ok: true, grant: g.id ?? `${g.from}-to-${g.to}` };
 }
 
@@ -488,6 +512,11 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
+  let del;
+  try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${e.message}: no one approves until it is fixed` }; }
+  // Setup approves before anyone is recorded, so a venture that names no one has no roster to check.
+  const refused = notAPerson(dir, del, by, { rosterRequired: false });
+  if (refused) return { ok: false, error: `only a person approves a decision: ${refused}` };
   const d = load(ventureFile(dir, file));
   // A decided decision changes by a new version: the decided one is kept, and this one supersedes it.
   // An agent's pending wording (proposed) is what the person approves when they give no answer of their own.
