@@ -76,7 +76,7 @@ export class Expected extends Error { constructor(m, kind = "expected") { super(
  * below threshold, routed to a person.
  */
 export function outcomeOf(x) {
-  if (x instanceof Error) return x.expected ? { outcome: "expected", kind: x.kind, error: x.message } : { outcome: "uncaught", kind: "bug", error: x.message };
+  if (x instanceof Error) { const f = /** @type {Expected} */ (x); return f.expected ? { outcome: "expected", kind: f.kind, error: f.message } : { outcome: "uncaught", kind: "bug", error: f.message }; }
   if (x?.outcome === "uncertain") return { outcome: "uncertain", kind: "below threshold", why: x.why };
   if (x?.outcome === "overruled") return { outcome: "answer", kind: "code wins", why: x.why };
   if (x && x.ok === false) return { outcome: "expected", kind: x.locked_by ? "locked" : /does not match/.test(x.error ?? "") ? "invalid write" : "refused", error: x.error };
@@ -93,7 +93,10 @@ export function expectDeterministic(step) {
 
 // ---- Steps and their checks ----------------------------------------------------------------------
 
-/** The model steps declared by the repository's packages (all, or the named ones), or by a kit.json. */
+/**
+ * The model steps declared by the repository's packages (all, or the named ones), or by a kit.json.
+ * @param {{ packages?: string[], kit?: string | * }} [opts]
+ */
 export function stepsOf({ packages: names, kit } = {}) {
   if (kit) {
     const k = typeof kit === "string" ? load(kit) : kit;
@@ -119,7 +122,11 @@ export function inputOf(input) {
   return { form: "id", id: input.slice(0, dot), path: input.slice(dot + 1) };
 }
 
-/** Errors in one step definition. */
+/**
+ * Errors in one step definition.
+ * @param {*} s
+ * @param {{ known?: { lists: Set<string>, all: Set<string> } }} [opts]
+ */
 export function checkStep(s, { known } = {}) {
   const at = `${s.package}/${s.step ?? "(no step id)"}`;
   const e = [];
@@ -194,7 +201,11 @@ export function waves(steps) {
 
 const knownRoutes = () => { const rs = routes(); return { lists: new Set(rs.filter((r) => r.collection === "list").map((r) => r.route)), all: new Set(rs.map((r) => r.route)) }; };
 
-/** Errors across steps: each definition, unknown routes, the order, and (with a venture) private fields named. */
+/**
+ * Errors across steps: each definition, unknown routes, the order, and (with a venture) private fields named.
+ * @param {*[]} steps
+ * @param {{ dir?: string, call?: typeof routerCall, workspace?: string }} [opts]
+ */
 export async function checkSteps(steps, { dir, call = routerCall, workspace } = {}) {
   const known = knownRoutes();
   const errors = steps.flatMap((s) => checkStep(s, { known }));
@@ -251,6 +262,7 @@ export function checkRequest(req) {
   return true;
 }
 
+/** @param {string} dir @param {{ call?: typeof routerCall, workspace?: string }} [opts] */
 async function context(dir, { call = routerCall, workspace } = {}) {
   const venture = load(join(dir, "venture.json")).id;
   const ws = workspace ?? dirname(dir);
@@ -371,7 +383,10 @@ export function keepComputed(text, kept) {
   return { ok: true, value: out };
 }
 
-/** A judgment from one answer: outcome answer, overruled (code wins) or uncertain. */
+/**
+ * A judgment from one answer: outcome answer, overruled (code wins) or uncertain.
+ * @returns {{ outcome: string, answer: *, confidence: number | null, threshold: number | null, why: string, kept?: Record<string, *>, overruled?: *, decision?: string }}
+ */
 export function settle(s, raw, computed = {}) {
   const t = typed(s, raw);
   const threshold = KINDS[s.kind].judgment ? s.threshold ?? THRESHOLD : null;
@@ -443,7 +458,7 @@ export async function payload(dir, steps, opts = {}) {
     const inp = await inputsFor(ctx, s, it);
     if (inp.withheld) { withheld.push({ key, why: inp.withheld }); continue; }
     if (inp.missing) { skipped.push({ key, why: inp.missing }); continue; }
-    const state = { ...inp.state };
+    const state = /** @type {Record<string, *>} */ ({ ...inp.state });
     for (const a of s.after ?? []) set(state, `steps.${a}`, { pending: keyOf({ ...s, step: a }, it.id) });
     const used = Object.fromEntries(Object.entries(c).filter(([n]) => s.keep?.includes(n) || refsOf(s.question).includes(n)));
     if (Object.keys(used).length) state.computed = used;
@@ -459,6 +474,10 @@ export async function payload(dir, steps, opts = {}) {
  * onEvent (computed first, then each judgment as it arrives), hooks.compute (wraps the code's compute),
  * call (the router's call, or a kit's wrapped one), model (the model name to request), fresh (ask again even
  * when a judgment on the same state exists; otherwise it is reused, and a person's answer always is).
+ * @param {string} dir
+ * @param {*[]} steps
+ * @param {{ ask?: (req: *) => Promise<*>, speculate?: boolean, write?: boolean, fresh?: boolean, onEvent?: (e: *) => void,
+ *   hooks?: { compute?: (f: () => Promise<Record<string, *>>) => *  }, call?: typeof routerCall, workspace?: string, model?: string }} [opts]
  */
 export async function run(dir, steps, { ask, speculate = false, write = true, fresh = false, onEvent = () => {}, hooks = {}, call = routerCall, workspace, model } = {}) {
   if (typeof ask !== "function") throw new Expected("no model: pass --answers <file> or set MENTURA_MODEL_CMD (payload shows what would be asked)", "no model");
@@ -470,11 +489,12 @@ export async function run(dir, steps, { ask, speculate = false, write = true, fr
   // Code computes every step's values; judgments that need them wait, the rest may be asked meanwhile.
   const all = steps.flatMap((s) => items.get(`${s.package}/${s.step}`).map((it) => [s, it]));
   const computeAll = async () => Object.fromEntries(await Promise.all(all.map(async ([s, it]) => [keyOf(s, it.id), await computeFor(ctx, s, it)])));
+  /** @type {Record<string, *>} */
   let computed = null;
   const computeP = Promise.resolve(hooks.compute ? hooks.compute(computeAll) : computeAll());
   computeP.then((c) => { computed = c; onEvent({ event: "computed", computed: Object.fromEntries(Object.entries(c).filter(([, v]) => Object.keys(v).length)) }); }, () => {});
 
-  let queue = Promise.resolve();
+  let queue = /** @type {Promise<*>} */ (Promise.resolve());
   const serial = (f) => (queue = queue.then(f, f));
   const writeJudgment = (s, it, j, reads, files, by) => serial(async () => {
     const id = judgmentId(s, it.id);
@@ -518,7 +538,7 @@ export async function run(dir, steps, { ask, speculate = false, write = true, fr
       try { inp = await inputsFor(ctx, s, it); } catch (e) { (e.expected ? out.errors : out.uncaught).push({ key, error: e.message }); continue; }
       if (inp.withheld) { out.withheld.push({ key, why: inp.withheld }); continue; }
       if (inp.missing) { out.skipped.push({ key, why: inp.missing }); continue; }
-      const state = { ...inp.state };
+      const state = /** @type {Record<string, *>} */ ({ ...inp.state });
       const reads = [...inp.reads], files = [...inp.files];
       for (const a of s.after ?? []) { const prior = answers.get(keyOf({ ...s, step: a }, it.id)); set(state, `steps.${a}`, prior.answer); reads.push(`${prior.file}#answer`); files.push(prior.file); }
       if (usesComputed(s)) {
@@ -554,7 +574,7 @@ export async function run(dir, steps, { ask, speculate = false, write = true, fr
           if (j.outcome === "uncertain" && write) await serial(async () => {
             const p = propose(dir, { id: j.decision, at: "knowledge", question: `${q.s.package}/${q.s.step}${q.it.id ? ` for ${q.it.id}` : ""}: ${q.s.question} (the model was not sure: ${j.why})`, layer: "knowledge", boundary: "fail-open",
               decides: { record: "judgment", path: `${JUDGMENTS}/${jid}.json` }, ...(q.s.options ? { options: q.s.options } : {}), note: `Answer with mentura decide ${j.decision} --by <name> --answer <answer>; the next run writes it as the judgment. The model read ${q.reads.join(", ")}.` },
-              { agentId: ACTOR });
+              /** @type {Parameters<typeof propose>[2]} */ ({ agentId: ACTOR }));
             if (!p.ok) throw new Expected(`could not route ${jid} to the founder: ${p.error}`, "refused");
           });
           if (j.outcome !== "uncertain") answers.set(q.key, { ...j, file });
@@ -592,6 +612,9 @@ const isModelJudgment = (dir, f) => {
  * Whose a file is: "person" (a person wrote, accepted or confirmed it), "agent", or "clear" (an agent's,
  * and its checks pass). model is true for a model's judgment; downstream_of_model lists the model
  * outputs an agent's record was derived from. A person's record a step read stays the person's.
+ * @param {string} dir
+ * @param {string} file
+ * @param {{ checks?: boolean, call?: typeof routerCall, workspace?: string, seen?: Set<string> }} [opts]
  */
 export async function provenanceOf(dir, file, { checks = false, call = routerCall, workspace, seen = new Set() } = {}) {
   seen.add(file);
@@ -617,20 +640,29 @@ export async function provenanceOf(dir, file, { checks = false, call = routerCal
   return res;
 }
 
-/** A person confirms a judgment as theirs: the content is unchanged and the log records the confirmation. */
+/**
+ * A person confirms a judgment as theirs: the content is unchanged and the log records the confirmation.
+ * @param {string} dir
+ * @param {string} id
+ * @param {{ by?: string, note?: string }} [opts]
+ */
 export function confirm(dir, id, { by, note } = {}) {
   if (!by) throw new Expected("confirming needs the person's name (--by)", "refused");
   const file = `${JUDGMENTS}/${id}.json`;
   if (!existsSync(ventureFile(dir, file))) throw new Expected(`no judgment ${id}`, "missing record");
   const j = load(ventureFile(dir, file));
   if (j.outcome === "uncertain") throw new Expected(`${id} is uncertain: answer its decision ${j.decision} instead`, "refused");
-  const e = prov(dir, { entity: file, route: `knowledge/judgment/${id}`, activity: "confirm", agent: agentFromEnv("person", "cli", { id: by }), note: note ?? `confirmed ${j.package}/${j.step}${j.item ? ` for ${j.item}` : ""}` });
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: `knowledge/judgment/${id}`, activity: "confirm", agent: agentFromEnv("person", "cli", { id: by }), note: note ?? `confirmed ${j.package}/${j.step}${j.item ? ` for ${j.item}` : ""}` }));
   return { confirmed: id, by, provenance: e.hash };
 }
 
 // ---- The waterfall: the venture's real order (F-10) ------------------------------------------------
 
-/** Records in order: each after the records it reads first (packages/catalog.json records.after). A cycle is uncaught. */
+/**
+ * Records in order: each after the records it reads first (packages/catalog.json records.after). A cycle is uncaught.
+ * @param {string} dir
+ * @param {{ graph?: Record<string, string[]> }} [opts]
+ */
 export async function waterfall(dir, { graph } = {}) {
   const after = graph ?? Object.fromEntries(Object.entries(loadPackages(repo).records).map(([k, v]) => [k, v.after ?? []]));
   const types = [...new Set([...Object.keys(after), ...Object.values(after).flat()])].sort();

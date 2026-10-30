@@ -113,7 +113,11 @@ function fileOfRead(res) {
   return a ? a.replace(/^[a-z0-9-]+:\/\//, "") : null;
 }
 
-/** The header of a read: what it is, its state, its owner and what reading it costs, without its body. */
+/**
+ * The header of a read: what it is, its state, its owner and what reading it costs, without its body.
+ * @param {{ r: Record<string, any>, route: string, dir: string, venture?: string, workspace?: string, res?: * }} at
+ * @returns {{ route: string, record: string | null, kind: string, collection?: string, state: string, note?: string, count?: number, owner?: string | null, tokens?: number, title?: string | null, updated?: string, by?: string, draft?: string, has_record?: boolean, source?: *, version?: * }}
+ */
 export function headerOf({ r, route, dir, venture, workspace, res }) {
   const h = { route, record: r.record ?? null, kind: r.kind, ...(r.collection ? { collection: r.collection } : {}) };
   if (r.kind === "command") return { ...h, state: "computed", note: r.note };
@@ -161,6 +165,7 @@ export function layoutParts(r, dir) {
   const base = routerLayout(r, null); // no venture: no need-now spawn, no chain; both come from here instead
   const chain = chainOf(dir, r.route.replace(/\/\[id\]$/, ""));
   // One part per layer or package in the stack, so routes in the same layer share theirs.
+  /** @type {Record<string, any>} */
   const parts = Object.fromEntries(base.stack.map((k) => [`stack:${k.path}`, k]));
   for (const f of chain) parts[`chain:${f.path}`] = f.text;
   parts.instructions = instructionsFor(chain, r.route);
@@ -274,6 +279,7 @@ export function candidates(r, record, template, { hover = [] } = {}) {
 }
 
 /** Prefetches the candidates within the prefetch budget: full, summary, state or count, by what each is and what is left. */
+/** @param {{ r: Record<string, any>, record: *, template: *, venture: string, dir: string, workspace?: string, actor_id?: string, task?: string, hover?: string[], set: Record<string, number> }} at */
 export async function prefetch({ r, record, template, venture, dir, workspace, actor_id, task = "", hover = [], set }) {
   const cands = candidates(r, record, template, { hover });
   const named = (route) => hover.includes(route) || (task && (task.includes(route) || task.includes(route.split("/").at(-1))));
@@ -322,6 +328,7 @@ const runCacheFile = (dir, route) => join(sessionDir(), "runs", `${sha(`${dir}\0
  * routes to prefetch in full, like hover), header_only (stop after the header), onPart (called with
  * { part, data } as each part is ready). Returns { ok, result: { header, budget, layout, template,
  * result, prefetch } } in that order.
+ * @param {{ venture: string, route: string, workspace?: string, actor?: string, actor_id?: string, via?: string, session?: string, task?: string, prefetch?: boolean | string[], header_only?: boolean, onPart?: (p: { part: string, data: * }) => void, _template?: * }} at
  */
 export async function navigate({ venture, route, workspace, actor = "agent", actor_id, via = "router", session = process.env.MENTURA_SESSION, task, prefetch: pf = true, header_only = false, onPart, _template }) {
   const { r, params } = resolve(route);
@@ -390,7 +397,15 @@ function budgetOf(out, limit) {
 // Header first, then the budget, then the rest in the order an agent needs it.
 const order = (o) => Object.fromEntries(["header", "budget", "needs_input", "layout", "template", "stale_result", "result", "not_found", "pending_draft", "pending_pull_requests", "source", "sources", "deprecated", "prefetch"].filter((k) => o[k] !== undefined).map((k) => [k, o[k]]));
 
-/** Runs a command route in a child process and reports progress while it runs (N-5). Gates apply: it goes through the router. */
+/** @typedef {{ progress: number, total?: number, message: string }} Progress */
+
+/**
+ * Runs a command route in a child process and reports progress while it runs (N-5). Gates apply: it goes through the router.
+ * @param {{ venture: string, route: string, input?: { value?: *, as_is?: boolean }, workspace?: string, actor_id?: string }} at
+ * @param {(p: Progress) => void} [onProgress]
+ * @param {number} [every]
+ * @returns {Promise<{ ok: boolean, error?: string, result?: * }>}
+ */
 export function runStreaming({ venture, route, input, workspace, actor_id }, onProgress = () => {}, every = 250) {
   return new Promise((done) => {
     const args = [join(repoRoot, "interface/cli/mentura.mjs"), route, "run", "--venture", venture, "--json",
@@ -415,7 +430,11 @@ export function runStreaming({ venture, route, input, workspace, actor_id }, onP
   });
 }
 
-/** Runs calls one after another (a batch of reads, checks or runs) and reports each as it finishes (N-5). */
+/**
+ * Runs calls one after another (a batch of reads, checks or runs) and reports each as it finishes (N-5).
+ * @param {{ venture?: string, workspace?: string, calls?: { route: string, action: string }[], actor_id?: string, via?: string }} at
+ * @param {(p: Progress) => void} [onProgress]
+ */
 export async function batch({ venture, workspace, calls = [], actor_id, via = "router" }, onProgress = () => {}) {
   const results = [];
   for (const [i, c] of calls.entries()) {
@@ -449,6 +468,7 @@ async function measureBudget(dir) {
   const v = load(join(dir, "venture.json"));
   const workspace = dirname(dir);
   const set = settings(dir);
+  /** @type {{ route: string, error?: string, limit?: number, used?: number, over?: boolean, largest?: string, advice?: string }[]} */
   const rows = [];
   let tmpl = null;
   for (const r of routes().filter((x) => x.kind === "record" && x.collection !== "item")) {
@@ -489,7 +509,10 @@ async function measureBudget(dir) {
 // ---------------------------------------------------------------------------------------------
 // Command line: the router's command route system/context, and the CLI hook for navigate, head and batch.
 
-/** mentura <route> navigate|head --venture <id> [--session s] [--task text] [--prefetch a,b | --no-prefetch] [--stream]; mentura batch --venture <id> --input calls.json [--stream]. */
+/**
+ * mentura <route> navigate|head --venture <id> [--session s] [--task text] [--prefetch a,b | --no-prefetch] [--stream]; mentura batch --venture <id> --input calls.json [--stream].
+ * @param {string[]} argv @param {{ workspace?: string }} [opts]
+ */
 export async function cli(argv, { workspace } = {}) {
   const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
   const flag = (n) => argv.includes(`--${n}`);

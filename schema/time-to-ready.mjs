@@ -20,7 +20,7 @@ import { exitCriteria } from "./canonical.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const day = (d) => d ? d.slice(0, 10) : null;
-const days = (a, b) => a && b ? Math.round((new Date(b) - new Date(a)) / 864e5) : null;
+const days = (a, b) => a && b ? Math.round((new Date(b).getTime() - new Date(a).getTime()) / 864e5) : null;
 
 function firstSeen(file) {
   try {

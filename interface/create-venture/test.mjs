@@ -11,6 +11,7 @@ const repo = new URL("../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "create-venture-test-"));
 const home = join(base, "home");
 mkdirSync(home);
+/** @type {NodeJS.ProcessEnv} */
 const env = { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, ".config"), npm_config_user_agent: "" };
 // The generator calls a real model when TYPESAFE_API_KEY is set; these tests use the stand-in or the list.
 for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];

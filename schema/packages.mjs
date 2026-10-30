@@ -43,7 +43,11 @@ const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const r2 = (x) => Math.round(x * 100) / 100;
 const json = (dir, f) => existsSync(ventureFile(dir, f)) ? load(ventureFile(dir, f)) : null;
 
-/** The facts the packages test: need-now's, the founder's flags, and the question matrix's answers. */
+/**
+ * The facts the packages test: need-now's, the founder's flags, and the question matrix's answers.
+ * @param {string} dir
+ * @param {{ flags?: Record<string, *>, answers?: Record<string, *> | null }} [opts]
+ */
 export function situation(dir, { flags = {}, answers = null } = {}) {
   const f = needFacts(dir);
   const phase = PHASES.includes(f.phase) ? f.phase : "discovery";
