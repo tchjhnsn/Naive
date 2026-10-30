@@ -60,7 +60,7 @@ export function analytics(dir, now) {
     venture: r.venture, phase: r.phase, total: rows.length, decided: decided.length, open: rows.filter((x) => x.state === "open").length,
     functions, types: count(rows, (x) => x.type), kinds: count(rows, (x) => x.kind),
     wording: count(decided, (x) => x.wording), by: count(decided.filter((x) => x.decided_by), (x) => x.decided_by), phases: count(decided.filter((x) => x.phase), (x) => x.phase),
-    outcomes: { total: outcomes.length, ...Object.fromEntries(["met", "partly", "missed", "pending"].map((k) => [k, outcomes.filter((o) => o === k).length])) },
+    outcomes: /** @type {{ total: number, met: number, partly: number, missed: number, pending: number }} */ ({ total: outcomes.length, ...Object.fromEntries(["met", "partly", "missed", "pending"].map((k) => [k, outcomes.filter((o) => o === k).length])) }),
     over_time: days.map(({ key, n }) => ({ day: key, decided: n })),
     decisions: rows,
     next: [

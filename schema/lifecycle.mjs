@@ -46,7 +46,12 @@ export function lifecycle(dir) {
   };
 }
 
-/** A person marks one of the current phase's exit criteria met, with the evidence for it. */
+/**
+ * A person marks one of the current phase's exit criteria met, with the evidence for it.
+ * @param {string} dir
+ * @param {string} id
+ * @param {{ evidence?: string, by?: { kind?: string, via?: string, id?: string } }} [opts]
+ */
 export function meet(dir, id, { evidence, by } = {}) {
   const v = load(join(dir, "venture.json"));
   const ec = exitCriteria(dir, v.phase);
@@ -67,11 +72,16 @@ export function meet(dir, id, { evidence, by } = {}) {
   if (ok.status !== 0) return { ok: false, error: `the record would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
   const tf = ventureFile(dir, ec.file);
   writeFileSync(tf, JSON.stringify(rec, null, 2) + "\n");
-  record(dir, { entity: ec.file, route: ec.source === "telos" ? "foundation/telos" : `foundation/exit-criteria/${v.phase}`, activity: "confirm", agent, note: `exit criterion ${v.phase}/${id} met${evidence ? `: ${evidence}` : ""}` });
+  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: ec.file, route: ec.source === "telos" ? "foundation/telos" : `foundation/exit-criteria/${v.phase}`, activity: "confirm", agent, note: `exit criterion ${v.phase}/${id} met${evidence ? `: ${evidence}` : ""}` }));
   return { ok: true, result: lifecycle(dir) };
 }
 
-/** A person moves the venture to another phase, through the gate. */
+/**
+ * A person moves the venture to another phase, through the gate.
+ * @param {string} dir
+ * @param {string} to
+ * @param {{ reason?: string, override?: string, by?: { kind?: string, via?: string, id?: string }, now?: string }} [opts]
+ */
 export function advance(dir, to, { reason, override, by, now } = {}) {
   const agent = by ?? agentFromEnv("person", "cli");
   if (agent.kind !== "person") return { ok: false, error: "a phase change is a person's decision; an agent can suggest it, never make it" };

@@ -88,7 +88,12 @@ export function confidentialityOf(dir, rel) {
   return r?.visibility === "confidential" ? { level: CONFIDENTIAL_LEVELS.includes(r.level) ? r.level : "C2", access: r.access ?? [] } : null;
 }
 
-/** Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id. */
+/**
+ * Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id.
+ * @param {string} dir
+ * @param {string} rel
+ * @param {{ actor?: string, id?: string }} [opts]
+ */
 export function mayKnow(dir, rel, { actor = "agent", id } = {}) {
   const c = confidentialityOf(dir, rel);
   if (!c || c.level === "C1") return true;

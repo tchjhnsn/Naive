@@ -73,6 +73,7 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
   const settled = statements.filter((s) => s.status !== "planned").every((s) => s.status === "confirmed");
   const errors = [];
 
+  /** @type {{ id: string, question: string, source: string, layer: string, parent: string | null, boundary: string, status: string, needed_in?: string, decides?: { record: string, path?: string }, part_of?: string, statement_status?: string, [k: string]: any }[]} */
   const list = [
     { id: "venture", question: `Build ${venture.name} as a venture`, source: "root", layer: "governance", parent: null, boundary: productOnly ? "fail-open" : "fail-closed", status: "decided", decided_at: null },
     { id: "foundation", question: `Settle the strategic foundation (${statements.filter((s) => !["confirmed", "planned"].includes(s.status)).length} statements open)`, source: "root", layer: "purpose", parent: "venture", boundary: productOnly ? "fail-open" : "fail-closed",
@@ -278,7 +279,8 @@ const fileOf = (dir, id) => decisionFiles(dir).find((f) => load(ventureFile(dir,
 export const decisionFile = fileOf;
 
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
- *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
+ *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides.
+ *  @param {string} dir @param {*} input @param {{ agentId?: string, via?: string, harness?: string, model?: string }} [opts] */
 export function propose(dir, input, { agentId, via = "router", harness, model } = {}) {
   const { at = "", name, ...rest } = input ?? {};
   if (!rest.id || !rest.question) return { ok: false, error: "a decision needs an id and a question" };
@@ -297,7 +299,7 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
   if (bad) return { ok: false, error: `does not match schema/decision-record.schema.json:\n${bad}` };
   mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
   writeFileSync(ventureFile(dir, file), JSON.stringify(d, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "draft", agent: agentFromEnv("agent", via, { ...(agentId ? { id: agentId } : {}), ...(harness ? { harness } : {}), ...(model ? { model } : {}) }), note: `proposed decision ${d.id}` });
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "draft", agent: agentFromEnv("agent", via, { ...(agentId ? { id: agentId } : {}), ...(harness ? { harness } : {}), ...(model ? { model } : {}) }), note: `proposed decision ${d.id}` }));
   return { ok: true, result: { proposed: d.id, file, awaiting: "approval", provenance: e.hash } };
 }
 
@@ -313,7 +315,8 @@ const setField = (o, path, v) => { const ks = path.split("."); let x = o; for (c
 /** Merge: apply a decided version's answer to the records it decides (applies_to). A separate step from
  *  approving, so it can be delegated: only a person may merge unless a delegation grant names merge for
  *  this decision's class (the delegation suite). Logged as a merge in provenance. Ends by building the
- *  decision's impact map (schema/impact.mjs) and returns its summary. */
+ *  decision's impact map (schema/impact.mjs) and returns its summary.
+ *  @param {string} dir @param {string} id @param {{ by?: string, via?: string, note?: string }} [opts] */
 export function merge(dir, id, { by, via = "cli", note } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
@@ -329,18 +332,19 @@ export function merge(dir, id, { by, via = "cli", note } = {}) {
     const rec = existsSync(f) ? load(f) : {};
     setField(rec, t.field, d.answer);
     writeFileSync(f, JSON.stringify(rec, null, 2) + "\n");
-    prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), decision: id, note: `merged ${id} version ${version} into ${t.field}` });
+    prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: t.file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), decision: id, note: `merged ${id} version ${version} into ${t.field}` }));
     files.push(t.file);
   }
   const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: agentFromEnv("person", via, { id: by }), note: note ?? `merged ${id} version ${version}` });
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "merge", agent: agentFromEnv("person", via, { id: by }), note: note ?? `merged ${id} version ${version}` }));
   const im = impact(dir, id, { via });
   return { ok: true, result: { merged: id, version, files, provenance: e.hash, impact: im.ok ? im.result : { error: im.error } } };
 }
 
 /** Rollback: make an earlier version current again, as a new version, so history is never rewritten.
- *  The restored version is decided; merge it to apply it. */
+ *  The restored version is decided; merge it to apply it.
+ *  @param {string} dir @param {string} id @param {string | number} to @param {{ by?: string, via?: string }} [opts] */
 export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
@@ -355,11 +359,11 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: `rolled ${id} back to version ${to} as version ${out.version}` });
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: `rolled ${id} back to version ${to} as version ${out.version}` }));
   return { ok: true, result: { decided: id, version: out.version, restored: Number(to), provenance: e.hash, next: out.applies_to?.length ? `mentura merge ${id}` : null } };
 }
 
-/** A person approves a decision: as worded, or with their own answer. */
+/** A person approves a decision: as worded, or with their own answer. @param {string} dir @param {string} id @param {{ by?: string, answer?: string, via?: string, note?: string, reasons?: object[] }} [opts] */
 export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
@@ -381,7 +385,7 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: note ?? `approved decision ${id} (${wording})` });
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: note ?? `approved decision ${id} (${wording})` }));
   return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
 }
 

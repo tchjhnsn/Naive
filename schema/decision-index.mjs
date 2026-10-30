@@ -227,7 +227,8 @@ export function touching(entity, ctx) {
 }
 
 /** Updates the index from the provenance events since its cursor (or since a time). Rebuilds when
- *  there is no index, the log was rewritten, or the venture changed phase. */
+ *  there is no index, the log was rewritten, or the venture changed phase.
+ *  @param {string} dir @param {{ now?: number, since?: string }} [opts] */
 export function update(dir, { now = Date.now(), since } = {}) {
   const idx = read(dir);
   const log = provenance(dir);

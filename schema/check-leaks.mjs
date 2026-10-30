@@ -23,7 +23,7 @@ const visible = (file, text) => file.endsWith(".mdx") || file.endsWith(".md") ? 
 
 const walk = (p) => statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];
 
-/** Each match: { file, pattern, text, why }. */
+/** Each match: { file, pattern, text, why }. @param {string[]} paths @param {{ venture?: string }} [opts] */
 export function leaks(paths, { venture } = {}) {
   const ps = patterns(venture), out = [];
   for (const file of paths.filter(existsSync).flatMap(walk).filter((f) => /\.(mdx?|json|html|txt)$/.test(f) && !f.endsWith("meta.json"))) {

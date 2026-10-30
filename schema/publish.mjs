@@ -68,7 +68,12 @@ export function sources(dir, channel) {
   return out;
 }
 
-/** naive publish build: compile the channel's MDX into one artifact output and leak-check it. */
+/**
+ * naive publish build: compile the channel's MDX into one artifact output and leak-check it.
+ * @param {string} dir
+ * @param {string} channel
+ * @param {{ artifact?: string }} [opts]
+ */
 export function build(dir, channel, { artifact } = {}) {
   const ch = channelOf(dir, channel);
   const id = artifact ?? manifest(dir).entries.find((e) => e.channel === channel)?.artifact ?? channel;
@@ -118,6 +123,11 @@ export function mayApprove(dir, { by, as = "founder", door, exposure }) {
 
 const stamp = (t) => t.replace(/[-:.]/g, "").toLowerCase();
 
+/**
+ * @param {string} dir
+ * @param {{ channel: string, artifact: string, sha256: string, url?: string, action: string, door: string, exposure: string, who?: string[],
+ *   reversibility: { how: string, takes?: string }, as: string, by?: string, ok: boolean, why?: string, not_before?: string }} d
+ */
 function decide(dir, { channel, artifact, sha256, url, action, door, exposure, who, reversibility, as, by, ok, why, not_before }) {
   const at = new Date().toISOString();
   const v = load(ventureFile(dir, "venture.json"));
@@ -147,7 +157,12 @@ function defaults(ch, door, reversibility) {
     : { how: "naive publish rollback restores the previous version", takes: "minutes" } };
 }
 
-/** naive publish <channel>: the gate. Returns { decision, entry } or throws Refused (the decision is still written). */
+/**
+ * naive publish <channel>: the gate. Returns { decision, entry } or throws Refused (the decision is still written).
+ * @param {string} dir
+ * @param {string} channel
+ * @param {{ by?: string, as?: string, door?: string, exposure?: string, who?: string[], reversibility?: string, url?: string, now?: Date }} [opts]
+ */
 export function publish(dir, channel, { by, as = "founder", door, exposure = "low", who = [], reversibility, url, now = new Date() } = {}) {
   const ch = channelOf(dir, channel);
   if (!EXPOSURE.includes(exposure)) refuse(`exposure is low, medium or high, not ${exposure}`);
@@ -181,7 +196,7 @@ export function publish(dir, channel, { by, as = "founder", door, exposure = "lo
   delete entry.stale;
   save(manifestPath(dir), m);
   save(aFile, { ...a, published: true, ...(entry.url ? { url: entry.url } : {}) });
-  record(dir, { entity: kept, activity: "publish", agent: { kind: "person", via: "cli", id: by }, derived_from: [a.output.path], decision, sha256: sha, note: `published ${id} on ${channel}${entry.url ? ` at ${entry.url}` : ""} (${d.door} door)` });
+  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: kept, activity: "publish", agent: { kind: "person", via: "cli", id: by }, derived_from: [a.output.path], decision, sha256: sha, note: `published ${id} on ${channel}${entry.url ? ` at ${entry.url}` : ""} (${d.door} door)` }));
   return { decision, entry };
 }
 
@@ -189,7 +204,12 @@ function kindOf(ch) {
   return { "docs-site": "docs", site: "site", blog: "site", social: "social", newsletter: "newsletter", email: "email", "app-store": "app-store", "claude-artifact": "claude-artifact" }[ch.kind] ?? "other";
 }
 
-/** naive publish rollback: restore the previous version (a two-way door). */
+/**
+ * naive publish rollback: restore the previous version (a two-way door).
+ * @param {string} dir
+ * @param {string} channel
+ * @param {{ by?: string, as?: string }} [opts]
+ */
 export function rollback(dir, channel, { by, as = "founder" } = {}) {
   channelOf(dir, channel);
   const m = manifest(dir);
@@ -205,7 +225,7 @@ export function rollback(dir, channel, { by, as = "founder" } = {}) {
   Object.assign(entry, { sha256: prev.sha256, output: prev.output, approved_by: by, at: new Date().toISOString(), decision });
   entry.previous = [undone, ...entry.previous.slice(1)];
   save(manifestPath(dir), m);
-  record(dir, { entity: prev.output, activity: "rollback", agent: { kind: "person", via: "cli", id: by }, decision, sha256: prev.sha256, note: `rolled ${channel} back from ${undone.sha256.slice(0, 12)} to ${prev.sha256.slice(0, 12)}` });
+  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: prev.output, activity: "rollback", agent: { kind: "person", via: "cli", id: by }, decision, sha256: prev.sha256, note: `rolled ${channel} back from ${undone.sha256.slice(0, 12)} to ${prev.sha256.slice(0, 12)}` }));
   return { decision, entry };
 }
 

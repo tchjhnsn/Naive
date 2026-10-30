@@ -63,7 +63,7 @@ export async function decide(dir, { id, answer, via = "api", where = "/setup" })
   if (id === GOAL && !d) {
     const p = propose(dir, { id: GOAL, question: "What must be true for the venture to leave discovery? Name the goal this phase works toward.", decides: { record: "exit-criteria", path: "foundation/exit-criteria/discovery.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }, { via });
     if (!p.ok) return p;
-    return approve(dir, GOAL, { by, answer: String(answer).trim(), via, note: `set at ${where}` });
+    return approve(dir, GOAL, /** @type {Parameters<typeof approve>[2]} */ ({ by, answer: String(answer).trim(), via, note: `set at ${where}` }));
   }
   if (!d) return { ok: false, error: `no decision ${id}` };
   if (d.source === "foundation") {
@@ -71,12 +71,16 @@ export async function decide(dir, { id, answer, via = "api", where = "/setup" })
     const did = `statement-${sid}`;
     const p = propose(dir, { id: did, question: d.question, statement: sid, decides: d.decides, layer: d.layer === "system" ? "purpose" : d.layer, needed_in: d.needed_in }, { via });
     if (!p.ok) return p;
-    return approve(dir, did, { by, answer: String(answer).trim(), via, note: `the founder's words at ${where}` });
+    return approve(dir, did, /** @type {Parameters<typeof approve>[2]} */ ({ by, answer: String(answer).trim(), via, note: `the founder's words at ${where}` }));
   }
-  return approve(dir, id, { by, answer: String(answer).trim(), via, note: `decided at ${where}` });
+  return approve(dir, id, /** @type {Parameters<typeof approve>[2]} */ ({ by, answer: String(answer).trim(), via, note: `decided at ${where}` }));
 }
 
 // One pointer: where a function keeps its truth, merged into knowledge/sources.json through the router.
+/**
+ * @param {string} dir
+ * @param {{ fn: string, system: string, address: string, via?: string, actor?: string, agentId?: string }} p
+ */
 export async function point(dir, { fn, system, address, via = "api", actor = "person", agentId }) {
   const catalog = load(join(repo, "schema/systems-catalog.json"));
   if (!catalog.functions[fn]?.includes(system)) return { ok: false, error: `${system} is not offered for ${fn}` };
@@ -119,7 +123,7 @@ export async function confirm(dir, { by = founderName(dir) } = {}) {
   const { approve } = await import("./decisions.mjs");
   const out = [];
   for (const w of (await state(dir)).waiting) {
-    const r = approve(dir, w.id, { by, via: "cli", note: `confirmed at setup: ${by}'s words, relayed by the model` });
+    const r = approve(dir, w.id, /** @type {Parameters<typeof approve>[2]} */ ({ by, via: "cli", note: `confirmed at setup: ${by}'s words, relayed by the model` }));
     if (!r.ok) return { ...r, confirmed: out };
     out.push(w.id);
   }

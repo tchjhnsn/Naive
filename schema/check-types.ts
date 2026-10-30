@@ -11,7 +11,7 @@ import { join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname;
 const CHECKED: readonly string[] = [
-  "evidence/", "frameworks/", "governance/", "knowledge/", "operations/", "purpose/", "test.mjs",
+  "evidence/", "frameworks/", "governance/", "knowledge/", "operations/", "purpose/", "schema/", "test.mjs",
 ];
 
 const tsc = join(root, "node_modules/.bin/tsc");

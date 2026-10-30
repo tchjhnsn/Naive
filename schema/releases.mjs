@@ -74,7 +74,8 @@ export function openCache(dir, k = key()) {
   let old = null;
   try { old = existsSync(f) ? load(f) : null; } catch { old = null; }
   const fresh = !old || old.key_hash !== kh;
-  const c = { key: k, key_hash: kh, fresh, previous_key: fresh && old ? old.key : null, entries: fresh ? {} : old.entries ?? {}, hits: 0, misses: 0 };
+  const c = /** @type {{ key: typeof k, key_hash: string, fresh: boolean, previous_key: *, entries: Record<string, *>, hits: number, misses: number,
+    get: (id: string, compute: () => *) => *, save: () => void }} */ ({ key: k, key_hash: kh, fresh, previous_key: fresh && old ? old.key : null, entries: fresh ? {} : old.entries ?? {}, hits: 0, misses: 0 });
   c.get = (id, compute) => { if (id in c.entries) { c.hits++; return c.entries[id]; } c.misses++; const v = compute(); c.entries[id] = v; return v; };
   c.save = () => {
     mkdirSync(dirname(f), { recursive: true });
@@ -131,6 +132,7 @@ export function confirmation(dir, file, type, log) {
   return { ok: true, by: who(by?.agent), at: by?.at ?? last.at };
 }
 
+/** @param {*} c @param {{ route?: string, file?: string, venture?: string }} at */
 function fixFor(c, { route, file, venture }) {
   if (c.fix === "baseline") return `${CLI} baseline --venture ${venture} --as person`;
   if (c.fix === "confirm") return c.statements.map((s) => `${CLI} confirm ${s} --venture ${venture} --confirm ${s}`).join(" && ");
@@ -183,13 +185,19 @@ function stripPrivate(text, file) {
   return { text: JSON.stringify(o, null, 2) + "\n", withheld: fields };
 }
 
-/** Everything a release would hold, read from the venture as it is. Writes nothing. */
+/** @typedef {{ file: string, record: string, route: string, route_template: string, id?: string, as_of?: string, confirmed_by?: string, text?: string, withheld_fields?: string[] }} Frozen */
+
+/**
+ * Everything a release would hold, read from the venture as it is. Writes nothing.
+ * @param {string} dir
+ * @param {{ cache?: ReturnType<typeof openCache> }} [opts]
+ */
 export async function survey(dir, { cache } = {}) {
   const v = load(join(dir, "venture.json"));
   const log = provEntries(dir);
   const ms = matchers();
   const files = ventureFiles(dir);
-  const frozen = [], holes = [], leftOut = [], blockers = [], privateCount = { records: 0, folder: 0 };
+  const frozen = /** @type {Frozen[]} */ ([]), holes = [], leftOut = [], blockers = [], privateCount = { records: 0, folder: 0 };
   const streams = new Map();
   for (const file of files) {
     if (["venture.json", "provenance.jsonl", "AGENTS.md"].includes(file) || file.endsWith(".gitkeep")) continue;
@@ -385,6 +393,7 @@ function writeRelease(dir, m, frozen) {
   writeFileSync(ventureFile(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
 }
 
+/** @param {Frozen} r */
 const strip = ({ text, ...rest }) => ({ ...rest, sha256: sha(text ?? "") });
 
 /**
@@ -414,7 +423,7 @@ export async function build(dir, { now = new Date().toISOString(), actor = "pers
     left_out: leftOut.sort((a, b) => a.file.localeCompare(b.file)), withheld: { private_records: s.private.records, private_folder_files: s.private.folder },
     packages: pk, routes: routeTable(s, plan, commands),
     items: Object.fromEntries([...new Set(s.frozen.filter((f) => f.id).map((f) => f.route_template))].sort().map((t) => [t, s.frozen.filter((f) => f.route_template === t).map((f) => f.id).sort()])),
-    commands: Object.fromEntries(Object.entries(commands).filter(([, v]) => !v.empty).map(([k, v]) => [k, { result: v.result }])),
+    commands: Object.fromEntries(Object.entries(commands).filter(([, v]) => !v.empty).map(([k, v]) => [k, /** @type {{ result: *, built_from?: string }} */ ({ result: v.result })])),
     incremental: [],
     cache: { key_hash: cache.key_hash, fresh: cache.fresh, hits: cache.hits, misses: cache.misses, ...(cache.previous_key ? { previous_key: cache.previous_key } : {}) },
   };
@@ -423,7 +432,7 @@ export async function build(dir, { now = new Date().toISOString(), actor = "pers
   cache.save();
   if (dryRun) return { ok: true, manifest: m, dry_run: true };
   writeRelease(dir, m, s.frozen);
-  prov(dir, { entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: ${m.records.length} records frozen, ${m.holes.length} live holes` });
+  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: ${m.records.length} records frozen, ${m.holes.length} live holes` }));
   return { ok: true, manifest: m };
 }
 
@@ -456,7 +465,7 @@ export async function add(dir, route, { now = new Date().toISOString(), actor = 
   writeFileSync(join(ventureFile(dir, RECORDS), file), hit.text);
   writeFileSync(ventureFile(dir, MANIFEST), JSON.stringify(m, null, 2) + "\n");
   writeFileSync(ventureFile(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
-  prov(dir, { entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: added ${route} to ${before} without rebuilding the rest` });
+  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: added ${route} to ${before} without rebuilding the rest` }));
   return { ok: true, manifest: m, added: { route, file, from: before } };
 }
 

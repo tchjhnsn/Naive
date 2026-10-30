@@ -111,9 +111,15 @@ function textStages(file, text, cfg, venture) {
   return out;
 }
 
-/** Runs every stage in order. Returns { ok, findings, stages }. */
+/** @typedef {{ rule: string, file: string, line?: number, text: string, message: string, published: boolean, severity?: string, waived?: boolean }} Finding */
+
+/**
+ * Runs every stage in order. Returns { ok, findings, stages }.
+ * @param {string[]} paths
+ * @param {{ venture?: string }} [opts]
+ */
 export async function check(paths, { venture } = {}) {
-  const cfg = configFor(venture), findings = [], stages = [];
+  const cfg = configFor(venture), findings = /** @type {Finding[]} */ ([]), stages = [];
   const on = (r) => cfg.rules[r] !== "off";
   const files = paths.filter(existsSync).flatMap(walk).filter((f) => /\.(mdx?|html|txt)$/.test(f));
   const publishedOf = new Map(files.map((f) => [resolve(f), frontmatter(readFileSync(f, "utf8")).meta.publish === true]));
@@ -159,7 +165,11 @@ export function append(file, findings, at = new Date().toISOString()) {
   appendFileSync(file, findings.map((f) => JSON.stringify({ at, ...f }) + "\n").join(""));
 }
 
-/** The loop: which rules are waived most often, and leaks found in files already published. */
+/**
+ * The loop: which rules are waived most often, and leaks found in files already published.
+ * @param {string} file
+ * @param {{ venture?: string }} [opts]
+ */
 export function report(file, { venture } = {}) {
   const rows = existsSync(file) ? readFileSync(file, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) : [];
   const { waived } = configFor(venture);
