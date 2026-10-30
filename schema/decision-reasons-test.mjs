@@ -50,7 +50,21 @@ try {
 
   const a2 = approve(v, "mission", { by: "Founder", answer: "We help solo founders and small teams." });
   const d2 = json(F);
-  expect("a new version keeps the old frozen reasons in versions and freezes fresh shas", a2.ok && d2.versions[0].provenance.reasons.length === 3 && d2.provenance.reasons[0].citations[0].version === shaOf(v, "evidence/interviews.json") && fresh("mission").render === "done", d2);
+  expect("a new version keeps the old frozen reasons in versions", a2.ok && d2.versions[0].provenance.reasons.length === 3, d2);
+  expect("an inherited reason keeps its old hash, so the new version stays stale", d2.provenance.reasons[0].citations[0].version === d2.versions[0].provenance.reasons[0].citations[0].version && d2.provenance.reasons[0].citations[0].version !== shaOf(v, "evidence/interviews.json") && fresh("mission").render === "stale", d2);
+  approve(v, "mission", { by: "Founder", answer: "We help founders who drown in decisions.", reasons: [{ claim: "Interviews say solo founders drown in decisions", kind: "for", citations: [{ ref: "evidence/interviews.json", locator: "quotes[0]" }] }] });
+  expect("restating the reason from the changed file freezes it fresh and clears the staleness", json(F).provenance.reasons.filter((r) => r.claim.startsWith("Interviews")).length === 1 && json(F).provenance.reasons.find((r) => r.claim.startsWith("Interviews")).citations[0].version === shaOf(v, "evidence/interviews.json") && fresh("mission").render === "done", json(F));
+
+  // An inherited reason keeps its hash even when its stored JSON differs from the frozen copy (a hand edit).
+  const inherited = () => json(F).reasons.find((r) => r.claim.startsWith("Interviews"));
+  writeFileSync(join(v, "evidence/interviews.json"), JSON.stringify({ quotes: ["changed again"] }, null, 2));
+  const reordered = json(F);
+  reordered.reasons = reordered.reasons.map(({ claim, kind, ...r }) => ({ kind, claim, ...r }));
+  writeFileSync(join(v, F), JSON.stringify(reordered, null, 2));
+  const hash = inherited().citations[0].version;
+  approve(v, "mission", { by: "Founder", answer: "We help founders with too many decisions." });
+  expect("an inherited reason whose key order differs is not re-frozen at today's hash", inherited().citations[0].version === hash && fresh("mission").render === "stale", json(F));
+  approve(v, "mission", { by: "Founder", answer: "We help founders with too many open decisions.", reasons: [{ claim: inherited().claim, kind: "for", citations: [{ ref: "evidence/interviews.json" }] }] });
 
   expect("reasonsFromArgs pairs each --cite with the reason before it", JSON.stringify(reasonsFromArgs(["x", "--reason", "A", "--cite", "a.json", "--locator", "f", "--cite", "D-1", "--against", "B"])) === JSON.stringify([{ claim: "A", kind: "for", citations: [{ ref: "a.json", locator: "f" }, { ref: "D-1" }] }, { claim: "B", kind: "against" }]));
 
