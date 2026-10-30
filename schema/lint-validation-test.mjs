@@ -229,4 +229,10 @@ const decision = (phase) => ({
   expect("a bad --now does not crash", bad.status === 0 && out(bad)?.findings, bad.stderr);
 }
 
+{
+  const dir = venture({ "naive.config.json": { validation_lint: { rules: { "stale-evidence": { mode: "fail-closed" } } } } });
+  const r = spawnSync("node", [join(repo, "schema/check-config.mjs"), dir], { encoding: "utf8" });
+  expect("naive.config.json accepts validation_lint", r.status === 0, r.stdout + r.stderr);
+}
+
 process.exit(failed ? 1 : 0);
