@@ -48,12 +48,10 @@ const problem = {
 
 const icp = {
   venture: "inbound-fixture",
-  profiles: [{
-    id: "shop-owner",
-    who: "Owners of independent repair shops",
-    jobs: ["See the week's bookings in one place"],
-    primary: true,
-  }],
+  id: "shop-owner",
+  who: "Owners of independent repair shops",
+  jobs: ["See the week's bookings in one place"],
+  primary: true,
 };
 
 const product = {
@@ -150,7 +148,7 @@ function writeJson(dir, rel, value) {
 function build(dir, opt = {}) {
   writeJson(dir, "venture.json", ventureJson);
   if (opt.sitemap !== false) writeJson(dir, "marketing/sitemap.json", sitemap);
-  if (opt.icp !== false) writeJson(dir, "foundation/icp.json", icp);
+  if (opt.icp !== false) writeJson(dir, `foundation/icp/${icp.id}.json`, icp);
   if (opt.problem !== false) writeJson(dir, "foundation/problem.json", problem);
   if (opt.product !== false) writeJson(dir, "product/offer.json", product);
   if (opt.brand !== false) writeJson(dir, "marketing/brand.json", brand);
@@ -243,7 +241,7 @@ function checkCovered(sitemapRes, contentRes) {
 }
 
 function checkAudience(icpRes, contentRes) {
-  const ids = new Set((icpRes?.result?.profiles ?? []).map((p) => p.id));
+  const ids = new Set(Object.keys(icpRes?.result ?? {}));
   const bad = contentFiles(contentRes).filter((f) => !ids.has(frontmatter(f.text).meta.audience));
   return { ok: contentFiles(contentRes).length > 0 && bad.length === 0, bad: bad.map((f) => frontmatter(f.text).meta.audience) };
 }
@@ -317,7 +315,7 @@ await withVenture({ drafts: "none" }, async (ws, dir) => {
   const write = await call({ venture: "inbound-fixture", route: "marketing/content", action: "write", workspace: ws, via: "replay", actor: "agent", input: {} });
 
   note("main path sitemap", "2 pages", sitemapRes.ok && sitemapRes.result?.pages?.length === 2, `${sitemapRes.result?.pages?.length ?? 0} pages`);
-  note("main path icp", "shop-owner", icpRes.ok && icpRes.result?.profiles?.[0]?.id === "shop-owner", icpRes.result?.profiles?.[0]?.id ?? icpRes.not_found?.note ?? icpRes.error);
+  note("main path icp", "shop-owner", icpRes.ok && Object.keys(icpRes.result ?? {}).join() === "shop-owner", Object.keys(icpRes.result ?? {}).join() || (icpRes.not_found?.note ?? icpRes.error));
   note("main path problem", "statement", problemRes.ok && typeof problemRes.result?.statement === "string", problemRes.ok ? "statement present" : (problemRes.not_found?.note ?? problemRes.error));
   note("main path inputs", "icp:shop-owner and problem", inputs.ok && inputs.result?.["icp:shop-owner"] && inputs.result?.problem, inputs.ok ? Object.keys(inputs.result).sort().join(", ") : inputs.error);
   note("main path product list", "offer", id === "offer", id ?? list.error);
@@ -346,8 +344,7 @@ await withVenture({ sitemap: false, drafts: "none" }, async (ws) => {
 await withVenture({ icp: false, drafts: "none" }, async (ws) => {
   const sitemapRes = await read(ws, "marketing/sitemap");
   const icpRes = await read(ws, "foundation/icp");
-  const invented = icpRes.result?.profiles?.length > 0;
-  note("missing icp", "not found, no invented profile", sitemapRes.ok && sitemapRes.result?.pages?.length === 2 && icpRes.result === null && !!icpRes.not_found && !invented, icpRes.not_found?.note ?? "profile was returned");
+  note("missing icp", "not found, no invented profile", sitemapRes.ok && sitemapRes.result?.pages?.length === 2 && icpRes.result === null && !!icpRes.not_found, icpRes.not_found?.note ?? "profile was returned");
 });
 
 await withVenture({ brand: false, drafts: "good" }, async (ws) => {
