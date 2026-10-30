@@ -55,6 +55,7 @@
     "schema/validate.py",
     "schema/check-validation.mjs",
     "schema/foundation.mjs",
+    "schema/lint-foundation.mjs",
     "schema/check-frameworks.mjs"
   ],
   "skill": {

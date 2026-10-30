@@ -1923,6 +1923,14 @@ export type NaiveConfig = {
       channel?: "stable" | "canary";
     };
   };
+  /** Foundation lint (foundation/lint): per-rule mode overrides. A rule stays fail-open unless its mode is fail-closed. */
+  foundation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
   /** How the acting role is checked on every action (M-18) */
   acting?: {
     /** A role id the team plan does not list: allow (the default, it may reach every route) or refuse */
