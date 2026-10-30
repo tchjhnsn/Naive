@@ -11,7 +11,9 @@
   ],
   "optional": [
     "validation-product-market-fit",
-    "evidence"
+    "evidence",
+    "validation-interview",
+    "validation-feedback"
   ],
   "refs": [
     "validation-problem",
@@ -53,7 +55,9 @@
     "schema/validation-go-to-market.schema.json",
     "schema/validation-team.schema.json",
     "schema/validation-operations-readiness.schema.json",
-    "schema/evidence.schema.json"
+    "schema/evidence.schema.json",
+    "schema/validation-interview.schema.json",
+    "schema/validation-feedback.schema.json"
   ],
   "templates": [
     "purpose/kits/validation/templates/go-to-market.md",
@@ -94,7 +98,9 @@
     "validation-go-to-market",
     "validation-team",
     "validation-operations-readiness",
-    "validation-weights"
+    "validation-weights",
+    "validation-interview",
+    "validation-feedback"
   ],
   "reads": [
     "venture",

@@ -9,6 +9,75 @@
     "$schema": {
       "type": "string"
     },
+    "beta": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The plugin beta's gate (schema/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "jev": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Opt-in for routing feedback through Jev: send lets feedback text leave the machine, and counts only with set_by naming the person who turned it on. A TYPESAFE_API_KEY alone sends nothing.",
+          "properties": {
+            "send": {
+              "type": "boolean"
+            },
+            "set_by": {
+              "type": "object",
+              "required": [
+                "person",
+                "at"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "person": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Usage telemetry (schema/telemetry.mjs, schema/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "send": {
+          "type": "boolean"
+        },
+        "set_by": {
+          "type": "object",
+          "required": [
+            "person",
+            "at"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "person": {
+              "type": "string",
+              "minLength": 1
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
     "gate": {
       "type": "object",
       "additionalProperties": false,
@@ -197,9 +266,156 @@
       },
       "description": "Mentura kits whose automations this venture turns on"
     },
+    "publish_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The publish lint (schema/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "copy-distance",
+              "leaks",
+              "brand",
+              "claims",
+              "marks",
+              "personal-data",
+              "secrets"
+            ]
+          },
+          "additionalProperties": {
+            "enum": [
+              "off",
+              "warn",
+              "error"
+            ]
+          }
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "waived": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rule"
+            ],
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              },
+              "by": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
+    },
+    "diagnose": {
+      "type": "object",
+      "description": "naive diagnose --if-due: a full diagnosis runs only when the founder's transcripts since the cursor reach threshold estimated tokens (characters / 4), or a new session is older than stale_hours",
+      "additionalProperties": false,
+      "properties": {
+        "threshold": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 20000
+        },
+        "stale_hours": {
+          "type": "number",
+          "minimum": 0,
+          "default": 24
+        }
+      }
+    },
+    "premise_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The premise-attack linter (schema/premise-lint.mjs): each rule, one per aspect, is off, warn (the default) or error",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "undefined-term": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "unmeasurable": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "no-owner": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "unsupported-premise": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "orphan": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "conflict": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "dependency": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "phase-mismatch": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {

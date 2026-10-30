@@ -39,15 +39,21 @@ export function check(dir) {
   const allowed = new Set(publicText.flatMap((t) => [...runs(t)]));
   const results = files(ventureFile(dir, CONTENT)).map((f) => {
     const rel = relative(dir, f), { meta, body } = frontmatter(readFileSync(f, "utf8")), errors = [];
+    // variant_of names a record (foundation/problem.json) or one field of it (foundation/problem.json#statement,
+    // the form schema/visibility.mjs variantOf reads); a field narrows the copy check to that field's text.
+    const [srcRel, field] = (meta.variant_of ?? "").split("#");
     if (!meta.variant_of) errors.push("names no internal record (variant_of): marketing content is a variant of an internal record");
-    else if (!existsSync(ventureFile(dir, meta.variant_of))) errors.push(`variant_of ${meta.variant_of} does not exist`);
+    else if (!existsSync(ventureFile(dir, srcRel))) errors.push(`variant_of ${meta.variant_of} does not exist`);
     if (!meta.audience) errors.push("names no audience");
     if (meta.publish === undefined) errors.push("does not say whether it is published (publish: true or false)");
     if (meta.publish === true && !meta.approved_by) errors.push("is published without a person's approval (approved_by, EE-025)");
-    if (meta.variant_of && existsSync(ventureFile(dir, meta.variant_of))) {
-      const src = ventureFile(dir, meta.variant_of);
+    if (meta.variant_of && existsSync(ventureFile(dir, srcRel))) {
+      const src = ventureFile(dir, srcRel);
       const raw = readFileSync(src, "utf8");
-      const internal = new Set(strings(src.endsWith(".json") ? JSON.parse(raw) : raw).flatMap((s) => [...runs(s)]));
+      const record = src.endsWith(".json") ? JSON.parse(raw) : raw;
+      const text = field && typeof record === "object" ? field.split(".").reduce((x, k) => (x == null ? undefined : x[k]), record) : record;
+      if (field && text === undefined) errors.push(`variant_of ${meta.variant_of}: the record has no field ${field}`);
+      const internal = new Set(strings(text ?? "").flatMap((s) => [...runs(s)]));
       const leaks = [...runs(body)].filter((r) => internal.has(r) && !allowed.has(r));
       if (leaks.length) errors.push(`copies ${leaks.length} run(s) of ${RUN} words from ${meta.variant_of}, such as "${leaks[0]}": write the public variant in its own words`);
     }

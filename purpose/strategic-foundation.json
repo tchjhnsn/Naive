@@ -41,7 +41,7 @@
         {
           "id": "icp",
           "record": "icp",
-          "attribute": "profiles"
+          "attribute": "."
         },
         {
           "id": "promised-to",
