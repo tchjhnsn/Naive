@@ -79,7 +79,8 @@ function acyclic(ids, edges) {
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 
-/** The Merkle DAG with signal, lanes and layout. */
+/** The Merkle DAG with signal, lanes and layout.
+ * @param {*[]} ideas @param {{ answers?: object | null, phase?: string, venture?: string, source?: string }} [opts] */
 export function build(ideas, { answers = null, phase = "discovery", venture, source } = {}) {
   const ids = ideas.map((i) => i.id);
   let raw = [], concrete = {};

@@ -66,6 +66,7 @@ function written(dir, key) {
   return existsSync(ventureFile(dir, rel));
 }
 
+/** @param {string} dir @param {{ now?: string | Date }} [opts] */
 export function route(dir, { now } = {}) {
   const venture = load(join(dir, "venture.json"));
   const g = existsSync(ventureFile(dir, GRAPH)) ? load(ventureFile(dir, GRAPH)) : null;
@@ -115,8 +116,8 @@ export function route(dir, { now } = {}) {
   });
 
   const routed = new Set(destinations.flatMap((x) => x.ideas.map((i) => i.id)));
-  for (const d of destinations) d.package = HOME[d.id] ?? null;
-  return { venture: venture.id, name: venture.name, phase: venture.phase, graph: g?.root ?? null, understood: understood(dir), stages: STAGES, destinations,
+  return { venture: venture.id, name: venture.name, phase: venture.phase, graph: g?.root ?? null, understood: understood(dir), stages: STAGES,
+    destinations: destinations.map((d) => ({ ...d, package: HOME[d.id] ?? null })),
     loose: nodes.filter((n) => !routed.has(n.id)).map(short),
     gaps: Object.entries(CONVENTIONS.records).filter(([k]) => !destinations.some((x) => x.id === k)).map(([k, c]) => ({ id: k, title: c.title ?? k, about: c.about })),
     docket, counts: Object.fromEntries(STAGES.map(([s]) => [s, destinations.filter((x) => x.stage === s).length])) };
