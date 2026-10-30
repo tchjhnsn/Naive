@@ -25,6 +25,7 @@
 //                                                   the ranked decisions; --why prints one decision's reasons and citations
 //                                                   a new --answer on a decided decision makes its next version; --rollback restores one
 //   mentura merge <decision> --venture <id> --by <name> [--confirm <decision>]
+//   mentura index --venture <id> [--since <iso>] [--rebuild]   update the live decision index from provenance
 //   mentura impact <decision> --venture <id>       rebuild a merged decision's impact map across the functions
 //                                                   apply a decided version to the records it decides (applies_to)
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
@@ -248,6 +249,20 @@ if (cmd === "merge") {
   const r = merge(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "index") {
+  // The live decision index (schema/decision-index.mjs): re-scores the decisions the provenance events
+  // since its cursor (or --since) touch, spreading with damping, and appends rank history.
+  const venture = opt("venture");
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const { rebuild, update } = await import("../../schema/decision-index.mjs");
+  const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
+  out({ venture: idx.venture, phase: idx.phase, update: { mode: idx.last_update.mode, events: idx.last_update.events, rescored: idx.last_update.touched.map((t) => t.id) },
+    flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),
+    ranked: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, why: e.why })) });
   process.exit(0);
 }
 
