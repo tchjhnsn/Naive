@@ -10,6 +10,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { connect, sourceFor, sourcesOf } from "../knowledge/connectors/index.mjs";
 import { resolve } from "../interface/router.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-where-used.mjs <workspace or venture dir> [--json]"); process.exit(2); }
@@ -21,18 +22,18 @@ const at = (obj, pointer) => pointer.split("/").slice(1).map((k) => k.replace(/~
 const errors = [], drift = [], unchecked = [];
 let lists = 0, checked = 0;
 for (const v of walk(dir)) {
-  if (!existsSync(join(v, FILE))) continue;
+  if (!existsSync(ventureFile(v, FILE))) continue;
   lists++;
   const id = JSON.parse(readFileSync(join(v, "venture.json"), "utf8")).id;
   const ids = new Map(sourcesOf(v).sources.map((s) => [s.id, s]));
-  for (const fact of JSON.parse(readFileSync(join(v, FILE), "utf8")).facts) {
+  for (const fact of JSON.parse(readFileSync(ventureFile(v, FILE), "utf8")).facts) {
     const where = `${id}: ${fact.id}`;
     const { r, params } = resolve(fact.parent.route);
     if (!r || r.kind !== "record" || r.collection === "list") { errors.push(`${where}: parent ${fact.parent.route} is not a record route`); continue; }
     const context = r.collection === "item" && (r.record === "product" || r.record === "account") ? { [r.record]: params.id } : {};
     const src = sourceFor(v, r.record, context);
     const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", params.id)) : r.files).filter((f) => !f.includes("*"));
-    const path = cands.find((f) => existsSync(join(v, f))) ?? cands[0];
+    const path = cands.find((f) => existsSync(ventureFile(v, f))) ?? cands[0];
     if (src.connector !== "filesystem") { unchecked.push(`${where}: parent is in ${src.id}`); continue; }
     const parent = await (await connect(src, v)).read(path);
     const value = parent && at(JSON.parse(parent.content), fact.parent.pointer);

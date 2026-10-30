@@ -14,6 +14,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const repo = new URL("../../", import.meta.url).pathname;
 const auto = process.argv.includes("--auto");
@@ -57,7 +58,7 @@ try {
   expect(!p.error && p.body.awaiting === "approval", `propose: ${JSON.stringify(p.body)}`);
   await say("naive", `Proposed ${p.body.proposed}. It waits for a person: an agent cannot decide it.`);
 
-  const card = JSON.parse(readFileSync(join(dir, "products/shop-app.json"), "utf8"));
+  const card = JSON.parse(readFileSync(join(ventureFile(dir, "products/shop-app.json")), "utf8"));
   const changed = { ...card, description: "Payroll first, then bookings and stock, for small service shops" };
   const w1 = await tool("mentura_write", { venture, route: "purpose/product/shop-app", record: changed, agent_id: "builder", note: "reposition around payroll" });
   expect(w1.error && /locked until decision reposition-shop-app/.test(w1.body.error), `first write: ${JSON.stringify(w1.body)}`);
@@ -78,9 +79,9 @@ try {
     const w2 = await tool("mentura_write", { venture, route: "purpose/product/shop-app", record: changed, agent_id: "builder", decision: "reposition-shop-app", note: "reposition around payroll" });
     expect(!w2.error, `second write: ${JSON.stringify(w2.body)}`);
     await say("agent", `Resumed: wrote ${w2.body.written}.`);
-    const log = readFileSync(join(dir, "provenance.jsonl"), "utf8").trim().split("\n").slice(-3).map((l) => JSON.parse(l));
+    const log = readFileSync(join(ventureFile(dir, "provenance.jsonl")), "utf8").trim().split("\n").slice(-3).map((l) => JSON.parse(l));
     await say("naive", `Provenance, last three entries:\n${log.map((e) => `        ${e.activity.padEnd(7)} ${e.entity.padEnd(48)} by ${e.agent.kind}${e.agent.id ? ` ${e.agent.id}` : ""} via ${e.agent.via}`).join("\n")}`);
-    const dec = JSON.parse(readFileSync(join(dir, "products/decisions/shop-app.reposition.decision.json"), "utf8"));
+    const dec = JSON.parse(readFileSync(join(ventureFile(dir, "products/decisions/shop-app.reposition.decision.json")), "utf8"));
     await say("naive", `The decision carries its outcome to test later: "${dec.outcomes[0].projected}" (${dec.outcomes[0].result ?? "pending"}).`);
   }
 } finally {

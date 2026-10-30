@@ -59,6 +59,9 @@
     "schema/check-governance.mjs",
     "schema/check-team.mjs"
   ],
-  "skill": null,
+  "skill": {
+    "id": "people-function",
+    "path": "packages/people/skill/SKILL.md"
+  },
   "use_model": []
 }

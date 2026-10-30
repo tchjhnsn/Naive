@@ -37,7 +37,7 @@ expect("M-3: a write answers with the record's state before and after", ch?.reco
 expect("M-3: it names each package whose progress moved", ch?.packages?.some((p) => p.package === "foundation" && p.progress.to > p.progress.from), ch?.packages);
 expect("M-3: it names the records that move now because of it", ch?.moves_now?.some((m) => m.record === "validation-solution" && m.route === "validation/solution"), ch?.moves_now);
 expect("M-3: it names the need-now rows it settled", ch?.need_now?.some((n) => n.record === "validation-problem" && n.from === "suggest now" && n.to === "held"), ch?.need_now);
-expect("M-17: a write answers with the next route: the next required record in its package", w1.result?.next?.route === "foundation/icp" && w1.result.next.action === "write" && /mentura foundation\/icp write --venture acme/.test(w1.result.next.command), w1.result?.next);
+expect("M-17: a write answers with the next route: the next required record in its package", w1.result?.next?.route === "foundation/icp/[id]" && w1.result.next.action === "write" && /mentura foundation\/icp\/<id> write --venture acme/.test(w1.result.next.command), w1.result?.next);
 const w2 = await c("validation/solution", "write", { input: { venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] } });
 expect("M-17: after an agent's write, the next step is a person reviewing it", w2.result?.next?.action === "review" && w2.result.next.route === "validation/solution" && w2.result.next.who === "a person", w2.result?.next);
 const w3 = await c("foundation/problem", "write", { input: { ...problem, statement: "Physios lose evenings" } });
@@ -49,7 +49,7 @@ expect("M-3 and M-17 through the CLI: the answer carries changed and next", cliW
 // P-37 and L-6: a package's own route.
 const fnd = await c("foundation", "read");
 expect("L-6: a package's route returns its records and their state", fnd.ok && fnd.result.package === "foundation" && fnd.result.records.some((r) => r.route === "foundation/problem" && r.status === "draft") && typeof fnd.result.progress === "number", fnd);
-expect("L-6: it says what moves now and what waits", fnd.result?.moves_now?.includes("foundation/icp") && Array.isArray(fnd.result.waits), fnd.result);
+expect("L-6: it says what moves now and what waits", fnd.result?.moves_now?.includes("foundation/icp/[id]") && Array.isArray(fnd.result.waits), fnd.result);
 expect("P-37: a package's pending state lists its drafts and how to accept them", fnd.result?.loading?.drafts?.[0]?.route === "foundation/problem" && fnd.result.loading.drafts[0].accept === "mentura accept foundation/problem --venture acme" && fnd.pending_drafts?.length === 1, fnd.result?.loading);
 const val = await c("validation", "read");
 expect("P-37: a package with no drafts has no pending state", val.ok && val.result.loading === null, val.result?.loading);
@@ -242,7 +242,7 @@ expect("E-8: recover refuses without --confirm recover", spawnSync("node", [join
 expect("E-8: the framework is sound in this repository", frameworkHealth() === null, frameworkHealth());
 // A broken data model, in a copy of the framework so the repository is never touched.
 const copy = mkdtempSync(join(tmpdir(), "writes-framework-"));
-for (const d of ["schema", "interface", "knowledge", "purpose", "operations", "evidence", "governance", "packages", "platform"]) if (existsSync(join(repo, d))) cpSync(join(repo, d), join(copy, d), { recursive: true });
+for (const d of ["schema", "interface", "knowledge", "purpose", "operations", "evidence", "governance", "packages", "platform", "frameworks"]) if (existsSync(join(repo, d))) cpSync(join(repo, d), join(copy, d), { recursive: true });
 writeFileSync(join(copy, "schema/data-model.json"), readFileSync(join(repo, "schema/data-model.json"), "utf8").slice(0, 500));
 const fw = spawnSync("node", [join(copy, "interface/cli/mentura.mjs"), "foundation/problem", "read", "--venture", "acme"], { encoding: "utf8", env });
 expect("E-8: a broken data model answers with recovery steps, not a stack trace", fw.status === 1 && /the framework is broken: schema\/data-model\.json/.test(fw.stderr) && /Recovery:/.test(fw.stderr) && /check-data-model/.test(fw.stderr), fw.stderr.slice(0, 400));

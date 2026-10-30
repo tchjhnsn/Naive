@@ -1,98 +1,109 @@
 #!/usr/bin/env node
-// Tests for naive port (EE-076) on a made-up project: files land where their names point, a nested
-// repository becomes a pointer, code and bank data stay behind, the project is never written to,
-// nothing in the venture is overwritten, and a plan goes stale when its source changes.
+// Tests for naive port (EE-076, a move since 2026-10-29) on made-up folders: the plan moves nothing
+// and says what would break (worktrees, links into the folder, processes inside it); applying needs
+// the confirmation, moves each folder whole with every byte and git history unchanged, names it in
+// sources.json and provenance, never overwrites, and refuses a folder that changed since the plan.
 
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, statSync, symlinkSync, writeFileSync, renameSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../interface/provenance.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const naive = (...a) => spawnSync("node", [join(repo, "interface/cli/naive.mjs"), ...a], { encoding: "utf8" });
+const git = (d, ...a) => spawnSync("git", ["-C", d, ...a], { encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } });
+// Every file under a folder with its bytes' hash and mode, .git included, so a move can be compared.
 const tree = (d, r = "") => readdirSync(join(d, r), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? tree(d, join(r, e.name))
-  : [`${join(r, e.name)} ${createHash("sha256").update(readFileSync(join(d, r, e.name))).digest("hex")} ${statSync(join(d, r, e.name)).mtimeMs}`]).sort();
+  : e.isSymbolicLink() ? [`${join(r, e.name)} link`] : [`${join(r, e.name)} ${createHash("sha256").update(readFileSync(join(d, r, e.name))).digest("hex")} ${statSync(join(d, r, e.name)).mode}`]).sort();
 
-const ws = mkdtempSync(join(tmpdir(), "port-test-"));
-const src = join(ws, "old-project");
-const files = {
-  "README.md": "# Old project\n",
-  "notes/problem-statement.md": "Clinics lose a day a week to scheduling.\n",
-  "notes/icp.md": "Solo physiotherapy clinics.\n",
-  "research/interview-ana.md": "Ana spends Mondays on the phone.\n",
-  "money/pricing.md": "$49 a month.\n",
-  "money/bank-statement-2026-09.csv": "date,amount\n",
-  "marketing/landing-copy.md": "Book in one tap.\n",
-  "Brand/brand-guide.md": "Teal and white.\n",
-  "docs/roadmap.md": "Q4: reminders.\n",
-  "legal/operating-agreement.md": "Members: one.\n",
-  "misc/random-thoughts.md": "Maybe a podcast.\n",
-  "app/package.json": "{}\n",
-  "app/index.js": "console.log(1)\n",
-  "scripts/deploy.sh": "echo deploy\n",
-};
-for (const [f, text] of Object.entries(files)) { mkdirSync(join(src, f, ".."), { recursive: true }); writeFileSync(join(src, f), text); }
-const before = tree(src);
+const ws = realpathSync(mkdtempSync(join(tmpdir(), "port-test-")));
+// A git repository with a worktree and uncommitted work, a plain folder, and a link into the repository.
+const app = join(ws, "code", "app");
+mkdirSync(join(app, "src"), { recursive: true });
+writeFileSync(join(app, "README.md"), "# App\n");
+writeFileSync(join(app, "src/index.js"), "console.log(1)\n");
+writeFileSync(join(app, ".env"), "NOT_A_REAL_KEY=1\n");
+git(app, "init", "-q", "-b", "main"); git(app, "add", "README.md", "src"); git(app, "commit", "-qm", "first");
+writeFileSync(join(app, "README.md"), "# App, edited\n");
+git(app, "worktree", "add", "-q", "-b", "side", join(ws, "worktrees", "app-side"));
+symlinkSync(join(app, "src"), join(ws, "code", "app-src"));
+const notes = join(ws, "notes");
+mkdirSync(join(notes, "research"), { recursive: true });
+writeFileSync(join(notes, "research/interview.md"), "Ana spends Mondays on the phone.\n");
+const before = { app: tree(app), notes: tree(notes), head: git(app, "rev-parse", "HEAD").stdout };
 
-const dir = join(ws, "ventures", "clinic");
+const dir = join(ws, "naive", "ventures", "clinic");
 const init = spawnSync("node", [join(repo, "schema/init-venture.mjs"), dir, "clinic"], { encoding: "utf8" });
 expect("a new venture is created to port into", init.status === 0, init.stderr);
 
-const p = naive("port", "--from", src, "--venture", dir);
-expect("port writes a plan", p.status === 0 && existsSync(join(dir, ".release/port-plan.json")), p.stderr);
-const planned = JSON.parse(readFileSync(join(dir, ".release/port-plan.json"), "utf8"));
+const p1 = naive("port", app, "--venture", dir, "--links", join(ws, "code"));
+const p2 = naive("port", notes, "--venture", dir);
+expect("port writes a plan", p1.status === 0 && p2.status === 0 && existsSync(ventureFile(dir, ".release/port-plan.json")), p1.stderr + p2.stderr);
+const planned = JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8"));
 const item = (f) => planned.items.find((i) => i.from === f);
-expect("writing the plan changes nothing in the venture's package directories", !existsSync(join(dir, "foundation/problem-statement.md")));
-expect("a problem statement goes to foundation/, kept as it is", item("notes/problem-statement.md")?.to === "foundation/problem-statement.md" && item("notes/problem-statement.md").confidence === "high");
-expect("an ICP goes to foundation/", item("notes/icp.md")?.to === "foundation/icp.md");
-expect("an interview goes to validation/", item("research/interview-ana.md")?.to === "validation/interview-ana.md");
-expect("pricing goes to finance/", item("money/pricing.md")?.to === "finance/pricing.md");
-expect("landing copy goes to marketing/", item("marketing/landing-copy.md")?.to === "marketing/landing-copy.md");
-expect("a roadmap goes to product/", item("docs/roadmap.md")?.to === "product/roadmap.md");
-expect("a legal document goes to _private/legal/", item("legal/operating-agreement.md")?.to === "_private/legal/operating-agreement.md");
-expect("bank data is left behind for the bank connection", item("money/bank-statement-2026-09.csv")?.action === "leave");
-expect("a nested code repository becomes a pointer, not files", item("app")?.action === "point" && !item("app/index.js"));
-expect("loose code is left behind", item("scripts/deploy.sh")?.action === "leave");
-expect("a file that matches nothing is left behind by name", item("misc/random-thoughts.md")?.action === "leave" && /migrate/.test(item("misc/random-thoughts.md").reason));
+expect("one run per folder adds to one plan", planned.items.length === 2 && item(app)?.action === "move" && item(notes)?.action === "move");
+expect("a folder goes to the venture's codebase/ under its own name", item(app).to === join(dir, "codebase", "app") && item(notes).to === join(dir, "codebase", "notes"));
+expect("writing the plan moves nothing", existsSync(app) && existsSync(notes) && !existsSync(join(dir, "codebase")));
+expect("the plan names the repository's worktree", item(app).git?.worktrees.some((w) => w.endsWith("app-side")) && /worktree repair/.test(item(app).warnings.join(" ")));
+expect("the plan says uncommitted work moves with it", /2 uncommitted changes/.test(item(app).warnings.join(" ")));
+expect("the plan names a link into the folder that would break", item(app).links.some((l) => l.link === join(ws, "code", "app-src")));
+expect("the plan opens no file: nothing of what is inside is in it", !/NOT_A_REAL_KEY|Mondays/.test(JSON.stringify(planned)));
+const again = naive("port", app, "--venture", dir);
+expect("planning a folder twice replaces its item", JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8")).items.length === 2, again.stderr);
+
+// A process working inside the folder refuses the apply.
+const sleeper = spawn("sleep", ["30"], { cwd: notes });
+await new Promise((r) => setTimeout(r, 300));
+const held = naive("port", "--venture", dir, "--apply", "--confirm", "port");
+sleeper.kill();
+await new Promise((r) => sleeper.on("exit", r));
+expect("a process inside a folder refuses the apply, and nothing moves", held.status !== 0 && /working inside/.test(held.stderr) && existsSync(app) && existsSync(notes), held.stderr);
 
 const unconfirmed = naive("port", "--venture", dir, "--apply");
-expect("applying needs the founder to type the confirmation", unconfirmed.status !== 0 && !existsSync(join(dir, "foundation/icp.md")));
+expect("applying needs the founder to type the confirmation", unconfirmed.status !== 0 && existsSync(app));
 
-// The founder changes one item before applying: the brand guide stays behind.
-planned.items.find((i) => i.from === "Brand/brand-guide.md").action = "leave";
-writeFileSync(join(dir, ".release/port-plan.json"), JSON.stringify(planned, null, 2));
 const a = naive("port", "--venture", dir, "--apply", "--confirm", "port");
 expect("the plan is carried out", a.status === 0, a.stderr);
-expect("ported files are byte for byte the originals", readFileSync(join(dir, "foundation/problem-statement.md"), "utf8") === files["notes/problem-statement.md"]);
-expect("an item the founder set to leave is not ported", !existsSync(join(dir, "marketing/brand-guide.md")));
+expect("each folder is gone from where it was", !existsSync(app) && !existsSync(notes));
+expect("every file arrives byte for byte, .git and uncommitted work included", JSON.stringify(tree(join(dir, "codebase/app"))) === JSON.stringify(before.app) && JSON.stringify(tree(join(dir, "codebase/notes"))) === JSON.stringify(before.notes));
+expect("the repository's history is unchanged", git(join(dir, "codebase/app"), "rev-parse", "HEAD").stdout === before.head);
+const sources = JSON.parse(readFileSync(ventureFile(dir, "knowledge/sources.json"), "utf8"));
+expect("each folder is a read-only filesystem source, by its path in the venture", ["app", "notes"].every((id) => sources.sources.some((s) => s.id === id && s.connector === "filesystem" && s.writes === "none" && s.root === `codebase/${id}` && /source of truth/.test(s.note))));
 const log = entries(dir).filter((e) => e.activity === "port");
-expect("every port is in provenance with the file it came from", log.some((e) => e.entity === "foundation/icp.md" && e.derived_from?.[0] === `file://${join(src, "notes/icp.md")}`));
-const sources = JSON.parse(readFileSync(join(dir, "knowledge/sources.json"), "utf8"));
-expect("the repository is a read-only filesystem source", sources.sources.some((s) => s.id === "app" && s.connector === "filesystem" && s.writes === "none" && s.root === join(src, "app")));
-const chk = spawnSync("node", [join(repo, "schema/check-sources.mjs"), join(ws)], { encoding: "utf8" });
+expect("every move is in provenance with the path it came from", log.some((e) => e.entity === "codebase/app" && e.derived_from?.[0] === `file://${app}`) && log.some((e) => e.entity === "codebase/notes"));
+expect("apply says how to repair the worktree", /worktree repair/.test(a.stdout));
+const tr = JSON.parse(readFileSync(ventureFile(dir, ".release/port-trace.json"), "utf8"));
+expect("the run leaves a trace with a child per folder", tr.name === "naive port apply" && tr.children.length === 2 && !/NOT_A_REAL_KEY/.test(JSON.stringify(tr)));
+const chk = spawnSync("node", [join(repo, "schema/check-sources.mjs"), dir], { encoding: "utf8" });
 expect("the source map it writes passes the sources check", chk.status === 0, chk.stdout + chk.stderr);
-expect("the project is never written to", JSON.stringify(tree(src)) === JSON.stringify(before));
 
-const again = naive("port", "--venture", dir, "--apply", "--confirm", "port");
-expect("applying twice refuses to overwrite", again.status !== 0 && /never overwrites/.test(again.stderr));
-const replan = JSON.parse(naive("port", "--from", src, "--venture", dir).status === 0 ? readFileSync(join(dir, ".release/port-plan.json"), "utf8") : "{}");
-expect("a fresh plan leaves behind what the venture already has", replan.items?.find((i) => i.from === "notes/icp.md")?.action === "leave");
+const twice = naive("port", "--venture", dir, "--apply", "--confirm", "port");
+expect("applying twice moves nothing more", twice.status === 0 && /moved 0 folders/.test(twice.stdout), twice.stderr);
 
-writeFileSync(join(src, "notes/problem-statement.md"), "Changed.\n");
-const stale = JSON.parse(readFileSync(join(dir, ".release/port-plan.json"), "utf8"));
-stale.items.find((i) => i.from === "Brand/brand-guide.md").action = "port";
-writeFileSync(join(dir, ".release/port-plan.json"), JSON.stringify(stale));
-writeFileSync(join(src, "Brand/brand-guide.md"), "Changed too.\n");
-const s = naive("port", "--venture", dir, "--apply", "--confirm", "port");
-expect("a plan whose source changed is refused", s.status !== 0 && /changed since the plan/.test(s.stderr));
+// A folder whose destination already exists stays where it is.
+const other = join(ws, "other", "notes");
+mkdirSync(other, { recursive: true });
+const clash = naive("port", other, "--venture", dir);
+const cp = JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8")).items.find((i) => i.from === other);
+expect("a port never overwrites: the item is left, with the reason", clash.status === 0 && cp?.action === "leave" && /never overwrites/.test(cp.reason));
 
-const inside = spawnSync("node", [join(repo, "schema/init-venture.mjs"), join(src, "v"), "v"], { encoding: "utf8" });
-const ins = naive("port", "--from", src, "--venture", join(src, "v"));
-expect("a venture inside the project it ports from is refused", inside.status === 0 && ins.status !== 0);
+// A folder replaced by another of the same name after the plan is refused.
+const swap = join(ws, "swap");
+mkdirSync(swap);
+naive("port", swap, "--venture", dir);
+renameSync(swap, join(ws, "swap-old")); mkdirSync(swap);
+const stale = naive("port", "--venture", dir, "--apply", "--confirm", "port");
+expect("a folder that is not the one planned is refused", stale.status !== 0 && /not the folder the plan was written for/.test(stale.stderr) && existsSync(swap));
+
+const insideV = join(ws, "host");
+const inner = spawnSync("node", [join(repo, "schema/init-venture.mjs"), join(insideV, "v"), "v"], { encoding: "utf8" });
+const ins = naive("port", insideV, "--venture", join(insideV, "v"));
+expect("a venture inside the folder it ports is refused", inner.status === 0 && ins.status !== 0);
 
 const up = naive("upgrade");
 expect("naive upgrade runs the layout upgrade (and asks for a venture)", up.status === 2 && /upgrade-venture/.test(up.stderr));

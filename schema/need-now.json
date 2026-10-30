@@ -451,6 +451,46 @@
       },
       "why": "Who you serve is a foundation statement: say it early and keep it in front of you (EE-051)"
     },
+    "goal": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.85,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Goals are the canonical end and measures every framework writes to; state them early"
+    },
+    "exit-criteria": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.85,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "The lifecycle gate reads them: say what must be true to leave this phase"
+    },
+    "requirement": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Requirements derive from goals once there is something to build against"
+    },
+    "constraints": {
+      "base": {
+        "discovery": 0.4,
+        "validation": 0.6,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "What the venture must not do holds whatever framework it thinks in"
+    },
     "alignment": {
       "base": {
         "discovery": 0.6,
@@ -476,6 +516,16 @@
         }
       ],
       "why": "Only when one product has parts that need their own roles, as Naive and Mentura do; follows the anatomy answers prior"
+    },
+    "decision-impact": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "Written when a decided version is merged; worth reading once records in several functions depend on one another"
     },
     "decision-record": {
       "base": {
@@ -748,6 +798,16 @@
       },
       "why": "One brand every agent and interface reads (colors, licensed typefaces, voice rules, marks), once the venture shows itself in public"
     },
+    "marketing-design-system": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "One brand every agent and interface reads (colors, licensed typefaces, voice rules, marks), once the venture shows itself in public"
+    },
     "public-assets": {
       "base": {
         "discovery": 0.2,
@@ -767,6 +827,16 @@
         "platform": 0.7
       },
       "why": "A package's own terms, once two packages start using one word in different senses"
+    },
+    "artifact": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "A view built from records for a reader; needed once something goes out to people, which grows with each phase"
     }
   }
 }

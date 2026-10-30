@@ -13,6 +13,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { blobSha, isText, matches, safePath } from "./contract.mjs";
+import { layoutOf, logicalFiles, ventureFile } from "../../schema/venture-paths.mjs";
 
 const SKIP = new Set(["node_modules"]);
 
@@ -29,7 +30,11 @@ export function connect({ id = "venture", root, writes = "direct", venture = fal
     }
     return e.isFile() ? [r] : [];
   });
-  const file = (p) => join(root, safePath(p));
+  // A venture in the structured layout (EE-086) keeps its records in knowledge/ and meta/: read and write them
+  // by their logical paths, and list them that way, so routes never see the layout.
+  const structured = venture && layoutOf(root) === "structured";
+  const file = (p) => (structured ? ventureFile(root, safePath(p)) : join(root, safePath(p)));
+  const listed = () => structured ? logicalFiles(root).filter((r) => !r.split("/").some((s) => s.startsWith(".")) && !r.startsWith("_") && !r.startsWith("node_modules/")) : walk(root);
   const git = (...args) => spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });
   const lastCommit = (p, content) => {
     const tracked = git("ls-files", "-s", "--", p);
@@ -42,8 +47,8 @@ export function connect({ id = "venture", root, writes = "direct", venture = fal
     id, kind: "filesystem", writes, root,
     async list(prefix = "") {
       const pre = prefix ? safePath(prefix) : "";
-      return walk(root).filter((p) => !pre || p === pre || p.startsWith(`${pre}/`)).sort()
-        .map((path) => ({ path, version: blobSha(readFileSync(join(root, path))) }));
+      return listed().filter((p) => !pre || p === pre || p.startsWith(`${pre}/`)).sort()
+        .map((path) => ({ path, version: blobSha(readFileSync(file(path))) }));
     },
     async read(p) {
       const f = file(p);
@@ -58,9 +63,9 @@ export function connect({ id = "venture", root, writes = "direct", venture = fal
     },
     async search(query, { limit = 50 } = {}) {
       const out = [];
-      for (const path of walk(root).sort()) {
+      for (const path of listed().sort()) {
         if (out.length >= limit) break;
-        const content = readFileSync(join(root, path), "utf8");
+        const content = readFileSync(file(path), "utf8");
         if (isText(path, content) && matches(`${path}\n${content}`, query)) out.push({ path, version: blobSha(content) });
       }
       return out;

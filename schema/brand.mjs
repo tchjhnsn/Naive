@@ -31,22 +31,26 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allowsCopy, factsOf, registerOf, REGISTER } from "./assets.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 export const BRAND = "marketing/brand.json";
 export const SITEMAPS = ["marketing/sitemap.json", "operations/marketing/sitemap.json"];
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-export const brandOf = (dir) => dir && existsSync(join(dir, BRAND)) ? load(join(dir, BRAND)) : null;
+export const brandOf = (dir) => dir && existsSync(ventureFile(dir, BRAND)) ? load(ventureFile(dir, BRAND)) : null;
 
 // ---------------------------------------------------------------------------------------------
 // Router hooks. interface/router.mjs spreads these into its tables; this module never imports the router.
 
 /** Where the new record types route (package folder layout, EE-070). */
-export const BRAND_ROUTES = { "marketing-brand": "marketing/brand", "public-assets": "public/assets", glossary: "glossary" };
+export const BRAND_ROUTES = { "marketing-brand": "marketing/brand", "marketing-design-system": "marketing/design-system", "public-assets": "public/assets", glossary: "glossary" };
 
 /** The command routes this module adds, built with the router's own cmd(). */
 export const brandCommands = (cmd) => [
   cmd("marketing/brand/tokens", "schema/brand.mjs", "The venture's brand tokens (Y-3): colors and typefaces as W3C design tokens, the CSS custom properties and @font-face rules an interface loads, each scope as its own selector, and the head links for the venture's marks (P-24)", { args: ["tokens"] }),
   cmd("marketing/brand/resolve", "schema/brand.mjs", "The brand at one route (Y-5, T-2): the venture brand with every scope that covers the route applied, nearer last, and which scope set each value; input value is the route", { value_flag: "--for" }),
+  cmd("marketing/design-system/inputs", "schema/design-system.mjs", "What the design system inherits from other functions, by key: the mission, the problem and segment, each ICP profile, the alignment principles, each product's market and each founder. A design choice's from names these keys", { args: ["inputs"] }),
+  cmd("marketing/design-system/check", "schema/design-system.mjs", "Every design choice rests on inputs that still exist: a retired ICP or a new mission names the brand choices to revisit", { args: ["check"] }),
+  cmd("marketing/brand-lint", "schema/brand-lint.mjs", "Brand alignment lint: decision records and marketing content against the design system (avoid words, jargon, unknown audiences, unsourced choices); fail-open unless naive.config.json brand_lint.rules.<id>.mode is fail-closed", { args: [] }),
   cmd("marketing/voice", "schema/brand.mjs", "Marketing content held to the voice rules, the global stylesheet for words (Y-3): each phrase to avoid, where it is and what to use instead; and terms another package keeps local (Y-2)", { args: ["voice"] }),
   cmd("glossary/terms", "schema/brand.mjs", "The terms one package sees (Y-2): its own glossary and the terms other packages export; their local terms stay with them. Input value is the package", { value_flag: "--package" }),
   cmd("marketing/sitemap/xml", "schema/brand.mjs", "sitemap.xml rendered from the marketing sitemap record (P-26), for a release; input value is the site's base URL", { value_flag: "--base" }),
@@ -110,7 +114,7 @@ const url = (path) => `/${path.replace(/^public\//, "")}`;
 /** The marks as head links: the file-based icons Next.js turns into <link> tags. */
 export function headLinks(dir, brand) {
   const reg = registerOf(dir);
-  const factsFor = (p) => reg?.assets?.find((a) => a.path === p)?.facts ?? (existsSync(join(dir, p)) ? factsOf(readFileSync(join(dir, p))) : null);
+  const factsFor = (p) => reg?.assets?.find((a) => a.path === p)?.facts ?? (existsSync(ventureFile(dir, p)) ? factsOf(readFileSync(ventureFile(dir, p))) : null);
   const out = [];
   for (const m of brand.marks ?? []) {
     if (m.kind === "logo") continue;
@@ -217,7 +221,7 @@ export function voiceCheck(text, rules) {
 /** The venture's marketing content files, venture-relative. */
 export function contentFiles(dir) {
   const walk = (d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : /\.(mdx?|txt)$/.test(e.name) ? [join(d, e.name)] : []) : [];
-  return ["marketing/content", "operations/marketing/content"].flatMap((p) => walk(join(dir, p))).map((f) => f.slice(dir.length + 1)).sort();
+  return ["marketing/content", "operations/marketing/content"].flatMap((p) => walk(ventureFile(dir, p))).map((f) => f.slice(dir.length + 1)).sort();
 }
 
 /** Every marketing content file held to the voice rules in force at its path, and to other packages' local terms (warnings). */
@@ -225,7 +229,7 @@ export function voice(dir, brand = brandOf(dir)) {
   const violations = [], leaks = [];
   const local = [...glossaries(dir)].filter(([p]) => p !== "marketing").flatMap(([p, g]) => (g.terms ?? []).filter((t) => !t.export).map((t) => ({ ...t, from: p })));
   for (const f of contentFiles(dir)) {
-    const text = readFileSync(join(dir, f), "utf8");
+    const text = readFileSync(ventureFile(dir, f), "utf8");
     const route = f.replace(/^operations\//, "").replace(/\.(mdx?|txt)$/, "");
     if (brand) for (const v of voiceCheck(text, resolveBrand(brand, route).voice.rules)) violations.push({ file: f, ...v });
     for (const t of local) for (const v of voiceCheck(text, [{ id: t.term, avoid: t.term }])) leaks.push({ file: f, line: v.line, term: t.term, local_to: t.from });
@@ -258,11 +262,11 @@ export function checkBrand(dir) {
       if (!(t.files ?? []).length) errors.push(`typeface ${t.id}: self-hosted but names no files in public/ (T-1)`);
       for (const f of t.files ?? []) {
         if (!f.startsWith("public/")) { errors.push(`typeface ${t.id}: ${f} is not in public/ (T-1)`); continue; }
-        if (!existsSync(join(dir, f))) { errors.push(`typeface ${t.id}: ${f} is not there (T-1)`); continue; }
+        if (!existsSync(ventureFile(dir, f))) { errors.push(`typeface ${t.id}: ${f} is not there (T-1)`); continue; }
         const a = asset(f);
         if (!a) errors.push(`typeface ${t.id}: ${f} has no entry in ${REGISTER} (T-1, J-2)`);
         else if (String(a.license).toLowerCase() !== String(t.license).toLowerCase()) errors.push(`typeface ${t.id}: licensed ${t.license}, but ${REGISTER} says ${f} is ${a.license} (T-1)`);
-        const type = factsOf(readFileSync(join(dir, f))).type;
+        const type = factsOf(readFileSync(ventureFile(dir, f))).type;
         if (!["woff2", "woff", "ttf", "otf"].includes(type)) errors.push(`typeface ${t.id}: ${f} is ${type}, not a font file (T-1)`);
       }
     }
@@ -281,9 +285,9 @@ export function checkBrand(dir) {
   // Marks (P-24): registered assets of the right type and size.
   const KINDS = { favicon: ["ico"], icon: ["png", "svg", "ico"], "apple-icon": ["png"], logo: ["png", "svg", "jpeg", "webp"] };
   for (const m of brand.marks ?? []) {
-    if (!existsSync(join(dir, m.asset))) { errors.push(`mark ${m.kind}: ${m.asset} is not there (P-24)`); continue; }
+    if (!existsSync(ventureFile(dir, m.asset))) { errors.push(`mark ${m.kind}: ${m.asset} is not there (P-24)`); continue; }
     if (!asset(m.asset)) errors.push(`mark ${m.kind}: ${m.asset} has no entry in ${REGISTER}, so its source and license are unknown (P-24, J-2)`);
-    const f = factsOf(readFileSync(join(dir, m.asset)));
+    const f = factsOf(readFileSync(ventureFile(dir, m.asset)));
     if (!KINDS[m.kind].includes(f.type)) errors.push(`mark ${m.kind}: ${m.asset} is ${f.type}; a ${m.kind} is ${KINDS[m.kind].join(" or ")} (P-24)`);
     if (m.kind === "apple-icon" && f.type === "png" && (f.width !== 180 || f.height !== 180)) errors.push(`mark apple-icon: ${m.asset} is ${f.width}x${f.height}; an apple-icon is 180x180 (P-24)`);
     if (m.kind === "icon" && f.width && f.width !== f.height) errors.push(`mark icon: ${m.asset} is ${f.width}x${f.height}; an icon is square (P-24)`);
@@ -311,8 +315,8 @@ export function checkBrand(dir) {
 const xmlEscape = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
 export function sitemapOf(dir) {
-  const f = SITEMAPS.find((p) => existsSync(join(dir, p)));
-  return f ? { file: f, record: load(join(dir, f)) } : null;
+  const f = SITEMAPS.find((p) => existsSync(ventureFile(dir, p)));
+  return f ? { file: f, record: load(ventureFile(dir, f)) } : null;
 }
 
 /** sitemaps.org XML from a marketing sitemap record: one <url> per planned page, home first. */

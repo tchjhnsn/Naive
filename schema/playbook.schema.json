@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "playbook.schema.json",
+  "title": "Playbook",
+  "description": "A step-by-step guide a venture function runs, in conversation with the founder (a template is the empty shape of one record; a playbook is the order of the work). Each step says what the agent is trying to learn, how to hold the conversation, which records it writes and when the step is done. An agent proposes; the founder confirms what is written.",
+  "type": "object",
+  "required": ["id", "title", "purpose", "when", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "title": { "type": "string" },
+    "purpose": { "type": "string", "description": "What the founder has at the end" },
+    "when": { "type": "string", "description": "When an agent should offer this playbook" },
+    "function": { "type": "string", "description": "The venture function that owns it" },
+    "phase": { "type": "string", "enum": ["discovery", "validation", "beachhead", "scale", "platform"] },
+    "sources": { "type": "array", "items": { "type": "string" }, "description": "Ideas the playbook is built on" },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "goal", "conversation", "done_when"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string" },
+          "goal": { "type": "string", "description": "What the agent is trying to learn or settle" },
+          "conversation": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "How to hold the conversation: questions, moves, what to avoid" },
+          "writes": { "type": "array", "items": { "type": "object", "required": ["route"], "additionalProperties": false, "properties": { "route": { "type": "string" }, "as": { "type": "string", "enum": ["draft", "proposal", "evidence", "decision"] }, "note": { "type": "string" } } } },
+          "done_when": { "type": "string" },
+          "artifact": { "type": "string", "description": "The view to build for the founder at this step, per the choosing-artifacts skill" }
+        }
+      }
+    }
+  }
+}

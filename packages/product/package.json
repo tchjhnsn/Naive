@@ -44,6 +44,9 @@
   "checks": [
     "schema/check-ventures.mjs"
   ],
-  "skill": null,
+  "skill": {
+    "id": "product-function",
+    "path": "packages/product/skill/SKILL.md"
+  },
   "use_model": []
 }

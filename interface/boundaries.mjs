@@ -18,6 +18,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -45,7 +46,7 @@ const VENTURE_SCHEMA = () => load(join(repo, "schema/venture.schema.json"));
 export function minimalVenture(dir) {
   const id = basename(dir).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "venture";
   return { id, name: id, parent: null, phase: "discovery", owner: "self", status: "active", profile: "profile.md",
-    layers: Object.fromEntries(["purpose", "knowledge", "operations", "evidence", "governance", "interface"].map((l) => [l, existsSync(join(dir, l)) ? { location: `${l}/` } : false])) };
+    layers: Object.fromEntries(["purpose", "knowledge", "operations", "evidence", "governance", "interface"].map((l) => [l, existsSync(ventureFile(dir, l)) ? { location: `${l}/` } : false])) };
 }
 
 /**
@@ -154,7 +155,7 @@ export async function boundaries(dir, { only = null } = {}) {
         const pats = r.files;
         const hits = files(dir).filter((f) => pats.some((g) => glob(g).test(f) && routable(f, g)));
         for (const f of hits) {
-          const problem = f.endsWith(".json") ? jsonProblem(join(dir, f)) ?? (r.schema ? validateFile(join(dir, f), r.schema) : null) : null;
+          const problem = f.endsWith(".json") ? jsonProblem(ventureFile(dir, f)) ?? (r.schema ? validateFile(ventureFile(dir, f), r.schema) : null) : null;
           records.push({ record: t, route: r.collection === "item" ? r.route.replace("[id]", starOf(f, pats) ?? basename(f)) : r.route, file: f, ok: !problem,
             ...(problem ? { error: problem, fix: { schema: r.schema, template: r.template, skills: pkg.skill?.path ? [pkg.skill.path] : [] } } : {}) });
         }
@@ -191,9 +192,9 @@ export function recover(dir) {
   const h = ventureHealth(dir);
   if (!h) return { ok: true, result: "venture.json is sound: nothing to recover" };
   const kept = join("_private", `venture.json.broken-${new Date().toISOString().replace(/[:.]/g, "-")}`);
-  if (existsSync(join(dir, "venture.json"))) { mkdirSync(join(dir, "_private"), { recursive: true }); renameSync(join(dir, "venture.json"), join(dir, kept)); }
+  if (existsSync(join(dir, "venture.json"))) { mkdirSync(join(ventureFile(dir, "_private")), { recursive: true }); renameSync(join(dir, "venture.json"), ventureFile(dir, kept)); }
   writeFileSync(join(dir, "venture.json"), JSON.stringify(minimalVenture(dir), null, 2) + "\n");
-  return { ok: true, result: { written: "venture.json", kept: existsSync(join(dir, kept)) ? kept : null, note: "a minimal venture.json: copy back what you need from the kept file, then check it" } };
+  return { ok: true, result: { written: "venture.json", kept: existsSync(ventureFile(dir, kept)) ? kept : null, note: "a minimal venture.json: copy back what you need from the kept file, then check it" } };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

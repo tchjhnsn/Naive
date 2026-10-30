@@ -17,11 +17,18 @@
 //   naive typegen                                   write .naive/types/ from the route table and the MCP tools
 //   naive upgrade [<venture dir>] [--framework]     move a venture onto the next Naive layout; --framework first
 //                                                   updates the installed framework with the venture's package manager (I-29)
-//   naive port --from <project> --venture <dir>     plan bringing a project in with its files as they are
+//   naive phase [<next phase>] [--meet <criterion> --evidence <text>] [--reason] [--override <why>]
+//                                                   the venture development lifecycle: where the venture is, its gate's exit
+//                                                   criteria, and moving to the next phase once a person has met them
+//   naive port <folder> --venture <dir> [--to <path>]  plan moving a folder into the venture as it is (codebase/<name>)
 //   naive port --venture <dir> --apply --confirm port
 //                                                   carry out that plan (EE-076)
 //   naive migrate --from <project> --venture <dir>  an agent rewrites the project as Naive records, as a plan and decisions
 //   naive migrate --venture <dir> --apply           write what a person decided (EE-076)
+//   naive capture "<text>"                          keep the text in the workspace's raw/, and file each chunk in the
+//                                                   venture it fits, or in the workspace inbox when unsure
+//   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
+//   naive read <venture> <path>                     read another venture's published artifact, if the workspace allows
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -30,6 +37,9 @@ import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:
 import { createServer } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
+import { logical } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../schema/venture-paths.mjs";
+import { checkWorkspace, findWorkspace } from "../../schema/workspace.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -83,15 +93,18 @@ async function dev(dir) {
   console.log(`\n  ▲ Naive ${version()}\n  - Venture:  ${name} (${relative(process.cwd(), dir) || "."})\n  - Setup:    http://127.0.0.1:${port}/setup\n  - Board:    http://127.0.0.1:${port}/\n  - Map:      http://127.0.0.1:${port}/map\n\n  Watching for changes. Each saved record is checked against its schema. Ctrl-C to stop.\n`);
   // Live feedback on save (I-24): a record that no longer matches its schema says so at once.
   const pending = new Map();
-  watch(dir, { recursive: true }, (_, f) => {
-    if (!f || !f.endsWith(".json") || f.startsWith("node_modules") || f.startsWith(".naive") || f.startsWith("_private")) return;
+  watch(dir, { recursive: true }, (_, raw) => {
+    if (!raw || !raw.endsWith(".json") || raw.startsWith("node_modules") || raw.startsWith(".naive")) return;
+    // The record's logical path (schema/venture-paths.mjs): knowledge/foundation/icp.json is foundation/icp.json.
+    const physicalPath = raw, f = logical(dir, raw);
+    if (f.startsWith("_private")) return;
     clearTimeout(pending.get(f));
     pending.set(f, setTimeout(async () => {
       pending.delete(f);
-      if (!existsSync(join(dir, f))) return;
+      if (!existsSync(ventureFile(dir, physicalPath))) return;
       const schema = await schemaFor(f);
       if (!schema) return;
-      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema.replace(/^schema\//, ""), "--file", join(dir, f)], { encoding: "utf8" });
+      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema.replace(/^schema\//, ""), "--file", ventureFile(dir, physicalPath)], { encoding: "utf8" });
       const out = (v.stdout + v.stderr).trim();
       if (v.status === 0) console.log(`  ✓ ${f}`);
       else if (/needs jsonschema/.test(out)) console.log(`  - ${f} changed (install python3's jsonschema package to check it as you save)`);
@@ -111,6 +124,9 @@ function check(dir) {
     console.log(`${r.status === 0 ? "pass" : "FAIL"}  ${c.replace("check-", "")}: ${last}`);
     if (r.status !== 0) console.log((r.stdout + r.stderr).trim().split("\n").slice(0, 12).map((l) => `      ${l}`).join("\n"));
   }
+  // The workspace the venture sits in: its naive-workspace.json matches the schema.
+  const ws = findWorkspace(dir);
+  if (ws) { const e = checkWorkspace(ws); if (e) failed++; console.log(`${e ? "FAIL" : "pass"}  workspace: ${e ? e.split("\n")[0] : "naive-workspace.json matches its schema"}`); }
   console.log(failed ? `\n${failed} failing` : "\nall passing");
   return failed ? 1 : 0;
 }
@@ -129,7 +145,7 @@ function info(dir) {
     `Platform     ${process.platform} ${process.arch}`,
     `python3      ${spawnSync("python3", ["-c", "import jsonschema; print('jsonschema ' + __import__('importlib.metadata').metadata.version('jsonschema'))"], { encoding: "utf8" }).stdout.trim() || "jsonschema missing (needed by schema checks)"}`,
     `Venture      ${v ? `${v.name ?? v.id} (${v.phase}) at ${dir}` : "none here"}`,
-    "Agents       " + agents.map(([name, f, ok]) => `${name}: ${dir && ok(read(join(dir, f))) ? "connected" : "not connected"}`).join(", "),
+    "Agents       " + agents.map(([name, f, ok]) => `${name}: ${dir && ok(read(ventureFile(dir, f))) ? "connected" : "not connected"}`).join(", "),
   ];
   console.log(lines.join("\n"));
 }
@@ -173,6 +189,12 @@ else if (cmd === "build" || cmd === "start") {
   if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("schema/frames.mjs", rest));
   const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
   process.exit(run("schema/frames.mjs", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
+} else if (cmd === "phase") {
+  // The venture development lifecycle (schema/lifecycle.mjs): where the venture is, its gate, and moving on.
+  // naive phase | naive phase --meet <criterion> [--evidence <text>] | naive phase <next> [--reason] [--override]
+  const target = rest.find((a, i) => !a.startsWith("--") && !["--venture", "--meet", "--evidence", "--reason", "--override", "--by"].includes(rest[i - 1]));
+  const pass = ["evidence", "reason", "override", "by"].flatMap((k) => opt(k) !== undefined ? [`--${k}`, opt(k)] : []);
+  process.exit(run("schema/lifecycle.mjs", [here(), ...(opt("meet") ? ["meet", opt("meet")] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
@@ -180,6 +202,15 @@ else if (cmd === "build" || cmd === "start") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
   process.exit(run(`schema/${cmd}-venture.mjs`, args));
+} else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
+  // The workspace (schema/workspace.mjs): the one above the venture this runs in, else above this folder.
+  const venture = opt("venture") ? here() : findVenture();
+  const ws = findWorkspace(venture ?? process.cwd());
+  if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  // naive read names the venture this session is in as the one reading.
+  const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
+  process.exit(run("schema/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");

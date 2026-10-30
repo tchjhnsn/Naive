@@ -5,6 +5,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "create-venture-test-"));
@@ -31,9 +32,26 @@ t("--yes creates a venture with the recommended defaults, installs the framework
   ok(/Success! Created kettle/.test(r.stdout), r.stdout);
   const venture = load(join(v, "venture.json"));
   ok(venture.phase === "discovery" && venture.id === "kettle");
-  ok(existsSync(join(v, "AGENTS.md")) && existsSync(join(v, "foundation")) && existsSync(join(v, "decisions")));
+  ok(existsSync(join(v, "AGENTS.md")) && existsSync(ventureFile(v, "foundation")) && existsSync(ventureFile(v, "decisions")));
+  ok(venture.layout === "structured" && existsSync(join(v, "k-base/foundation")) && existsSync(join(v, "meta/provenance.jsonl")), "the structured layout: k-base/ and meta/");
   ok(existsSync(join(v, "node_modules/.bin/naive")), "naive is installed in the venture");
   ok(existsSync(join(v, ".git")), "a git repository");
+});
+
+t("the first venture is My first venture, in a workspace named Naive workspace; both can be named", () => {
+  // Its own folder, outside base: base became a workspace when the first test created kettle in it.
+  const ws = mkdtempSync(join(tmpdir(), "create-venture-ws-"));
+  const r = create(["--yes", "--skip-install", "--no-git"], ws);
+  ok(r.status === 0, r.stderr + r.stdout);
+  const venture = load(join(ws, "my-first-venture/venture.json"));
+  ok(venture.name === "My first venture" && venture.id === "my-first-venture", JSON.stringify(venture.name));
+  const w = load(join(ws, "naive-workspace.json"));
+  ok(w.name === "Naive workspace" && w.ventures.join() === "my-first-venture", JSON.stringify(w));
+  ok(existsSync(join(ws, "AGENTS.md")), "the workspace has its own AGENTS.md");
+  ok(create(["--yes", "--skip-install", "--no-git", "--venture-name", "Acme Labs"], ws).status === 0);
+  ok(load(join(ws, "acme-labs/venture.json")).name === "Acme Labs");
+  ok(load(join(ws, "naive-workspace.json")).ventures.join() === "my-first-venture,acme-labs", "a second venture joins the same workspace");
+  rmSync(ws, { recursive: true, force: true });
 });
 
 t("the venture's package.json has the four scripts and the framework", () => {
@@ -43,14 +61,14 @@ t("the venture's package.json has the four scripts and the framework", () => {
 });
 
 t("the idea dump is saved verbatim as raw/dump.md and recorded in provenance", () => {
-  ok(readFileSync(join(v, "raw/dump.md"), "utf8").includes("Kettles for cafes."));
-  ok(readFileSync(join(v, "provenance.jsonl"), "utf8").includes('"raw/dump.md"'));
+  ok(readFileSync(ventureFile(v, "raw/dump.md"), "utf8").includes("Kettles for cafes."));
+  ok(readFileSync(ventureFile(v, "provenance.jsonl"), "utf8").includes('"raw/dump.md"'));
 });
 
 t("every record file is mapped to its JSON Schema for the editor", () => {
   const s = load(join(v, ".vscode/settings.json"))["json.schemas"];
-  const icp = s.find((x) => x.fileMatch.includes("/foundation/icp.json"));
-  ok(icp?.url === "./node_modules/naive-framework/schema/icp.schema.json", JSON.stringify(icp));
+  const icp = s.find((x) => x.fileMatch.includes("/k-base/foundation/icp/*.json"));
+  ok(icp?.url === "./node_modules/naive-framework/schema/icp-profile.schema.json", JSON.stringify(icp));
   ok(existsSync(join(v, icp.url)), "the schema it points to is installed");
 });
 
@@ -101,7 +119,19 @@ t("the answers are kept for the next venture, and --reset-preferences forgets th
   ok(create(["--reset-preferences"]).status === 0 && !existsSync(join(home, ".config/naive/create-venture.json")));
 });
 
-const prompts = (args, lines, extra = {}) => spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), ...args, "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
+const prompts = (args, lines, extra = {}) => spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), ...args, "--layout", "flat", "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
+
+t("structured layout: the org chart in venture.json names each function's owner, and people/ stores no hats", () => {
+  ok(create(["duo", "--type", "software-startup", "--name", "Ana Ruiz", "--team", "Ben Okafor", "--yes", "--skip-install", "--no-git"]).status === 0);
+  const v2 = load(join(base, "duo/venture.json"));
+  ok(v2.layout === "structured" && Object.values(v2.functions).every((f) => f.owner === "ana-ruiz"), JSON.stringify(v2.functions));
+  const roster = load(join(base, "duo/k-base/people/people.json"));
+  ok(roster.people.every((p) => !("hats" in p)), JSON.stringify(roster));
+  const top = readdirSync(join(base, "duo")).filter((f) => !f.startsWith(".")).sort().join(" ");
+  ok(top === "AGENTS.md README.md k-base meta package.json venture.json", top);
+  const r = spawnSync("node", [join(repo, "schema/check-people.mjs"), join(base, "duo")], { encoding: "utf8" });
+  ok(r.status === 0, r.stdout);
+});
 
 t("the setup questions: nothing is scaffolded until the type and role are set; customize asks layers, legal form and a dump", () => {
   // name, what (Enter: the list), type 1 (software startup), role, your name, solo, phase,
@@ -114,10 +144,10 @@ t("the setup questions: nothing is scaffolded until the type and role are set; c
   const c = load(join(base, "clinic/venture.json"));
   ok(c.type === "software-startup" && c.phase === "validation" && c.form?.legal_form === "llc", JSON.stringify(c));
   ok(c.layers.purpose && c.layers.knowledge && c.layers.operations === false, JSON.stringify(c.layers));
-  ok(existsSync(join(base, "clinic/raw/dump.md")));
-  const people = load(join(base, "clinic/people/people.json"));
+  ok(existsSync(ventureFile(join(base, "clinic"), "raw/dump.md")));
+  const people = load(ventureFile(join(base, "clinic"), "people/people.json"));
   ok(people.mode === "solo" && people.people[0].role === "founder" && people.people[0].hats.length === c.departments.length, JSON.stringify(people));
-  const fns = load(join(base, "clinic/knowledge/sources.json")).functions;
+  const fns = load(ventureFile(join(base, "clinic"), "knowledge/sources.json")).functions;
   ok(fns.products.systems.map((s) => s.system).join() === "local-repo,github" && fns.products.systems[1].address === "pat/clinic", JSON.stringify(fns.products));
   ok(fns.finance.systems[0].system === "stripe" && fns.finance.systems[0].status === "pointed" && !fns["customer-service"], JSON.stringify(fns));
   ok(fns.legal.systems.length === 0 && /our lawyer/.test(fns.legal.note), "a function answered in prose keeps the founder's words");
@@ -130,11 +160,11 @@ t("a VC fund with a team: an investor role, one file per founder, each function 
   ok(r.status === 0, r.stdout + r.stderr);
   const v = load(join(base, "northstar/venture.json"));
   ok(v.type === "vc-fund" && v.layers.purpose, JSON.stringify(v));
-  ok(existsSync(join(base, "northstar/fund/decisions/thesis.decision.json")) && existsSync(join(base, "northstar/deals")) && existsSync(join(base, "northstar/portfolio")), "a fund starts with its thesis question, deals and a portfolio");
-  ok(!existsSync(join(base, "northstar/products/decisions")) && !existsSync(join(base, "northstar/marketing")), "a fund has no product questions and no marketing package");
-  const people = load(join(base, "northstar/people/people.json"));
+  ok(existsSync(ventureFile(join(base, "northstar"), "fund/decisions/thesis.decision.json")) && existsSync(ventureFile(join(base, "northstar"), "deals")) && existsSync(ventureFile(join(base, "northstar"), "portfolio")), "a fund starts with its thesis question, deals and a portfolio");
+  ok(!existsSync(ventureFile(join(base, "northstar"), "products/decisions")) && !existsSync(ventureFile(join(base, "northstar"), "marketing")), "a fund has no product questions and no marketing package");
+  const people = load(ventureFile(join(base, "northstar"), "people/people.json"));
   ok(people.mode === "team" && people.people.every((p) => p.role === "general-partner"), JSON.stringify(people));
-  ok(JSON.stringify(load(join(base, "northstar/people/founders/ada-lovelace.json")).hats) === JSON.stringify(["finance", "external-relationships"]));
+  ok(JSON.stringify(load(ventureFile(join(base, "northstar"), "people/founders/ada-lovelace.json")).hats) === JSON.stringify(["finance", "external-relationships"]));
   const check = spawnSync("node", [join(repo, "schema/check-people.mjs"), base], { encoding: "utf8" });
   ok(check.status === 0, check.stdout);
 });
@@ -156,8 +186,8 @@ t("without a model key, describing it falls back to the list; an unclear descrip
 t("--source points functions at systems; Rho syncs from its saved answer and is marked a fixture; bad pointers are refused", () => {
   const r = create(["shop", "--type", "ecommerce", "--name", "Lee Park", "--source", "marketing-and-sales=shopify:shop.myshopify.com", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install"]);
   ok(r.status === 0 && /Rho: synced from a saved sandbox answer \(a fixture/.test(r.stdout) && /Legal documents: none connected yet/.test(r.stdout), r.stdout + r.stderr);
-  const fns = load(join(base, "shop/knowledge/sources.json")).functions;
-  ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(join(base, "shop/money/_summary.json")), JSON.stringify(fns));
+  const fns = load(ventureFile(join(base, "shop"), "knowledge/sources.json")).functions;
+  ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(ventureFile(join(base, "shop"), "money/_summary.json")), JSON.stringify(fns));
   ok(fns["marketing-and-sales"].systems[0].status === "pointed");
   // The transactions Rho synced are sensitive: git must ignore them. (Where Rho writes account records,
   // money/accounts/ against the data model's money/<id>.json, is the Rho integration's open question.)
@@ -168,8 +198,8 @@ t("--source points functions at systems; Rho syncs from its saved answer and is 
 });
 
 t("flags: --type, --role and --team; a role the type does not have is refused", () => {
-  ok(create(["studio2", "--type", "services-business", "--role", "founder", "--name", "Lee Park", "--team", "Kim Cho", "--yes", "--skip-install", "--no-git"]).status === 0);
-  const p = load(join(base, "studio2/people/people.json"));
+  ok(create(["studio2", "--type", "services-business", "--role", "founder", "--name", "Lee Park", "--team", "Kim Cho", "--layout", "flat", "--yes", "--skip-install", "--no-git"]).status === 0);
+  const p = load(ventureFile(join(base, "studio2"), "people/people.json"));
   ok(p.mode === "team" && p.people[1].role === "co-founder" && p.people[0].hats.length > 0, JSON.stringify(p));
   const r = create(["badrole", "--type", "software-startup", "--role", "limited-partner", "--yes", "--skip-install", "--no-git"]);
   ok(r.status === 1 && /has no limited-partner role/.test(r.stderr) && !existsSync(join(base, "badrole")), r.stderr);
@@ -181,9 +211,9 @@ t("naive check runs every venture check, from inside the venture", () => {
 });
 
 t("naive and mentura find the venture from a subdirectory, without --venture", () => {
-  const i = naive(["info"], join(v, "foundation"));
+  const i = naive(["info"], ventureFile(v, "foundation"));
   ok(i.status === 0 && i.stdout.includes("kettle (discovery)") && /Agents\s+Claude Code: not connected/.test(i.stdout), i.stdout);
-  const m = spawnSync("node", [join(v, "node_modules/.bin/mentura"), "system/overview", "view"], { cwd: join(v, "foundation"), env, encoding: "utf8" });
+  const m = spawnSync("node", [join(v, "node_modules/.bin/mentura"), "system/overview", "view"], { cwd: ventureFile(v, "foundation"), env, encoding: "utf8" });
   ok(m.status === 0 && m.stdout.includes("# kettle: overview"), m.stdout + m.stderr);
 });
 
@@ -221,11 +251,12 @@ async function devTest() {
     ok((await fetch(`http://127.0.0.1:${port}/`)).status === 200, "the board answers");
     ok((await fetch(`http://127.0.0.1:${port}/map`)).status === 200, "the map answers");
     await new Promise((r) => setTimeout(r, 300));
-    writeFileSync(join(v, "foundation/icp.json"), '{"id": 5}\n');
+    mkdirSync(ventureFile(v, "foundation/icp"), { recursive: true });
+    writeFileSync(ventureFile(v, "foundation/icp/bad.json"), '{"id": 5}\n');
     const python = spawnSync("python3", ["-c", "import jsonschema"]).status === 0;
-    await wait(python ? /✗ foundation\/icp\.json does not match schema\/icp\.schema\.json/ : /foundation\/icp\.json changed/);
+    await wait(python ? /✗ foundation\/icp\/bad\.json does not match schema\/icp-profile\.schema\.json/ : /foundation\/icp\/bad\.json changed/);
     return "ok";
-  } finally { child.kill(); rmSync(join(v, "foundation/icp.json"), { force: true }); }
+  } finally { child.kill(); rmSync(ventureFile(v, "foundation/icp"), { recursive: true, force: true }); }
 }
 
 for (const [name, fn] of tests) {

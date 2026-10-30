@@ -1,6 +1,6 @@
 {
   "name": "naive-framework",
-  "version": "0.2.0",
+  "version": "0.6.0",
   "description": "Naive, a venture development framework: conventions, routes, records, checks and an agent interface for building a venture.",
   "type": "module",
   "license": "MIT",
@@ -31,6 +31,7 @@
     "governance/",
     "evidence/",
     "platform/",
+    "frameworks/",
     "docs/reference/",
     "docs/decisions/",
     "docs/ontology.md",
@@ -42,6 +43,7 @@
     "!**/*.feature",
     "!interface/create-venture/",
     "!platform/integrations/fixtures/",
+    "!platform/research/",
     "!schema/examples/docket-scenarios.json",
     "!**/.env*",
     "!**/*.pem",

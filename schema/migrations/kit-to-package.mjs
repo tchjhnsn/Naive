@@ -14,6 +14,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "../venture-paths.mjs";
 
 export const id = "kit-to-package";
 export const describe = "Moves Naive packages out of naive.config.json kits into packages, and rewrites layer and kit routes inside records (decision unlocks, team-plan access, where-used parents) to package routes";
@@ -67,15 +68,15 @@ export function apply(dir, ctx) {
     return r.to;
   };
   const rewriteFile = (file, fn) => {
-    if (!existsSync(join(dir, file))) return;
-    const before = readFileSync(join(dir, file), "utf8");
+    if (!existsSync(ventureFile(dir, file))) return;
+    const before = readFileSync(ventureFile(dir, file), "utf8");
     const rec = JSON.parse(before);
     fn(rec);
     const after = JSON.stringify(rec, null, 2) + "\n";
     if (after.trim() !== before.trim()) ctx.write(file, after, { note: "routes renamed from layer and kit routes to package routes (EE-071)" });
   };
 
-  const decisionFiles = (sub = "") => readdirSync(join(dir, sub), { withFileTypes: true }).flatMap((e) => {
+  const decisionFiles = (sub = "") => readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.isDirectory()) return e.name.startsWith(".") || e.name.startsWith("_") || existsSync(join(dir, rel, "venture.json")) ? [] : decisionFiles(rel);
     return e.name.endsWith(".decision.json") ? [rel] : [];

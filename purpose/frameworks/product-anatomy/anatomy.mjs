@@ -20,6 +20,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ventureFile } from "../../../schema/venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
@@ -39,7 +40,7 @@ function readVenture(path) {
   }
   const venture = load(join(path, "venture.json"));
   const dir = join(path, "products");
-  const cards = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => load(join(dir, f))) : [];
+  const cards = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => load(ventureFile(dir, f))) : [];
   const products = Object.fromEntries(cards.map((c) => [c.id, c]));
   const flows = cards.flatMap((c) => (c.flows_to ?? []).map((to) => ({ from: c.id, to })));
   return { venture, core: venture.core, products, flows };

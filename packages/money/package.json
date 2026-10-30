@@ -36,7 +36,10 @@
   "checks": [
     "schema/check-data-packages.mjs"
   ],
-  "skill": null,
+  "skill": {
+    "id": "money-function",
+    "path": "packages/money/skill/SKILL.md"
+  },
   "use_model": [],
   "complete": false
 }

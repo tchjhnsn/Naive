@@ -13,6 +13,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-execution.mjs <venture dir>"); process.exit(2); }
@@ -27,7 +28,7 @@ const template = load(join(root, "governance/venture-template/decision-rights.js
 const errors = [];
 
 const classes = new Map(template.classes.map((c) => [c.id, c]));
-const own = join(dir, "governance/decision-rights.json");
+const own = join(ventureFile(dir, "governance/decision-rights.json"));
 if (existsSync(own)) for (const c of load(own).classes) {
   const t = classes.get(c.id);
   if (t && RANK[c.level] < RANK[t.level] && !c.decision) errors.push(`decision-rights/${c.id}: loosens ${t.level} to ${c.level} without naming a decision`);
@@ -36,14 +37,14 @@ if (existsSync(own)) for (const c of load(own).classes) {
 for (const c of classes.values()) if (!roles.has(c.owner)) errors.push(`decision-rights/${c.id}: owner ${c.owner} is not a role`);
 
 const results = new Map();
-for (const f of jsonIn(join(dir, "evidence/results"))) {
+for (const f of jsonIn(join(ventureFile(dir, "evidence/results")))) {
   const e = load(f);
   if (e.passed !== e.results.every((r) => r.passed)) errors.push(`evidence/${e.id}: passed says ${e.passed} but its results disagree`);
   results.set(resolve(f), e);
 }
 
 let count = 0;
-for (const f of jsonIn(join(dir, "operations/handoffs"))) {
+for (const f of jsonIn(join(ventureFile(dir, "operations/handoffs")))) {
   const h = load(f), at = `handoff/${h.id}`;
   count++;
   if (h.venture !== venture.id) errors.push(`${at}: venture ${h.venture} is not ${venture.id}`);
