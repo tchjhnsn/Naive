@@ -367,6 +367,7 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
 // Writes hook (interface/writes.mjs): adds what reads, layouts and writes answer.
 export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
+/** @param {{ venture: string, route: string, action: string, input?: *, actor?: string, actor_id?: string, workspace?: string, via?: string, provenance?: { derived_from?: string[], decision?: string, note?: string, agent?: Record<string, any>, activity?: string, confidence?: number | string | null } }} args */
 async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   const requested = route;
   const { r, params, alias } = resolve(route);
@@ -436,7 +437,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
       if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
       // Confidentiality (C2 and above): a record only its access list may know of is left out, as if absent.
-      items = items.filter((x) => mayKnow(dir, x.path, { actor, id: actor === "person" ? process.env.MENTURA_PERSON ?? actor_id : actor_id }));
+      items = items.filter((x) => mayKnow(dir, x.path, /** @type {*} */ ({ actor, id: actor === "person" ? process.env.MENTURA_PERSON ?? actor_id : actor_id })));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
     const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
