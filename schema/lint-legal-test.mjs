@@ -80,6 +80,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
 
 // Counterparty records the agreement may name.
 {
+  /** @type {[string, Record<string, string>][]} */
   const cases = [
     ["ownership holder", { "governance/ownership.json": JSON.stringify({ holders: [{ id: "ada", name: "Ada", kind: "founder" }] }) }],
     ["founder file", { "people/founders/ada.json": founder("ada") }],
