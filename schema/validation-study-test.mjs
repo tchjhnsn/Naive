@@ -5,13 +5,14 @@
 //   node schema/validation-study-test.mjs
 
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, resolve } from "../interface/router.mjs";
 import { blocked, giveFeedback, manifest, status, unlock } from "./beta-gate.mjs";
 import { route } from "./feedback-route.mjs";
-import { events, flush, record, ventureHash } from "./telemetry.mjs";
+import { events, flush, record, refuse, ventureHash } from "./telemetry.mjs";
 import { summary } from "./bugs.mjs";
 import { check } from "./check-validation-study.mjs";
 
@@ -65,7 +66,12 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("telemetry is off by default: nothing is written", !record(dir, e).written && !existsSync(join(dir, ".naive/telemetry.jsonl")));
   cfg({ telemetry: { enabled: true } });
   const w = record(dir, e);
-  expect("opted in, an event is written to .naive/telemetry.jsonl with the venture id hashed", w.written && events(dir).length === 1 && events(dir)[0].venture === ventureHash("vs") && !JSON.stringify(events(dir)).includes('"vs"'), JSON.stringify(w));
+  expect("opted in, an event is written to .naive/telemetry.jsonl with the venture id hashed", w.written && events(dir).length === 1 && events(dir)[0].venture === ventureHash(dir, "vs") && !JSON.stringify(events(dir)).includes('"vs"'), JSON.stringify(w));
+  const salted = mkdtempSync(join(tmpdir(), "vs-salt-"));
+  writeFileSync(join(salted, "venture.json"), JSON.stringify({ id: "vs" }));
+  expect("the venture hash is salted per venture: the bare id's hash and another venture's hash of the same id differ", events(dir)[0].venture !== createHash("sha256").update("vs").digest("hex").slice(0, 16) && ventureHash(salted, "vs") !== events(dir)[0].venture);
+  expect("telemetry refuses free text in at", !record(dir, { ...e, at: "Jane Doe said pricing is too high" }).written);
+  expect("telemetry refuses free text in source", !record(dir, { ...e, source: "customer list: Bob, Alice" }).written && !refuse({ ...events(dir)[0], source: "mentura" }));
   expect("an event is valid against telemetry.schema.json", valid("telemetry.schema.json", events(dir)[0]));
   expect("telemetry refuses record contents", !record(dir, { ...e, input: { statement: "secret plan" } }).written);
   expect("telemetry refuses a _private path", !record(dir, { ...e, name: "route.read", capability: "foundation", session: "_private/x" }).written && !valid("telemetry.schema.json", { ...events(dir)[0], path: "_private/people.json" }));

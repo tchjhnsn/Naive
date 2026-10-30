@@ -10,7 +10,7 @@
     "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$", "description": "The event, e.g. route.write, beta.unlock" },
     "capability": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "A capability id from beta/capabilities.json, or core" },
     "at": { "type": "string", "format": "date-time" },
-    "venture": { "type": "string", "pattern": "^[0-9a-f]{16}$", "description": "A hash of the venture id, never the id" },
+    "venture": { "type": "string", "pattern": "^[0-9a-f]{16}$", "description": "A salted hash of the venture id, never the id; the salt stays in the venture's .naive/telemetry-salt and is never sent" },
     "session": { "type": "string", "pattern": "^[A-Za-z0-9-]{4,64}$" },
     "duration_ms": { "type": "integer", "minimum": 0 },
     "outcome": { "enum": ["ok", "error", "refused", "cancelled"] },
