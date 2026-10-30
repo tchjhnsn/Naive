@@ -22,7 +22,11 @@
     "venture-types",
     "frame",
     "upgrade-registry",
-    "kit"
+    "kit",
+    "research-cell",
+    "research-source",
+    "research-claim",
+    "research-citation"
   ],
   "reads": [
     "product",
