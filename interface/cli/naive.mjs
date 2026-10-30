@@ -10,6 +10,7 @@
 //   naive check                                     run every check that applies to the venture (I-9)
 //   naive info                                      versions, the venture, and which agents are connected (I-6)
 //   naive mcp                                       serve the venture to an agent over MCP (stdio)
+//   naive types                                     the venture types, each with its roles, packages and first decisions (EE-082)
 //   naive setup [state|artifact|answer|point|confirm]  set the venture up: the state, an artifact of it, and
 //                                                   confirming the answers the model relayed (EE-083)
 //   naive frame "<the founder's words>"             match the words to a frame in the decision library, judge its
@@ -36,6 +37,9 @@
 //                                                   venture it fits, or in the workspace inbox when unsure
 //   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
 //   naive read <venture> <path>                     read another venture's published artifact, if the workspace allows
+//   naive lint premises [<route>] [--drafts] [--json] [--propose]
+//                                                   attack the premises of the venture's goals, requirements, exit criteria,
+//                                                   constraints and decisions; --propose writes findings as open decisions
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -171,10 +175,19 @@ function upgradeFramework(dir) {
 
 if (cmd === "dev") await dev(here());
 else if (cmd === "check") process.exit(check(here()));
+else if (cmd === "types") {
+  // What create-venture can make, for an agent to offer the founder: each type with its roles, by name.
+  const { roles, types } = await import("../../schema/venture-type.mjs");
+  const R = new Map(roles().map((r) => [r.id, r.name]));
+  console.log(JSON.stringify(types().map((t) => ({ id: t.id, label: t.label, description: t.description, examples: t.examples, roles: t.roles.map((r) => ({ id: r, name: R.get(r) })), default_role: t.default_role, first_decisions: t.decisions })), null, 2));
+}
 else if (cmd === "mcp") {
-  // The MCP server, on the venture this runs in: `claude mcp add naive -- npx naive mcp`.
+  // The MCP server, on the venture this runs in: `claude mcp add naive -- npx naive mcp`. Outside a
+  // venture (a plugin starts it in every project), the current folder is the workspace, so a venture
+  // created here is found at once.
   const env = { ...process.env };
-  if (!env.MENTURA_WORKSPACE) env.MENTURA_WORKSPACE = asRouted(here()).workspace;
+  const at = opt("venture") ? here() : findVenture();
+  if (!env.MENTURA_WORKSPACE) env.MENTURA_WORKSPACE = at ? asRouted(at).workspace : process.cwd();
   process.exit(spawnSync("node", [join(repo, "interface/mcp/server.mjs")], { stdio: "inherit", env }).status ?? 1);
 }
 else if (cmd === "info") info(findVenture() ?? (opt("venture") && existsSync(join(resolve(opt("venture")), "venture.json")) ? resolve(opt("venture")) : null));
@@ -247,6 +260,10 @@ else if (cmd === "build" || cmd === "start") {
   // naive read names the venture this session is in as the one reading.
   const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
   process.exit(run("schema/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
+} else if (cmd === "lint") {
+  const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
+  process.exit(run("schema/premise-lint.mjs", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");
