@@ -777,6 +777,16 @@
         "platform": 0.7
       },
       "why": "A package's own terms, once two packages start using one word in different senses"
+    },
+    "artifact": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "A view built from records for a reader; needed once something goes out to people, which grows with each phase"
     }
   }
 }
