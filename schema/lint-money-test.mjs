@@ -17,6 +17,10 @@ const expect = (name, ok, detail = "") => {
   if (!ok) failed++;
 };
 
+/**
+ * @param {Record<string, unknown>} files
+ * @param {{ layout?: string }} [options]
+ */
 function venture(files, { layout } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "money-lint-"));
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "fixture", name: "Fixture", phase: "discovery", ...(layout ? { layout } : {}) }));
