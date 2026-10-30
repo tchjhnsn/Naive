@@ -1949,6 +1949,14 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (schema/triggers.mjs) */
   triggers?: unknown[];
+  /** Per-rule mode for the validation lint (schema/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
+  validation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
   /** naive diagnose --if-due: a full diagnosis runs only when the founder's transcripts since the cursor reach threshold estimated tokens (characters / 4), or a new session is older than stale_hours */
   diagnose?: {
     threshold?: number;

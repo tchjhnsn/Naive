@@ -21,6 +21,10 @@ const put = (dir, rel, body) => {
   mkdirSync(join(p, ".."), { recursive: true });
   writeFileSync(p, typeof body === "string" ? body : JSON.stringify(body, null, 2) + "\n");
 };
+/**
+ * @param {Record<string, unknown>} files
+ * @param {{ phase?: string, layout?: string }} [options]
+ */
 function venture(files, { phase = "validation", layout } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "lint-validation-"));
   put(dir, "venture.json", { id: "lintv", name: "Lint", phase, status: "active", ...(layout ? { layout } : {}) });

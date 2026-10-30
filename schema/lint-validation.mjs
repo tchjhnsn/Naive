@@ -26,6 +26,7 @@ export const RULES = [
 ];
 
 // Package path first, then the pre-migration path. The first file that exists is the record.
+/** @type {[string, string[]][]} */
 const PLACES = [
   ["problem", ["foundation/problem.json", "purpose/validation/problem.json"]],
   ["solution", ["validation/solution.json", "purpose/validation/solution.json"]],
