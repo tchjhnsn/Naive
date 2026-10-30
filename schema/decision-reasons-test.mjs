@@ -102,7 +102,7 @@ try {
   expect("a name that is no person cannot clear staleness by restating the claim", !stranger.ok && rendered() === "stale", stranger);
   const recordPath = join(o, "decisions/pick.decision.json");
   const before = readFileSync(recordPath, "utf8");
-  const raw = await call({ venture: "rop", route: "decisions/pick", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { ...JSON.parse(before), status: "open" } });
+  const raw = await call({ venture: "rop", route: "decisions/pick", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { id: "pick", question: "Which?", answer: "this", status: "open", reasons: cited } });
   expect("an agent's raw write that reopens a decided decision is only a draft", raw.ok && raw.result.draft === true && readFileSync(recordPath, "utf8") === before, raw);
   expect("so the decision stays stale and nothing re-freezes", rendered() === "stale", rendered());
 } finally {
