@@ -52,6 +52,8 @@ const steps = [
   ["governance: examples", "node", ["schema/check-governance.mjs", "schema/examples/workspace"]],
   ["the canonical core and frameworks for thinking (telos-to-goals, canonical exit criteria, fallback)", "node", ["schema/canonical-core-test.mjs"]],
   ["frameworks map onto canonical records only", "node", ["schema/check-frameworks.mjs"]],
+  ["a founder's own frameworks and playbooks (list, new, check, publish --dry-run)", "node", ["schema/user-frameworks-test.mjs"]],
+  ["transcript diagnosis (human words only, redacted first, one raw draft per run)", "node", ["scripts/diagnose-transcripts-test.mjs"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],

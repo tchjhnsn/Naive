@@ -26,7 +26,7 @@ export function check(root) {
   for (const { dir, f } of fws) {
     if (f.id !== dir.split("/")[1]) errors.push(`${dir}/framework.json: id ${f.id} does not match its folder`);
     for (const m of f.maps_to ?? []) if (!canonical(m.canonical_route)) errors.push(`${dir}: maps_to ${m.framework_field} -> ${m.canonical_route}, which is not a canonical route (${CANONICAL.join(", ")})`);
-    for (const p of [f.template, f.skill, f.adapter, ...(f.checks ?? [])].filter(Boolean)) if (!existsSync(join(root, p))) errors.push(`${dir}: ${p} not found`);
+    for (const p of [f.template, f.playbook, f.skill, f.adapter, ...(f.checks ?? [])].filter(Boolean)) if (!existsSync(join(root, p))) errors.push(`${dir}: ${p} not found`);
     for (const c of f.checks ?? []) allowed.add(c);
   }
   const sdir = join(root, "schema");

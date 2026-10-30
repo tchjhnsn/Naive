@@ -29,6 +29,11 @@
 //                                                   venture it fits, or in the workspace inbox when unsure
 //   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
 //   naive read <venture> <path>                     read another venture's published artifact, if the workspace allows
+//   naive framework list | new <id> | check [<id>] | publish <id> --dry-run
+//                                                   the founder's own frameworks and playbooks in the workspace's frameworks/,
+//                                                   beside the built-in ones; publishing only packs a bundle for now
+//   naive diagnose [--since <iso>] [--dir <transcripts>]  find frameworks, playbooks, ideas and decisions in the founder's own
+//                                                   words in agent transcripts (redacted first) and draft them as a raw source
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -211,6 +216,14 @@ else if (cmd === "build" || cmd === "start") {
   // naive read names the venture this session is in as the one reading.
   const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
   process.exit(run("schema/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
+} else if (cmd === "framework") {
+  // A founder's own frameworks (schema/user-frameworks.mjs): the workspace above the venture, else above this folder.
+  const from = opt("venture") ? here() : process.cwd();
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const [sub = "list", ...more] = args;
+  process.exit(run("schema/user-frameworks.mjs", [sub, ...more, from]));
+} else if (cmd === "diagnose") {
+  process.exit(run("scripts/diagnose-transcripts.mjs", rest));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");
