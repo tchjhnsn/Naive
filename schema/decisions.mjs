@@ -26,12 +26,14 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
 import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
 import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
+import { impact } from "./impact.mjs";
+import { changedReasons, citesOf, stamp } from "./reasons.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -154,7 +156,10 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
     })();
     const parent = byId.get(d.parent);
     const at = (x) => x?.provenance?.approved_at ?? x?.decided_at;
-    const stale = d.status === "decided" && at(d) && at(parent) && at(parent) > at(d);
+    const parentStale = d.status === "decided" && at(d) && at(parent) && at(parent) > at(d);
+    // Reasons with citations: a decided decision whose frozen cited file changed is stale too.
+    const changed = d.source === "file" ? changedReasons(dir, d) : [];
+    const stale = parentStale || changed.length > 0;
     // A due time is a real deadline: it overrides needed_in, and an open decision past it is overdue.
     const later = !d.due && d.needed_in && PHASES.indexOf(d.needed_in) > phase;
     const overdue = d.status === "open" && d.due && Date.parse(d.due) < now;
@@ -169,6 +174,8 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
       ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}), ...(d.ideas?.length ? { ideas: d.ideas } : {}),
       ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),
       ...(d.provenance ? { provenance: d.provenance } : {}),
+      ...(d.reasons?.length ? { reasons: d.reasons } : {}),
+      ...(changed.length ? { reasons_changed: changed.map(({ ref, claim, kind }) => ({ ref, claim, kind })) } : {}), ...(stale && !parentStale ? { stale_because: "reasons" } : {}),
       ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,
         due: d.outcomes.filter((o) => (o.result ?? "pending") === "pending" && /^\d{4}-\d{2}-\d{2}/.test(o.by ?? "") && Date.parse(o.by) < now).map((o) => o.id) } } : {}),
       ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}),
@@ -204,12 +211,20 @@ export function ownScore(d, phase, now = Date.now()) {
   if (d.render === "overdue") { s += 100; why.push("past its due time"); }
   // Cost of delay grows as the deadline nears: 40 at three days, 60 at two, 120 at one, up to 300.
   else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 72) { s += Math.min(300, Math.round((60 * 48) / Math.max(h, 1))); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
-  if (d.render === "stale") { s += 30; why.push("its parent changed after it was decided"); }
+  // A why entry may carry cites (the refs a reason supplies); why stays a list of strings, and
+  // why_cites pairs each cited entry with its refs (backward compatible).
+  const cites = [];
+  if (d.render === "stale" && d.stale_because !== "reasons") { s += 30; why.push("its parent changed after it was decided"); }
+  else if (d.render === "stale") s += 30;
+  for (const c of d.reasons_changed ?? []) { const w = `the reason you decided ${d.id} changed: ${c.ref}`; why.push(w); cites.push({ why: w, cites: [c.ref] }); }
   if (d.unlocks?.length) { s += 10 * d.unlocks.length; why.push(`unlocks ${d.unlocks.join("; ")}`); }
   if (d.part_of === "foundation") { s += phase === "discovery" ? 20 : 10; why.push("settles the strategic foundation"); }
   if (d.awaiting) { s += 8; why.push("an agent has drafted it: approving takes a minute"); }
   if (d.outcomes?.total) { s += 3 * d.outcomes.total; why.push(`${d.outcomes.total} expected outcome${d.outcomes.total > 1 ? "s" : ""} to test`); }
-  return { score: s, why };
+  // Cited reasons carry no weight of their own yet; they say what the decision rests on.
+  const refs = d.status !== "decided" ? citesOf(d.reasons) : [];
+  if (refs.length) { const w = `rests on ${d.reasons.length} reason${d.reasons.length > 1 ? "s" : ""} citing ${refs.length} source${refs.length > 1 ? "s" : ""}`; why.push(w); cites.push({ why: w, cites: refs }); }
+  return { score: s, why, ...(cites.length ? { why_cites: cites } : {}) };
 }
 
 /** Which open decisions matter most now, and why (EE-057): a decision's own weight plus 12 for each
@@ -219,11 +234,12 @@ export function rank(ds, phase, now = Date.now()) {
   const below = (id) => ds.filter((x) => x.held_by === id || x.parent === id).length;
   const scored = ds.map((d) => {
     if (!["now", "overdue", "stale"].includes(d.render) || d.source === "root") return { ...d, rank: null };
-    const { score, why } = ownScore(d, phase, now);
+    const { score, why, why_cites } = ownScore(d, phase, now);
     const n = below(d.id);
     // Kept in the order the reasons were always given: deadline and staleness first, then what waits.
-    if (n) why.splice(why.findIndex((w) => !/due|parent changed/.test(w)) === -1 ? why.length : why.findIndex((w) => !/due|parent changed/.test(w)), 0, `${n} decision${n > 1 ? "s" : ""} wait on it`);
-    return { ...d, rank: score + 12 * n, why };
+    const first = /due|parent changed|reason you decided/;
+    if (n) why.splice(why.findIndex((w) => !first.test(w)) === -1 ? why.length : why.findIndex((w) => !first.test(w)), 0, `${n} decision${n > 1 ? "s" : ""} wait on it`);
+    return { ...d, rank: score + 12 * n, why, ...(why_cites ? { why_cites } : {}) };
   });
   const order = scored.map((d, i) => [d, i]).sort(([a, i], [b, j]) => (b.rank ?? -1) - (a.rank ?? -1) || i - j).map(([d]) => d);
   return order;
@@ -258,20 +274,37 @@ const validate = (d) => {
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 };
 const fileOf = (dir, id) => decisionFiles(dir).find((f) => load(ventureFile(dir, f)).id === id);
+/** The venture-relative file of a decision record, by id. */
+export const decisionFile = fileOf;
+
+/** Whether an applies_to file is a relative path that stays inside the venture (no "..", not absolute). */
+const inside = (f) => typeof f === "string" && f !== "" && !isAbsolute(f) && !/^[a-zA-Z]:/.test(f) && !f.split(/[\\/]/).includes("..");
 
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
  *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
 export function propose(dir, input, { agentId, via = "router", harness, model } = {}) {
-  const { at = "", name, ...rest } = input ?? {};
+  // Version history, merge state and rollback lineage are written by approve/merge/rollback, never by an agent.
+  const { at = "", name, version: _v, versions: _vs, merged: _m, rolled_back_from: _r, proposed: _p, ...rest } = input ?? {};
   if (!rest.id || !rest.question) return { ok: false, error: "a decision needs an id and a question" };
   if (rest.status && rest.status !== "open") return { ok: false, error: "an agent may only propose an open decision; a person approves it" };
   const existing = fileOf(dir, rest.id);
-  if (existing && load(ventureFile(dir, existing)).status === "decided") return { ok: false, error: `${rest.id} is decided; only a person can change it` };
   const file = existing ?? `${at ? `${at}/` : ""}decisions/${name ?? rest.id}.decision.json`;
   if (!existing && !/^([a-z0-9-]+\/)*decisions\/[a-z0-9.-]+\.decision\.json$/.test(file)) return { ok: false, error: `${file} is not a decisions/ path` };
-  // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
+  const outside = (rest.applies_to ?? []).find((t) => !inside(t?.file));
+  if (outside) return { ok: false, error: `applies_to ${outside?.file} is not a path inside the venture` };
   const before = existing ? load(ventureFile(dir, existing)) : {};
-  const d = { ...before, ...rest, status: "open", provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
+  const drafted_by = { kind: "agent", ...(agentId ? { id: agentId } : {}) };
+  let d;
+  if (before.status === "decided") {
+    // An agent never un-decides (EE-058): the decided version stays current, and the new wording waits
+    // in proposed as a draft of the next version until a person approves it.
+    if (!rest.answer) return { ok: false, error: `${rest.id} is decided; propose new wording as an answer, and a person approves it as the next version` };
+    d = { ...before, proposed: { answer: rest.answer, ...(rest.options ? { options: rest.options } : {}), drafted_by, proposed_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") } };
+  } else {
+    // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
+    if (rest.reasons) rest.reasons = stamp(dir, rest.reasons);
+    d = { ...before, ...rest, status: "open", provenance: { drafted_by } };
+  }
   const bad = validate(d);
   if (bad) return { ok: false, error: `does not match schema/decision-record.schema.json:\n${bad}` };
   mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
@@ -280,23 +313,101 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
   return { ok: true, result: { proposed: d.id, file, awaiting: "approval", provenance: e.hash } };
 }
 
+/** The decision with its current version moved into versions and the version number raised. */
+function nextVersion(d) {
+  const { versions = [], ...cur } = d;
+  const snap = { version: cur.version ?? 1, status: cur.status, answer: cur.answer ?? null, ...(cur.options ? { options: cur.options } : {}), ...(cur.provenance ? { provenance: cur.provenance } : {}), ...(cur.merged?.version === (cur.version ?? 1) ? { merged: cur.merged } : {}), superseded_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+  const { rolled_back_from, merged, proposed, ...rest } = cur;
+  return { ...rest, version: (cur.version ?? 1) + 1, versions: [...versions, snap] };
+}
+
+const setField = (o, path, v) => { const ks = path.split("."); let x = o; for (const k of ks.slice(0, -1)) x = x[k] ??= {}; x[ks.at(-1)] = v; };
+
+/** Merge: apply a decided version's answer to the records it decides (applies_to). A separate step from
+ *  approving, so it can be delegated: only a person may merge unless a delegation grant names merge for
+ *  this decision's class (the delegation suite). Logged as a merge in provenance. Ends by building the
+ *  decision's impact map (schema/impact.mjs) and returns its summary. */
+export function merge(dir, id, { by, via = "cli", note } = {}) {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  if (!by) return { ok: false, error: "merging needs the name of who merges (--by)" };
+  const d = load(ventureFile(dir, file));
+  if (d.status !== "decided") return { ok: false, error: `${id} is not decided; approve it before merging` };
+  if (!d.applies_to?.length) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
+  const version = d.version ?? 1;
+  if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
+  const files = [];
+  const outside = d.applies_to.find((t) => !inside(t?.file));
+  if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
+  for (const t of d.applies_to) {
+    const f = ventureFile(dir, t.file);
+    const rec = existsSync(f) ? load(f) : {};
+    setField(rec, t.field, d.answer);
+    writeFileSync(f, JSON.stringify(rec, null, 2) + "\n");
+    prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), decision: id, note: `merged ${id} version ${version} into ${t.field}` });
+    files.push(t.file);
+  }
+  const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: agentFromEnv("person", via, { id: by }), note: note ?? `merged ${id} version ${version}` });
+  const im = impact(dir, id, { via });
+  return { ok: true, result: { merged: id, version, files, provenance: e.hash, impact: im.ok ? im.result : { error: im.error } } };
+}
+
+/** Rollback: make an earlier version current again, as a new version, so history is never rewritten.
+ *  The restored version is decided; merge it to apply it. */
+export function rollback(dir, id, to, { by, via = "cli" } = {}) {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  if (!by) return { ok: false, error: "rolling back needs the person's name (--by)" };
+  const d = load(ventureFile(dir, file));
+  const old = (d.versions ?? []).find((v) => v.version === Number(to));
+  if (!old) return { ok: false, error: `${id} has no version ${to}` };
+  if (old.status !== "decided") return { ok: false, error: `${id} version ${to} was never decided; only a decided version can be restored` };
+  const n = nextVersion(d);
+  const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...(old.provenance ?? {}), drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
+  const bad = validate(out);
+  if (bad) return { ok: false, error: bad };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: `rolled ${id} back to version ${to} as version ${out.version}` });
+  return { ok: true, result: { decided: id, version: out.version, restored: Number(to), provenance: e.hash, next: out.applies_to?.length ? `mentura merge ${id}` : null } };
+}
+
 /** A person approves a decision: as worded, or with their own answer. */
-export function approve(dir, id, { by, answer, via = "cli", note } = {}) {
+export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
   const d = load(ventureFile(dir, file));
-  if (d.status === "decided") return { ok: false, error: `${id} is already decided` };
+  // A decided decision changes by a new version: the decided one is kept, and this one supersedes it.
+  // An agent's pending wording (proposed) is what the person approves when they give no answer of their own.
+  if (d.status === "decided" && !answer && d.proposed) answer = d.proposed.answer;
+  if (d.status === "decided" && (!answer || answer === d.answer)) return { ok: false, error: `${id} is already decided as worded; give a new --answer to make version ${(d.version ?? 1) + 1}` };
+  if (d.status === "decided") {
+    const pending = d.proposed, nv = nextVersion(d);
+    for (const k of Object.keys(d)) delete d[k];
+    Object.assign(d, nv);
+    // The next version is drafted by whoever drafted it: the agent when its proposed wording is approved,
+    // else the person approving their own answer. Its predecessor's wording no longer counts as a draft.
+    d.answer = pending?.answer === answer ? answer : null;
+    if (pending?.answer === answer && pending.options) d.options = pending.options;
+    d.provenance = { drafted_by: pending?.answer === answer ? pending.drafted_by : { kind: "person", id: by } };
+  }
   if (!answer && !d.answer) return { ok: false, error: `${id} has no wording to approve; give an answer` };
   const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
   const wording = !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
   const phase = load(join(dir, "venture.json")).phase;
-  const out = { ...d, status: "decided", answer: answer ?? d.answer, provenance: { ...d.provenance, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via } };
+  // Reasons given at approval join the drafted ones; all are frozen, each local citation with its sha256
+  // now, into this version's provenance. A new version starts from no frozen reasons of its own.
+  const given = [...(d.reasons ?? []), ...(reasons ?? [])];
+  const { reasons: _old, ...pv } = d.provenance ?? {};
+  const frozen = given.length ? stamp(dir, given, { keep: false }) : null;
+  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: note ?? `approved decision ${id} (${wording})` });
-  return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity) } };
+  return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
 }
 
 /** The matrix: for each layer, the decisions that render now, wait, or come later, by phase. */

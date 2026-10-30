@@ -79,6 +79,20 @@ export function notify(dir, { source, paths, version, at = now(), via = "framewo
   return { source, paths, stale: [...readers.keys()].sort() };
 }
 
+/** Marks named files stale for a reason the caller already worked out (a merged decision's impact map,
+ *  schema/impact.mjs), through the same marks notify() writes; returns the files marked. */
+export function mark(dir, files, { source = LOCAL, paths = [], version, reads, via = "framework", at = now() } = {}) {
+  files = [...new Set(files)].filter(Boolean);
+  if (!files.length) return [];
+  const state = readMarks(dir);
+  const because = { source, paths, ...(version ? { version } : {}), at, via };
+  for (const file of files) state.marks.push({ file, via: "decision", reads: reads ?? paths[0] ?? null, because, marked_at: now() });
+  state.notifications = [...(state.notifications ?? []), { ...because, marked: files.length, received_at: now() }].slice(-100);
+  mkdirSync(join(dir, ".naive"), { recursive: true });
+  writeFileSync(ventureFile(dir, MARKS), JSON.stringify(state, null, 2) + "\n");
+  return files.sort();
+}
+
 /** Whether one file is stale: the marks made after its latest write, or null when it is fresh. */
 export function staleOf(dir, file) {
   if (!existsSync(ventureFile(dir, MARKS))) return null;

@@ -1,0 +1,44 @@
+{
+  "id": "product-first",
+  "title": "Product first",
+  "version": "0.1.0",
+  "description": "Build an MVP, prove people keep using it, then price it. What Naive does when a venture names no playbook.",
+  "order": [
+    "mvp",
+    "retention",
+    "pricing"
+  ],
+  "phases": [
+    {
+      "phase": "discovery",
+      "gate": "Problem-solution fit",
+      "evidence": []
+    },
+    {
+      "phase": "validation",
+      "gate": "Product-market fit: retention holds",
+      "evidence": [
+        {
+          "id": "retention",
+          "statement": "Retention holds: the people who start using the product keep using it",
+          "match": "retention|retain|keep using|cohort"
+        }
+      ]
+    },
+    {
+      "phase": "beachhead",
+      "gate": "Repeatability",
+      "evidence": []
+    },
+    {
+      "phase": "scale",
+      "gate": "Market leadership with healthy margins",
+      "evidence": []
+    },
+    {
+      "phase": "platform",
+      "gate": "Others build on it",
+      "evidence": []
+    }
+  ]
+}

@@ -320,11 +320,14 @@ if (!flag("no-workspace")) {
   while (!existsSync(join(up, WORKSPACE_FILE)) && dirname(up) !== up) up = dirname(up);
   const root = existsSync(join(up, WORKSPACE_FILE)) ? up : dirname(dir);
   const wf = join(root, WORKSPACE_FILE);
-  const ws = existsSync(wf) ? JSON.parse(readFileSync(wf, "utf8")) : { schema: "everything-ecosystem", schema_version: readFileSync(join(framework, "schema/VERSION"), "utf8").trim(), name: "Naive workspace", ventures: [] };
+  const ws = existsSync(wf) ? JSON.parse(readFileSync(wf, "utf8")) : { schema: "everything-ecosystem", schema_version: readFileSync(join(framework, "schema/VERSION"), "utf8").trim(), name: "Naive workspace", ventures: [], settings: { cross_venture_reads: true, route_threshold: 0.8 } };
   const rel = relative(root, dir);
   if (!ws.ventures.includes(rel)) ws.ventures.push(rel);
   writeFileSync(wf, JSON.stringify(ws, null, 2) + "\n");
   if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
+  // The workspace's own folders: raw/ keeps what the founder captures, inbox/ holds what waits for them,
+  // meta/ the logs, founder/ the founder record once.
+  for (const d of ["raw", "inbox", "meta", "founder"]) { mkdirSync(join(root, d), { recursive: true }); if (!readdirSync(join(root, d)).length) writeFileSync(join(root, d, ".gitkeep"), ""); }
   workspace = { root, name: ws.name };
 }
 

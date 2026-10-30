@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "constraints.schema.json",
+  "title": "Constraints",
+  "description": "The venture's canonical constraints, at <venture>/foundation/constraints.json: what it must not do, whatever framework states its goals.",
+  "type": "object",
+  "required": ["must_not"],
+  "additionalProperties": false,
+  "properties": {
+    "venture": { "type": "string" },
+    "must_not": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "statement": { "type": "string" },
+          "why": { "type": "string" },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "updated": { "type": "string" }
+  }
+}

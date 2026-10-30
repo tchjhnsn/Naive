@@ -16,6 +16,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { catalog } from "./departments.mjs";
 import { ventureFile } from "./venture-paths.mjs";
+import { scale } from "./canonical.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -39,7 +40,7 @@ export function factsOf(dir) {
   const td = existsSync(teamFile) ? load(teamFile) : null;
   const team = td?.status === "decided" ? ["solo", "cofounders", "looking"].find((t) => (td.answer ?? "").toLowerCase().startsWith(t)) ?? null : null;
   return {
-    team, type: v.type ?? null, phase: v.phase, ambition: v.ambition, funding: v.form?.funding, legal_form: v.form?.legal_form,
+    team, type: v.type ?? null, phase: v.phase, ambition: scale(dir, v), funding: v.form?.funding, legal_form: v.form?.legal_form,
     offering: products.map((p) => p.offering), software: products.some((p) => p.software),
     path: json("purpose/validation/go-to-market.json")?.path,
     people: members.filter((m) => m.kind !== "agent").length + (v.owner === "self" && !members.some((m) => m.kind !== "agent") ? 1 : 0),
