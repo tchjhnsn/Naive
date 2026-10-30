@@ -1714,7 +1714,8 @@
         "instance/**/people/people.json",
         "schema/examples/**/people/people.json"
       ],
-      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)"
+      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)",
+      "decision_class": "strategy-or-constitution"
     },
     {
       "id": "founder",
