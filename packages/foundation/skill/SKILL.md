@@ -48,7 +48,7 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-telos.mjs`, `schema/check-validation.mjs`, `schema/foundation.mjs` and the schema checks (`schema/validate.py`). Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `schema/check-telos.mjs`, `schema/check-validation.mjs`, `schema/foundation.mjs`, `schema/lint-foundation.mjs` (route `foundation/lint`) and the schema checks (`schema/validate.py`). `foundation/lint` warns, and does not fail, unless `naive.config.json` sets `foundation_lint.rules.<id>.mode` to `fail-closed`. Run it after each write, and fix a failure before you report the work done.
 
 ## Actions and artifacts
 
