@@ -38,7 +38,7 @@ export function gradeItem(e, today = new Date()) {
   else if (e.audience !== "target") down(1, `${e.audience} audience`);
   if (["behavior", "commitment", "stated"].includes(e.kind) && (e.sample?.n ?? 0) < MIN_SAMPLE) down(1, `sample under ${MIN_SAMPLE}`);
   if (["stated", "opinion"].includes(e.kind) && e.specificity !== "specific") down(1, "general, not specific");
-  const months = (today - new Date(e.collected)) / (30.44 * 864e5);
+  const months = (+today - +new Date(e.collected)) / (30.44 * 864e5);
   if (months > STALE_MONTHS) down(1, `older than ${STALE_MONTHS} months`);
   return { level: LEVELS[Math.max(0, g)], why };
 }

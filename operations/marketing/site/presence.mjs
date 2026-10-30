@@ -121,7 +121,8 @@ export function pageType(p) {
 
 const pageText = (p) => `[${p.path}] ${p.title}\n${(p.text ?? "").slice(0, 3000)}`;
 
-/** The Jev request: does each page tell a visitor each item, and which customer types the ICP is. */
+/** The Jev request: does each page tell a visitor each item, and which customer types the ICP is.
+ * @param {*} site @param {{ text: string, source: string, says?: string[], cite?: string, stated?: string[] }} [icp] */
 export function request(site, icp = icpOf(null, site)) {
   const pages = site.pages.filter((p) => !p.error);
   const questions = {};

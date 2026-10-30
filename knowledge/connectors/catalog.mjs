@@ -53,7 +53,8 @@ async function routeOf(path) {
 
 export const load = (dir) => existsSync(ventureFile(dir, FILE)) ? JSON.parse(readFileSync(ventureFile(dir, FILE), "utf8")) : null;
 
-/** Builds or refreshes the catalog. Returns it with stats: items, read (items fetched), reused. */
+/** Builds or refreshes the catalog. Returns it with stats: items, read (items fetched), reused.
+ * @param {string} dir @param {{ write?: boolean, sources?: object[] }} [opts] */
 export async function build(dir, { write = true, sources } = {}) {
   const prior = new Map((load(dir)?.items ?? []).map((x) => [x.address, x]));
   const conns = sources ?? await connectAll(dir);

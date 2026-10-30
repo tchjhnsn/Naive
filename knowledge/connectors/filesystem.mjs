@@ -17,6 +17,7 @@ import { layoutOf, logicalFiles, ventureFile } from "../../schema/venture-paths.
 
 const SKIP = new Set(["node_modules"]);
 
+/** @param {{ id?: string, root?: string, writes?: string, venture?: boolean }} [opts] */
 export function connect({ id = "venture", root, writes = "direct", venture = false } = {}) {
   if (!root) throw new Error("the filesystem connector needs a root folder");
   if (writes === "pull-request") throw new Error("the filesystem connector writes direct or none");

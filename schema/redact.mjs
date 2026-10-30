@@ -5,6 +5,7 @@
 const SECRET_NAME = String.raw`[A-Za-z0-9_-]*(?:api[_-]?key|access[_-]?key|private[_-]?key|secret|token|password|passwd|passphrase|pwd)(?:[_-]?(?:key|value|string|base))*|pass|[A-Za-z0-9]+(?:[_-][A-Za-z0-9]+)*[_-](?:key|pass)`;
 const QUOTED = String.raw`\\"(?:[^"\\]|\\[^"])*\\"|"[^"]*"|'[^']*'`;
 
+/** @type {[string, RegExp][]} */
 const PATTERNS = [
   ["private-key", /-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|$)/g],
   ["langsmith-key", /\blsv2_(?:pt|sk)_[A-Za-z0-9_]{16,}/g],
@@ -49,10 +50,10 @@ const KEEP_PREFIX = new Set(["url-credentials", "cookie", "cli-flag", "cli-user"
 
 export function redact(text) {
   let out = String(text);
-  for (const [kind, re] of PATTERNS) out = out.replace(re,
+  for (const [kind, re] of PATTERNS) out = out.replace(re, /** @type {*} */ (
     KEEP_PREFIX.has(kind) ? (_, prefix) => `${prefix}${SECRET}${kind === "url-credentials" ? "@" : ""}`
     : kind === "assignment" ? (_, q, name, sep) => `${q}${name}${q}${sep}${q ? `${q}${SECRET}${q}`.replace(/'/g, '"') : SECRET}`
     : kind === "authorization" ? (_, q, name, value) => `${q}${name}${q}: ${/^\\?["']/.test(value) ? `"${SECRET}"` : SECRET}`
-    : `[REDACTED:${kind}]`);
+    : `[REDACTED:${kind}]`));
   return out;
 }

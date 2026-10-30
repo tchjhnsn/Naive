@@ -90,7 +90,8 @@ export function activeMinutes(timestamps) {
   return Math.round(ms / 60000 * 10) / 10;
 }
 
-/** Per venture, per day: sessions, active minutes, messages, tokens in. */
+/** Per venture, per day: sessions, active minutes, messages, tokens in.
+ *  @param {{ root: string, dir?: string, from?: string, to?: string }} opts */
 export function activity({ root, dir, from, to }) {
   const ventures = venturesUnder(root);
   const sessions = readSessions(dir);
