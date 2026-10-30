@@ -180,9 +180,60 @@
       "additionalProperties": false,
       "description": "The publish lint (schema/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived",
       "properties": {
-        "rules": { "type": "object", "propertyNames": { "enum": ["copy-distance", "leaks", "brand", "claims", "marks", "personal-data", "secrets"] }, "additionalProperties": { "enum": ["off", "warn", "error"] } },
-        "marks": { "type": "array", "items": { "type": "string" } },
-        "waived": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["rule"], "properties": { "rule": { "type": "string" }, "file": { "type": "string" }, "text": { "type": "string" }, "why": { "type": "string" }, "by": { "type": "string" } } } }
+        "rules": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "copy-distance",
+              "leaks",
+              "brand",
+              "claims",
+              "marks",
+              "personal-data",
+              "secrets"
+            ]
+          },
+          "additionalProperties": {
+            "enum": [
+              "off",
+              "warn",
+              "error"
+            ]
+          }
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "waived": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rule"
+            ],
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              },
+              "by": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     },
     "triggers": {
@@ -203,6 +254,75 @@
           "type": "number",
           "minimum": 0,
           "default": 24
+        }
+      }
+    },
+    "premise_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The premise-attack linter (schema/premise-lint.mjs): each rule, one per aspect, is off, warn (the default) or error",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "undefined-term": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "unmeasurable": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "no-owner": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "unsupported-premise": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "orphan": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "conflict": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "dependency": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
+            "phase-mismatch": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            }
+          }
         }
       }
     }

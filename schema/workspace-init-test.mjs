@@ -150,6 +150,103 @@ await t("create-venture's own workspace gets the same clock and calendar", () =>
   ok(w.name === "Naive workspace" && w.timeZone && existsSync(join(dir, "calendar/calendars/default.json")), JSON.stringify(w));
 });
 
+const bad = '{"name":"Mine","ventures":["one","two"],';
+
+await t("a workspace file that does not parse stops the command and stays as it was", () => {
+  const dir = join(base, "corrupt");
+  mkdirSync(dir);
+  writeFileSync(join(dir, "naive-workspace.json"), bad);
+  const cv = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), "three", "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
+  ok(cv.status === 1 && /naive-workspace\.json does not parse/.test(cv.stderr), cv.stderr + cv.stdout);
+  ok(readFileSync(join(dir, "naive-workspace.json"), "utf8") === bad, "create-venture left the file untouched");
+  ok(!existsSync(join(dir, "three")), "no venture folder is made");
+  const init = sh(["workspace", "init", dir, "--venture", "Two", ...FLAGS]);
+  ok(init.status === 1 && /does not parse/.test(init.stderr), init.stderr + init.stdout);
+  ok(readFileSync(join(dir, "naive-workspace.json"), "utf8") === bad, "init left the file untouched");
+  ok(sh(["capture", "a note"], { cwd: dir }).status === 1, "capture stops too");
+  const nul = join(base, "corrupt-null");
+  mkdirSync(nul);
+  writeFileSync(join(nul, "naive-workspace.json"), "null");
+  ok(sh(["workspace", "init", nul, "--venture", "Two", ...FLAGS]).status === 1, "valid JSON that is not an object stops too");
+  ok(readFileSync(join(nul, "naive-workspace.json"), "utf8") === "null");
+});
+
+await t("another tool's workspace.json is left alone", () => {
+  const dir = join(base, "nx");
+  mkdirSync(dir);
+  const nx = JSON.stringify({ version: 2, projects: {} });
+  writeFileSync(join(dir, "workspace.json"), nx);
+  const r = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), "app", "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
+  ok(r.status === 0, r.stderr + r.stdout);
+  ok(readFileSync(join(dir, "workspace.json"), "utf8") === nx, "the other tool's file is untouched");
+  ok(load(join(dir, "naive-workspace.json")).ventures.join() === "app", "ours is written beside it");
+});
+
+await t("mistakes the flags show are refused before anything is written", () => {
+  const src = join(base, "src-a");
+  mkdirSync(src);
+  writeFileSync(join(src, "README.md"), "# A\n");
+  const r = sh(["workspace", "init", "noconfirm", "--port", src, "--apply", ...FLAGS]);
+  ok(r.status === 2 && /--apply --confirm port/.test(r.stderr), r.stderr);
+  ok(!existsSync(join(base, "noconfirm")), "nothing is left to finish");
+  const inside = sh(["workspace", "init", "--port", ".", ...FLAGS], { cwd: src });
+  ok(inside.status === 2 && /inside the folder it ports/.test(inside.stderr), inside.stderr);
+  ok(readdirSync(src).join() === "README.md", "the source folder is unchanged");
+  const fixed = sh(["workspace", "init", "noconfirm", "--port", src, "--apply", "--confirm", "port", ...FLAGS]);
+  ok(fixed.status === 0, fixed.stderr + fixed.stdout);
+});
+
+await t("a folder left by a stopped run is named, and kept", () => {
+  const dir = join(base, "stopped/kettle");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "half.txt"), "x");
+  const r = sh(["workspace", "init", "stopped", "--venture", "Kettle", ...FLAGS]);
+  ok(r.status === 1 && r.stderr.includes(`${dir} was already there`) && /remove it/.test(r.stderr), r.stderr);
+  ok(existsSync(join(dir, "half.txt")), "it may be the founder's folder");
+});
+
+await t("a workspace from before the calendar gets one when it asks", () => {
+  const dir = join(base, "old");
+  mkdirSync(dir);
+  writeFileSync(join(dir, "naive-workspace.json"), JSON.stringify({ schema: "everything-ecosystem", schema_version: "0.5.0", ventures: [] }));
+  const r = sh(["calendar", "list"], { cwd: dir });
+  ok(r.status === 0, r.stderr + r.stdout);
+  ok(existsSync(join(dir, "calendar/calendars/default.json")) && load(join(dir, "naive-workspace.json")).timeZone, "the calendar and clock are filled in");
+});
+
+await t("one bad date is skipped and named, and the rest of the calendar still shows", () => {
+  const ws = join(base, "dates");
+  ok(sh(["workspace", "init", ws, "--venture", "Kettle", "--time-zone", "America/Chicago", ...FLAGS]).status === 0);
+  addEvent(ws, { title: "Good one", start: "2026-11-03T09:00", uid: "good" });
+  const ev = (uid, o) => writeFileSync(join(ws, "calendar/events", `${uid}.json`), JSON.stringify({ "@type": "Event", uid, title: uid, duration: "PT1H", calendar: "default", ...o }));
+  ev("soon", { start: "soon", timeZone: "America/Chicago" });
+  ev("mars", { start: "2026-11-03T09:00:00", timeZone: "Mars/Olympus" });
+  const dd = ventureFile(join(ws, "kettle"), "decisions");
+  mkdirSync(dd, { recursive: true });
+  writeFileSync(join(dd, "vague.decision.json"), JSON.stringify({ id: "vague", question: "Vague?", layer: "purpose", status: "open", due: "end of Q3" }));
+  const r = sh(["calendar", "list", "--from", "2026-11-01", "--to", "2026-11-30"], { cwd: ws });
+  ok(r.status === 0 && /Good one/.test(r.stdout), r.stderr + r.stdout);
+  for (const name of ["soon.json", "mars.json", "vague"]) ok(r.stderr.includes(name), `${name} is named: ${r.stderr}`);
+  ok(sh(["calendar", "export", "--ics", join(base, "d.ics"), "--from", "2026-11-01", "--to", "2026-11-30"], { cwd: ws }).status === 0, "export survives it too");
+});
+
+await t("from a packed npm install: naive workspace init makes the workspace and its venture", () => {
+  const out = join(base, "pack");
+  mkdirSync(out);
+  const p = spawnSync("npm", ["pack", "--silent", "--pack-destination", out], { cwd: repo, encoding: "utf8" });
+  ok(p.status === 0, p.stderr);
+  const app = join(out, "app");
+  mkdirSync(app);
+  writeFileSync(join(app, "package.json"), "{}");
+  const i = spawnSync("npm", ["install", "--offline", "--no-audit", "--no-fund", join(out, p.stdout.trim())], { cwd: app, encoding: "utf8" });
+  ok(i.status === 0, i.stderr);
+  const bin = join(app, "node_modules/.bin/naive");
+  const r = spawnSync(bin, ["workspace", "init", "ws1", "--venture", "Kettle", ...FLAGS], { cwd: app, env, encoding: "utf8" });
+  ok(r.status === 0, r.stderr + r.stdout);
+  ok(load(join(app, "ws1/naive-workspace.json")).ventures.join() === "kettle" && existsSync(join(app, "ws1/kettle/venture.json")), "the venture is made and listed");
+  ok(!existsSync(join(app, "node_modules/naive-framework/interface/create-venture/test.mjs")), "tests stay out of the package");
+});
+
 rmSync(base, { recursive: true, force: true });
 if (failed) { console.log(`${failed} failed`); process.exit(1); }
 console.log("all passed");

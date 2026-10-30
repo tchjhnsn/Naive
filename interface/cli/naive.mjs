@@ -51,6 +51,9 @@
 //   naive workspace rename <name>                   rename the workspace this runs in (logged in its meta/provenance.jsonl)
 //   naive calendar [list [--from <date>] [--to <date>] | add --title <t> --start <local time> | export --ics <file>]
 //                                                   the workspace calendar: stored events and those derived from dated records
+//   naive lint premises [<route>] [--drafts] [--json] [--propose]
+//                                                   attack the premises of the venture's goals, requirements, exit criteria,
+//                                                   constraints and decisions; --propose writes findings as open decisions
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -61,7 +64,7 @@ import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { logical } from "../../schema/venture-paths.mjs";
 import { ventureFile } from "../../schema/venture-paths.mjs";
-import { checkWorkspace, findWorkspace } from "../../schema/workspace.mjs";
+import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../schema/workspace.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -249,19 +252,19 @@ else if (cmd === "build" || cmd === "start") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
 } else if (cmd === "publish") {
-  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  if (args[0] === "check") {
+    // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
+    const v = opt("venture") ?? findVenture();
+    process.exit(run("schema/publish-lint.mjs", [...args, ...(v ? ["--venture", v] : [])]));
+  }
+  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
   process.exit(run("schema/publish.mjs", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
   process.exit(run(`schema/${cmd}-venture.mjs`, args));
-} else if (cmd === "publish") {
-  // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
-  const args = rest[0] === "check" ? rest.slice(1) : rest;
-  const v = opt("venture") ?? findVenture();
-  process.exit(run("schema/publish-lint.mjs", ["check", ...args.filter((a, i) => a !== "--venture" && args[i - 1] !== "--venture"), ...(v ? ["--venture", v] : [])]));
 } else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
   // The workspace (schema/workspace.mjs): the one above the venture this runs in, else above this folder.
   const venture = opt("venture") ? here() : findVenture();
@@ -295,8 +298,14 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "calendar") {
   const ws = findWorkspace(opt("workspace") ?? process.cwd());
   if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
+  // A workspace from before the calendar gets its clock and calendar the first time it asks for them.
+  try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error(e.message); process.exit(1); }
   const [sub = "list", ...args] = rest[0] && !rest[0].startsWith("--") ? rest : ["list", ...rest];
   process.exit(run("schema/calendar.mjs", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
+} else if (cmd === "lint") {
+  const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
+  process.exit(run("schema/premise-lint.mjs", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");
