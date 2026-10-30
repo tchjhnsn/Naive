@@ -90,6 +90,10 @@ ventureName ??= basename(dir);
 const id = slug(basename(dir));
 if (!id) fail(`${basename(dir)} has no letters or digits to make a venture id from`);
 if (existsSync(dir) && readdirSync(dir).length) fail(`${dir} already exists and is not empty. create-venture only creates new ventures; to bring an existing project in, create one here and run naive port or naive migrate.`);
+// A workspace file that does not parse stops here, before the venture folder is made.
+const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(join(framework, "schema/workspace.mjs"));
+let ownWorkspace = null;
+if (!flag("no-workspace")) try { ownWorkspace = findWorkspace(dirname(dir)); if (ownWorkspace) loadWorkspace(ownWorkspace); } catch (e) { fail(e.message); }
 
 // The framework's registries: venture types, roles and functions (EE-082).
 const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "schema/venture-type.mjs")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
@@ -285,7 +289,7 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
   devDependencies: { [fw.name]: spec },
 }, null, 2) + "\n");
-writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
+writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder conversations and what is caught in them stay local, in case a redaction misses something.\n**/raw/sources/conversations-*/\n**/raw/sources/diagnosis-*/\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(join(framework, "interface/router.mjs"));
@@ -314,21 +318,14 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
 // naive-workspace.json above the venture lists it; with none, the venture's parent folder becomes the
 // workspace, named "Naive workspace" until the founder renames it, with an AGENTS.md for rules that hold
 // across every venture. --no-workspace leaves the parent folder as it is.
+// The workspace's file, AGENTS.md, folders, clock (its timeZone) and calendar come from schema/workspace.mjs,
+// the same code naive workspace init runs, so both ways in make the same workspace.
 let workspace = null;
 if (!flag("no-workspace")) {
-  let up = dirname(dir);
-  while (!existsSync(join(up, WORKSPACE_FILE)) && dirname(up) !== up) up = dirname(up);
-  const root = existsSync(join(up, WORKSPACE_FILE)) ? up : dirname(dir);
-  const wf = join(root, WORKSPACE_FILE);
-  const ws = existsSync(wf) ? JSON.parse(readFileSync(wf, "utf8")) : { schema: "everything-ecosystem", schema_version: readFileSync(join(framework, "schema/VERSION"), "utf8").trim(), name: "Naive workspace", ventures: [], settings: { cross_venture_reads: true, route_threshold: 0.8 } };
-  const rel = relative(root, dir);
-  if (!ws.ventures.includes(rel)) ws.ventures.push(rel);
-  writeFileSync(wf, JSON.stringify(ws, null, 2) + "\n");
-  if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
-  // The workspace's own folders: raw/ keeps what the founder captures, inbox/ holds what waits for them,
-  // meta/ the logs, founder/ the founder record once.
-  for (const d of ["raw", "inbox", "meta", "founder"]) { mkdirSync(join(root, d), { recursive: true }); if (!readdirSync(join(root, d)).length) writeFileSync(join(root, d, ".gitkeep"), ""); }
-  workspace = { root, name: ws.name };
+  const root = ownWorkspace ?? dirname(dir);
+  const { ws } = ensureWorkspace(root, { owner: people[0].id });
+  addVenture(root, dir);
+  workspace = { root, name: ws.name, timeZone: ws.timeZone };
 }
 
 try { mkdirSync(dirname(prefsFile), { recursive: true }); writeFileSync(prefsFile, JSON.stringify({ type: vtype.id, role, mode, phase: answers.phase, layers: answers.layers, legalForm: answers.legalForm }, null, 2) + "\n"); } catch {}
@@ -338,7 +335,7 @@ const cd = relative(process.cwd(), dir) || ".";
 const legal = functions.legal?.systems.length ? null : "Legal documents: none connected yet. Point Naive at them later with --source legal=google-drive:<folder> (or docusign, local-folder), and draft the founder agreement with the founding-agreement kit.";
 console.log(`
 ${bold("Success!")} Created ${basename(dir)} at ${dir}
-Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE})` : "none (--no-workspace)"}
+Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE}), clock in ${workspace.timeZone}, calendar in calendar/` : "none (--no-workspace)"}
 Git: ${git}${rhoNote ? `\n${rhoNote}` : ""}${legal ? `\n${legal}` : ""}
 
 Inside that directory, you can run:

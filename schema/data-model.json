@@ -24,6 +24,35 @@
       ]
     },
     {
+      "id": "calendar",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar.schema.json",
+      "paths": [
+        "instance/calendar/calendars/*.json",
+        "schema/examples/workspace/calendar/calendars/*.json"
+      ],
+      "note": "A workspace calendar: owner, members, visibility. Created with the workspace (default.json, named Venture); schema/calendar.mjs (Torian, 2026-10-30)"
+    },
+    {
+      "id": "calendar-event",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar-event.schema.json",
+      "paths": [
+        "instance/calendar/events/*.json",
+        "schema/examples/workspace/calendar/events/*.json"
+      ],
+      "refs": [
+        {
+          "field": "calendar",
+          "to": "calendar",
+          "checked_by": "schema/workspace-init-test.mjs"
+        }
+      ],
+      "note": "One JSCalendar-shaped event (RFC 8984) per file. Derived events (decisions with a due time, releases) are a view in schema/calendar.mjs, never stored; naive calendar export writes .ics"
+    },
+    {
       "id": "venture",
       "layer": "system",
       "level": "venture",
@@ -306,6 +335,52 @@
       ],
       "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares schema/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts.",
       "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "validation-interview",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-interview.schema.json",
+      "paths": [
+        "instance/**/validation/interviews/*.json",
+        "schema/examples/**/validation/interviews/*.json"
+      ],
+      "refs": [
+        {
+          "field": "icp",
+          "to": "icp",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "transcript.source",
+          "to": "raw-source",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "follow_up.evidence",
+          "to": "evidence",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "One problem interview in the validation study: an anonymised person, consent, the transcript's raw source, bottlenecks, current solutions, the chosen problem, a prediction with Naive and without, and the follow-up that checks it. Names stay in _private."
+    },
+    {
+      "id": "validation-feedback",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-feedback.schema.json",
+      "paths": [
+        "instance/**/validation/feedback/*.json",
+        "schema/examples/**/validation/feedback/*.json"
+      ],
+      "refs": [
+        {
+          "field": "capability",
+          "to": "beta-capabilities",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (schema/beta-gate.mjs)."
     },
     {
       "id": "validation-solution",
@@ -834,6 +909,28 @@
       "note": "Execution folded into operations (EE-038)."
     },
     {
+      "id": "activity",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity.schema.json",
+      "paths": [
+        "instance/**/operations/activity/*.json",
+        "schema/examples/**/operations/activity/*.json"
+      ],
+      "note": "Time spent in the venture on one day from transcript timestamps alone: sessions, active minutes, messages, estimated tokens in, in the venture's time zone; internal by default (naive activity, TRANSCRIPT_DIAGNOSIS_V2)"
+    },
+    {
+      "id": "activity-summary",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity-summary.schema.json",
+      "paths": [
+        "instance/**/operations/activity/_summary.json",
+        "schema/examples/**/operations/activity/_summary.json"
+      ],
+      "note": "Days since last touch and the streak, for the docket; a long silence is a gentle nudge (naive activity --write)"
+    },
+    {
       "id": "evidence",
       "layer": "evidence",
       "level": "venture",
@@ -1052,6 +1149,19 @@
         }
       ],
       "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "internal-terms",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/internal-terms.schema.json",
+      "paths": [
+        "schema/internal-terms.json",
+        "instance/**/governance/internal-terms.json",
+        "schema/examples/**/governance/internal-terms.json"
+      ],
+      "note": "Patterns that mark internal text (decision ids, attributions, record paths, codenames, phase jargon, draft markers); public output matches none of them (schema/check-leaks.mjs). Naive's defaults in schema/internal-terms.json, the founder's own in the venture's governance/internal-terms.json",
       "decision_class": "strategy-or-constitution"
     },
     {
@@ -1537,6 +1647,65 @@
       "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
     },
     {
+      "id": "role-template",
+      "layer": "governance",
+      "level": "method",
+      "schema": "schema/role-template.schema.json",
+      "paths": [
+        "governance/venture-template/roles/founder.json",
+        "governance/venture-template/roles/chief-of-staff.json",
+        "governance/venture-template/roles/product-design-lead.json",
+        "governance/venture-template/roles/architect.json",
+        "governance/venture-template/roles/builder.json",
+        "governance/venture-template/roles/marketing-lead.json",
+        "governance/venture-template/roles/finance-lead.json",
+        "governance/venture-template/roles/validation-lead.json",
+        "governance/venture-template/roles/people-lead.json",
+        "governance/venture-template/roles/counsel.json"
+      ],
+      "refs": [
+        {
+          "field": "verified_by",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grantable_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "note": "One role a venture can install: function, grantable decision classes, default tier, lint suites, verifier (never itself) and skill"
+    },
+    {
+      "id": "delegation",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/delegation.schema.json",
+      "paths": [
+        "governance/venture-template/delegation.json",
+        "instance/**/governance/delegation.json"
+      ],
+      "refs": [
+        {
+          "field": "grants.from",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.to",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "decision_class": "strategy-or-constitution"
+    },
+    {
       "id": "people",
       "layer": "operations",
       "level": "venture",
@@ -1545,7 +1714,8 @@
         "instance/**/people/people.json",
         "schema/examples/**/people/people.json"
       ],
-      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)"
+      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)",
+      "decision_class": "strategy-or-constitution"
     },
     {
       "id": "founder",
@@ -1690,9 +1860,90 @@
         }
       ],
       "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
+    },
+    {
+      "id": "bug",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/bug.schema.json",
+      "paths": [
+        "instance/**/product/bugs/*.json",
+        "schema/examples/**/product/bugs/*.json"
+      ],
+      "note": "One defect: title, severity P0 to P3, status, the version it was found and fixed in, and how to reproduce it. Stable means no open P0 or P1 (naive bugs, schema/bugs.mjs).",
+      "refs": [
+        {
+          "field": "fixed_in",
+          "to": "(release)",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ]
+    },
+    {
+      "id": "telemetry-event",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/telemetry.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/.naive/telemetry.jsonl"
+      ],
+      "note": "Opt-in usage events shared by the plugin beta and Mentura: which capability ran, when, how long, how it ended; no record contents, no _private paths, the venture id hashed with a per-venture salt (schema/telemetry.mjs). Not routed: the router never routes .naive/, so events stay off MCP and the API."
+    },
+    {
+      "id": "beta-capabilities",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/beta-capabilities.schema.json",
+      "paths": [
+        "beta/capabilities.json"
+      ],
+      "note": "The plugin beta's capabilities in unlock order, each with its checkpoint feedback form (schema/beta-gate.mjs)."
+    },
+    {
+      "id": "decision-roadmap",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/decision-roadmap.schema.json",
+      "form": "json",
+      "paths": [
+        "packages/*/roadmaps/*.json"
+      ],
+      "refs": [
+        {
+          "field": "steps.*.frame",
+          "to": "frame",
+          "checked_by": "schema/check-roadmap.mjs"
+        }
+      ],
+      "note": "A decision roadmap: an ordered set of frames, each step with its phase, dependencies, door and decider. schema/roadmaps.mjs installs it by proposing each step's decisions open; schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder"
+    },
+    {
+      "id": "lifecycle-playbook",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/lifecycle-playbook.schema.json",
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/product-anatomy/playbooks/*.json"
+      ],
+      "refs": [],
+      "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
     }
   ],
   "ignore": [
+    {
+      "path": "interface/plugin-mcp.json",
+      "reason": "The MCP server the Claude Code plugin starts, from its own copy of the framework (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/plugin.json",
+      "reason": "The Claude Code plugin manifest: Naive's skills and MCP server for an agent (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "reason": "The Claude Code marketplace for a clone of the repository (EE-084); not a record"
+    },
     {
       "path": "site/package.json",
       "reason": "The developer-docs site's npm manifest (EE-034); not a record"
@@ -1712,6 +1963,10 @@
     {
       "path": "package-lock.json",
       "reason": "npm lockfile for the repository's dev dependencies (typescript and its Node types); generated by npm"
+    },
+    {
+      "path": "tsconfig.strict.json",
+      "reason": "Strict TypeScript config for .ts files (schema/check-types.ts); not a record"
     },
     {
       "path": "tsconfig.json",
@@ -1750,16 +2005,24 @@
       "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
     },
     {
-      "path": "schema/internal-terms.json",
-      "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
-    },
-    {
       "path": "package.json",
       "reason": "The framework's npm manifest: the naive and mentura commands (I-1, I-17); not a record"
     },
     {
       "path": "interface/create-venture/package.json",
       "reason": "The create-venture generator's npm manifest (I-1); not a record"
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "The framework's npm lockfile for its dev tools (ESLint), installed by npm ci in CI; not a record"
+    },
+    {
+      "path": "schema/known-leaks.json",
+      "reason": "The dated list of public outputs that leak internal text today, read by schema/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
+    },
+    {
+      "path": "schema/internal-terms.json",
+      "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
     }
   ]
 }

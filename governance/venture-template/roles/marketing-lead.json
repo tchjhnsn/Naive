@@ -1,0 +1,15 @@
+{
+  "id": "marketing-lead",
+  "name": "Marketing lead",
+  "function": "marketing",
+  "description": "Owns positioning, copy and what the venture says in public, short of commitments.",
+  "grantable_classes": [
+    "domain-fact"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [
+    "marketing/brand-lint"
+  ],
+  "verified_by": "chief-of-staff",
+  "skill": "packages/marketing/skill/SKILL.md"
+}

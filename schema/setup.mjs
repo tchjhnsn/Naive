@@ -52,11 +52,9 @@ export async function state(dir) {
 // An open decision whose wording an agent wrote: in setup, the founder's words the model relayed.
 const relayed = (d) => d.status !== "decided" && !!d.answer && d.provenance?.drafted_by?.kind === "agent";
 
-const founderName = (dir) => existsSync(join(ventureFile(dir, "people/people.json"))) ? load(join(ventureFile(dir, "people/people.json"))).people[0]?.name ?? "Founder" : "Founder";
-
 // One answer: a decision on file is approved; a foundation statement (or the goal) becomes a decision a person approves.
 export async function decide(dir, { id, answer, via = "api", where = "/setup" }) {
-  const { approve, decisions, propose } = await import("./decisions.mjs");
+  const { approve, decisions, founderName, propose } = await import("./decisions.mjs");
   if (!answer || !String(answer).trim()) return { ok: false, error: "write an answer first" };
   const by = founderName(dir);
   const d = decisions(dir).decisions.find((x) => x.id === id);
@@ -115,7 +113,8 @@ export async function relay(dir, { id, answer, agentId, harness, model }) {
 }
 
 /** The founder confirms the answers the model relayed, at the keyboard: each becomes a decision they made. */
-export async function confirm(dir, { by = founderName(dir) } = {}) {
+export async function confirm(dir, { by } = {}) {
+  by ??= (await import("./decisions.mjs")).founderName(dir);
   const { approve } = await import("./decisions.mjs");
   const out = [];
   for (const w of (await state(dir)).waiting) {

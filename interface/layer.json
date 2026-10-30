@@ -12,6 +12,10 @@
       "path": "interface/skills/naive-setup/SKILL.md"
     },
     {
+      "id": "naive-create",
+      "path": "interface/skills/naive-create/SKILL.md"
+    },
+    {
       "id": "choosing-artifacts",
       "path": "interface/skills/choosing-artifacts/SKILL.md"
     },
@@ -23,7 +27,8 @@
   "records": [
     "route-aliases",
     "adapter",
-    "artifact"
+    "artifact",
+    "beta-capabilities"
   ],
   "reads": [
     "integration"
