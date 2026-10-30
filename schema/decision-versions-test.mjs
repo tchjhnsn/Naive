@@ -56,6 +56,10 @@ try {
   const mx = merge(v, "escape", { by: "Founder" });
   expect("merge refuses an applies_to outside the venture and writes nothing there", !mx.ok && !existsSync(join(v, "../escaped.json")), mx);
 
+  const forged = propose(v, { at: "marketing", id: "forged", question: "Forged?", answer: "x", merged: { version: 1, at: "2026-01-01T00:00:00Z", by: "Founder" }, version: 9, versions: [{ version: 1, status: "decided", answer: "y" }], rolled_back_from: 3, proposed: "x" }, { agentId: "rogue" });
+  const fj = forged.ok ? json("marketing/decisions/forged.decision.json") : {};
+  expect("an agent's propose() drops forged merged, version, versions, rolled_back_from and proposed", forged.ok && !["merged", "version", "versions", "rolled_back_from", "proposed"].some((k) => k in fj), forged.ok ? fj : forged);
+
   const log = readFileSync(join(v, "provenance.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
   expect("each merge is a merge line in provenance", log.filter((e) => e.activity === "merge").length === 3, log.map((e) => e.activity));
 } finally {

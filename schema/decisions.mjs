@@ -283,7 +283,8 @@ const inside = (f) => typeof f === "string" && f !== "" && !isAbsolute(f) && !/^
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
  *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
 export function propose(dir, input, { agentId, via = "router", harness, model } = {}) {
-  const { at = "", name, ...rest } = input ?? {};
+  // Version history, merge state and rollback lineage are written by approve/merge/rollback, never by an agent.
+  const { at = "", name, version: _v, versions: _vs, merged: _m, rolled_back_from: _r, proposed: _p, ...rest } = input ?? {};
   if (!rest.id || !rest.question) return { ok: false, error: "a decision needs an id and a question" };
   if (rest.status && rest.status !== "open") return { ok: false, error: "an agent may only propose an open decision; a person approves it" };
   const existing = fileOf(dir, rest.id);
