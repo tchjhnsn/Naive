@@ -52,7 +52,7 @@ import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { logical } from "../../schema/venture-paths.mjs";
 import { ventureFile } from "../../schema/venture-paths.mjs";
-import { checkWorkspace, findWorkspace } from "../../schema/workspace.mjs";
+import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../schema/workspace.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -276,6 +276,8 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "calendar") {
   const ws = findWorkspace(opt("workspace") ?? process.cwd());
   if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
+  // A workspace from before the calendar gets its clock and calendar the first time it asks for them.
+  try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error(e.message); process.exit(1); }
   const [sub = "list", ...args] = rest[0] && !rest[0].startsWith("--") ? rest : ["list", ...rest];
   process.exit(run("schema/calendar.mjs", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
 } else if (cmd === "typegen") {

@@ -15,10 +15,12 @@
 // port or migrate then plans the move or the rewrite into that venture (schema/port-venture.mjs,
 // schema/migrate-venture.mjs). A port moves files only with --apply --confirm port. If the venture cannot be
 // made, its half-made folder is removed and the workspace kept; the same command run again finishes it.
+// A folder that was already there is left alone, and the message names it. What can be refused from the
+// flags alone is refused before anything is written, so those mistakes leave nothing to finish.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { basename, join, resolve, sep } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { DEFAULT_NAME, WORKSPACE_FILE, ensureWorkspace, findWorkspace, loadWorkspace } from "./workspace.mjs";
 
@@ -58,8 +60,13 @@ ventureName ??= mode === "venture" ? FIRST_VENTURE : title(basename(source));
 wsName ??= DEFAULT_NAME;
 
 const root = resolve(positional[0] ?? slug(wsName));
+const vdir = join(root, slug(ventureName) || "venture");
+if (mode === "port" && flag("apply") && opt("confirm") !== "port") fail("moving files needs --apply --confirm port", 2);
+if (mode === "port" && (vdir === source || vdir.startsWith(source + sep))) fail(`the workspace would sit inside the folder it ports (${source}): run this from outside that folder, or pass a <dir> outside it`, 2);
 // A workspace left without a venture by a failed init is finished by running init again; one that holds a venture is not re-initiated.
-if (findWorkspace(root) === root && loadWorkspace(root).ws.ventures?.length) fail(`${root} is already a workspace (${WORKSPACE_FILE}); add a venture to it with create-venture, or rename it with naive workspace rename`);
+try {
+  if (findWorkspace(root) === root && loadWorkspace(root).ws.ventures?.length) fail(`${root} is already a workspace (${WORKSPACE_FILE}); add a venture to it with create-venture, or rename it with naive workspace rename`);
+} catch (e) { fail(e.message); }
 
 // 1. The workspace, its clock and its calendar.
 let w;
@@ -67,14 +74,15 @@ try { w = ensureWorkspace(root, { name: wsName, timeZone: opt("time-zone"), owne
 console.log(`Created ${w.ws.name} at ${root}: clock in ${w.ws.timeZone}, calendar in calendar/ (calendars/default.json)`);
 
 // 2. The venture, by create-venture, inside the workspace.
-const vdir = join(root, slug(ventureName) || "venture");
 const pass = [["type"], ["role"], ["layout"], ["founder", "name"]].flatMap(([k, as]) => (opt(k) !== undefined ? [`--${as ?? k}`, opt(k)] : []));
 const fresh = !existsSync(vdir);
 const cv = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), vdir, "--venture-name", ventureName, "--yes", ...pass,
   ...(flag("skip-install") ? ["--skip-install"] : []), ...(flag("no-git") ? ["--no-git"] : [])], { encoding: "utf8", cwd: root, env: { ...process.env, CREATE_VENTURE_PROMPTS: "" } });
 if (cv.status !== 0) {
   if (fresh) rmSync(vdir, { recursive: true, force: true });
-  fail(`the workspace is made, but its venture is not: ${(cv.stderr || cv.stdout).trim()}\nFix that and run the same naive workspace init again; it finishes this workspace.`);
+  const next = fresh ? "Fix that and run the same naive workspace init again; it finishes this workspace."
+    : `${vdir} was already there, so it was left alone. If a stopped run left it, remove it and run the same naive workspace init again; otherwise pick another venture name.`;
+  fail(`the workspace is made, but its venture is not: ${(cv.stderr || cv.stdout).trim()}\n${next}`);
 }
 console.log(`Created the venture ${ventureName} at ${vdir}`);
 
@@ -83,7 +91,6 @@ const run = (script, args) => spawnSync("node", [join(repo, script), ...args], {
 if (mode === "port") {
   if (run("schema/port-venture.mjs", [source, "--venture", vdir]) !== 0) fail("the port plan failed; the workspace and venture are kept");
   if (flag("apply")) {
-    if (opt("confirm") !== "port") fail("moving files needs --apply --confirm port", 2);
     if (run("schema/port-venture.mjs", ["--venture", vdir, "--apply", "--confirm", "port"]) !== 0) process.exit(1);
   } else console.log(`\nNothing moved yet. Review the plan, then: naive port --venture ${vdir} --apply --confirm port`);
 } else if (mode === "migrate") {

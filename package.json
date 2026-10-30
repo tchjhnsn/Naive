@@ -42,7 +42,7 @@
     "!**/test.mjs",
     "!**/*.steps.mjs",
     "!**/*.feature",
-    "!interface/create-venture/",
+    "!interface/create-venture/package.json",
     "!platform/integrations/fixtures/",
     "!platform/research/",
     "!schema/examples/docket-scenarios.json",

@@ -51,9 +51,17 @@ export function addEvent(root, { title, start, duration = "PT1H", timeZone, cale
   return e;
 }
 
+// One record with a bad date must not take the whole calendar down: it is skipped, and the warning names it.
+const dated = (record, fn) => { try { return fn(); } catch (e) { console.warn(`skipped ${record}: ${e.message}`); return null; } };
+
 export function storedEvents(root) {
   const d = join(root, CALENDAR_DIR, "events");
-  return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => read(join(d, f))).filter(Boolean) : [];
+  if (!existsSync(d)) return [];
+  const zone = zoneOf(root);
+  return readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => {
+    const e = read(join(d, f));
+    return e && dated(join(d, f), () => (localDate(toInstant(e.start, e.timeZone ?? zone), zone), e));
+  }).filter(Boolean);
 }
 
 // The workspace's ventures: every venture.json under the folders the workspace lists.
@@ -81,12 +89,13 @@ export async function derivedEvents(root) {
     const vz = zoneOf(dir);
     const r = decisions(dir, now().getTime());
     for (const d of r.decisions ?? []) if (d.due && !["done", "withdrawn", "deferred"].includes(d.render)) {
-      const at = new Date(d.due);
-      out.push({ "@type": "Event", uid: `decision:${vid}:${d.id}`, title: `Decide: ${d.question ?? d.id}`, start: localDateTime(at, vz), timeZone: vz, duration: "PT0S", calendar: DEFAULT_CALENDAR,
+      const start = dated(d.file ?? `decision ${d.id} in ${dir}`, () => localDateTime(new Date(d.due), vz));
+      if (start) out.push({ "@type": "Event", uid: `decision:${vid}:${d.id}`, title: `Decide: ${d.question ?? d.id}`, start, timeZone: vz, duration: "PT0S", calendar: DEFAULT_CALENDAR,
         derived: { from: "decision", venture: vid, id: d.id, ...(d.file ? { file: d.file } : {}), render: d.render } });
     }
     const m = read(join(dir, ".release/release.json")) ?? read(join(dir, "meta/releases/release.json"));
-    if (m?.built_at) out.push({ "@type": "Event", uid: `release:${vid}:${m.release ?? m.built_at}`, title: `Release ${m.release ?? ""} of ${v.name ?? vid}`.replace("  ", " "), start: localDateTime(new Date(m.built_at), vz), timeZone: vz, duration: "PT0S", calendar: DEFAULT_CALENDAR,
+    const released = m?.built_at && dated(`the release record in ${dir}`, () => localDateTime(new Date(m.built_at), vz));
+    if (released) out.push({ "@type": "Event", uid: `release:${vid}:${m.release ?? m.built_at}`, title: `Release ${m.release ?? ""} of ${v.name ?? vid}`.replace("  ", " "), start: released, timeZone: vz, duration: "PT0S", calendar: DEFAULT_CALENDAR,
       derived: { from: "release", venture: vid, release: m.release ?? null } });
   }
   return out.map((e) => ({ ...e, timeZone: e.timeZone ?? zone }));
@@ -152,7 +161,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const [cmd, root, ...rest] = process.argv.slice(2);
   const opt = (n) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
   if (!root || !["list", "add", "export"].includes(cmd)) { console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   node")).map((l) => l.slice(3)).join("\n")); process.exit(2); }
-  if (!existsSync(join(root, CALENDAR_DIR, "calendars"))) { console.error(`${root} has no calendar yet: naive workspace init creates one`); process.exit(1); }
+  if (!existsSync(join(root, CALENDAR_DIR, "calendars"))) { console.error(`${root} has no calendar yet: run naive calendar in it to add one, or naive workspace init to make a workspace`); process.exit(1); }
   try {
     if (cmd === "add") {
       const e = addEvent(root, { title: opt("title"), start: opt("start"), duration: opt("duration") ?? "PT1H", calendar: opt("calendar") ?? DEFAULT_CALENDAR, timeZone: opt("time-zone") });
