@@ -4,28 +4,98 @@
   "title": "Artifact",
   "description": "A view built from records for a reader: a document, deck, dashboard, design, page or file. Records are the source of truth and are never what gets published; artifacts are what gets published, and each names the records it was built from, at the revision it read, so naive check can say when one has gone stale.",
   "type": "object",
-  "required": ["id", "kind", "title", "built_from", "built_at"],
+  "required": [
+    "id",
+    "kind",
+    "title",
+    "built_from",
+    "built_at"
+  ],
   "additionalProperties": false,
   "properties": {
-    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
-    "kind": { "enum": ["document", "deck", "dashboard", "design", "design-system", "page", "file", "site"] },
-    "title": { "type": "string" },
-    "url": { "type": "string", "description": "Where it is published or kept" },
-    "function": { "type": "string", "description": "The venture function whose action built it" },
-    "action": { "type": "string", "description": "The action that built it, as in the choosing-artifacts map" },
-    "audience": { "type": "string", "description": "Who it is for: the founder, the team, investors, the public" },
-    "published": { "type": "boolean", "description": "It has gone out to its audience; a person decides that" },
-    "built_at": { "type": "string", "format": "date-time" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "kind": {
+      "enum": [
+        "document",
+        "deck",
+        "dashboard",
+        "design",
+        "design-system",
+        "page",
+        "file",
+        "site"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string",
+      "description": "Where it is published or kept"
+    },
+    "function": {
+      "type": "string",
+      "description": "The venture function whose action built it"
+    },
+    "action": {
+      "type": "string",
+      "description": "The action that built it, as in the choosing-artifacts map"
+    },
+    "audience": {
+      "type": "string",
+      "description": "Who it is for: the founder, the team, investors, the public"
+    },
+    "published": {
+      "type": "boolean",
+      "description": "It has gone out to its audience; a person decides that"
+    },
+    "built_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "built_from": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["record"],
+        "required": [
+          "record"
+        ],
         "additionalProperties": false,
         "properties": {
-          "record": { "type": "string", "description": "The record's logical path in the venture, such as foundation/problem.json" },
-          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "The record's content hash when the artifact was built" }
+          "record": {
+            "type": "string",
+            "description": "The record's logical path in the venture, such as foundation/problem.json"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "The record's content hash when the artifact was built"
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "description": "The built output, as naive publish build wrote it: what a channel publishes",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "channel": {
+          "type": "string"
         }
       }
     }
