@@ -37,6 +37,9 @@
 //                                                   venture it fits, or in the workspace inbox when unsure
 //   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
 //   naive read <venture> <path>                     read another venture's published artifact, if the workspace allows
+//   naive beta status|feedback <capability>|unlock  the plugin beta: which capabilities are open, the checkpoint feedback
+//                                                   that unlocks the next, and unlocking it (beta.enabled in naive.config.json)
+//   naive bugs [--all]                              open P0 and P1 bugs; stable means none
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -260,6 +263,10 @@ else if (cmd === "build" || cmd === "start") {
   // naive read names the venture this session is in as the one reading.
   const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
   process.exit(run("schema/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
+} else if (cmd === "beta" || cmd === "bugs") {
+  // The plugin beta's gate (schema/beta-gate.mjs) and the bug summary (schema/bugs.mjs).
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run(cmd === "beta" ? "schema/beta-gate.mjs" : "schema/bugs.mjs", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
