@@ -131,7 +131,7 @@ export async function check(paths, { venture } = {}) {
   // 2. leaks
   if (on("leaks")) {
     stages.push("leaks");
-    for (const l of leaks(files, { venture })) findings.push({ rule: "leaks", file: l.file, text: l.text, message: `internal term ${l.pattern}: ${l.why}`, published: publishedOf.get(resolve(l.file)) ?? false });
+    for (const l of leaks(files, { venture })) findings.push({ rule: "leaks", file: l.file, text: l.text, message: `internal term ${l.pattern}: ${l.why}`, ...(l.severity === "warn" ? { term_severity: "warn" } : {}), published: publishedOf.get(resolve(l.file)) ?? false });
   }
   // 3. brand
   if (on("brand") && venture && existsSync(join(repo, "schema/brand-lint.mjs"))) {
@@ -146,7 +146,9 @@ export async function check(paths, { venture } = {}) {
   const base = venture ?? process.cwd();
   for (const f of findings) {
     f.file = relative(base, resolve(f.file)) || f.file;
-    f.severity = cfg.rules[f.rule];
+    // A term the founder marked warn (governance/internal-terms.json) is reported, never an error.
+    f.severity = f.term_severity === "warn" && cfg.rules[f.rule] === "error" ? "warn" : cfg.rules[f.rule];
+    delete f.term_severity;
     f.waived = cfg.waived.some((w) => w.rule === f.rule && (!w.file || w.file === f.file) && (!w.text || w.text === f.text));
   }
   return { ok: !findings.some((f) => f.severity === "error" && !f.waived), stages, findings };

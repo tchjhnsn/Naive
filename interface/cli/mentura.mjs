@@ -24,7 +24,7 @@
 //   mentura decisions --venture <id> [--why <decision>] [--json]
 //                                                   the ranked decisions; --why prints one decision's reasons and citations
 //                                                   a new --answer on a decided decision makes its next version; --rollback restores one
-//   mentura merge <decision> --venture <id> --by <name> [--confirm <decision>]
+//   mentura merge <decision> --venture <id> --by <name> | --role <role> [--confirm <decision>]
 //   mentura index --venture <id> [--since <iso>] [--rebuild]   update the live decision index from provenance
 //   mentura impact <decision> --venture <id>       rebuild a merged decision's impact map across the functions
 //                                                   apply a decided version to the records it decides (applies_to)
@@ -246,15 +246,17 @@ if (cmd === "merge") {
   const d = decisions(dir).decisions.find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
-  const r = merge(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, note: opt("note") });
+  // --role merges as a role under a delegation grant that names may_merge (an agent with no --by merges as its role).
+  const by = opt("by") ?? (opt("role") ? undefined : process.env.MENTURA_PERSON);
+  const r = merge(dir, id, { by, role: opt("role") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
 }
 
 if (cmd === "index") {
-  // The live decision index (schema/decision-index.mjs): re-scores the decisions the provenance events
-  // since its cursor (or --since) touch, spreading with damping, and appends rank history.
+  // The live decision index (schema/decision-index.mjs): re-scores every active decision
+  // (an update equals a rebuild) and appends rank history for what moved.
   const venture = opt("venture");
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();

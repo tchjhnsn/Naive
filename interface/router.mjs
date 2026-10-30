@@ -162,7 +162,7 @@ function buildRoutes() {
     cmd("knowledge/catalog", "knowledge/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "knowledge/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
     // The live decision index: schema/decision-index.mjs, a cache in .naive/ updated from provenance.
-    cmd("system/decision-index", "schema/decision-index.mjs", "The live decision index: every open decision scored by the docket, its structural impact (functions, records, linked decisions), its phase weight and requirement lift, and requirement violations flagged now; each run re-scores only the decisions the provenance events since its cursor touch, spreading with damping to linked ones, and appends rank history. Input value update (default), rebuild or read", { venture_arg: "id" }),
+    cmd("system/decision-index", "schema/decision-index.mjs", "The live decision index: every open decision scored by the docket, its structural impact (functions, records, linked decisions), its phase weight and requirement lift, and requirement violations flagged now; each run re-scores every active decision, so an update equals a rebuild, and appends rank history for what moved. Input value update (default), rebuild or read", { venture_arg: "id" }),
     // Freshness (Revalidating, V-1 to V-8): schema/freshness.mjs.
     cmd("system/freshness", "schema/freshness.mjs", "What is fresh, stale or expired, and which records are live holes: by time (freshness profiles, per phase too) and on demand (a dependency changed, a where-used parent drifted, a tag, path or package was revalidated)"),
     cmd("system/revalidate", "schema/freshness.mjs", "Mark records stale on demand: input value tag:<route> (the record and what depends on it), path:<folder>, package:<name>, or pivot (the validation package); a plain folder is refused in favour of exact tags", { value_flag: "--revalidate" }),
@@ -534,7 +534,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
     // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
     // approved it, is a draft whatever the decision's class.
-    const settles = /^(decision|decision-record)$/.test(r.record) && (input?.status === "decided" || input?.approved_by != null);
+    const isDecision = /^(decision|decision-record)$/.test(r.record);
+    const settles = isDecision && (input?.status === "decided" || input?.approved_by != null || input?.provenance?.approved_by != null);
+    // Known gap A: a decided decision names who decided it, whoever writes it; a person's write without one is refused.
+    if (isDecision && actor === "person" && input?.status === "decided" && !input?.provenance?.approved_by) return { ok: false, error: `a decided decision names who decided it (provenance.approved_by); approve it with mentura decide ${input?.id ?? "<id>"} --by <name>` };
     const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person";
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
@@ -577,7 +580,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent });
     else await store.write(file, recordText);
     const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write");
-    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured.why) : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
+    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }

@@ -1,6 +1,6 @@
 // Tests for the live decision index: structural impact for open decisions, phase weight and the
-// requirement lift, violations flagged now, incremental updates that re-score only what an event
-// touches with bounded propagation, rank history, the route and the mentura index command.
+// requirement lift, violations flagged now, updates that re-score every decision (equal to a
+// rebuild), rank history, the route and the mentura index command.
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -53,20 +53,24 @@ try {
   // (d) rank history
   expect("a rebuild appends a rank for every active decision", rankHistory(v).length === idx.entries.length && rankHistory(v, "shop-price")[0].rank === price.rank && Array.isArray(rankHistory(v, "shop-price")[0].why));
 
-  // (b) incremental: nothing new, nothing re-scored
+  // (b) update: nothing new, nothing moves; every update re-scores every decision, so it equals a rebuild.
   idx = update(v);
-  expect("an update with no new events re-scores nothing", idx.last_update.mode === "update" && idx.last_update.events === 0 && idx.last_update.touched.length === 0, idx.last_update);
-
-  // An event on a record re-scores the decisions touching it, spreading with damping, not unrelated ones.
+  expect("an update with no new events moves nothing", idx.last_update.mode === "update" && idx.last_update.events === 0 && idx.last_update.touched.length === 0, idx.last_update);
   record(v, { entity: "accounts/acme/account.json", route: "x", activity: "write", agent });
   idx = update(v);
-  const touched = Object.fromEntries(idx.last_update.touched.map((t) => [t.id, t.weight]));
-  expect("an event re-scores the decisions that touch the changed record", touched["shop-price"] === 1, idx.last_update);
-  expect("the update spreads to linked decisions with damping", touched["shop-copy"] === 0.8, touched);
-  expect("a decision sharing the changed record is re-scored in full", touched["shop-billing"] === 1, touched);
-  expect("propagation does not run through the venture root", !("venture" in touched) && !("foundation" in touched) && Object.values(touched).every((w) => w === 1 || w === 0.8), touched);
-  expect("an unrelated decision is not re-scored", !("tagline" in touched), touched);
-  expect("history records the cause", rankHistory(v, "shop-price").at(-1).cause === "accounts/acme/account.json", rankHistory(v, "shop-price").at(-1));
+  expect("an update counts the events since its cursor", idx.last_update.events === 1, idx.last_update);
+
+  // A due time passing with no provenance event re-ranks the decision: update matches rebuild.
+  propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", due: "2026-11-05T00:00:00Z" }, { agentId: "cos" });
+  rebuild(v, { now: Date.parse("2026-11-01T00:00:00Z") });
+  idx = update(v, { now: Date.parse("2026-11-06T00:00:00Z") });
+  const ld = entryOf(idx, "launch-date");
+  expect("a decision whose due time passed is overdue and ranks first after an update", ld.render === "overdue" && idx.entries[0].id === "launch-date", idx.entries.map((e) => [e.id, e.score, e.render]));
+  const fresh = rebuild(v, { now: Date.parse("2026-11-06T00:00:00Z") });
+  expect("update and rebuild give the same ranking", JSON.stringify(idx.entries.map((e) => [e.id, e.score])) === JSON.stringify(fresh.entries.map((e) => [e.id, e.score])));
+  expect("history records the move", rankHistory(v, "launch-date").some((r) => r.cause === "rank moved" && r.rank === 1));
+  propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", status: "withdrawn" }, { agentId: "cos" });
+  rebuild(v);
 
   // (c) requirements: a heavy one lifts a later decision into this phase; a violation is flagged now
   put("foundation/requirements/scale-to-millions.json", { id: "scale-to-millions", statement: "Serve hundreds of millions of users", derives_from: { ambition: "platform" }, phase: "scale", functions: ["product"], verified_by: "load test evidence", weight: 0.9, check: { answer_must_not_match: "sqlite" } });
@@ -80,11 +84,9 @@ try {
   const s = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "decision-record.schema.json", "--file", join(v, "product/decisions/shop-scale.decision.json")], { encoding: "utf8" });
   expect("the requirements field matches the decision-record schema", s.status === 0, s.stdout + s.stderr);
 
-  // --since replays events from a time; a rewritten log forces a rebuild.
+  // --since counts events from a time.
   idx = update(v, { since: "2000-01-01T00:00:00Z" });
-  expect("--since replays every event since a time", idx.last_update.events > 5 && idx.last_update.touched.length >= 3, idx.last_update);
-  writeFileSync(join(v, ".naive/decision-index.json"), JSON.stringify({ ...read(v), cursor: { events: 2, hash: "not-it" } }));
-  expect("a cursor that no longer matches the log rebuilds", update(v).last_update.mode === "rebuild");
+  expect("--since counts every event since a time", idx.last_update.events > 5, idx.last_update);
 
   // (e) the route and the command
   const r = await call({ venture: "idx", route: "system/decision-index", action: "run", input: { value: "read" }, workspace: ws, actor: "person", actor_id: "Founder" });
