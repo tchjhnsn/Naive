@@ -10,6 +10,7 @@
 //
 //   node schema/check-provenance.mjs <workspace or venture dir>
 
+import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { contentHash, lineHash, LOG } from "../interface/provenance.mjs";
@@ -22,7 +23,7 @@ const errors = [], warnings = [];
 let logs = 0, lines = 0;
 
 for (const root of walk(dir)) {
-  const f = join(root, LOG);
+  const f = ventureFile(root, LOG);
   if (!existsSync(f)) continue;
   logs++;
   const id = JSON.parse(readFileSync(join(root, "venture.json"), "utf8")).id;
@@ -41,10 +42,10 @@ for (const root of walk(dir)) {
     at = e.at; prev = e.hash;
     if (typeof e.entity !== "string") { errors.push(`${where}: no entity`); return; }
     if (!e.source) last.set(e.entity, e);
-    for (const d of e.derived_from ?? []) if (!/^[a-z][a-z0-9+.-]*:\/\//.test(d) && !/^[A-Z]+-\d+$/.test(d) && !d.startsWith("_drafts/") && !existsSync(join(root, d))) warnings.push(`${where}: derived from ${d}, which is not in the venture folder`);
+    for (const d of e.derived_from ?? []) if (!/^[a-z][a-z0-9+.-]*:\/\//.test(d) && !/^[A-Z]+-\d+$/.test(d) && !d.startsWith("_drafts/") && !existsSync(ventureFile(root, d))) warnings.push(`${where}: derived from ${d}, which is not in the venture folder`);
   });
   for (const [entity, e] of last) {
-    const p = join(root, entity);
+    const p = ventureFile(root, entity);
     if (!existsSync(p)) { if (e.activity !== "draft") warnings.push(`${id}: ${entity} is in the log but gone; git holds what happened`); continue; }
     if (contentHash(p) !== e.sha256) warnings.push(`${id}: ${entity} changed outside the router since ${e.at}; git holds that history`);
   }

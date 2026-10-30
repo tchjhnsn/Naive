@@ -885,6 +885,18 @@
       "why": "Torian, 2026-10-29: when scaffolding, ask the user to point Naive to the source of truth for each function (the repo, GitHub and Vercel for a software product; analytics from the host; Stripe, Square or Shopify for sales; Rho for financials in the demo; legal documents, with the connections to set them up if missing), let a function default or be answered in prose, and ship a local setup experience like the one Next.js gives, essentially the strategic foundation and a version of the decision docket, ending by setting a goal for the discovery phase. After setup a founder has the structure of the venture and a way of routing decisions; operating it is Mentura's, as deploying is Vercel's after Next.js."
     },
     {
+      "id": "EE-084",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-041",
+        "EE-082",
+        "EE-083"
+      ],
+      "decision": "Naive is a Claude Code plugin, and the plugin is the repository itself, so the naive-framework npm package is the plugin too: .claude-plugin/plugin.json at the root names the naive-create and naive-setup skills and an MCP server (interface/plugin-mcp.json) that runs the plugin's own copy of the framework, with no npx. naive mcp starts outside a venture (the current folder is the workspace), so the plugin works in any project, and naive types lists the venture types for an agent to offer. .claude-plugin/marketplace.json lists the plugin for a clone; the public marketplace is tchjhnsn/naive-plugins. interface/plugin-test.mjs checks the manifest follows package.json, the skills exist, the MCP server answers outside a venture, and Claude Code validates them.",
+      "why": "Torian, 2026-10-29: make the plugin accessible through the docs, so someone can add it from Claude's plugin library; the demo may run entirely from the plugin in Claude Code; most people do not read documentation, which is for agents and for understanding the code base."
+    },
+    {
       "id": "EE-086",
       "date": "2026-10-29",
       "status": "in-force",
@@ -898,6 +910,19 @@
       ],
       "decision": "The venture project structure (docs/design/VENTURE_STRUCTURE_2026-10-29.md). At the top: venture.json, README.md (was profile.md), AGENTS.md, knowledge/ (the knowledge base), meta/ (sources.json, naive.config.json, provenance.jsonl, releases) and an optional repo/ for code. Packages sit flat in knowledge/. venture.json declares the business functions once (the org chart, flat by default with one function per package owned by the founder); packages and records inherit their function from it, a founder composes functions over several packages, (group)/ folders are an optional view, and hats derive from function ownership. A record's route is its path inside knowledge/, with groups and the extension dropped: no name table, no reserved route names. Skills teach where files go; code guarantees schema, the person-only gate, private data, provenance and outside systems. A function's publishable items are in public.json where it has any.",
       "why": "Torian, 2026-10-29: the folder structure is a visual aid and an educational device for how a founder should think about the business; put the knowledge base in a knowledge folder, code in an optional repo folder like src, and add a meta folder; let people group and merge functions their own way, starting from a flat org chart declared in the venture file that everything inherits from; routes were overcomplicated, and agents can handle file conventions with skills. Answers marked default in the design note are Claude's recommendations until Torian changes them."
+    },
+    {
+      "id": "EE-085",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-024",
+        "EE-038",
+        "EE-042",
+        "EE-083"
+      ],
+      "decision": "Naive's project scaffolding is a central data management structure: everything a venture knows sits in one structure under one set of conventions, with pointers to the systems of record that keep the rest. Naive is for solo founders and small founding teams. It is not a software engineering framework (MAD is, EE-038): it leans toward a monorepo for most software and otherwise asks only that the code be connected, with a pointer between the knowledge base and the code base, and it is opinionated about file conventions. README.md, AGENTS.md, the docs introduction and the ontology say so.",
+      "why": "Torian, 2026-10-29: with SaaS commoditized, much of what would sit in separate data silos can be centralized, which is ideal for a solo founder and still for a small team; central data gives AI-native work an edge, since agents move faster with better context and reasoning for their decisions. Lean Startup names Ries's build-measure-learn method rather than team size, so the docs say solo founders and small founding teams."
     }
   ]
 }

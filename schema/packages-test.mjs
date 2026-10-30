@@ -68,10 +68,10 @@ t("the question matrix asks Jev only what the records leave open, and its answer
 });
 
 t("a package is complete only when a person confirmed its required records and everything it reads", () => {
-  const files = { ...base, "purpose/icp.json": { profiles: [{ id: "a", who: "solo clinics" }] }, "products/kept.json": { id: "kept", name: "Kept" } };
-  const some = packages(venture({ ...files, "provenance.jsonl": person("purpose/validation/problem.json", "purpose/icp.json") }));
+  const files = { ...base, "foundation/icp/a.json": { id: "a", who: "solo clinics" }, "products/kept.json": { id: "kept", name: "Kept" } };
+  const some = packages(venture({ ...files, "provenance.jsonl": person("purpose/validation/problem.json", "foundation/icp/a.json") }));
   ok(by(some).foundation.state === "review", "the product it reads is not confirmed yet");
-  const all = packages(venture({ ...files, "provenance.jsonl": person("purpose/validation/problem.json", "purpose/icp.json", "products/kept.json") }));
+  const all = packages(venture({ ...files, "provenance.jsonl": person("purpose/validation/problem.json", "foundation/icp/a.json", "products/kept.json") }));
   ok(by(all).foundation.state === "complete" && all.complete.includes("foundation"), JSON.stringify(by(all).foundation));
 });
 
