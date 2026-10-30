@@ -22,7 +22,8 @@
   ],
   "records": [
     "route-aliases",
-    "adapter"
+    "adapter",
+    "artifact"
   ],
   "reads": [
     "integration"

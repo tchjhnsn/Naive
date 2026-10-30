@@ -18,9 +18,9 @@
       "expires": null
     },
     {
-      "id": "founder-to-product-manager",
+      "id": "founder-to-product-design-lead",
       "from": "founder",
-      "to": "product-manager",
+      "to": "product-design-lead",
       "classes": ["experience-design"],
       "scope": "product/",
       "may_redelegate": false,
@@ -38,9 +38,9 @@
       "expires": null
     },
     {
-      "id": "chief-of-staff-to-cto",
+      "id": "chief-of-staff-to-architect",
       "from": "chief-of-staff",
-      "to": "cto",
+      "to": "architect",
       "classes": ["new-structure", "new-adr-within-strategy", "new-dependency-free", "schema-change-within-adr", "security-tightening", "implementation-detail", "accept-verified-work"],
       "scope": "venture",
       "may_redelegate": true,
@@ -48,8 +48,8 @@
       "expires": null
     },
     {
-      "id": "cto-to-builder",
-      "from": "cto",
+      "id": "architect-to-builder",
+      "from": "architect",
       "to": "builder",
       "classes": ["implementation-detail", "accept-verified-work", "schema-change-within-adr", "security-tightening"],
       "scope": "engineering/",

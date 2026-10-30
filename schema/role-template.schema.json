@@ -8,6 +8,7 @@
   "properties": {
     "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Matches the file name" },
     "name": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Other names for this role (such as cto for architect); the id is canonical and matches agent-roles.json and decision-rights.json"},
     "chief_delegator": { "type": "boolean", "description": "True for the founder only: the root of every delegation chain" },
     "function": { "type": "string", "description": "The function the role serves, such as product, engineering, marketing, or all" },
     "description": { "type": "string" },

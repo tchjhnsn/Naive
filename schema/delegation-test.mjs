@@ -36,25 +36,25 @@ const t = spawnSync("node", [join(repo, "schema/check-delegation.mjs")], { encod
 expect("the template passes", t.status === 0, t.stdout + t.stderr);
 expect("a copy of the template passes", venture().ok);
 
-fails("a grant wider than its grantor's fails", (d) => grant(d, "chief-of-staff-to-cto").classes.push("experience-design"), /exceeds its grantor/);
-fails("a grant passed on without may_redelegate fails", (d) => { grant(d, "founder-to-chief-of-staff").may_redelegate = false; }, /chief-of-staff-to-cto: exceeds/);
+fails("a grant wider than its grantor's fails", (d) => grant(d, "chief-of-staff-to-architect").classes.push("experience-design"), /exceeds its grantor/);
+fails("a grant passed on without may_redelegate fails", (d) => { grant(d, "founder-to-chief-of-staff").may_redelegate = false; }, /chief-of-staff-to-architect: exceeds/);
 fails("a grant from a role nobody granted fails (the chain must reach the founder)", (d) =>
   d.grants.push({ id: "stray", from: "people-lead", to: "builder", classes: ["implementation-detail"], scope: "venture", may_redelegate: false, may_merge: false, expires: null }), /stray: exceeds/);
-fails("a scope wider than the grantor's fails", (d) => { grant(d, "cto-to-builder").scope = "venture"; grant(d, "chief-of-staff-to-cto").scope = "engineering/"; }, /cto-to-builder: exceeds/);
-fails("may_merge beyond the grantor's fails", (d) => { grant(d, "cto-to-builder").may_merge = true; }, /cto-to-builder: exceeds/);
+fails("a scope wider than the grantor's fails", (d) => { grant(d, "architect-to-builder").scope = "venture"; grant(d, "chief-of-staff-to-architect").scope = "engineering/"; }, /architect-to-builder: exceeds/);
+fails("may_merge beyond the grantor's fails", (d) => { grant(d, "architect-to-builder").may_merge = true; }, /architect-to-builder: exceeds/);
 fails("a money class is never re-delegated", (d) => {
   grant(d, "founder-to-finance-lead").may_redelegate = true;
   d.grants.push({ id: "money-on", from: "finance-lead", to: "chief-of-staff", classes: ["spend-register-upkeep"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
 }, /money-on: .*never re-delegated/);
 fails("a one-way door is never delegated", (d) => grant(d, "founder-to-chief-of-staff").classes.push("change-direction"), /one-way door/);
-fails("an expired grant fails", (d) => { grant(d, "founder-to-product-manager").expires = "2026-10-01"; }, /expired/);
-fails("a grant outliving its grantor's fails", (d) => { grant(d, "founder-to-chief-of-staff").expires = "2026-12-31"; }, /chief-of-staff-to-cto: exceeds/);
-fails("the template expires nothing, but a later day makes a dated grant fail", (d) => { grant(d, "founder-to-product-manager").expires = "2026-11-30"; }, /expired/, "2026-12-01");
+fails("an expired grant fails", (d) => { grant(d, "founder-to-product-design-lead").expires = "2026-10-01"; }, /expired/);
+fails("a grant outliving its grantor's fails", (d) => { grant(d, "founder-to-chief-of-staff").expires = "2026-12-31"; }, /chief-of-staff-to-architect: exceeds/);
+fails("the template expires nothing, but a later day makes a dated grant fail", (d) => { grant(d, "founder-to-product-design-lead").expires = "2026-11-30"; }, /expired/, "2026-12-01");
 fails("a cycle never reaches the founder", (d) => {
   d.grants.push({ id: "a", from: "people-lead", to: "counsel", classes: ["domain-fact"], scope: "venture", may_redelegate: true, may_merge: false, expires: null },
     { id: "b", from: "counsel", to: "people-lead", classes: ["domain-fact"], scope: "venture", may_redelegate: true, may_merge: false, expires: null });
 }, /grant\/a: exceeds/);
-fails("a class not grantable to the role fails", (d) => grant(d, "cto-to-builder").classes.push("new-structure"), /not grantable to builder/);
+fails("a class not grantable to the role fails", (d) => grant(d, "architect-to-builder").classes.push("new-structure"), /not grantable to builder/);
 fails("a role that verifies itself fails", (_, roles) => {
   const p = join(roles, "builder.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, verified_by: "builder" }));
@@ -65,7 +65,7 @@ fails("only the chief delegator goes unverified", (_, roles) => {
 }, /only the chief delegator/);
 
 // The verification substrate.
-expect("a verifier other than the builder is independent", independent("builder", "cto"));
+expect("a verifier other than the builder is independent", independent("builder", "architect"));
 expect("the builder is not its own verifier", !independent("builder", "builder"));
 expect("no verifier is not independent", !independent("builder", undefined) && !independent("builder", ""));
 expect("a conformance check needs no verifier", !verificationErrors({ kind: "conformance", target: "tests" }, "builder").length);

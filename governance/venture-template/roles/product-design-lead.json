@@ -1,6 +1,9 @@
 {
-  "id": "product-manager",
-  "name": "Product manager",
+  "id": "product-design-lead",
+  "name": "Product and design lead (product manager)",
+  "aliases": [
+    "product-manager"
+  ],
   "function": "product",
   "description": "Owns what the product is and for whom.",
   "grantable_classes": [

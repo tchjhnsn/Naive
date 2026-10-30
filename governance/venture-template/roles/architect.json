@@ -1,6 +1,9 @@
 {
-  "id": "cto",
-  "name": "CTO / architect",
+  "id": "architect",
+  "name": "Architect (CTO)",
+  "aliases": [
+    "cto"
+  ],
   "function": "engineering",
   "description": "Owns structure, ADRs and reviews the builder's work.",
   "grantable_classes": [
