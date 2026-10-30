@@ -33,6 +33,7 @@ import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
 import { impact } from "./impact.mjs";
+import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
 
@@ -327,15 +328,19 @@ const setField = (o, path, v) => { const ks = path.split("."); let x = o; for (c
  *  approving, so it can be delegated: only a person may merge unless a delegation grant names merge for
  *  this decision's class (the delegation suite). Logged as a merge in provenance. Ends by building the
  *  decision's impact map (schema/impact.mjs) and returns its summary. */
-export function merge(dir, id, { by, via = "cli", note } = {}) {
+export function merge(dir, id, { by, role, via = "cli", note, today } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
-  if (!by) return { ok: false, error: "merging needs the name of who merges (--by)" };
+  if (!by && !role) return { ok: false, error: "merging needs the name of who merges (--by)" };
   const d = load(ventureFile(dir, file));
   if (d.status !== "decided") return { ok: false, error: `${id} is not decided; approve it before merging` };
   if (!d.applies_to?.length) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
   const version = d.version ?? 1;
   if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
+  const may = mayMerge(dir, d, { by, role, today });
+  if (!may.ok) return may;
+  by = by ?? role;
+  const actor = role ? agentFromEnv("agent", via, { id: role }) : agentFromEnv("person", via, { id: by });
   const files = [];
   const outside = d.applies_to.find((t) => !inside(t?.file));
   if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
@@ -344,14 +349,87 @@ export function merge(dir, id, { by, via = "cli", note } = {}) {
     const rec = existsSync(f) ? load(f) : {};
     setField(rec, t.field, d.answer);
     writeFileSync(f, JSON.stringify(rec, null, 2) + "\n");
-    prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), decision: id, note: `merged ${id} version ${version} into ${t.field}` });
+    prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: actor, decision: id, note: `merged ${id} version ${version} into ${t.field}` });
     files.push(t.file);
   }
   const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: agentFromEnv("person", via, { id: by }), note: note ?? `merged ${id} version ${version}` });
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: actor, note: note ?? `merged ${id} version ${version}${may.grant ? ` under grant ${may.grant}` : ""}` });
+  // Public variants written from a merged field (MDX with variant_of: <file>#<field>) were worded from
+  // the old version: they are marked stale so they are re-linted before the next publish (the hook
+  // item 11, republish-on-change, builds on).
+  const variants = d.applies_to.flatMap((t) => variantsOf(dir, t.file, t.field));
+  if (variants.length) mark(dir, variants, { paths: files, version: String(version), via: "merge" });
   const im = impact(dir, id, { via });
-  return { ok: true, result: { merged: id, version, files, provenance: e.hash, impact: im.ok ? im.result : { error: im.error } } };
+  return { ok: true, result: { merged: id, version, files, ...(may.grant ? { grant: may.grant } : {}), variants_stale: variants, provenance: e.hash, impact: im.ok ? im.result : { error: im.error } } };
+}
+
+/** The venture's delegation record (governance/delegation.json, the delegation suite), or null. */
+const delegationOf = (dir) => { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? load(f) : null; };
+// Classes that are one-way doors: every class the decision-rights register marks escalate (the
+// founder decides), plus production-ship. Built from the register so a class it escalates can never
+// be merged by a role, and a venture's one_way_doors only adds to them.
+let oneWayDefault;
+export function oneWayClasses() {
+  if (oneWayDefault) return oneWayDefault;
+  const f = join(new URL("..", import.meta.url).pathname, "governance/venture-template/decision-rights.json");
+  oneWayDefault = new Set(["production-ship", ...(load(f).classes ?? []).filter((c) => c.level === "escalate").map((c) => c.id)]);
+  return oneWayDefault;
+}
+
+/** The people who may act as a person in this venture: ids and names in people/people.json, and the
+ *  founders named in governance/delegation.json. Empty when the venture records no one. */
+function peopleOf(dir) {
+  const out = new Set();
+  const pf = ventureFile(dir, "people/people.json");
+  if (existsSync(pf)) for (const p of load(pf).people ?? []) for (const k of [p.id, p.name]) if (k) out.add(k);
+  const founders = delegationOf(dir)?.founder;
+  for (const f of [founders ?? []].flat()) if (f) out.add(f);
+  return out;
+}
+
+/** Who may merge a decided version. A person may (with no grant, only the founder merges). A role
+ *  (an agent or a delegate acting as one) may only under a live delegation grant to that role that
+ *  names may_merge and the decision's class; a one-way door is never merged by anyone but a person. */
+export function mayMerge(dir, d, { by, role, today = new Date().toISOString().slice(0, 10) } = {}) {
+  const del = delegationOf(dir);
+  const roles = new Set([...(del?.grants ?? []).flatMap((g) => [g.to, g.from]), ...agentRoleIds()].filter((r) => r && r !== del?.root));
+  if (by && role) return { ok: false, error: "merge as a person (--by) or as a role (--role), not both" };
+  if (!role) {
+    if (roles.has(by)) return { ok: false, error: `${by} is a role, not a person: a role merges only under a delegation grant (--role ${by})` };
+    const people = peopleOf(dir);
+    if (!people.size) return { ok: false, error: "the venture names no people (people/people.json) or founder (governance/delegation.json): no one can merge as a person" };
+    if (!people.has(by)) return { ok: false, error: `${by} is not a person in people/people.json or a founder in governance/delegation.json: only they merge` };
+    return { ok: true };
+  }
+  const oneWay = new Set([...oneWayClasses(), ...(del?.one_way_doors ?? [])]);
+  if (!d.class) return { ok: false, error: `${d.id} names no decision class, so no grant can cover it: only the founder merges it` };
+  if (oneWay.has(d.class)) return { ok: false, error: `${d.id} is a ${d.class} decision, a one-way door: it is never delegated, only the founder merges it` };
+  const g = (del?.grants ?? []).find((g) => g.to === role && g.may_merge === true && (g.classes ?? []).includes(d.class) && (g.expires == null || g.expires >= today));
+  if (!g) return { ok: false, error: `no live grant in governance/delegation.json lets ${role} merge ${d.class} decisions: only the founder merges ${d.id}` };
+  return { ok: true, grant: g.id ?? `${g.from}-to-${g.to}` };
+}
+
+let agentRoles;
+function agentRoleIds() {
+  if (agentRoles) return agentRoles;
+  const f = join(new URL("..", import.meta.url).pathname, "governance/venture-template/roles/agent-roles.json");
+  try { agentRoles = (load(f).roles ?? []).map((r) => r.id).filter((id) => id && id !== "founder"); } catch { agentRoles = []; }
+  return agentRoles;
+}
+
+/** The public variants of a field: MDX files under the venture's content folders whose frontmatter says variant_of: <file>#<field>. */
+export function variantsOf(dir, rel, field) {
+  const out = [];
+  for (const d of ["marketing/content", "operations/marketing/content"]) {
+    const root = ventureFile(dir, d);
+    if (!existsSync(root)) continue;
+    for (const name of readdirSync(root, { recursive: true }).map(String).filter((n) => n.endsWith(".mdx"))) {
+      const m = readFileSync(join(root, name), "utf8").match(/^---\n([\s\S]*?)\n---/);
+      if (m && new RegExp(`^variant_of:\\s*["']?${(rel + "#" + field).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']?\\s*$`, "m").test(m[1])) out.push(`${d}/${name}`);
+    }
+  }
+  return out;
 }
 
 /** Rollback: make an earlier version current again, as a new version, so history is never rewritten.

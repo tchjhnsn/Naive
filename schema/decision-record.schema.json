@@ -59,6 +59,10 @@
       ],
       "description": "The layer it belongs to; defaults to the decided record's layer"
     },
+    "class": {
+      "type": "string",
+      "description": "The decision class (governance/decision-rights.json) this decision belongs to. A delegation grant can let a role merge decisions of a class (may_merge); a one-way-door class is never delegated, and with no class only the founder merges"
+    },
     "parent": {
       "type": [
         "string",
