@@ -18,6 +18,7 @@ const v = join(tmp, "canary"), out = join(tmp, "out");
 const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
 const CANARY = "CANARY-9b1e";
 w("venture.json", { id: "canary", name: "Canary", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery", core: { promise: `${CANARY} promise: we help founders know the next decision to make.` } });
+w("people/people.json", { venture: "canary", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] });
 w("foundation/problem.json", { venture: "canary", statement: `${CANARY} problem: founders cannot tell which decision matters most this week.`, segment: `${CANARY} segment: solo founders building with agents`, forms: [{ id: "f", statement: `${CANARY} form: nobody uses what they built` }], evidence: [] });
 w("foundation/alignment.json", { venture: "canary", principles: [{ id: "p", statement: `${CANARY} principle: people decide by default, always` }] });
 const all = () => Object.keys(CHANNELS).flatMap((c) => CHANNELS[c].outputs.map((p) => { try { return readFileSync(join(out, p), "utf8"); } catch { return ""; } })).join("\n");

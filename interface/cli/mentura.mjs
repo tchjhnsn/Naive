@@ -24,7 +24,8 @@
 //   mentura decisions --venture <id> [--why <decision>] [--json]
 //                                                   the ranked decisions; --why prints one decision's reasons and citations
 //                                                   a new --answer on a decided decision makes its next version; --rollback restores one
-//   mentura merge <decision> --venture <id> --by <name> [--confirm <decision>]
+//   mentura visibility <record> [<field>] --venture <id> [--public --by <name> | --propose]   field visibility; a person approves public
+//   mentura merge <decision> --venture <id> --by <name> | --role <role> [--confirm <decision>]
 //   mentura index --venture <id> [--since <iso>] [--rebuild]   update the live decision index from provenance
 //   mentura impact <decision> --venture <id>       rebuild a merged decision's impact map across the functions
 //                                                   apply a decided version to the records it decides (applies_to)
@@ -78,6 +79,7 @@ import { impact } from "../../schema/impact.mjs";
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { ventureFile } from "../../schema/venture-paths.mjs";
+import { setPublic, visibilityOf } from "../../schema/visibility.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
@@ -237,6 +239,31 @@ if (cmd === "accept") {
   process.exit(0);
 }
 
+if (cmd === "visibility") {
+  // Field visibility (publishing gate): each field's level, or a person approves one as public, pinning
+  // its wording by sha256. An agent may only propose (--propose); the field stays as it was.
+  const venture = opt("venture"), rel = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !rel) usage();
+  const file = rel.endsWith(".json") ? rel : `${rel}.json`;
+  const field = positional[2];
+  if (flag("public") || flag("propose")) {
+    if (!field) { console.error("name the field: mentura visibility <record> <field> --venture <id> --public --by <name>"); process.exit(2); }
+    const by = opt("by") ?? process.env.MENTURA_PERSON;
+    const actor = process.env.MENTURA_ACTOR_ID;
+    if (flag("public") && (process.env.MENTURA_MODEL || (actor && actor !== by))) { console.error(`an agent (${actor ?? process.env.MENTURA_MODEL}) is acting: only a person approves a field as public; an agent proposes (--propose)`); process.exit(1); }
+    const r = setPublic(dir, file, field, flag("propose") ? { propose: true, agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID } : { by });
+    if (!r.ok) { console.error(r.error); process.exit(1); }
+    record(dir, { entity: file.replace(/\.json$/, ".visibility.json"), route: "governance/visibility", activity: flag("propose") ? "draft" : "accept", agent: agentFromEnv(flag("propose") ? "agent" : "person", "cli", flag("propose") ? {} : { id: by }), note: `${flag("propose") ? "proposed" : "approved"} ${file}#${field} as public` });
+    out(r.result);
+    process.exit(0);
+  }
+  if (!existsSync(ventureFile(dir, file))) { console.error(`no record ${file} in ${venture}`); process.exit(1); }
+  const rec = JSON.parse(readFileSync(ventureFile(dir, file), "utf8"));
+  out(Object.fromEntries(Object.keys(rec).filter((k) => !field || k === field).map((k) => [k, visibilityOf(dir, file, k)])));
+  process.exit(0);
+}
+
 if (cmd === "merge") {
   // A person (or a delegated role) applies a decided version to the records it decides (applies_to).
   // Approving and merging are separate steps; typing the decision's id confirms the merge.
@@ -246,7 +273,9 @@ if (cmd === "merge") {
   const d = decisions(dir).decisions.find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
-  const r = merge(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, note: opt("note") });
+  // --role merges as a role under a delegation grant that names may_merge (an agent with no --by merges as its role).
+  const by = opt("by") ?? (opt("role") ? undefined : process.env.MENTURA_PERSON);
+  const r = merge(dir, id, { by, role: opt("role") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
@@ -395,7 +424,7 @@ if (["read", "view"].includes(action) && flag("hierarchy")) input = { ...(input 
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
 // Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
 if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
-let r = await call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+let r = await call({ venture, route: cmd, action, input, actor: ["person", "public"].includes(opt("as")) ? opt("as") : "agent", workspace, via: "cli", provenance });
 // Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
 if (r.ok && r.needs_input && !flag("json")) {
   const n = r.needs_input;
@@ -406,7 +435,7 @@ if (r.ok && r.needs_input && !flag("json")) {
   const a = (await rl.question("Fill in (f) or run as is (r)? ")).trim().toLowerCase();
   rl.close();
   if (!a.startsWith("r")) { console.log(`Fill in: ${n.options[0].how}`); process.exit(0); }
-  r = await call({ venture, route: cmd, action, input: { ...(input ?? {}), as_is: true }, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+  r = await call({ venture, route: cmd, action, input: { ...(input ?? {}), as_is: true }, actor: ["person", "public"].includes(opt("as")) ? opt("as") : "agent", workspace, via: "cli", provenance });
 }
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);
