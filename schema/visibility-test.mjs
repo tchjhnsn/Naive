@@ -3,11 +3,13 @@
 // (schema/check-visibility.mjs) refuses a page that uses a fact no person approved.
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hash, variantOf, visibilityOf } from "./visibility.mjs";
 import { refusals } from "./check-visibility.mjs";
+import { context } from "./upgrades.mjs";
+import * as telosToGoals from "./migrations/telos-to-goals.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
@@ -68,6 +70,46 @@ try {
 
   const customers = cli(["customers", "read", "--as", "public", "--json"]);
   expect("a list route does not name an item with no public field to the public reader", customers.status === 0 && !customers.stdout.includes("acme-secret-deal"), customers.stdout.slice(0, 400) + customers.stderr);
+
+  const missing = JSON.parse(cli(["customers/nope", "read", "--as", "public", "--json"]).stdout);
+  const internalItem = cli(["customers/acme-secret-deal", "read", "--as", "public", "--json"]);
+  const scrub = (a) => JSON.stringify(a).replaceAll("acme-secret-deal", "nope");
+  expect("an item with no public field answers the same as a missing one", scrub(JSON.parse(internalItem.stdout)) === scrub(missing) && missing.not_found, { internal: internalItem.stdout.slice(0, 400), missing });
+  w("customers/corrupt-deal.json", "CANARY-CORRUPT-ITEM");
+  const corruptItem = cli(["customers/corrupt-deal", "read", "--as", "public", "--json"]);
+  expect("an item that does not parse answers the same as a missing one", JSON.stringify(JSON.parse(corruptItem.stdout)).replaceAll("corrupt-deal", "nope") === JSON.stringify(missing), corruptItem.stdout.slice(0, 400));
+  rmSync(join(v, "customers/corrupt-deal.json"));
+
+  const INTERNAL_KEYS = ["metadata", "hierarchy", "pending_draft", "stale"];
+  const internalKeys = (a) => INTERNAL_KEYS.filter((k) => k in a);
+  const direct = await import("../interface/router.mjs");
+  const read = (route, input, actor = "public") => direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws });
+  for (const [route, input] of [["foundation/problem", undefined], ["foundation/problem", { hierarchy: true }], ["evidence", undefined], ["customers/nope", { hierarchy: true }]]) {
+    const a = await read(route, input);
+    expect(`the public read of ${route}${input ? " with hierarchy" : ""} carries no internal metadata`, a.ok && !internalKeys(a).length && a.not_found?.need_now == null, a);
+  }
+  expect("a person's read still carries metadata", !!(await read("foundation/problem", undefined, "person")).metadata);
+
+  const before = readFileSync(join(v, "foundation/problem.json"), "utf8");
+  w("foundation/problem.json", "CANARY-CORRUPT");
+  const corrupt = cli(["foundation/problem", "read", "--as", "public", "--json"]);
+  expect("a parse error on a single record echoes no record bytes to the public reader", !(corrupt.stdout + corrupt.stderr).includes("CANARY") && /does not parse/.test(corrupt.stdout + corrupt.stderr), corrupt.stdout.slice(0, 400));
+  const corruptAgent = cli(["foundation/problem", "read", "--json"]);
+  expect("an agent still sees the parse detail", (corruptAgent.stdout + corruptAgent.stderr).includes("CANARY"), corruptAgent.stderr.slice(0, 400));
+  w("foundation/problem.json", before);
+
+  const tws = mkdtempSync(join(tmpdir(), "visibility-telos-"));
+  try {
+    const tandem = join(tws, "ventures/tandem");
+    cpSync(join(repo, "schema/examples/workspace/ventures/tandem"), tandem, { recursive: true });
+    telosToGoals.apply(tandem, context(tandem, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }));
+    const telos = (actor) => direct.call({ venture: "tandem", route: "foundation/telos", action: "read", actor, workspace: tws });
+    const shown = await telos("public");
+    expect("the telos view on a migrated venture gives the public reader nothing", shown.ok && shown.result === null && !shown.view, shown);
+    expect("the telos view still renders for an agent", (await telos("agent")).view?.framework === "telos");
+  } finally {
+    rmSync(tws, { recursive: true, force: true });
+  }
 
   w("marketing/content/variant.mdx", '---\nvariant_of: foundation/problem.json#segment\npublish: true\napproved_by:\n  - Founder\n---\nA public wording.\n');
   expect("a variant's list-form approved_by reads through the shared frontmatter parser", variantOf(v, "foundation/problem.json", "segment")?.value === "A public wording.");

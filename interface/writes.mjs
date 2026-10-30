@@ -153,18 +153,21 @@ export async function around(inner, args) {
   catch (e) {
     // E-6: a record that cannot be read is that record's error, not a crash.
     if (action !== "read") throw e;
-    return { ok: false, outcome: "error", error: `${concrete}: the record does not parse: ${String(e.message ?? e).split("\n")[0]}`, fix: { schema: r.schema ?? null, template: r.template ?? null }, resolved_by: "error" };
+    // The parser's message quotes the record's bytes, so a public reader gets none of it.
+    const detail = actor === "public" ? "" : `: ${String(e.message ?? e).split("\n")[0]}`;
+    return { ok: false, outcome: "error", error: `${concrete}: the record does not parse${detail}`, fix: { schema: r.schema ?? null, template: r.template ?? null }, resolved_by: "error" };
   }
 
   if (action === "read" && dir && r.kind === "record") {
     if (out.ok) {
       const items = r.collection === "list" ? Object.fromEntries(Object.entries(out.sources ?? {}).map(([id, s]) => [id, fileOfAddress(s.address)]).filter(([, f]) => f))
         : out.source && fileOfAddress(out.source.address) ? { [params.id ?? r.record]: fileOfAddress(out.source.address) } : {};
-      out = { ...out, params, metadata: await metadataFor({ dir, r, route: concrete, params, result: out.result, items }) };
+      // Metadata is built from the unprojected record, so a public reader gets none of it.
+      out = { ...out, params, ...(actor === "public" ? {} : { metadata: await metadataFor({ dir, r, route: concrete, params, result: out.result, items }) }) };
       out = filterRead(out, input?.where, r);
     }
     out.resolved_by = resolvedBy(out);
-    if (input?.hierarchy) {
+    if (input?.hierarchy && actor !== "public") {
       const { layout } = await import("./router.mjs");
       const pkg = packageOfRecord(r.record);
       const lay = withParams(layout(r, dir), { dir, params, file: draftOf(concrete, venture, workspace)?.file, group: pkg ? groupLayout(pkg, dir) : null });
