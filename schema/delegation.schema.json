@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delegation.schema.json",
+  "title": "Delegation",
+  "description": "Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at governance/venture-template/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by schema/check-delegation.mjs.",
+  "type": "object",
+  "required": ["register", "root", "grants"],
+  "properties": {
+    "register": { "const": "delegation" },
+    "updated": { "type": "string" },
+    "template": { "type": "boolean" },
+    "extends": { "type": "string", "description": "A venture file: path to the template it customizes" },
+    "note": { "type": "string" },
+    "root": { "type": "string", "description": "The chief delegator's role id (founder)" },
+    "never_redelegated": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "one_way_doors": { "type": "array", "items": { "type": "string" }, "uniqueItems": true, "description": "Irreversible classes; they stay with the founder" },
+    "grants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "classes", "scope", "may_redelegate", "may_merge", "expires"],
+        "properties": {
+          "id": { "type": "string" },
+          "from": { "type": "string", "description": "Grantor role id" },
+          "to": { "type": "string", "description": "Grantee role id" },
+          "classes": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+          "scope": { "type": "string", "description": "\"venture\" for all of it, or a route or path prefix such as engineering/ that narrows it" },
+          "may_redelegate": { "type": "boolean" },
+          "may_merge": { "type": "boolean", "description": "May merge or land work under these classes without the grantor" },
+          "expires": { "type": ["string", "null"], "format": "date", "description": "Last day the grant holds; null for until revoked" },
+          "decision": { "type": "string", "description": "The decision that made the grant" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

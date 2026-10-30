@@ -1,0 +1,19 @@
+{
+  "id": "cto",
+  "name": "CTO / architect",
+  "function": "engineering",
+  "description": "Owns structure, ADRs and reviews the builder's work.",
+  "grantable_classes": [
+    "new-structure",
+    "new-adr-within-strategy",
+    "new-dependency-free",
+    "schema-change-within-adr",
+    "security-tightening",
+    "implementation-detail",
+    "accept-verified-work"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "founder",
+  "skill": "governance/skills/executive-roles/SKILL.md"
+}

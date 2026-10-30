@@ -1,0 +1,19 @@
+{
+  "id": "product-manager",
+  "name": "Product manager",
+  "function": "product",
+  "description": "Owns what the product is and for whom.",
+  "grantable_classes": [
+    "experience-design",
+    "domain-fact"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [
+    "product/lint"
+  ],
+  "verified_by": "chief-of-staff",
+  "also_verified_by": [
+    "founder"
+  ],
+  "skill": "packages/product/skill/SKILL.md"
+}
