@@ -91,6 +91,7 @@ const steps = [
   ["team: instance", "node", ["schema/check-team.mjs", "instance"]],
   ["venture types and people: instance", "node", ["schema/check-people.mjs", "instance"]],
   ["venture types and people: examples", "node", ["schema/check-people.mjs", "schema/examples/workspace"]],
+  ["people lint: role, hire, decision", "node", ["schema/lint-people-test.mjs"]],
   ["provenance: instance", "node", ["schema/check-provenance.mjs", "instance"]],
   ["provenance: examples", "node", ["schema/check-provenance.mjs", "schema/examples/workspace"]],
   ["sources: instance", "node", ["schema/check-sources.mjs", "instance"]],

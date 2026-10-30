@@ -57,7 +57,8 @@
   "checks": [
     "schema/check-validation.mjs",
     "schema/check-governance.mjs",
-    "schema/check-team.mjs"
+    "schema/check-team.mjs",
+    "schema/lint-people.mjs"
   ],
   "skill": {
     "id": "people-function",
