@@ -53,6 +53,10 @@ Status:
 | Product | Business models | `schema/vocab/business-models.json` (St. Gallen 55 plus named extras) | defined |
 | Every layer | Tool integrations | `schema/integration.schema.json`, `<layer>/tooling/integrations.json`, `check-integrations.mjs` (interfaces reach at least four layers) | defined |
 
+## Docs next to the code
+
+Every README in this repo, this one included, is checked by `schema/check-docs-claims.mjs`: the paths, commands and routes it names must exist and its relative links must resolve. A pull request that changes code here owes this README an update, or a `No docs change: <why>` line in its body (`.github/workflows/docs-required.yml`). New READMEs follow `docs/readme-template.md`.
+
 ## Open reconciliations
 
 1. **Venture profile guidance.** The profile has no guidance of its own since the SAD documents were removed (EE-036); write a short template when a venture first needs one.

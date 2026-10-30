@@ -24,16 +24,33 @@ expect("an unknown route fails", "Read `foundation/nothing-here`.\n", false, /no
 expect("an unknown mentura command fails", "`mentura frobnicate --venture x`\n", false, /mentura frobnicate/);
 expect("a line that says not built passes", "`naive teleport` is not built yet.\n", true);
 expect("an allow comment passes", "`naive teleport` <!-- claim-ok: planned -->\n", true);
-const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\n" }).stdout.trim().split("\n");
-const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md";
+writeFileSync(join(dir, "README.md"), "");
+expect("a relative link to a real file passes", "See [the folder's README](./README.md#top).\n", true);
+expect("a broken relative link fails", "See [nothing](./no-such-readme.md).\n", false, /the link points at nothing/);
+expect("web, anchor and site links are not checked", "[a](https://example.com) [b](#top) [c](/docs/reference)\n", true);
+const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\nschema/README.md\nREADME.md\n" }).stdout.trim().split("\n");
+const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md,schema/README.md,README.md";
 if (!scannedOk) failed++;
 console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
+const owedOf = (input) => spawnSync("node", ["schema/check-docs-claims.mjs", "--readmes"], { cwd: repo, encoding: "utf8", input }).stdout.trim();
+const owed = [
+  ["code next to a README owes that README", "schema/check-nouns.mjs\n", "schema/README.md"],
+  ["changing the README pays it", "schema/check-nouns.mjs\nschema/README.md\n", ""],
+  ["the nearest README is the one owed", "purpose/frameworks/idea-map/x.mjs\n", "purpose/frameworks/idea-map/README.md"],
+  ["code with no README in its top folder owes none", "interface/cli/naive.mjs\n", ""],
+  ["a doc is not code", "schema/notes.md\n", ""],
+];
+for (const [name, input, want] of owed) {
+  const got = owedOf(input);
+  if (got !== want) failed++;
+  console.log(`${got === want ? "pass" : "FAIL"}  ${name}${got === want ? "" : `\n  want ${want || "(none)"}, got ${got || "(none)"}`}`);
+}
 const workflow = readFileSync(join(repo, ".github/workflows/docs-required.yml"), "utf8");
-const wired = workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --scanned');
+const wired = workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --scanned') && workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --readmes');
 if (!wired) failed++;
 console.log(`${wired ? "pass" : "FAIL"}  the docs-required workflow asks this linter which changes are docs`);
 const all = spawnSync("node", ["schema/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });
 if (all.status !== 0) failed++;
-console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs and skills claim only what is built${all.status === 0 ? "" : `\n${all.stdout}`}`);
+console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}`}`);
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);

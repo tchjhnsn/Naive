@@ -1,17 +1,20 @@
 #!/usr/bin/env node
-// Checks that the docs describe only what is built. Scans site/content/docs/**/*.mdx, docs/master/*.md and
-// every SKILL.md for claims in backticks and code blocks, and fails on any that the code does not have:
+// Checks that the docs describe only what is built. Scans site/content/docs/**/*.mdx, docs/master/*.md,
+// every SKILL.md and every README.md for claims in backticks and code blocks, and fails on any that the code does not have:
 //
 //   naive <cmd> / mentura <cmd>   the command is dispatched by interface/cli/naive.mjs or mentura.mjs
 //   --flag after a naive command  the command (or the script it runs) reads that flag
 //   schema/..., interface/..., purpose/..., packages/..., docs/...   the repository path exists
 //   foundation/problem            a record route in the route table (interface/router.mjs routes())
+//   [text](../other/README.md)    a relative link resolves to a file or folder next to the doc
 //
 // Venture-relative paths (k-base/, meta/, codebase/, artifacts/, ...) and placeholders (<id>) are allowed.
 // A line describing something not built says "not built", or carries <!-- claim-ok: reason -->.
 //
 //   node schema/check-docs-claims.mjs [--root <dir>] [files...]
 //   node schema/check-docs-claims.mjs --scanned < paths   prints the repo-relative paths this linter scans
+//   node schema/check-docs-claims.mjs --readmes < paths   prints the README.md nearest each changed code file that
+//                                                         the change leaves untouched (docs next to the code)
 // Prints each failure as file:line: claim: why. Exit 1 if any.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -26,9 +29,22 @@ const read = (p) => readFileSync(join(repo, p), "utf8");
 const walk = (d) => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 // The docs this linter scans. The docs-required CI check counts a change as docs only when it touches one of these.
-const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && ((r.startsWith("site/content/docs/") && r.endsWith(".mdx")) || /^docs\/master\/[^/]+\.md$/.test(r) || r.endsWith("/SKILL.md") || r === "SKILL.md");
+const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && ((r.startsWith("site/content/docs/") && r.endsWith(".mdx")) || /^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r));
+const stdinPaths = () => readFileSync(0, "utf8").split("\n").map((l) => l.trim()).filter(Boolean);
 if (argv[0] === "--scanned") {
-  for (const r of readFileSync(0, "utf8").split("\n").map((l) => l.trim()).filter(Boolean)) if (scanned(r)) console.log(r);
+  for (const r of stdinPaths()) if (scanned(r)) console.log(r);
+  process.exit(0);
+}
+// The README.md nearest a code file, searched up to its top-level folder (never the repo root README).
+const CODE = /^(schema|interface|packages|purpose)\/.*(?<!\.mdx?)$/;
+const nearestReadme = (r) => {
+  for (let d = r.split("/").slice(0, -1); d.length; d.pop()) if (existsSync(join(repo, ...d, "README.md"))) return [...d, "README.md"].join("/");
+  return null;
+};
+if (argv[0] === "--readmes") {
+  const changed = stdinPaths();
+  const owed = new Set(changed.filter((r) => CODE.test(r)).map(nearestReadme).filter((r) => r && !changed.includes(r)));
+  for (const r of [...owed].sort()) console.log(r);
   process.exit(0);
 }
 const docs = only.length ? only.map((f) => f.startsWith("/") ? f : join(repo, f)) : walk(repo).filter((f) => scanned(relative(repo, f)));
@@ -113,6 +129,12 @@ for (const f of docs) {
     if (/claim-ok:|not built/i.test(line)) return;
     if (fence) { if (!/^(json|ts|js|tsx|jsx|yaml|mermaid)$/.test(fence)) checkCommand(f, n, line); return; }
     for (const [, c] of line.matchAll(/`([^`\n]+)`/g)) checkInline(f, n, c);
+    for (const [, t] of line.replace(/`[^`\n]+`/g, "").matchAll(/\]\(([^)\s]+)\)/g)) {
+      if (/^([a-z]+:|#|\/)/.test(t)) continue;
+      claims++;
+      const to = join(f, "..", decodeURI(t.split("#")[0]));
+      if (![to, `${to}.mdx`, join(to, "index.mdx")].some((x) => existsSync(x))) fail(f, n, t, "the link points at nothing");
+    }
   });
 }
 
