@@ -2,7 +2,7 @@
 // merging is a separate step that writes the answer into applies_to, and rollback restores an earlier
 // version as a new one so history is never rewritten.
 
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, merge, propose, rollback } from "./decisions.mjs";
@@ -33,9 +33,13 @@ try {
   merge(v, "mission", { by: "Founder" });
   expect("merging version 2 replaces the answer", json("venture.json").core.promise === "We help solo founders and small founding teams.");
 
-  const p3 = propose(v, { id: "mission", question: "What is the mission?", answer: "An agent's new wording." }, { agentId: "cos" });
-  expect("an agent's new wording on a decided decision opens the next version, open", p3.ok && json(F).status === "open" && json(F).version === 3 && json(F).versions.length === 2, json(F));
-  approve(v, "mission", { by: "Founder" });
+  const p3 = propose(v, { id: "mission", question: "What is the mission?", answer: "An agent's new wording.", status: "open" }, { agentId: "rogue" });
+  const d3 = json(F);
+  expect("an agent's new wording never un-decides: version 2 stays decided and current", p3.ok && d3.status === "decided" && d3.version === 2 && d3.answer === "We help solo founders and small founding teams.", d3);
+  expect("the agent's wording waits as a draft of the next version", d3.proposed?.answer === "An agent's new wording." && d3.proposed.drafted_by?.id === "rogue", d3.proposed);
+  const a3 = approve(v, "mission", { by: "Founder" });
+  const d3b = json(F);
+  expect("a person approving promotes the draft to version 3, drafted by the agent", a3.ok && a3.result.wording === "approved" && d3b.version === 3 && d3b.answer === "An agent's new wording." && !d3b.proposed && d3b.provenance.drafted_by.id === "rogue" && d3b.versions.length === 2, d3b);
 
   const r = rollback(v, "mission", 1, { by: "Founder" });
   const d4 = json(F);
@@ -43,6 +47,14 @@ try {
   expect("rollback is not live until merged", json("venture.json").core.promise === "We help solo founders and small founding teams.");
   merge(v, "mission", { by: "Founder" });
   expect("merging the rollback restores the earlier answer", json("venture.json").core.promise === "We help founders.");
+
+  const a5 = approve(v, "mission", { by: "Founder", answer: "A fifth wording." });
+  expect("a new version after a rollback carries no stale rolled_back_from or merged", a5.ok && json(F).version === 5 && !("rolled_back_from" in json(F)) && !("merged" in json(F)), json(F));
+
+  expect("an agent cannot name an applies_to outside the venture", !propose(v, { at: "marketing", id: "escape", question: "Where?", answer: "out", applies_to: [{ file: "../escaped.json", field: "x" }] }, { agentId: "rogue" }).ok);
+  writeFileSync(join(v, "marketing/decisions/escape.decision.json"), JSON.stringify({ id: "escape", question: "Where?", status: "decided", answer: "out", applies_to: [{ file: "../escaped.json", field: "x" }] }));
+  const mx = merge(v, "escape", { by: "Founder" });
+  expect("merge refuses an applies_to outside the venture and writes nothing there", !mx.ok && !existsSync(join(v, "../escaped.json")), mx);
 
   const log = readFileSync(join(v, "provenance.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
   expect("each merge is a merge line in provenance", log.filter((e) => e.activity === "merge").length === 3, log.map((e) => e.activity));
