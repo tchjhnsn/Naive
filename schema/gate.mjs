@@ -98,6 +98,7 @@ const SEVERITY = { pass: 0, draft: 1, owner: 2, refuse: 3 };
  * (team-plan id), confidence (a score the write carries, or undefined), exists (the record exists
  * now), decisionOwner (the owner of the record's decision class, if any).
  * Returns { then: pass | draft | owner | refuse, rule, source, owner, variants, why, matched }.
+ * @param {{ config: *, dir?: string, route: string, table?: string, requested?: *, record?: string, actor?: string, role?: string, confidence?: number, exists?: boolean, decisionOwner?: string }} q
  */
 export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner }) {
   const pins = pinsBlocking(config, record);

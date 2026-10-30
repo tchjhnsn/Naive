@@ -14,7 +14,7 @@ import { ventureFile } from "./venture-paths.mjs";
 const repo = new URL("..", import.meta.url).pathname;
 const naive = join(repo, "interface/cli/naive.mjs");
 const base = mkdtempSync(join(tmpdir(), "workspace-init-"));
-const env = { ...process.env, XDG_CONFIG_HOME: join(base, ".config"), MENTURA_AGENT_CMD: `node ${join(repo, "schema/examples/migrate/agent.mjs")}`, CREATE_VENTURE_PROMPTS: "" };
+const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, XDG_CONFIG_HOME: join(base, ".config"), MENTURA_AGENT_CMD: `node ${join(repo, "schema/examples/migrate/agent.mjs")}`, CREATE_VENTURE_PROMPTS: "" });
 delete env.MENTURA_WORKSPACE;
 const sh = (args, opts = {}) => spawnSync("node", [naive, ...args], { cwd: base, env, encoding: "utf8", ...opts });
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
