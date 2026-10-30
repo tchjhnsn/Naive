@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Cases for schema/check-docs-claims.mjs: claims the code has pass, claims it lacks fail, and the docs pass.
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -18,11 +18,20 @@ const expect = (name, text, ok, pattern) => {
 expect("a built command, flag, file and route pass", "Run `naive phase --meet x --evidence y`, see `schema/check-docs-claims.mjs`, read `foundation/problem`, keep `k-base/raw/` and `artifacts/<id>.json`.\n", true);
 expect("an unknown naive command fails", "Run `naive teleport`.\n", false, /naive teleport: interface\/cli\/naive.mjs has no such command/);
 expect("a flag the command never reads fails", "```sh\nnaive phase --warp 9\n```\n", false, /naive phase --warp/);
+expect("a string literal in the source is not a flag", "```sh\nnaive check --node\n```\n", false, /naive check --node/);
 expect("a missing repo file fails", "See `schema/does-not-exist.mjs`.\n", false, /no such file/);
 expect("an unknown route fails", "Read `foundation/nothing-here`.\n", false, /not a route/);
 expect("an unknown mentura command fails", "`mentura frobnicate --venture x`\n", false, /mentura frobnicate/);
 expect("a line that says not built passes", "`naive teleport` is not built yet.\n", true);
 expect("an allow comment passes", "`naive teleport` <!-- claim-ok: planned -->\n", true);
+const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\nschema/x.mjs\n" }).stdout.trim().split("\n");
+const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md";
+if (!scannedOk) failed++;
+console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
+const workflow = readFileSync(join(repo, ".github/workflows/docs-required.yml"), "utf8");
+const wired = workflow.includes("node schema/check-docs-claims.mjs --scanned");
+if (!wired) failed++;
+console.log(`${wired ? "pass" : "FAIL"}  the docs-required workflow asks this linter which changes are docs`);
 const all = spawnSync("node", ["schema/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });
 if (all.status !== 0) failed++;
 console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs and skills claim only what is built${all.status === 0 ? "" : `\n${all.stdout}`}`);

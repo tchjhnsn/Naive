@@ -1,4 +1,6 @@
-// Checks each venture's telos (purpose/telos.json, EE-023): start with the end. Rules:
+// Checks each venture's telos (EE-023): start with the end. The telos is foundation/telos.json (or
+// purpose/telos.json) before telos-to-goals, and its canonical goals and exit criteria after, read as
+// the telos view (frameworks/telos/adapter.mjs). Every path resolves through venture-paths.mjs. Rules:
 //   measures: ids unique, exactly one primary.
 //   phases: each phase listed once; every exit criterion serves at least one known measure,
 //     so each phase's exit traces back to the end; the venture's current phase has exit
@@ -12,6 +14,8 @@
 //   node schema/check-telos.mjs <workspace or venture dir>
 
 import { ventureFile } from "./venture-paths.mjs";
+import { migrated, scale } from "./canonical.mjs";
+import { telosFile, telosView } from "../frameworks/telos/adapter.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -25,13 +29,15 @@ let checked = 0;
 
 for (const root of walk(dir)) {
   const v = load(ventureFile(root, "venture.json"));
-  const tPath = ventureFile(root, "purpose/telos.json");
-  if (!existsSync(tPath)) {
-    if (v.phase !== "discovery" && v.ambition && v.ambition !== "hobby") warnings.push(`${v.id}: past Discovery with no purpose/telos.json; the owner should state the end first`);
+  const file = migrated(root) ? null : telosFile(root);
+  const t = file ? load(ventureFile(root, file)) : telosView(root);
+  const ambition = scale(root);
+  if (!t) {
+    if (v.phase !== "discovery" && ambition && ambition !== "hobby") warnings.push(`${v.id}: past Discovery with no telos (foundation/goals and foundation/exit-criteria); the owner should state the end first`);
     continue;
   }
   checked++;
-  const t = load(tPath), at = `${v.id}/purpose/telos.json`;
+  const at = `${v.id}/${file ?? "foundation/goals, foundation/exit-criteria"}`;
   const ids = t.measures.map((m) => m.id);
   if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate measure ids`);
   if (t.measures.filter((m) => m.primary).length !== 1) errors.push(`${at}: exactly one measure is primary`);
@@ -43,11 +49,11 @@ for (const root of walk(dir)) {
   }
   if (!seen.has(v.phase)) warnings.push(`${at}: no exit criteria for the current phase, ${v.phase}`);
 
-  const path = t.owner_outcome.path;
-  if (v.ambition === "aggressive-growth" && path === "hold") warnings.push(`${at}: aggressive growth usually means investors expecting an exit, but the owners intend to hold`);
-  if (v.ambition === "hobby" && ["ipo", "acquisition"].includes(path)) warnings.push(`${at}: a hobby that intends ${path}; is the ambition still hobby?`);
+  const path = t.owner_outcome?.path;
+  if (ambition === "aggressive-growth" && path === "hold") warnings.push(`${at}: aggressive growth usually means investors expecting an exit, but the owners intend to hold`);
+  if (ambition === "hobby" && ["ipo", "acquisition"].includes(path)) warnings.push(`${at}: a hobby that intends ${path}; is the ambition still hobby?`);
   const ePath = ventureFile(root, "governance/exit.json");
-  if (existsSync(ePath)) {
+  if (path && existsSync(ePath)) {
     const paths = load(ePath).paths;
     const preferred = paths.filter((p) => p.stance === "preferred").map((p) => p.kind);
     if (paths.some((p) => p.kind === path && p.stance === "ruled-out")) errors.push(`${v.id}/governance/exit.json: rules out ${path}, the path the telos intends`);
