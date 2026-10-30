@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="pele pele-state" viewBox="0 0 1371 942" width="1371" height="942" style="max-width:100%;height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_tw:var(--pele-title-weight,bold);--_fm:var(--pele-font-mono,monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="state"><style>.pele {
+  --pele-bg: #ffffff;
+  --pele-fg: #1c1c1c;
+  --pele-muted: #656565;
+  --pele-line: #808080;
+  --pele-surface: #fcfcfc;
+  --pele-surface-alt: #f1f1f1;
+  --pele-border: #c9c9c9;
+}
+.pele .blue rect { fill: #c3e0ff; }
+.pele .orange rect { fill: #f0d3bf; }
+.pele .purple rect { fill: #e3d5ff; }
+.pele .yellow rect { fill: #f0dcbf; }
+.pele .teal rect { fill: #bfe3df; }
+.pele .tan rect { fill: #e5d9ce; }
+.pele .pink rect { fill: #ffcbe6; }
+.pele .breaks rect {
+  fill: #ffecee !important;
+  stroke: #e72e3b !important;
+  stroke-width: 2.5px !important;
+}
+.pele .breaks text {
+  fill: #cd2834 !important;
+}
+.pele .mayBreak rect {
+  fill: #fff3e6 !important;
+  stroke: #e8730c !important;
+  stroke-width: 2.5px !important;
+}
+.pele .mayBreak text {
+  fill: #b85a06 !important;
+}
+.pele .bugPath rect {
+  stroke: #1680f3 !important;
+  stroke-width: 2.5px !important;
+}
+.pele .repeats rect {
+  stroke: #9b35d6 !important;
+  stroke-width: 2.5px !important;
+  stroke-dasharray: 6 3;
+}
+@media (prefers-color-scheme: dark) {
+  .pele {
+    --pele-bg: #1f1f1f;
+    --pele-fg: #f5f5f5;
+    --pele-muted: #acacac;
+    --pele-line: #939393;
+    --pele-surface: #121212;
+    --pele-surface-alt: #2c2c2c;
+    --pele-border: #4e4e4e;
+  }
+  .pele .blue rect { fill: #1b3857; }
+  .pele .orange rect { fill: #573117; }
+  .pele .purple rect { fill: #3c2e57; }
+  .pele .yellow rect { fill: #573d17; }
+  .pele .teal rect { fill: #174641; }
+  .pele .tan rect { fill: #3d3127; }
+  .pele .pink rect { fill: #57233e; }
+  .pele .breaks rect {
+    fill: #2e2021 !important;
+    stroke: #cf2b35 !important;
+  }
+  .pele .breaks text {
+    fill: #ff6463 !important;
+  }
+  .pele .mayBreak rect {
+    fill: #2e2619 !important;
+    stroke: #d0700f !important;
+  }
+  .pele .mayBreak text {
+    fill: #ffa257 !important;
+  }
+  .pele .bugPath rect {
+    stroke: #116dd2 !important;
+  }
+  .pele .repeats rect {
+    stroke: #9a3fcf !important;
+  }
+}
+</style><text class="pele-title" font-weight="var(--_tw)" text-anchor="middle" xml:space="preserve"><tspan x="685.5" y="25.6">One field on its way to a public channel (naive publish build)</tspan></text><g transform="translate(0,36)"><g class="pele-clusters"><g class="pele-cluster pele-state-composite" data-id="legend"><rect x="373.21" y="8" width="624.14" height="172" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M373.21,44H997.35" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="685.28" y="31.6" text-anchor="middle">Legend</text></g><g class="pele-cluster pele-state-composite" data-id="all"><rect x="8" y="220" width="1354.56" height="678" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M8,256H1362.56" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="685.28" y="243.6" text-anchor="middle">At the same time</text></g><g class="pele-cluster pele-state-composite" data-id="r0"><rect x="34" y="298.5" width="473.52" height="557" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M34,334.5H507.52" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="270.76" y="322.1" text-anchor="middle">Field</text></g><g class="pele-cluster pele-state-composite" data-id="r1"><rect x="567.52" y="282" width="501.5" height="590" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M567.52,318H1069.02" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="818.27" y="305.6" text-anchor="middle">Variant</text></g><g class="pele-cluster pele-state-composite" data-id="r2"><rect x="1129.02" y="426.5" width="207.54" height="301" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M1129.02,462.5H1336.56" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="1232.79" y="450.1" text-anchor="middle">Output</text></g></g><g class="pele-dividers" stroke-dasharray="4 4" fill="none" stroke="var(--_b)"><path class="pele-divider" d="M537.52,256V898"/><path class="pele-divider" d="M1099.02,256V898"/></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-transition" data-id="edge0"><path d="M269.65,364.5L269.65,401.5"/><path class="pele-marker" d="M269.65,408.5L266.29,400.5L273.01,400.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge1"><path d="M261.65,452.5C261.65,494.5 152.27,494.5 152.27,536.5L152.27,580.5C152.27,616 215.83,616 215.83,651.5L215.83,657.5"/><path class="pele-marker" d="M215.83,664.5L212.47,656.5L219.19,656.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge2"><path d="M277.65,452.5C277.65,461.75 387.03,461.75 387.03,471L387.03,529.5"/><path class="pele-marker" d="M387.03,536.5L383.67,528.5L390.39,528.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge3"><path d="M269.65,708.5L269.65,770.5"/><path class="pele-marker" d="M269.65,777.5L266.29,769.5L273.01,769.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge4"><path d="M387.03,580.5L387.03,639C387.03,645.94 323.47,645.94 323.47,652.88L323.47,657.5"/><path class="pele-marker" d="M323.47,664.5L320.11,656.5L326.83,656.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge5"><path d="M822.94,348L822.94,385"/><path class="pele-marker" d="M822.94,392L819.58,384L826.3,384Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge6"><path d="M822.94,436L822.94,513"/><path class="pele-marker" d="M822.94,520L819.58,512L826.3,512Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge7"><path d="M806.47,564C806.47,573.25 698.68,573.25 698.68,582.5L698.68,650"/><path class="pele-marker" d="M698.68,657L695.32,649L702.04,649Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge8"><path d="M839.41,564C839.41,573.25 947.21,573.25 947.21,582.5L947.21,641"/><path class="pele-marker" d="M947.21,648L943.85,640L950.57,640Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge9"><path d="M698.68,701L698.68,787"/><path class="pele-marker" d="M698.68,794L695.32,786L702.04,786Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge10"><path d="M1232.79,492.5L1232.79,529.5"/><path class="pele-marker" d="M1232.79,536.5L1229.43,528.5L1236.15,528.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge11"><path d="M1232.79,580.5L1232.79,642.5"/><path class="pele-marker" d="M1232.79,649.5L1229.43,641.5L1236.15,641.5Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="edge1"><rect x="52" y="540.5" width="200.54" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="152.27" y="554.4">you approve the field's wording</tspan><tspan x="152.27" y="572.4">as public</tspan></text></g><g class="pele-edge-label" data-id="edge2"><rect x="302.1" y="473" width="169.87" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="387.03" y="486.9">you set the field to publish</tspan><tspan x="387.03" y="504.9">through a variant</tspan></text></g><g class="pele-edge-label" data-id="edge3"><rect x="193.67" y="729" width="151.96" height="21" rx="3" fill="var(--_bg)"/><text x="269.65" y="744.4" text-anchor="middle">someone edits the field</text></g><g class="pele-edge-label" data-id="edge4"><rect x="286.76" y="601" width="200.54" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="387.03" y="614.9">you approve the field's wording</tspan><tspan x="387.03" y="632.9">as public</tspan></text></g><g class="pele-edge-label" data-id="edge6"><rect x="740.34" y="456.5" width="165.21" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="822.94" y="470.4">an agent drafts the public</tspan><tspan x="822.94" y="488.4">variant</tspan></text></g><g class="pele-edge-label" data-id="edge7"><rect x="621.53" y="592" width="154.3" height="21" rx="3" fill="var(--_bg)"/><text x="698.68" y="607.4" text-anchor="middle">you approve the variant</text></g><g class="pele-edge-label" data-id="edge8"><rect x="860.33" y="584.5" width="173.75" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="947.21" y="598.4">an agent marks the variant</tspan><tspan x="947.21" y="616.4">approved</tspan></text></g><g class="pele-edge-label" data-id="edge9"><rect x="600.14" y="730.5" width="197.07" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="698.68" y="744.4">the variant is rewritten with the</tspan><tspan x="698.68" y="762.4">record's own sentence</tspan></text></g><g class="pele-edge-label" data-id="edge11"><rect x="1155.65" y="601" width="154.29" height="21" rx="3" fill="var(--_bg)"/><text x="1232.79" y="616.4" text-anchor="middle">naive publish build runs</text></g></g><g class="pele-nodes"><g class="pele-node pele-state teal" data-id="lg0" transform="translate(417.21,112)"><rect x="-28" y="-22" width="56" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">ok</text></g><g class="pele-node pele-state mayBreak" data-id="lg1" transform="translate(600.79,112)"><rect x="-115.58" y="-52" width="231.17" height="104" rx="10" fill="var(--_s)" stroke="var(--_b)" style="fill:#fff3e6;stroke:#e8730c;stroke-width:2.5px;"/><text class="pele-label" style="fill:#b85a06;" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Breaks</tspan><tspan x="0" y="-4.9">GateAcceptsHonestVariant</tspan><tspan x="0" y="16.1">or NoInternalWords in some</tspan><tspan x="0" y="37.1">cases</tspan></text></g><g class="pele-node pele-state bugPath" data-id="lg2" transform="translate(868.86,112)"><rect x="-112.49" y="-41.5" width="224.98" height="83" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Path to the</tspan><tspan x="0" y="5.6">GateAcceptsHonestVariant</tspan><tspan x="0" y="26.6">or NoInternalWords bug</tspan></text></g><g class="pele-node pele-state bugPath" data-id="s0" transform="translate(269.65,430.5)"><rect x="-42.68" y="-22" width="85.36" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Internal</text></g><g class="pele-node pele-state" data-id="s1" transform="translate(269.65,686.5)"><rect x="-105.82" y="-22" width="211.63" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Public, wording approved</text></g><g class="pele-node pele-state" data-id="s2" transform="translate(387.03,558.5)"><rect x="-104.49" y="-22" width="208.98" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Publish through a variant</text></g><g class="pele-node pele-state" data-id="s3" transform="translate(269.65,808.5)"><rect x="-84.92" y="-31" width="169.84" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Public, edited since</tspan><tspan x="0" y="16.1">approval</tspan></text></g><g class="pele-node pele-state-start" data-id="r0_start" transform="translate(269.65,357.5)"><circle r="7" fill="var(--_l)"/></g><g class="pele-node pele-state bugPath" data-id="s4" transform="translate(822.94,414)"><rect x="-52.46" y="-22" width="104.91" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">No variant</text></g><g class="pele-node pele-state bugPath" data-id="s5" transform="translate(822.94,542)"><rect x="-68.47" y="-22" width="136.94" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Variant drafted</text></g><g class="pele-node pele-state" data-id="s6" transform="translate(698.68,679)"><rect x="-102.71" y="-22" width="205.42" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Variant approved by you</text></g><g class="pele-node pele-state" data-id="s7" transform="translate(947.21,679)"><rect x="-105.82" y="-31" width="211.63" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Variant marked approved</tspan><tspan x="0" y="16.1">by an agent</tspan></text></g><g class="pele-node pele-state" data-id="s8" transform="translate(698.68,825)"><rect x="-115.16" y="-31" width="230.32" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Approved variant copies the</tspan><tspan x="0" y="16.1">record</tspan></text></g><g class="pele-node pele-state-start" data-id="r1_start" transform="translate(822.94,341)"><circle r="7" fill="var(--_l)"/></g><g class="pele-node pele-state teal bugPath" data-id="s9" transform="translate(1232.79,558.5)"><rect x="-80.03" y="-22" width="160.06" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Nothing published</text></g><g class="pele-node pele-state mayBreak bugPath" data-id="s10" transform="translate(1232.79,680.5)"><rect x="-87.77" y="-31" width="175.54" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)" style="fill:#fff3e6;stroke:#e8730c;stroke-width:2.5px;"/><text class="pele-label" style="fill:#b85a06;" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Record's own words</tspan><tspan x="0" y="16.1">published</tspan></text></g><g class="pele-node pele-state-start" data-id="r2_start" transform="translate(1232.79,485.5)"><circle r="7" fill="var(--_l)"/></g></g></g></svg>

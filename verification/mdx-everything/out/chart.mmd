@@ -1,0 +1,76 @@
+---
+title: "One field on its way to a public channel (naive publish build)"
+---
+stateDiagram-v2
+  direction LR
+  state "Legend" as legend {
+    lg0: ok
+    lg1: refused
+    lg2: Breaks OnlyAPersonApproves in some cases
+    lg3: Path to the OnlyAPersonApproves bug
+  }
+  class lg0 teal
+  class lg1 blue
+  class lg2 mayBreak
+  class lg3 bugPath
+  state "At the same time" as all {
+    state "Field" as r0 {
+      s0: Internal
+      s1: Public, wording approved
+      s2: Publish through a variant
+      s3: Public, edited since approval
+      [*] --> s0
+      s0 --> s1: you approve the field's wording as public
+      s0 --> s2: you set the field to publish through a variant
+      s1 --> s3: someone edits the field
+      s2 --> s1: you approve the field's wording as public
+    }
+    --
+    state "Variant" as r1 {
+      s4: No variant
+      s5: Variant drafted
+      s6: Variant approved by you
+      s7: Variant marked approved by an agent
+      s8: Approved variant copies the record
+      [*] --> s4
+      s4 --> s5: an agent drafts the public variant
+      s5 --> s6: you approve the variant
+      s5 --> s7: an agent marks the variant approved
+      s6 --> s8: the variant is rewritten with the record's own sentence
+    }
+    --
+    state "Output" as r2 {
+      s9: Nothing published
+      s10: Record's own words published
+      s11: Build refused
+      s12: Variant published
+      [*] --> s9
+      s9 --> s10: naive publish build runs [when Field is Public, wording approved and Variant is not Approved variant copies the record]
+      s10 --> s9: naive publish build runs [when Field is Public, edited since approval and Variant is one of No variant, Variant drafted]
+      s9 --> s12: naive publish build runs [when Field is one of Public, edited since approval, Publish through a variant and Variant is one of Variant approved by you, Variant marked approved by an agent]
+      s9 --> s11: naive publish build runs [when Variant is Approved variant copies the record]
+      s10 --> s12: naive publish build runs [when Field is Public, edited since approval and Variant is one of Variant approved by you, Variant marked approved by an agent]
+      s10 --> s11: naive publish build runs [when Variant is Approved variant copies the record]
+      s12 --> s10: naive publish build runs [when Field is Public, wording approved and Variant is not Approved variant copies the record]
+      s12 --> s11: naive publish build runs [when Variant is Approved variant copies the record]
+    }
+  }
+  classDef mayBreak fill:#fff3e6,stroke:#e8730c,stroke-width:2.5px,color:#b85a06
+  class s0 bugPath
+  class s1 mayBreak
+  class s2 mayBreak
+  class s2 bugPath
+  class s3 mayBreak
+  class s4 teal
+  class s4 bugPath
+  class s5 teal
+  class s5 bugPath
+  class s6 teal
+  class s7 mayBreak
+  class s7 bugPath
+  class s9 teal
+  class s9 bugPath
+  class s10 teal
+  class s11 blue
+  class s12 mayBreak
+  class s12 bugPath

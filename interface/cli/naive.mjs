@@ -29,6 +29,9 @@
 //                                                   venture it fits, or in the workspace inbox when unsure
 //   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
 //   naive read <venture> <path>                     read another venture's published artifact, if the workspace allows
+//   naive publish build <site|artifact|foundation> [--out <dir>]
+//                                                   compile the venture's public variants for one channel through the
+//                                                   publishing gate (EE-064); publishing reads only that output
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -211,6 +214,13 @@ else if (cmd === "build" || cmd === "start") {
   // naive read names the venture this session is in as the one reading.
   const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
   process.exit(run("schema/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
+} else if (cmd === "publish") {
+  // The publishing gate: naive publish <step> runs operations/marketing/publish-<step>.mjs on the venture.
+  const [step, ...args] = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const script = `operations/marketing/publish-${step}.mjs`;
+  if (!step || !/^[a-z-]+$/.test(step) || !existsSync(join(repo, script))) { console.error("usage: naive publish build <site|artifact|foundation> [--out <dir>]"); process.exit(2); }
+  const [channel, ...flags] = args;
+  process.exit(run(script, [channel ?? "", here(), ...flags]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");

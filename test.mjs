@@ -57,6 +57,8 @@ const steps = [
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["publishing gate: field visibility, leak canaries, internal terms", "node", ["schema/leaks-test.mjs"]],
   ["public site carries no internal text", "node", ["schema/check-leaks.mjs", "site/content/marketing"]],
+  ["publish build: every public word compiled through the gate; canaries reach no channel", "node", ["operations/marketing/publish-build-test.mjs"]],
+  ["public gate (EE-064): the repository's venture", "node", ["operations/marketing/check-public.mjs", "instance/ventures/everything-ecosystem"]],
   ["decision versions: propose, approve, merge, rollback", "node", ["schema/decision-versions-test.mjs"]],
   ["decision impact: a merge maps what depends on it across functions, marks it stale, proposes follow-ups", "node", ["schema/decision-impact-test.mjs"]],
   ["decision reasons: cited reasons frozen at approval; a changed citation makes the decision stale", "node", ["schema/decision-reasons-test.mjs"]],
