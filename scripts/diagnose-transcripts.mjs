@@ -19,7 +19,7 @@
 // naive.config.json diagnose.threshold, default 20000, or a new session that started over 24 hours ago) and exits 0
 // quietly when there is nothing to read. Catches are typed pattern rules per kind (CATCHES), each matched against the
 // records that would hold it and marked recorded or missed. Every catch cites {file, timestamp, sha256} of the
-// redacted message, and the day's redacted messages are kept as an immutable raw source,
+// redacted message, and the day's redacted messages are kept as a raw source that is only ever redacted further,
 // raw/sources/conversations-<date>/ (internal, never published), which records made from a catch can cite.
 
 import { createHash } from "node:crypto";
@@ -87,7 +87,7 @@ export function humanText(entry) {
   const parts = typeof c === "string" ? [c] : Array.isArray(c) ? c.filter((b) => b?.type === "text").map((b) => b.text) : [];
   const text = parts.join("\n")
     .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "")
-    .replace(/<(command-[a-z-]+|local-command-[a-z-]+)>[\s\S]*?<\/\1>/g, "")
+    .replace(/<(command-[a-z-]+|local-command-[a-z-]+|bash-[a-z-]+)>[\s\S]*?<\/\1>/g, "")
     .trim();
   return text || null;
 }
@@ -259,8 +259,35 @@ export function isDue({ root, dir, now = new Date(), since }) {
   return { due, tokens, threshold, stale_session: stale, reason: tokens >= threshold ? `about ${tokens} tokens since the cursor (threshold ${threshold})` : stale ? `a new session older than ${stale_hours} hours: ${stale}` : `about ${tokens} tokens since the cursor, under ${threshold}` };
 }
 
-// The day's redacted founder messages as an immutable raw source: raw/sources/conversations-<date>/. An existing
-// folder is never changed; messages it lacks go in a new conversations-<date>-<n>.
+// Redaction rewrites what is already kept: each run re-redacts raw/sources/conversations-*/ and diagnosis-*/ with
+// today's patterns, so a secret an older pattern missed does not stay on disk. A message whose text changes gets
+// the sha256 of its new text, and every catch and text.md that cited the old hash is moved to the new one.
+export function reredactSources(root) {
+  const dir = join(root, "raw/sources");
+  if (!existsSync(dir)) return [];
+  const kept = readdirSync(dir).filter((d) => /^(?:conversations|diagnosis)-/.test(d)).map((d) => join(dir, d));
+  const moved = new Map();
+  const rewrite = (file, fn) => { if (!existsSync(file)) return false; const was = readFileSync(file, "utf8"); const now = fn(was); if (now === was) return false; writeFileSync(file, now); return true; };
+  const jsonl = (fn) => (text) => text.split("\n").map((line) => { const o = line.trim() && readJson0(line); return o ? JSON.stringify(fn(o)) : line; }).join("\n");
+  const changed = new Set();
+  for (const d of kept) if (rewrite(join(d, "messages.jsonl"), jsonl((m) => {
+    const text = redact(m.text ?? "");
+    if (text !== m.text) { moved.set(m.sha256, sha256(text)); return { ...m, text, sha256: sha256(text) }; }
+    return m;
+  }))) changed.add(d);
+  const remap = (ref) => (ref?.sha256 && moved.has(ref.sha256) ? { ...ref, sha256: moved.get(ref.sha256) } : ref);
+  // text.md cites messages by "sha256 <hex>", which the hex pattern would otherwise take for a secret.
+  const redactKeepingHashes = (t) => { const hs = []; return redact(t.replace(/\bsha256 ([0-9a-f]{12,64})\b/g, (_, h) => `sha256 \u0000${hs.push(h) - 1}\u0000`)).replace(/\u0000(\d+)\u0000/g, (_, i) => hs[i]); };
+  const rehash = (text) => [...moved].reduce((t, [a, b]) => t.split(a).join(b).split(a.slice(0, 12)).join(b.slice(0, 12)), text);
+  for (const d of kept) {
+    if (rewrite(join(d, "catches.jsonl"), jsonl((c) => ({ ...c, quote: redact(c.quote ?? ""), source: remap(c.source), ...(c.sources ? { sources: c.sources.map(remap) } : {}) })))) changed.add(d);
+    if (rewrite(join(d, "text.md"), (t) => rehash(redactKeepingHashes(t)))) changed.add(d);
+  }
+  return [...changed].map((d) => relative(root, d));
+}
+
+// The day's redacted founder messages as a raw source: raw/sources/conversations-<date>/. An existing folder gets no
+// new messages (they go in a new conversations-<date>-<n>); it changes only when reredactSources redacts it further.
 export function writeConversations(root, messages, tz) {
   const byDay = new Map();
   for (const m of messages) {
@@ -284,7 +311,7 @@ export function writeConversations(root, messages, tz) {
     mkdirSync(out, { recursive: true });
     writeFileSync(join(out, "source.json"), JSON.stringify({ id, origin: "the founder's own messages in agent transcripts, redacted before writing (naive diagnose); internal, never published", title: `Founder conversations, ${day} (${tz})`, fetched: day }, null, 2) + "\n");
     writeFileSync(join(out, "messages.jsonl"), fresh.map((m) => JSON.stringify({ file: m.file, timestamp: m.timestamp, sha256: m.sha256, text: m.text })).join("\n") + "\n");
-    writeFileSync(join(out, "text.md"), ["---", "type: raw-source", "source: generated", `created: ${day}`, "visibility: internal", "tags: [naive, conversations, transcripts]", "---", "", `# Founder conversations, ${day}`, "", "Redacted. Immutable: never edited, never published.", "",
+    writeFileSync(join(out, "text.md"), ["---", "type: raw-source", "source: generated", `created: ${day}`, "visibility: internal", "tags: [naive, conversations, transcripts]", "---", "", `# Founder conversations, ${day}`, "", "Redacted. Never edited except to redact further; never published.", "",
       ...fresh.flatMap((m) => [`## ${m.timestamp} (${m.file}, sha256 ${m.sha256})`, "", m.text, ""])].join("\n"));
     written.push(id);
   }
@@ -295,6 +322,7 @@ const readJson0 = (line) => { try { return JSON.parse(line); } catch { return nu
 export async function diagnose({ root, dir, since, now = new Date(), env = process.env, tz = zoneOf(root) }) {
   const cursorFile = join(root, ".naive/diagnose-cursor.json");
   const cursor = since ?? cursorOf(root);
+  const reredacted = reredactSources(root);
   const messages = readMessages(dir, cursor);
   let candidates = heuristicCandidates(messages);
   if (env.NAIVE_DIAGNOSE_MODEL === "1") {
@@ -321,7 +349,7 @@ export async function diagnose({ root, dir, since, now = new Date(), env = proce
   const last = messages.map((m) => m.timestamp).filter(Boolean).sort().at(-1) ?? cursor ?? now.toISOString();
   mkdirSync(dirname(cursorFile), { recursive: true });
   writeFileSync(cursorFile, JSON.stringify({ last_run: now.toISOString(), last_timestamp: last }, null, 2) + "\n");
-  return { out, messages: messages.length, candidates, conversations };
+  return { out, messages: messages.length, candidates, conversations, reredacted };
 }
 
 function findRoot(from) {

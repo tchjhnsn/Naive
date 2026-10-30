@@ -46,6 +46,8 @@ const bundle = JSON.parse(readFileSync(join(ws, ".naive/publish/frameworks/now-w
 assert.deepEqual(Object.keys(bundle.files).sort(), ["framework.json", "playbook.md", "template.md"]);
 assert.equal(publishFramework("now-what", ws).code, 2);
 assert.equal(cli("framework", "publish", "now-what").status, 2);
+writeFileSync(join(ws, "frameworks/now-what/playbook.md"), "Copy governance/board into the deck.\n");
+assert.match(publishFramework("now-what", ws, { dryRun: true }).problems.join("\n"), /record-path "governance\/board"/, "a record path the framework does not map to is still a leak");
 writeFileSync(join(ws, "frameworks/now-what/playbook.md"), "token: ghp_" + "a".repeat(36) + "\n");
 assert.equal(publishFramework("now-what", ws, { dryRun: true }).code, 1, "a secret in the bundle fails the dry run");
 console.log("user frameworks: list, new, check and publish --dry-run behave");

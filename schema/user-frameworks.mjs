@@ -16,6 +16,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { check as checkFrameworks } from "./check-frameworks.mjs";
 import { findWorkspace } from "./workspace.mjs";
+import { leaks } from "./check-leaks.mjs";
 import { findSecrets } from "./redact.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -121,13 +122,11 @@ export function publishFramework(id, from = process.cwd(), { dryRun = false } = 
   const text = JSON.stringify(bundle, null, 2) + "\n";
   writeFileSync(out, text);
   const problems = findSecrets(text).map((s) => `looks like a secret (${s.kind}) in the bundle`);
-  const leaks = join(repo, "schema/check-leaks.mjs");
-  let leakRun = "skipped (schema/check-leaks.mjs is not in this version)";
-  if (existsSync(leaks)) {
-    const r = spawnSync("node", [leaks, out], { encoding: "utf8" });
-    leakRun = r.status === 0 ? "passed" : "failed";
-    if (r.status !== 0) problems.push(`schema/check-leaks.mjs: ${(r.stdout + r.stderr).trim()}`);
-  }
+  // The leak check, except for the canonical routes the framework maps to: those are its contract, not a venture's records.
+  const routes = (f.framework.maps_to ?? []).map((m) => m.canonical_route).filter(Boolean);
+  const found = leaks([out]).filter((l) => l.severity !== "warn" && !routes.some((r) => r === l.text || r.startsWith(`${l.text}/`)));
+  const leakRun = found.length ? "failed" : "passed";
+  for (const l of found) problems.push(`schema/check-leaks.mjs: ${l.pattern} "${l.text}" (${l.why})`);
   if (f.framework.visibility !== "public") problems.push(`visibility is ${f.framework.visibility ?? "internal"}: set it to public before publishing for real`);
   return { code: problems.some((p) => !p.startsWith("visibility")) ? 1 : 0, out, leakRun, problems,
     message: `dry run: packed ${Object.keys(files).length} files into ${out}; leak check ${leakRun}; nothing was sent` };

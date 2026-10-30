@@ -3,8 +3,8 @@
 import assert from "node:assert/strict";
 import { utimesSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { diagnose, heuristicCandidates, isDue, sha256 } from "./diagnose-transcripts.mjs";
+import { join, relative } from "node:path";
+import { diagnose, heuristicCandidates, humanText, isDue, sha256 } from "./diagnose-transcripts.mjs";
 import { redact } from "../schema/redact.mjs";
 
 const fixtures = new URL("./fixtures/transcripts", import.meta.url).pathname;
@@ -16,6 +16,20 @@ const FAKE = "lsv2_pt_0123456789abcdef0123456789abcdef_ab12cd34ef";
 
 // redaction covers the shapes named
 for (const s of [FAKE, "sk-" + "x".repeat(30), "ghp_" + "y".repeat(36), "AKIA" + "ABCDEFGHIJKLMNOP", "a".repeat(48), "f00d".repeat(10), "me@example.com"]) assert.ok(!redact(`x ${s} y`).includes(s), s);
+
+// lowercase and quoted names, Stripe keys and Authorization headers (all values fake)
+for (const [t, gone] of [
+  ["api_key = fake-key-not-real-123", "fake-key-not-real-123"],
+  ['{"password": "fake pass phrase"}', "fake pass phrase"],
+  ["sk_live_" + "FAKE0".repeat(5), "FAKE0FAKE0"],
+  ["Authorization: token fakeTokenNotReal42", "fakeTokenNotReal42"],
+]) { const out = redact(t); assert.ok(!out.includes(gone) && out.includes("[REDACTED"), `${t} -> ${out}`); }
+assert.equal(redact('{"password": "fake"}'), '{"password": "[REDACTED:secret]"}', "a JSON value stays a JSON string");
+assert.equal(redact(redact("api_key = fake-1")), redact("api_key = fake-1"), "redacting twice changes nothing");
+assert.equal(redact("the compass: north"), "the compass: north", "an ordinary word before a colon is kept");
+// shell lines the founder ran are not the founder's words
+assert.equal(humanText({ type: "user", message: { role: "user", content: "<bash-input>ls -la</bash-input><bash-stdout>secret.txt</bash-stdout><bash-stderr>warn</bash-stderr>keep the ledger" } }), "keep the ledger");
+assert.equal(humanText({ type: "user", message: { role: "user", content: "<bash-stdout>only output</bash-stdout>" } }), null);
 
 const r = await diagnose({ root, dir, now: new Date("2026-10-30T02:00:00Z"), env: {}, tz: "UTC" });
 assert.equal(r.messages, 2, "only the human's own messages: no assistant, tool result or meta lines");
@@ -118,7 +132,7 @@ assert.match(readFileSync(join(convDir, "text.md"), "utf8"), /visibility: intern
 const catches = readFileSync(join(r2.out, "catches.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l));
 assert.equal(catches.length, r2.candidates.length);
 assert.match(readFileSync(join(r2.out, "text.md"), "utf8"), /\| decision \| \d+ \| \d+ \|/);
-// immutable: a rerun over the same messages leaves the folder as it was and adds nothing
+// a rerun over the same messages leaves the folder as it was and adds nothing
 const snapshot = readFileSync(join(convDir, "messages.jsonl"), "utf8");
 const r3 = await diagnose({ root: v2, dir: tdir, since: "2026-10-01T00:00:00Z", now: new Date("2026-10-31T13:00:00Z"), env: {} });
 assert.deepEqual(r3.conversations, []);
@@ -128,6 +142,21 @@ writeFileSync(join(tdir, "s3.jsonl"), H("2026-10-31T15:00:00Z", `My token is ${F
 utimesSync(join(tdir, "s3.jsonl"), new Date("2026-10-31T15:00:00Z"), new Date("2026-10-31T15:00:00Z"));
 const r4 = await diagnose({ root: v2, dir: tdir, since: "2026-10-31T00:00:00Z", now: new Date("2026-10-31T16:00:00Z"), env: {} });
 assert.ok(!readFileSync(join(v2, "raw/sources", r4.conversations[0], "messages.jsonl"), "utf8").includes(FAKE));
+// a secret an older pattern missed is redacted in the kept source on the next run, and citations follow the new hash
+const missed = "api_key = fake-missed-by-old-rules-77";
+const leakedSha = sha256(`we set ${missed} today`);
+writeFileSync(join(convDir, "messages.jsonl"), snapshot + JSON.stringify({ file: "old.jsonl", timestamp: "2026-10-28T09:00:00Z", sha256: leakedSha, text: `we set ${missed} today` }) + "\n");
+writeFileSync(join(convDir, "text.md"), readFileSync(join(convDir, "text.md"), "utf8") + `## 2026-10-28T09:00:00Z (old.jsonl, sha256 ${leakedSha})\n\nwe set ${missed} today\n`);
+writeFileSync(join(r2.out, "catches.jsonl"), readFileSync(join(r2.out, "catches.jsonl"), "utf8") + JSON.stringify({ kind: "idea", quote: `we set ${missed}`, source: { file: "old.jsonl", timestamp: "2026-10-28T09:00:00Z", sha256: leakedSha } }) + "\n");
+const r5 = await diagnose({ root: v2, dir: tdir, since: "2026-11-01T00:00:00Z", now: new Date("2026-11-01T16:00:00Z"), env: {} });
+assert.ok(r5.reredacted.includes("raw/sources/conversations-2026-10-28") && r5.reredacted.includes(relative(v2, r2.out)), JSON.stringify(r5.reredacted));
+for (const f of [join(convDir, "messages.jsonl"), join(convDir, "text.md"), join(r2.out, "catches.jsonl")]) assert.ok(!readFileSync(f, "utf8").includes("fake-missed-by-old-rules-77"), `${f} is redacted in place`);
+const fixed = readFileSync(join(convDir, "messages.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l)).find((m) => m.file === "old.jsonl");
+assert.ok(fixed.sha256 !== leakedSha && fixed.sha256 === sha256(fixed.text), "the rewritten message carries the hash of its new text");
+const recited = readFileSync(join(r2.out, "catches.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l)).find((c) => c.source?.file === "old.jsonl");
+assert.equal(recited.source.sha256, fixed.sha256, "the catch cites the new hash");
+assert.ok(readFileSync(join(convDir, "text.md"), "utf8").includes(fixed.sha256) && !readFileSync(join(convDir, "text.md"), "utf8").includes(leakedSha), "text.md cites the new hash");
+assert.equal(readFileSync(join(convDir, "messages.jsonl"), "utf8").split(snapshot.trim())[0], "", "messages that needed nothing more are untouched");
 // short decisions in reply to options only: a bare yes with no options before it is not one
 assert.equal(heuristicCandidates([{ text: "Yes, A.", file: "x", timestamp: "t", sha256: "0", after_options: false, answered: true }]).length, 0);
 console.log("transcript diagnosis: human words only, redacted first, cursor, one draft per run, model pass off by default; v2 catches, threshold, conversation provenance");
