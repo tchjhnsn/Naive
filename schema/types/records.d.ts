@@ -27,6 +27,49 @@ export type Account = {
   note?: string;
 };
 
+/** Days since the founder last touched the venture and the current streak, at operations/activity/_summary.json (naive activity --write); feeds the docket. A long silence is a gentle nudge, never an alarm. Internal by default. */
+export type ActivitySummary = {
+  venture: string;
+  /**
+   * @format date
+   */
+  as_of: string;
+  time_zone: string;
+  visibility?: "internal" | "public";
+  /**
+   * @format date
+   */
+  last_touch?: string | null;
+  days_since_last_touch?: number | null;
+  /** Consecutive days with activity ending today, or yesterday when today has none yet */
+  streak: number;
+  active_days_30?: number;
+  nudge?: string;
+};
+
+/** Time the founder spent in the venture on one day, from transcript timestamps alone, at operations/activity/<date>.json (naive activity --write). The day is the venture's IANA time zone's. Internal by default. When the calendar component is installed, activity days appear as derived events; nothing is copied there. */
+export type Activity = {
+  venture: string;
+  /**
+   * @format date
+   */
+  date: string;
+  time_zone: string;
+  visibility?: "internal" | "public";
+  /** Transcript files with a founder message that day */
+  sessions: number;
+  /** Sum of gaps of 10 minutes or less between the founder's own messages */
+  active_minutes: number;
+  messages: number;
+  /** Estimated: characters of the founder's messages / 4 */
+  tokens_in: number;
+  session_files?: string[];
+  /** How the day's sessions were matched to the venture */
+  matched_by?: ("cwd" | "mention")[];
+  /** When this was computed (ISO 8601) */
+  computed?: string;
+};
+
 /** What runs Naive on a platform or in an agent harness (Z-4), as a Next.js adapter customizes build and deploy for a platform. A harness adapter (Claude Code, Codex, Cursor) adapts the framework through the venture's AGENTS.md and skills: the entry files it writes into a venture, and where it puts the package skills. A platform adapter (Mentura, Naive's first, as Vercel is for Next.js) names the tests it runs. An adapter is verified when it passes the framework's tests (node interface/adapters.mjs verify <name>). Harness adapters are interface/adapters/<name>.json; the platform's is platform/adapter.json. */
 export type Adapter = {
   name: string;
@@ -140,6 +183,32 @@ export type Artifact = {
   };
 };
 
+/** The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (schema/beta-gate.mjs). */
+export type BetaCapabilities = {
+  $schema?: string;
+  version: string;
+  note?: string;
+  capabilities: {
+    id: string;
+    title: string;
+    /** Unlocked from the start */
+    core?: boolean;
+    /** Router path patterns (gate syntax) this capability opens */
+    routes: string[];
+    checkpoint: {
+      id: string;
+      questions: {
+        id: string;
+        ask: string;
+        kind: "text" | "scale-1-5" | "yes-no";
+        required?: boolean;
+      }[];
+    };
+  }[];
+  /** Routes no capability locks: where testers give feedback and file bugs */
+  always_open?: string[];
+};
+
 /** The venture's boards, at <venture>/governance/board.json (EE-022): at most one formal board of directors (or managers, or trustees), which holds legal authority, and any advisory boards, which advise and decide nothing. A seat says who fills it and who appoints them; reserved matters are what only the formal board may decide. schema/check-governance.mjs checks seats against ownership.json. */
 export type Board = {
   /**
@@ -167,6 +236,77 @@ export type Board = {
   }[];
 };
 
+/** One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node schema/bugs.mjs, naive bugs). */
+export type Bug = {
+  id: string;
+  venture?: string;
+  title: string;
+  /** P0 blocks use or loses data; P1 breaks a capability; P2 a workaround exists; P3 cosmetic */
+  severity: "P0" | "P1" | "P2" | "P3";
+  status: "open" | "in-progress" | "fixed" | "wont-fix" | "duplicate";
+  /** The version (or commit) it was found in */
+  found_in: string;
+  /** Steps to reproduce */
+  repro?: string[];
+  /** The version that fixed it */
+  fixed_in?: string | null;
+  /** The feedback record it came from, if any */
+  feedback?: string;
+};
+
+/** One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; schema/calendar.mjs computes them each time the calendar is read. */
+export type CalendarEvent = {
+  "@type": "Event";
+  /** Globally unique; the file's name without .json */
+  uid: string;
+  title: string;
+  description?: string;
+  /** A JSCalendar LocalDateTime: the wall-clock time in timeZone, with no offset */
+  start: string;
+  /** An IANA time zone, for example America/New_York */
+  timeZone: string;
+  /** An RFC 8984 Duration, for example PT1H */
+  duration?: string;
+  /** Optional RFC 8984 recurrence rules; stored, not yet expanded by the list view */
+  recurrenceRules?: {
+    "@type"?: "RecurrenceRule";
+    frequency: "yearly" | "monthly" | "weekly" | "daily" | "hourly" | "minutely" | "secondly";
+    interval?: number;
+    count?: number;
+    until?: string;
+    byDay?: unknown[];
+    [key: string]: unknown;
+  }[];
+  /** The calendar it belongs to, by id (calendar/calendars/<id>.json) */
+  calendar: string;
+  /**
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * @format date-time
+   */
+  updated?: string;
+};
+
+/** One calendar in a workspace (calendar/calendars/<id>.json): who owns it, who is on it, and who may see it. Events name it by id. A workspace is initiated with the default calendar, default, named Venture (Torian, 2026-10-30; schema/calendar.mjs). */
+export type Calendar = {
+  /** The calendar's id, the file's name without .json */
+  id: string;
+  name: string;
+  /** The person who owns it, by id (a founder id, or founder) */
+  owner: string;
+  /** People on the calendar, by id */
+  members: string[];
+  /** private: the owner only; members: those listed; workspace: everyone in the workspace */
+  visibility: "private" | "members" | "workspace";
+  description?: string;
+  /**
+   * @format date-time
+   */
+  created?: string;
+};
+
 /** The venture's canonical constraints, at <venture>/foundation/constraints.json: what it must not do, whatever framework states its goals. */
 export type Constraints = {
   venture?: string;
@@ -175,8 +315,19 @@ export type Constraints = {
     statement: string;
     why?: string;
     source?: string;
+    /** The founder's messages this constraint was made from (naive diagnose catches) */
+    conversation?: ConversationRef[];
   }[];
   updated?: string;
+};
+
+/** Where a record came from in the founder's own words: the transcript file, the message's timestamp and the sha256 of the redacted message, as kept in raw/sources/conversations-<date>/messages.jsonl (naive diagnose) */
+export type ConversationRef = {
+  /** The raw source holding the message: conversations-<date>[-n] */
+  source?: string;
+  file: string;
+  timestamp: string;
+  sha256: string;
 };
 
 /** One master record in a data package (customers, investors or money), at <package>/<id>.json (EE-070). The package is never complete. Its gates are coverage and freshness. Activity lives in append-only _streams/. */
@@ -285,6 +436,8 @@ export type DecisionRecord = {
   statement?: string;
   /** The layer it belongs to; defaults to the decided record's layer */
   layer?: "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface" | "system";
+  /** The decision class (governance/decision-rights.json) this decision belongs to. A delegation grant can let a role merge decisions of a class (may_merge); a one-way-door class is never delegated, and with no class only the founder merges */
+  class?: string;
   /** The decision this one depends on. Defaults to foundation for a foundation record, else venture. */
   parent?: string | null;
   /** fail-closed: while this decision is open, decisions under it wait and agents only draft. fail-open: work under it goes on. inherit: the parent's boundary. The venture root and the foundation fail closed; a product fails open (EE-054). */
@@ -361,6 +514,8 @@ export type DecisionRecord = {
     /** The routes the activity uses, as globs such as operations/** (robots syntax). Until the decision is made, the router refuses agents those routes (for the actors in for, or every agent). */
     routes?: string[];
   }[];
+  /** The founder's messages this record was made from (naive diagnose catches) */
+  conversation?: ConversationRef[];
   /** A publish decision (class public-commitment), written by naive publish before anything goes out. One-way doors (hard to undo) are decided by the founder; two-way doors by the founder or a role delegated in governance/delegation.json. An agent never approves. */
   publish?: {
     channel: string;
@@ -405,6 +560,15 @@ export type DecisionRecord = {
     superseded_at?: string;
     [key: string]: unknown;
   }[];
+  /** An agent's new wording for a decided decision, waiting for a person. The decided version stays current; approving promotes this to the next version (EE-058: an agent never decides or un-decides) */
+  proposed?: {
+    answer: string;
+    options?: string[];
+    drafted_by: {
+      [key: string]: unknown;
+    };
+    proposed_at?: string;
+  };
   /** Where a merge writes the decided answer: a venture-relative file and a dotted field, such as venture.json core.promise */
   applies_to?: {
     file: string;
@@ -472,6 +636,35 @@ export type DecisionRights = {
   }[];
 };
 
+/** An ordered set of frames from the decision library, at packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder. */
+export type DecisionRoadmap = {
+  id: string;
+  title: string;
+  /** The package it lives in */
+  function: string;
+  version: string;
+  description?: string;
+  /** Where the ordering comes from, such as a public playbook it was distilled from */
+  source?: string;
+  steps: {
+    id: string;
+    /** A frame id in packages/*\/frames */
+    frame: string;
+    order: number;
+    needed_in?: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+    /** Step ids that must be decided first */
+    depends_on?: string[];
+    /** one-way: hard to undo, so the founder decides it */
+    door: "one-way" | "two-way";
+    /** The role that decides, under the delegation suite; founder for every one-way door */
+    decided_by: string;
+    /** The role that merges the decided work */
+    merged_by?: string;
+    /** Evidence or lint checks that must pass first */
+    requires?: string[];
+  }[];
+};
+
 /** A decision log: the schema's own (docs/decisions/decisions.json, ids EE-NNN), or any venture's, with its own id prefix. Entries are appended, never rewritten; a changed decision is a new entry that supersedes the old one. */
 export type Decision = {
   /** Whose decisions these are */
@@ -489,6 +682,43 @@ export type Decision = {
     status: "proposed" | "in-force" | "superseded" | "withdrawn";
     supersedes?: string[];
     related?: string[];
+  }[];
+};
+
+/** Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at governance/venture-template/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by schema/check-delegation.mjs. */
+export type Delegation = {
+  register: "delegation";
+  updated?: string;
+  template?: boolean;
+  /** A venture file: repo-relative path to the template it customizes. The template's never_redelegated and one_way_doors bind the venture too, and an extends that cannot be honored is refused. Grants are not inherited */
+  extends?: string;
+  note?: string;
+  /** The chief delegator's role id (founder) */
+  root: string;
+  /** The people who hold the root role, by name. Only they approve a one-way publication (schema/publish.mjs) or merge as the founder (schema/decisions.mjs). The template leaves it out; a venture names its own founders */
+  founder?: string[];
+  never_redelegated?: string[];
+  /** Irreversible classes; they stay with the founder */
+  one_way_doors?: string[];
+  grants: {
+    id?: string;
+    /** Grantor role id */
+    from: string;
+    /** Grantee role id */
+    to: string;
+    classes: string[];
+    /** "venture" for all of it, or a route or path prefix such as engineering/ that narrows it */
+    scope: string;
+    may_redelegate: boolean;
+    /** May merge or land work under these classes without the grantor */
+    may_merge: boolean;
+    /**
+     * Last day the grant holds; null for until revoked
+     * @format date
+     */
+    expires: string | null;
+    /** The decision that made the grant */
+    decision?: string;
   }[];
 };
 
@@ -759,7 +989,7 @@ export type Frame = {
   }[];
 };
 
-/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). schema/check-frameworks.mjs checks that every maps_to targets a canonical route. */
+/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). schema/check-frameworks.mjs checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (schema/user-frameworks.mjs). */
 export type Framework = {
   id: string;
   title: string;
@@ -787,6 +1017,13 @@ export type Framework = {
     canonical_field: string;
     note?: string;
   }[];
+  /** The playbook: the steps for running the framework, a path relative to the root that holds frameworks/ */
+  playbook?: string | null;
+  /** Who owns the framework: a person for a founder's own, Naive for a built-in one */
+  owner?: string;
+  /** internal stays in the workspace; public may be published (naive framework publish) */
+  visibility?: "internal" | "public";
+  status?: "draft" | "stable";
 };
 
 /** One line of a venture's freshness log (<venture>/knowledge/freshness.jsonl, Revalidating V-1, V-2, V-5, V-7): an on-demand revalidation (a tag, a folder path or a package marked stale, like revalidateTag and revalidatePath), a check that a record is still right without changing it (verify), or a phase change. Append-only; each append is also a line in the provenance log. schema/freshness.mjs writes and reads it. */
@@ -939,6 +1176,8 @@ export type Goal = {
   /** The framework for thinking the goal was written through (frameworks/<id>), if any */
   framework?: string;
   updated?: string;
+  /** The founder's messages this record was made from (naive diagnose catches) */
+  conversation?: ConversationRef[];
   decision?: string;
 };
 
@@ -1053,6 +1292,8 @@ export type IcpProfile = {
   reached_through?: string[];
   /** The customer type from the marketing matrix (operations/marketing/site/matrix.json customer_types), when the founder sets it; otherwise it is judged from who (EE-063) */
   customer_type?: string;
+  /** The founder's messages this record was made from (naive diagnose catches) */
+  conversation?: ConversationRef[];
 };
 
 /** The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by purpose/frameworks/idea-map/graph.mjs; it holds no decisions. */
@@ -1146,6 +1387,24 @@ export type Integration = {
     /** The command that runs the contract evals against it */
     eval?: string;
   };
+};
+
+/** Patterns that mark internal text, which public output must never contain (schema/check-leaks.mjs). Naive's own list is schema/internal-terms.json; a venture's founder edits its own at <venture>/governance/internal-terms.json, for unannounced codenames and internal jargon. A pattern with severity warn is reported without failing, for a term whose status a person has not decided yet. */
+export type InternalTerms = {
+  note?: string;
+  updated?: string;
+  /** Who edits the list (the founder) */
+  owner?: string;
+  patterns: {
+    id: string;
+    kind?: "decision-id" | "attribution" | "record-path" | "codename" | "phase-jargon" | "draft-marker" | "other";
+    /** A JavaScript regular expression, matched with the g flag */
+    regex: string;
+    why: string;
+    severity?: "fail" | "warn";
+    /** For a codename: what lifts it, such as the announcement */
+    until?: string;
+  }[];
 };
 
 /** The output of one model step ("use model", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by schema/model-steps.mjs through the router. */
@@ -1333,6 +1592,31 @@ export type Layer = {
   gaps?: string[];
   /** The layer's name */
   name: string;
+};
+
+/** An ordering of the venture development lifecycle, at purpose/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
+export type LifecyclePlaybook = {
+  id: string;
+  title: string;
+  version: string;
+  description?: string;
+  /** The broad order of moves the playbook takes */
+  order?: string[];
+  /** Decision roadmaps bundled with the playbook */
+  roadmaps?: string[];
+  phases: {
+    phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+    /** What clears the phase under this playbook */
+    gate: string;
+    /** Decision ids that must be decided before the gate passes */
+    gating_decisions?: string[];
+    evidence: {
+      id: string;
+      statement: string;
+      /** A case-insensitive pattern: a met exit criterion whose id, statement or evidence fits it supplies this evidence */
+      match: string;
+    }[];
+  }[];
 };
 
 /** The venture's brand tokens, in the marketing package at marketing/brand.json: colors, typefaces with their licenses, the font each role uses, voice rules (the global stylesheet for words), the logo and marks, outside design systems by reference, and scopes where a route prefix overrides the venture brand (nearer context wins). Read by every agent's layout and every interface; checked by schema/check-brand.mjs. Translates Next.js global CSS, next/font and file-based icons (Y-3, Y-4, Y-5, T-1, T-2, P-24). Version 0.x, unevaluated. */
@@ -1570,6 +1854,33 @@ export type MoneySummary = {
 /** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in schema/naive-config.mjs. node schema/check-config.mjs <venture dir> checks it. */
 export type NaiveConfig = {
   $schema?: string;
+  /** The plugin beta's gate (schema/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default. */
+  beta?: {
+    enabled?: boolean;
+    /** Opt-in for routing feedback through Jev: send lets feedback text leave the machine, and counts only with set_by naming the person who turned it on. A TYPESAFE_API_KEY alone sends nothing. */
+    jev?: {
+      send?: boolean;
+      set_by?: {
+        person: string;
+        /**
+         * @format date-time
+         */
+        at: string;
+      };
+    };
+  };
+  /** Usage telemetry (schema/telemetry.mjs, schema/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on. */
+  telemetry?: {
+    enabled?: boolean;
+    send?: boolean;
+    set_by?: {
+      person: string;
+      /**
+       * @format date-time
+       */
+      at: string;
+    };
+  };
   /** The venture's one gate (X-5). It runs before every write and never calls a model (X-4). */
   gate?: {
     /** Routes whose agent writes are always drafts; each covers that route and every route under it (X-3) */
@@ -1638,6 +1949,24 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (schema/triggers.mjs) */
   triggers?: unknown[];
+  /** naive diagnose --if-due: a full diagnosis runs only when the founder's transcripts since the cursor reach threshold estimated tokens (characters / 4), or a new session is older than stale_hours */
+  diagnose?: {
+    threshold?: number;
+    stale_hours?: number;
+  };
+  /** The premise-attack linter (schema/premise-lint.mjs): each rule, one per aspect, is off, warn (the default) or error */
+  premise_lint?: {
+    rules?: {
+      "undefined-term"?: "off" | "warn" | "error";
+      unmeasurable?: "off" | "warn" | "error";
+      "no-owner"?: "off" | "warn" | "error";
+      "unsupported-premise"?: "off" | "warn" | "error";
+      orphan?: "off" | "warn" | "error";
+      conflict?: "off" | "warn" | "error";
+      dependency?: "off" | "warn" | "error";
+      "phase-mismatch"?: "off" | "warn" | "error";
+    };
+  };
 };
 
 export type NaiveConfigRule = {
@@ -2169,6 +2498,33 @@ export type Requirement = {
   weight?: number;
   framework?: string;
   updated?: string;
+  /** The founder's messages this record was made from (naive diagnose catches) */
+  conversation?: ConversationRef[];
+};
+
+/** One role a venture can install, at governance/venture-template/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by schema/check-delegation.mjs. */
+export type RoleTemplate = {
+  /** Matches the file name */
+  id: string;
+  name: string;
+  /** Other names for this role (such as cto for architect); the id is canonical and matches agent-roles.json and decision-rights.json */
+  aliases?: string[];
+  /** True for the founder only: the root of every delegation chain */
+  chief_delegator?: boolean;
+  /** The function the role serves, such as product, engineering, marketing, or all */
+  function: string;
+  description?: string;
+  /** Decision classes (from decision-rights.json) this role may be granted; the chief delegator lists none, since it holds all */
+  grantable_classes: string[];
+  default_tier: "person" | "frontier" | "workhorse" | "none";
+  /** Lint routes it runs, such as marketing/brand-lint */
+  lint_suites: string[];
+  /** The role that verifies its work; null only for the chief delegator */
+  verified_by: string | null;
+  /** Further verifiers for some work, such as the founder for spend */
+  also_verified_by?: string[];
+  /** Path from the repository root to the role's skill */
+  skill: string;
 };
 
 /** Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. interface/test.mjs checks that every alias points at a route that exists. */
@@ -2351,6 +2707,24 @@ export type TeamPlan = {
     /** The agent role that drafts, searches and screens */
     assisted_by?: string;
   }[];
+};
+
+/** One usage event, one line of <venture>/.naive/telemetry.jsonl; the one schema the plugin beta and Mentura share. Opt-in only (telemetry.enabled in naive.config.json). An event carries no record contents and no _private path: only which capability ran, when, for how long and how it ended. It leaves the machine only when telemetry.send is true and a person set it (schema/telemetry.mjs). */
+export type Telemetry = {
+  /** The event, e.g. route.write, beta.unlock */
+  name: string;
+  /** A capability id from beta/capabilities.json, or core */
+  capability: string;
+  /**
+   * @format date-time
+   */
+  at: string;
+  /** A salted hash of the venture id, never the id; the salt stays in the venture's .naive/telemetry-salt and is never sent */
+  venture: string;
+  session: string;
+  duration_ms?: number;
+  outcome: "ok" | "error" | "refused" | "cancelled";
+  source?: "plugin-beta" | "mentura";
 };
 
 /** The end a venture exists to reach, at <venture>/purpose/telos.json (EE-023): start with the end. It states the end state, how anyone would know it was reached (measures), what the owners intend to happen when it is reached (owner outcome), and, for each phase of the Succession Matrix, the exit criteria that must be true to leave it, each serving at least one measure. Other layers read it instead of asking again: the governance layer's exit.json prefers the owner outcome's path, and MAD's governance tier takes its success measure from the primary measure. schema/check-telos.mjs checks it. Written by the owner; an agent may draft it but not settle it. */
@@ -2536,6 +2910,34 @@ export type ValidationEvidence = {
   form?: string;
 };
 
+/** One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (schema/beta-gate.mjs) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided. */
+export type ValidationFeedback = {
+  id: string;
+  venture?: string;
+  /**
+   * @format date-time
+   */
+  at: string;
+  /** An anonymous id (NAIVE_BETA_TESTER), never a name or email: it is part of the record's file name */
+  tester: string;
+  /** A capability id from beta/capabilities.json */
+  capability: string;
+  /** The checkpoint whose form these answer */
+  checkpoint: string;
+  /** Question id to answer */
+  answers: {
+    [key: string]: string | number | boolean;
+  };
+  /** The route the feedback was filed under (product/bugs, validation/feedback, ...) */
+  routed_to?: string | null;
+  routing?: {
+    model: string;
+    confidence: number;
+    /** True when the injected fallback decided, not Jev */
+    fallback: boolean;
+  };
+};
+
 /** The go-to-market sub-score (EE-026), at <venture>/purpose/validation/go-to-market.json: the path (build first, market first, cofounder first), the motion and the channels, with cited evidence that a channel reaches the segment at a known cost. The path sets the validation weights. */
 export type ValidationGoToMarket = {
   venture: string;
@@ -2564,6 +2966,59 @@ export type ValidationGoToMarket = {
      */
     scored: string;
     note?: string;
+  };
+};
+
+/** One problem interview in the validation study, at <venture>/validation/interviews/<id>.json: who (anonymised), under what consent, what they said hurts, what they use now, the problem they chose, what the interviewer predicted with Naive and without it, and the follow-up that checks the prediction. The transcript itself stays in raw/ and is cited, never copied here. */
+export type ValidationInterview = {
+  /** Equal to the file name */
+  id: string;
+  venture?: string;
+  /**
+   * The day of the interview
+   * @format date
+   */
+  at?: string;
+  /** An anonymised reference (p-07), never a name or contact detail; the key to the real person stays in a _private record */
+  person: string;
+  /** The ideal customer profile id (foundation/icp/<id>.json) this person fits */
+  icp: string;
+  consent: {
+    given: boolean;
+    /**
+     * @format date-time
+     */
+    at: string;
+    method: "written" | "verbal-recorded" | "form" | "email";
+  };
+  /** The raw source the transcript lives in */
+  transcript: {
+    /** A raw source id or venture path (raw/sources/<id>) */
+    source: string;
+  };
+  bottlenecks: string[];
+  current_solutions?: {
+    /** The bottleneck it is used for */
+    for: string;
+    what_it_does: string;
+    what_it_doesnt?: string;
+  }[];
+  /** The one bottleneck the person chose to work on */
+  chosen_problem?: string;
+  prediction?: {
+    /** What the interviewer predicts happens with Naive */
+    with_naive: string;
+    /** What the interviewer predicts happens without it */
+    status_quo: string;
+  };
+  follow_up?: {
+    /**
+     * @format date
+     */
+    date: string;
+    outcome_vs_prediction?: "matched" | "better" | "worse" | "mixed" | "no-outcome";
+    /** Evidence record ids behind the outcome */
+    evidence?: string[];
   };
 };
 
@@ -2831,6 +3286,10 @@ export type Venture = {
   parent: string | null;
   /** How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: purpose/frameworks/product-anatomy/phases.json. */
   phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+  /** The venture's IANA time zone, when it differs from its workspace's (schema/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's */
+  timeZone?: string;
+  /** The lifecycle playbook the venture follows (purpose/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default. */
+  lifecycle_playbook?: string;
   /** Why the venture exists and how far through the phases it means to go. hobby follows the IRS sense: not engaged in for profit. */
   ambition?: "hobby" | "survival" | "lifestyle" | "managed-growth" | "aggressive-growth";
   /** Whether and how the venture is formalized. */
@@ -2973,7 +3432,7 @@ export type Workspace = {
   schema: "everything-ecosystem";
   /** The version in schema/VERSION that this workspace follows */
   schema_version: string;
-  /** The workspace's name, shown to the founder. create-venture names a new workspace "Naive workspace"; the founder can rename it */
+  /** The workspace's name, shown to the founder. A new workspace is named "Naive workspace"; the founder renames it with naive workspace rename */
   name?: string;
   /** Folders to search for venture.json files, relative to the workspace. Grouping folders inside them are for people to browse and carry no meaning; each venture.json is the truth. */
   ventures: string[];
@@ -2990,4 +3449,8 @@ export type Workspace = {
   };
   /** The founder record, relative to the workspace (normally founder/founder.json) */
   founder?: string;
+  /** The workspace's IANA time zone (for example America/New_York): the clock's zone (schema/clock.mjs). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture */
+  timeZone?: string;
+  /** The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (schema/calendar.mjs). Created with the workspace */
+  calendar?: string;
 };

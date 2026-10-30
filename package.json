@@ -57,6 +57,7 @@
     "!platform/agents/",
     "!schema/check-types.ts",
     "!schema/check-types-test.ts",
+    "!schema/record-types.ts",
     "!**/.DS_Store"
   ],
   "keywords": [
