@@ -883,6 +883,46 @@
         "platform": 0.8
       },
       "why": "What is live and who approved it; needed from the first publication on"
+    },
+    "validation-interview": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.9,
+        "beachhead": 0.4,
+        "scale": 0.2,
+        "platform": 0.1
+      },
+      "why": "Problem interviews are the evidence Discovery and Validation stand on; they fade once retention holds"
+    },
+    "validation-feedback": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.6,
+        "beachhead": 0.6,
+        "scale": 0.4,
+        "platform": 0.3
+      },
+      "why": "Testers' checkpoint feedback, once someone is using what was built"
+    },
+    "bug": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Bugs matter once people use the product; stable means no open P0 or P1"
+    },
+    "telemetry-event": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Opt-in usage events; only for ventures in the plugin beta or on Mentura, and only when someone turns them on"
     }
   }
 }

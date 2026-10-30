@@ -46,6 +46,7 @@ import { agentFromEnv, entries as provEntries, record as prov } from "./provenan
 import { address } from "../knowledge/connectors/contract.mjs";
 import { holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
+import { blocked as betaBlocked } from "../schema/beta-gate.mjs";
 // Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.
 import { readFlag as freshnessFlag } from "../schema/freshness.mjs";
 // Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
@@ -111,6 +112,7 @@ function buildRoutes() {
     const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
     const short = sub && r.id.startsWith(`${sub}-`) ? r.id.slice(sub.length + 1) : r.id;
     const filesOf = r.paths.filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
+    if (filesOf.length && filesOf.every((f) => f.startsWith(".naive/"))) continue; // .naive/ is local and never routed.
     // The template is the package's template dir, or <manifest folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
     const tdir = k?.template_dir ?? (k && !k.path.startsWith("packages/") ? join(dirname(k.path), "templates") : null);
     const tname = tdir && existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
@@ -262,6 +264,7 @@ const PACKAGE_ROUTE = {
   "idea-dump": "raw/dump", "idea-map": "ideas/map", "idea-graph": "ideas/graph", product: "product", evidence: "evidence",
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
+  "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   ...BRAND_ROUTES, // Brand hook: marketing/brand, public/assets, glossary (schema/brand.mjs).
@@ -389,6 +392,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const lock = actor !== "person" && (action === "write" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
   if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
     fix: { who: "a person, not an agent", command: `mentura decide ${lock.id} --venture ${venture} --by <their name> [--answer "<their wording>"]`, then: "retry this call" } };
+  // Beta gate hook (schema/beta-gate.mjs): with beta.enabled in naive.config.json, a locked capability's
+  // routes are refused, naming the checkpoint feedback that unlocks them. Off by default. The tester is
+  // NAIVE_BETA_TESTER, the same id as naive beta, never the acting role.
+  const beta = betaBlocked(dir, requested, { table: r.route });
+  if (beta) return { ok: false, error: beta.message, beta_locked: beta.capability, fix: { feedback: beta.needs, command: beta.needs.capability ? `naive beta feedback ${beta.needs.capability}` : null, then: "naive beta unlock, then retry this call" } };
 
   if (action === "view") {
     const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance });

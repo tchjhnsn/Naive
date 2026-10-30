@@ -51,6 +51,9 @@
 //   naive workspace rename <name>                   rename the workspace this runs in (logged in its meta/provenance.jsonl)
 //   naive calendar [list [--from <date>] [--to <date>] | add --title <t> --start <local time> | export --ics <file>]
 //                                                   the workspace calendar: stored events and those derived from dated records
+//   naive beta status|feedback <capability>|unlock  the plugin beta: which capabilities are open, the checkpoint feedback
+//                                                   that unlocks the next, and unlocking it (beta.enabled in naive.config.json)
+//   naive bugs [--all]                              open P0 and P1 bugs; stable means none
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -302,6 +305,10 @@ else if (cmd === "build" || cmd === "start") {
   try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error(e.message); process.exit(1); }
   const [sub = "list", ...args] = rest[0] && !rest[0].startsWith("--") ? rest : ["list", ...rest];
   process.exit(run("schema/calendar.mjs", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
+} else if (cmd === "beta" || cmd === "bugs") {
+  // The plugin beta's gate (schema/beta-gate.mjs) and the bug summary (schema/bugs.mjs).
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run(cmd === "beta" ? "schema/beta-gate.mjs" : "schema/bugs.mjs", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
