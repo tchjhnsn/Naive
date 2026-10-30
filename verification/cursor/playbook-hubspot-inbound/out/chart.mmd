@@ -1,0 +1,66 @@
+---
+title: "Inbound content plan, from the sitemap"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: wait
+    lg1: read
+    lg2: plan
+    lg3: pass
+    lg4: fail
+    lg5: stop
+  }
+  class lg0 yellow
+  class lg1 blue
+  class lg2 purple
+  class lg3 teal
+  class lg4 orange
+  class lg5 pink
+  s0: No sitemap on the venture
+  s1: Sitemap not read
+  s2: Sitemap read
+  s3: Stopped: no sitemap
+  s4: ICP read
+  s5: Stopped: no ICP
+  s6: Problem read
+  s7: Inherited keys read
+  s8: Product list read
+  s9: One product read
+  s10: Voice checked
+  s11: Publication rules read
+  s12: Content plan filled
+  s13: Drafts written
+  s14: A check failed
+  s15: Checks passed
+  [*] --> s0
+  [*] --> s1
+  s0 --> s3: you stop [the venture has no sitemap]
+  s1 --> s2: you read the planned site
+  s2 --> s4: you read who the venture serves
+  s2 --> s5: you stop [the venture has no ICP]
+  s4 --> s6: you read the problem
+  s6 --> s7: you read the keys marketing inherits
+  s7 --> s8: you read the product list
+  s8 --> s9: you read one product
+  s9 --> s10: you run the voice check
+  s10 --> s11: you read who may publish
+  s11 --> s12: you fill the content plan
+  s12 --> s13: you write the drafts
+  s13 --> s14: a check fails
+  s13 --> s15: the checks pass
+  class s0 pink
+  class s1 yellow
+  class s2 blue
+  class s3 pink
+  class s4 blue
+  class s5 pink
+  class s6 blue
+  class s7 blue
+  class s8 blue
+  class s9 blue
+  class s10 blue
+  class s11 blue
+  class s12 purple
+  class s13 purple
+  class s14 orange
+  class s15 teal
