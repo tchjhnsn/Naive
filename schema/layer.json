@@ -22,7 +22,9 @@
     "venture-types",
     "frame",
     "upgrade-registry",
-    "kit"
+    "kit",
+    "calendar",
+    "calendar-event"
   ],
   "reads": [
     "product",
@@ -52,7 +54,11 @@
     "schema/upgrades.mjs",
     "schema/upgrades-test.mjs",
     "schema/triggers.mjs",
-    "schema/stale.mjs"
+    "schema/stale.mjs",
+    "schema/clock.mjs",
+    "schema/calendar.mjs",
+    "schema/workspace-init.mjs",
+    "schema/workspace-init-test.mjs"
   ],
   "gaps": [],
   "name": "system"
