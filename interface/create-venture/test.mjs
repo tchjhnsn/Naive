@@ -48,6 +48,8 @@ t("the first venture is My first venture, in a workspace named Naive workspace; 
   const w = load(join(ws, "naive-workspace.json"));
   ok(w.name === "Naive workspace" && w.ventures.join() === "my-first-venture", JSON.stringify(w));
   ok(existsSync(join(ws, "AGENTS.md")), "the workspace has its own AGENTS.md");
+  ok(typeof w.timeZone === "string" && w.timeZone.length > 0, "the workspace starts with its clock's zone");
+  ok(load(join(ws, "calendar/calendars/default.json")).visibility === "workspace", "and its default calendar");
   ok(create(["--yes", "--skip-install", "--no-git", "--venture-name", "Acme Labs"], ws).status === 0);
   ok(load(join(ws, "acme-labs/venture.json")).name === "Acme Labs");
   ok(load(join(ws, "naive-workspace.json")).ventures.join() === "my-first-venture,acme-labs", "a second venture joins the same workspace");
@@ -67,8 +69,8 @@ t("the idea dump is saved verbatim as raw/dump.md and recorded in provenance", (
 
 t("every record file is mapped to its JSON Schema for the editor", () => {
   const s = load(join(v, ".vscode/settings.json"))["json.schemas"];
-  const icp = s.find((x) => x.fileMatch.includes("/k-base/foundation/icp.json"));
-  ok(icp?.url === "./node_modules/naive-framework/schema/icp.schema.json", JSON.stringify(icp));
+  const icp = s.find((x) => x.fileMatch.includes("/k-base/foundation/icp/*.json"));
+  ok(icp?.url === "./node_modules/naive-framework/schema/icp-profile.schema.json", JSON.stringify(icp));
   ok(existsSync(join(v, icp.url)), "the schema it points to is installed");
 });
 
@@ -251,11 +253,12 @@ async function devTest() {
     ok((await fetch(`http://127.0.0.1:${port}/`)).status === 200, "the board answers");
     ok((await fetch(`http://127.0.0.1:${port}/map`)).status === 200, "the map answers");
     await new Promise((r) => setTimeout(r, 300));
-    writeFileSync(ventureFile(v, "foundation/icp.json"), '{"id": 5}\n');
+    mkdirSync(ventureFile(v, "foundation/icp"), { recursive: true });
+    writeFileSync(ventureFile(v, "foundation/icp/bad.json"), '{"id": 5}\n');
     const python = spawnSync("python3", ["-c", "import jsonschema"]).status === 0;
-    await wait(python ? /✗ foundation\/icp\.json does not match schema\/icp\.schema\.json/ : /foundation\/icp\.json changed/);
+    await wait(python ? /✗ foundation\/icp\/bad\.json does not match schema\/icp-profile\.schema\.json/ : /foundation\/icp\/bad\.json changed/);
     return "ok";
-  } finally { child.kill(); rmSync(ventureFile(v, "foundation/icp.json"), { force: true }); }
+  } finally { child.kill(); rmSync(ventureFile(v, "foundation/icp"), { recursive: true, force: true }); }
 }
 
 for (const [name, fn] of tests) {

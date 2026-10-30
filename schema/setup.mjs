@@ -61,7 +61,7 @@ export async function decide(dir, { id, answer, via = "api", where = "/setup" })
   const by = founderName(dir);
   const d = decisions(dir).decisions.find((x) => x.id === id);
   if (id === GOAL && !d) {
-    const p = propose(dir, { id: GOAL, question: "What must be true for the venture to leave discovery? Name the goal this phase works toward.", decides: { record: "telos", path: "foundation/telos.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }, { via });
+    const p = propose(dir, { id: GOAL, question: "What must be true for the venture to leave discovery? Name the goal this phase works toward.", decides: { record: "exit-criteria", path: "foundation/exit-criteria/discovery.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }, { via });
     if (!p.ok) return p;
     return approve(dir, GOAL, { by, answer: String(answer).trim(), via, note: `set at ${where}` });
   }
@@ -104,7 +104,7 @@ export async function relay(dir, { id, answer, agentId, harness, model }) {
   const note = `the founder's words, relayed from ${harness ?? "the model's harness"} during setup`;
   const opts = { agentId, via: "mcp", harness, model };
   const d = decisions(dir).decisions.find((x) => x.id === id);
-  if (id === GOAL) return propose(dir, { ...(d ? {} : { decides: { record: "telos", path: "foundation/telos.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }), id: GOAL, question: d?.question ?? "What must be true for the venture to leave discovery? Name the goal this phase works toward.", answer: words, note }, opts);
+  if (id === GOAL) return propose(dir, { ...(d ? {} : { decides: { record: "exit-criteria", path: "foundation/exit-criteria/discovery.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }), id: GOAL, question: d?.question ?? "What must be true for the venture to leave discovery? Name the goal this phase works toward.", answer: words, note }, opts);
   if (!d) return { ok: false, error: `no decision ${id}` };
   if (d.status === "decided") return { ok: false, error: `${id} is decided; only the founder can change it` };
   if (d.source === "foundation") {

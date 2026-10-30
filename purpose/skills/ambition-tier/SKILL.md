@@ -203,3 +203,7 @@ Each evolution is logged in the entity profile changelog with `lifecycle-ambitio
 ## Status
 
 - **2026-05-14:** Initial authoring per §29 amendment.
+
+## Framework
+
+This skill is the interview for the `ambition-tier` framework for thinking (`frameworks/ambition-tier/framework.json`). Answers are written to canonical records (`foundation/goals/`, `foundation/exit-criteria/`) through its `maps_to`, not to framework-only files (Torian, 2026-10-30).

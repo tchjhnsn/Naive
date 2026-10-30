@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "goal.schema.json",
+  "title": "Goal",
+  "description": "A canonical goal, at <venture>/foundation/goals/<id>.json: what the venture means to reach, by when, how anyone would know (measures with targets) and who owns it. Framework-neutral: the telos, ambition tiers, OKRs and other frameworks for thinking write goals through their maps_to and never change this shape (Torian, 2026-10-30: opinionated schema, swappable frameworks). Requirements derive from goals and measures; exit criteria serve measures.",
+  "type": "object",
+  "required": ["id", "statement", "kind"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "venture": { "type": "string" },
+    "statement": { "type": "string", "description": "The goal in one sentence" },
+    "kind": {
+      "enum": ["venture", "owner", "scale", "product", "function", "learning"],
+      "description": "venture: the end the venture exists for. owner: what the owners intend once it is reached (hold, sell, list, wind down). scale: how far through the phases the venture means to go. product, function: a goal of one product or function. learning: what the venture must find out"
+    },
+    "horizon": { "type": ["integer", "string"], "description": "The year it should be reached by, a date, a phase id, or 'open'" },
+    "end_state": { "type": "string", "description": "What is true in the world when it is reached" },
+    "value": { "type": "string", "description": "A goal's chosen value when its kind has a fixed set: the scale (hobby, survival, lifestyle, managed-growth, aggressive-growth) or the owner path (acquisition, ipo, secondary-sale, merger, management-buyout, wind-down, hold)" },
+    "why": { "type": "string" },
+    "measures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "statement": { "type": "string" },
+          "target": { "type": ["string", "number"] },
+          "unit": { "type": "string" },
+          "primary": { "type": "boolean" },
+          "kind": { "type": "string", "description": "A framework's own classification of the measure, kept as written" }
+        }
+      }
+    },
+    "owner": { "type": "string", "description": "The person or role who owns the goal" },
+    "framework": { "type": "string", "description": "The framework for thinking the goal was written through (frameworks/<id>), if any" },
+    "updated": { "type": "string" },
+    "conversation": { "type": "array", "description": "The founder's messages this record was made from (naive diagnose catches)", "items": { "$ref": "conversation-ref.schema.json" } },
+    "decision": { "type": "string" }
+  }
+}

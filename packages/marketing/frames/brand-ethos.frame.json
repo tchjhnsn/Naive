@@ -1,0 +1,66 @@
+{
+  "id": "brand-ethos",
+  "title": "State what the venture stands for",
+  "functions": [
+    "marketing"
+  ],
+  "triggers": [
+    "what does our brand stand for",
+    "what do we believe as a company",
+    "we need a brand but don't know where to start"
+  ],
+  "goal": "{goal}",
+  "premises": [
+    {
+      "id": "belief-exists",
+      "claim": "The founder already holds a belief about the problem that the venture would keep even if it cost customers.",
+      "attack": "test-the-goal",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    },
+    {
+      "id": "belief-is-specific",
+      "claim": "That belief is specific enough that a competitor could disagree with it.",
+      "attack": "invert",
+      "reads": [
+        "phase",
+        "goal"
+      ]
+    }
+  ],
+  "attacks": [
+    "test-the-goal",
+    "invert"
+  ],
+  "reframe": "What does the venture believe about its problem that it would keep while in the {phase} phase, even at a cost?",
+  "props": [
+    "phase",
+    "goal"
+  ],
+  "freshness": {
+    "look_for": [
+      "ventures that faced the same brand problem, and what it cost them"
+    ],
+    "max_age_days": 365,
+    "cite": true
+  },
+  "reasoning": [
+    "Read the venture's goal and phase.",
+    "Judge each premise against the facts alone.",
+    "Propose the decision open; never pick an option."
+  ],
+  "emits": [
+    {
+      "id": "brand-ethos",
+      "question": "What does the venture stand for, in one sentence it would keep at a cost?",
+      "options": [
+        "a belief about the problem",
+        "a belief about the people who have it",
+        "a belief about how the work should be done"
+      ],
+      "layer": "purpose"
+    }
+  ]
+}
