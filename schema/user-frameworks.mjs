@@ -37,6 +37,7 @@ const inRoot = (root, source) => {
 
 // Every framework a venture or workspace can use: the built-in ones and the workspace's own.
 // A workspace framework with a built-in's id is listed as shadowing it and does not replace it.
+/** @returns {{ workspace: string | null, frameworks: *[] }} */
 export function listFrameworks(from = process.cwd()) {
   const ws = findWorkspace(resolve(from));
   const builtin = inRoot(repo, "built-in");
@@ -51,6 +52,7 @@ export function resolveFramework(id, from = process.cwd()) {
   return all.find((f) => f.id === id && f.source === "built-in") ?? all.find((f) => f.id === id) ?? null;
 }
 
+/** @param {string} id @param {string} [from] @param {{ title?: string, owner?: string }} [opts] */
 export function newFramework(id, from = process.cwd(), { title, owner } = {}) {
   if (!ID.test(id ?? "")) throw new Error(`framework id must be lowercase letters, digits and dashes: ${id}`);
   const ws = findWorkspace(resolve(from));

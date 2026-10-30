@@ -162,6 +162,7 @@ function check(dir) {
 function info(dir) {
   const v = dir && JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
   // Supported agents (I-6): the MCP clients Naive is tested with, and whether this venture is connected to each.
+  /** @type {[string, string, (j: *) => *][]} */
   const agents = [
     ["Claude Code", ".mcp.json", (j) => j?.mcpServers?.naive || j?.mcpServers?.mentura],
     ["Cursor", ".cursor/mcp.json", (j) => j?.mcpServers?.naive || j?.mcpServers?.mentura],

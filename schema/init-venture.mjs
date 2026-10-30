@@ -43,7 +43,8 @@ const on = only !== null ? only.split(",").filter(Boolean) : [...new Set([...lay
 const unknown = on.filter((l) => !ALL.includes(l));
 if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
 mkdirSync(dir, { recursive: true });
-const venture = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase };
+const venture = /** @type {{ id: string, name: string, type?: string, parent: string | null, phase: string, form?: { legal_form?: string, funding?: string }, core?: Record<string, string>,
+  owner?: string, status?: string, profile?: string, layers?: Record<string, { location: string } | false>, layout?: string, functions?: Record<string, { owner: string | null }> }} */ ({ id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase });
 if (legalForm || vtype?.funding) venture.form = { ...(legalForm ? { legal_form: legalForm } : {}), ...(vtype?.funding ? { funding: vtype.funding } : {}) };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
 Object.assign(venture, { owner: "self", status: "active", profile: structured ? "README.md" : "profile.md", layers: {} });
