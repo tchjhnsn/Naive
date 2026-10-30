@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bug.schema.json",
+  "title": "Bug",
+  "description": "One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node schema/bugs.mjs, naive bugs).",
+  "type": "object",
+  "required": ["id", "title", "severity", "status", "found_in"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "venture": { "type": "string" },
+    "title": { "type": "string", "minLength": 1 },
+    "severity": { "enum": ["P0", "P1", "P2", "P3"], "description": "P0 blocks use or loses data; P1 breaks a capability; P2 a workaround exists; P3 cosmetic" },
+    "status": { "enum": ["open", "in-progress", "fixed", "wont-fix", "duplicate"] },
+    "found_in": { "type": "string", "description": "The version (or commit) it was found in" },
+    "repro": { "type": "array", "items": { "type": "string" }, "description": "Steps to reproduce" },
+    "fixed_in": { "type": ["string", "null"], "description": "The version that fixed it" },
+    "feedback": { "type": "string", "description": "The feedback record it came from, if any" }
+  }
+}

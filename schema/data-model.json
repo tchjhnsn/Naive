@@ -308,6 +308,52 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "validation-interview",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-interview.schema.json",
+      "paths": [
+        "instance/**/validation/interviews/*.json",
+        "schema/examples/**/validation/interviews/*.json"
+      ],
+      "refs": [
+        {
+          "field": "icp",
+          "to": "icp",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "transcript.source",
+          "to": "raw-source",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "follow_up.evidence",
+          "to": "evidence",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "One problem interview in the validation study: an anonymised person, consent, the transcript's raw source, bottlenecks, current solutions, the chosen problem, a prediction with Naive and without, and the follow-up that checks it. Names stay in _private."
+    },
+    {
+      "id": "validation-feedback",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-feedback.schema.json",
+      "paths": [
+        "instance/**/validation/feedback/*.json",
+        "schema/examples/**/validation/feedback/*.json"
+      ],
+      "refs": [
+        {
+          "field": "capability",
+          "to": "beta-capabilities",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (schema/beta-gate.mjs)."
+    },
+    {
       "id": "validation-solution",
       "layer": "purpose",
       "level": "venture",
@@ -1703,6 +1749,45 @@
         }
       ],
       "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
+    },
+    {
+      "id": "bug",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/bug.schema.json",
+      "paths": [
+        "instance/**/product/bugs/*.json",
+        "schema/examples/**/product/bugs/*.json"
+      ],
+      "note": "One defect: title, severity P0 to P3, status, the version it was found and fixed in, and how to reproduce it. Stable means no open P0 or P1 (naive bugs, schema/bugs.mjs).",
+      "refs": [
+        {
+          "field": "fixed_in",
+          "to": "(release)",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ]
+    },
+    {
+      "id": "telemetry-event",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/telemetry.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/.naive/telemetry.jsonl"
+      ],
+      "note": "Opt-in usage events shared by the plugin beta and Mentura: which capability ran, when, how long, how it ended; no record contents, no _private paths, the venture id hashed with a per-venture salt (schema/telemetry.mjs). Not routed: the router never routes .naive/, so events stay off MCP and the API."
+    },
+    {
+      "id": "beta-capabilities",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/beta-capabilities.schema.json",
+      "paths": [
+        "beta/capabilities.json"
+      ],
+      "note": "The plugin beta's capabilities in unlock order, each with its checkpoint feedback form (schema/beta-gate.mjs)."
     },
     {
       "id": "decision-roadmap",
