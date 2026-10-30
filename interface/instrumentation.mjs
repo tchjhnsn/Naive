@@ -81,7 +81,11 @@ export async function instrumented(args, fn, dirOf) {
   return r;
 }
 
-/** Records one judgment (a System 1 call or a scored check): what was asked, the score and the outcome. */
+/**
+ * Records one judgment (a System 1 call or a scored check): what was asked, the score and the outcome.
+ * @param {string} dir
+ * @param {{ question?: string, score?: number, threshold?: number, outcome: string, owner?: string, model?: string, route?: string, ms?: number }} j
+ */
 export function judgment(dir, { question, score, threshold, outcome, owner, model, route, ms }) {
   return emit(dir, { kind: "judgment", question, score, threshold, outcome, owner, model, route, ms });
 }

@@ -41,7 +41,8 @@ export function calendars(root) {
   return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => read(join(d, f))).filter(Boolean) : [];
 }
 
-/** Store one event. start is a local date-time in timeZone (the workspace's unless given). */
+/** Store one event. start is a local date-time in timeZone (the workspace's unless given).
+ *  @param {string} root @param {{ title: string, start: string, duration?: string, timeZone?: string, calendar?: string, description?: string, recurrenceRules?: *[], uid?: string }} event */
 export function addEvent(root, { title, start, duration = "PT1H", timeZone, calendar = DEFAULT_CALENDAR, description, recurrenceRules, uid = randomUUID() }) {
   if (!title || !start) throw new Error("an event needs a title and a start");
   if (!calendars(root).some((c) => c.id === calendar)) throw new Error(`no calendar ${calendar} in ${join(root, CALENDAR_DIR, "calendars")}`);
@@ -101,7 +102,8 @@ export async function derivedEvents(root) {
   return out.map((e) => ({ ...e, timeZone: e.timeZone ?? zone }));
 }
 
-/** Stored and derived events whose start falls on a local date in [from, to] (inclusive), in start order. */
+/** Stored and derived events whose start falls on a local date in [from, to] (inclusive), in start order.
+ *  @param {string} root @param {{ from?: string, to?: string }} [opts] */
 export async function events(root, { from, to } = {}) {
   const zone = zoneOf(root);
   const today = localDate(now(), zone);
@@ -109,7 +111,7 @@ export async function events(root, { from, to } = {}) {
   to ??= localDate(new Date(toInstant(today, zone).getTime() + 30 * 864e5), zone);
   const inRange = (e) => { const d = localDate(toInstant(e.start, e.timeZone ?? zone), zone); return d >= from && d <= to; };
   return [...storedEvents(root), ...(await derivedEvents(root))].filter(inRange)
-    .sort((a, b) => toInstant(a.start, a.timeZone ?? zone) - toInstant(b.start, b.timeZone ?? zone));
+    .sort((a, b) => toInstant(a.start, a.timeZone ?? zone).getTime() - toInstant(b.start, b.timeZone ?? zone).getTime());
 }
 
 // --- iCalendar (RFC 5545) ---
@@ -139,6 +141,7 @@ export function toICS(list, { name = "Naive workspace" } = {}) {
 export function fromICS(text) {
   const lines = text.replace(/\r\n[ \t]/g, "").split(/\r?\n/);
   const out = [];
+  /** @type {*} */
   let e = null;
   for (const l of lines) {
     if (l === "BEGIN:VEVENT") { e = { "@type": "Event", duration: "PT0S" }; continue; }

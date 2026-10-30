@@ -370,6 +370,7 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
 // Writes hook (interface/writes.mjs): adds what reads, layouts and writes answer.
 export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
+/** @param {{ venture: string, route: string, action: string, input?: *, actor?: string, actor_id?: string, workspace?: string, via?: string, provenance?: { derived_from?: string[], decision?: string, note?: string, agent?: Record<string, any>, activity?: string, confidence?: number | string | null } }} args */
 async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
   if (actor === "public" && action !== "read") return { ok: false, error: `the public reader only reads; ${action} needs a person or an agent` };
   const requested = route;
