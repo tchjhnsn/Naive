@@ -23,6 +23,7 @@
     "AGENTS.md",
     "README.md",
     "LICENSE",
+    ".claude-plugin/plugin.json",
     "interface/",
     "schema/",
     "packages/",
