@@ -13,7 +13,7 @@ The model is the request, not the React tree. Each action is one request, and th
 | KnownDocsIsPage | A docs URL that is a page comes back as that page. | Holds. |
 | MissingIs404 | A docs URL that is not a page is a 404, and the 404 is noindex. | Holds. |
 | OldPathRedirects | An old path (the list in `site/next.config.mjs`) redirects to a docs page. It does not render a second copy. | Holds. All 19 redirects are 308, and each target is a live page. |
-| NavIsLive | Header and footer links are live pages: Docs, Blog, Templates, Showcase, Why, Who it is for, the five docs sections, `llms.txt`, and `llms-full.txt`. | Holds. Blog, Templates, and Showcase are stubs and still answer 200. |
+| NavIsLive | Header and footer links are live pages: Docs, Blog, Templates, Showcase, Why, Who it is for, About, the five docs sections, `llms.txt`, and `llms-full.txt`. | Holds. Blog, Templates, and Showcase are stubs and still answer 200. |
 | LlmsIsMarkdown | `llms.txt` is Markdown, and every page it names has HTML and a `.md` body. The `.md` body and `Accept: text/markdown` are the same bytes. | Holds for all 43 docs pages, after the docs-home fix. |
 | DocsResolves | A request comes back as a page, as Markdown, as a redirect, or as a 404. | Holds. |
 | NoDeadlock | A finished request can stay finished. | Holds. The chart hides that step. |
