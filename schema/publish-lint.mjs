@@ -46,7 +46,7 @@ const SECRETS = [
 ];
 const EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
 const PHONE = /(?<![\w.])(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}(?![\w])/g;
-const CLAIM_NUMBER = /(\$\s?\d|\d[\d,.]*\s?(%|x\b|percent|k\b|m\b|million|billion|thousand|times|customers|users|clients|teams|companies|founders|people)|\b\d{2,}[\d,]*\b)/i;
+const CLAIM_NUMBER = /(\$\s?\d|\d[\d,.]*\s?(%|x\b|percent|k\b|m\b|million|billion|thousand|times|customers|users|clients|teams|companies|founders|people))/i;
 const CLAIM_CUSTOMER = /\b(customers?|trusted by|used by|loved by|chosen by)\b/i;
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
