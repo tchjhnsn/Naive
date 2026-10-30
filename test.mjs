@@ -91,6 +91,7 @@ const steps = [
   ["decision docket against the scenario evidence set (reports agreement; does not gate on it)", "node", ["schema/docket-eval.mjs"]],
   ["site reader (links and text, offline)", "node", ["platform/integrations/site-test.mjs"]],
   ["Rho money source (package, append-only, read-only client, offline)", "node", ["platform/integrations/rho-test.mjs"]],
+  ["workspace: settings, cross-venture reads, naive capture and the inbox", "node", ["schema/workspace-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
