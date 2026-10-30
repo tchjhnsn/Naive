@@ -80,6 +80,7 @@ const init = spawnSync("node", [join(repo, "schema/init-venture.mjs"), join(ws, 
 if (init.status !== 0) { console.error(init.stderr || init.stdout); process.exit(1); }
 
 let n = 0;
+/** @param {string} route @param {string} action @param {{ as?: string, input?: unknown }} [options] */
 function call(route, action, { as = "agent", input } = {}) {
   const args = [join(repo, "interface/cli/mentura.mjs"), route, action, "--venture", venture, "--workspace", ws, "--as", as, "--json"];
   if (input) {
