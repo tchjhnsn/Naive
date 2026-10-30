@@ -131,6 +131,13 @@
     "note": {
       "type": "string"
     },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reason"
+      },
+      "description": "Why: claims for and against the decision and the context it rests on, each with citations. Approving freezes them into provenance.reasons"
+    },
     "provenance": {
       "type": "object",
       "additionalProperties": false,
@@ -194,6 +201,13 @@
         "via": {
           "type": "string",
           "description": "Where the approval was given, such as the Decision Docket or a decision card"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reason"
+          },
+          "description": "The reasons this version was approved on, frozen at approval with each local citation's sha256. If a cited file changes later the decision renders stale: the reason it was decided changed"
         }
       }
     },
@@ -282,6 +296,155 @@
               "type": "string"
             },
             "description": "The routes the activity uses, as globs such as operations/** (robots syntax). Until the decision is made, the router refuses agents those routes (for the actors in for, or every agent)."
+          }
+        }
+      }
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "This wording's version. Changing a decided decision makes a new version; earlier ones stay in versions (decision versions, 2026-10-29)"
+    },
+    "versions": {
+      "type": "array",
+      "description": "Earlier versions, oldest first, kept so any of them can be rolled back to. Each is the decision as it stood, without its own versions",
+      "items": {
+        "type": "object",
+        "required": [
+          "version",
+          "status"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "answer": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provenance": {
+            "type": "object"
+          },
+          "merged": {
+            "type": "object"
+          },
+          "superseded_at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "applies_to": {
+      "type": "array",
+      "description": "Where a merge writes the decided answer: a venture-relative file and a dotted field, such as venture.json core.promise",
+      "items": {
+        "type": "object",
+        "required": [
+          "file",
+          "field"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "merged": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The version a merge applied to applies_to, and who merged it. Approving and merging are separate steps, and merging may be delegated",
+      "required": [
+        "version",
+        "by",
+        "at"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer"
+        },
+        "by": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rolled_back_from": {
+      "type": "integer",
+      "description": "When this version restores an earlier one, the version it restores"
+    }
+  },
+  "$defs": {
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "kind"
+      ],
+      "description": "One reason for or against a decision, or context it rests on, with the records it cites (dynamic decision index, item 4)",
+      "properties": {
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "for",
+            "against",
+            "context"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "description": "A venture-relative record path, an evidence id, a research cell id or a decision id"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "description": "sha256 of the cited file when it was cited; computed in code for a local file"
+              },
+              "locator": {
+                "type": "string",
+                "description": "Where in the cited record, such as a field path or a line"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
           }
         }
       }
