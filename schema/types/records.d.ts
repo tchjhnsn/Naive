@@ -1905,6 +1905,14 @@ export type NaiveConfig = {
     /** Checks that run but do not fail the route's check */
     warn?: string[];
   };
+  /** Investors lint (investors/lint). Each rule is fail-open unless its mode is fail-closed, which makes that rule's findings fail the run. */
+  investors_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
   /** Thresholds by name: confidence (the gate's confidence routing), idea-map (when a System 1 answer becomes a tag) */
   thresholds?: {
     [key: string]: number;
