@@ -43,7 +43,7 @@ const steps = [
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["schema/brand-test.mjs"]],
   ["upgrades: migrations, pins, early adoption, canary, staged agent upgrades", "node", ["schema/upgrades-test.mjs"]],
   ["naive upgrade --layout structured: a flat venture moves onto k-base/ and meta/", "node", ["schema/structured-layout-test.mjs"]],
-  ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["schema/structure-checks-test.ts"]],
+  ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["schema/structure-checks-test.mjs"]],
   ["kits", "node", ["platform/kits/test.mjs"]],
   ["webhooks", "node", ["platform/webhooks/test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["schema/frames-test.mjs"]],

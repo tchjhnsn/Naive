@@ -1,7 +1,8 @@
-// Checks each venture's telos (EE-023): start with the end. The telos is foundation/telos.json (or
-// purpose/telos.json) before telos-to-goals, and its canonical goals and exit criteria after, read as
-// the telos view (frameworks/telos/adapter.mjs). Every path resolves through venture-paths.mjs. Rules:
-//   measures: ids unique, exactly one primary.
+// Checks each venture's telos (EE-023): start with the end. The telos is the venture goal in
+// foundation/goals with its exit criteria, read as the telos view (frameworks/telos/adapter.mjs), and
+// before telos-to-goals it is foundation/telos.json (or purpose/telos.json). Canonical records with no
+// venture goal are no telos yet. Every path resolves through venture-paths.mjs. Rules:
+//   measures: ids unique, exactly one primary. A venture goal with no measures yet is a warning.
 //   phases: each phase listed once; every exit criterion serves at least one known measure,
 //     so each phase's exit traces back to the end; the venture's current phase has exit
 //     criteria (warning when it has none).
@@ -14,7 +15,7 @@
 //   node schema/check-telos.mjs <workspace or venture dir>
 
 import { ventureFile } from "./venture-paths.mjs";
-import { migrated, scale } from "./canonical.mjs";
+import { scale } from "./canonical.mjs";
 import { telosFile, telosView } from "../frameworks/telos/adapter.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -29,8 +30,10 @@ let checked = 0;
 
 for (const root of walk(dir)) {
   const v = load(ventureFile(root, "venture.json"));
-  const file = migrated(root) ? null : telosFile(root);
-  const t = file ? load(ventureFile(root, file)) : telosView(root);
+  const view = telosView(root);
+  const end = view?.statement ? view : null;
+  const file = end ? null : telosFile(root);
+  const t = end ?? (file ? load(ventureFile(root, file)) : null);
   const ambition = scale(root);
   if (!t) {
     if (v.phase !== "discovery" && ambition && ambition !== "hobby") warnings.push(`${v.id}: past Discovery with no telos (foundation/goals and foundation/exit-criteria); the owner should state the end first`);
@@ -40,7 +43,8 @@ for (const root of walk(dir)) {
   const at = `${v.id}/${file ?? "foundation/goals, foundation/exit-criteria"}`;
   const ids = t.measures.map((m) => m.id);
   if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate measure ids`);
-  if (t.measures.filter((m) => m.primary).length !== 1) errors.push(`${at}: exactly one measure is primary`);
+  if (end && !ids.length) warnings.push(`${at}: the venture goal has no measures yet; the owner should say how the end is measured`);
+  else if (t.measures.filter((m) => m.primary).length !== 1) errors.push(`${at}: exactly one measure is primary`);
   const seen = new Set();
   for (const p of t.phases ?? []) {
     if (seen.has(p.phase)) errors.push(`${at}: phase ${p.phase} listed twice`);

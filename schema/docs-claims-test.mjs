@@ -24,12 +24,12 @@ expect("an unknown route fails", "Read `foundation/nothing-here`.\n", false, /no
 expect("an unknown mentura command fails", "`mentura frobnicate --venture x`\n", false, /mentura frobnicate/);
 expect("a line that says not built passes", "`naive teleport` is not built yet.\n", true);
 expect("an allow comment passes", "`naive teleport` <!-- claim-ok: planned -->\n", true);
-const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\nschema/x.mjs\n" }).stdout.trim().split("\n");
+const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\n" }).stdout.trim().split("\n");
 const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md";
 if (!scannedOk) failed++;
 console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
 const workflow = readFileSync(join(repo, ".github/workflows/docs-required.yml"), "utf8");
-const wired = workflow.includes("node schema/check-docs-claims.mjs --scanned");
+const wired = workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --scanned');
 if (!wired) failed++;
 console.log(`${wired ? "pass" : "FAIL"}  the docs-required workflow asks this linter which changes are docs`);
 const all = spawnSync("node", ["schema/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });

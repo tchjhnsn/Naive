@@ -26,7 +26,7 @@ const read = (p) => readFileSync(join(repo, p), "utf8");
 const walk = (d) => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 // The docs this linter scans. The docs-required CI check counts a change as docs only when it touches one of these.
-const scanned = (r) => (r.startsWith("site/content/docs/") && r.endsWith(".mdx")) || /^docs\/master\/[^/]+\.md$/.test(r) || r.endsWith("/SKILL.md") || r === "SKILL.md";
+const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && ((r.startsWith("site/content/docs/") && r.endsWith(".mdx")) || /^docs\/master\/[^/]+\.md$/.test(r) || r.endsWith("/SKILL.md") || r === "SKILL.md");
 if (argv[0] === "--scanned") {
   for (const r of readFileSync(0, "utf8").split("\n").map((l) => l.trim()).filter(Boolean)) if (scanned(r)) console.log(r);
   process.exit(0);
@@ -47,7 +47,7 @@ const isRoute = (c) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r)
 
 // The flags a naive command reads: in naive.mjs's branch for it and in the scripts that branch runs.
 // Only flag definitions count: a literal --name, or a name passed to a flag reader. Any other string is not a flag.
-const flagWords = (src) => new Set([...src.matchAll(/--([a-z][a-z-]*)/g), ...src.matchAll(/(?:opt|flag|has|pass)\(\s*"([a-z][a-z-]*)"/g)].map((m) => m[1]));
+const flagWords = (src) => new Set([...src.matchAll(/--([a-z][a-z-]*)/g), ...src.matchAll(/(?<![\w.])(?:opt|flag|has|pass)\(\s*"([a-z][a-z-]*)"/g)].map((m) => m[1]));
 const branchOf = (cmd) => {
   const lines = naiveSrc.split("\n");
   const start = lines.findIndex((l) => new RegExp(`cmd === "${cmd}"`).test(l) && /if \(/.test(l));
