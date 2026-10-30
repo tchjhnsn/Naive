@@ -36,6 +36,8 @@ function merge(base, over) {
 }
 
 /** The venture's naive.config.json as written, or {} when it has none. A file that is not JSON throws, naming the file. */
+export const namedPerson = (setBy) => typeof setBy?.person === "string" && setBy.person.trim() !== "";
+
 export function rawConfig(dir) {
   const f = dir && ventureFile(dir, CONFIG);
   if (!f || !existsSync(f)) return {};

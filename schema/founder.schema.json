@@ -67,6 +67,55 @@
           "type": "boolean"
         }
       }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in purpose/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type",
+      "properties": {
+        "template": {
+          "type": "string",
+          "description": "The template it started from; default if absent"
+        },
+        "summary": {
+          "type": "string",
+          "description": "The mentor's prose portrait, for reasoning models"
+        },
+        "attributes": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "text"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "description": "In the founder's own words"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "One of the attribute's types in purpose/frameworks/founder-profile/attributes.json"
+                },
+                "function": {
+                  "type": "string",
+                  "description": "For a strength or weakness of type venture-function: the venture function it is about"
+                }
+              }
+            }
+          }
+        },
+        "confirmed": {
+          "type": "boolean",
+          "description": "The founder said the profile reads true"
+        }
+      }
     }
   }
 }

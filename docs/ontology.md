@@ -42,6 +42,7 @@ The system is opinionated: it names one default for each choice, and every defau
 
 | Noun | Meaning | Standard | References |
 | --- | --- | --- | --- |
+| central data management structure | What a venture's scaffolding is (EE-085): one structure for everything the venture knows, under one set of conventions, with pointers to the systems of record that keep the rest. It suits solo founders and small founding teams, for whom one central structure replaces separate SaaS silos and gives agents the whole picture | master data management, centralized style (DAMA-DMBOK) |  |
 | venture | The unit: anything a builder undertakes, from a hobby to a company. Ventures can hold ventures | common business usage |  |
 | phase | How far a venture has come: discovery, validation, beachhead, scale, platform | Blank; Moore | blank-2005-four-steps, moore-1991-crossing-the-chasm, moore-1995-inside-the-tornado |
 | gate | The test for leaving a phase: problem-solution fit, product-market fit (retention), repeatability, market leadership | Andreessen; Zook and Allen | andreessen-2007-only-thing-that-matters, zook-allen-2012-repeatability |

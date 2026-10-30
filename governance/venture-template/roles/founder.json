@@ -1,0 +1,12 @@
+{
+  "id": "founder",
+  "name": "Founder (chief delegator)",
+  "chief_delegator": true,
+  "function": "all",
+  "description": "Holds all authority and wears one hat: delegating it.",
+  "grantable_classes": [],
+  "default_tier": "person",
+  "lint_suites": [],
+  "verified_by": null,
+  "skill": "governance/skills/executive-roles/SKILL.md"
+}
