@@ -43,7 +43,7 @@ export const LADDER = [
 const LABEL = { 2: "demonstrated", 1: "inferred" };
 const MIN_SAMPLE = 5, MAX_AGE_MONTHS = 18;
 
-const months = (from, to) => (to - new Date(from)) / (1000 * 60 * 60 * 24 * 30.44);
+const months = (from, to) => (to - +new Date(from)) / (1000 * 60 * 60 * 24 * 30.44);
 export const originOf = (e) => e.origin ?? (e.source?.path && !e.source?.url ? "first-hand" : "reported");
 
 /** How strongly one item bears on its assumption: 2 demonstrates, 1 infers, 0 counts for nothing. */
@@ -96,7 +96,14 @@ export function preflight(rec) {
 
 export const ASK = "Some things the assessment reads are missing. Fill them in first, or run it as is?";
 
-/** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. */
+/** @typedef {{ field: string, items?: string[], why: string, as_is: string }} Missing */
+/** @typedef {ReturnType<typeof ladder>} Rung */
+/**
+ * @typedef {{ needs_input?: { ask: string, missing: Missing[], options: { choice: string, how: string }[] } } & Partial<Rung & { venture: string | null, ran_as_is: boolean, missing: Missing[], assumptions: ReturnType<typeof label>,
+ *   forms: ({ form: string, statement: string, assumptions: ReturnType<typeof label> } & Pick<Rung, "supports" | "next" | "blocking">)[] }>} Assessment
+ */
+
+/** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. @returns {Assessment} */
 export function assess(dir, { as_is = false, today = new Date() } = {}) {
   const f = join(ventureFile(dir, "purpose/validation/problem.json"));
   const rec = existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
@@ -118,6 +125,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   if (!dir) { console.error("usage: node schema/assess-problem.mjs <venture dir> [--json] [--preflight] [--as-is]"); process.exit(2); }
   const flag = (f) => process.argv.includes(f);
+  /** @type {Assessment} */
   const out = flag("--preflight") ? { missing: preflight(existsSync(join(ventureFile(dir, "purpose/validation/problem.json"))) ? JSON.parse(readFileSync(join(ventureFile(dir, "purpose/validation/problem.json")), "utf8")) : null) } : assess(dir, { as_is: flag("--as-is") });
   if (flag("--json")) { console.log(JSON.stringify(out, null, 2)); process.exit(0); }
   const list = (m) => m.map((x) => `  - ${x.field}${x.items ? ` (${x.items.join(", ")})` : ""}: ${x.why}. As is: ${x.as_is}`).join("\n");

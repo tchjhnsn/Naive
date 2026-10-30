@@ -22,7 +22,7 @@ const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "gate-test-"));
-const env = { ...process.env, MENTURA_WORKSPACE: ws };
+const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: ws });
 delete env.MENTURA_ACTOR_ID;
 delete process.env.MENTURA_ACTOR_ID;
 const cli = (...a) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...a], { encoding: "utf8", env });

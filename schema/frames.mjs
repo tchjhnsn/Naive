@@ -161,7 +161,11 @@ export function fresh(f, lookup, now = Date.now()) {
   return { kept, dropped: list.length - kept.length };
 }
 
-/** Match (or take) a frame, judge its premises against the venture, and propose its decisions, open. */
+/**
+ * Match (or take) a frame, judge its premises against the venture, and propose its decisions, open.
+ * @param {string} dir
+ * @param {{ id?: string, text?: string, lookup?: *, now?: number, agentId?: string, harness?: string, model?: string }} [opts]
+ */
 export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "frames", harness, model } = {}) {
   const f = id ? frameOf(id) : (text ? frameOf(match(text)[0]?.id) : null);
   if (!f) return { ok: false, error: id ? `no frame ${id}` : `no frame fits "${text ?? ""}"; node schema/frames.mjs list shows them` };

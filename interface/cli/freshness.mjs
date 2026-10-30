@@ -30,6 +30,7 @@ export async function main(cmd, argv, workspace) {
   if (!dir) { console.error(venture ? `no venture ${venture}` : `usage: mentura ${cmd} ${cmd === "freshness" ? "" : "<target> "}--venture <id>`); return venture ? 1 : 2; }
   const by = agentFromEnv(opt("as") === "person" ? "person" : "agent", "cli");
   const now = opt("now");
+  /** @type {{ ok: boolean, error?: string, suggest?: string[], or?: string, result?: * }} */
   let r;
   if (cmd === "revalidate") {
     if (!target && !flag("pivot")) { console.error("usage: mentura revalidate <tag:route|path:folder|package:name|route> --venture <id>, or --pivot"); return 2; }
@@ -45,7 +46,7 @@ export async function main(cmd, argv, workspace) {
     r = (await import("../../schema/lifecycle.mjs")).advance(dir, target, { reason: opt("reason"), override: opt("override"), by, now });
   } else if (cmd === "freshness") {
     if (opt("freeze")) r = await freeze(dir, resolve(opt("freeze")), { now });
-    else { const f = await freshness(dir, { now }); print(flag("json") ? f : [`${f.venture} (${f.phase}): ${f.summary.fresh} fresh, ${f.summary.stale} stale, ${f.summary.expired} expired, ${f.summary.holes} live ${f.summary.holes === 1 ? "hole" : "holes"}, of ${f.summary.records} records.`,
+    else { const f = await /** @type {(dir: string, o: { now?: string }) => Promise<*>} */ (freshness)(dir, { now }); print(flag("json") ? f : [`${f.venture} (${f.phase}): ${f.summary.fresh} fresh, ${f.summary.stale} stale, ${f.summary.expired} expired, ${f.summary.holes} live ${f.summary.holes === 1 ? "hole" : "holes"}, of ${f.summary.records} records.`,
       ...f.items.filter((i) => i.state !== "fresh").map((i) => `  ${i.state.padEnd(7)} ${i.route}: ${i.reasons.map((x) => x.note).join("; ")}`),
       ...f.copies.filter((c) => c.state !== "fresh").map((c) => `  ${c.state.padEnd(7)} ${c.path} (copy of ${c.parent}): ${c.note}`),
       ...f.warnings.map((w) => `warning: ${w}`)].join("\n")); return 0; }

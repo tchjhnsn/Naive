@@ -64,7 +64,11 @@ function byRefs(dir, changed, list) {
 /** The structural impact of any decision, open or decided, without side effects: nothing is marked stale,
  *  nothing proposed, nothing written. The records it would change (applies_to, or the record it decides),
  *  the records that read them (provenance derived_from) or refer to their type (data-model refs), and
- *  the functions those fall in. schema/decision-index.mjs scores open decisions with it. */
+ *  the functions those fall in. schema/decision-index.mjs scores open decisions with it.
+ * @param {string} dir
+ * @param {*} d
+ * @param {{ all?: { provenance?: *[], files?: string[] } }} [opts]
+ */
 export function structural(dir, d, { all } = {}) {
   const changed = [...new Set([...(d.merged?.files ?? []), ...(d.applies_to ?? []).map((t) => t.file), ...(d.decides?.path ? [d.decides.path] : [])])];
   if (!changed.length) return { changed, records: [], functions: [] };
@@ -98,7 +102,7 @@ export function impact(dir, id, { via = "framework", proposeFollowUps = true } =
     const proposed = [];
     if (recs.length && proposeFollowUps) {
       const fid = `revise-${fn}-after-${id}-v${version}`.slice(0, 80).replace(/-+$/, "");
-      const p = propose(dir, { at: fn, id: fid, question: `Revise ${recs.join(", ")} after ${id} version ${version}?`, decides: { path: recs[0] } }, { agentId: "naive-impact", via });
+      const p = propose(dir, { at: fn, id: fid, question: `Revise ${recs.join(", ")} after ${id} version ${version}?`, decides: { path: recs[0] } }, /** @type {Parameters<typeof propose>[2]} */ ({ agentId: "naive-impact", via }));
       if (p.ok) proposed.push(fid);
     }
     return { function: fn, affected_records: recs, stale: recs.filter((f) => marked.has(f)), note: null, proposed_decisions: proposed };
