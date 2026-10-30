@@ -41,7 +41,7 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: No checks of its own yet. `naive check` covers the records it reads (validation and money checks). Run it after each write, and fix a failure before you report the work done.
+`node schema/lint-finance.mjs <venture dir> [--json]` (route `finance/lint`) checks spend decisions, prices and metrics. Rules: `spend-no-runway` (a spend decision whose answer, note and options never say what it does to runway), `price-below-cost` (a pricing point whose amount is below its cost) and `metric-no-target` (a metric with no numeric target for the venture's current phase). Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `finance_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1). `naive check` runs it, and still covers the records this function reads (validation and money checks). Run it after each write, and fix a failure before you report the work done.
 
 ## Actions and artifacts
 
