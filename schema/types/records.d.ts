@@ -1957,6 +1957,14 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (schema/triggers.mjs) */
   triggers?: unknown[];
+  /** Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
+  legal_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
   /** naive diagnose --if-due: a full diagnosis runs only when the founder's transcripts since the cursor reach threshold estimated tokens (characters / 4), or a new session is older than stale_hours */
   diagnose?: {
     threshold?: number;
@@ -1973,6 +1981,22 @@ export type NaiveConfig = {
       conflict?: "off" | "warn" | "error";
       dependency?: "off" | "warn" | "error";
       "phase-mismatch"?: "off" | "warn" | "error";
+    };
+  };
+  /** Foundation lint (foundation/lint): per-rule mode overrides. A rule stays fail-open unless its mode is fail-closed. */
+  foundation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the people lint (schema/lint-people.mjs, route people/lint). A rule stays fail-open unless its mode is fail-closed. */
+  people_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
     };
   };
 };
