@@ -61,6 +61,7 @@ const steps = [
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["publishing gate: field visibility, leak canaries, internal terms", "node", ["schema/leaks-test.mjs"]],
+  ["field visibility: only a person sets public, the public reader, the publish check", "node", ["schema/visibility-test.mjs"]],
   ["public site carries no internal text (Naive's terms and the in-repo venture's own)", "node", ["schema/check-leaks.mjs", "site/content/marketing", "--venture", "instance/ventures/everything-ecosystem"]],
   ["internal terms: the founder-edited dictionary, its schema, warn and fail terms", "node", ["schema/internal-terms-test.mjs"]],
   ["publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop", "node", ["schema/publish-lint-test.mjs"]],
