@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repo = fileURLToPath(new URL("..", import.meta.url));
+const BAD_JS = "/** @type {number} */\nconst n = 'x';\nexport default n;\n";
 const BAD_TYPE = "const n: number = 'x';\nexport default n;\n";
 
 function gateExit(files: Record<string, string>): number {
@@ -17,6 +18,7 @@ function gateExit(files: Record<string, string>): number {
     mkdirSync(join(dir, "schema"));
     cpSync(join(repo, "schema/check-types.ts"), join(dir, "schema/check-types.ts"));
     cpSync(join(repo, "tsconfig.json"), join(dir, "tsconfig.json"));
+    cpSync(join(repo, "tsconfig.strict.json"), join(dir, "tsconfig.strict.json"));
     writeFileSync(join(dir, "package.json"), '{ "type": "module" }\n');
     symlinkSync(join(repo, "node_modules"), join(dir, "node_modules"));
     for (const [rel, text] of Object.entries(files)) {
@@ -31,7 +33,7 @@ function gateExit(files: Record<string, string>): number {
 
 const cases: [string, Record<string, string>, number][] = [
   ["a clean tree passes", { "brand-new/ok.ts": "export const n = 1;\n" }, 0],
-  ["a type error in a pending folder passes", { "scripts/bad.ts": BAD_TYPE }, 0],
+  ["a type error in a pending folder passes", { "scripts/bad.mjs": BAD_JS }, 0],
   ["a type error in a new top-level folder fails", { "brand-new/bad.ts": BAD_TYPE }, 1],
   ["a type error in a root file fails", { "bad.ts": BAD_TYPE }, 1],
   ["a syntax error in a pending folder fails", { "scripts/broken.mjs": "const = ;\n" }, 1],
