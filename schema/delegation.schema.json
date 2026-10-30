@@ -12,6 +12,7 @@
     "extends": { "type": "string", "description": "A venture file: path to the template it customizes" },
     "note": { "type": "string" },
     "root": { "type": "string", "description": "The chief delegator's role id (founder)" },
+    "founder": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true, "description": "The people who hold the root role, by name. Only they approve a one-way publication (schema/publish.mjs) or merge as the founder (schema/decisions.mjs). The template leaves it out; a venture names its own founders" },
     "never_redelegated": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
     "one_way_doors": { "type": "array", "items": { "type": "string" }, "uniqueItems": true, "description": "Irreversible classes; they stay with the founder" },
     "grants": {

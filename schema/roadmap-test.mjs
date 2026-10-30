@@ -27,7 +27,8 @@ const bad = (patch) => check({ ...brand, steps: brand.steps.map((s) => patch[s.i
 expect("a cycle is rejected", bad({ ethos: { depends_on: ["stand"] } }).some((e) => /cycle/.test(e)));
 expect("an unknown frame is rejected", bad({ ethos: { frame: "no-such-frame" } }).some((e) => /does not have/.test(e)));
 expect("a step with no decider is rejected", bad({ tagline: { decided_by: "" } }).some((e) => /no decider/.test(e)));
-expect("a one-way door delegated away from the founder is rejected", bad({ stand: { decided_by: "marketing" } }).some((e) => /one-way door delegated/.test(e)));
+expect("a decider that is not a role is rejected", bad({ tagline: { decided_by: "marketing" } }).some((e) => /not a role/.test(e)));
+expect("a one-way door delegated away from the founder is rejected", bad({ stand: { decided_by: "marketing-lead" } }).some((e) => /one-way door delegated/.test(e)));
 const cli = spawnSync("node", [join(repo, "schema/check-roadmap.mjs")], { encoding: "utf8" });
 expect("the check passes on the repository's roadmaps", cli.status === 0, cli.stderr);
 

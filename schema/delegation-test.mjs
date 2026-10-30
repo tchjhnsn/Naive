@@ -36,6 +36,11 @@ const t = spawnSync("node", [join(repo, "schema/check-delegation.mjs")], { encod
 expect("the template passes", t.status === 0, t.stdout + t.stderr);
 expect("a copy of the template passes", venture().ok);
 
+const schemaCheck = (d) => { const f = join(tmp, `schema-${n++}.json`); writeFileSync(f, JSON.stringify(d)); return spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "delegation.schema.json", "--file", f], { encoding: "utf8" }); };
+expect("a delegation naming its founders matches the schema", schemaCheck({ ...base, founder: ["Torian"] }).status === 0);
+expect("a founder list with no names does not", schemaCheck({ ...base, founder: [] }).status !== 0);
+expect("a bare founder list with no root or grants does not", schemaCheck({ founder: ["Torian"] }).status !== 0);
+
 fails("a grant wider than its grantor's fails", (d) => grant(d, "chief-of-staff-to-architect").classes.push("experience-design"), /exceeds its grantor/);
 fails("a grant passed on without may_redelegate fails", (d) => { grant(d, "founder-to-chief-of-staff").may_redelegate = false; }, /chief-of-staff-to-architect: exceeds/);
 fails("a grant from a role nobody granted fails (the chain must reach the founder)", (d) =>
