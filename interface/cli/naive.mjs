@@ -243,19 +243,19 @@ else if (cmd === "build" || cmd === "start") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
 } else if (cmd === "publish") {
-  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  if (args[0] === "check") {
+    // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
+    const v = opt("venture") ?? findVenture();
+    process.exit(run("schema/publish-lint.mjs", [...args, ...(v ? ["--venture", v] : [])]));
+  }
+  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
   process.exit(run("schema/publish.mjs", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
   process.exit(run(`schema/${cmd}-venture.mjs`, args));
-} else if (cmd === "publish") {
-  // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
-  const args = rest[0] === "check" ? rest.slice(1) : rest;
-  const v = opt("venture") ?? findVenture();
-  process.exit(run("schema/publish-lint.mjs", ["check", ...args.filter((a, i) => a !== "--venture" && args[i - 1] !== "--venture"), ...(v ? ["--venture", v] : [])]));
 } else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
   // The workspace (schema/workspace.mjs): the one above the venture this runs in, else above this folder.
   const venture = opt("venture") ? here() : findVenture();

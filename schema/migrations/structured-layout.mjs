@@ -14,13 +14,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { CODEBASE, KBASE, layoutOf } from "../venture-paths.mjs";
+import { CODEBASE, KBASE, TOP as TOP_FILES, layoutOf } from "../venture-paths.mjs";
 
 export const id = "structured-layout";
 export const describe = "Moves a flat venture onto the structured layout: the knowledge base into k-base/, provenance, config, sources and releases into meta/, and profile.md to README.md (EE-086)";
 
-// What stays at the top: the venture's own files and what tools keep there.
-const TOP = new Set(["venture.json", "AGENTS.md", "README.md", "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb", ".gitignore", ".git", ".vscode", ".naive", "node_modules", KBASE, "meta", CODEBASE, "repo"]);
+const TOP = new Set([...TOP_FILES, ".git", ".naive", "node_modules", KBASE, "meta", CODEBASE, "repo"]);
 
 export function apply(dir, ctx) {
   if (layoutOf(dir) === "structured") return;

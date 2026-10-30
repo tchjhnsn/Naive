@@ -4,7 +4,7 @@
 //
 //   flat (no layout in venture.json, every venture made before EE-086): the logical path, unchanged
 //   structured (venture.json layout: "structured"):
-//     venture.json, AGENTS.md, README.md, package.json   at the top (profile.md is README.md)
+//     venture.json, AGENTS.md, README.md, package.json, lockfiles, .vscode/   at the top (profile.md is README.md)
 //     provenance.jsonl, sources.json, naive.config.json   in meta/; .release/ is meta/releases/
 //     every package (foundation/, people/, _drafts/ ...)  in k-base/, or in k-base/(group)/ when the
 //                                                         founder mirrors a function as a folder
@@ -17,7 +17,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
-const TOP = new Set(["venture.json", "AGENTS.md", "README.md", "package.json", "package-lock.json", ".gitignore"]);
+/** What stays at the top of a structured venture: its own files and what tools keep there. The migration moves everything else. */
+export const TOP = new Set(["venture.json", "AGENTS.md", "README.md", "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb", ".gitignore", ".vscode"]);
 const META = { "provenance.jsonl": "meta/provenance.jsonl", "knowledge/sources.json": "meta/sources.json", "sources.json": "meta/sources.json", "naive.config.json": "meta/naive.config.json" };
 const cache = new Map();
 export const KBASE = "k-base";
@@ -53,7 +54,7 @@ function groupOf(dir, pkg) {
 export function physical(dir, rel) {
   const r = String(rel).split(sep).join("/").replace(/^\.\//, "");
   if (layoutOf(dir) !== "structured") return r;
-  if (TOP.has(r)) return r;
+  if (TOP.has(r.split("/")[0])) return r;
   if (r === "profile.md") return "README.md";
   if (META[r]) return META[r];
   if (r === ".release" || r.startsWith(".release/")) return "meta/releases" + r.slice(".release".length);

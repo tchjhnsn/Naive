@@ -1834,6 +1834,10 @@
       "reason": "The create-venture generator's npm manifest (I-1); not a record"
     },
     {
+      "path": "package-lock.json",
+      "reason": "The framework's npm lockfile for its dev tools (ESLint), installed by npm ci in CI; not a record"
+    },
+    {
       "path": "schema/known-leaks.json",
       "reason": "The dated list of public outputs that leak internal text today, read by schema/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
     },
