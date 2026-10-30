@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-// naive publish build <channel>: compile a venture's public words for one channel, through the publishing
-// gate, and write what a publish may read. Publishing reads only this output, never a venture record.
+// The site build through the publishing gate: compile a venture's public words for one of the site's
+// channels (the marketing pages' facts and the two one-pagers) and write what a publish may read. Publishing
+// reads only this output, never a venture record. naive publish build (schema/publish.mjs) compiles a
+// channel's approved MDX into .release/publish/; this does the same for what site/scripts/ render.
 //
 //   node operations/marketing/publish-build.mjs <channel> <venture dir> [--out <dir>] [--json]
 //

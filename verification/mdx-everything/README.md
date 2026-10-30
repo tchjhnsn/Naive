@@ -1,6 +1,6 @@
 # Verification: cursor/mdx-everything (gate wave 1, item 2)
 
-`PublicWords.tla` models one record field on its way to a public channel: its visibility sidecar, its MDX
+`PublicWords.tla` models (for `operations/marketing/publish-build.mjs`) one record field on its way to a public channel: its visibility sidecar, its MDX
 public variant, and what a build puts in the output. `CODE = "branch"` (`PublicWords.cfg`) is this branch;
 `CODE = "main"` (`PublicWords-main.cfg`) is origin/main at 566bb99. `replay.mjs` replays each rule against
 the real code, on a fixture venture and on `instance/ventures/everything-ecosystem`.

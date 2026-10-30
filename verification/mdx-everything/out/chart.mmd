@@ -1,5 +1,5 @@
 ---
-title: "One field on its way to a public channel (naive publish build)"
+title: "One field on its way to a public channel (the site build)"
 ---
 stateDiagram-v2
   direction LR
@@ -45,14 +45,14 @@ stateDiagram-v2
       s11: Build refused
       s12: Variant published
       [*] --> s9
-      s9 --> s10: naive publish build runs [when Field is Public, wording approved and Variant is not Approved variant copies the record]
-      s10 --> s9: naive publish build runs [when Field is Public, edited since approval and Variant is one of No variant, Variant drafted]
-      s9 --> s12: naive publish build runs [when Field is one of Public, edited since approval, Publish through a variant and Variant is one of Variant approved by you, Variant marked approved by an agent]
-      s9 --> s11: naive publish build runs [when Variant is Approved variant copies the record]
-      s10 --> s12: naive publish build runs [when Field is Public, edited since approval and Variant is one of Variant approved by you, Variant marked approved by an agent]
-      s10 --> s11: naive publish build runs [when Variant is Approved variant copies the record]
-      s12 --> s10: naive publish build runs [when Field is Public, wording approved and Variant is not Approved variant copies the record]
-      s12 --> s11: naive publish build runs [when Variant is Approved variant copies the record]
+      s9 --> s10: the site build runs [when Field is Public, wording approved and Variant is not Approved variant copies the record]
+      s10 --> s9: the site build runs [when Field is Public, edited since approval and Variant is one of No variant, Variant drafted]
+      s9 --> s12: the site build runs [when Field is one of Public, edited since approval, Publish through a variant and Variant is one of Variant approved by you, Variant marked approved by an agent]
+      s9 --> s11: the site build runs [when Variant is Approved variant copies the record]
+      s10 --> s12: the site build runs [when Field is Public, edited since approval and Variant is one of Variant approved by you, Variant marked approved by an agent]
+      s10 --> s11: the site build runs [when Variant is Approved variant copies the record]
+      s12 --> s10: the site build runs [when Field is Public, wording approved and Variant is not Approved variant copies the record]
+      s12 --> s11: the site build runs [when Variant is Approved variant copies the record]
     }
   }
   classDef mayBreak fill:#fff3e6,stroke:#e8730c,stroke-width:2.5px,color:#b85a06

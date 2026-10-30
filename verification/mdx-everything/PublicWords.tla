@@ -49,7 +49,7 @@ GateBlocks == IF CODE = "main" THEN variant # "none" ELSE variant = "copying"
 
 \* main: no build command. site/scripts/foundation.mjs prints every filled statement from
 \* mentura purpose/foundation run, whatever its visibility, and nothing runs the gate first.
-\* branch: naive publish build <channel> runs gate, compile, build, verify (operations/marketing/publish-build.mjs);
+\* branch: operations/marketing/publish-build.mjs <channel> runs gate, compile, build, verify (operations/marketing/publish-build.mjs);
 \* verify refuses output that carries a field's own wording unless that field is public and pinned.
 Out == IF CODE = "main" THEN "fieldWords" ELSE IF GateBlocks THEN "refused" ELSE Compiled
 Build ==

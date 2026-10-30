@@ -1,5 +1,5 @@
 ---
-title: "One field on its way to a public channel (naive publish build)"
+title: "One field on its way to a public channel (the site build)"
 ---
 stateDiagram-v2
   direction LR
@@ -41,7 +41,7 @@ stateDiagram-v2
       s9: Nothing published
       s10: Record's own words published
       [*] --> s9
-      s9 --> s10: naive publish build runs
+      s9 --> s10: the site build runs
     }
   }
   classDef mayBreak fill:#fff3e6,stroke:#e8730c,stroke-width:2.5px,color:#b85a06

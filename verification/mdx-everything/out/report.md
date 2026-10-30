@@ -9,7 +9,7 @@ The shortest path has 4 steps:
 1. an agent drafts the public variant: Field Internal, Variant Variant drafted, Output Nothing published
 2. an agent marks the variant approved: Field Internal, Variant Variant marked approved by an agent, Output Nothing published
 3. you set the field to publish through a variant: Field Publish through a variant, Variant Variant marked approved by an agent, Output Nothing published
-4. naive publish build runs: Field Publish through a variant, Variant Variant marked approved by an agent, Output Variant published
+4. the site build runs: Field Publish through a variant, Variant Variant marked approved by an agent, Output Variant published
 
 ## Rules that hold
 TypeOK, NoInternalWords, NoCopiedVariant, GateAcceptsHonestVariant, NoDeadlock

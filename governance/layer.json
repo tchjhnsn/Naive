@@ -74,7 +74,8 @@
     "publication-policy",
     "decision-record",
     "decision-impact",
-    "venture-role"
+    "venture-role",
+    "publications"
   ],
   "reads": [
     "handoff",

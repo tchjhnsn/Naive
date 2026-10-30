@@ -23,7 +23,7 @@ try {
   const page = readFileSync(join(repo, "site/artifact/foundation.html"), "utf8").replace(/&amp;/g, "&");
   const verbatim = internalWording(ee).filter((w) => page.includes(w.text)).length;
   say("NoInternalWords (main)", verbatim ? "FAIL" : "PASS", `main's foundation one-pager carries ${verbatim} internal field(s) word for word and ${leaks([join(repo, "site/artifact/foundation.html")]).length} internal-term match(es)`);
-  // R1 on the branch: the same channel through naive publish build.
+  // R1 on the branch: the same channel through operations/marketing/publish-build.mjs.
   for (const c of ["site", "artifact", "foundation"]) {
     const r = build(c, ee, { out: join(tmp, "out") });
     say(`NoInternalWords (${c})`, r.ok ? "PASS" : "FAIL", r.ok ? "built; verify found no internal wording and no internal-term match" : r.errors.join("; "));

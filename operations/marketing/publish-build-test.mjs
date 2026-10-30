@@ -61,8 +61,8 @@ writeFileSync(process.env.NAIVE_PUBLISH_OUT + "/artifact/bad.html", "<p>" + p.se
   expect("a builder that renders a record's own wording is refused at the verify stage", !r.ok && r.stage === "verify" && /foundation\/problem\.json#segment/.test(r.errors.join(" ")), r);
 
   expect("an unknown channel is refused", !build("nope", v, { out }).ok);
-  const cli = spawnSync("node", [join(repo, "interface/cli/naive.mjs"), "publish", "build", "site", "--venture", v, "--out", out], { encoding: "utf8" });
-  expect("naive publish build <channel> runs the build", cli.status === 0 && /built site for canary/.test(cli.stdout), cli.stdout + cli.stderr);
+  const cli = spawnSync("node", [join(repo, "operations/marketing/publish-build.mjs"), "site", v, "--out", out], { encoding: "utf8" });
+  expect("the command line runs the build", cli.status === 0 && /built site for canary/.test(cli.stdout), cli.stdout + cli.stderr);
   const repoVenture = spawnSync("node", [join(repo, "operations/marketing/publish-build.mjs"), "foundation", join(repo, "instance/ventures/everything-ecosystem"), "--out", out], { encoding: "utf8" });
   expect("the repository's own venture builds its foundation one-pager through the gate", repoVenture.status === 0, repoVenture.stdout + repoVenture.stderr);
 } finally {
