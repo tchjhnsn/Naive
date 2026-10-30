@@ -19,6 +19,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install jsonschema
+      - run: npm ci
       - run: node test.mjs
 
   site:
