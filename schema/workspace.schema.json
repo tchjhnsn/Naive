@@ -59,6 +59,10 @@
     "founder": {
       "type": "string",
       "description": "The founder record, relative to the workspace (normally founder/founder.json)"
+    },
+    "timeZone": {
+      "type": "string",
+      "description": "The IANA time zone (America/Chicago) the venture's days are counted in: activity, deadlines, \"today\". Unset: the workspace's, else the system's"
     }
   },
   "additionalProperties": false

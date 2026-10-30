@@ -410,6 +410,10 @@
           "description": "The laws, regulators or standards that apply, such as GDPR, HIPAA or SOC 2"
         }
       }
+    },
+    "timeZone": {
+      "type": "string",
+      "description": "The IANA time zone (America/Chicago) the venture's days are counted in: activity, deadlines, \"today\". Unset: the workspace's, else the system's"
     }
   },
   "$defs": {

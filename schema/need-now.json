@@ -827,6 +827,26 @@
         "platform": 0.8
       },
       "why": "A view built from records for a reader; needed once something goes out to people, which grows with each phase"
+    },
+    "activity": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Derived from transcripts by naive activity --write; worth having once the founder wants to see time spent and the streak, never required"
+    },
+    "activity-summary": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Days since last touch and the streak feed the docket; derived, never required"
     }
   }
 }

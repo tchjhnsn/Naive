@@ -178,6 +178,23 @@
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
+    },
+    "diagnose": {
+      "type": "object",
+      "description": "naive diagnose --if-due: a full diagnosis runs only when the founder's transcripts since the cursor reach threshold estimated tokens (characters / 4), or a new session is older than stale_hours",
+      "additionalProperties": false,
+      "properties": {
+        "threshold": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 20000
+        },
+        "stale_hours": {
+          "type": "number",
+          "minimum": 0,
+          "default": 24
+        }
+      }
     }
   },
   "$defs": {

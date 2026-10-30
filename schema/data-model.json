@@ -816,6 +816,28 @@
       "note": "Execution folded into operations (EE-038)."
     },
     {
+      "id": "activity",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity.schema.json",
+      "paths": [
+        "instance/**/operations/activity/*.json",
+        "schema/examples/**/operations/activity/*.json"
+      ],
+      "note": "Time spent in the venture on one day from transcript timestamps alone: sessions, active minutes, messages, estimated tokens in, in the venture's time zone; internal by default (naive activity, TRANSCRIPT_DIAGNOSIS_V2)"
+    },
+    {
+      "id": "activity-summary",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity-summary.schema.json",
+      "paths": [
+        "instance/**/operations/activity/_summary.json",
+        "schema/examples/**/operations/activity/_summary.json"
+      ],
+      "note": "Days since last touch and the streak, for the docket; a long silence is a gentle nudge (naive activity --write)"
+    },
+    {
       "id": "evidence",
       "layer": "evidence",
       "level": "venture",

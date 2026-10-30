@@ -33,7 +33,11 @@
 //                                                   the founder's own frameworks and playbooks in the workspace's frameworks/,
 //                                                   beside the built-in ones; publishing only packs a bundle for now
 //   naive diagnose [--since <iso>] [--dir <transcripts>]  find frameworks, playbooks, ideas and decisions in the founder's own
-//                                                   words in agent transcripts (redacted first) and draft them as a raw source
+//                                                   words in agent transcripts (redacted first) and draft them as a raw source;
+//                                                   --if-due runs it only past naive.config.json diagnose.threshold
+//   naive activity [--from <date>] [--to <date>] [--write]  time spent in each venture per day from transcript timestamps:
+//                                                   sessions, active minutes, messages, tokens in; --write keeps
+//                                                   operations/activity/<date>.json and the streak (internal)
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -224,6 +228,8 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("schema/user-frameworks.mjs", [sub, ...more, from]));
 } else if (cmd === "diagnose") {
   process.exit(run("scripts/diagnose-transcripts.mjs", rest));
+} else if (cmd === "activity") {
+  process.exit(run("schema/activity.mjs", rest));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");

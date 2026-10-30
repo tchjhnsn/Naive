@@ -285,6 +285,13 @@
           }
         }
       }
+    },
+    "conversation": {
+      "type": "array",
+      "description": "The founder's messages this record was made from (naive diagnose catches)",
+      "items": {
+        "$ref": "conversation-ref.schema.json"
+      }
     }
   }
 }
