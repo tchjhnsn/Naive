@@ -117,6 +117,9 @@ const steps = [
   ["Rho money source (package, append-only, read-only client, offline)", "node", ["platform/integrations/rho-test.mjs"]],
   ["workspace: settings, cross-venture reads, naive capture and the inbox", "node", ["schema/workspace-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
+  ["PR review agent (content findings from fixture markdown, screenshot mode, preview noindex)", "node", ["scripts/pr-review/pr-review-test.mjs"]],
+  // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.
+  ...(existsSync(join(root, "node_modules/eslint")) ? [["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]]] : []),
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
