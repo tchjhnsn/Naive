@@ -445,6 +445,32 @@
         }
       }
     },
+    "proposed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "answer",
+        "drafted_by"
+      ],
+      "description": "An agent's new wording for a decided decision, waiting for a person. The decided version stays current; approving promotes this to the next version (EE-058: an agent never decides or un-decides)",
+      "properties": {
+        "answer": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "drafted_by": {
+          "type": "object"
+        },
+        "proposed_at": {
+          "type": "string"
+        }
+      }
+    },
     "applies_to": {
       "type": "array",
       "description": "Where a merge writes the decided answer: a venture-relative file and a dotted field, such as venture.json core.promise",

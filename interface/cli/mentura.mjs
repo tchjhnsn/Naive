@@ -255,8 +255,8 @@ if (cmd === "merge") {
 }
 
 if (cmd === "index") {
-  // The live decision index (schema/decision-index.mjs): re-scores the decisions the provenance events
-  // since its cursor (or --since) touch, spreading with damping, and appends rank history.
+  // The live decision index (schema/decision-index.mjs): re-scores every active decision
+  // (an update equals a rebuild) and appends rank history for what moved.
   const venture = opt("venture");
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();

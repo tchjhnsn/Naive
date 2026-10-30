@@ -356,6 +356,22 @@
       ],
       "why": "Required before anything is published (EE-025)"
     },
+    "internal-terms": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "publishes",
+          "at_least": 0.9
+        }
+      ],
+      "why": "The venture's own internal terms (unannounced codenames, jargon) are needed before anything is published, so the leak check knows them"
+    },
     "team-plan": {
       "base": {
         "discovery": 0.2,
