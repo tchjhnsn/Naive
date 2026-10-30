@@ -38,7 +38,10 @@ export const factsFor = (dir, path) => {
 
 const emptyRegister = () => ({ version: VERSION, assets: [] });
 
-/** Writes the register through the router: schema first, then provenance. */
+/**
+ * Writes the register through the router: schema first, then provenance.
+ * @param {string} venture @param {string | undefined} workspace @param {*} reg @param {{ actor?: string, note?: string }} [opts]
+ */
 export async function writeRegister(venture, workspace, reg, { actor = "agent", note } = {}) {
   return call({ venture, route: "public/assets", action: "write", input: reg, actor, workspace, via: "cli", provenance: { note } });
 }
@@ -110,6 +113,7 @@ const rawId = (url) => {
  * A remote image as a link with a note in raw/ (J-3): raw/sources/<id>/source.json says where it is,
  * text.md is the note, and the register lists it under remote. Nothing is fetched here. The platform
  * fetcher passes `fetched` (facts of the private original) and `copy` when it kept a public copy.
+ * @param {{ venture: string, workspace?: string, url: string, license?: string, credit?: string, id?: string, alt?: string, note?: string, fetched?: { type?: string, width?: number, height?: number, bytes?: number, sha256?: string }, copy?: string, actor?: string }} opts
  */
 export async function addRemote({ venture, workspace, url, license, credit, id, alt, note, fetched, copy, actor = "agent" }) {
   const dir = ventureDir(venture, workspace);
@@ -141,7 +145,7 @@ export async function setHosts({ venture, workspace, hosts, actor = "agent" }) {
   return w.ok ? { ok: true, result: { remote_hosts: hosts } } : w;
 }
 
-/** mentura brand ... and mentura assets ...: returns the exit code. */
+/** mentura brand ... and mentura assets ...: returns the exit code. @param {string[]} argv @param {{ workspace?: string }} [opts] */
 export async function main(argv, { workspace } = {}) {
   const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
   const flag = (n) => argv.includes(`--${n}`);

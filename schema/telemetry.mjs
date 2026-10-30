@@ -78,7 +78,8 @@ export const events = (dir) => existsSync(join(dir, FILE)) ? readFileSync(join(d
 
 const parseLine = (l) => { try { return JSON.parse(l); } catch { return null; } };
 
-/** Sends the events not yet sent, re-checking each line so a hand-edited one is skipped, through the injected send(events); only when a person turned sending on. */
+/** Sends the events not yet sent, re-checking each line so a hand-edited one is skipped, through the injected send(events); only when a person turned sending on.
+ *  @param {string} dir @param {{ send?: (events: *[]) => * }} [opts] */
 export async function flush(dir, { send } = {}) {
   const s = settings(dir);
   if (!s.send) return { sent: 0, why: "sending is off: it needs telemetry.send true and telemetry.set_by naming the person who set it" };

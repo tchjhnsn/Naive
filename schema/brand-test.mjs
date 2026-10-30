@@ -19,6 +19,7 @@ import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } fr
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
+/** @param {string} name @param {unknown} ok @param {unknown} [detail] */
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const has = (list, re) => list.some((x) => re.test(x));
 
@@ -70,7 +71,7 @@ const svg = (attrs) => Buffer.from(`<?xml version="1.0"?>\n<svg xmlns="http://ww
 // ---- A workspace with a venture.
 const ws = mkdtempSync(join(tmpdir(), "brand-test-"));
 const W = join(ws, "ventures");
-const env = { ...process.env, MENTURA_WORKSPACE: W };
+const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: W });
 delete env.MENTURA_ACTOR_ID;
 const mentura = (...a) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
 const init = mentura("init", join(W, "acme"), "--id", "acme", "--layers", "purpose");
@@ -91,7 +92,7 @@ let r = mentura("assets", "add", "public/logo.svg", "--venture", "acme", "--sour
 expect("J-2: mentura assets add registers a file through the router", r.status === 0 && reg().assets[0].path === "public/logo.svg", r.stderr);
 expect("J-4: code filled the facts on add", reg().assets[0].facts.width === 200 && reg().assets[0].facts.type === "svg");
 expect("J-4: the write is in provenance, attributed to an agent", entries(dir).some((e) => e.entity === "public/assets.json" && e.agent.kind === "agent" && e.route === "public/assets"));
-for (const [p, extra] of [["public/icon.png", []], ["public/apple-icon.png", []], ["public/favicon.ico", ["--decorative"]], ["public/fonts/inter.woff2", []]])
+for (const [p, extra] of /** @type {[string, string[]][]} */ ([["public/icon.png", []], ["public/apple-icon.png", []], ["public/favicon.ico", ["--decorative"]], ["public/fonts/inter.woff2", []]]))
   mentura("assets", "add", p, "--venture", "acme", "--source", p.includes("fonts") ? "https://rsms.me/inter/" : "Acme design", "--license", p.includes("fonts") ? "OFL-1.1" : "owned", "--credit", p.includes("fonts") ? "Rasmus Andersson" : "Acme", ...(p.endsWith(".png") ? ["--alt", "Acme mark"] : []), ...extra);
 let a = checkAssets(dir);
 expect("J-2: with every file registered the check has no errors", a.ok, a.errors);
@@ -299,12 +300,12 @@ const brand = {
   const photo = png(640, 360);
   const server = createServer((req, res) => {
     if (req.url === "/a.png") { res.writeHead(200, { "content-type": "image/png", "content-length": photo.length }); res.end(photo); }
-    else if (req.url === "/hop") { res.writeHead(302, { location: "http://localhost:" + server.address().port + "/a.png" }); res.end(); }
+    else if (req.url === "/hop") { res.writeHead(302, { location: "http://localhost:" + /** @type {import("node:net").AddressInfo} */ (server.address()).port + "/a.png" }); res.end(); }
     else if (req.url === "/page") { res.writeHead(200, { "content-type": "text/html" }); res.end("<html></html>"); }
     else { res.writeHead(404); res.end(); }
   });
-  await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
-  const host = `127.0.0.1:${server.address().port}`;
+  await /** @type {Promise<void>} */ (new Promise((ok) => server.listen(0, "127.0.0.1", ok)));
+  const host = `127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}`;
   const base = `http://${host}`;
   // The fetcher runs as its own process (asynchronously, so this process keeps serving).
   const run = (args) => new Promise((ok) => {
