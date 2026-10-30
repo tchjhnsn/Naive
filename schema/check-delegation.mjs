@@ -32,10 +32,18 @@ const pick = (rel) => venture && existsSync(join(venture, "governance", rel)) ? 
 
 const d = load(file);
 const rolesDir = pick("roles");
-const roles = new Map(readdirSync(rolesDir).filter((f) => f.endsWith(".json")).map((f) => load(join(rolesDir, f)))
-  .filter((r) => r.verified_by !== undefined && r.id).map((r) => [r.id, r]));
 const classes = new Set(load(pick("decision-rights.json")).classes.map((c) => c.id));
 const errors = [];
+// Every file in roles/ is one role template, except the indexes, which list roles in a roles array.
+// A template missing its id or verified_by is reported, never skipped.
+const roles = new Map();
+for (const f of readdirSync(rolesDir).filter((f) => f.endsWith(".json"))) {
+  const r = load(join(rolesDir, f));
+  if (Array.isArray(r.roles)) continue;
+  if (!r.id) errors.push(`role file ${f}: has no id`);
+  else if (r.verified_by === undefined) errors.push(`role/${r.id}: has no verified_by (null only for the chief delegator)`);
+  else roles.set(r.id, r);
+}
 
 // Roles: never their own verifier.
 for (const r of roles.values()) {
@@ -52,7 +60,10 @@ if (delegators.length !== 1 || delegators[0] !== d.root) errors.push(`root ${d.r
 
 const oneWay = new Set(d.one_way_doors ?? []), fixed = new Set(d.never_redelegated ?? []);
 const live = (g) => g.expires === null || g.expires >= today;
-const within = (inner, outer) => outer === "venture" || (inner !== "venture" && inner.startsWith(outer));
+// Scopes are paths compared by whole segments: engineering/ holds engineering/api, never engineering-secrets/.
+const segments = (scope) => scope.split("/").filter(Boolean);
+const within = (inner, outer) => outer === "venture" || (inner !== "venture"
+  && segments(outer).every((s, i) => segments(inner)[i] === s));
 const later = (a, b) => b === null || (a !== null && a <= b); // a ends no later than b
 const name = (g, i) => `grant/${g.id ?? i}`;
 

@@ -41,6 +41,12 @@ fails("a grant passed on without may_redelegate fails", (d) => { grant(d, "found
 fails("a grant from a role nobody granted fails (the chain must reach the founder)", (d) =>
   d.grants.push({ id: "stray", from: "people-lead", to: "builder", classes: ["implementation-detail"], scope: "venture", may_redelegate: false, may_merge: false, expires: null }), /stray: exceeds/);
 fails("a scope wider than the grantor's fails", (d) => { grant(d, "architect-to-builder").scope = "venture"; grant(d, "chief-of-staff-to-architect").scope = "engineering/"; }, /architect-to-builder: exceeds/);
+fails("a scope that only shares a prefix with the grantor's fails (whole segments)", (d) => { grant(d, "chief-of-staff-to-architect").scope = "engineering"; grant(d, "architect-to-builder").scope = "engineering-secrets/"; }, /architect-to-builder: exceeds/);
+expect("a scope one segment deeper than the grantor's passes", venture((d) => { grant(d, "chief-of-staff-to-architect").scope = "engineering"; grant(d, "architect-to-builder").scope = "engineering/api/"; }).ok);
+fails("a role template missing verified_by is reported, not dropped", (_, roles) => {
+  const p = join(roles, "counsel.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  delete r.verified_by; writeFileSync(p, JSON.stringify(r));
+}, /role\/counsel: has no verified_by/);
 fails("may_merge beyond the grantor's fails", (d) => { grant(d, "architect-to-builder").may_merge = true; }, /architect-to-builder: exceeds/);
 fails("a money class is never re-delegated", (d) => {
   grant(d, "founder-to-finance-lead").may_redelegate = true;
