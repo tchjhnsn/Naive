@@ -1,0 +1,16 @@
+{
+  "id": "brand",
+  "title": "Build a brand",
+  "function": "marketing",
+  "version": "0.1.0",
+  "description": "From what the venture stands for to the public stand it takes: each step a frame whose decisions the founder makes in order.",
+  "source": "The ordering in the Nike brand playbook: ethos, audiences, tagline, visual identity, first campaign, stand",
+  "steps": [
+    { "id": "ethos", "frame": "brand-ethos", "order": 1, "needed_in": "discovery", "door": "two-way", "decided_by": "founder" },
+    { "id": "audiences", "frame": "brand-audiences", "order": 2, "needed_in": "validation", "depends_on": ["ethos"], "door": "two-way", "decided_by": "founder" },
+    { "id": "tagline", "frame": "brand-tagline", "order": 3, "needed_in": "validation", "depends_on": ["ethos", "audiences"], "door": "two-way", "decided_by": "marketing-lead", "merged_by": "founder", "requires": ["brand-lint"] },
+    { "id": "visual-identity", "frame": "brand-visual-identity", "order": 4, "needed_in": "validation", "depends_on": ["ethos", "audiences"], "door": "two-way", "decided_by": "product-design-lead", "merged_by": "founder", "requires": ["brand-lint"] },
+    { "id": "first-campaign", "frame": "brand-first-campaign", "order": 5, "needed_in": "beachhead", "depends_on": ["tagline", "visual-identity"], "door": "two-way", "decided_by": "marketing-lead", "merged_by": "founder" },
+    { "id": "stand", "frame": "brand-stand", "order": 6, "needed_in": "beachhead", "depends_on": ["ethos", "first-campaign"], "door": "one-way", "decided_by": "founder", "merged_by": "founder" }
+  ]
+}

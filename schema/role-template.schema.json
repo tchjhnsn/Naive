@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "role-template.schema.json",
+  "title": "Role template",
+  "description": "One role a venture can install, at governance/venture-template/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by schema/check-delegation.mjs.",
+  "type": "object",
+  "required": ["id", "name", "function", "grantable_classes", "default_tier", "lint_suites", "verified_by", "skill"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Matches the file name" },
+    "name": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Other names for this role (such as cto for architect); the id is canonical and matches agent-roles.json and decision-rights.json"},
+    "chief_delegator": { "type": "boolean", "description": "True for the founder only: the root of every delegation chain" },
+    "function": { "type": "string", "description": "The function the role serves, such as product, engineering, marketing, or all" },
+    "description": { "type": "string" },
+    "grantable_classes": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "uniqueItems": true,
+      "description": "Decision classes (from decision-rights.json) this role may be granted; the chief delegator lists none, since it holds all"
+    },
+    "default_tier": { "enum": ["person", "frontier", "workhorse", "none"] },
+    "lint_suites": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+/[a-z0-9-]+$" }, "uniqueItems": true, "description": "Lint routes it runs, such as marketing/brand-lint" },
+    "verified_by": { "type": ["string", "null"], "description": "The role that verifies its work; null only for the chief delegator" },
+    "also_verified_by": { "type": "array", "items": { "type": "string" }, "description": "Further verifiers for some work, such as the founder for spend" },
+    "skill": { "type": "string", "description": "Path from the repository root to the role's skill" }
+  },
+  "additionalProperties": false
+}

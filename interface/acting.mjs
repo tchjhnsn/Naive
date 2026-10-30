@@ -20,6 +20,8 @@ export { mayReadItem, mayReadSome };
 /** Checks who is acting on a venture. Returns { ok, who: { kind, role, known, occupant } } or { ok: false, error }. */
 export function actingOf(dir, kind, roleId) {
   const who = { kind, role: roleId ?? null };
+  // The public reader (field visibility): what a public component may read; reads only, in no role.
+  if (kind === "public") return roleId ? { ok: false, error: "the public reader acts in no role", who } : { ok: true, who };
   if (kind !== "agent" && kind !== "person") return { ok: false, error: `the actor is a person or an agent, not ${kind}`, who };
   if (!dir || !roleId) return { ok: true, who };
   const plan = teamPlan(dir);

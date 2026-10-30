@@ -6,14 +6,22 @@
 //   node schema/workspace.mjs capture <workspace> "<text>"          keep the text in raw/, route its chunks
 //   node schema/workspace.mjs inbox <workspace> [list | assign <chunk> <venture>]
 //   node schema/workspace.mjs read <workspace> <from venture> <to venture> <path>
+//   node schema/workspace.mjs rename <workspace> "<new name>"
+//
+// ensureWorkspace makes a workspace (Torian, 2026-10-30): naive-workspace.json named "Naive workspace"
+// until renamed, with its IANA timeZone (the clock, schema/clock.mjs), the calendar with its default
+// "venture" calendar (schema/calendar.mjs), AGENTS.md and raw/, inbox/, meta/, founder/. A workspace
+// always holds a venture: naive workspace init creates, ports or migrates one in the same step.
 //
 // Cross-venture reads (canRead): on by default; only published artifacts cross, never records or _private/.
 // Each one is logged in the workspace's meta/provenance.jsonl.
 
 import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { ventureFile } from "./venture-paths.mjs";
+import { systemZone, validZone } from "./clock.mjs";
+import { initCalendar } from "./calendar.mjs";
 import { goals } from "./canonical.mjs";
 
 export const WORKSPACE_FILE = "naive-workspace.json";
@@ -22,17 +30,32 @@ const repo = new URL("..", import.meta.url).pathname;
 const now = () => new Date().toISOString();
 const read = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 
+// Other tools also use the name workspace.json (Nx, for one), so that file counts only when it says it is ours.
+function workspaceFile(root) {
+  const named = join(root, WORKSPACE_FILE), other = join(root, "workspace.json");
+  return existsSync(named) || read(other)?.schema !== "everything-ecosystem" ? named : other;
+}
+
+// The founder edits this file by hand, so one that does not parse stops the command: defaults over it would lose their ventures.
+function readWorkspaceFile(file) {
+  if (!existsSync(file)) return null;
+  let ws;
+  try { ws = JSON.parse(readFileSync(file, "utf8")); } catch (e) { throw new Error(`${file} does not parse, so nothing was changed: ${e.message}. Fix the file and run this again.`); }
+  if (!ws || typeof ws !== "object" || Array.isArray(ws)) throw new Error(`${file} is not a JSON object, so nothing was changed. Fix the file and run this again.`);
+  return ws;
+}
+
 /** The nearest workspace folder at or above dir, or null. */
 export function findWorkspace(dir) {
   let up = resolve(dir);
-  while (!existsSync(join(up, WORKSPACE_FILE)) && !existsSync(join(up, "workspace.json")) && dirname(up) !== up) up = dirname(up);
-  return existsSync(join(up, WORKSPACE_FILE)) || existsSync(join(up, "workspace.json")) ? up : null;
+  while (!existsSync(workspaceFile(up)) && dirname(up) !== up) up = dirname(up);
+  return existsSync(workspaceFile(up)) ? up : null;
 }
 
 /** The workspace: its file, its settings with defaults filled, and its ventures by id. */
 export function loadWorkspace(root) {
-  const file = existsSync(join(root, WORKSPACE_FILE)) ? join(root, WORKSPACE_FILE) : join(root, "workspace.json");
-  const ws = read(file) ?? { ventures: [] };
+  const file = workspaceFile(root);
+  const ws = readWorkspaceFile(file) ?? { ventures: [] };
   const ventures = {};
   const walk = (d, depth) => {
     if (!existsSync(d) || depth > 4) return;
@@ -150,21 +173,69 @@ export function assign(workspace, chunkId, venture) {
   return to;
 }
 
+export const DEFAULT_NAME = "Naive workspace";
+
+/** Create the workspace at root, or fill in what an older one lacks (timeZone, the calendar). Returns { root, file, ws, created }. */
+export function ensureWorkspace(root, { name, timeZone, owner } = {}) {
+  root = resolve(root);
+  mkdirSync(root, { recursive: true });
+  const file = workspaceFile(root);
+  const created = !existsSync(file);
+  if (timeZone && !validZone(timeZone)) throw new Error(`${timeZone} is not an IANA time zone this machine knows (for example America/New_York)`);
+  const ws = readWorkspaceFile(file) ?? { schema: "everything-ecosystem", schema_version: readFileSync(join(repo, "schema/VERSION"), "utf8").trim(), name: name ?? DEFAULT_NAME, ventures: [], settings: { ...DEFAULTS } };
+  if (created && name) ws.name = name;
+  ws.name ??= DEFAULT_NAME;
+  // The clock starts with the workspace: its zone, the system's unless one is given.
+  if (!ws.timeZone || (created && timeZone)) ws.timeZone = timeZone ?? systemZone();
+  ws.calendar ??= "calendar/";
+  ws.ventures ??= [];
+  writeFileSync(file, JSON.stringify(ws, null, 2) + "\n");
+  if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
+  // raw/ keeps what the founder captures, inbox/ holds what waits for them, meta/ the logs, founder/ the founder record once.
+  for (const d of ["raw", "inbox", "meta", "founder"]) { mkdirSync(join(root, d), { recursive: true }); if (!readdirSync(join(root, d)).length) writeFileSync(join(root, d, ".gitkeep"), ""); }
+  initCalendar(root, { owner: owner ?? "founder" });
+  if (created) log(root, "provenance.jsonl", { action: "workspace-init", name: ws.name, timeZone: ws.timeZone });
+  return { root, file, ws, created };
+}
+
+/** List a venture folder in the workspace (relative to it), once. */
+export function addVenture(root, ventureDir) {
+  const { file, ws } = ensureWorkspace(root);
+  const rel = relative(resolve(root), resolve(ventureDir));
+  if (!ws.ventures.includes(rel)) ws.ventures.push(rel);
+  writeFileSync(file, JSON.stringify(ws, null, 2) + "\n");
+  return ws;
+}
+
+/** Rename the workspace; logged in meta/provenance.jsonl with the old and new names. */
+export function renameWorkspace(root, name, { by } = {}) {
+  name = String(name ?? "").trim();
+  if (!name) throw new Error("a workspace name cannot be empty");
+  const w = loadWorkspace(resolve(root));
+  if (!existsSync(w.file)) throw new Error(`${root} is not a workspace (no ${WORKSPACE_FILE})`);
+  const from = w.ws.name ?? DEFAULT_NAME;
+  w.ws.name = name;
+  writeFileSync(w.file, JSON.stringify(w.ws, null, 2) + "\n");
+  log(w.root, "provenance.jsonl", { action: "workspace-rename", from, to: name, ...(by ? { by } : {}) });
+  return { from, to: name };
+}
+
 /** The workspace file against its schema; null when it passes, else the error. */
 export function checkWorkspace(root) {
-  const w = loadWorkspace(root);
-  const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "workspace.schema.json", "--file", w.file], { encoding: "utf8" });
+  const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "workspace.schema.json", "--file", workspaceFile(root)], { encoding: "utf8" });
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 }
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   const [cmd, root, ...rest] = process.argv.slice(2);
   if (!cmd || !root) { console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   ")).map((l) => l.slice(5)).join("\n")); process.exit(2); }
-  const w = loadWorkspace(resolve(root));
-  if (cmd === "check") { const e = checkWorkspace(w.root); console.log(e ?? `${basename(w.file)} matches workspace.schema.json`); process.exit(e ? 1 : 0); }
+  if (cmd === "check") { const e = checkWorkspace(resolve(root)); console.log(e ?? `${basename(workspaceFile(resolve(root)))} matches workspace.schema.json`); process.exit(e ? 1 : 0); }
+  let w;
+  try { w = loadWorkspace(resolve(root)); } catch (e) { console.error(e.message); process.exit(1); }
   if (cmd === "capture") { const r = capture(w, rest.join(" ")); console.log(`kept ${r.raw}`); for (const c of r.chunks) console.log(`  ${c.id} -> ${c.to} (${c.best ?? "no venture"} ${c.confidence})`); }
   else if (cmd === "inbox" && rest[0] === "assign") console.log(`moved to ${assign(w, rest[1], rest[2])}`);
   else if (cmd === "inbox") { const l = inbox(w); console.log(l.length ? l.map((c) => `${c.id}  best guess ${c.best ?? "none"} ${c.confidence}  ${c.text.slice(0, 60).replace(/\n/g, " ")}`).join("\n") : "the inbox is empty"); }
+  else if (cmd === "rename") { const r = renameWorkspace(w.root, rest.join(" ")); console.log(`renamed the workspace from ${r.from} to ${r.to}`); }
   else if (cmd === "read") { const r = crossRead(w, rest[0], rest[1], rest[2]); if (!r.ok) { console.error(r.reason); process.exit(1); } console.log(JSON.stringify(r.artifact, null, 2)); }
   else { console.error(`unknown command ${cmd}`); process.exit(2); }
 }

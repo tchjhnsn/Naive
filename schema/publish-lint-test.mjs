@@ -29,6 +29,7 @@ try {
   w("pages/claim.mdx", page("title: Claim", "Over 500 customers rely on us. It saves 30% of your week."));
   w("pages/claim-sourced.mdx", page("title: Sourced\nsources:\n  - evidence/survey.json", "Over 500 customers rely on us."));
   w("pages/claim-badsource.mdx", page("title: Bad\nsources: [evidence/missing.json]", "Over 500 customers rely on us."));
+  w("pages/years.mdx", page("title: Years", "Founded in 2024, we read Chapter 12 together."));
   w("pages/marks.mdx", page("title: Marks", "Like Nike says, Just Do It. Unlike Amazon. Pineapple is fine."));
   w("pages/personal.mdx", page("title: Personal", "Write to jane.doe@example.com or call (555) 123-4567."));
   w("pages/secret.mdx", page("title: Secret", "Use key sk-ant-abcdefghijklmnopqrstuvwxyz123456 to start."));
@@ -40,6 +41,7 @@ try {
   expect("leaks: a decision id is an error and knows the page is published", lk.some((f) => f.rule === "leaks" && f.severity === "error" && f.published), lk);
   const cl = await run("claim.mdx");
   expect("claims: numbers and customers without sources are errors", cl.filter((f) => f.rule === "claims").length === 2 && cl.every((f) => f.severity === "error"), cl);
+  expect("claims: a year or a chapter number is not a claim", !rules(await run("years.mdx")).includes("claims"), await run("years.mdx"));
   expect("claims: a source that exists clears them", !rules(await run("claim-sourced.mdx")).includes("claims"), await run("claim-sourced.mdx"));
   expect("claims: a source that does not exist does not", rules(await run("claim-badsource.mdx")).includes("claims"));
   const mk = await run("marks.mdx");
