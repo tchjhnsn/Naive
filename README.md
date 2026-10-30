@@ -14,6 +14,17 @@
 `docs/design/` holds the ecosystem's own domain and systems design. Each layer has a `tooling/integrations.json` listing the tools it can plug into (Obsidian, Notion, Linear, the Claude and Cursor agent SDKs and so on), checked against `schema/integration.schema.json`. 
 The loop: Purpose is articulated into Knowledge, Operations hands the work to people and agents, and Evidence feeds back into Knowledge and Purpose.
 
+## What Naive is, and who it is for
+
+**A venture's scaffolding is a central data management structure** (EE-085). Everything a venture knows sits in one place, under one set of conventions: its foundation, products, customers, people, money, decisions and evidence, with pointers to the systems that keep the rest (the code repository, the bank, the payments account). The records live in the venture; anything they point to stays in its own system of record, and `sources.json` says where.
+
+**Naive is built for solo founders and small founding teams.** Two reasons:
+
+- **The silos are gone.** Software as a service has become a commodity, so much of what a company would once have kept in separate tools (a CRM, a wiki, a finance app, a project tracker) can now live in one central structure. For one founder, or a few, that is simpler to keep true than a dozen tools, and nothing is lost between them.
+- **Agents work better with the whole picture.** An agent that can read the venture's foundation, people, money and decisions in one place has better context, reasons better about each decision, and moves faster. Central data is what makes a venture AI-native rather than AI-assisted.
+
+**Naive is not a software engineering framework.** How software gets built is MAD's job (EE-038). Naive is lightly opinionated about code: it leans toward a monorepo for most software, and otherwise only asks that the code be connected, with a pointer between the knowledge base and the code base. It is opinionated about file conventions: what each record is, where it routes, and how the knowledge base points at the code.
+
 ## What kind of thing it is
 
 A **venture development framework** (proposed genus, EE-024), in the same genus as web development frameworks. A web framework gives a developer conventions, a project structure, generators, a test runner and plug-in packages, and calls the developer's code. This one gives a builder the same for a venture:

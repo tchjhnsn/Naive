@@ -14,6 +14,7 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "./venture-paths.mjs";
+import { reviewIsIndependent } from "./verify.mjs";
 
 const [dir, id] = process.argv.slice(2);
 if (!dir || !id) { console.error("usage: node schema/check-ready.mjs <venture dir> <handoff id> [--record --by <who>]"); process.exit(2); }
@@ -72,7 +73,7 @@ const scripts = h.done_criteria.filter((d) => d.kind !== "review").flatMap((d) =
 });
 const lost = scripts.filter((s) => !existsSync(s.path));
 item("every script a criterion runs exists", !lost.length, lost.map((s) => `${s.d}: ${s.path.slice(root.length)}`).join(", "));
-const badReview = h.done_criteria.filter((d) => d.kind === "review" && (!roles.has(d.reviewer) || d.reviewer === h.role));
+const badReview = h.done_criteria.filter((d) => d.kind === "review" && !reviewIsIndependent(d, h.role, roles));
 item("every review names a reviewer other than the holder", !badReview.length, badReview.map((d) => d.id).join(", "));
 
 for (const i of items) console.log(`${i.ok ? "pass" : "FAIL"}  ${i.name}${!i.ok && i.why ? `: ${i.why}` : ""}`);
