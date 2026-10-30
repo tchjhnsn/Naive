@@ -59,6 +59,10 @@
       ],
       "description": "The layer it belongs to; defaults to the decided record's layer"
     },
+    "class": {
+      "type": "string",
+      "description": "The decision class (governance/decision-rights.json) this decision belongs to. A delegation grant can let a role merge decisions of a class (may_merge); a one-way-door class is never delegated, and with no class only the founder merges"
+    },
     "parent": {
       "type": [
         "string",
@@ -438,6 +442,32 @@
           "superseded_at": {
             "type": "string"
           }
+        }
+      }
+    },
+    "proposed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "answer",
+        "drafted_by"
+      ],
+      "description": "An agent's new wording for a decided decision, waiting for a person. The decided version stays current; approving promotes this to the next version (EE-058: an agent never decides or un-decides)",
+      "properties": {
+        "answer": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "drafted_by": {
+          "type": "object"
+        },
+        "proposed_at": {
+          "type": "string"
         }
       }
     },

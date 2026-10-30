@@ -52,9 +52,8 @@ try {
   const d2 = json(F);
   expect("a new version keeps the old frozen reasons in versions", a2.ok && d2.versions[0].provenance.reasons.length === 3, d2);
   expect("an inherited reason keeps its old hash, so the new version stays stale", d2.provenance.reasons[0].citations[0].version === d2.versions[0].provenance.reasons[0].citations[0].version && d2.provenance.reasons[0].citations[0].version !== shaOf(v, "evidence/interviews.json") && fresh("mission").render === "stale", d2);
-  propose(v, { id: "mission", question: "What is the mission?", answer: "We help solo founders and small teams.", reasons: [{ claim: "Interviews say teams drown too", kind: "for", citations: [{ ref: "evidence/interviews.json" }] }] }, { agentId: "cos" });
-  approve(v, "mission", { by: "Founder" });
-  expect("restating the reason from the changed file freezes it fresh and clears the staleness", json(F).provenance.reasons[0].citations[0].version === shaOf(v, "evidence/interviews.json") && fresh("mission").render === "done", json(F));
+  approve(v, "mission", { by: "Founder", answer: "We help founders who drown in decisions.", reasons: [{ claim: "Interviews say solo founders drown in decisions", kind: "for", citations: [{ ref: "evidence/interviews.json", locator: "quotes[0]" }] }] });
+  expect("restating the reason from the changed file freezes it fresh and clears the staleness", json(F).provenance.reasons.filter((r) => r.claim.startsWith("Interviews")).length === 1 && json(F).provenance.reasons.find((r) => r.claim.startsWith("Interviews")).citations[0].version === shaOf(v, "evidence/interviews.json") && fresh("mission").render === "done", json(F));
 
   expect("reasonsFromArgs pairs each --cite with the reason before it", JSON.stringify(reasonsFromArgs(["x", "--reason", "A", "--cite", "a.json", "--locator", "f", "--cite", "D-1", "--against", "B"])) === JSON.stringify([{ claim: "A", kind: "for", citations: [{ ref: "a.json", locator: "f" }, { ref: "D-1" }] }, { claim: "B", kind: "against" }]));
 
