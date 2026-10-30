@@ -238,13 +238,13 @@ else if (cmd === "build" || cmd === "start") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
 } else if (cmd === "publish") {
-  // naive publish check: the publish lint (schema/publish-lint.mjs); --venture defaults to the one this runs in.
-  // Everything else is the publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   if (args[0] === "check") {
+    // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
     const v = opt("venture") ?? findVenture();
     process.exit(run("schema/publish-lint.mjs", [...args, ...(v ? ["--venture", v] : [])]));
   }
+  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
   process.exit(run("schema/publish.mjs", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
