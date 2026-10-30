@@ -465,8 +465,8 @@ export type DecisionRecord = {
   provenance?: {
     /** Who wrote the wording */
     drafted_by: {
-      /** framework: Naive asked the question itself, as a convention (the product foundation); a person still answers it. unverified: a door with no sign-in (the console) said a person wrote it */
-      kind: "person" | "agent" | "framework" | "unverified";
+      /** framework: Naive asked the question itself, as a convention (the product foundation); a person still answers it */
+      kind: "person" | "agent" | "framework";
       /** The person's name or the agent's id */
       id?: string;
     };
@@ -478,8 +478,10 @@ export type DecisionRecord = {
     approved_at?: string;
     /** The venture's phase when it was approved */
     phase?: "discovery" | "validation" | "beachhead" | "scale" | "platform";
-    /** approved: the drafted wording as it was; changed: the approver altered it; own: the approver wrote it; unverified: settled through a door with no sign-in, so who worded it is not known */
-    wording?: "approved" | "changed" | "own" | "unverified";
+    /** unverified: the approval came through a door with no sign-in (the venture console), so approved_by is the venture's founder by default, not a checked identity, and no wording is claimed */
+    signer?: "unverified";
+    /** approved: the drafted wording as it was; changed: the approver altered it; own: the approver wrote it */
+    wording?: "approved" | "changed" | "own";
     /** The decision class in governance/decision-rights.json under which the approver could decide, when authority was delegated */
     authority?: string;
     /** Where the approval was given, such as the Decision Docket or a decision card */
