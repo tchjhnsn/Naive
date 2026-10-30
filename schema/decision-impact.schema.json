@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decision-impact.schema.json",
+  "title": "Decision impact",
+  "description": "The impact map of a merged decision version (schema/impact.mjs), written beside the decision as decisions/<id>.impact.json: for each venture function, the records that depend on what the merge changed (by provenance, the where-used list and data-model refs), which of them were marked stale, an agent's note, and the open follow-up decisions proposed. Naive proposes; a person decides.",
+  "type": "object",
+  "required": ["decision", "version", "functions", "built_at"],
+  "additionalProperties": false,
+  "properties": {
+    "decision": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "changed": { "type": "array", "items": { "type": "string" }, "description": "The venture-relative files the merge wrote (applies_to)" },
+    "functions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["function", "affected_records", "stale", "note", "proposed_decisions"],
+        "additionalProperties": false,
+        "properties": {
+          "function": { "enum": ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money", "operations"] },
+          "affected_records": { "type": "array", "items": { "type": "string" } },
+          "stale": { "type": "array", "items": { "type": "string" } },
+          "note": { "type": ["string", "null"], "description": "An agent's draft of what changes for this function; null until one is written" },
+          "proposed_decisions": { "type": "array", "items": { "type": "string" }, "description": "Open follow-up decision ids, proposed, never decided" }
+        }
+      }
+    },
+    "built_at": { "type": "string", "format": "date-time" }
+  }
+}

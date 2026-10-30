@@ -24,7 +24,7 @@ Interface layer. An artifact is a rendered view; a record is the source of truth
 
 - A **record** is a file in the venture's `k-base/` with a schema. It is what agents read, what decisions cite and what `naive check` tests.
 - An **artifact** is a page, deck, dashboard or file made from one or more records for a reader. A marketing site describes the company, but the company's facts live in its records, not on the site.
-- Every artifact names the records it was built from (route and revision or date), so a reader can trace each claim.
+- Records are never what gets published; artifacts are. Every artifact is itself a record in `artifacts/<id>.json` (`schema/artifact.schema.json`) naming the records it was built from with their hashes, so a reader can trace each claim and `schema/check-artifacts.mjs` says when it has gone stale.
 - When a record changes, rebuild the artifact. Never hand-edit an artifact to change a fact.
 - What people type into an artifact (a form, a docket, comments) is input. Write it back through the router as a proposal or a draft in `_drafts/`; a person settles it. The artifact's own stored state is never the source of truth.
 - Outside a Naive venture the same rule holds: name what the view was made from, and keep the facts where they already live.

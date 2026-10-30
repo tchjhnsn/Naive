@@ -73,7 +73,9 @@
     "exit",
     "publication-policy",
     "decision-record",
-    "venture-role"
+    "decision-impact",
+    "venture-role",
+    "publications"
   ],
   "reads": [
     "handoff",

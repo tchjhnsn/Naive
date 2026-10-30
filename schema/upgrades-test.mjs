@@ -53,7 +53,7 @@ expect("kit-to-package rewrites team-plan access to package routes", plan2.roles
 expect("a route glob that spans several packages is escalated, not rewritten", plan2.roles[0].routes.read[0] === "purpose/**" && /purpose\/\*\* spans routes/.test(up.stdout));
 expect("kit-to-package rewrites the where-used parent route", json(join(a, "knowledge/where-used.json")).facts[0].parent.route === "product/alpha-app");
 const rel = json(join(a, `.release/upgrade-${reg.framework}.json`));
-expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,icp-profiles" && rel.guides.length === 2 && rel.packages.length > 5);
+expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,icp-profiles,telos-to-goals" && rel.guides.length === 2 && rel.packages.length > 5);
 const log = entries(a);
 expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("schema/check-provenance.mjs", [a]).status === 0);
 const read = mentura(["purpose/validation/problem", "read", "--venture", "alpha"]);
