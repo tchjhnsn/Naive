@@ -21,6 +21,7 @@
     },
     "weight": { "type": "integer", "minimum": 1, "maximum": 3 },
     "framework": { "type": "string" },
-    "updated": { "type": "string" }
+    "updated": { "type": "string" },
+    "conversation": { "type": "array", "description": "The founder's messages this record was made from (naive diagnose catches)", "items": { "$ref": "conversation-ref.schema.json" } }
   }
 }
