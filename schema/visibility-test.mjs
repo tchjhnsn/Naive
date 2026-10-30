@@ -21,6 +21,7 @@ const STATEMENT = "Building is easy now. Knowing what to decide next is not.";
 try {
   w("venture.json", { id: "vis", name: "Vis", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery" });
   w("foundation/problem.json", { venture: "vis", statement: STATEMENT, segment: "INTERNAL-SEGMENT-9c1", evidence: [] });
+  w("people/people.json", { venture: "vis", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] });
 
   w("foundation/problem.visibility.json", { fields: { statement: { visibility: "public", sha256: hash(STATEMENT) } } });
   expect("a public field no person approved stays internal", visibilityOf(v, "foundation/problem.json", "statement").visibility === "internal");
@@ -30,6 +31,10 @@ try {
 
   const byRole = cli(["visibility", "foundation/problem", "statement", "--public", "--by", "chief-of-staff"]);
   expect("a role cannot approve a field as public", byRole.status !== 0 && /only a person/.test(byRole.stderr), byRole.stderr);
+  const stranger = cli(["visibility", "foundation/problem", "statement", "--public", "--by", "Somebody Else"]);
+  expect("a name not in people/people.json cannot approve a field as public", stranger.status !== 0 && /not a person/.test(stranger.stderr), stranger.stderr);
+  const agentAsPerson = cli(["visibility", "foundation/problem", "statement", "--public", "--by", "Founder"], { MENTURA_ACTOR_ID: "marketing-lead" });
+  expect("an agent cannot approve public by naming a person", agentAsPerson.status !== 0 && /agent .* is acting/.test(agentAsPerson.stderr) && visibilityOf(v, "foundation/problem.json", "statement").visibility === "internal", agentAsPerson.stderr);
   const prop = cli(["visibility", "foundation/problem", "statement", "--propose"], { MENTURA_ACTOR_ID: "marketing-lead" });
   expect("an agent proposes public, and the field stays internal", prop.status === 0 && visibilityOf(v, "foundation/problem.json", "statement").visibility === "internal", prop.stdout + prop.stderr);
   const ok = cli(["visibility", "foundation/problem", "statement", "--public", "--by", "Founder"]);

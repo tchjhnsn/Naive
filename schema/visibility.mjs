@@ -38,21 +38,16 @@ export function visibilityOf(dir, rel, field) {
   if (value === undefined) return { visibility: "internal", declared: "public", stale: "the field is missing" };
   if (v.sha256 !== hash(value)) return { visibility: "variant", declared: "public", stale: "the wording changed after it was approved as public" };
   // Only a person sets public (a recorded two-way-door decision): no approver, or a role's id, is no approval.
-  if (!isPerson(dir, v.approved_by)) return { visibility: "internal", declared: "public", stale: v.approved_by ? `${v.approved_by} is a role, not a person: only a person approves a field as public` : "no person approved it as public" };
+  if (!isPerson(dir, v.approved_by)) return { visibility: "internal", declared: "public", stale: v.approved_by ? `${v.approved_by} is not a person in people/people.json: only a person approves a field as public` : "no person approved it as public" };
   return { visibility: "public", declared: "public", approved_by: v.approved_by };
 }
 
-/** Whether an approver id names a person: set, and not an agent role (the role template, or a role in the venture's delegation grants). */
+/** Whether an approver id names a known person: an id or name in the venture's people/people.json. */
 export function isPerson(dir, id) {
   if (!id || typeof id !== "string") return false;
-  return !roleIds(dir).has(id);
-}
-function roleIds(dir) {
-  const ids = new Set();
-  try { for (const r of load(new URL("../governance/venture-template/roles/agent-roles.json", import.meta.url).pathname).roles ?? []) if (r.id && r.id !== "founder") ids.add(r.id); } catch {}
-  const del = ventureFile(dir, "governance/delegation.json");
-  if (existsSync(del)) try { const d = load(del); for (const g of d.grants ?? []) for (const r of [g.to, g.from]) if (r && r !== d.root) ids.add(r); } catch {}
-  return ids;
+  const f = ventureFile(dir, "people/people.json");
+  if (!existsSync(f)) return false;
+  try { return (load(f).people ?? []).some((p) => p.id === id || p.name === id); } catch { return false; }
 }
 
 /** A record as the public may see it: each top-level field that is public or has an approved variant. */
@@ -74,7 +69,7 @@ export function setPublic(dir, rel, field, { by, propose = false, agentId } = {}
   const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   if (propose) fields[field] = { ...(fields[field] ?? { visibility: "internal" }), proposed: { visibility: "public", sha256: hash(value), by: agentId ?? "agent", at } };
   else {
-    if (!isPerson(dir, by)) return { ok: false, error: by ? `${by} is a role: only a person approves a field as public; an agent proposes (--propose)` : "approving a field as public needs the person's name (--by)" };
+    if (!isPerson(dir, by)) return { ok: false, error: by ? `${by} is not a person in people/people.json: only a person approves a field as public; an agent proposes (--propose)` : "approving a field as public needs the person's name (--by)" };
     fields[field] = { visibility: "public", sha256: hash(value), approved_by: by, approved_at: at };
   }
   writeFileSync(sf, JSON.stringify({ ...side, fields }, null, 2) + "\n");
