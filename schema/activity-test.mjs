@@ -13,7 +13,7 @@ const repo = new URL("..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "naive-activity-"));
 writeFileSync(join(ws, "naive-workspace.json"), JSON.stringify({ name: "ws", timeZone: "Asia/Tokyo" }));
 const studio = join(ws, "ventures/studio"), tandem = join(ws, "ventures/tandem"), quiet = join(ws, "ventures/quiet");
-for (const [d, v] of [[studio, { id: "studio", timeZone: "America/Chicago" }], [tandem, { id: "tandem" }], [quiet, { id: "quiet" }]]) { mkdirSync(d, { recursive: true }); writeFileSync(join(d, "venture.json"), JSON.stringify(v)); }
+for (const [d, v] of /** @type {[string, *][]} */ ([[studio, { id: "studio", timeZone: "America/Chicago" }], [tandem, { id: "tandem" }], [quiet, { id: "quiet" }]])) { mkdirSync(d, { recursive: true }); writeFileSync(join(d, "venture.json"), JSON.stringify(v)); }
 
 // the clock: the venture's zone, else the workspace's
 assert.equal(zoneOf(studio), "America/Chicago");

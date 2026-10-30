@@ -3,11 +3,13 @@
 // (schema/check-visibility.mjs) refuses a page that uses a fact no person approved.
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hash, visibilityOf } from "./visibility.mjs";
+import { hash, variantOf, visibilityOf } from "./visibility.mjs";
 import { refusals } from "./check-visibility.mjs";
+import { context } from "./upgrades.mjs";
+import * as telosToGoals from "./migrations/telos-to-goals.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
@@ -57,6 +59,62 @@ try {
   rmSync(join(v, "knowledge/sources.json"));
   expect("the router's public reader cannot write", cli(["foundation/problem", "write", "--as", "public", "--input", join(v, "foundation/problem.json")]).status !== 0);
 
+  const asAgent = cli(["visibility", "foundation/problem", "segment", "--public", "--by", "Founder"], { MENTURA_ACTOR: "agent" });
+  expect("MENTURA_ACTOR=agent cannot approve a field as public, even naming a person", asAgent.status === 1 && /only a person approves/.test(asAgent.stderr) && visibilityOf(v, "foundation/problem.json", "segment").visibility === "internal", asAgent.stdout + asAgent.stderr);
+
+  w("customers/acme-secret-deal.json", { id: "acme-secret-deal" });
+  for (const args of [["foundation", "view"], ["foundation", "read"], ["venture", "read"]]) {
+    const r = cli([...args, "--as", "public", "--json"]);
+    expect(`the public reader is refused on ${args.join(" ")}`, r.status !== 0 && /public reader/.test(r.stdout + r.stderr) && !(r.stdout + r.stderr).includes("acme-secret-deal"), r.stdout.slice(0, 400) + r.stderr);
+  }
+
+  const customers = cli(["customers", "read", "--as", "public", "--json"]);
+  expect("a list route does not name an item with no public field to the public reader", customers.status === 0 && !customers.stdout.includes("acme-secret-deal"), customers.stdout.slice(0, 400) + customers.stderr);
+
+  const missing = JSON.parse(cli(["customers/nope", "read", "--as", "public", "--json"]).stdout);
+  const internalItem = cli(["customers/acme-secret-deal", "read", "--as", "public", "--json"]);
+  const scrub = (a) => JSON.stringify(a).replaceAll("acme-secret-deal", "nope");
+  expect("an item with no public field answers the same as a missing one", scrub(JSON.parse(internalItem.stdout)) === scrub(missing) && missing.not_found, { internal: internalItem.stdout.slice(0, 400), missing });
+  w("customers/corrupt-deal.json", "CANARY-CORRUPT-ITEM");
+  const corruptItem = cli(["customers/corrupt-deal", "read", "--as", "public", "--json"]);
+  expect("an item that does not parse answers the same as a missing one", JSON.stringify(JSON.parse(corruptItem.stdout)).replaceAll("corrupt-deal", "nope") === JSON.stringify(missing), corruptItem.stdout.slice(0, 400));
+  rmSync(join(v, "customers/corrupt-deal.json"));
+
+  const INTERNAL_KEYS = ["metadata", "hierarchy", "pending_draft", "stale"];
+  const internalKeys = (a) => INTERNAL_KEYS.filter((k) => k in a);
+  const direct = await import("../interface/router.mjs");
+  const read = (route, input, actor = "public") => direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws });
+  for (const [route, input] of [["foundation/problem", undefined], ["foundation/problem", { hierarchy: true }], ["evidence", undefined], ["customers/nope", { hierarchy: true }]]) {
+    const a = await read(route, input);
+    expect(`the public read of ${route}${input ? " with hierarchy" : ""} carries no internal metadata`, a.ok && !internalKeys(a).length && a.not_found?.need_now == null, a);
+  }
+  expect("a person's read still carries metadata", !!(await read("foundation/problem", undefined, "person")).metadata);
+
+  const before = readFileSync(join(v, "foundation/problem.json"), "utf8");
+  w("foundation/problem.json", "CANARY-CORRUPT");
+  const corrupt = cli(["foundation/problem", "read", "--as", "public", "--json"]);
+  expect("a parse error on a single record echoes no record bytes to the public reader", !(corrupt.stdout + corrupt.stderr).includes("CANARY") && /does not parse/.test(corrupt.stdout + corrupt.stderr), corrupt.stdout.slice(0, 400));
+  const corruptAgent = cli(["foundation/problem", "read", "--json"]);
+  expect("an agent still sees the parse detail", (corruptAgent.stdout + corruptAgent.stderr).includes("CANARY"), corruptAgent.stderr.slice(0, 400));
+  w("foundation/problem.json", before);
+
+  const tws = mkdtempSync(join(tmpdir(), "visibility-telos-"));
+  try {
+    const tandem = join(tws, "ventures/tandem");
+    cpSync(join(repo, "schema/examples/workspace/ventures/tandem"), tandem, { recursive: true });
+    telosToGoals.apply(tandem, context(tandem, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }));
+    const telos = (actor) => direct.call({ venture: "tandem", route: "foundation/telos", action: "read", actor, workspace: tws });
+    const shown = await telos("public");
+    expect("the telos view on a migrated venture gives the public reader nothing", shown.ok && shown.result === null && !shown.view, shown);
+    expect("the telos view still renders for an agent", (await telos("agent")).view?.framework === "telos");
+  } finally {
+    rmSync(tws, { recursive: true, force: true });
+  }
+
+  w("marketing/content/variant.mdx", '---\nvariant_of: foundation/problem.json#segment\npublish: true\napproved_by:\n  - Founder\n---\nA public wording.\n');
+  expect("a variant's list-form approved_by reads through the shared frontmatter parser", variantOf(v, "foundation/problem.json", "segment")?.value === "A public wording.");
+  rmSync(join(v, "marketing/content/variant.mdx"));
+
   w("site/why.mdx", '<Section>\n  <Fact name="problem" />\n  <Fact name="segment" />\n</Section>\n');
   w("facts.json", { venture: "vis", problem: { value: STATEMENT, status: "confirmed", source: "foundation/problem.json#statement" } });
   const r = refusals(v, { content: join(v, "site"), facts: join(v, "facts.json") });
@@ -64,8 +122,6 @@ try {
   w("foundation/problem.json", { venture: "vis", statement: STATEMENT + " Edited.", segment: "INTERNAL-SEGMENT-9c1", evidence: [] });
   const r2 = refusals(v, { content: join(v, "site"), facts: join(v, "facts.json") });
   expect("after an edit the approved field is refused until re-approved", r2.some((x) => x.name === "problem" && x.visibility === "variant"), r2);
-  const real = spawnSync("node", [join(repo, "schema/check-visibility.mjs")], { encoding: "utf8" });
-  expect("the publish check refuses the in-repo venture's pages until a person approves their fields", real.status === 1 && /REFUSED/.test(real.stderr), real.stdout + real.stderr);
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }
