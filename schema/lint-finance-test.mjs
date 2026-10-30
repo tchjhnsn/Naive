@@ -27,6 +27,11 @@ function write(dir, rel, body) {
   writeFileSync(p, typeof body === "string" ? body : JSON.stringify(body, null, 2));
 }
 
+/**
+ * @param {string} name
+ * @param {Record<string, unknown>} files
+ * @param {{ phase?: string, layout?: string, config?: object, configAt?: string }} [options]
+ */
 function venture(name, files, { phase = "validation", layout, config, configAt } = {}) {
   const dir = join(tmp, name);
   mkdirSync(dir, { recursive: true });
