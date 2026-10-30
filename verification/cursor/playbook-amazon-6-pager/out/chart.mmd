@@ -1,0 +1,44 @@
+---
+title: "A decision memo: draft, propose while it stays open, then you decide"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: ready
+    lg1: draft
+    lg2: proposed
+    lg3: decided
+  }
+  class lg0 tan
+  class lg1 blue
+  class lg2 yellow
+  class lg3 teal
+  s0: No memo yet
+  s1: You have read the problem, the customer, the principles, and who may decide
+  s2: An incomplete memo is an open draft
+  s3: The memo you mean to finish is an open draft
+  s4: The draft names the customer, the problem, and a solution
+  s5: A finding is recorded for the FAQ
+  s6: The FAQ cites that finding
+  s7: The decision matrix still shows the memo as open
+  s8: Proposed, and still open
+  s9: Decided by you
+  [*] --> s0
+  s0 --> s1: you read what the venture already holds
+  s1 --> s2: you draft a memo and leave the sections empty
+  s2 --> s3: you open the memo you mean to propose
+  s3 --> s4: you write the customer narrative
+  s4 --> s5: you record a finding
+  s5 --> s6: you add the FAQ and cite the finding
+  s6 --> s7: you run the decision matrix
+  s7 --> s8: you propose the memo, and it stays open
+  s8 --> s9: you decide
+  class s0 tan
+  class s1 tan
+  class s2 blue
+  class s3 blue
+  class s4 blue
+  class s5 blue
+  class s6 blue
+  class s7 blue
+  class s8 yellow
+  class s9 teal

@@ -19,7 +19,8 @@
   ],
   "templates": [],
   "checks": [
-    "schema/check-data-packages.mjs"
+    "schema/check-data-packages.mjs",
+    "schema/lint-investors.mjs"
   ],
   "skill": {
     "id": "investors-function",

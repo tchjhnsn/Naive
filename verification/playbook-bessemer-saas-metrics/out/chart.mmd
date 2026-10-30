@@ -1,0 +1,53 @@
+---
+title: "Bessemer SaaS metrics: what the founder files, then what gets checked"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: reading
+    lg1: proposed
+    lg2: passed
+    lg3: failed
+  }
+  class lg0 blue
+  class lg1 purple
+  class lg2 teal
+  class lg3 orange
+  s0: Not started
+  s1: Phase read
+  s2: Product read
+  s3: Pricing read
+  s4: Money read
+  s5: Retention read
+  s6: Telos read
+  s7: Bessemer pages filed
+  s8: Metrics record proposed
+  s9: Checks failed
+  s10: Checks passed
+  s11: You decided
+  s12: Targets drafted on the telos
+  [*] --> s0
+  s0 --> s1: you read the venture's phase
+  s1 --> s2: you read the product
+  s2 --> s3: you read pricing
+  s3 --> s4: you read cash, flows and runway
+  s4 --> s5: you read retention
+  s5 --> s6: you read the telos
+  s6 --> s7: you file the Bessemer pages
+  s7 --> s8: you propose the metrics record
+  s8 --> s9: you run the checks [when no product is on file]
+  s8 --> s10: you run the checks [when the product is on file]
+  s10 --> s11: you decide
+  s11 --> s12: you draft the targets onto the telos [when a telos is already on file]
+  class s0 blue
+  class s1 blue
+  class s2 blue
+  class s3 blue
+  class s4 blue
+  class s5 blue
+  class s6 blue
+  class s7 purple
+  class s8 purple
+  class s9 orange
+  class s10 teal
+  class s11 teal
+  class s12 teal

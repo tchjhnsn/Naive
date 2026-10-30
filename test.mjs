@@ -43,6 +43,8 @@ const steps = [
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["schema/setup-test.mjs"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["interface/writes-test.mjs"]],
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["schema/brand-test.mjs"]],
+  ["investors lint: raise, terms, unconfirmed update numbers", "node", ["schema/lint-investors-test.mjs"]],
+  ["product lint: ICP, feature jobs and pricing", "node", ["schema/lint-product-test.mjs"]],
   ["money lint: transfer approver and account owner", "node", ["schema/lint-money-test.mjs"]],
   ["customers lint: ICP match and promises the product keeps", "node", ["schema/lint-customers-test.mjs"]],
   ["finance lint: spend, price below cost, metric targets", "node", ["schema/lint-finance-test.mjs"]],
