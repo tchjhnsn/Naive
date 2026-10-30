@@ -127,6 +127,9 @@ function validateFile(file, schema) {
  * The boundaries of a venture (E-5): the venture level first (venture.json and its folder structure),
  * then each package the venture uses, each contained. Inside a package each record is checked on its
  * own (E-6), then the package's checks run. options.only limits it to some packages.
+ * @param {string} dir
+ * @param {{ only?: string[] | null }} [options]
+ * @returns {Promise<{ ok: boolean, reached: "venture" | "package" | null, venture: { ok: boolean, error?: string, recovery?: string[], errors?: string[], fix?: string, warnings?: any[] }, packages: { package: string, ok: boolean, error?: string, records: { record: string, route: string, file: string, ok: boolean, error?: string, fix?: { schema?: string, template?: string, skills: string[] } }[], checks: { check: string, passed: boolean, output: string }[] }[], contained?: string[], proceeds: string[] }>}
  */
 export async function boundaries(dir, { only = null } = {}) {
   const { structure, checkManifest, manifest } = await import("../schema/structure.mjs");
