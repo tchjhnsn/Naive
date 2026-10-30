@@ -20,6 +20,8 @@
 //   naive phase [<next phase>] [--meet <criterion> --evidence <text>] [--reason] [--override <why>]
 //                                                   the venture development lifecycle: where the venture is, its gate's exit
 //                                                   criteria, and moving to the next phase once a person has met them
+//   naive publish build <channel> | naive publish <channel> --by <person> [--as <role>] [--door] [--exposure] | naive publish rollback <channel> | naive publish status
+//                                                   compile public MDX into an artifact, then publish it through the one-way/two-way door gate
 //   naive port <folder> --venture <dir> [--to <path>]  plan moving a folder into the venture as it is (codebase/<name>)
 //   naive port --venture <dir> --apply --confirm port
 //                                                   carry out that plan (EE-076)
@@ -198,6 +200,11 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
+} else if (cmd === "publish") {
+  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
+  process.exit(run("schema/publish.mjs", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
