@@ -1,6 +1,7 @@
 {
   "name": "foundation",
   "title": "Foundation",
+  "version": "0.5.0",
   "kind": "core",
   "purpose": "What the venture is, why, for whom and with what: the records every other package reads, reviewed near daily.",
   "department": "strategy",
@@ -11,7 +12,11 @@
   "optional": [
     "venture-profile",
     "telos",
-    "alignment"
+    "alignment",
+    "goal",
+    "requirement",
+    "exit-criteria",
+    "constraints"
   ],
   "refs": [
     "product"
@@ -34,9 +39,13 @@
   ],
   "schemas": [
     "schema/validation-problem.schema.json",
-    "schema/icp.schema.json",
+    "schema/icp-profile.schema.json",
     "schema/telos.schema.json",
-    "schema/alignment.schema.json"
+    "schema/alignment.schema.json",
+    "schema/goal.schema.json",
+    "schema/requirement.schema.json",
+    "schema/exit-criteria.schema.json",
+    "schema/constraints.schema.json"
   ],
   "templates": [
     "purpose/templates/telos-based-smart.md"
@@ -45,7 +54,8 @@
     "schema/check-telos.mjs",
     "schema/validate.py",
     "schema/check-validation.mjs",
-    "schema/foundation.mjs"
+    "schema/foundation.mjs",
+    "schema/check-frameworks.mjs"
   ],
   "skill": {
     "id": "foundation-function",
