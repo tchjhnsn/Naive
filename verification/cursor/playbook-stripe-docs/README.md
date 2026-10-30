@@ -35,7 +35,7 @@ Then:
 node verification/cursor/playbook-stripe-docs/replay.mjs
 ```
 
-Re-run both after any edit to the playbook's steps, routes, or checks. An earlier TLC run reported 21 states and 23 steps. That output was not saved, so the counts have no file behind them, and TLC has not been re-run since. The TLC column below comes from the same run. The chart draws 15 states and 16 arrows.
+Re-run both after any edit to the playbook's steps, routes, or checks. An earlier TLC run reported 21 states and 23 steps. Re-run on 30 October 2026 with TLC 2.19 on OpenJDK 21: the same result, saved in `out/tlc.out`. The TLC column below comes from the same run. The chart draws 15 states and 16 arrows.
 
 ## Rules
 
