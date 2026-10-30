@@ -224,7 +224,7 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
-} else if (cmd === "publish") {
+} else if (cmd === "publish" && rest[0] !== "check") {
   // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
