@@ -25,6 +25,9 @@
 //                                                   carry out that plan (EE-076)
 //   naive migrate --from <project> --venture <dir>  an agent rewrites the project as Naive records, as a plan and decisions
 //   naive migrate --venture <dir> --apply           write what a person decided (EE-076)
+//   naive publish check <paths>... [--json]         the publish lint: copy distance, leaks, brand, claims, marks,
+//                                                   personal data, secrets; rules off|warn|error in naive.config.json
+//   naive publish check --report                    the rules most often waived and leaks found after publish
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -194,6 +197,11 @@ else if (cmd === "build" || cmd === "start") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
   process.exit(run(`schema/${cmd}-venture.mjs`, args));
+} else if (cmd === "publish") {
+  // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
+  const args = rest[0] === "check" ? rest.slice(1) : rest;
+  const v = opt("venture") ?? findVenture();
+  process.exit(run("schema/publish-lint.mjs", ["check", ...args.filter((a, i) => a !== "--venture" && args[i - 1] !== "--venture"), ...(v ? ["--venture", v] : [])]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../router.mjs");
