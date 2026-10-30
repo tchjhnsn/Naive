@@ -11,9 +11,14 @@
 //
 // advance goes one phase forward; a step back (a venture can return to discovery) needs --reason, and
 // skipping a phase needs --override. The change itself, with its staleness, is schema/freshness.mjs's phase().
+//
+// The gate and the evidence that clears it come from the venture's lifecycle playbook (venture.json
+// lifecycle_playbook; purpose/frameworks/product-anatomy/playbooks/). With none named, product-first is
+// read and its evidence is reported only, so a venture that never chose keeps today's behavior. A venture
+// that names a playbook cannot pass a gate until a met exit criterion supplies each piece of its evidence.
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,6 +29,10 @@ import { ventureFile } from "./venture-paths.mjs";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 export const PHASES = load(join(root, "purpose/frameworks/product-anatomy/phases.json")).phases.map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate, binding_constraint }));
+export const DEFAULT_PLAYBOOK = "product-first";
+const playbookDir = join(root, "purpose/frameworks/product-anatomy/playbooks");
+export const playbooks = () => existsSync(playbookDir) ? readdirSync(playbookDir).filter((f) => f.endsWith(".json")).map((f) => load(join(playbookDir, f))) : [];
+export const playbookOf = (id) => playbooks().find((p) => p.id === id) ?? null;
 // Where a venture keeps its telos: foundation/ (setup writes it there) or the older purpose/.
 const TELOS = ["foundation/telos.json", "purpose/telos.json"];
 const telosFile = (dir) => TELOS.map((t) => ventureFile(dir, t)).find(existsSync) ?? null;
@@ -36,13 +45,31 @@ export function lifecycle(dir) {
   const telos = tf ? load(tf) : null;
   const criteria = (telos?.phases?.find((p) => p.phase === v.phase)?.exit_criteria ?? []).map((c) => ({ id: c.id, statement: c.statement, evidence: c.evidence ?? null, met: c.met ?? null }));
   const unmet = criteria.filter((c) => !c.met).map((c) => c.id);
+  const chosen = !!v.lifecycle_playbook;
+  const pb = playbookOf(v.lifecycle_playbook ?? DEFAULT_PLAYBOOK);
+  const ph = pb?.phases.find((x) => x.phase === v.phase);
+  // Each piece of the playbook's gate evidence, and the met criteria that supply it.
+  const evidence = (ph?.evidence ?? []).map((e) => {
+    const re = new RegExp(e.match, "i");
+    const by = criteria.filter((c) => c.met && (re.test(c.id) || re.test(c.statement ?? "") || re.test(c.met.evidence ?? "") || re.test(c.evidence ?? ""))).map((c) => c.id);
+    return { id: e.id, statement: e.statement, met_by: by, met: by.length > 0 };
+  });
+  const missing = chosen ? evidence.filter((e) => !e.met) : [];
+  const blocking = [
+    ...(!criteria.length ? [`no exit criteria for ${v.phase} in the telos: state what must be true to leave it`] : unmet.map((id) => `exit criterion ${id} is not met`)),
+    ...(!pb && chosen ? [`no lifecycle playbook ${v.lifecycle_playbook}`] : []),
+    ...missing.map((e) => `the ${pb.id} playbook clears ${v.phase} on ${e.statement}; no met exit criterion supplies it`),
+  ];
+  const cur = PHASES[i] ? { ...PHASES[i], gate: ph?.gate ?? PHASES[i].gate } : null;
   return {
     venture: v.id, phase: v.phase, step: i + 1, of: PHASES.length,
-    current: PHASES[i] ?? null, next: PHASES[i + 1] ?? null,
+    current: cur, next: PHASES[i + 1] ?? null,
+    playbook: pb ? { id: pb.id, version: pb.version, chosen } : null,
+    gate_evidence: evidence,
     telos: tf ? tf.slice(dir.length + 1) : null,
     exit_criteria: criteria,
-    ready: criteria.length > 0 && unmet.length === 0,
-    blocking: !criteria.length ? [`no exit criteria for ${v.phase} in the telos: state what must be true to leave it`] : unmet.map((id) => `exit criterion ${id} is not met`),
+    ready: criteria.length > 0 && blocking.length === 0,
+    blocking,
   };
 }
 
@@ -88,7 +115,8 @@ export function advance(dir, to, { reason, override, by, now } = {}) {
 const text = (l) => [
   `${l.venture}: ${l.current?.name ?? l.phase} (phase ${l.step} of ${l.of})`,
   l.current ? `  ${l.current.question}` : "",
-  l.current ? `  Gate: ${l.current.gate}` : "",
+  l.current ? `  Gate: ${l.current.gate}${l.playbook ? ` (${l.playbook.id} playbook${l.playbook.chosen ? "" : ", the default"})` : ""}` : "",
+  ...l.gate_evidence.map((e) => `  ${e.met ? "✓" : "○"} evidence ${e.id}: ${e.statement}${e.met ? `  (from ${e.met_by.join(", ")})` : ""}`),
   ...(l.exit_criteria.length ? l.exit_criteria.map((c) => `  ${c.met ? "✓" : "○"} ${c.id}: ${c.statement}${c.met ? `  (met ${c.met.at.slice(0, 10)} by ${c.met.by})` : ""}`) : [`  ○ ${l.blocking[0]}`]),
   l.next ? `Next: ${l.next.name}, ${l.next.question}${l.ready ? "  Ready: naive phase " + l.next.id : ""}` : "This is the last phase.",
 ].filter(Boolean).join("\n");
