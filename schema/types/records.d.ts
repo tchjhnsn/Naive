@@ -1975,6 +1975,22 @@ export type NaiveConfig = {
       "phase-mismatch"?: "off" | "warn" | "error";
     };
   };
+  /** Foundation lint (foundation/lint): per-rule mode overrides. A rule stays fail-open unless its mode is fail-closed. */
+  foundation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the people lint (schema/lint-people.mjs, route people/lint). A rule stays fail-open unless its mode is fail-closed. */
+  people_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
 };
 
 export type NaiveConfigRule = {
