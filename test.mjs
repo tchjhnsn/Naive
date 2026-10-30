@@ -135,6 +135,7 @@ const steps = [
   // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.
   ...(existsSync(join(root, "node_modules/eslint")) ? [["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]]] : []),
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
+  ...(existsSync(join(root, "site/node_modules")) ? [["site page gate: internal wording, drafts, blog approval, showcase fixtures", "node", ["site/scripts/gate-pages-test.ts"]]] : []),
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
 
