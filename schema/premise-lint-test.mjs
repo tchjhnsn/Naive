@@ -97,6 +97,60 @@ const f3 = lint(d3, { config: {} });
 ok(!f3.some((f) => f.record === "foundation/exit-criteria/discovery#sold" && f.aspect === "unmeasurable"), "a criterion serving <goal>/<measure> uses that goal's target, not another goal's same-named measure");
 ok(f3.some((f) => f.record === "foundation/exit-criteria/discovery#vague" && f.aspect === "conflict" && /a and b/.test(f.question)), "a bare measure id two goals share is flagged as ambiguous");
 
+// Measure references compare by <goal>/<measure>, however they are spelled.
+put(d3, "foundation/goals/c.json", { id: "c", statement: "Keep.", kind: "venture", why: "x", owner: "T", measures: [{ id: "kept", statement: "kept", target: 3 }] });
+put(d3, "foundation/requirements/shared.json", { id: "shared", statement: "Shared.", derives_from: ["count"], must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
+put(d3, "foundation/requirements/later.json", { id: "later", statement: "Later.", derives_from: ["c/kept"], must_hold_by: "scale", verified_by: { kind: "check", ref: "x" } });
+put(d3, "foundation/exit-criteria/validation.json", { phase: "validation", criteria: [{ id: "bare", statement: "Kept three", serves: ["kept"] }] });
+put(d3, "foundation/exit-criteria/bogus.json", { phase: "bogus", criteria: [{ id: "odd", statement: "Kept three again", serves: ["c/kept"] }] });
+const f4 = lint(d3, { config: {} });
+ok(f4.some((f) => f.record === "foundation/requirements/shared" && f.aspect === "conflict" && /a and b share/.test(f.question)), "a requirement deriving from a bare measure two goals share is flagged as ambiguous");
+ok(f4.some((f) => f.record === "foundation/exit-criteria/validation#bare" && f.aspect === "phase-mismatch"), "phase-mismatch matches c/kept against a unique bare kept");
+ok(!f4.some((f) => f.record === "foundation/exit-criteria/bogus#odd" && f.aspect === "phase-mismatch"), "an unknown phase is not a phase mismatch");
+ok(!f4.some((f) => f.record === "foundation/exit-criteria/discovery#vague" && f.aspect === "unmeasurable"), "an ambiguous measure gets its conflict, not a false unmeasurable");
+
+// Repeated real CLI runs on fresh state.
+const linterPath = new URL("./premise-lint.mjs", import.meta.url).pathname;
+const run = (d, ...a) => spawnSync("node", [linterPath, d, "--propose", ...a], { encoding: "utf8" });
+const premiseFiles = (d) => existsSync(join(d, "decisions")) ? readdirSync(join(d, "decisions")).filter((f) => f.startsWith("premise-")) : [];
+const fresh = (statement) => { const d = mkdtempSync(join(tmpdir(), "premise-lint-")); put(d, "venture.json", { id: "fresh", phase: "discovery" }); put(d, "foundation/goals/g.json", { id: "g", statement, kind: "venture", why: "x", owner: "T", measures: [{ id: "m", statement: "m", target: 1 }] }); return d; };
+const d4 = fresh("Grow a good business.");
+const counts = [1, 2, 3, 4].map(() => { run(d4); return premiseFiles(d4).length; });
+const events = () => existsSync(join(d4, "provenance.jsonl")) ? readFileSync(join(d4, "provenance.jsonl"), "utf8") : "";
+const log = events();
+run(d4);
+ok(counts.every((n) => n === 1) && events() === log, "repeated --propose runs file one decision and write no new provenance");
+
+// A person's approval counts as a decider, and approving does not grow the findings.
+const only = premiseFiles(d4)[0].replace(".decision.json", "");
+approve(d4, only, { by: "Torian", answer: "good means ten customers", reasons: [{ kind: "for", claim: "a number" }] });
+put(d4, "decisions/own.decision.json", { id: "own", question: "Which plan?", status: "decided", answer: "flat", reasons: [{ kind: "for", claim: "simple" }], provenance: { approved_by: "Torian" } });
+run(d4); run(d4);
+ok(premiseFiles(d4).length === 1 && JSON.parse(readFileSync(join(d4, "decisions", `${only}.decision.json`), "utf8")).status === "decided", "an approved decision stays decided across reruns");
+ok(!lint(d4, { config: {} }).some((f) => f.aspect === "no-owner"), "provenance.approved_by counts as the decider");
+
+// Two vague words in one field are two decisions.
+const d5 = fresh("Grow a good and strong business.");
+run(d5); run(d5);
+const qs = premiseFiles(d5).map((f) => JSON.parse(readFileSync(join(d5, "decisions", f), "utf8")).question);
+ok(qs.length === 2 && qs.some((q) => /"good"/.test(q)) && qs.some((q) => /"strong"/.test(q)), "each vague word gets its own decision");
+
+// An open decision with other wording is refreshed, in place.
+const openFile = join(d5, "decisions", premiseFiles(d5)[0]);
+const openRec = JSON.parse(readFileSync(openFile, "utf8"));
+writeFileSync(openFile, JSON.stringify({ ...openRec, question: "older wording" }, null, 2));
+run(d5);
+ok(premiseFiles(d5).length === 2 && JSON.parse(readFileSync(openFile, "utf8")).question === openRec.question, "a still-open decision with other wording is updated");
+
+// A failed proposal prints why and exits non-zero.
+const d6 = fresh("Grow a good business.");
+const fakeBin = join(d6, "bin");
+mkdirSync(fakeBin);
+writeFileSync(join(fakeBin, "python3"), "#!/bin/sh\necho refused by the validator\nexit 1\n", { mode: 0o755 });
+const bad = spawnSync(process.execPath, [linterPath, d6, "--propose"], { encoding: "utf8", env: { ...process.env, PATH: fakeBin } });
+ok(bad.status === 1 && /refused/.test(bad.stderr), "a failed proposal prints the failure and exits non-zero");
+
+for (const d of [d4, d5, d6]) rmSync(d, { recursive: true, force: true });
 rmSync(d3, { recursive: true, force: true });
 rmSync(dir, { recursive: true, force: true }); rmSync(d2, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passing");

@@ -35,10 +35,12 @@ export const ASPECTS = {
 // Vague words: grading or sufficiency language that needs a definition or a number to be checkable.
 export const VAGUE = ["moderate", "enough", "sufficient", "stable", "good", "reliable", "rely", "confident", "significant", "strong", "many", "few", "adequate", "reasonable", "robust", "fast", "quickly", "scalable", "simple", "easy", "mature", "solid", "near-term", "soon", "large", "small", "meaningful", "regularly", "month over month"];
 
+const LINTER = "premise-lint";
 const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const hasWord = (text, w) => new RegExp(`(^|[^\\p{L}\\p{N}-])${esc(w)}(?=$|[^\\p{L}\\p{N}-])`, "iu").test(text ?? "");
 const words = (s) => new Set(String(s ?? "").toLowerCase().match(/[a-z0-9]{3,}/g) ?? []);
+const listed = (xs) => xs.length > 1 ? `${xs.slice(0, -1).join(", ")} and ${xs.at(-1)}` : xs.join("");
 const jaccard = (a, b) => { const A = words(a), B = words(b); if (!A.size || !B.size) return 0; let n = 0; for (const x of A) if (B.has(x)) n++; return n / (A.size + B.size - n); };
 
 // ---- Records ---------------------------------------------------------------------------------
@@ -80,7 +82,8 @@ export function graph(dir, { includeDrafts = false } = {}) {
     else if (rel.startsWith("foundation/exit-criteria/")) for (const c of rec.criteria ?? []) g.criteria.push({ ...c, phase: rec.phase, _rel: rel, _draft: draft });
     else if (rel === "foundation/constraints.json") for (const c of rec.must_not ?? []) g.constraints.push({ ...c, _rel: rel, _draft: draft });
   }
-  for (const { rel, rec } of decisionFiles(dir)) g.decisions.push({ ...rec, _rel: rel });
+  // Decisions this linter drafted are its own output, not premises of the venture.
+  for (const { rel, rec } of decisionFiles(dir)) if (rec.provenance?.drafted_by?.id !== LINTER) g.decisions.push({ ...rec, _rel: rel });
   const v = load(join(dir, "venture.json")) ?? {};
   g.functions = Array.isArray(v.functions) ? v.functions.map((f) => f.id ?? f) : Object.keys(v.functions ?? {});
   g.phase = v.phase;
@@ -106,6 +109,9 @@ export function cells(g) {
   // Measures are keyed <goal>/<measure>. A bare measure id resolves only when exactly one goal has it.
   const measuresNamed = (id) => g.measures.has(id) ? [g.measures.get(id)] : [...g.measures.values()].filter((m) => m.id === id);
   const measureOf = (id) => { const ms = measuresNamed(id); return ms.length === 1 ? ms[0] : undefined; };
+  // One spelling per measure, so a/count and a unique bare count compare equal. An ambiguous id stays as written.
+  const measureKey = (id) => { const m = measureOf(id); return m ? `${m.goal}/${m.id}` : id; };
+  const ambiguity = (route, verb, id) => `${route} ${verb} measure ${id}, which goals ${listed(measuresNamed(id).map((m) => m.goal))} share; name it as <goal>/${id}.`;
   const resolves = (id) => !!(goalOf(id) || measuresNamed(id).length || g.requirements.some((r) => r.id === id));
 
   // The text a record inherits from its parents: a vague word defined there is defined here.
@@ -131,6 +137,7 @@ export function cells(g) {
   }
 
   // Requirements
+  const goalText = g.goals.map((x) => JSON.stringify(x)).join(" ").toLowerCase();
   const reqGraph = new Map(g.requirements.map((r) => [r.id, (r.derives_from ?? []).filter((d) => g.requirements.some((x) => x.id === d))]));
   for (const r of g.requirements) {
     const parents = r.derives_from ?? [];
@@ -140,13 +147,13 @@ export function cells(g) {
     if (missing.length && missing.length === parents.length) cell("requirement", r, "derives_from", "orphan", { expected: "goal or measure" }, missing);
     else for (const d of missing) cell("requirement", r, "derives_from", "dependency", { detail: `derives from ${d}, which is no goal, measure or requirement` }, [d]);
     if (missing.length === parents.length && parents.length) cell("requirement", r, "statement", "unsupported-premise", { claim: r.statement }, parents);
+    for (const d of parents) if (!goalOf(d) && !g.requirements.some((x) => x.id === d) && measuresNamed(d).length > 1) cell("requirement", r, `derives_from.${d}`, "conflict", { detail: ambiguity(routeOf.requirement(r), "derives from", d) }, [d]);
     if (!r.verified_by) cell("requirement", r, "verified_by", "unmeasurable", { detail: "It has no verified_by: no check, evidence or person." });
     else if (!r.verified_by.ref) cell("requirement", r, "verified_by", "unmeasurable", { detail: `verified_by is a ${r.verified_by.kind} with no ref.` });
     else if (r.verified_by.kind === "person") cell("requirement", r, "verified_by", "unmeasurable", { detail: `Only ${r.verified_by.ref}'s judgment verifies it; what would ${r.verified_by.ref} look at?` }, [r.verified_by.ref]);
     if (r.verified_by?.kind === "person" && !r.verified_by.ref) cell("requirement", r, "verified_by", "no-owner");
     if (!r.must_hold_by) cell("requirement", r, "must_hold_by", "unmeasurable", { detail: "It has no must_hold_by, so no phase gate checks it." });
     // A weight-3 requirement constraining a function no goal names.
-    const goalText = g.goals.map((x) => JSON.stringify(x)).join(" ").toLowerCase();
     if (r.weight === 3) for (const f of r.constrains ?? []) if (!hasWord(goalText, f)) cell("requirement", r, `constrains.${f}`, "conflict", { detail: `${routeOf.requirement(r)} has weight 3 and constrains ${f}, but no goal names ${f}.` }, [f]);
     for (const f of r.constrains ?? []) if (g.functions.length && !g.functions.includes(f)) cell("requirement", r, `constrains.${f}`, "dependency", { detail: `constrains ${f}, which is not a function in venture.json` }, [f]);
     // Cycle through requirement-to-requirement derivations.
@@ -160,16 +167,19 @@ export function cells(g) {
     vague("criterion", c, "statement", c.statement, serves);
     if (!serves.length) cell("criterion", c, "serves", "orphan", { expected: "goal measure" });
     for (const s of serves) if (!measureOf(s)) {
-      const goal = goalOf(s), owners = measuresNamed(s).map((m) => m.goal);
-      cell("criterion", c, `serves.${s}`, "conflict", { detail: owners.length > 1 ? `${routeOf.criterion(c)} serves measure ${s}, which goals ${owners.join(" and ")} both have; name it as <goal>/${s}.` : goal ? `${routeOf.criterion(c)} serves ${s}, a goal, not one of its measures.` : `${routeOf.criterion(c)} serves measure ${s}, but no goal has that measure.` }, [s]);
+      const goal = goalOf(s);
+      cell("criterion", c, `serves.${s}`, "conflict", { detail: measuresNamed(s).length > 1 ? ambiguity(routeOf.criterion(c), "serves", s) : goal ? `${routeOf.criterion(c)} serves ${s}, a goal, not one of its measures.` : `${routeOf.criterion(c)} serves measure ${s}, but no goal has that measure.` }, [s]);
     }
     const targets = serves.map(measureOf).filter((m) => m?.target !== undefined);
-    if (!c.evidence && !c.met?.evidence && !targets.length) cell("criterion", c, "statement", "unmeasurable", { detail: "It names no evidence, and the measures it serves have no target." }, serves);
+    // An ambiguous id already has its conflict: which target applies is unknown, not missing.
+    const ambiguous = serves.some((s) => measuresNamed(s).length > 1);
+    if (!c.evidence && !c.met?.evidence && !targets.length && !ambiguous) cell("criterion", c, "statement", "unmeasurable", { detail: "It names no evidence, and the measures it serves have no target." }, serves);
     // Phase mismatch: a requirement it relies on (shared measure, or the same claim in other words) must hold later.
+    const served = new Set(serves.map(measureKey)), at = PHASES.indexOf(c.phase);
     for (const r of g.requirements) {
-      if (!r.must_hold_by) continue;
-      const relies = (r.derives_from ?? []).some((d) => serves.includes(d)) || serves.includes(r.id) || jaccard(c.statement, r.statement) >= 0.5;
-      if (relies && PHASES.indexOf(r.must_hold_by) > PHASES.indexOf(c.phase)) cell("criterion", c, "phase", "phase-mismatch", { phase: c.phase, other: routeOf.requirement(r), later: r.must_hold_by }, [routeOf.requirement(r)]);
+      if (!r.must_hold_by || at < 0) continue;
+      const relies = (r.derives_from ?? []).some((d) => served.has(measureKey(d))) || serves.includes(r.id) || jaccard(c.statement, r.statement) >= 0.5;
+      if (relies && PHASES.indexOf(r.must_hold_by) > at) cell("criterion", c, "phase", "phase-mismatch", { phase: c.phase, other: routeOf.requirement(r), later: r.must_hold_by }, [routeOf.requirement(r)]);
     }
   }
   // Sibling conflict: two criteria in different phases stating the same thing.
@@ -188,7 +198,7 @@ export function cells(g) {
   // Decisions
   const ids = new Map(g.decisions.map((d) => [d.id, d]));
   for (const d of g.decisions) {
-    if (d.status === "decided" && !d.decided_by) cell("decision", d, "decided_by", "no-owner");
+    if (d.status === "decided" && !(d.decided_by ?? d.provenance?.approved_by)) cell("decision", d, "decided_by", "no-owner");
     if (d.status === "decided" && !(d.reasons ?? []).length) cell("decision", d, "answer", "unsupported-premise", { claim: typeof d.answer === "string" ? d.answer : JSON.stringify(d.answer ?? null) });
     vague("decision", d, "question", d.question, []);
     if (d.parent && !ids.has(d.parent)) cell("decision", d, "parent", "dependency", { detail: `names parent ${d.parent}, which is no decision here` }, [d.parent]);
@@ -204,10 +214,10 @@ export function cells(g) {
 /** The level of each rule: naive.config.json premise_lint.rules, default warn. */
 export function levels(config = {}) {
   const set = config.premise_lint?.rules ?? {};
-  return Object.fromEntries(Object.keys(ASPECTS).map((a) => { const v = set[a]; const lvl = Array.isArray(v) ? v[0] : v; return [a, ["off", "warn", "error"].includes(lvl) ? lvl : "warn"]; }));
+  return Object.fromEntries(Object.keys(ASPECTS).map((a) => { const lvl = set[a]; return [a, ["off", "warn", "error"].includes(lvl) ? lvl : "warn"]; }));
 }
 
-/** Findings: {record, field, aspect, question, links, severity}, deduplicated, rules applied. */
+/** Findings: {record, field, aspect, question, links, severity, term?}, deduplicated, rules applied. */
 export function lint(dir, { route, includeDrafts = false, config } = {}) {
   const lv = levels(config ?? readConfig(dir));
   const seen = new Set();
@@ -219,7 +229,7 @@ export function lint(dir, { route, includeDrafts = false, config } = {}) {
     const key = `${c.record}|${c.field}|${c.aspect}|${question}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ record: c.record, field: c.field, aspect: c.aspect, question, links: c.links, severity: lv[c.aspect], ...(c.draft ? { draft: true } : {}) });
+    out.push({ record: c.record, field: c.field, aspect: c.aspect, question, links: c.links, severity: lv[c.aspect], ...(c.term ? { term: c.term } : {}), ...(c.draft ? { draft: true } : {}) });
   }
   return out;
 }
@@ -230,11 +240,11 @@ export function lint(dir, { route, includeDrafts = false, config } = {}) {
 export async function proposeFindings(dir, findings) {
   const { propose, decisionFile } = await import("./decisions.mjs");
   return findings.map((f) => {
-    const id = `premise-${createHash("sha256").update(`${f.record}|${f.field}|${f.aspect}`).digest("hex").slice(0, 10)}`;
+    const id = `premise-${createHash("sha256").update([f.record, f.field, f.aspect, f.term ?? "", ...[...f.links].sort()].join("|")).digest("hex").slice(0, 10)}`;
     const file = decisionFile(dir, id);
     const prior = file && load(ventureFile(dir, file));
     if (prior && (prior.status !== "open" || prior.question === f.question)) return { finding: f, ok: true, result: { kept: id, file, status: prior.status } };
-    const r = propose(dir, { id, question: f.question, note: `premise-lint ${f.aspect} on ${f.record} ${f.field}` }, { agentId: "premise-lint", via: "cli" });
+    const r = propose(dir, { id, question: f.question, note: `premise-lint ${f.aspect} on ${f.record} ${f.field}` }, { agentId: LINTER, via: "cli" });
     return { finding: f, ...r };
   });
 }
@@ -252,5 +262,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (proposed) console.log(`\nproposed ${proposed.filter((p) => p.result?.proposed).length} open decisions, kept ${proposed.filter((p) => p.result?.kept).length} already filed`);
     console.log(`\n${findings.length} findings (${findings.filter((f) => f.severity === "error").length} errors)`);
   }
-  process.exit(findings.some((f) => f.severity === "error") ? 1 : 0);
+  const failed = (proposed ?? []).filter((p) => !p.ok);
+  for (const p of failed) console.error(`could not propose ${p.finding.aspect} on ${p.finding.record}: ${[p.error, ...(p.errors ?? [])].filter(Boolean).join("; ")}`);
+  process.exit(failed.length || findings.some((f) => f.severity === "error") ? 1 : 0);
 }
