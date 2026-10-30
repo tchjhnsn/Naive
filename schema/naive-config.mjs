@@ -10,6 +10,7 @@
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -35,8 +36,10 @@ function merge(base, over) {
 }
 
 /** The venture's naive.config.json as written, or {} when it has none. A file that is not JSON throws, naming the file. */
+export const namedPerson = (setBy) => typeof setBy?.person === "string" && setBy.person.trim() !== "";
+
 export function rawConfig(dir) {
-  const f = dir && join(dir, CONFIG);
+  const f = dir && ventureFile(dir, CONFIG);
   if (!f || !existsSync(f)) return {};
   try { return load(f); } catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e.message}`); }
 }
@@ -139,7 +142,7 @@ export function pinsBlocking(config, recordType) {
 
 /** The venture's naive.config.json, or {} when it has none. A file that is not JSON throws. */
 export function readConfig(dir) {
-  const f = join(dir, CONFIG);
+  const f = ventureFile(dir, CONFIG);
   if (!existsSync(f)) return {};
   try { return JSON.parse(readFileSync(f, "utf8")); }
   catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e.message}`); }
@@ -149,7 +152,7 @@ export function readConfig(dir) {
 export function writeConfig(dir, cfg) {
   const order = ["naive", "packages", "kits", "triggers", "gate"];
   const out = Object.fromEntries([...order.filter((k) => cfg[k] !== undefined).map((k) => [k, cfg[k]]), ...Object.entries(cfg).filter(([k]) => !order.includes(k))]);
-  writeFileSync(join(dir, CONFIG), JSON.stringify(out, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, CONFIG), JSON.stringify(out, null, 2) + "\n");
   return out;
 }
 

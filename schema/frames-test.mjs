@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "frames-test-"));
@@ -18,7 +19,7 @@ for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY"]) delete process.env[k
 process.env.NAIVE_JUDGE_CMD = `node ${join(repo, "schema/examples/frames/judge.mjs")}`;
 process.env.MENTURA_WORKSPACE = base;
 const F = await import("./frames.mjs");
-const file = (id) => JSON.parse(readFileSync(join(dir, "decisions", `${id}.decision.json`), "utf8"));
+const file = (id) => JSON.parse(readFileSync(ventureFile(dir, `decisions/${id}.decision.json`), "utf8"));
 
 let failed = 0;
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };

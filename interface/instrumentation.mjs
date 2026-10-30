@@ -17,6 +17,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { randomUUID } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 export const EVENTS = ".naive/events.jsonl";
 const listeners = new Set();
@@ -29,7 +30,7 @@ export const tokens = (x) => Math.ceil((x === undefined ? 0 : typeof x === "stri
 export function register(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 
 const configOf = (dir) => {
-  const f = dir && join(dir, "naive.config.json");
+  const f = dir && join(ventureFile(dir, "naive.config.json"));
   if (!f || !existsSync(f)) return {};
   try { return JSON.parse(readFileSync(f, "utf8")); } catch { return {}; }
 };
@@ -48,14 +49,14 @@ export function emit(dir, event) {
   for (const k of Object.keys(e)) if (e[k] === undefined) delete e[k];
   for (const fn of listeners) { try { fn(e, dir); } catch {} }
   if (dir && enabled(dir)) {
-    try { mkdirSync(join(dir, ".naive"), { recursive: true }); appendFileSync(join(dir, EVENTS), JSON.stringify(e) + "\n"); } catch {}
+    try { mkdirSync(join(dir, ".naive"), { recursive: true }); appendFileSync(ventureFile(dir, EVENTS), JSON.stringify(e) + "\n"); } catch {}
   }
   return e;
 }
 
 /** The venture's events, oldest first. */
 export function events(dir) {
-  const f = join(dir, EVENTS);
+  const f = ventureFile(dir, EVENTS);
   if (!existsSync(f)) return [];
   return readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).flatMap((l) => { try { return [JSON.parse(l)]; } catch { return []; } });
 }

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "beta-capabilities.schema.json",
+  "title": "Beta capability manifest",
+  "description": "The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (schema/beta-gate.mjs).",
+  "type": "object",
+  "required": [
+    "version",
+    "capabilities"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "routes",
+          "checkpoint"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "core": {
+            "type": "boolean",
+            "description": "Unlocked from the start"
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Router path patterns (gate syntax) this capability opens"
+          },
+          "checkpoint": {
+            "type": "object",
+            "required": [
+              "id",
+              "questions"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "questions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "ask",
+                    "kind"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "ask": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "text",
+                        "scale-1-5",
+                        "yes-no"
+                      ]
+                    },
+                    "required": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "always_open": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Routes no capability locks: where testers give feedback and file bugs"
+    }
+  }
+}

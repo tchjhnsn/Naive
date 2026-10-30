@@ -23,13 +23,14 @@ import { evaluate, patternRe, rulesFor } from "./gate.mjs";
 import { teamPlan } from "./access.mjs";
 import { gateOf, repo, resolve, routes } from "../interface/router.mjs";
 import { agentFromEnv, record } from "../interface/provenance.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 
 const FRAMEWORKS = ["idea-map"];
 
 /** Problems with a venture's naive.config.json: { errors, warnings }. */
 export function check(dir) {
   const errors = [], warnings = [];
-  const f = join(dir, CONFIG);
+  const f = ventureFile(dir, CONFIG);
   if (!existsSync(f)) return { errors, warnings, note: `no ${CONFIG}: every default applies` };
   let raw;
   try { raw = rawConfig(dir); } catch (e) { return { errors: [e.message], warnings }; }
@@ -66,7 +67,7 @@ export function explain(dir, route, { actor = "agent", role, confidence } = {}) 
   const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   const cls = gateOf(r, dir);
   const files = (r.collection === "item" ? r.files.map((x) => x.replace("*", params.id)) : r.files);
-  const exists = files.some((x) => existsSync(join(dir, x)));
+  const exists = files.some((x) => existsSync(ventureFile(dir, x)));
   const verdict = evaluate({ config: configFor(dir), dir, route: concrete, table: r.route, record: r.record, actor, role, confidence, exists, decisionOwner: cls?.owner ?? undefined });
   return { route: concrete, record: r.record, actor, role: role ?? null, confidence: confidence ?? null, decision_class: cls ? { class: cls.class, level: cls.level, drafts: cls.drafts && actor !== "person" } : null, gate: verdict };
 }
@@ -78,7 +79,7 @@ export function pin(dir, names) {
   const unknown = chosen.filter((n) => !have[n]);
   if (unknown.length) throw new Error(`not installed: ${unknown.join(", ")}`);
   raw.packages = { ...(raw.packages ?? {}), ...Object.fromEntries(chosen.map((n) => [n, have[n]])) };
-  writeFileSync(join(dir, CONFIG), JSON.stringify(raw, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, CONFIG), JSON.stringify(raw, null, 2) + "\n");
   record(dir, { entity: CONFIG, route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli"), note: `pinned ${chosen.join(", ")} at the installed versions` });
   return raw.packages;
 }

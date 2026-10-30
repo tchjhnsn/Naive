@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { evaluate } from "../schema/gate.mjs";
 import { writeHeld } from "../schema/gate-drafts.mjs";
 import { checksFor, configFor } from "../schema/naive-config.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 /**
  * The gate's verdict on a local write, or null when it passes. A person is never held, only
@@ -19,7 +20,7 @@ export function gateWrite({ dir, r, route, requested, file, actor, actor_id, pro
   catch (e) { return actor === "person" ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${e.message}: the gate fails closed, written as a draft for a person to accept` }; }
   const confidence = provenance.confidence === undefined || provenance.confidence === null || provenance.confidence === "" ? undefined : Number(provenance.confidence);
   const v = evaluate({ config, dir, route, table: r.route, requested, record: r.record, actor, role: actor_id, confidence: Number.isNaN(confidence) ? undefined : confidence,
-    exists: existsSync(join(dir, file)), decisionOwner: gate?.owner ?? undefined });
+    exists: existsSync(ventureFile(dir, file)), decisionOwner: gate?.owner ?? undefined });
   if (v.then === "pass") return null;
   if (actor === "person" && v.then !== "refuse") return null;
   return v;

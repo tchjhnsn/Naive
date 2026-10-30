@@ -15,6 +15,7 @@
 
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, extname, basename } from "node:path";
+import { ventureFile } from "../../../schema/venture-paths.mjs";
 
 // ---------------------------------------------------------------- lexicons
 
@@ -59,7 +60,7 @@ const jsonOut = flag("json");
 function walk(dir, acc = []) {
   for (const entry of readdirSync(dir)) {
     if (entry === "node_modules" || entry.startsWith(".")) continue;
-    const full = join(dir, entry);
+    const full = ventureFile(dir, entry);
     const st = statSync(full);
     if (st.isDirectory()) walk(full, acc);
     else if (extname(entry) === ".tsx" && !/\.(test|spec|stories)\.tsx$/.test(entry)) acc.push(full);

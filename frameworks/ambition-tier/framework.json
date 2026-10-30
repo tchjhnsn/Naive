@@ -1,0 +1,23 @@
+{
+  "id": "ambition-tier",
+  "title": "Ambition tiers",
+  "purpose": "Declare how far the venture means to go, which sets the depth of research and the phases it aims for. A framework for thinking whose answer is a canonical goal of kind scale (Torian, 2026-10-30).",
+  "vocabulary": {
+    "hobby": "not engaged in for profit (the IRS sense)",
+    "survival": "income the owner needs now",
+    "lifestyle": "a business that supports the owner's life, not growth for its own sake",
+    "managed-growth": "growth at a pace the owners choose",
+    "aggressive-growth": "growth as fast as capital allows, usually with investors expecting an exit",
+    "tier": "the scale goal's value"
+  },
+  "frames": [
+    { "id": "tier", "question": "Why does the venture exist, and how far through the phases does it mean to go?", "answers": "ambition" }
+  ],
+  "template": null,
+  "skill": "purpose/skills/ambition-tier/SKILL.md",
+  "adapter": "frameworks/ambition-tier/adapter.mjs",
+  "checks": [],
+  "maps_to": [
+    { "framework_field": "ambition", "canonical_route": "foundation/goals/[id]", "canonical_field": "value", "note": "goal id scale, kind scale" }
+  ]
+}

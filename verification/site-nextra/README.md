@@ -1,6 +1,6 @@
 # Site routes
 
-A small TLA+ model of what one request to the Naive site comes back as, after the move to Nextra (EE-087). TLC checks it. The pstack statechart command draws the chart.
+A small TLA+ model of what one request to the Naive site comes back as, after the move to Nextra (EE-088). TLC checks it. The pstack statechart command draws the chart.
 
 The model is the request, not the React tree. Each action is one request, and the comment in `SiteRoutes.tla` names the file that answers it.
 

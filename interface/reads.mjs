@@ -23,6 +23,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { entries } from "./provenance.mjs";
+import { ventureFile } from "../schema/venture-paths.mjs";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
@@ -45,7 +46,7 @@ export function frontmatter(text) {
 /** A record's state from the log and the drafts folder (O-2). */
 export async function stateOf(dir, file) {
   const { confirmedIn } = await import("../schema/foundation.mjs");
-  if (existsSync(join(dir, "_drafts", `${file.replace(/\//g, "__")}.draft`))) return "draft";
+  if (existsSync(join(ventureFile(dir, "_drafts"), `${file.replace(/\//g, "__")}.draft`))) return "draft";
   const es = entries(dir).filter((e) => e.entity === file);
   if (!es.length) return "unlogged";
   return confirmedIn(dir, file, null) ? "confirmed" : "agent";
@@ -58,7 +59,7 @@ export function defaults(dir, file, id) {
     const last = es.at(-1);
     return { id, created: es[0].at, updated: last.at, by: { kind: last.agent?.kind ?? null, ...(last.agent?.id ? { id: last.agent.id } : {}), via: last.agent?.via ?? null }, activity: last.activity, writes: es.length, from: "provenance" };
   }
-  const st = existsSync(join(dir, file)) ? statSync(join(dir, file)) : null;
+  const st = existsSync(ventureFile(dir, file)) ? statSync(ventureFile(dir, file)) : null;
   return { id, created: st ? new Date(st.birthtimeMs || st.mtimeMs).toISOString() : null, updated: st ? st.mtime.toISOString() : null, by: null, writes: 0, from: "file", note: "written outside the router: mentura baseline adopts it into the log" };
 }
 
@@ -138,7 +139,7 @@ const parseInstructions = (chain) => {
 export function withParams(layout, { dir, params, file, group }) {
   const chain = [...(layout.chain ?? [])];
   const have = new Set(chain.map((c) => c.path));
-  const add = (rel, at = chain.length) => { if (dir && !have.has(rel) && existsSync(join(dir, rel))) { chain.splice(at, 0, { path: rel, text: readFileSync(join(dir, rel), "utf8") }); have.add(rel); } };
+  const add = (rel, at = chain.length) => { if (dir && !have.has(rel) && existsSync(ventureFile(dir, rel))) { chain.splice(at, 0, { path: rel, text: readFileSync(ventureFile(dir, rel), "utf8") }); have.add(rel); } };
   if (group?.agents) add(group.agents, chain.findIndex((c) => c.path === "AGENTS.md") + 1);
   if (file) {
     const parts = dirname(file).split("/").filter((p) => p && p !== ".");

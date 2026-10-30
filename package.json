@@ -1,6 +1,6 @@
 {
   "name": "naive-framework",
-  "version": "0.2.0",
+  "version": "0.6.0",
   "description": "Naive, a venture development framework: conventions, routes, records, checks and an agent interface for building a venture.",
   "type": "module",
   "license": "MIT",
@@ -16,14 +16,17 @@
     "mentura": "interface/cli/mentura.mjs"
   },
   "scripts": {
-    "test": "node test.mjs"
+    "test": "node test.mjs",
+    "lint": "eslint ."
   },
   "files": [
     "AGENTS.md",
     "README.md",
     "LICENSE",
+    ".claude-plugin/plugin.json",
     "interface/",
     "schema/",
+    "scripts/diagnose-transcripts.mjs",
     "packages/",
     "purpose/",
     "knowledge/",
@@ -31,6 +34,7 @@
     "governance/",
     "evidence/",
     "platform/",
+    "frameworks/",
     "docs/reference/",
     "docs/decisions/",
     "docs/ontology.md",
@@ -40,8 +44,9 @@
     "!**/test.mjs",
     "!**/*.steps.mjs",
     "!**/*.feature",
-    "!interface/create-venture/",
+    "!interface/create-venture/package.json",
     "!platform/integrations/fixtures/",
+    "!platform/research/",
     "!schema/examples/docket-scenarios.json",
     "!**/.env*",
     "!**/*.pem",
@@ -57,5 +62,11 @@
     "startup",
     "agents",
     "mcp"
-  ]
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "typescript-eslint": "^8.72.1"
+  }
 }

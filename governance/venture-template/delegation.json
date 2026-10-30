@@ -1,0 +1,71 @@
+{
+  "register": "delegation",
+  "updated": "2026-10-29",
+  "template": true,
+  "note": "Default delegation. The founder grants the chief of staff the operations classes, which it may pass on; strategy, experience design, public commitments and money are granted directly and never passed on; one-way doors stay with the founder. A venture customizes this in <venture>/governance/delegation.json.",
+  "root": "founder",
+  "never_redelegated": ["strategy-or-constitution", "experience-design", "public-commitment", "spend-money", "cancel-or-downgrade", "move-payment-method", "spend-register-upkeep"],
+  "one_way_doors": ["irreversible-data-change", "ownership-or-control", "legal-or-terms", "continue-or-stop", "change-direction", "contradicts-ledger", "production-ship"],
+  "grants": [
+    {
+      "id": "founder-to-chief-of-staff",
+      "from": "founder",
+      "to": "chief-of-staff",
+      "classes": ["defer-or-route", "cross-entity", "accept-verified-work", "implementation-detail", "schema-change-within-adr", "security-tightening", "new-structure", "new-adr-within-strategy", "new-dependency-free", "domain-fact"],
+      "scope": "venture",
+      "may_redelegate": true,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "founder-to-product-design-lead",
+      "from": "founder",
+      "to": "product-design-lead",
+      "classes": ["experience-design"],
+      "scope": "product/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "founder-to-finance-lead",
+      "from": "founder",
+      "to": "finance-lead",
+      "classes": ["spend-register-upkeep", "cancel-or-downgrade"],
+      "scope": "finance/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-architect",
+      "from": "chief-of-staff",
+      "to": "architect",
+      "classes": ["new-structure", "new-adr-within-strategy", "new-dependency-free", "schema-change-within-adr", "security-tightening", "implementation-detail", "accept-verified-work"],
+      "scope": "venture",
+      "may_redelegate": true,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "architect-to-builder",
+      "from": "architect",
+      "to": "builder",
+      "classes": ["implementation-detail", "accept-verified-work", "schema-change-within-adr", "security-tightening"],
+      "scope": "engineering/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-validation-lead",
+      "from": "chief-of-staff",
+      "to": "validation-lead",
+      "classes": ["domain-fact"],
+      "scope": "validation/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    }
+  ]
+}

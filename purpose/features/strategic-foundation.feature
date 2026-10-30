@@ -55,9 +55,9 @@ Feature: Strategic foundation
     Scenario: Accepting a draft that changes a foundation statement shows the change and needs its name typed
       Given the example venture "tandem"
       And an agent writes an ICP for "tandem"
-      When the founder accepts "purpose/icp" by typing "yes"
+      When the founder accepts "foundation/icp/owners" by typing "yes"
       Then the command is refused
-      And the founder accepts "purpose/icp" by typing "purpose/icp"
+      And the founder accepts "foundation/icp/owners" by typing "foundation/icp/owners"
       And the founder asks for the strategic foundation
       And "icp" is "confirmed"
 
@@ -68,7 +68,7 @@ Feature: Strategic foundation
       And an agent writes an ICP for "tandem"
       When the founder asks for the strategic foundation
       Then "promised-to" is "draft"
-      And the founder accepts "purpose/icp" by typing "purpose/icp"
+      And the founder accepts "foundation/icp/owners" by typing "foundation/icp/owners"
       And the founder asks for the strategic foundation
       And "promised-to" is "confirmed"
       And "promised-to" shows "Owners of small service shops"
