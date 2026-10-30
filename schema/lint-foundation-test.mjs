@@ -45,6 +45,7 @@ const alignment = (check = "schema/check-nouns.mjs") => ({
   venture: "fixture",
   principles: [{ id: "sourced", statement: "Every default traces to a source", source: "EE-014", check }],
 });
+/** @param {unknown[]} [forms] */
 const problem = (forms = [{ id: "next-step", statement: "The next step is unclear." }]) => ({
   venture: "fixture", statement: "The next step is unclear.", segment: "early founders", evidence: [], forms,
 });
