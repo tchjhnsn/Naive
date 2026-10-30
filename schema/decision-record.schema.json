@@ -135,13 +135,6 @@
     "note": {
       "type": "string"
     },
-    "reasons": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/reason"
-      },
-      "description": "Why: claims for and against the decision and the context it rests on, each with citations. Approving freezes them into provenance.reasons"
-    },
     "provenance": {
       "type": "object",
       "additionalProperties": false,
@@ -304,6 +297,109 @@
         }
       }
     },
+    "publish": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "artifact",
+        "sha256",
+        "door",
+        "exposure",
+        "reversibility"
+      ],
+      "description": "A publish decision (class public-commitment), written by naive publish before anything goes out. One-way doors (hard to undo) are decided by the founder; two-way doors by the founder or a role delegated in governance/delegation.json. An agent never approves.",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "artifact": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "url": {
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "publish",
+            "rollback"
+          ]
+        },
+        "door": {
+          "enum": [
+            "one-way",
+            "two-way"
+          ],
+          "description": "two-way: easy to undo (a private artifact, a draft page). one-way: hard to undo (a public post, an email sent, a launch, anything indexed or cached). After Bezos's Type 1 and Type 2 decisions (2015 shareholder letter)."
+        },
+        "exposure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "level"
+          ],
+          "properties": {
+            "level": {
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "who": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "competitor",
+                  "investor",
+                  "customer",
+                  "legal-regulatory",
+                  "brand",
+                  "public"
+                ]
+              }
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "reversibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "how"
+          ],
+          "properties": {
+            "how": {
+              "type": "string"
+            },
+            "takes": {
+              "type": "string"
+            }
+          }
+        },
+        "approver_role": {
+          "type": "string",
+          "description": "founder, or the role delegated under governance/delegation.json"
+        },
+        "not_before": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reason"
+      },
+      "description": "Why: claims for and against the decision and the context it rests on, each with citations. Approving freezes them into provenance.reasons"
+    },
     "version": {
       "type": "integer",
       "minimum": 1,
@@ -399,6 +495,51 @@
     "rolled_back_from": {
       "type": "integer",
       "description": "When this version restores an earlier one, the version it restores"
+    },
+    "door": {
+      "enum": [
+        "one-way",
+        "two-way"
+      ],
+      "description": "How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (schema/decision-index.mjs)."
+    },
+    "requirements": {
+      "type": "array",
+      "description": "The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (schema/decision-index.mjs).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "relation"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "relation": {
+            "enum": [
+              "satisfies",
+              "constrains",
+              "violates"
+            ]
+          }
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of decisions that cannot be made until this one is. An edge in the decision index."
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of decisions whose answers may conflict with this one. An edge in the decision index."
     }
   },
   "$defs": {

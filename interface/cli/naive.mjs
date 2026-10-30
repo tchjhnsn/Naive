@@ -20,11 +20,16 @@
 //   naive phase [<next phase>] [--meet <criterion> --evidence <text>] [--reason] [--override <why>]
 //                                                   the venture development lifecycle: where the venture is, its gate's exit
 //                                                   criteria, and moving to the next phase once a person has met them
+//   naive publish build <channel> | naive publish <channel> --by <person> [--as <role>] [--door] [--exposure] | naive publish rollback <channel> | naive publish status
+//                                                   compile public MDX into an artifact, then publish it through the one-way/two-way door gate
 //   naive port <folder> --venture <dir> [--to <path>]  plan moving a folder into the venture as it is (codebase/<name>)
 //   naive port --venture <dir> --apply --confirm port
 //                                                   carry out that plan (EE-076)
 //   naive migrate --from <project> --venture <dir>  an agent rewrites the project as Naive records, as a plan and decisions
 //   naive migrate --venture <dir> --apply           write what a person decided (EE-076)
+//   naive publish check <paths>... [--json]         the publish lint: copy distance, leaks, brand, claims, marks,
+//                                                   personal data, secrets; rules off|warn|error in naive.config.json
+//   naive publish check --report                    the rules most often waived and leaks found after publish
 //   naive capture "<text>"                          keep the text in the workspace's raw/, and file each chunk in the
 //                                                   venture it fits, or in the workspace inbox when unsure
 //   naive inbox [list | assign <chunk> <venture>]   the chunks waiting for the founder, and choosing their venture
@@ -198,10 +203,20 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
+} else if (cmd === "publish") {
+  // The publishing gate (schema/publish.mjs): build, publish, rollback, status.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
+  process.exit(run("schema/publish.mjs", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
   process.exit(run(`schema/${cmd}-venture.mjs`, args));
+} else if (cmd === "publish") {
+  // The publish lint (schema/publish-lint.mjs). Inside a venture, --venture defaults to it.
+  const args = rest[0] === "check" ? rest.slice(1) : rest;
+  const v = opt("venture") ?? findVenture();
+  process.exit(run("schema/publish-lint.mjs", ["check", ...args.filter((a, i) => a !== "--venture" && args[i - 1] !== "--venture"), ...(v ? ["--venture", v] : [])]));
 } else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
   // The workspace (schema/workspace.mjs): the one above the venture this runs in, else above this folder.
   const venture = opt("venture") ? here() : findVenture();
