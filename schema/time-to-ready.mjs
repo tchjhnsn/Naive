@@ -65,6 +65,7 @@ export function timeToReady(dir) {
   const layers = {};
   for (const row of nn.rows.filter((r) => r.status === "held" || r.status === "suggest now")) {
     const l = row.layer ?? "system";
+    if (l !== "system" && v.layers && !v.layers[l] && row.status !== "held") continue; // a layer the venture turned off (or never turned on) is not asked for
     layers[l] ??= { dates: [], missing: [] };
     const d = seen(row.type);
     if (d) layers[l].dates.push(d); else layers[l].missing.push(row.type);
