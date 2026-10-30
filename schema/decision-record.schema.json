@@ -395,6 +395,51 @@
     "rolled_back_from": {
       "type": "integer",
       "description": "When this version restores an earlier one, the version it restores"
+    },
+    "door": {
+      "enum": [
+        "one-way",
+        "two-way"
+      ],
+      "description": "How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (schema/decision-index.mjs)."
+    },
+    "requirements": {
+      "type": "array",
+      "description": "The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (schema/decision-index.mjs).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "relation"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "relation": {
+            "enum": [
+              "satisfies",
+              "constrains",
+              "violates"
+            ]
+          }
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of decisions that cannot be made until this one is. An edge in the decision index."
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of decisions whose answers may conflict with this one. An edge in the decision index."
     }
   },
   "$defs": {
