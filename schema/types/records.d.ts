@@ -1905,8 +1905,8 @@ export type NaiveConfig = {
     /** Checks that run but do not fail the route's check */
     warn?: string[];
   };
-  /** finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
-  finance_lint?: {
+  /** Investors lint (investors/lint). Each rule is fail-open unless its mode is fail-closed, which makes that rule's findings fail the run. */
+  investors_lint?: {
     rules?: {
       [key: string]: {
         mode?: "fail-open" | "fail-closed";
@@ -1957,8 +1957,8 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (schema/triggers.mjs) */
   triggers?: unknown[];
-  /** Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
-  legal_lint?: {
+  /** Per-rule mode for the product lint (schema/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed. */
+  product_lint?: {
     rules?: {
       [key: string]: {
         mode?: "fail-open" | "fail-closed";
@@ -1981,6 +1981,46 @@ export type NaiveConfig = {
       conflict?: "off" | "warn" | "error";
       dependency?: "off" | "warn" | "error";
       "phase-mismatch"?: "off" | "warn" | "error";
+    };
+  };
+  /** Per-rule mode for the money lint (schema/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed. */
+  money_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open. */
+  customers_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the validation lint (schema/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
+  validation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
+  finance_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
+  legal_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
     };
   };
   /** Foundation lint (foundation/lint): per-rule mode overrides. A rule stays fail-open unless its mode is fail-closed. */
@@ -2221,6 +2261,13 @@ export type Product = {
   repo?: string;
   /** The ICP profiles (purpose/icp.json ids) the product is offered to: who buys or adopts it, and so whom its marketing addresses first (EE-064). In a B2B2C or partner-led venture these are the partners, not the partners' customers. */
   offered_to?: string[];
+  /** What the product does. Each feature names the job it serves: a job of an ICP profile in offered_to. The jobs stay on the ICP record and are read by id, not copied here. */
+  features?: {
+    id: string;
+    name?: string;
+    /** The job this feature serves. It must be a job of an ICP profile this product is offered to. */
+    job?: string;
+  }[];
   /** ICP profiles the product ultimately serves through those it is offered to, such as a partner's own customers (EE-064) */
   serves?: string[];
 };
