@@ -51,7 +51,7 @@ FollowRedirect ==
     /\ outcome = "redirect"
     /\ asked' = "docs" /\ outcome' = "page" /\ indexed' = FALSE
 
-\* A header or footer link: /docs, /blog, /templates, /showcase, /why, /for,
+\* A header or footer link: /docs, /blog, /templates, /showcase, /why, /for, /about,
 \* and the docs section links. Each is a page, not a redirect and not a 404.
 OpenNav ==
     /\ outcome = "waiting"
