@@ -45,6 +45,7 @@ const steps = [
   ["kits", "node", ["platform/kits/test.mjs"]],
   ["webhooks", "node", ["platform/webhooks/test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["schema/frames-test.mjs"]],
+  ["premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)", "node", ["schema/premise-lint-test.mjs"]],
   ["frames: instance", "node", ["schema/frames.mjs", "check"]],
   ["the Next.js translation status (every concept has a status, its evidence exists, the page is current)", "node", ["schema/check-nextjs-status.mjs"]],
   ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],
