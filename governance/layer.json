@@ -75,7 +75,8 @@
     "internal-terms",
     "decision-record",
     "decision-impact",
-    "venture-role"
+    "venture-role",
+    "publications"
   ],
   "reads": [
     "handoff",
