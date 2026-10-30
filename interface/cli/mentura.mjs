@@ -234,7 +234,7 @@ if (cmd === "accept") {
     provenance: { activity: "accept", derived_from: [chosen], note: opt("note") } });
   if (!w.ok) { console.error(w.error); process.exit(1); }
   // Gate group hook (X-2): removes the draft, its variants and sidecar, and decides the variants decision.
-  const settled = settleDraft(d.dir, d.draft, { picked: opt("pick") ?? "a", by: opt("by") });
+  const settled = /** @type {{ picked: string, decision?: string, decided?: boolean, error?: string }} */ (settleDraft(d.dir, d.draft, /** @type {*} */ ({ picked: opt("pick") ?? "a", by: opt("by") })));
   out(`accepted: ${w.result.written}${settled.decision ? ` (draft ${settled.picked}; decision ${settled.decision} ${settled.decided ? "decided" : `not decided: ${settled.error}`})` : ""}`);
   process.exit(0);
 }
@@ -275,7 +275,7 @@ if (cmd === "merge") {
   if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
   // --role merges as a role under a delegation grant that names may_merge (an agent with no --by merges as its role).
   const by = opt("by") ?? (opt("role") ? undefined : process.env.MENTURA_PERSON);
-  const r = merge(dir, id, { by, role: opt("role") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), note: opt("note") });
+  const r = merge(dir, id, /** @type {*} */ ({ by, role: opt("role") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), note: opt("note") }));
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
@@ -288,7 +288,7 @@ if (cmd === "index") {
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
   const { rebuild, update } = await import("../../schema/decision-index.mjs");
-  const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
+  const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, /** @type {*} */ ({ since: opt("since") }));
   out({ venture: idx.venture, phase: idx.phase, update: { mode: idx.last_update.mode, events: idx.last_update.events, rescored: idx.last_update.touched.map((t) => t.id) },
     flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),
     ranked: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, why: e.why })) });
@@ -335,8 +335,8 @@ if (cmd === "decide") {
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
   const r = opt("rollback") !== undefined
-    ? rollback(dir, id, opt("rollback"), { by: opt("by") ?? process.env.MENTURA_PERSON })
-    : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note"), reasons: givenReasons.length ? givenReasons : undefined });
+    ? rollback(dir, id, opt("rollback"), /** @type {*} */ ({ by: opt("by") ?? process.env.MENTURA_PERSON }))
+    : approve(dir, id, /** @type {*} */ ({ by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note"), reasons: givenReasons.length ? givenReasons : undefined }));
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
@@ -346,7 +346,7 @@ if (cmd === "propose") {
   // An agent proposes a decision from a JSON file; it stays open until a person decides it.
   const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
   if (!dir || !opt("input")) usage();
-  const r = propose(dir, JSON.parse(readFileSync(resolve(opt("input")), "utf8")), { agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID, via: "cli" });
+  const r = propose(dir, JSON.parse(readFileSync(resolve(opt("input")), "utf8")), /** @type {*} */ ({ agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID, via: "cli" }));
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);

@@ -57,7 +57,8 @@ export function publicView(dir, rel, rec) {
 }
 
 /** A person approves a field as public: pins its current wording by sha256 in the record's sidecar. An
- *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry. */
+ *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry.
+ *  @param {string} dir @param {string} rel @param {string} field @param {{ by?: string, propose?: boolean, agentId?: string }} [opts] */
 export function setPublic(dir, rel, field, { by, propose = false, agentId } = {}) {
   const f = ventureFile(dir, rel);
   if (!existsSync(f)) return { ok: false, error: `no record ${rel}` };
