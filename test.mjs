@@ -119,6 +119,8 @@ const steps = [
   ["site reader (links and text, offline)", "node", ["platform/integrations/site-test.mjs"]],
   ["Rho money source (package, append-only, read-only client, offline)", "node", ["platform/integrations/rho-test.mjs"]],
   ["workspace: settings, cross-venture reads, naive capture and the inbox", "node", ["schema/workspace-test.mjs"]],
+  ["validation study: interviews, feedback, bugs, telemetry, the beta gate and feedback routing", "node", ["schema/validation-study-test.mjs"]],
+  ["validation study records: instance", "node", ["schema/check-validation-study.mjs", "instance"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   ["PR review agent (content findings from fixture markdown, screenshot mode, preview noindex)", "node", ["scripts/pr-review/pr-review-test.mjs"]],
   // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.
