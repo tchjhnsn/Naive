@@ -75,6 +75,7 @@ const covers = (patterns, route, table) => patterns.some((p) => patternRe(p).tes
  * Whether a route is closed to a tester: null when the gate is off or the route is open; otherwise
  * { capability, needs: { capability, checkpoint }, message }. A route covered by any unlocked capability,
  * or by always_open, is open; one no capability covers is open too.
+ * @param {string} dir @param {string} route @param {{ tester?: string, table?: string, m?: * }} [opts]
  */
 export function blocked(dir, route, { tester, table, m } = {}) {
   if (!dir || !enabled(dir)) return null;
@@ -115,6 +116,7 @@ export function status(dir, tester, m = manifest()) {
 /**
  * Records a tester's checkpoint answers as validation/feedback/<id>.json, routed with the feedback router.
  * Refuses a locked capability, an unknown question and a missing required answer.
+ * @param {string} dir @param {string} capId @param {*} answers @param {{ tester?: string, m?: *, now?: Date, routing?: * }} [opts]
  */
 export async function giveFeedback(dir, capId, answers, { tester, m = manifest(), now = new Date(), routing = {} } = {}) {
   const t = testerOf(tester);
