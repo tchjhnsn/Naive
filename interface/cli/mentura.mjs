@@ -18,7 +18,10 @@
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route;
 //                                                   [--pick <letter>] [--by <name>] accepts one of drafts kept side by side
-//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--confirm <decision>]
+//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
+//                                                   a new --answer on a decided decision makes its next version; --rollback restores one
+//   mentura merge <decision> --venture <id> --by <name> [--confirm <decision>]
+//                                                   apply a decided version to the records it decides (applies_to)
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
 //   mentura propose --venture <id> --input <file.json> [--as <role>]
 //                                                   an agent proposes a decision; it stays open until a person decides
@@ -62,7 +65,7 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
-import { approve, decisions, propose } from "../../schema/decisions.mjs";
+import { approve, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
 import { asRouted, findVenture } from "./find-venture.mjs";
@@ -226,6 +229,21 @@ if (cmd === "accept") {
   process.exit(0);
 }
 
+if (cmd === "merge") {
+  // A person (or a delegated role) applies a decided version to the records it decides (applies_to).
+  // Approving and merging are separate steps; typing the decision's id confirms the merge.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const d = decisions(dir).decisions.find((x) => x.id === id);
+  if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+  if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
+  const r = merge(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
 if (cmd === "decide") {
   // A person makes a decision (EE-058): approves the drafted wording, or gives their own with
   // --answer. Typing the decision's id confirms it. Provenance records who, when and in which phase.
@@ -235,7 +253,9 @@ if (cmd === "decide") {
   const d = decisions(dir).decisions.find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
-  const r = approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note") });
+  const r = opt("rollback") !== undefined
+    ? rollback(dir, id, opt("rollback"), { by: opt("by") ?? process.env.MENTURA_PERSON })
+    : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);

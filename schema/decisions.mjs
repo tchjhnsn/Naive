@@ -266,12 +266,14 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
   if (!rest.id || !rest.question) return { ok: false, error: "a decision needs an id and a question" };
   if (rest.status && rest.status !== "open") return { ok: false, error: "an agent may only propose an open decision; a person approves it" };
   const existing = fileOf(dir, rest.id);
-  if (existing && load(ventureFile(dir, existing)).status === "decided") return { ok: false, error: `${rest.id} is decided; only a person can change it` };
   const file = existing ?? `${at ? `${at}/` : ""}decisions/${name ?? rest.id}.decision.json`;
   if (!existing && !/^([a-z0-9-]+\/)*decisions\/[a-z0-9.-]+\.decision\.json$/.test(file)) return { ok: false, error: `${file} is not a decisions/ path` };
   // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
+  // New wording for a decided one opens its next version; the decided version is kept in versions.
   const before = existing ? load(ventureFile(dir, existing)) : {};
-  const d = { ...before, ...rest, status: "open", provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
+  const next = before.status === "decided" ? nextVersion(before) : before;
+  const { versions, version, merged, rolled_back_from, ...carried } = next;
+  const d = { ...carried, ...rest, status: "open", ...(version ? { version } : {}), ...(versions ? { versions } : {}), ...(merged ? { merged } : {}), provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
   const bad = validate(d);
   if (bad) return { ok: false, error: `does not match schema/decision-record.schema.json:\n${bad}` };
   mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
@@ -280,13 +282,71 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
   return { ok: true, result: { proposed: d.id, file, awaiting: "approval", provenance: e.hash } };
 }
 
+/** The decision with its current version moved into versions and the version number raised. */
+function nextVersion(d) {
+  const { versions = [], ...cur } = d;
+  const snap = { version: cur.version ?? 1, status: cur.status, answer: cur.answer ?? null, ...(cur.options ? { options: cur.options } : {}), ...(cur.provenance ? { provenance: cur.provenance } : {}), ...(cur.merged ? { merged: cur.merged } : {}), superseded_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+  return { ...cur, version: (cur.version ?? 1) + 1, versions: [...versions, snap] };
+}
+
+const setField = (o, path, v) => { const ks = path.split("."); let x = o; for (const k of ks.slice(0, -1)) x = x[k] ??= {}; x[ks.at(-1)] = v; };
+
+/** Merge: apply a decided version's answer to the records it decides (applies_to). A separate step from
+ *  approving, so it can be delegated: only a person may merge unless a delegation grant names merge for
+ *  this decision's class (the delegation suite). Logged as a merge in provenance. */
+export function merge(dir, id, { by, via = "cli", note } = {}) {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  if (!by) return { ok: false, error: "merging needs the name of who merges (--by)" };
+  const d = load(ventureFile(dir, file));
+  if (d.status !== "decided") return { ok: false, error: `${id} is not decided; approve it before merging` };
+  if (!d.applies_to?.length) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
+  const version = d.version ?? 1;
+  if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
+  const files = [];
+  for (const t of d.applies_to) {
+    const f = ventureFile(dir, t.file);
+    const rec = existsSync(f) ? load(f) : {};
+    setField(rec, t.field, d.answer);
+    writeFileSync(f, JSON.stringify(rec, null, 2) + "\n");
+    prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), decision: id, note: `merged ${id} version ${version} into ${t.field}` });
+    files.push(t.file);
+  }
+  const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: agentFromEnv("person", via, { id: by }), note: note ?? `merged ${id} version ${version}` });
+  return { ok: true, result: { merged: id, version, files, provenance: e.hash } };
+}
+
+/** Rollback: make an earlier version current again, as a new version, so history is never rewritten.
+ *  The restored version is decided; merge it to apply it. */
+export function rollback(dir, id, to, { by, via = "cli" } = {}) {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  if (!by) return { ok: false, error: "rolling back needs the person's name (--by)" };
+  const d = load(ventureFile(dir, file));
+  const old = (d.versions ?? []).find((v) => v.version === Number(to));
+  if (!old) return { ok: false, error: `${id} has no version ${to}` };
+  if (old.status !== "decided") return { ok: false, error: `${id} version ${to} was never decided; only a decided version can be restored` };
+  const n = nextVersion(d);
+  const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...(old.provenance ?? {}), drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
+  delete out.merged;
+  const bad = validate(out);
+  if (bad) return { ok: false, error: bad };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: `rolled ${id} back to version ${to} as version ${out.version}` });
+  return { ok: true, result: { decided: id, version: out.version, restored: Number(to), provenance: e.hash, next: out.applies_to?.length ? `mentura merge ${id}` : null } };
+}
+
 /** A person approves a decision: as worded, or with their own answer. */
 export function approve(dir, id, { by, answer, via = "cli", note } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
   const d = load(ventureFile(dir, file));
-  if (d.status === "decided") return { ok: false, error: `${id} is already decided` };
+  // A decided decision changes by a new version: the decided one is kept, and this one supersedes it.
+  if (d.status === "decided" && (!answer || answer === d.answer)) return { ok: false, error: `${id} is already decided as worded; give a new --answer to make version ${(d.version ?? 1) + 1}` };
+  if (d.status === "decided") Object.assign(d, nextVersion(d));
   if (!answer && !d.answer) return { ok: false, error: `${id} has no wording to approve; give an answer` };
   const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
   const wording = !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
