@@ -1,0 +1,47 @@
+---
+title: "Product lint: a record is read, judged, then the run exits"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: reading
+    lg1: clear
+    lg2: finding
+    lg3: failed
+  }
+  class lg0 blue
+  class lg1 teal
+  class lg2 orange
+  class lg3 pink
+  s0: Venture given, records not read
+  s1: Records read from the venture
+  s2: Finding: business model has no pricing record
+  s3: Finding: feature serves no job
+  s4: No finding
+  s5: Finding: product offered to no ICP
+  s6: Broken record skipped
+  s7: Exit 0
+  s8: Exit 1
+  [*] --> s0
+  s0 --> s1: read the venture's records
+  s1 --> s4: judge a clean venture
+  s1 --> s3: the feature serves no job
+  s1 --> s6: skip a record that is not valid JSON
+  s1 --> s2: the business model has no pricing record
+  s1 --> s5: the product names no ICP
+  s2 --> s7: the finding stays a warning
+  s3 --> s7: the finding stays a warning
+  s4 --> s7: no fail-closed finding
+  s5 --> s7: the finding stays a warning
+  s2 --> s8: a fail-closed rule has a finding
+  s3 --> s8: a fail-closed rule has a finding
+  s5 --> s8: a fail-closed rule has a finding
+  s6 --> s7: no fail-closed finding
+  class s0 blue
+  class s1 blue
+  class s2 orange
+  class s3 orange
+  class s4 teal
+  class s5 orange
+  class s6 teal
+  class s7 teal
+  class s8 pink

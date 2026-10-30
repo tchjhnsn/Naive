@@ -1,0 +1,66 @@
+---
+title: "Money lint: a transfer decision and an account"
+---
+stateDiagram-v2
+  direction LR
+  state "Legend" as legend {
+    lg0: clear
+    lg1: proposed
+    lg2: approved
+    lg3: executed
+    lg4: flagged
+  }
+  class lg0 teal
+  class lg1 blue
+  class lg2 tan
+  class lg3 purple
+  class lg4 orange
+  state "At the same time" as all {
+    state "Transfer" as r0 {
+      s0: No transfer decision
+      s1: Transfer record unreadable
+      s2: Proposed, no approver
+      s3: Proposed, approver named
+      s4: Approved, no approver
+      s5: Executed, no approver
+      s6: Approved, approver named
+      s7: Executed, approver named
+      [*] --> s0
+      s0 --> s1: the transfer record cannot be read
+      s0 --> s2: a transfer is proposed
+      s1 --> s0: the transfer decision is withdrawn
+      s2 --> s3: someone is named as approver
+      s2 --> s4: the transfer is approved
+      s2 --> s5: the transfer is executed
+      s3 --> s6: the transfer is approved
+      s3 --> s7: the transfer is executed
+      s4 --> s5: the transfer is executed
+      s4 --> s6: someone is named as approver
+      s5 --> s7: someone is named as approver
+      s6 --> s4: the approver's name is removed
+      s6 --> s7: the transfer is executed
+      s7 --> s5: the approver's name is removed
+    }
+    --
+    state "Account" as r1 {
+      s8: No account
+      s9: Account record unreadable
+      s10: Account has an owner
+      s11: Account has no owner
+      [*] --> s8
+      s8 --> s9: the account record cannot be read
+      s8 --> s10: an account names its owner
+      s8 --> s11: an account is recorded with no owner
+      s9 --> s8: the account record is removed
+      s10 --> s11: an account is recorded with no owner
+      s11 --> s10: an account names its owner
+    }
+  }
+  class s0 teal
+  class s1 teal
+  class s2 orange
+  class s3 blue
+  class s4 orange
+  class s5 orange
+  class s6 tan
+  class s7 purple
