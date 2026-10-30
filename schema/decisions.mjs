@@ -33,6 +33,7 @@ import { glob as routeFileGlob, routes } from "../interface/router.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
 import { impact } from "./impact.mjs";
+import { changedReasons, citesOf, stamp } from "./reasons.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -155,7 +156,10 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
     })();
     const parent = byId.get(d.parent);
     const at = (x) => x?.provenance?.approved_at ?? x?.decided_at;
-    const stale = d.status === "decided" && at(d) && at(parent) && at(parent) > at(d);
+    const parentStale = d.status === "decided" && at(d) && at(parent) && at(parent) > at(d);
+    // Reasons with citations: a decided decision whose frozen cited file changed is stale too.
+    const changed = d.source === "file" ? changedReasons(dir, d) : [];
+    const stale = parentStale || changed.length > 0;
     // A due time is a real deadline: it overrides needed_in, and an open decision past it is overdue.
     const later = !d.due && d.needed_in && PHASES.indexOf(d.needed_in) > phase;
     const overdue = d.status === "open" && d.due && Date.parse(d.due) < now;
@@ -170,6 +174,8 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
       ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}), ...(d.ideas?.length ? { ideas: d.ideas } : {}),
       ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),
       ...(d.provenance ? { provenance: d.provenance } : {}),
+      ...(d.reasons?.length ? { reasons: d.reasons } : {}),
+      ...(changed.length ? { reasons_changed: changed.map(({ ref, claim, kind }) => ({ ref, claim, kind })) } : {}), ...(stale && !parentStale ? { stale_because: "reasons" } : {}),
       ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,
         due: d.outcomes.filter((o) => (o.result ?? "pending") === "pending" && /^\d{4}-\d{2}-\d{2}/.test(o.by ?? "") && Date.parse(o.by) < now).map((o) => o.id) } } : {}),
       ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}),
@@ -205,12 +211,20 @@ export function ownScore(d, phase, now = Date.now()) {
   if (d.render === "overdue") { s += 100; why.push("past its due time"); }
   // Cost of delay grows as the deadline nears: 40 at three days, 60 at two, 120 at one, up to 300.
   else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 72) { s += Math.min(300, Math.round((60 * 48) / Math.max(h, 1))); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
-  if (d.render === "stale") { s += 30; why.push("its parent changed after it was decided"); }
+  // A why entry may carry cites (the refs a reason supplies); why stays a list of strings, and
+  // why_cites pairs each cited entry with its refs (backward compatible).
+  const cites = [];
+  if (d.render === "stale" && d.stale_because !== "reasons") { s += 30; why.push("its parent changed after it was decided"); }
+  else if (d.render === "stale") s += 30;
+  for (const c of d.reasons_changed ?? []) { const w = `the reason you decided ${d.id} changed: ${c.ref}`; why.push(w); cites.push({ why: w, cites: [c.ref] }); }
   if (d.unlocks?.length) { s += 10 * d.unlocks.length; why.push(`unlocks ${d.unlocks.join("; ")}`); }
   if (d.part_of === "foundation") { s += phase === "discovery" ? 20 : 10; why.push("settles the strategic foundation"); }
   if (d.awaiting) { s += 8; why.push("an agent has drafted it: approving takes a minute"); }
   if (d.outcomes?.total) { s += 3 * d.outcomes.total; why.push(`${d.outcomes.total} expected outcome${d.outcomes.total > 1 ? "s" : ""} to test`); }
-  return { score: s, why };
+  // Cited reasons carry no weight of their own yet; they say what the decision rests on.
+  const refs = d.status !== "decided" ? citesOf(d.reasons) : [];
+  if (refs.length) { const w = `rests on ${d.reasons.length} reason${d.reasons.length > 1 ? "s" : ""} citing ${refs.length} source${refs.length > 1 ? "s" : ""}`; why.push(w); cites.push({ why: w, cites: refs }); }
+  return { score: s, why, ...(cites.length ? { why_cites: cites } : {}) };
 }
 
 /** Which open decisions matter most now, and why (EE-057): a decision's own weight plus 12 for each
@@ -220,11 +234,12 @@ export function rank(ds, phase, now = Date.now()) {
   const below = (id) => ds.filter((x) => x.held_by === id || x.parent === id).length;
   const scored = ds.map((d) => {
     if (!["now", "overdue", "stale"].includes(d.render) || d.source === "root") return { ...d, rank: null };
-    const { score, why } = ownScore(d, phase, now);
+    const { score, why, why_cites } = ownScore(d, phase, now);
     const n = below(d.id);
     // Kept in the order the reasons were always given: deadline and staleness first, then what waits.
-    if (n) why.splice(why.findIndex((w) => !/due|parent changed/.test(w)) === -1 ? why.length : why.findIndex((w) => !/due|parent changed/.test(w)), 0, `${n} decision${n > 1 ? "s" : ""} wait on it`);
-    return { ...d, rank: score + 12 * n, why };
+    const first = /due|parent changed|reason you decided/;
+    if (n) why.splice(why.findIndex((w) => !first.test(w)) === -1 ? why.length : why.findIndex((w) => !first.test(w)), 0, `${n} decision${n > 1 ? "s" : ""} wait on it`);
+    return { ...d, rank: score + 12 * n, why, ...(why_cites ? { why_cites } : {}) };
   });
   const order = scored.map((d, i) => [d, i]).sort(([a, i], [b, j]) => (b.rank ?? -1) - (a.rank ?? -1) || i - j).map(([d]) => d);
   return order;
@@ -276,6 +291,7 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
   const before = existing ? load(ventureFile(dir, existing)) : {};
   const next = before.status === "decided" ? nextVersion(before) : before;
   const { versions, version, merged, rolled_back_from, ...carried } = next;
+  if (rest.reasons) rest.reasons = stamp(dir, rest.reasons);
   const d = { ...carried, ...rest, status: "open", ...(version ? { version } : {}), ...(versions ? { versions } : {}), ...(merged ? { merged } : {}), provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
   const bad = validate(d);
   if (bad) return { ok: false, error: `does not match schema/decision-record.schema.json:\n${bad}` };
@@ -344,7 +360,7 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
 }
 
 /** A person approves a decision: as worded, or with their own answer. */
-export function approve(dir, id, { by, answer, via = "cli", note } = {}) {
+export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
@@ -356,12 +372,17 @@ export function approve(dir, id, { by, answer, via = "cli", note } = {}) {
   const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
   const wording = !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";
   const phase = load(join(dir, "venture.json")).phase;
-  const out = { ...d, status: "decided", answer: answer ?? d.answer, provenance: { ...d.provenance, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via } };
+  // Reasons given at approval join the drafted ones; all are frozen, each local citation with its sha256
+  // now, into this version's provenance. A new version starts from no frozen reasons of its own.
+  const given = [...(d.reasons ?? []), ...(reasons ?? [])];
+  const { reasons: _old, ...pv } = d.provenance ?? {};
+  const frozen = given.length ? stamp(dir, given, { keep: false }) : null;
+  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: note ?? `approved decision ${id} (${wording})` });
-  return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity) } };
+  return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
 }
 
 /** The matrix: for each layer, the decisions that render now, wait, or come later, by phase. */

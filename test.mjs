@@ -57,6 +57,7 @@ const steps = [
   ["public site carries no internal text", "node", ["schema/check-leaks.mjs", "site/content/marketing"]],
   ["decision versions: propose, approve, merge, rollback", "node", ["schema/decision-versions-test.mjs"]],
   ["decision impact: a merge maps what depends on it across functions, marks it stale, proposes follow-ups", "node", ["schema/decision-impact-test.mjs"]],
+  ["decision reasons: cited reasons frozen at approval; a changed citation makes the decision stale", "node", ["schema/decision-reasons-test.mjs"]],
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
   ["publication: examples", "node", ["schema/check-publication.mjs", "schema/examples/workspace"]],
   ["team: instance", "node", ["schema/check-team.mjs", "instance"]],

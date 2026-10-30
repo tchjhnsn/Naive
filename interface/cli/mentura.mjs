@@ -19,6 +19,10 @@
 //                                                   one holding a foundation statement asks you to type the route;
 //                                                   [--pick <letter>] [--by <name>] accepts one of drafts kept side by side
 //   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
+//          [--reason "<claim>" | --against "<claim>" | --context "<claim>"] [--cite <ref> [--locator <where>]] ...
+//                                                   reasons with citations, frozen with each cited file's sha256 at approval
+//   mentura decisions --venture <id> [--why <decision>] [--json]
+//                                                   the ranked decisions; --why prints one decision's reasons and citations
 //                                                   a new --answer on a decided decision makes its next version; --rollback restores one
 //   mentura merge <decision> --venture <id> --by <name> [--confirm <decision>]
 //   mentura impact <decision> --venture <id>       rebuild a merged decision's impact map across the functions
@@ -66,7 +70,8 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
-import { approve, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
+import { approve, decisionFile, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
+import { reasonsFromArgs, whyLines } from "../../schema/reasons.mjs";
 import { impact } from "../../schema/impact.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
@@ -258,7 +263,25 @@ if (cmd === "impact") {
   process.exit(0);
 }
 
+if (cmd === "decisions") {
+  // The ranked decisions, or with --why one decision's reasons and what they cite.
+  const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const r = decisions(dir);
+  const id = opt("why");
+  if (id) {
+    const f = decisionFile(dir, id);
+    if (!f) { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+    const d = JSON.parse(readFileSync(ventureFile(dir, f), "utf8"));
+    const live = r.decisions.find((x) => x.id === id);
+    out(flag("json") ? { id, reasons: d.reasons ?? [], approved_on: d.provenance?.reasons ?? [], changed: live?.reasons_changed ?? [], render: live?.render } : whyLines(dir, d).join("\n"));
+  } else out(flag("json") ? r : r.decisions.filter((d) => d.rank !== null && d.rank !== undefined).map((d) => `${String(d.rank).padStart(4)} ${d.render.padEnd(8)} ${d.id}${d.why?.length ? `\n       why: ${d.why.join("; ")}` : ""}`).join("\n") || "nothing to decide now");
+  process.exit(0);
+}
+
 if (cmd === "decide") {
+  let givenReasons = [];
+  try { givenReasons = reasonsFromArgs(argv); } catch (e) { console.error(e.message); process.exit(2); }
   // A person makes a decision (EE-058): approves the drafted wording, or gives their own with
   // --answer. Typing the decision's id confirms it. Provenance records who, when and in which phase.
   const venture = opt("venture"), id = action;
@@ -269,7 +292,7 @@ if (cmd === "decide") {
   if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
   const r = opt("rollback") !== undefined
     ? rollback(dir, id, opt("rollback"), { by: opt("by") ?? process.env.MENTURA_PERSON })
-    : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note") });
+    : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note"), reasons: givenReasons.length ? givenReasons : undefined });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
