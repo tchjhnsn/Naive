@@ -147,6 +147,7 @@ Pay: ${pay}
 Equity: ${equity}
 `;
 
+/** @param {string} id @param {{ recruiting?: object[], note: string, why: string }} fields */
 function planFor(id, { recruiting, note, why }) {
   return {
     venture: id,
