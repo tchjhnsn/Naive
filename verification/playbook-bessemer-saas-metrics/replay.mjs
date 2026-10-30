@@ -5,7 +5,7 @@
 // Fixture ventures live under a temp directory. Nothing here is a founder's venture.
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -114,7 +114,17 @@ function metricsNote(over = {}) {
   };
 }
 
-export function grade(note, ctx) {
+// The metrics record the checks read: the person's answer once decided, the agent's note while open.
+export function metricsOf(decision) {
+  try {
+    return JSON.parse(decision?.status === "decided" ? decision.answer : decision?.note);
+  } catch {
+    return null;
+  }
+}
+
+export function grade(metrics, ctx) {
+  const note = metrics ?? {};
   const findings = [];
   const fail = (rule, message) => findings.push({ rule, message });
   const product = ctx.product;
@@ -162,7 +172,7 @@ export function grade(note, ctx) {
   } else if (!ctx.telosExisted) {
     if (ctx.telosWrittenByPlaybook) fail("telos-when-decided", "this playbook created a telos");
   } else {
-    const numeric = PHASES.filter((p) => note.targets[p].value !== PHRASE && p === note.phase);
+    const numeric = PHASES.filter((p) => note.targets?.[p]?.value !== PHRASE && p === note.phase);
     const criteria = ctx.telosCriteria ?? [];
     for (const p of numeric) {
       const t = note.targets[p];
@@ -196,10 +206,10 @@ function initVenture(workspace, id, phase) {
 }
 
 const SOURCES = [
-  ["bessemer-scaling-100m", "https://www.bvp.com/atlas/scaling-to-100-million", "2021-09-21", "Scaling to $100 Million"],
-  ["bessemer-state-of-the-cloud-2023", "https://www.bvp.com/atlas/state-of-the-cloud-2023", "2023-04-11", "State of the Cloud 2023"],
-  ["bessemer-state-of-the-cloud-2024", "https://www.bvp.com/atlas/state-of-the-cloud-2024", "2024-06-20", "State of the Cloud 2024"],
-  ["bessemer-cloud-100-benchmarks-2025", "https://www.bvp.com/atlas/the-cloud-100-benchmarks-report", "2025-09-03", "The Cloud 100 Benchmarks Report 2025"],
+  ["bessemer-scaling-100m", "https://www.bvp.com/atlas/scaling-to-100-million", "2026-10-29", "Scaling to $100 Million"],
+  ["bessemer-state-of-the-cloud-2023", "https://www.bvp.com/atlas/state-of-the-cloud-2023", "2026-10-29", "State of the Cloud 2023"],
+  ["bessemer-state-of-the-cloud-2024", "https://www.bvp.com/atlas/state-of-the-cloud-2024", "2026-10-29", "State of the Cloud 2024"],
+  ["bessemer-cloud-100-benchmarks-2025", "https://www.bvp.com/atlas/the-cloud-100-benchmarks-report", "2026-10-29", "The Cloud 100 Benchmarks Report 2025"],
 ];
 
 async function fileSources(workspace, venture) {
@@ -390,19 +400,21 @@ async function main() {
   record("NoUseBeforeProvided withheld actuals", true, filledGrade.byRule["actuals-from-records"][0].message);
 
   // Agent drafts telos only after a person decides, and the live record stays put.
-  const { approve } = await import("../../schema/decisions.mjs");
   const withNumber = metricsNote({
     phase: "beachhead", arr_band: "$1-10MM", actuals: actualsFrom(money),
     targets: { ...blankTargets(), beachhead: { value: "125% net retention", metric: "net_retention", condition: "$1-10MM ARR median", source: SCALING } },
   });
-  const decisionFile = join(workspace, "ventures", passId, "decisions/finance-saas-metrics.decision.json");
-  const onDisk = JSON.parse(readFileSync(decisionFile, "utf8"));
-  onDisk.note = JSON.stringify(withNumber);
-  writeFileSync(decisionFile, JSON.stringify(onDisk, null, 2) + "\n");
-  const approved = approve(join(workspace, "ventures", passId), "finance-saas-metrics", { by: "Fixture Founder", via: "replay", answer: onDisk.note });
-  assert(approved.ok, approved.error);
+  const decide = spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), "decide", "finance-saas-metrics", "--venture", passId, "--workspace", workspace, "--by", "Fixture Founder", "--confirm", "finance-saas-metrics", "--answer", JSON.stringify(withNumber)], { encoding: "utf8" });
+  assert(decide.status === 0, `decide: ${decide.stderr || decide.stdout}`);
   const decided = (await read(workspace, passId, "decisions/finance-saas-metrics")).result;
-  assert(decided.status === "decided" && decided.provenance.approved_by === "Fixture Founder", "approve did not record the person");
+  assert(decided.status === "decided" && decided.provenance.approved_by === "Fixture Founder", "decide did not record the person");
+  assert(decided.note === decisionRead.result.note, "the proposed note should not change");
+  assert(JSON.stringify(metricsOf(decided)) === JSON.stringify(withNumber), "the checks should read the person's answer");
+  const badAnswer = grade(metricsOf({ ...decided, answer: JSON.stringify(invented) }), { ...ctx, decision: decided });
+  assert(badAnswer.byRule["targets-sourced"].length, "an invented number in the answer should fail");
+  const proseAnswer = grade(metricsOf({ ...decided, answer: "We will aim for good retention." }), { ...ctx, decision: decided });
+  assert(proseAnswer.byRule["targets-sourced"].length, "an answer that is not the metrics record should fail");
+  record("targets-sourced reads the decided answer", true, "decide --answer carried the target; an invented number and a prose answer both failed");
   const liveBefore = readFileSync(join(workspace, "ventures", passId, "foundation/telos.json"), "utf8");
   const draftedTelos = JSON.parse(liveBefore);
   draftedTelos.phases[0].exit_criteria.push({
@@ -413,7 +425,7 @@ async function main() {
   const liveAfter = readFileSync(join(workspace, "ventures", passId, "foundation/telos.json"), "utf8");
   assert(liveAfter === liveBefore, "agent write changed the live telos");
   assert(existsSync(join(workspace, "ventures", passId, "_drafts/foundation__telos.json.draft")), "draft file missing");
-  const telosGrade = grade(withNumber, {
+  const telosGrade = grade(metricsOf(decided), {
     ...ctx, decision: decided, telosWrittenByPlaybook: true,
     telosCriteria: draftedTelos.phases[0].exit_criteria,
   });

@@ -28,7 +28,7 @@ The page's method:
 - Gross margin is revenue after cost of goods sold, divided by revenue. They name hosting, implementation, and services, including customer success, as typical costs of goods. [Scaling to $100 Million](https://www.bvp.com/atlas/scaling-to-100-million)
 - CAC payback is how long sales, marketing, and the customer-success cost tied to renewal and expansion take to be repaid. They measure it on gross-margin-adjusted ARR. They recommend investing when customer lifetime value over CAC is 3x or better. [Scaling to $100 Million](https://www.bvp.com/atlas/scaling-to-100-million)
 - Their efficiency score on this page is free-cash-flow margin of ARR plus ARR year-over-year growth. They say it is generally only meaningful after $25 million of ARR. They encourage portfolio companies to target 70 percent between $25 million and $50 million of ARR, and 50 percent at $100 million and above. They mention the Rule of 40 as the often-cited 40 percent bar, and the page says the average BVP Nasdaq Emerging Cloud Index efficiency score is closer to 50 percent. [Scaling to $100 Million](https://www.bvp.com/atlas/scaling-to-100-million)
-- Cash conversion score is ARR divided by total capital invested minus cash. [Scaling to $100 Million](https://www.bvp.com/atlas/scaling-to-100-million)
+- Cash conversion score is ARR divided by (total capital invested minus cash). [Scaling to $100 Million](https://www.bvp.com/atlas/scaling-to-100-million)
 
 Average ARR growth by scale, from the benchmark list on that page:
 
@@ -127,7 +127,7 @@ The venture provides, before step 1, whatever it already has. This playbook does
 4. Read `purpose/money/summary`. When the read returns a record, the actuals for cash, monthly inflow, monthly outflow, monthly net, and `runway_months` are that record's figures, in the minor units the summary uses. When the read is not found, those actuals are `not in the venture`. Do not treat monthly inflow as ARR. The summary has no ARR field (`schema/money-summary.schema.json`).
 5. Read `validation/product-market-fit`. Retention cohorts stay on that record. Do not copy a Bessemer retention number in as if it were the venture's cohort.
 6. Read `foundation/telos`. If it is missing, leave it missing. This playbook does not invent `statement`, `end_state`, or `owner_outcome`.
-7. Write one `raw/sources/[id]` record for each page you will cite. The ids are `bessemer-scaling-100m` (origin `https://www.bvp.com/atlas/scaling-to-100-million`, fetched `2021-09-21`), `bessemer-state-of-the-cloud-2023` (origin `https://www.bvp.com/atlas/state-of-the-cloud-2023`, fetched `2023-04-11`), `bessemer-state-of-the-cloud-2024` (origin `https://www.bvp.com/atlas/state-of-the-cloud-2024`, fetched `2024-06-20`), and `bessemer-cloud-100-benchmarks-2025` (origin `https://www.bvp.com/atlas/the-cloud-100-benchmarks-report`, fetched `2025-09-03`). `fetched` is the page's published date.
+7. Write one `raw/sources/[id]` record for each page you will cite. `fetched` is the date you fetched that page, not the date Bessemer published it. The ids are `bessemer-scaling-100m` (origin `https://www.bvp.com/atlas/scaling-to-100-million`), `bessemer-state-of-the-cloud-2023` (origin `https://www.bvp.com/atlas/state-of-the-cloud-2023`), `bessemer-state-of-the-cloud-2024` (origin `https://www.bvp.com/atlas/state-of-the-cloud-2024`), and `bessemer-cloud-100-benchmarks-2025` (origin `https://www.bvp.com/atlas/the-cloud-100-benchmarks-report`).
 8. Propose `decisions/finance-saas-metrics` with `mentura propose`. Status stays `open`. An agent does not decide it. The question is: "Which published Bessemer benchmarks, if any, are the targets for each phase?" `needed_in` is the venture's current phase. `boundary` is `fail-open`. `decides` names record `telos` and path `foundation/telos.json`. The note is the metrics record, as JSON:
 
 ```json
@@ -160,7 +160,7 @@ The venture provides, before step 1, whatever it already has. This playbook does
 `segment` may be null, `smb`, `mid-market`, or `enterprise`. `stage_note` may be null, `Series B or C enterprise software`, or `public playbook`. The agent leaves both null.
 
 9. Write `evidence/[id]` for the check run. `subject.kind` is `venture`. `passed` is true only when every criterion below passed. A failed run is still written, with `passed` false. That is how a check can fail.
-10. A person decides with `mentura decide finance-saas-metrics --by "<name>"`. They may replace a phase target only by the rule in the checks. They type the decision id themselves.
+10. A person decides with `mentura decide finance-saas-metrics --by "<name>" --confirm finance-saas-metrics --answer "$(cat metrics.json)"`. `metrics.json` is the metrics record from step 8 with `arr_band`, `segment`, `stage_note`, and any phase target the person changed. They may replace a phase target only by the rule in the checks. They type the decision id themselves. The `note` keeps what the agent proposed. Once the status is `decided`, `answer` is the metrics record, and every check reads it. While the status is `open`, the checks read `note`.
 11. After that decision is `decided`, and only if step 6 found a telos, draft the accepted numeric targets for the current phase onto `foundation/telos` as exit criteria. Each criterion's `statement` is the target value, its `evidence` names the `raw/sources` id, and `serves` names a measure that already exists on the telos. An agent's write of `foundation/telos` is a draft (`strategy-or-constitution` in `schema/data-model.json`). A person accepts it. If there is no telos, stop. Do not create one in this playbook.
 
 Replace a target's `value` only when all of the following are true. Otherwise leave `no published Bessemer target`.
@@ -193,7 +193,7 @@ A replaced target looks like this:
 
 ## Checks
 
-Run them after step 8 and again after a person edits the decision. Write the result to `evidence/[id]`. Each one can pass or fail.
+Run them after step 8 and again after a person decides. An `answer` that does not parse as the metrics record fails `targets-sourced`. Write the result to `evidence/[id]`. Each one can pass or fail.
 
 | Criterion | Passes when | Fails when |
 | --- | --- | --- |

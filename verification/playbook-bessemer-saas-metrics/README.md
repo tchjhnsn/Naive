@@ -2,7 +2,7 @@
 
 Model of `packages/finance/playbooks/bessemer-saas-metrics.md`: the states a founder's records move through as the template steps run. TLC checks the rules. `replay.mjs` runs the same routes on fixture ventures.
 
-The chart hides two kinds of step. `CiteTarget` stays on "Metrics record proposed" (a later phase may cite a published number only after the Bessemer pages are filed, and discovery and validation never do). `Done` is the stutter on the end states: checks failed, you decided with no telos on file, and targets drafted on the telos. TLC counted 88 of those model steps. The drawn chart is the path a reader follows.
+The chart hides two kinds of step. `CiteTarget` stays on "Metrics record proposed" (a later phase may cite a published number only after the Bessemer pages are filed, and discovery and validation never do). `Done` is the stutter on the end states: checks failed, you decided with no telos on file, and targets drafted on the telos. The earlier TLC run counted 88 of those model steps. The drawn chart is the path a reader follows.
 
 `venture` is not a row in `node interface/router.mjs`. `call()` still answers it: `interface/writes.mjs` hands an unknown route to `specialCall` in `interface/package-routes.mjs`. The replay reads `phase` from it. `finance/metrics` is not a route. The playbook does not use it.
 
@@ -27,7 +27,7 @@ Replay the routes:
 node verification/playbook-bessemer-saas-metrics/replay.mjs
 ```
 
-Confirmed with TLC 1.7.4 (the statechart script's pinned jar) on this model: 496 states, 520 steps, exit 0. The chart draws 13 states and 12 arrows.
+An earlier run of TLC 1.7.4 (the statechart script's pinned jar) reported 496 states, 520 steps and exit 0. That output was not saved, so these counts have no file behind them, and TLC has not been re-run since. The TLC column below comes from the same run. The chart draws 13 states and 12 arrows.
 
 ## Rules
 
@@ -39,8 +39,8 @@ Confirmed with TLC 1.7.4 (the statechart script's pinned jar) on this model: 496
 | TypeOK | PASS | The fixture records that were written came back from the router valid against their schemas. |
 | NoDeadlock | PASS | The replay's pass path ends on a telos draft. The fail path ends on evidence with `passed` false. |
 
-The chart state "Checks failed" is the playbook check when no product is on file. TLC does not mark it as a broken rule. The invariant holds there: a failing check means the product was absent. The replay writes that failure. It is the check working.
+The model claims less than the playbook. The playbook has six failure criteria: `cloud-fit`, `targets-sourced`, `no-early-number`, `actuals-from-records`, `decision-open`, and `telos-when-decided`. `CheckMatches` in `BessemerSaasMetrics.tla` covers one way to fail: the chart state "Checks failed" means no product is on file. TLC says nothing about the other five. `grade` in `replay.mjs` runs all six on fixtures, so the replay is the only evidence for those five.
 
 A scratch module that is not this spec, `UseMissing` (set actuals to `from-money` while `moneyPresent` is false), breaks `NoUseBeforeProvided` in one step. That action is not in `BessemerSaasMetrics.tla`. The replay does not reproduce it: a filled runway with no money summary fails the playbook check instead of being stored as fact.
 
-`propose` of a decision with status `decided` is refused: "an agent may only propose an open decision; a person approves it." After `approve` with a person's name, an agent write of `foundation/telos` returns `draft: true` and leaves the live file unchanged.
+`propose` of a decision with status `decided` is refused: "an agent may only propose an open decision; a person approves it." After `mentura decide --confirm finance-saas-metrics --answer` with a person's name, the checks read the metrics record from `answer`, and an agent write of `foundation/telos` returns `draft: true` and leaves the live file unchanged.
