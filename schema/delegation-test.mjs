@@ -148,6 +148,7 @@ expect("a person whose MENTURA_ACTOR_ID is their own name still merges", asActor
 
 // Provenance after the refusal: nothing is recorded as person/Torian.
 const pv = peopled();
+mkdirSync(join(pv, "operations"));
 writeFileSync(join(pv, "venture.json"), JSON.stringify({ id: "pv", name: "Pv", type: "software-startup", phase: "discovery" }));
 propose(pv, { id: "d-a", question: "A?", answer: "a", class: "implementation-detail", applies_to: [{ file: "operations/a.json", field: "a" }] }, { agentId: "cos" });
 const decided = approve(pv, "d-a", { by: "Torian" });

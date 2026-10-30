@@ -93,7 +93,7 @@ try {
   writeFileSync(join(o, "evidence/e.json"), "{\"v\":1}\n");
   const claim = "The evidence says so";
   const cited = [{ claim, kind: "for", citations: [{ ref: "evidence/e.json" }] }];
-  propose(o, { id: "pick", question: "Which?", answer: "this", reasons: cited }, { agentId: "cos" });
+  propose(o, { id: "pick", question: "Which?", answer: "this", boundary: "fail-open", reasons: cited }, { agentId: "cos" });
   approve(o, "pick", { by: "Torian" });
   writeFileSync(join(o, "evidence/e.json"), "{\"v\":2}\n");
   const rendered = () => decisions(o, Date.now()).decisions.find((d) => d.id === "pick").render;
