@@ -75,14 +75,14 @@ const after = readdirSync(join(dir, "foundation/goals")).map((f) => readFileSync
 ok(before === after, "records are never edited");
 
 // --propose writes open decisions only.
-const p = await proposeFindings(dir, all.filter((f) => f.record === crit));
+const p = proposeFindings(dir, all.filter((f) => f.record === crit));
 const files = readdirSync(join(dir, "decisions")).filter((f) => f.startsWith("premise-"));
 ok(p.every((x) => x.ok) && files.length === p.length && files.every((f) => JSON.parse(readFileSync(join(dir, "decisions", f), "utf8")).status === "open"), "--propose writes each finding as an open decision");
 
 // Rerunning --propose never reopens a decision a person decided, and files nothing twice.
 const [first] = p;
 const decided = approve(dir, first.result.proposed, { by: "Torian", answer: "moderate means a 3 of 5 on the problem rubric", reasons: [{ kind: "for", claim: "the rubric already grades problems" }] });
-const again = await proposeFindings(dir, all.filter((f) => f.record === crit));
+const again = proposeFindings(dir, all.filter((f) => f.record === crit));
 const rec = JSON.parse(readFileSync(join(dir, first.result.file), "utf8"));
 ok(decided.ok && rec.status === "decided" && !rec.versions && again.every((x) => x.ok && x.result.kept), "rerunning --propose keeps decided and already-filed decisions as they are");
 ok(readdirSync(join(dir, "decisions")).filter((f) => f.startsWith("premise-")).length === files.length, "rerunning --propose files no duplicates");
@@ -150,7 +150,74 @@ writeFileSync(join(fakeBin, "python3"), "#!/bin/sh\necho refused by the validato
 const bad = spawnSync(process.execPath, [linterPath, d6, "--propose"], { encoding: "utf8", env: { ...process.env, PATH: fakeBin } });
 ok(bad.status === 1 && /refused/.test(bad.stderr), "a failed proposal prints the failure and exits non-zero");
 
-for (const d of [d4, d5, d6]) rmSync(d, { recursive: true, force: true });
+// _private/ is never read: its answer reaches neither the output nor a filed decision.
+const SECRET = "the acquirer is Initech at nine million";
+const d7 = fresh("Grow a business.");
+put(d7, "_private/decisions/secret.decision.json", { id: "secret", question: "Who is buying us?", status: "decided", answer: SECRET });
+put(d7, "_private/archive/decisions/old.decision.json", { id: "old", question: "Is this good?", status: "open", answer: SECRET });
+const shown = spawnSync("node", [linterPath, d7, "--json"], { encoding: "utf8" });
+const filed = run(d7);
+const onDisk = premiseFiles(d7).map((f) => readFileSync(join(d7, "decisions", f), "utf8")).join();
+ok(!shown.stdout.includes(SECRET) && !filed.stdout.includes(SECRET) && !filed.stderr.includes(SECRET), "a _private/ answer never reaches lint output");
+ok(!onDisk.includes(SECRET) && !(existsSync(join(d7, "provenance.jsonl")) && readFileSync(join(d7, "provenance.jsonl"), "utf8").includes(SECRET)) && !/_private|secret/.test(shown.stdout), "a _private/ decision never reaches a filed decision");
+
+// Re-deciding a premise decision files nothing about the linter's own decision.
+const d8 = fresh("Grow a good business.");
+run(d8);
+const [own] = premiseFiles(d8).map((f) => f.replace(".decision.json", ""));
+const reasons = [{ kind: "for", claim: "a number" }];
+approve(d8, own, { by: "Torian", answer: "ten customers", reasons });
+const redone = approve(d8, own, { by: "Torian", answer: "twenty customers", reasons });
+run(d8);
+ok(redone.ok && JSON.parse(readFileSync(join(d8, "decisions", `${own}.decision.json`), "utf8")).provenance.drafted_by.kind === "person" && premiseFiles(d8).length === 1, "re-deciding a premise decision files no extra decision");
+
+// An unrelated parent does not re-ask a question a person answered.
+const d9 = fresh("Grow a business.");
+put(d9, "foundation/goals/h.json", { id: "h", statement: "Hire.", kind: "venture", why: "x", owner: "T", measures: [{ id: "n", statement: "n" }] });
+const parented = (derives_from, serves) => {
+  put(d9, "foundation/requirements/r.json", { id: "r", statement: "Stay reliable.", derives_from, must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
+  put(d9, "foundation/exit-criteria/discovery.json", { phase: "discovery", criteria: [{ id: "c", statement: "Done", serves }] });
+};
+put(d9, "foundation/goals/k.json", { id: "k", statement: "Keep.", kind: "venture", why: "x", owner: "T", measures: [{ id: "bare", statement: "bare" }] });
+parented(["g"], ["k/bare"]);
+run(d9);
+const answered = premiseFiles(d9);
+for (const f of answered) approve(d9, f.replace(".decision.json", ""), { by: "Torian", answer: "settled", reasons });
+parented(["g", "h"], ["k/bare", "h/n"]);
+run(d9);
+ok(answered.length >= 1 && premiseFiles(d9).length === answered.length, "adding an unrelated parent re-asks nothing");
+
+// Each missing parent and each mismatched requirement is its own decision.
+const d10 = fresh("Grow a business.");
+put(d10, "foundation/requirements/two-missing.json", { id: "two-missing", statement: "Holds.", derives_from: ["g", "gone-a", "gone-b"], must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
+for (const id of ["late-a", "late-b"]) put(d10, `foundation/requirements/${id}.json`, { id, statement: `${id} holds.`, derives_from: ["g/m"], must_hold_by: "scale", verified_by: { kind: "check", ref: "x" } });
+put(d10, "foundation/exit-criteria/discovery.json", { phase: "discovery", criteria: [{ id: "c", statement: "Done", serves: ["g/m"] }] });
+run(d10); run(d10);
+const asked = premiseFiles(d10).map((f) => JSON.parse(readFileSync(join(d10, "decisions", f), "utf8")).question);
+ok(asked.length === 4 && ["gone-a", "gone-b", "late-a", "late-b"].every((x) => asked.some((q) => q.includes(x))), "findings differing only by target file separate decisions");
+
+// A decided decision keeps its question when the finding's wording changes.
+const d11 = fresh("Grow a good business.");
+run(d11);
+const [settled] = premiseFiles(d11);
+const settledFile = join(d11, "decisions", settled);
+approve(d11, settled.replace(".decision.json", ""), { by: "Torian", answer: "ten customers", reasons });
+const reworded = JSON.parse(readFileSync(settledFile, "utf8"));
+writeFileSync(settledFile, JSON.stringify({ ...reworded, question: "older wording" }, null, 2));
+const rerun = run(d11);
+const kept = JSON.parse(readFileSync(settledFile, "utf8"));
+ok(rerun.status === 0 && kept.question === "older wording" && kept.status === "decided" && kept.answer === "ten customers", "a decided decision with other wording is left alone");
+
+// Parents decisions.mjs accepts are not reported missing.
+const d13 = fresh("Grow a good business.");
+run(d13);
+const [linterId] = premiseFiles(d13).map((f) => f.replace(".decision.json", ""));
+for (const [id, parent] of [["under-venture", "venture"], ["under-foundation", "foundation"], ["under-linter", linterId]]) put(d13, `decisions/${id}.decision.json`, { id, question: "Which plan?", status: "open", parent });
+put(d13, "decisions/under-nothing.decision.json", { id: "under-nothing", question: "Which plan?", status: "open", parent: "gone" });
+const parents = lint(d13, { config: {} }).filter((f) => f.field === "parent");
+ok(parents.length === 1 && parents[0].record === "decisions/under-nothing", "linter-drafted, venture and foundation parents resolve; a missing one is still reported");
+
+for (const d of [d4, d5, d6, d7, d8, d9, d10, d11, d13]) rmSync(d, { recursive: true, force: true });
 rmSync(d3, { recursive: true, force: true });
 rmSync(dir, { recursive: true, force: true }); rmSync(d2, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passing");

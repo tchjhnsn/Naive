@@ -12,11 +12,12 @@
 // Rules (one per aspect) are ESLint-shaped: naive.config.json premise_lint.rules.<aspect> is "off",
 // "warn" or "error" (default warn). Any error-level finding exits 1.
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { ventureFile, kbaseOf } from "./venture-paths.mjs";
+import { ventureFile } from "./venture-paths.mjs";
 import { readConfig } from "./naive-config.mjs";
+import { decisions, decisionFiles, propose, decisionFile } from "./decisions.mjs";
 
 export const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 
@@ -36,6 +37,8 @@ export const ASPECTS = {
 export const VAGUE = ["moderate", "enough", "sufficient", "stable", "good", "reliable", "rely", "confident", "significant", "strong", "many", "few", "adequate", "reasonable", "robust", "fast", "quickly", "scalable", "simple", "easy", "mature", "solid", "near-term", "soon", "large", "small", "meaningful", "regularly", "month over month"];
 
 const LINTER = "premise-lint";
+// The linter's own decisions are told by id, which survives every version of the record.
+const OWN_ID = /^premise-[0-9a-f]{10}$/;
 const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const hasWord = (text, w) => new RegExp(`(^|[^\\p{L}\\p{N}-])${esc(w)}(?=$|[^\\p{L}\\p{N}-])`, "iu").test(text ?? "");
@@ -61,15 +64,6 @@ function canonical(dir) {
   if (existsSync(ventureFile(dir, "foundation/constraints.json"))) add("foundation/constraints.json");
   return out;
 }
-// Every *.decision.json under the knowledge base, skipping hidden folders, _drafts and code.
-function decisionFiles(dir) {
-  const root = join(dir, existsSync(join(dir, kbaseOf(dir))) ? kbaseOf(dir) : "");
-  const out = [];
-  const walk = (d) => { for (const n of readdirSync(d)) { if (n.startsWith(".") || n === "_drafts" || n === "node_modules" || n === "codebase" || n === "repo") continue; const p = join(d, n); let s; try { s = statSync(p); } catch { continue; } if (s.isDirectory()) { if (!existsSync(join(p, "venture.json"))) walk(p); } else if (n.endsWith(".decision.json")) out.push(p); } };
-  if (existsSync(root)) walk(root);
-  return out.map((p) => ({ rel: p.slice(dir.length + 1), rec: load(p) })).filter((x) => x.rec?.id);
-}
-
 /** The venture's premise graph: goals, measures, requirements, exit criteria, constraints and decisions. */
 export function graph(dir, { includeDrafts = false } = {}) {
   const byRel = new Map();
@@ -83,7 +77,12 @@ export function graph(dir, { includeDrafts = false } = {}) {
     else if (rel === "foundation/constraints.json") for (const c of rec.must_not ?? []) g.constraints.push({ ...c, _rel: rel, _draft: draft });
   }
   // Decisions this linter drafted are its own output, not premises of the venture.
-  for (const { rel, rec } of decisionFiles(dir)) if (rec.provenance?.drafted_by?.id !== LINTER) g.decisions.push({ ...rec, _rel: rel });
+  for (const rel of decisionFiles(dir)) {
+    const rec = load(ventureFile(dir, rel));
+    if (rec?.id && !OWN_ID.test(rec.id)) g.decisions.push({ ...rec, _rel: rel });
+  }
+  // A parent may be any decision decisions.mjs resolves: the linter's own, the roots, a foundation statement.
+  g.decisionIds = new Set(decisions(dir, Date.now()).decisions.map((d) => d.id));
   const v = load(join(dir, "venture.json")) ?? {};
   g.functions = Array.isArray(v.functions) ? v.functions.map((f) => f.id ?? f) : Object.keys(v.functions ?? {});
   g.phase = v.phase;
@@ -201,8 +200,8 @@ export function cells(g) {
     if (d.status === "decided" && !(d.decided_by ?? d.provenance?.approved_by)) cell("decision", d, "decided_by", "no-owner");
     if (d.status === "decided" && !(d.reasons ?? []).length) cell("decision", d, "answer", "unsupported-premise", { claim: typeof d.answer === "string" ? d.answer : JSON.stringify(d.answer ?? null) });
     vague("decision", d, "question", d.question, []);
-    if (d.parent && !ids.has(d.parent)) cell("decision", d, "parent", "dependency", { detail: `names parent ${d.parent}, which is no decision here` }, [d.parent]);
-    for (const u of d.unlocks ?? []) if (typeof u === "string" && !ids.has(u)) cell("decision", d, "unlocks", "dependency", { detail: `unlocks ${u}, which is no decision here` }, [u]);
+    if (d.parent && !g.decisionIds.has(d.parent)) cell("decision", d, "parent", "dependency", { detail: `names parent ${d.parent}, which is no decision here` }, [d.parent]);
+    for (const u of d.unlocks ?? []) if (typeof u === "string" && !g.decisionIds.has(u)) cell("decision", d, "unlocks", "dependency", { detail: `unlocks ${u}, which is no decision here` }, [u]);
     const seen = new Set([d.id]); let p = d.parent;
     while (p && ids.has(p)) { if (seen.has(p)) { cell("decision", d, "parent", "dependency", { detail: "is, through its parents, its own ancestor" }); break; } seen.add(p); p = ids.get(p).parent; }
   }
@@ -234,13 +233,16 @@ export function lint(dir, { route, includeDrafts = false, config } = {}) {
   return out;
 }
 
+// What tells two cells of one (record, field, aspect) apart. Anything else may change without
+// re-asking a question a person answered.
+const cellDetail = (f) => f.term ? [f.term] : ["dependency", "conflict", "phase-mismatch"].includes(f.aspect) ? [...f.links].sort() : [];
+
 /** Writes each finding as an open decision (an agent proposes; a person decides). A finding whose
  *  decision already exists is left alone unless it is still open with other wording, so a rerun never
  *  reopens what a person decided. */
-export async function proposeFindings(dir, findings) {
-  const { propose, decisionFile } = await import("./decisions.mjs");
+export function proposeFindings(dir, findings) {
   return findings.map((f) => {
-    const id = `premise-${createHash("sha256").update([f.record, f.field, f.aspect, f.term ?? "", ...[...f.links].sort()].join("|")).digest("hex").slice(0, 10)}`;
+    const id = `premise-${createHash("sha256").update([f.record, f.field, f.aspect, ...cellDetail(f)].join("|")).digest("hex").slice(0, 10)}`;
     const file = decisionFile(dir, id);
     const prior = file && load(ventureFile(dir, file));
     if (prior && (prior.status !== "open" || prior.question === f.question)) return { finding: f, ok: true, result: { kept: id, file, status: prior.status } };
@@ -255,7 +257,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, route] = args.filter((a) => !a.startsWith("--"));
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node schema/premise-lint.mjs <venture dir> [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
   const findings = lint(dir, { route, includeDrafts: flags.has("--drafts") });
-  const proposed = flags.has("--propose") ? await proposeFindings(dir, findings) : null;
+  const proposed = flags.has("--propose") ? proposeFindings(dir, findings) : null;
   if (flags.has("--json")) console.log(JSON.stringify({ findings, ...(proposed ? { proposed: proposed.map((p) => ({ record: p.finding.record, aspect: p.finding.aspect, ok: p.ok, ...(p.result ?? { error: p.error }) })) } : {}) }, null, 2));
   else {
     for (const f of findings) console.log(`${f.severity.padEnd(5)}  ${f.aspect.padEnd(19)} ${f.record} ${f.field}${f.draft ? " (draft)" : ""}\n       ${f.question}`);
