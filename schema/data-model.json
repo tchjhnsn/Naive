@@ -1777,7 +1777,7 @@
       "paths": [
         "instance/**/.naive/telemetry.jsonl"
       ],
-      "note": "Opt-in usage events shared by the plugin beta and Mentura: which capability ran, when, how long, how it ended; no record contents, no _private paths, the venture id hashed with a per-venture salt (schema/telemetry.mjs)."
+      "note": "Opt-in usage events shared by the plugin beta and Mentura: which capability ran, when, how long, how it ended; no record contents, no _private paths, the venture id hashed with a per-venture salt (schema/telemetry.mjs). Not routed: the router never routes .naive/, so events stay off MCP and the API."
     },
     {
       "id": "beta-capabilities",

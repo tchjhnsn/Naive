@@ -24,7 +24,8 @@ const env = { ...process.env, MENTURA_WORKSPACE: ws };
 delete env.MENTURA_ACTOR_ID; delete env.TYPESAFE_API_KEY;
 delete process.env.MENTURA_ACTOR_ID;
 const cli = (...a) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
-const naive = (...a) => spawnSync("node", [join(repo, "interface/cli/naive.mjs"), ...a], { encoding: "utf8", env });
+const naive = (...a) => spawnSync("node", [join(repo, "interface/cli/naive.mjs"), ...a], { encoding: "utf8", env: { ...env, NAIVE_BETA_TESTER: "t1" } });
+const routesMd = () => readFileSync(join(repo, "docs/reference/ROUTES.md"), "utf8");
 const json = (o) => JSON.stringify(o, null, 2) + "\n";
 const put = (f, o) => { mkdirSync(join(f, ".."), { recursive: true }); writeFileSync(f, json(o)); };
 const valid = (schema, o) => { const f = join(ws, `v-${Math.random().toString(36).slice(2)}.json`); writeFileSync(f, JSON.stringify(o)); const r = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" }); rmSync(f); return r.status === 0; };
@@ -91,11 +92,11 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   const fb = { capability: "venture", answers: { confusing: "setup crashed when I named the venture" } };
   const noKey = await route(fb, { jev: async () => { throw new Error("must not be called"); }, env: {} });
   expect("without TYPESAFE_API_KEY the fallback routes, no model", noKey.fallback && noKey.destination === "product/bugs" && noKey.model === "fallback", JSON.stringify(noKey));
-  const sure = await route(fb, { jev: async () => ({ destination: "decisions", confidence: 0.97 }), env: { TYPESAFE_API_KEY: "test" } });
+  const sure = await route(fb, { jev: async () => ({ destination: "decisions", confidence: 0.97 }), env: { TYPESAFE_API_KEY: "test" }, send: true });
   expect("with the key, Jev's answer at 0.95 or more is accepted", sure.model === "jev" && sure.destination === "decisions" && !sure.fallback, JSON.stringify(sure));
-  const unsure = await route(fb, { jev: async () => ({ destination: "decisions", confidence: 0.9 }), fallback: () => ({ destination: "inbox", confidence: 0.6, model: "stub" }), env: { TYPESAFE_API_KEY: "test" } });
+  const unsure = await route(fb, { jev: async () => ({ destination: "decisions", confidence: 0.9 }), fallback: () => ({ destination: "inbox", confidence: 0.6, model: "stub" }), env: { TYPESAFE_API_KEY: "test" }, send: true });
   expect("below 0.95 the injected fallback decides", unsure.fallback && unsure.destination === "inbox" && unsure.model === "stub", JSON.stringify(unsure));
-  const broken = await route(fb, { jev: async () => { throw new Error("network"); }, env: { TYPESAFE_API_KEY: "test" } });
+  const broken = await route(fb, { jev: async () => { throw new Error("network"); }, env: { TYPESAFE_API_KEY: "test" }, send: true });
   expect("a Jev failure falls back", broken.fallback && broken.destination === "product/bugs");
 }
 
@@ -111,8 +112,8 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("on, feedback and bugs are always open", blocked(dir, "validation/feedback/x", { tester: "t1", table: "validation/feedback/[id]" }) === null && blocked(dir, "product/bugs/b-1", { tester: "t1" }) === null);
   const b = blocked(dir, "ideas/map", { tester: "t1" });
   expect("on, the first non-core capability is locked until feedback on foundation", b?.capability === "ideas" && b.needs.capability === "foundation" && /naive beta feedback foundation/.test(b.message), JSON.stringify(b));
-  process.env.MENTURA_ACTOR_ID = "t1";
-  const refused = await call({ venture: "vs", route: "ideas/map", action: "read", workspace: ws, actor_id: "t1" });
+  process.env.NAIVE_BETA_TESTER = "t1";
+  const refused = await call({ venture: "vs", route: "ideas/map", action: "read", workspace: ws, actor_id: "builder" });
   expect("the router refuses a locked capability's route, naming the feedback to give", !refused.ok && refused.beta_locked === "ideas" && /feedback on foundation/.test(refused.error), JSON.stringify(refused).slice(0, 300));
   expect("unlock before the feedback is refused", !unlock(dir, "t1").ok);
   const missing = await giveFeedback(dir, "foundation", { wrong: "the ICP" }, { tester: "t1", routing: { env: {} } });
@@ -127,15 +128,57 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("the unlocked route is open; the one after stays locked", blocked(dir, "ideas/map", { tester: "t1" }) === null && blocked(dir, "validation/solution", { tester: "t1" })?.needs.capability === "ideas");
   const st = status(dir, "t1");
   expect("status lists each capability, open or locked, and the next step", st.enabled && st.capabilities.find((c) => c.id === "ideas").unlocked && st.next.capability === "validation" && !st.next.ready);
-  const cliStatus = naive("beta", "status", "--tester", "t1", "--venture", dir);
+  const cliStatus = naive("beta", "status", "--venture", dir);
   expect("naive beta status", cliStatus.status === 0 && /next: validation/.test(cliStatus.stdout), cliStatus.stdout + cliStatus.stderr);
   const form = naive("beta", "feedback", "ideas", "--venture", dir);
   expect("naive beta feedback <capability> with no answers shows the form", form.status === 0 && /found_home \(required\)/.test(form.stdout), form.stdout + form.stderr);
-  const fbCli = naive("beta", "feedback", "ideas", "--answer", "found_home=yes", "--tester", "t1", "--venture", dir);
-  const unCli = naive("beta", "unlock", "--tester", "t1", "--venture", dir);
+  const fbCli = naive("beta", "feedback", "ideas", "--answer", "found_home=yes", "--venture", dir);
+  const unCli = naive("beta", "unlock", "--venture", dir);
   expect("naive beta feedback and unlock from the CLI", fbCli.status === 0 && unCli.status === 0 && /unlocked validation/.test(unCli.stdout), fbCli.stdout + fbCli.stderr + unCli.stdout + unCli.stderr);
   expect("check-validation-study passes the feedback records", !check(dir).some((p) => /feedback/.test(p)));
+  // The tester is one id everywhere: an agent's role changes nothing, and the CLI and the router agree.
+  const asRole = spawnSync("node", [join(repo, "interface/cli/naive.mjs"), "beta", "status", "--venture", dir], { encoding: "utf8", env: { ...env, MENTURA_ACTOR_ID: "builder", NAIVE_BETA_TESTER: "t1" } });
+  expect("the CLI's tester is NAIVE_BETA_TESTER, not the actor's role", /tester t1\b/.test(asRole.stdout), asRole.stdout + asRole.stderr);
+  process.env.MENTURA_ACTOR_ID = "builder";
+  const open = await call({ venture: "vs", route: "ideas/map", action: "read", workspace: ws, actor_id: "builder" });
+  expect("a tester's unlock opens the router for an agent with any role", open.beta_locked === undefined, JSON.stringify(open));
+  const flag = naive("beta", "status", "--tester", "someone-else", "--venture", dir);
+  expect("the CLI refuses --tester, so it cannot differ from the router", flag.status !== 0 && /NAIVE_BETA_TESTER/.test(flag.stderr), flag.stdout + flag.stderr);
   delete process.env.MENTURA_ACTOR_ID;
+
+  // A tester is an anonymous id, refused before anything is written.
+  const q = manifest().capabilities[0];
+  const answers = Object.fromEntries(q.checkpoint.questions.filter((x) => x.required).map((x) => [x.id, x.kind === "scale-1-5" ? "4" : x.kind === "yes-no" ? "yes" : "fine"]));
+  for (const bad of ["jane@example.com", "Jane Doe", "../../etc/x", "a/b", "__proto__", "Jane", "-x", "a".repeat(65)]) {
+    const before = readdirSync(join(dir, "validation/feedback")).length;
+    const r = await giveFeedback(dir, q.id, answers, { tester: bad, routing: { env: {} } });
+    expect(`feedback refuses the tester ${bad.slice(0, 20)}`, !r.ok && /tester/.test(r.error) && readdirSync(join(dir, "validation/feedback")).length === before, JSON.stringify(r));
+    expect(`unlock refuses the tester ${bad.slice(0, 20)}`, !unlock(dir, bad).ok);
+  }
+  const rec = (tester) => ({ id: "f-2", at: "2026-10-30T10:00:00Z", tester, capability: "venture", checkpoint: "c", answers: {} });
+  expect("the schema takes an id and refuses an email as a tester", valid("validation-feedback.schema.json", rec("t-1")) && !valid("validation-feedback.schema.json", rec("jane@example.com")));
+
+  // A key is not consent: feedback goes to Jev only with beta.jev.send and a named person.
+  let sent = 0;
+  const jev = async () => { sent++; return { destination: "decisions", confidence: 0.99 }; };
+  const key = { TYPESAFE_API_KEY: "test" };
+  await route({ capability: "venture", answers: { confusing: "x" } }, { jev, env: key });
+  await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key } });
+  await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key, send: true } });
+  expect("a key alone sends nothing to Jev, and a caller cannot opt in for the venture", sent === 0, String(sent));
+  const conf = JSON.parse(readFileSync(join(dir, "naive.config.json"), "utf8"));
+  put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true } } });
+  await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key } });
+  expect("send without a named person sends nothing", sent === 0, String(sent));
+  put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true, set_by: { person: "torian", at: "2026-10-30T10:00:00Z" } } } });
+  const consented = await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key } });
+  expect("send with a named person routes through Jev", sent === 1 && consented.record.routing.model === "jev", JSON.stringify(consented));
+  put(join(dir, "naive.config.json"), conf);
+
+  // .naive/ is never routed: telemetry stays on this machine.
+  expect("system/telemetry is not a route", await call({ venture: "vs", route: "system/telemetry", action: "read", workspace: ws, actor: "person" }).then((r) => !r.ok));
+  expect("the route table has no route into .naive/", !routesMd().includes("`.naive/"));
+  delete process.env.NAIVE_BETA_TESTER;
 }
 
 rmSync(ws, { recursive: true, force: true });

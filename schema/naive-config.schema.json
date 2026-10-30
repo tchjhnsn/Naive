@@ -16,6 +16,34 @@
       "properties": {
         "enabled": {
           "type": "boolean"
+        },
+        "jev": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Opt-in for routing feedback through Jev: send lets feedback text leave the machine, and counts only with set_by naming the person who turned it on. A TYPESAFE_API_KEY alone sends nothing.",
+          "properties": {
+            "send": {
+              "type": "boolean"
+            },
+            "set_by": {
+              "type": "object",
+              "required": [
+                "person",
+                "at"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "person": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
         }
       }
     },

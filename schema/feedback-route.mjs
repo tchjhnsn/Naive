@@ -1,12 +1,13 @@
 // Feedback routing: where a beta tester's feedback goes.
 //
 //   import { route } from "./feedback-route.mjs"
-//   await route(feedback, { jev, fallback, env })  ->  { destination, confidence, model }
+//   await route(feedback, { jev, send, fallback, env })  ->  { destination, confidence, model }
 //
-// Jev (TypeSafe) decides when TYPESAFE_API_KEY is set and a jev client is injected, and its answer is
+// Jev (TypeSafe) decides when send is true, TYPESAFE_API_KEY is set and a jev client is injected, and its answer is
 // accepted at confidence 0.95 or more. Otherwise, or below that, the injected fallback decides. The default
 // fallback is keyword rules that call no model. No Jev client is built here: the caller injects one, so
-// tests use stubs and never reach the network.
+// tests use stubs and never reach the network. send is the venture's explicit opt-in (beta.jev in
+// naive.config.json, read by schema/beta-gate.mjs): feedback text stays on the machine without it, key or no key.
 
 export const DESTINATIONS = ["product/bugs", "validation/feedback", "decisions", "foundation", "inbox"];
 export const ACCEPT = 0.95;
@@ -26,8 +27,8 @@ export function keywordFallback(fb) {
   return { destination: "validation/feedback", confidence: 0.5 };
 }
 
-export async function route(feedback, { jev, fallback = keywordFallback, env = process.env, accept = ACCEPT } = {}) {
-  if (env.TYPESAFE_API_KEY && typeof jev === "function") {
+export async function route(feedback, { jev, send = false, fallback = keywordFallback, env = process.env, accept = ACCEPT } = {}) {
+  if (send === true && env.TYPESAFE_API_KEY && typeof jev === "function") {
     try {
       const j = await jev({ text: textOf(feedback), options: DESTINATIONS, capability: feedback.capability });
       if (j && DESTINATIONS.includes(j.destination) && typeof j.confidence === "number" && j.confidence >= accept)

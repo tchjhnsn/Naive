@@ -1,8 +1,8 @@
 // The plugin beta's gate: capabilities unlock in order, each after the tester gives feedback on the one before.
 //
-//   node schema/beta-gate.mjs <venture dir> status [--tester <t>] [--json]
-//   node schema/beta-gate.mjs <venture dir> feedback <capability> --answer <question>=<answer>... [--tester <t>]
-//   node schema/beta-gate.mjs <venture dir> unlock [--tester <t>]
+//   node schema/beta-gate.mjs <venture dir> status [--json]
+//   node schema/beta-gate.mjs <venture dir> feedback <capability> --answer <question>=<answer>...
+//   node schema/beta-gate.mjs <venture dir> unlock
 //   (naive beta status | feedback <capability> | unlock)
 //
 // The manifest is beta/capabilities.json. Core capabilities (creating the venture, the docket, the foundation
@@ -11,6 +11,10 @@
 // .naive/beta.json, per tester. The gate is on only when naive.config.json has beta.enabled true; off, it
 // changes nothing. The router asks blocked() before every action and refuses a locked capability's routes,
 // naming the feedback to give.
+//
+// The tester is one id for the CLI and the router: NAIVE_BETA_TESTER, default "tester". An agent's role is
+// not the tester. The id is anonymous (TESTER) because it lands in a committed file name. Feedback reaches
+// Jev only when beta.jev.send is true and beta.jev.set_by names the person who turned it on; a key is not consent.
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -29,7 +33,15 @@ export function enabled(dir) {
   try { return rawConfig(dir).beta?.enabled === true; } catch { return false; }
 }
 
-export const testerOf = (t) => t || process.env.NAIVE_BETA_TESTER || process.env.MENTURA_ACTOR_ID || "tester";
+export const TESTER = /^[a-z0-9][a-z0-9-]{0,63}$/;
+const badTester = (t) => `tester ${JSON.stringify(t)} must be an anonymous id: lowercase letters, digits and hyphens, at most 64 characters, no name or email`;
+
+export const testerOf = (t) => t || process.env.NAIVE_BETA_TESTER || "tester";
+
+/** Whether this venture lets feedback text go to Jev: a person turned it on, by name. */
+function jevConsented(dir) {
+  try { const j = rawConfig(dir).beta?.jev; return j?.send === true && !!j.set_by?.person; } catch { return false; }
+}
 
 export function state(dir) {
   const f = join(dir, STATE);
@@ -52,7 +64,8 @@ const given = (dir, tester, cap) => feedback(dir).find((f) => f.tester === teste
 
 /** The capability ids open to a tester: core, plus those unlocked in .naive/beta.json. */
 export function unlocked(dir, tester, m = manifest()) {
-  const t = state(dir).testers[testerOf(tester)] ?? { unlocked: [] };
+  const id = testerOf(tester), testers = state(dir).testers;
+  const t = Object.hasOwn(testers, id) ? testers[id] : { unlocked: [] };
   return m.capabilities.filter((c) => c.core || t.unlocked.includes(c.id)).map((c) => c.id);
 }
 
@@ -105,6 +118,7 @@ export function status(dir, tester, m = manifest()) {
  */
 export async function giveFeedback(dir, capId, answers, { tester, m = manifest(), now = new Date(), routing = {} } = {}) {
   const t = testerOf(tester);
+  if (!TESTER.test(t)) return { ok: false, error: badTester(t) };
   const cap = m.capabilities.find((c) => c.id === capId);
   if (!cap) return { ok: false, error: `no beta capability ${capId} (${m.capabilities.map((c) => c.id).join(", ")})` };
   if (!unlocked(dir, t, m).includes(capId)) return { ok: false, error: `${capId} is locked; give feedback on the capability before it first` };
@@ -116,8 +130,8 @@ export async function giveFeedback(dir, capId, answers, { tester, m = manifest()
   const bad = qs.filter((q) => answers[q.id] !== undefined && ((q.kind === "scale-1-5" && !["1", "2", "3", "4", "5", 1, 2, 3, 4, 5].includes(answers[q.id])) || (q.kind === "yes-no" && !["yes", "no", true, false].includes(answers[q.id]))));
   if (bad.length) return { ok: false, error: `${bad.map((q) => `${q.id} is ${q.kind}`).join("; ")}` };
   const clean = Object.fromEntries(Object.entries(answers).map(([k, v]) => [k, qs.find((q) => q.id === k).kind === "scale-1-5" ? Number(v) : v]));
-  const id = `${capId}-${t.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${now.toISOString().slice(0, 19).replace(/[^0-9]/g, "")}`;
-  const r = await routeFeedback({ capability: capId, answers: clean }, routing);
+  const id = `${capId}-${t}-${now.toISOString().slice(0, 19).replace(/[^0-9]/g, "")}`;
+  const r = await routeFeedback({ capability: capId, answers: clean }, { ...routing, send: jevConsented(dir) });
   const rec = { id, at: now.toISOString(), tester: t, capability: capId, checkpoint: cap.checkpoint.id, answers: clean, routed_to: r.destination, routing: { model: r.model, confidence: r.confidence, fallback: r.fallback } };
   const f = ventureFile(dir, `validation/feedback/${id}.json`);
   mkdirSync(dirname(f), { recursive: true });
@@ -128,6 +142,7 @@ export async function giveFeedback(dir, capId, answers, { tester, m = manifest()
 /** Unlocks the next capability when the feedback on the one before exists. */
 export function unlock(dir, tester, { m = manifest(), now = new Date() } = {}) {
   const t = testerOf(tester);
+  if (!TESTER.test(t)) return { ok: false, error: badTester(t) };
   const n = next(dir, t, m);
   if (!n) return { ok: true, unlocked: null, note: "every capability is unlocked" };
   if (!n.ready) return { ok: false, error: `${n.capability} unlocks after feedback on ${n.after}: run naive beta feedback ${n.after}` };
@@ -144,8 +159,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, sub = "status", ...rest] = process.argv.slice(2);
   const opt = (n) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
   const json = rest.includes("--json");
-  if (!dir) { console.error("usage: node schema/beta-gate.mjs <venture dir> status|feedback <capability>|unlock [--tester <t>]"); process.exit(2); }
-  const tester = opt("tester");
+  if (!dir) { console.error("usage: node schema/beta-gate.mjs <venture dir> status|feedback <capability>|unlock"); process.exit(2); }
+  if (rest.includes("--tester")) { console.error("set the tester with NAIVE_BETA_TESTER, so the CLI and the router agree"); process.exit(2); }
+  const tester = undefined;
   const say = (o, text) => { console.log(json ? JSON.stringify(o, null, 2) : text); };
   if (sub === "status") {
     const s = status(dir, tester);
