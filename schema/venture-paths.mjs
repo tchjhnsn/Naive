@@ -17,6 +17,21 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
+/** A delegation record as it binds: when it extends a template, the template's never_redelegated and
+ *  one_way_doors are unioned in, so a venture can only add to them. Grants are never inherited.
+ *  Throws on an extends it cannot honor; a caller that catches it must refuse. */
+export function readDelegation(file) {
+  const d = JSON.parse(readFileSync(file, "utf8"));
+  if (d.extends === undefined) return d;
+  const base = join(new URL("..", import.meta.url).pathname, d.extends);
+  if (!existsSync(base)) throw new Error(`delegation extends ${d.extends}, which does not exist`);
+  let t;
+  try { t = JSON.parse(readFileSync(base, "utf8")); } catch (e) { throw new Error(`delegation extends ${d.extends}, which cannot be read: ${e.message}`); }
+  if (t.register !== "delegation" || t.extends !== undefined || t.root !== d.root) throw new Error(`delegation extends ${d.extends}, which is not a base delegation record with root ${d.root}`);
+  const union = (k) => [...new Set([...(t[k] ?? []), ...(d[k] ?? [])])];
+  return { ...d, never_redelegated: union("never_redelegated"), one_way_doors: union("one_way_doors") };
+}
+
 const TOP = new Set(["venture.json", "AGENTS.md", "README.md", "package.json", "package-lock.json", ".gitignore"]);
 const META = { "provenance.jsonl": "meta/provenance.jsonl", "knowledge/sources.json": "meta/sources.json", "sources.json": "meta/sources.json", "naive.config.json": "meta/naive.config.json" };
 const cache = new Map();

@@ -53,6 +53,7 @@ const steps = [
   ["the Next.js translation status (every concept has a status, its evidence exists, the page is current)", "node", ["schema/check-nextjs-status.mjs"]],
   ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],
   ["delegation: template (grants within the grantor's, chains reach the founder, no self-verification)", "node", ["schema/check-delegation.mjs"]],
+  ...ventures(join(root, "instance")).filter((v) => existsSync(join(v, "governance/delegation.json"))).map((v) => [`delegation: instance ${v.slice(root.length)}`, "node", ["schema/check-delegation.mjs", v]]),
   ["delegation and the verification substrate (cases that must fail)", "node", ["schema/delegation-test.mjs"]],
   ["docs claim only what is built (commands, flags, files and routes in the docs, master docs and skills)", "node", ["schema/docs-claims-test.mjs"]],
   ["governance: instance", "node", ["schema/check-governance.mjs", "instance"]],
