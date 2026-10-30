@@ -1,7 +1,9 @@
 # The PR review agent (handoff 2026-10-29, item 7), unprivileged half. It lints and tests the PR, then reads the Vercel
 # preview: content (markdown of the changed pages, checked for internal terms and secrets) and design (computed styles,
 # screenshots only with the `screenshots` label or naive.config.json pr_review.screenshots "always"). This workflow runs
-# the PR's own code, so it holds no secrets and a read-only token. It uploads its findings as the `pr-review` artifact;
+# the PR's own code. This file asks for no secrets and a read-only token, but that is not a guarantee: a deployment_status
+# run uses the deployed commit's copy of this file, which that commit can change. Treat those runs as able to reach what
+# GitHub gives the repo's workflows, and confirm Vercel's fork protection before this repo goes public. It uploads its findings as the `pr-review` artifact;
 # pr-review-comment.yml posts them. Neither workflow merges, approves or pushes.
 name: pr-review
 
@@ -46,7 +48,8 @@ jobs:
       - run: node test.mjs
 
   preview:
-    # Runs when Vercel reports a successful preview deployment, or by hand with a PREVIEW_URL.
+    # Runs when Vercel reports a successful preview deployment, or by hand with a PREVIEW_URL. Dispatch from the PR's
+    # branch (gh workflow run pr-review --ref <branch>): the comment workflow posts only when the run's head is the PR's.
     if: >-
       (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
         && github.event.deployment.environment != 'Production')
