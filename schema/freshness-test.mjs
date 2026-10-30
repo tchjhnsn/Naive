@@ -17,6 +17,7 @@ const { call, routes } = await import("../interface/router.mjs");
 const F = await import("./freshness.mjs");
 
 let failed = 0;
+/** @param {string} name @param {unknown} ok @param {unknown} [detail] */
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail).slice(0, 600)}`}`); if (!ok) failed++; };
 const mentura = (...a) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
 const init = (id, phase = "discovery") => { const p = spawnSync("node", [join(repo, "schema/init-venture.mjs"), join(ws, id), id, "--phase", phase, "--layers", "purpose"], { encoding: "utf8" }); if (p.status !== 0) throw new Error(p.stderr); return join(ws, id); };

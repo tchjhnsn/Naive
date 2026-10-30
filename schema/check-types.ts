@@ -15,7 +15,6 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const PENDING: readonly string[] = [
-  "schema/",
   "scripts/",
 ];
 const SUPPRESS = "@ts-" + "(?:ignore|nocheck|expect-error)";

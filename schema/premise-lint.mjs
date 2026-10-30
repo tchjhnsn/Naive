@@ -216,7 +216,8 @@ export function levels(config = {}) {
   return Object.fromEntries(Object.keys(ASPECTS).map((a) => { const lvl = set[a]; return [a, ["off", "warn", "error"].includes(lvl) ? lvl : "warn"]; }));
 }
 
-/** Findings: {record, field, aspect, question, links, severity, term?}, deduplicated, rules applied. */
+/** Findings: {record, field, aspect, question, links, severity, term?}, deduplicated, rules applied.
+ *  @param {string} dir @param {{ route?: *, includeDrafts?: boolean, config?: * }} [opts] */
 export function lint(dir, { route, includeDrafts = false, config } = {}) {
   const lv = levels(config ?? readConfig(dir));
   const seen = new Set();

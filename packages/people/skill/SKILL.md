@@ -43,7 +43,9 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-validation.mjs` (team), `schema/check-governance.mjs` and `schema/check-team.mjs`. Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `schema/check-validation.mjs` (team), `schema/check-governance.mjs`, `schema/check-team.mjs`, and `schema/lint-people.mjs` (route `people/lint`). Run it after each write, and fix a failure before you report the work done.
+
+`node schema/lint-people.mjs <venture dir> [--json]` warns when a role owns no function, a hire is on the books before the team plan names that role, or a decided decision names no person. Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open. Set `people_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make that rule fail the run (exit 1).
 
 ## Actions and artifacts
 
