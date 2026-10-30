@@ -1,0 +1,39 @@
+---
+title: "From a file in the repository to a template card"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: building
+    lg1: browsing
+    lg2: reading
+  }
+  class lg0 blue
+  class lg1 teal
+  class lg2 purple
+  s0: Nothing listed yet
+  s1: A record was read from the repository
+  s2: Cards are on the page
+  s3: The filters match nothing
+  s4: The detail page is open
+  s5: The filters match some cards
+  s6: The use command is shown
+  [*] --> s0
+  s0 --> s1: the build reads a file from the repository
+  s1 --> s2: the page lists a card for that file
+  s2 --> s3: you set a filter that matches nothing
+  s2 --> s4: you open the card
+  s2 --> s5: you set a filter that keeps the card
+  s3 --> s2: you go back to the full list
+  s4 --> s2: you go back to the full list
+  s4 --> s6: you choose Use
+  s5 --> s2: you go back to the full list
+  s5 --> s3: you set a filter that matches nothing
+  s5 --> s4: you open the card
+  s6 --> s2: you go back to the full list
+  class s0 blue
+  class s1 blue
+  class s2 teal
+  class s3 teal
+  class s4 purple
+  class s5 teal
+  class s6 purple

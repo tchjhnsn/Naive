@@ -1,0 +1,61 @@
+---
+title: "Validation lint: a claim, its evidence, and the decision"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: empty
+    lg1: warn
+    lg2: clean
+  }
+  class lg0 tan
+  class lg1 orange
+  class lg2 teal
+  s0: No validation record
+  s1: Record will not parse
+  s2: Claim with no evidence
+  s3: Evidence within its shelf life
+  s4: Evidence within its shelf life, graded only by an agent
+  s5: Evidence past its shelf life
+  s6: Claim with no evidence, decided in Validation
+  s7: Evidence past its shelf life, graded only by an agent
+  s8: Evidence past its shelf life, Validation decision on discovery-grade evidence
+  s9: Evidence within its shelf life, Validation decision on discovery-grade evidence
+  s10: Evidence past its shelf life, graded only by an agent, Validation decision on discovery-grade evidence
+  s11: Evidence within its shelf life, graded only by an agent, Validation decision on discovery-grade evidence
+  [*] --> s0
+  s0 --> s1: the record will not parse
+  s0 --> s2: a claim is written with no evidence
+  s1 --> s2: a claim is written with no evidence
+  s2 --> s3: only discovery-grade evidence is cited or evidence is cited, still inside its shelf life
+  s3 --> s4: an agent grades the assumption
+  s3 --> s5: time passes the shelf life or the venture changes phase
+  s2 --> s6: someone decides in Validation on discovery-grade evidence
+  s4 --> s7: time passes the shelf life or the venture changes phase
+  s5 --> s7: an agent grades the assumption
+  s5 --> s8: someone decides in Validation on discovery-grade evidence
+  s3 --> s9: someone decides in Validation on discovery-grade evidence
+  s6 --> s2: the decision is taken back
+  s6 --> s9: only discovery-grade evidence is cited
+  s6 --> s3: evidence is cited, still inside its shelf life
+  s7 --> s10: someone decides in Validation on discovery-grade evidence
+  s4 --> s11: someone decides in Validation on discovery-grade evidence
+  s8 --> s5: the decision is taken back
+  s8 --> s10: an agent grades the assumption
+  s9 --> s3: the decision is taken back
+  s9 --> s11: an agent grades the assumption
+  s9 --> s8: time passes the shelf life
+  s10 --> s7: the decision is taken back
+  s11 --> s4: the decision is taken back
+  s11 --> s10: time passes the shelf life
+  class s0 tan
+  class s1 tan
+  class s2 orange
+  class s3 teal
+  class s4 orange
+  class s5 orange
+  class s6 orange
+  class s7 orange
+  class s8 orange
+  class s9 orange
+  class s10 orange
+  class s11 orange
