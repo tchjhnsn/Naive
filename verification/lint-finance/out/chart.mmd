@@ -1,0 +1,66 @@
+---
+title: "Finance lint"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: quiet
+    lg1: warn
+    lg2: fail
+    lg3: gap
+  }
+  class lg0 teal
+  class lg1 yellow
+  class lg2 orange
+  class lg3 blue
+  s0: Nothing to flag. Run passes
+  s1: Price is below cost. Run passes
+  s2: Spend has no runway impact. Run passes
+  s3: Price or cost is missing. Run passes
+  s4: A record did not parse. Run passes
+  s5: Metric has no target for this phase. Run passes
+  s6: Spend has no runway impact. Price is below cost. Run passes
+  s7: Spend has no runway impact. Price is below cost. Metric has no target for this phase. Run passes
+  s8: Price is below cost. Run fails
+  s9: Spend has no runway impact. Run fails
+  s10: Metric has no target for this phase. Run fails
+  s11: Spend has no runway impact. Price is below cost. Run fails
+  s12: Spend has no runway impact. Price is below cost. Metric has no target for this phase. Run fails
+  [*] --> s0
+  s0 --> s1: you check a price that is below its cost
+  s0 --> s2: you check a spend decision with no runway impact
+  s0 --> s3: you check a price or cost that is not a number
+  s0 --> s4: you check records that do not parse
+  s0 --> s5: the metric has no target for this phase
+  s0 --> s6: you check a venture that breaks every rule
+  s1 --> s8: a fail-closed rule has a finding
+  s2 --> s9: a fail-closed rule has a finding
+  s5 --> s10: a fail-closed rule has a finding
+  s6 --> s7: the metric has no target for this phase
+  s6 --> s11: a fail-closed rule has a finding
+  s5 --> s0: the venture moves back to a phase this metric targets
+  s7 --> s6: the venture moves back to a phase this metric targets
+  s7 --> s12: a fail-closed rule has a finding
+  s8 --> s1: the fail-closed rule no longer has a finding
+  s9 --> s2: the fail-closed rule no longer has a finding
+  s10 --> s5: the fail-closed rule no longer has a finding
+  s6 --> s12: the metric has no target for this phase
+  s0 --> s10: the metric has no target for this phase
+  s11 --> s6: the fail-closed rule no longer has a finding
+  s11 --> s12: the metric has no target for this phase
+  s10 --> s0: the venture moves back to a phase this metric targets
+  s12 --> s7: the fail-closed rule no longer has a finding
+  s12 --> s6: the venture moves back to a phase this metric targets
+  s12 --> s11: the venture moves back to a phase this metric targets
+  class s0 teal
+  class s1 yellow
+  class s2 yellow
+  class s3 blue
+  class s4 blue
+  class s5 yellow
+  class s6 yellow
+  class s7 yellow
+  class s8 orange
+  class s9 orange
+  class s10 orange
+  class s11 orange
+  class s12 orange
