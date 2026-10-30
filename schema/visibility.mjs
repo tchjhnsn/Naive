@@ -15,6 +15,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { frontmatter } from "./publish-lint.mjs";
 import { ventureFile } from "./venture-paths.mjs";
 
 export const LEVELS = ["public", "variant", "internal", "confidential"];
@@ -53,11 +54,12 @@ export function isPerson(dir, id) {
 /** A record as the public may see it: each top-level field that is public or has an approved variant. */
 export function publicView(dir, rel, rec) {
   if (!rec || typeof rec !== "object" || Array.isArray(rec)) return null;
-  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, v.value]));
+  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, /** @type {*} */ (v).value]));
 }
 
 /** A person approves a field as public: pins its current wording by sha256 in the record's sidecar. An
- *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry. */
+ *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry.
+ *  @param {string} dir @param {string} rel @param {string} field @param {{ by?: string, propose?: boolean, agentId?: string }} [opts] */
 export function setPublic(dir, rel, field, { by, propose = false, agentId } = {}) {
   const f = ventureFile(dir, rel);
   if (!existsSync(f)) return { ok: false, error: `no record ${rel}` };
@@ -82,11 +84,9 @@ export function variantOf(dir, rel, field, contentDirs = ["marketing/content", "
     const root = ventureFile(dir, d);
     if (!existsSync(root)) continue;
     for (const name of readdirSync(root, { recursive: true }).map(String).filter((n) => n.endsWith(".mdx"))) {
-      const text = readFileSync(join(root, name), "utf8");
-      const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-      if (!m) continue;
-      const meta = Object.fromEntries(m[1].split("\n").map((l) => l.match(/^([a-z_]+):\s*(.*)$/)).filter(Boolean).map(([, k, v]) => [k, v.replace(/^["']|["']$/g, "").trim()]));
-      if (meta.variant_of === `${rel}#${field}` && meta.publish === "true" && isPerson(dir, meta.approved_by)) return { value: m[2].trim(), file: `${d}/${name}`, approved_by: meta.approved_by };
+      const { meta, body } = frontmatter(readFileSync(join(root, name), "utf8"));
+      const approved_by = [meta.approved_by].flat().find((p) => isPerson(dir, p));
+      if (meta.variant_of === `${rel}#${field}` && meta.publish === true && approved_by) return { value: body.trim(), file: `${d}/${name}`, approved_by };
     }
   }
   return null;
@@ -124,7 +124,12 @@ export function confidentialityOf(dir, rel) {
   return r?.visibility === "confidential" ? { level: CONFIDENTIAL_LEVELS.includes(r.level) ? r.level : "C2", access: r.access ?? [] } : null;
 }
 
-/** Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id. */
+/**
+ * Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id.
+ * @param {string} dir
+ * @param {string} rel
+ * @param {{ actor?: string, id?: string }} [opts]
+ */
 export function mayKnow(dir, rel, { actor = "agent", id } = {}) {
   const c = confidentialityOf(dir, rel);
   if (!c || c.level === "C1") return true;

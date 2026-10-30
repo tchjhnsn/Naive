@@ -175,7 +175,8 @@ export function assign(workspace, chunkId, venture) {
 
 export const DEFAULT_NAME = "Naive workspace";
 
-/** Create the workspace at root, or fill in what an older one lacks (timeZone, the calendar). Returns { root, file, ws, created }. */
+/** Create the workspace at root, or fill in what an older one lacks (timeZone, the calendar). Returns { root, file, ws, created }.
+ *  @param {string} root @param {{ name?: string, timeZone?: string, owner?: string }} [opts] */
 export function ensureWorkspace(root, { name, timeZone, owner } = {}) {
   root = resolve(root);
   mkdirSync(root, { recursive: true });
@@ -207,7 +208,8 @@ export function addVenture(root, ventureDir) {
   return ws;
 }
 
-/** Rename the workspace; logged in meta/provenance.jsonl with the old and new names. */
+/** Rename the workspace; logged in meta/provenance.jsonl with the old and new names.
+ *  @param {string} root @param {string} name @param {{ by?: string }} [opts] */
 export function renameWorkspace(root, name, { by } = {}) {
   name = String(name ?? "").trim();
   if (!name) throw new Error("a workspace name cannot be empty");

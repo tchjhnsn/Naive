@@ -11,6 +11,7 @@ export const KINDS = ["conformance", "model", "person"];
 export const independent = (builder, verifier) => typeof verifier === "string" && verifier !== "" && verifier !== builder;
 
 // What is wrong with one check, or an empty list. known(verifier) says whether the verifier exists.
+/** @param {{ kind?: string, verifier?: string, target?: string }} check @param {string} [builder] @param {(verifier: string) => boolean} [known] */
 export function verificationErrors({ kind, verifier, target }, builder, known = () => true) {
   const errors = [];
   if (!KINDS.includes(kind)) errors.push(`${target ?? "check"}: unknown kind ${kind}`);

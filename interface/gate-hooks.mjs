@@ -13,6 +13,8 @@ import { ventureFile } from "../schema/venture-paths.mjs";
 /**
  * The gate's verdict on a local write, or null when it passes. A person is never held, only
  * refused. A naive.config.json that is not valid JSON fails closed: an agent's write is held.
+ * @param {{ dir: string, r: Record<string, any>, route: string, requested: string, file: string, actor: string, actor_id?: string, provenance?: { confidence?: number | string | null }, gate?: { owner?: string } | null }} w
+ * @returns {{ then: string, rule: string, source: string, why?: string, owner?: string, matched?: any[], variants?: boolean, function?: string } | null}
  */
 export function gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance = {}, gate }) {
   let config;
