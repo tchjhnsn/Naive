@@ -1933,14 +1933,6 @@ export type NaiveConfig = {
     version?: string;
     channel?: "stable" | "canary";
   };
-  /** Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open. */
-  customers_lint?: {
-    rules?: {
-      [key: string]: {
-        mode?: "fail-open" | "fail-closed";
-      };
-    };
-  };
   /** Mentura kits whose automations this venture turns on */
   kits?: string[];
   /** The publish lint (schema/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived */
@@ -1957,8 +1949,8 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (schema/triggers.mjs) */
   triggers?: unknown[];
-  /** Per-rule mode for the validation lint (schema/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
-  validation_lint?: {
+  /** Per-rule mode for the money lint (schema/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed. */
+  money_lint?: {
     rules?: {
       [key: string]: {
         mode?: "fail-open" | "fail-closed";
@@ -1981,6 +1973,22 @@ export type NaiveConfig = {
       conflict?: "off" | "warn" | "error";
       dependency?: "off" | "warn" | "error";
       "phase-mismatch"?: "off" | "warn" | "error";
+    };
+  };
+  /** Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open. */
+  customers_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the validation lint (schema/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
+  validation_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
     };
   };
   /** finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
