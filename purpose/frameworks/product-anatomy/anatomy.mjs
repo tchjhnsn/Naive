@@ -67,7 +67,7 @@ async function score(input, outPath) {
     body: JSON.stringify(request(input)),
   });
   if (!res.ok) throw new Error(`TypeSafe returned ${res.status}: ${await res.text()}`);
-  const { answers } = await res.json();
+  const { answers } = /** @type {{ answers: object }} */ (await res.json());
   const out = { scorer: MODEL, scored: new Date().toISOString(), answers: {} };
   for (const [key, a] of Object.entries(answers)) {
     const [qid, pid] = key.split(":");

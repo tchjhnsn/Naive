@@ -20,9 +20,11 @@ export function telosExitCriteria(dir, phase) {
   return { file: f, record: t, criteria: p?.exit_criteria ?? [] };
 }
 
-/** Telos -> canonical: { goals: [{file, rec}], exit: [{file, rec}] }. Pure. */
+/** Telos -> canonical: { goals: [{file, rec}], exit: [{file, rec}] }. Pure.
+ * @param {*} t @param {{ venture?: string }} [opts] */
 export function split(t, { venture } = {}) {
   const base = venture ? { venture } : {};
+  /** @type {{ file: string, rec: Record<string, unknown> }[]} */
   const goals = [{
     file: "foundation/goals/telos.json",
     rec: { id: "telos", ...base, statement: t.statement, kind: "venture", ...(t.horizon !== undefined ? { horizon: t.horizon } : {}),

@@ -27,7 +27,12 @@ const tilde = (p) => p.replace(homedir(), "~");
 const quick = flag("--quick");
 
 // ---------- the design profile ----------
+/**
+ * @typedef {{ found: boolean, why?: string, entityClass?: string, name?: string, roots?: string[], include?: string,
+ *   characteristics?: string[], obligations?: string[], [field: string]: string | string[] | boolean | undefined }} DesignProfile
+ */
 /** Reads `design-profile:` from an entity profile's frontmatter (a small, fixed shape; no YAML dependency). */
+/** @returns {DesignProfile} */
 export function readDesignProfile(entityDir) {
   const p = join(entityDir, "entity-profile.md");
   if (!existsSync(p)) return { found: false, why: "no entity-profile.md" };
@@ -134,7 +139,7 @@ async function ask(state, questions) {
       body: JSON.stringify({ model: MODEL, state, questions }), signal: AbortSignal.timeout(90000) });
     if (res.status === 429 || res.status >= 500) { await new Promise((r) => setTimeout(r, 2500 * (a + 1))); continue; }
     if (!res.ok) throw new Error(`TypeSafe ${res.status}`);
-    const o = await res.json(); tokens += o.usage?.input_tokens ?? 0; cache[k] = o; return o;
+    const o = /** @type {{ usage?: { input_tokens?: number } }} */ (await res.json()); tokens += o.usage?.input_tokens ?? 0; cache[k] = o; return o;
   }
   throw new Error("retries exhausted");
 }
@@ -147,6 +152,8 @@ function excerpt(f, doc) {
 }
 
 const docs = REG.documents.filter((d) => layer === "all" || d.layer === layer);
+/** @typedef {{ id: string, name: string, layer: string, stage: string, status: string, reason?: string, answered?: number, total?: number, candidates: { path: string }[], [field: string]: unknown }} Result */
+/** @type {Result[]} */
 const results = [];
 for (const doc of docs) {
   const base = { id: doc.id, name: doc.name, layer: doc.layer, stage: doc.stage };
