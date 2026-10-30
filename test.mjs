@@ -48,6 +48,7 @@ const steps = [
   ["frames: instance", "node", ["schema/frames.mjs", "check"]],
   ["the Next.js translation status (every concept has a status, its evidence exists, the page is current)", "node", ["schema/check-nextjs-status.mjs"]],
   ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],
+  ["docs claim only what is built (commands, flags, files and routes in the docs, master docs and skills)", "node", ["schema/docs-claims-test.mjs"]],
   ["governance: instance", "node", ["schema/check-governance.mjs", "instance"]],
   ["governance: examples", "node", ["schema/check-governance.mjs", "schema/examples/workspace"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
