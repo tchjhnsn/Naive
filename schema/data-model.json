@@ -24,6 +24,35 @@
       ]
     },
     {
+      "id": "calendar",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar.schema.json",
+      "paths": [
+        "instance/calendar/calendars/*.json",
+        "schema/examples/workspace/calendar/calendars/*.json"
+      ],
+      "note": "A workspace calendar: owner, members, visibility. Created with the workspace (default.json, named Venture); schema/calendar.mjs (Torian, 2026-10-30)"
+    },
+    {
+      "id": "calendar-event",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar-event.schema.json",
+      "paths": [
+        "instance/calendar/events/*.json",
+        "schema/examples/workspace/calendar/events/*.json"
+      ],
+      "refs": [
+        {
+          "field": "calendar",
+          "to": "calendar",
+          "checked_by": "schema/workspace-init-test.mjs"
+        }
+      ],
+      "note": "One JSCalendar-shaped event (RFC 8984) per file. Derived events (decisions with a due time, releases) are a view in schema/calendar.mjs, never stored; naive calendar export writes .ics"
+    },
+    {
       "id": "venture",
       "layer": "system",
       "level": "venture",
