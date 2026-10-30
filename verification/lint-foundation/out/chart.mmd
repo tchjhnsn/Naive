@@ -1,0 +1,42 @@
+---
+title: "Foundation lint: a finding, and how the run exits"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: waiting
+    lg1: read
+    lg2: warn
+    lg3: fail
+    lg4: clear
+  }
+  class lg0 tan
+  class lg1 blue
+  class lg2 yellow
+  class lg3 orange
+  class lg4 teal
+  s0: Nothing read yet
+  s1: Records read from the venture
+  s2: A rule fired, warning only
+  s3: Clean venture, no finding
+  s4: Missing or malformed record skipped
+  s5: A rule fired, set to fail
+  s6: Exited with no failure
+  s7: Exited failed
+  [*] --> s0
+  s0 --> s1: read the records through venture files
+  s1 --> s2: a rule fires as a warning
+  s1 --> s3: judge a clean venture
+  s1 --> s4: skip a missing or malformed record
+  s1 --> s5: a rule fires and its mode is fail closed
+  s2 --> s6: exit 0
+  s3 --> s6: exit 0
+  s4 --> s6: exit 0
+  s5 --> s7: exit 1
+  class s0 tan
+  class s1 blue
+  class s2 yellow
+  class s3 teal
+  class s4 teal
+  class s5 orange
+  class s6 teal
+  class s7 orange

@@ -206,6 +206,28 @@
         ]
       }
     },
+    "foundation_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Foundation lint (foundation/lint): per-rule mode overrides. A rule stays fail-open unless its mode is fail-closed.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "acting": {
       "type": "object",
       "additionalProperties": false,
@@ -308,6 +330,28 @@
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
+    },
+    "people_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-rule mode for the people lint (schema/lint-people.mjs, route people/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
     },
     "diagnose": {
       "type": "object",
