@@ -82,6 +82,11 @@ export function internalWording(dir) {
 
 const unescape = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 
+/**
+ * @param {string} channel @param {string} dir
+ * @param {{ out?: string, channels?: Record<string, { outputs: string[], scripts: string[] }> }} [opts]
+ * @returns {{ ok: boolean, channel: string, stage?: string, errors?: string[], venture?: string, built_at?: string, outputs?: { path: string, sha256: string }[], sources?: { file: string, variant_of?: string, approved_by?: string, sha256: string }[], pending?: { file: string, variant_of?: string }[] }}
+ */
 export function build(channel, dir, { out = join(repo, "site"), channels = CHANNELS } = {}) {
   const ch = channels[channel];
   if (!ch) return { ok: false, channel, errors: [`no channel ${channel}: one of ${Object.keys(channels).join(", ")}`] };
