@@ -41,7 +41,8 @@ export async function main(cmd, argv, workspace) {
     if (!target) { console.error("usage: mentura phase <phase> --venture <id> --as person"); return 2; }
     // A phase change is the founder's decision: an agent may suggest it, not make it.
     if (opt("as") !== "person") { console.error(`a phase change is a person's: run mentura phase ${target} --venture ${venture} --as person`); return 1; }
-    r = phase(dir, target, { reason: opt("reason"), by, now });
+    // Through the lifecycle gate (schema/lifecycle.mjs), as naive phase does: exit criteria first.
+    r = (await import("../../schema/lifecycle.mjs")).advance(dir, target, { reason: opt("reason"), override: opt("override"), by, now });
   } else if (cmd === "freshness") {
     if (opt("freeze")) r = await freeze(dir, resolve(opt("freeze")), { now });
     else { const f = await freshness(dir, { now }); print(flag("json") ? f : [`${f.venture} (${f.phase}): ${f.summary.fresh} fresh, ${f.summary.stale} stale, ${f.summary.expired} expired, ${f.summary.holes} live ${f.summary.holes === 1 ? "hole" : "holes"}, of ${f.summary.records} records.`,
