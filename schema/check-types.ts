@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname;
-const PENDING: readonly string[] = ["interface/", "platform/", "schema/", "scripts/"];
+const PENDING: readonly string[] = ["interface/", "platform/", "schema/"];
 const SUPPRESS = "@ts-" + "(?:ignore|nocheck|expect-error)";
 
 const tsc = join(root, "node_modules/.bin/tsc");
