@@ -1,0 +1,109 @@
+# The PR review agent (handoff 2026-10-29, item 7). It lints and tests the PR, then reads the Vercel preview:
+# content (markdown of the changed pages, checked for internal terms and secrets) and design (computed styles, no
+# screenshots unless the PR has the `screenshots` label or naive.config.json pr_review.screenshots is "always").
+# It posts or updates one comment. It never merges, approves or pushes.
+name: pr-review
+
+on:
+  pull_request:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number to comment on
+        required: true
+      preview_url:
+        description: Preview URL (PREVIEW_URL)
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: read
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number || github.event.deployment.sha || github.event.inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema
+      - run: npm ci
+      - run: npm run lint
+      - run: node test.mjs
+
+  preview:
+    # Runs when Vercel reports a successful preview deployment, or by hand with a PREVIEW_URL.
+    if: >-
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
+        && github.event.deployment.environment != 'Production')
+      || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      PREVIEW_URL: ${{ github.event.deployment_status.environment_url || github.event.inputs.preview_url }}
+      VERCEL_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Find the PR
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let number = context.payload.inputs?.pr;
+            if (!number) {
+              const sha = context.payload.deployment.sha;
+              const { data } = await github.rest.repos.listPullRequestsAssociatedWithCommit({ ...context.repo, commit_sha: sha });
+              number = data.find((p) => p.state === "open")?.number;
+            }
+            if (!number) { core.notice("No open PR for this deployment."); return; }
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: Number(number) });
+            core.setOutput("number", String(pr.number));
+            core.setOutput("head", pr.head.sha);
+            core.setOutput("base", pr.base.ref);
+            core.setOutput("labels", pr.labels.map((l) => l.name).join(","));
+      - uses: actions/checkout@v4
+        if: steps.pr.outputs.number
+        with:
+          ref: ${{ steps.pr.outputs.head }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        if: steps.pr.outputs.number
+        with:
+          node-version: 22
+      - name: Install Playwright (Chromium only)
+        if: steps.pr.outputs.number
+        run: npm install --no-save playwright && npx playwright install --with-deps chromium
+      - name: Content
+        if: steps.pr.outputs.number
+        run: node scripts/pr-review/content.mjs --preview "$PREVIEW_URL" --base "origin/${{ steps.pr.outputs.base }}" > content.md || echo "### Content\n\nThe content pass failed to run." > content.md
+      - name: Design
+        if: steps.pr.outputs.number
+        env:
+          PR_LABELS: ${{ steps.pr.outputs.labels }}
+        run: node scripts/pr-review/design.mjs --preview "$PREVIEW_URL" --base "origin/${{ steps.pr.outputs.base }}" > design.md || echo "### Design\n\nThe design pass failed to run." > design.md
+      - name: Comment
+        if: steps.pr.outputs.number
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const marker = "<!-- naive-pr-review -->";
+            const body = [marker, "## PR review", "", `Preview: ${process.env.PREVIEW_URL}`, "",
+              fs.readFileSync("content.md", "utf8"), "", fs.readFileSync("design.md", "utf8"), "",
+              "_Findings only. This agent does not approve or block the PR._"].join("\n");
+            const issue_number = Number("${{ steps.pr.outputs.number }}");
+            const comments = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number });
+            const mine = comments.find((c) => c.body?.startsWith(marker));
+            if (mine) await github.rest.issues.updateComment({ ...context.repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ ...context.repo, issue_number, body });

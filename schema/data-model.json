@@ -1638,6 +1638,10 @@
     {
       "path": "interface/create-venture/package.json",
       "reason": "The create-venture generator's npm manifest (I-1); not a record"
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "The framework's npm lockfile for its dev tools (ESLint), installed by npm ci in CI; not a record"
     }
   ]
 }
