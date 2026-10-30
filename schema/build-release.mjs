@@ -36,6 +36,7 @@ if (opt("export")) {
 }
 
 if (opt("add")) {
+  /** @type {{ ok: boolean, error?: string, fix?: string, manifest?: *, added?: { route: string, file: string, from: string } }} */
   const r = await add(dir, opt("add"), { now, actor });
   if (!r.ok) { console.error(r.error + (r.fix ? `\n  fix: ${r.fix}` : "")); process.exit(1); }
   console.log(has("json") ? JSON.stringify(r.manifest, null, 2) : `added ${r.added.route} to release ${r.added.from}: now release ${r.manifest.release}; nothing else was rebuilt`);
