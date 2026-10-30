@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { lint, proposeFindings, ASPECTS } from "./premise-lint.mjs";
+import { approve } from "./decisions.mjs";
 
 let failed = 0;
 const ok = (cond, name) => { console.log(`${cond ? "ok  " : "FAIL"}  ${name}`); if (!cond) failed++; };
@@ -78,6 +79,25 @@ const p = await proposeFindings(dir, all.filter((f) => f.record === crit));
 const files = readdirSync(join(dir, "decisions")).filter((f) => f.startsWith("premise-"));
 ok(p.every((x) => x.ok) && files.length === p.length && files.every((f) => JSON.parse(readFileSync(join(dir, "decisions", f), "utf8")).status === "open"), "--propose writes each finding as an open decision");
 
+// Rerunning --propose never reopens a decision a person decided, and files nothing twice.
+const [first] = p;
+const decided = approve(dir, first.result.proposed, { by: "Torian", answer: "moderate means a 3 of 5 on the problem rubric", reasons: [{ kind: "for", claim: "the rubric already grades problems" }] });
+const again = await proposeFindings(dir, all.filter((f) => f.record === crit));
+const rec = JSON.parse(readFileSync(join(dir, first.result.file), "utf8"));
+ok(decided.ok && rec.status === "decided" && !rec.versions && again.every((x) => x.ok && x.result.kept), "rerunning --propose keeps decided and already-filed decisions as they are");
+ok(readdirSync(join(dir, "decisions")).filter((f) => f.startsWith("premise-")).length === files.length, "rerunning --propose files no duplicates");
+
+// Measure ids are scoped by goal: two goals with the same measure id do not overwrite each other.
+const d3 = mkdtempSync(join(tmpdir(), "premise-lint-"));
+put(d3, "venture.json", { id: "f3" });
+put(d3, "foundation/goals/a.json", { id: "a", statement: "Sell.", kind: "venture", why: "x", owner: "T", measures: [{ id: "count", statement: "customers", target: 10 }] });
+put(d3, "foundation/goals/b.json", { id: "b", statement: "Hire.", kind: "venture", why: "x", owner: "T", measures: [{ id: "count", statement: "hires" }] });
+put(d3, "foundation/exit-criteria/discovery.json", { phase: "discovery", criteria: [{ id: "sold", statement: "Ten customers", serves: ["a/count"] }, { id: "vague", statement: "Ten of them", serves: ["count"] }] });
+const f3 = lint(d3, { config: {} });
+ok(!f3.some((f) => f.record === "foundation/exit-criteria/discovery#sold" && f.aspect === "unmeasurable"), "a criterion serving <goal>/<measure> uses that goal's target, not another goal's same-named measure");
+ok(f3.some((f) => f.record === "foundation/exit-criteria/discovery#vague" && f.aspect === "conflict" && /a and b/.test(f.question)), "a bare measure id two goals share is flagged as ambiguous");
+
+rmSync(d3, { recursive: true, force: true });
 rmSync(dir, { recursive: true, force: true }); rmSync(d2, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);

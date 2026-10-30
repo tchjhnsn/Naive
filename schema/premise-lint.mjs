@@ -75,7 +75,7 @@ export function graph(dir, { includeDrafts = false } = {}) {
   if (includeDrafts) for (const x of drafts(dir)) if (/^foundation\//.test(x.rel)) byRel.set(x.rel, x); // a draft stands for the record it would become
   const g = { goals: [], measures: new Map(), requirements: [], criteria: [], constraints: [], decisions: [], functions: [] };
   for (const { rel, rec, draft } of byRel.values()) {
-    if (rel.startsWith("foundation/goals/")) { g.goals.push({ ...rec, _rel: rel, _draft: draft }); for (const m of rec.measures ?? []) { g.measures.set(m.id, { ...m, goal: rec.id }); g.measures.set(`${rec.id}/${m.id}`, { ...m, goal: rec.id }); } }
+    if (rel.startsWith("foundation/goals/")) { g.goals.push({ ...rec, _rel: rel, _draft: draft }); for (const m of rec.measures ?? []) g.measures.set(`${rec.id}/${m.id}`, { ...m, goal: rec.id }); }
     else if (rel.startsWith("foundation/requirements/")) g.requirements.push({ ...rec, _rel: rel, _draft: draft });
     else if (rel.startsWith("foundation/exit-criteria/")) for (const c of rec.criteria ?? []) g.criteria.push({ ...c, phase: rec.phase, _rel: rel, _draft: draft });
     else if (rel === "foundation/constraints.json") for (const c of rec.must_not ?? []) g.constraints.push({ ...c, _rel: rel, _draft: draft });
@@ -103,8 +103,10 @@ export function cells(g) {
   const out = [];
   const cell = (kind, rec, field, aspect, fill = {}, links = []) => out.push({ kind, record: routeOf[kind](rec), field, aspect, ...fill, links, draft: !!rec._draft });
   const goalOf = (id) => g.goals.find((x) => x.id === id);
-  const measureOf = (id) => g.measures.get(id);
-  const resolves = (id) => !!(goalOf(id) || measureOf(id) || g.requirements.some((r) => r.id === id));
+  // Measures are keyed <goal>/<measure>. A bare measure id resolves only when exactly one goal has it.
+  const measuresNamed = (id) => g.measures.has(id) ? [g.measures.get(id)] : [...g.measures.values()].filter((m) => m.id === id);
+  const measureOf = (id) => { const ms = measuresNamed(id); return ms.length === 1 ? ms[0] : undefined; };
+  const resolves = (id) => !!(goalOf(id) || measuresNamed(id).length || g.requirements.some((r) => r.id === id));
 
   // The text a record inherits from its parents: a vague word defined there is defined here.
   const parentsText = (ids) => (ids ?? []).map((id) => { const goal = goalOf(id) ?? goalOf(measureOf(id)?.goal); const m = measureOf(id); return JSON.stringify(goal ?? {}) + JSON.stringify(m ?? {}); }).join(" ");
@@ -158,8 +160,8 @@ export function cells(g) {
     vague("criterion", c, "statement", c.statement, serves);
     if (!serves.length) cell("criterion", c, "serves", "orphan", { expected: "goal measure" });
     for (const s of serves) if (!measureOf(s)) {
-      const goal = goalOf(s);
-      cell("criterion", c, `serves.${s}`, "conflict", { detail: goal ? `${routeOf.criterion(c)} serves ${s}, a goal, not one of its measures.` : `${routeOf.criterion(c)} serves measure ${s}, but no goal has that measure.` }, [s]);
+      const goal = goalOf(s), owners = measuresNamed(s).map((m) => m.goal);
+      cell("criterion", c, `serves.${s}`, "conflict", { detail: owners.length > 1 ? `${routeOf.criterion(c)} serves measure ${s}, which goals ${owners.join(" and ")} both have; name it as <goal>/${s}.` : goal ? `${routeOf.criterion(c)} serves ${s}, a goal, not one of its measures.` : `${routeOf.criterion(c)} serves measure ${s}, but no goal has that measure.` }, [s]);
     }
     const targets = serves.map(measureOf).filter((m) => m?.target !== undefined);
     if (!c.evidence && !c.met?.evidence && !targets.length) cell("criterion", c, "statement", "unmeasurable", { detail: "It names no evidence, and the measures it serves have no target." }, serves);
@@ -222,11 +224,16 @@ export function lint(dir, { route, includeDrafts = false, config } = {}) {
   return out;
 }
 
-/** Writes each finding as an open decision (an agent proposes; a person decides). */
+/** Writes each finding as an open decision (an agent proposes; a person decides). A finding whose
+ *  decision already exists is left alone unless it is still open with other wording, so a rerun never
+ *  reopens what a person decided. */
 export async function proposeFindings(dir, findings) {
-  const { propose } = await import("./decisions.mjs");
+  const { propose, decisionFile } = await import("./decisions.mjs");
   return findings.map((f) => {
     const id = `premise-${createHash("sha256").update(`${f.record}|${f.field}|${f.aspect}`).digest("hex").slice(0, 10)}`;
+    const file = decisionFile(dir, id);
+    const prior = file && load(ventureFile(dir, file));
+    if (prior && (prior.status !== "open" || prior.question === f.question)) return { finding: f, ok: true, result: { kept: id, file, status: prior.status } };
     const r = propose(dir, { id, question: f.question, note: `premise-lint ${f.aspect} on ${f.record} ${f.field}` }, { agentId: "premise-lint", via: "cli" });
     return { finding: f, ...r };
   });
@@ -242,7 +249,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (flags.has("--json")) console.log(JSON.stringify({ findings, ...(proposed ? { proposed: proposed.map((p) => ({ record: p.finding.record, aspect: p.finding.aspect, ok: p.ok, ...(p.result ?? { error: p.error }) })) } : {}) }, null, 2));
   else {
     for (const f of findings) console.log(`${f.severity.padEnd(5)}  ${f.aspect.padEnd(19)} ${f.record} ${f.field}${f.draft ? " (draft)" : ""}\n       ${f.question}`);
-    if (proposed) console.log(`\nproposed ${proposed.filter((p) => p.ok).length} open decisions`);
+    if (proposed) console.log(`\nproposed ${proposed.filter((p) => p.result?.proposed).length} open decisions, kept ${proposed.filter((p) => p.result?.kept).length} already filed`);
     console.log(`\n${findings.length} findings (${findings.filter((f) => f.severity === "error").length} errors)`);
   }
   process.exit(findings.some((f) => f.severity === "error") ? 1 : 0);
