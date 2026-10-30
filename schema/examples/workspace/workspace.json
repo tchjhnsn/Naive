@@ -4,5 +4,8 @@
   "ventures": [
     "ventures/"
   ],
-  "code": "code/"
+  "code": "code/",
+  "name": "Naive workspace",
+  "timeZone": "America/New_York",
+  "calendar": "calendar/"
 }

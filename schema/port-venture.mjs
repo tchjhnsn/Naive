@@ -82,10 +82,10 @@ function git(src) {
   const g = join(src, ".git");
   if (!existsSync(g)) return null;
   if (statSync(g).isFile()) return { linked: true, worktrees: [], uncommitted: null };
-  // status rewrites .git/index unless locks are refused, and the move has to keep every byte.
-  const run = (...a) => spawnSync("git", ["-C", src, "--no-optional-locks", ...a], { encoding: "utf8" });
+  const run = (...a) => spawnSync("git", ["-C", src, ...a], { encoding: "utf8" });
   const wt = (run("worktree", "list", "--porcelain").stdout ?? "").split("\n").filter((l) => l.startsWith("worktree ")).map((l) => l.slice(9)).filter((p) => real(p) !== real(src));
-  const st = run("status", "--porcelain");
+  // --no-optional-locks: status must not rewrite .git/index. The plan reads the folder and writes nothing (EE-076).
+  const st = run("--no-optional-locks", "status", "--porcelain");
   return { linked: false, worktrees: wt, uncommitted: st.status === 0 ? st.stdout.split("\n").filter(Boolean).length : null };
 }
 

@@ -1,0 +1,13 @@
+{
+  "venture": "studio",
+  "date": "2026-10-28",
+  "time_zone": "America/Chicago",
+  "visibility": "internal",
+  "sessions": 2,
+  "active_minutes": 42.5,
+  "messages": 18,
+  "tokens_in": 2310,
+  "session_files": ["-Users-alex-studio/a.jsonl", "-Users-alex-studio/b.jsonl"],
+  "matched_by": ["cwd"],
+  "computed": "2026-10-30T18:00:00.000Z"
+}

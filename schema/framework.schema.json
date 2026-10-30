@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "framework.schema.json",
+  "title": "Framework for thinking",
+  "description": "A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). schema/check-frameworks.mjs checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (schema/user-frameworks.mjs).",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "frames",
+    "maps_to"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "vocabulary": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "The framework's own terms and what each means in canonical words"
+    },
+    "frames": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "question"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "answers": {
+            "type": "string",
+            "description": "The framework field the answer fills"
+          }
+        }
+      }
+    },
+    "template": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "skill": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The skill that runs the framework with the founder; it stays at its layer path"
+    },
+    "adapter": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A module rendering the framework's view from canonical records"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Checks that belong to the framework and may read its own fields"
+    },
+    "maps_to": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "framework_field",
+          "canonical_route",
+          "canonical_field"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "framework_field": {
+            "type": "string"
+          },
+          "canonical_route": {
+            "type": "string"
+          },
+          "canonical_field": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "playbook": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The playbook: the steps for running the framework, a path relative to the root that holds frameworks/"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Who owns the framework: a person for a founder's own, Naive for a built-in one"
+    },
+    "visibility": {
+      "enum": [
+        "internal",
+        "public"
+      ],
+      "description": "internal stays in the workspace; public may be published (naive framework publish)"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "stable"
+      ]
+    }
+  }
+}

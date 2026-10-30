@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "activity.schema.json",
+  "title": "Activity day",
+  "description": "Time the founder spent in the venture on one day, from transcript timestamps alone, at operations/activity/<date>.json (naive activity --write). The day is the venture's IANA time zone's. Internal by default. When the calendar component is installed, activity days appear as derived events; nothing is copied there.",
+  "type": "object",
+  "required": [
+    "venture",
+    "date",
+    "time_zone",
+    "sessions",
+    "active_minutes",
+    "messages",
+    "tokens_in"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "time_zone": {
+      "type": "string"
+    },
+    "visibility": {
+      "enum": [
+        "internal",
+        "public"
+      ],
+      "default": "internal"
+    },
+    "sessions": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Transcript files with a founder message that day"
+    },
+    "active_minutes": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Sum of gaps of 10 minutes or less between the founder's own messages"
+    },
+    "messages": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tokens_in": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Estimated: characters of the founder's messages / 4"
+    },
+    "session_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "matched_by": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "cwd",
+          "mention"
+        ]
+      },
+      "description": "How the day's sessions were matched to the venture"
+    },
+    "computed": {
+      "type": "string",
+      "description": "When this was computed (ISO 8601)"
+    }
+  }
+}
