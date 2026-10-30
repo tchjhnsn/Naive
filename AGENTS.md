@@ -42,6 +42,13 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 - `node purpose/frameworks/product-anatomy/test.mjs` tests the Product Anatomy runner's role rules.
 - `node schema/test.mjs` tests the checkers on broken copies; `python3 schema/validate.py` validates every record against its schema.
 
+## Docs
+
+- The docs (site/content/docs/, docs/, every SKILL.md, and docs/master/naive-docs.md, exported from the master article) state only what is decided and built. Something not built says "not built" in that sentence.
+- Ideas go through `naive capture`, not into the docs.
+- Every PR updates the docs or says "No docs change: <why>" in its body; .github/workflows/docs-required.yml enforces it.
+- `node schema/check-docs-claims.mjs` must pass: every command, flag, repository path and route the docs name exists in the code.
+
 ## Rules
 
 - Never read or print `.env*` files.

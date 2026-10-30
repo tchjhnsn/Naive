@@ -131,6 +131,13 @@
     "note": {
       "type": "string"
     },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reason"
+      },
+      "description": "Why: claims for and against the decision and the context it rests on, each with citations. Approving freezes them into provenance.reasons"
+    },
     "provenance": {
       "type": "object",
       "additionalProperties": false,
@@ -194,6 +201,13 @@
         "via": {
           "type": "string",
           "description": "Where the approval was given, such as the Decision Docket or a decision card"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reason"
+          },
+          "description": "The reasons this version was approved on, frozen at approval with each local citation's sha256. If a cited file changes later the decision renders stale: the reason it was decided changed"
         }
       }
     },
@@ -426,6 +440,59 @@
         "type": "string"
       },
       "description": "Ids of decisions whose answers may conflict with this one. An edge in the decision index."
+    }
+  },
+  "$defs": {
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "kind"
+      ],
+      "description": "One reason for or against a decision, or context it rests on, with the records it cites (dynamic decision index, item 4)",
+      "properties": {
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "for",
+            "against",
+            "context"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "description": "A venture-relative record path, an evidence id, a research cell id or a decision id"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "description": "sha256 of the cited file when it was cited; computed in code for a local file"
+              },
+              "locator": {
+                "type": "string",
+                "description": "Where in the cited record, such as a field path or a line"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
