@@ -12,7 +12,8 @@ import { join, resolve } from "node:path";
 import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.mjs";
 import { frameOf } from "./frames.mjs";
 
-/** Propose every step's decisions, open, with the step's place in the roadmap in the note. */
+/** Propose every step's decisions, open, with the step's place in the roadmap in the note.
+ *  @param {string} dir @param {string} id @param {{ agentId?: string, harness?: string, model?: string }} [opts] */
 export async function install(dir, id, { agentId = "roadmaps", harness, model } = {}) {
   const r = roadmapOf(id);
   if (!r) return { ok: false, error: `no roadmap ${id}; node schema/roadmaps.mjs list shows them` };

@@ -14,7 +14,7 @@ const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}
 
 const ws = mkdtempSync(join(tmpdir(), "releases-test-"));
 const ventures = join(ws, "ventures");
-const env = { ...process.env, MENTURA_WORKSPACE: ventures, MENTURA_AGENT_CMD: `node ${join(ws, "agent-called.mjs")}` };
+const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: ventures, MENTURA_AGENT_CMD: `node ${join(ws, "agent-called.mjs")}` });
 delete env.MENTURA_MODEL; delete env.MENTURA_ACTOR; delete env.MENTURA_ACTOR_ID;
 // A stand-in agent that leaves a mark if anything calls a model (C-10: building calls none).
 writeFileSync(join(ws, "agent-called.mjs"), `import { writeFileSync } from "node:fs"; writeFileSync(${JSON.stringify(join(ws, "AGENT_CALLED"))}, "1"); console.log("{}");\n`);
@@ -177,14 +177,14 @@ const port = await new Promise((ok) => { let out = ""; server.stdout.on("data", 
 expect("I-17: node schema/start-release.mjs <venture dir> --port n serves on 127.0.0.1", !!port);
 if (port) {
   const at = (p, o) => fetch(`http://127.0.0.1:${port}${p}`, o);
-  const idx = await at("/").then((r) => r.json());
+  const idx = /** @type {{ release: string }} */ (await at("/").then((r) => r.json()));
   const post = await at("/foundation/problem", { method: "POST", body: "{}" });
   const svgRes = await at("/card.svg");
   const missing = await at("/customers/acme");
   expect("C-12: the server serves the release index", idx.release === base.release);
   expect("C-12: a release is read-only: a POST answers 405", post.status === 405 && post.headers.get("allow") === "GET, HEAD");
   expect("O-7: /card.svg is the card drawn by the interface", svgRes.status === 200 && /image\/svg\+xml/.test(svgRes.headers.get("content-type")) && (await svgRes.text()).includes("kettle"));
-  const miss = await missing.json();
+  const miss = /** @type {{ not_in_release?: boolean, items: string[], add: string }} */ (await missing.json());
   expect("C-18: an item not known at build time answers 404 with the shell's items and the command that adds it", missing.status === 404 && miss.not_in_release && miss.items.includes("bean") && /--add customers\/acme/.test(miss.add), JSON.stringify(miss));
   // C-18: add one new item without rebuilding the rest.
   writeJson(join(ws, "acme.json"), { id: "acme", name: "Acme Coffee" });
@@ -194,7 +194,7 @@ if (port) {
   const a = build(dir, "--add", "customers/acme");
   const after = manifest(dir);
   const live = await at("/customers/acme");
-  expect("C-18: --add puts a new item into the release, served at once", a.status === 0 && live.status === 200 && (await live.json()).record.name === "Acme Coffee", a.stderr);
+  expect("C-18: --add puts a new item into the release, served at once", a.status === 0 && live.status === 200 && /** @type {{ record: { name: string } }} */ (await live.json()).record.name === "Acme Coffee", a.stderr);
   expect("C-18: nothing else is rebuilt: every other entry and frozen file is untouched", before.records.every((r) => JSON.stringify(after.records.find((x) => x.file === r.file)) === JSON.stringify(r) && statSync(join(dir, ".release/records", r.file)).mtimeMs === mtimes[r.file]) && after.built_at === before.built_at && after.incremental.at(-1)?.from === before.release && after.release !== before.release, JSON.stringify(after.incremental));
   expect("C-18: the card follows the release", JSON.parse(readFileSync(join(dir, ".release/card.json"), "utf8")).headline.find((h) => h.label === "Customers")?.value === 2);
   server.kill();

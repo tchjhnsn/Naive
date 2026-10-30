@@ -251,7 +251,7 @@ if (cmd === "visibility") {
     if (!field) { console.error("name the field: mentura visibility <record> <field> --venture <id> --public --by <name>"); process.exit(2); }
     const by = opt("by") ?? process.env.MENTURA_PERSON;
     const actor = process.env.MENTURA_ACTOR_ID;
-    if (flag("public") && (process.env.MENTURA_MODEL || (actor && actor !== by))) { console.error(`an agent (${actor ?? process.env.MENTURA_MODEL}) is acting: only a person approves a field as public; an agent proposes (--propose)`); process.exit(1); }
+    if (flag("public") && (process.env.MENTURA_ACTOR === "agent" || process.env.MENTURA_MODEL || (actor && actor !== by))) { console.error(`an agent (${actor ?? process.env.MENTURA_MODEL ?? "MENTURA_ACTOR"}) is acting: only a person approves a field as public; an agent proposes (--propose)`); process.exit(1); }
     const r = setPublic(dir, file, field, flag("propose") ? { propose: true, agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID } : { by });
     if (!r.ok) { console.error(r.error); process.exit(1); }
     record(dir, { entity: file.replace(/\.json$/, ".visibility.json"), route: "governance/visibility", activity: flag("propose") ? "draft" : "accept", agent: agentFromEnv(flag("propose") ? "agent" : "person", "cli", flag("propose") ? {} : { id: by }), note: `${flag("propose") ? "proposed" : "approved"} ${file}#${field} as public` });
