@@ -65,6 +65,7 @@ import { packageSlots } from "./package-routes.mjs";
 import { routable } from "../schema/structure.mjs";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from schema/brand.mjs.
 import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
+import { foundationLintCommands } from "../schema/lint-foundation.mjs";
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../schema/stale.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
@@ -171,6 +172,7 @@ function buildRoutes() {
   );
   out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (schema/caching.mjs).
   out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (schema/brand.mjs).
+  out.push(...foundationLintCommands(cmd)); // Foundation lint: mission, ICP jobs, alignment checks, problem forms (schema/lint-foundation.mjs).
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
 
