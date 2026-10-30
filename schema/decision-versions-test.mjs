@@ -72,6 +72,25 @@ try {
   const bad = merge(v, "stage", { by: "Founder" });
   expect("a merge whose answer breaks the target's schema is refused", !bad.ok && /venture\.schema\.json/.test(bad.error) && /phase/.test(bad.error), bad);
   expect("a refused merge writes nothing: the record and the decision are unchanged", readFileSync(join(v, "venture.json"), "utf8") === before && !json("marketing/decisions/stage.decision.json").merged);
+  for (const file of ["./venture.json", ".//venture.json", "marketing/./x.json"]) {
+    const sp = propose(v, { at: "marketing", id: `spelled-${file.length}`, question: "Which phase?", answer: "growth", applies_to: [{ file, field: "phase" }] }, { agentId: "cos" });
+    expect(`propose refuses the spelling ${file}, which would skip the schema check`, !sp.ok && /not a path inside/.test(sp.error), sp);
+  }
+  // Merging into a record that does not exist: it has no earlier gaps, so it must pass whole.
+  propose(v, { at: "marketing", id: "new-product", question: "How is it described?", answer: "Desc", applies_to: [{ file: "product/new.json", field: "description" }] }, { agentId: "cos" });
+  approve(v, "new-product", { by: "Founder" });
+  mkdirSync(join(v, "product"), { recursive: true });
+  const nw = merge(v, "new-product", { by: "Founder" });
+  expect("a merge cannot create a record missing its required fields", !nw.ok && /product\.schema\.json/.test(nw.error) && !existsSync(join(v, "product/new.json")), nw);
+  // A validator that cannot run says nothing about the record: the merge is refused.
+  const brokenBin = mkdtempSync(join(tmpdir(), "no-validator-"));
+  writeFileSync(join(brokenBin, "python3"), "#!/bin/sh\necho 'validate.py needs jsonschema' >&2\nexit 1\n", { mode: 0o755 });
+  const path = process.env.PATH;
+  process.env.PATH = `${brokenBin}:${path}`;
+  const nv = merge(v, "stage", { by: "Founder" });
+  process.env.PATH = path;
+  rmSync(brokenBin, { recursive: true, force: true });
+  expect("a merge is refused when the validator cannot run", !nv.ok && /could not check venture\.json/.test(nv.error) && readFileSync(join(v, "venture.json"), "utf8") === before, nv);
 
   writeFileSync(join(v, "marketing/why.json"), JSON.stringify({ n: 1 }));
   propose(v, { at: "marketing", id: "tone", question: "What tone?", answer: "Plain.", reasons: [{ claim: "Readers skim", kind: "for", citations: [{ ref: "marketing/why.json" }] }] }, { agentId: "cos" });
