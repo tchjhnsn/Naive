@@ -1,0 +1,15 @@
+{
+  "name": "naive",
+  "description": "Naive, the venture development framework, as a Claude Code plugin.",
+  "owner": {
+    "name": "Torian Johnson",
+    "url": "https://github.com/tchjhnsn"
+  },
+  "plugins": [
+    {
+      "name": "naive",
+      "description": "Create and set up a venture in conversation: types, roles, sources of truth, the foundation and the first decisions, with your progress as an artifact.",
+      "source": "./"
+    }
+  ]
+}

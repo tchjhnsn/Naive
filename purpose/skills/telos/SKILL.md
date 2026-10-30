@@ -10,7 +10,7 @@ description: >
   done its job, how anyone would know (measures), what the owners intend to
   happen then (hold, sell, list, wind down), and what must be true to leave each
   phase of the Succession Matrix, each tied to a measure. Records
-  purpose/telos.json. Other layers read it: governance's exit paths and MAD's
+  foundation/goals and foundation/exit-criteria. Other layers read it: governance's exit paths and MAD's
   success measure. The owner writes it; an agent drafts and asks (EE-023).
   MANDATORY TRIGGERS: telos, start with the end, end in mind, end state, what is
   this for, north star, long-term goal, exit criteria, phase gate, when do we
@@ -19,7 +19,7 @@ description: >
 
 # Telos: start with the end
 
-Purpose layer (EE-023). Writes `purpose/telos.json`; `node schema/check-telos.mjs` checks it. Covey's habit "begin with the end in mind" and Aristotle's telos, the end a thing exists for, name the same move: decide the end first, then derive every earlier step from it.
+Purpose layer (EE-023). Writes `foundation/goals/telos` (the end and its measures), `foundation/goals/owner-outcome` and `foundation/exit-criteria/<phase>`; `node schema/check-telos.mjs` checks them. A `foundation/telos` write is refused once a venture has any of these records. Covey's habit "begin with the end in mind" and Aristotle's telos, the end a thing exists for, name the same move: decide the end first, then derive every earlier step from it.
 
 ## When
 

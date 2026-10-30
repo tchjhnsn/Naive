@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-interview.schema.json",
+  "title": "Validation interview",
+  "description": "One problem interview in the validation study, at <venture>/validation/interviews/<id>.json: who (anonymised), under what consent, what they said hurts, what they use now, the problem they chose, what the interviewer predicted with Naive and without it, and the follow-up that checks the prediction. The transcript itself stays in raw/ and is cited, never copied here.",
+  "type": "object",
+  "required": ["id", "person", "icp", "consent", "transcript", "bottlenecks"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "Equal to the file name" },
+    "venture": { "type": "string" },
+    "at": { "type": "string", "format": "date", "description": "The day of the interview" },
+    "person": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "An anonymised reference (p-07), never a name or contact detail; the key to the real person stays in a _private record" },
+    "icp": { "type": "string", "description": "The ideal customer profile id (foundation/icp/<id>.json) this person fits" },
+    "consent": {
+      "type": "object",
+      "required": ["given", "at", "method"],
+      "additionalProperties": false,
+      "properties": {
+        "given": { "type": "boolean" },
+        "at": { "type": "string", "format": "date-time" },
+        "method": { "enum": ["written", "verbal-recorded", "form", "email"] }
+      }
+    },
+    "transcript": {
+      "type": "object",
+      "required": ["source"],
+      "additionalProperties": false,
+      "description": "The raw source the transcript lives in",
+      "properties": { "source": { "type": "string", "description": "A raw source id or venture path (raw/sources/<id>)" } }
+    },
+    "bottlenecks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "current_solutions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["for", "what_it_does"],
+        "additionalProperties": false,
+        "properties": {
+          "for": { "type": "string", "description": "The bottleneck it is used for" },
+          "what_it_does": { "type": "string" },
+          "what_it_doesnt": { "type": "string" }
+        }
+      }
+    },
+    "chosen_problem": { "type": "string", "description": "The one bottleneck the person chose to work on" },
+    "prediction": {
+      "type": "object",
+      "required": ["with_naive", "status_quo"],
+      "additionalProperties": false,
+      "properties": {
+        "with_naive": { "type": "string", "description": "What the interviewer predicts happens with Naive" },
+        "status_quo": { "type": "string", "description": "What the interviewer predicts happens without it" }
+      }
+    },
+    "follow_up": {
+      "type": "object",
+      "required": ["date"],
+      "additionalProperties": false,
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "outcome_vs_prediction": { "enum": ["matched", "better", "worse", "mixed", "no-outcome"] },
+        "evidence": { "type": "array", "items": { "type": "string" }, "description": "Evidence record ids behind the outcome" }
+      }
+    }
+  }
+}

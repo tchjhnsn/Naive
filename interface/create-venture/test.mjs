@@ -48,6 +48,8 @@ t("the first venture is My first venture, in a workspace named Naive workspace; 
   const w = load(join(ws, "naive-workspace.json"));
   ok(w.name === "Naive workspace" && w.ventures.join() === "my-first-venture", JSON.stringify(w));
   ok(existsSync(join(ws, "AGENTS.md")), "the workspace has its own AGENTS.md");
+  ok(typeof w.timeZone === "string" && w.timeZone.length > 0, "the workspace starts with its clock's zone");
+  ok(load(join(ws, "calendar/calendars/default.json")).visibility === "workspace", "and its default calendar");
   ok(create(["--yes", "--skip-install", "--no-git", "--venture-name", "Acme Labs"], ws).status === 0);
   ok(load(join(ws, "acme-labs/venture.json")).name === "Acme Labs");
   ok(load(join(ws, "naive-workspace.json")).ventures.join() === "my-first-venture,acme-labs", "a second venture joins the same workspace");

@@ -14,6 +14,7 @@
 //
 //   node schema/check-team.mjs <workspace or venture dir>
 
+import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -44,14 +45,14 @@ const cap = new Map(caps.capabilities.map((c) => [c.id, c]));
 
 let checked = 0;
 for (const root of walk(dir)) {
-  const v = load(join(root, "venture.json"));
-  const pPath = [join(root, "people/team-plan.json"), join(root, "operations/team-plan.json")].find((p) => existsSync(p)) ?? join(root, "operations/team-plan.json");
+  const v = load(ventureFile(root, "venture.json"));
+  const pPath = [ventureFile(root, "people/team-plan.json"), ventureFile(root, "operations/team-plan.json")].find((p) => existsSync(p)) ?? ventureFile(root, "operations/team-plan.json");
   if (!existsSync(pPath)) continue;
   checked++;
   const plan = load(pPath), at = `${v.id}/operations/team-plan.json`;
   // The venture's decision rights: the template, tightened by the venture's own file.
   const classes = new Map(template.classes.map((c) => [c.id, c]));
-  const own = join(root, "governance/decision-rights.json");
+  const own = ventureFile(root, "governance/decision-rights.json");
   if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
   const ids = plan.roles.map((r) => r.id);
   if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate role ids`);
@@ -84,7 +85,7 @@ for (const root of walk(dir)) {
   }
   for (const rec of plan.recruiting ?? []) {
     if (!ids.includes(rec.role)) errors.push(`${at}: recruiting for unknown role ${rec.role}`);
-    if (!existsSync(join(root, rec.brief))) errors.push(`${at}: recruiting brief ${rec.brief} not found (paths are relative to the venture folder)`);
+    if (!existsSync(ventureFile(root, rec.brief))) errors.push(`${at}: recruiting brief ${rec.brief} not found (paths are relative to the venture folder)`);
     if (rec.assisted_by && plan.roles.find((r) => r.id === rec.assisted_by)?.occupant !== "agent") warnings.push(`${at}: recruiting for ${rec.role} is assisted by ${rec.assisted_by}, which is not an agent role in the plan`);
   }
 }
