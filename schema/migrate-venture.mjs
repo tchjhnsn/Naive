@@ -119,7 +119,7 @@ Files: ${JSON.stringify(Object.fromEntries(given.map((f) => [f.path, f.text])))}
 export function proposeDecisions(dir, p) {
   mkdirSync(join(dir, dirname(PLAN)), { recursive: true });
   writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
-  prov(dir, { entity: PLAN, activity: "draft", agent: agentFromEnv("agent", "migrate", { id: "naive-migrate" }), note: `migrate plan from ${p.from}: ${p.items.length} records, ${p.left_behind.length} left behind` });
+  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: PLAN, activity: "draft", agent: agentFromEnv("agent", "migrate", { id: "naive-migrate" }), note: `migrate plan from ${p.from}: ${p.items.length} records, ${p.left_behind.length} left behind` }));
   const groups = new Map();
   for (const it of p.items) groups.set(functionOf(it.route), [...(groups.get(functionOf(it.route)) ?? []), it]);
   const proposed = [];
@@ -129,7 +129,7 @@ export function proposeDecisions(dir, p) {
       question: `Migrate ${its.length} record${its.length === 1 ? "" : "s"} from ${basename(p.from)} into ${fn}, as ${PLAN} plans them?`,
       options: Object.values(ANSWERS), answer: ANSWERS.bring, decides: { path: PLAN },
       note: its.map((it) => `${it.id}: ${it.from.join(", ")} -> ${it.route}`).join("; "),
-    }, { agentId: "naive-migrate", via: "migrate" });
+    }, /** @type {Parameters<typeof propose>[2]} */ ({ agentId: "naive-migrate", via: "migrate" }));
     if (!r.ok) throw new Error(r.error);
     proposed.push(r.result.proposed);
   }
@@ -164,7 +164,7 @@ export async function apply(dir) {
     if (!s.sources.some((x) => x.id === id)) s.sources.push({ id, connector: "filesystem", writes: "none", root: p.from, note: "migrate: a person chose to point to these files rather than rewrite them" });
     mkdirSync(dirname(f), { recursive: true });
     writeFileSync(f, JSON.stringify(s, null, 2) + "\n");
-    prov(dir, { entity: "knowledge/sources.json", activity: "write", agent: agentFromEnv("agent", "migrate", { id: "naive-migrate" }), note: `points to ${p.from}, read-only` });
+    prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: "knowledge/sources.json", activity: "write", agent: agentFromEnv("agent", "migrate", { id: "naive-migrate" }), note: `points to ${p.from}, read-only` }));
   }
   writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
   return done;
