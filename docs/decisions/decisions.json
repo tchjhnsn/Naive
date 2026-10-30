@@ -923,6 +923,13 @@
       ],
       "decision": "Naive's project scaffolding is a central data management structure: everything a venture knows sits in one structure under one set of conventions, with pointers to the systems of record that keep the rest. Naive is for solo founders and small founding teams. It is not a software engineering framework (MAD is, EE-038): it leans toward a monorepo for most software and otherwise asks only that the code be connected, with a pointer between the knowledge base and the code base, and it is opinionated about file conventions. README.md, AGENTS.md, the docs introduction and the ontology say so.",
       "why": "Torian, 2026-10-29: with SaaS commoditized, much of what would sit in separate data silos can be centralized, which is ideal for a solo founder and still for a small team; central data gives AI-native work an edge, since agents move faster with better context and reasoning for their decisions. Lean Startup names Ries's build-measure-learn method rather than team size, so the docs say solo founders and small founding teams."
+    },
+    {
+      "id": "EE-087",
+      "date": "2026-10-30",
+      "status": "in-force",
+      "decision": "Naive is written in TypeScript. The move runs in four phases: tsc checks the JavaScript (allowJs, checkJs) folder by folder through schema/check-types.ts; record types are generated from schema/*.schema.json, never typed by hand; modules are renamed to .ts folder by folder, run by Node's type stripping (Node 22.18 or later for developing Naive); and the published packages ship compiled JavaScript with .d.ts files, so ventures need neither TypeScript nor a newer Node. typescript and @types/node are dev dependencies only. New code is TypeScript with erasable syntax only and no any. Rust is kept for later hot paths, called from TypeScript. Founders choose JavaScript or TypeScript for their own venture: create-venture defaults to TypeScript when tsc is already on the machine and Node is 22.18 or later, and to JavaScript otherwise (not built yet).",
+      "why": "Torian, 2026-10-30: for our own development it is better to write Naive in TypeScript, while giving venture founders the choice; many new founders have never coded and should not have to install anything, so the default follows what is already on their machine. Plan: https://claude.ai/artifact/Bv57vdrZVduwRjUTofpNo5"
     }
   ]
 }
