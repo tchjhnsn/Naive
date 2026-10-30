@@ -1,0 +1,62 @@
+---
+title: "People lint: a role, a hire, and who owns a decision"
+---
+stateDiagram-v2
+  direction LR
+  state "Legend" as legend {
+    lg0: unreadable
+  }
+  class lg0 purple
+  state "At the same time" as all {
+    state "Team plan" as r0 {
+      s0: The plan names the role
+      s1: The plan does not name the role
+      [*] --> s0
+      s0 --> s1: you remove the role from the team plan
+      s1 --> s0: you add the role to the team plan
+    }
+    --
+    state "Hire" as r1 {
+      s2: No hire
+      s3: A hire is on the books
+      [*] --> s2
+      s2 --> s3: you hire for the role
+      s3 --> s2: you withdraw the hire
+    }
+    --
+    state "Role" as r2 {
+      s4: The role owns a function
+      s5: The role owns no function
+      [*] --> s4
+      s4 --> s5: you take the role's function away
+      s5 --> s4: you give the role a function
+    }
+    --
+    state "Decision" as r3 {
+      s6: No decided decision
+      s7: No person owns the decision
+      s8: A person owns the decision
+      [*] --> s6
+      s6 --> s7: a decision is saved with no person
+      s6 --> s8: a person decides
+      s7 --> s6: you leave the decision open
+      s7 --> s8: a person decides
+      s8 --> s6: you leave the decision open
+      s8 --> s7: a decision is saved with no person
+    }
+    --
+    state "Records" as r4 {
+      s9: Records read
+      s10: Records malformed
+      s11: Records missing
+      [*] --> s9
+      s9 --> s10: the records are malformed
+      s9 --> s11: the records are missing
+      s10 --> s9: the records can be read again
+      s10 --> s11: the records are missing
+      s11 --> s9: the records can be read again
+      s11 --> s10: the records are malformed
+    }
+  }
+  class s10 purple
+  class s11 purple

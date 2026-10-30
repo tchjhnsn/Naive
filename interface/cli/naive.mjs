@@ -142,7 +142,7 @@ async function dev(dir) {
 }
 
 // The checks that read a workspace, run on this venture: it and the ventures nested in it, not its neighbours.
-const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used"];
+const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
 function check(dir) {
   let failed = 0;
   for (const c of CHECKS) {

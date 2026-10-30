@@ -1,0 +1,37 @@
+---
+title: "Each entry in the Naive site nav"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: start
+    lg1: page
+  }
+  class lg0 tan
+  class lg1 teal
+  s0: Nothing asked yet
+  s1: Blog
+  s2: Docs
+  s3: Showcase
+  s4: Templates
+  s5: Who it is for
+  s6: Why
+  [*] --> s0
+  s0 --> s1: you open Blog
+  s0 --> s2: you open Docs
+  s0 --> s3: you open Showcase
+  s0 --> s4: you open Templates
+  s0 --> s5: you open Who it is for
+  s0 --> s6: you open Why
+  s1 --> s0: you ask for something else
+  s2 --> s0: you ask for something else
+  s3 --> s0: you ask for something else
+  s4 --> s0: you ask for something else
+  s5 --> s0: you ask for something else
+  s6 --> s0: you ask for something else
+  class s0 tan
+  class s1 teal
+  class s2 teal
+  class s3 teal
+  class s4 teal
+  class s5 teal
+  class s6 teal
