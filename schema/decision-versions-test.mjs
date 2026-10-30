@@ -44,6 +44,21 @@ try {
   merge(v, "mission", { by: "Founder" });
   expect("merging the rollback restores the earlier answer", json("venture.json").core.promise === "We help founders.");
 
+  propose(v, { at: "marketing", id: "stage", question: "Which phase are we in?", answer: "growth", applies_to: [{ file: "venture.json", field: "phase" }] }, { agentId: "cos" });
+  approve(v, "stage", { by: "Founder" });
+  const before = readFileSync(join(v, "venture.json"), "utf8");
+  const bad = merge(v, "stage", { by: "Founder" });
+  expect("a merge whose answer breaks the target's schema is refused", !bad.ok && /venture\.schema\.json/.test(bad.error) && /phase/.test(bad.error), bad);
+  expect("a refused merge writes nothing: the record and the decision are unchanged", readFileSync(join(v, "venture.json"), "utf8") === before && !json("marketing/decisions/stage.decision.json").merged);
+
+  writeFileSync(join(v, "marketing/why.json"), JSON.stringify({ n: 1 }));
+  propose(v, { at: "marketing", id: "tone", question: "What tone?", answer: "Plain.", reasons: [{ claim: "Readers skim", kind: "for", citations: [{ ref: "marketing/why.json" }] }] }, { agentId: "cos" });
+  approve(v, "tone", { by: "Founder" });
+  approve(v, "tone", { by: "Founder", answer: "Warm.", reasons: [{ claim: "Warmth converts", kind: "for" }] });
+  rollback(v, "tone", 1, { by: "Founder" });
+  const t = json("marketing/decisions/tone.decision.json");
+  expect("rollback restores the version's reasons, in step with provenance.reasons", JSON.stringify(t.reasons) === JSON.stringify(t.provenance.reasons) && t.reasons.length === 1 && t.reasons[0].claim === "Readers skim", t);
+
   const log = readFileSync(join(v, "provenance.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
   expect("each merge is a merge line in provenance", log.filter((e) => e.activity === "merge").length === 3, log.map((e) => e.activity));
 } finally {

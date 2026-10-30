@@ -265,11 +265,11 @@ export function locked(dir, route, actorId) {
   return d ? { id: d.id, question: d.question } : null;
 }
 
-const validate = (d) => {
+const validate = (d, schema = "decision-record.schema.json") => {
   const scratch = mkdtempSync(join(tmpdir(), "decision-"));
   const f = join(scratch, "d.json");
   writeFileSync(f, JSON.stringify(d));
-  const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "decision-record.schema.json", "--file", f], { encoding: "utf8" });
+  const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" });
   rmSync(scratch, { recursive: true, force: true });
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 };
@@ -323,12 +323,26 @@ export function merge(dir, id, { by, via = "cli", note } = {}) {
   if (!d.applies_to?.length) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
   const version = d.version ?? 1;
   if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
-  const files = [];
+  // Every target is built and checked against its record type's schema before any is written.
+  const recs = new Map();
   for (const t of d.applies_to) {
     const f = ventureFile(dir, t.file);
-    const rec = existsSync(f) ? load(f) : {};
+    const rec = recs.get(t.file) ?? (existsSync(f) ? load(f) : {});
     setField(rec, t.field, d.answer);
-    writeFileSync(f, JSON.stringify(rec, null, 2) + "\n");
+    recs.set(t.file, rec);
+  }
+  // Gaps the record already had (a field not written yet) do not block a merge; errors the answer adds do.
+  for (const [rel, rec] of recs) {
+    const schema = MODEL.records.find((r) => r.id === recordOf(rel))?.schema?.replace(/^schema\//, "");
+    if (!schema) continue;
+    const f = ventureFile(dir, rel);
+    const before = new Set((validate(existsSync(f) ? load(f) : {}, schema) ?? "").split("\n"));
+    const added = (validate(rec, schema) ?? "").split("\n").filter((l) => l && !before.has(l));
+    if (added.length) return { ok: false, error: `merging ${id} would make ${rel} not match schema/${schema}; nothing was written:\n${added.join("\n")}` };
+  }
+  const files = [];
+  for (const t of d.applies_to) {
+    writeFileSync(ventureFile(dir, t.file), JSON.stringify(recs.get(t.file), null, 2) + "\n");
     prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), decision: id, note: `merged ${id} version ${version} into ${t.field}` });
     files.push(t.file);
   }
@@ -352,6 +366,8 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   const n = nextVersion(d);
   const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...(old.provenance ?? {}), drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
   delete out.merged;
+  if (old.provenance?.reasons) out.reasons = old.provenance.reasons;
+  else delete out.reasons;
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
@@ -374,9 +390,12 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
   const phase = load(join(dir, "venture.json")).phase;
   // Reasons given at approval join the drafted ones; all are frozen, each local citation with its sha256
   // now, into this version's provenance. A new version starts from no frozen reasons of its own.
+  // A reason carried from the previous decided version keeps the hash it was frozen at, so a citation
+  // that changed since still makes this version stale; only reasons new to this version freeze now.
+  const prior = new Set((d.versions?.at(-1)?.provenance?.reasons ?? []).map((x) => JSON.stringify(x)));
   const given = [...(d.reasons ?? []), ...(reasons ?? [])];
   const { reasons: _old, ...pv } = d.provenance ?? {};
-  const frozen = given.length ? stamp(dir, given, { keep: false }) : null;
+  const frozen = given.length ? given.map((x) => prior.has(JSON.stringify(x)) ? x : stamp(dir, [x], { keep: false })[0]) : null;
   const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
