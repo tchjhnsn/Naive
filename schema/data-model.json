@@ -1731,6 +1731,10 @@
       "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
     },
     {
+      "path": "schema/known-leaks.json",
+      "reason": "The dated list of public outputs that leak internal text today, read by schema/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
+    },
+    {
       "path": "schema/internal-terms.json",
       "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
     },
