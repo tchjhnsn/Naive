@@ -427,6 +427,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const cite = (x) => ({ source: src.id, address: address(src.id, x.path), version: x.version, ...(x.commit ? { commit: x.commit } : {}), ...(x.permalink ? { permalink: x.permalink } : {}), ...(x.attributes ? { attributes: x.attributes } : {}) });
 
   if (action === "read") {
+    // Approvals live in the venture folder's sidecars, so a public reader of another source fails closed.
+    if (actor === "public" && remote) return { ok: false, error: `the public reader reads only records in the venture's own folder; ${route} lives in ${src.id}` };
     const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
@@ -474,7 +476,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const fresh = remote ? {} : await freshnessFlag(dir, found, r.collection === "list");
     Object.assign(loading, fresh);
     const parseOne = parse;
-    const parseWith = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
+    const merged = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
+    // Field visibility: a public reader (actor "public", what a public component reads) sees only the fields
+    // a person approved as public, or their approved variants; every other field is internal and left out.
+    // This is the one place values are made, so list and single reads both pass through it.
+    const parseWith = (x) => actor === "public" ? publicView(dir, x.path, merged(x)) : merged(x);
     if (r.collection === "list") {
       const idOf = (path) => {
         for (const g of r.files) {
@@ -489,9 +495,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       const { values, errors } = contain(items, parseWith, idOf);
       return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...deprecated };
     }
-    // Field visibility: a public reader (actor "public", what a public component reads) sees only the fields
-    // a person approved as public, or their approved variants; every other field is internal and left out.
-    const data = Object.fromEntries(items.map((x) => [x.path, actor === "public" && !remote ? publicView(dir, x.path, parseWith(x)) : parseWith(x)]));
+    const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
     // V-9 hook: a summary whose source changed since it was written is marked stale (schema/stale.mjs).
     const stale = !remote && items.length === 1 ? staleOf(dir, found[0]) : null;
     return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...(stale ? { stale } : {}), ...deprecated };

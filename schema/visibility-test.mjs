@@ -40,6 +40,16 @@ try {
   const pub = cli(["foundation/problem", "read", "--as", "public", "--json"]);
   const seen = JSON.parse(pub.stdout).result;
   expect("the router's public reader sees the public field and nothing internal", seen?.statement === STATEMENT && !pub.stdout.includes("INTERNAL-SEGMENT"), pub.stdout.slice(0, 400) + pub.stderr);
+  w("evidence/results/e1.json", { id: "e1", note: "INTERNAL-EVIDENCE-4f2" });
+  const list = cli(["evidence", "read", "--as", "public", "--json"]);
+  expect("the router's public reader of a list route sees no internal field", list.status === 0 && JSON.parse(list.stdout).ok && !list.stdout.includes("INTERNAL-EVIDENCE"), list.stdout.slice(0, 400) + list.stderr);
+  mkdirSync(join(ws, "shared/foundation"), { recursive: true });
+  writeFileSync(join(ws, "shared/foundation/problem.json"), JSON.stringify({ venture: "vis", statement: STATEMENT, segment: "INTERNAL-REMOTE-7a3", evidence: [] }));
+  w("knowledge/sources.json", { sources: [{ id: "shared", connector: "filesystem", root: "../shared" }], records: { "validation-problem": "shared" } });
+  const far = cli(["foundation/problem", "read", "--as", "public", "--json"]);
+  expect("the router's public reader of another source fails closed", far.status !== 0 && !far.stdout.includes("INTERNAL-REMOTE") && /venture's own folder/.test(far.stdout + far.stderr), far.stdout.slice(0, 400) + far.stderr);
+  expect("an internal reader still reads the other source", cli(["foundation/problem", "read", "--json"]).stdout.includes("INTERNAL-REMOTE"));
+  rmSync(join(v, "knowledge/sources.json"));
   expect("the router's public reader cannot write", cli(["foundation/problem", "write", "--as", "public", "--input", join(v, "foundation/problem.json")]).status !== 0);
 
   w("site/why.mdx", '<Section>\n  <Fact name="problem" />\n  <Fact name="segment" />\n</Section>\n');
