@@ -2,11 +2,11 @@
 
 Model of `packages/decisions/playbooks/amazon-6-pager.md`: the states a decision memo moves through, and the rules that memo has to keep.
 
-Checked against `claude/mac-brand-kit` at `d0ffc7ce7bd4b69ce4a4effe7180884fb0650593`, plus the playbook on this branch. The actions match:
+The replay runs against the router on this branch, where each ICP profile is its own record. The actions match:
 
 | Action | Code the replay called |
 | --- | --- |
-| ReadInputs, WriteNarrative | `call` read and write of `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights` (`interface/router.mjs`) |
+| ReadInputs, WriteNarrative | `call` read of `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights` (`interface/router.mjs`). The fixture writes those records first. Its profile goes to `foundation/icp/shop-owners`, because `foundation/icp` has no write action. |
 | DraftGap, DraftFull, WriteFaq, Propose | `propose()` in `schema/decisions.mjs` (what `mentura propose` calls), which writes `decisions/<id>.decision.json` |
 | RecordFinding | `call` write then read of `evidence/[id]` |
 | RunMatrix | `call` run of `governance/decisions` |
@@ -40,17 +40,17 @@ node verification/cursor/playbook-amazon-6-pager/replay.mjs
 
 ## Rules
 
-TLC, on this spec, reached 10 distinct states and found no broken rule (`out/tlc.out`, `out/report.md`). NoDeadlock holds. The replay exit code was 0.
+TLC reached 10 distinct states and found no broken rule (`out/tlc.out`, `out/report.md`). NoDeadlock holds. That output is from the 2026-10-29 run. TLC was not re-run after main moved ICP to one record per profile. The spec did not change, and it reads the `foundation/icp` list route, which still exists. The replay exit code was 0 on this branch.
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
 | TypeOK | PASS | The ten states use only `none`, `open`, and `decided`, and the founder is the only decider. |
 | RoutesReal | PASS | `resolve()` in `interface/router.mjs` finds `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights`, `decisions/[id]`, `evidence/[id]`, and `governance/decisions`. A write to `decisions/bad.id` is refused: `bad.id is not a valid id (lowercase letters, digits and hyphens)`. |
-| NoReadBeforeProvided | PASS | The fixture writes the four input records, then reads them, then drafts. On a second venture with no problem record, `foundation/problem` reads as not found (`no validation-problem record yet`) and the replay writes no memo. `evidence/faq-finding` is written, then read, before the FAQ cites it. |
+| NoReadBeforeProvided | PASS | The fixture writes the four input records, then reads them, then drafts. `foundation/icp` returns the profiles keyed by id, and the replay takes the primary one from that read. On a second venture with no problem record, `foundation/problem` reads as not found (`no validation-problem record yet`) and the replay writes no memo. A finding with no `ran_at` or `runner` is refused. `evidence/faq-finding` with both is written, then read, before the FAQ cites it. |
 | MemoNeverDecides | PASS | `propose()` with `status: "decided"` returns `an agent may only propose an open decision; a person approves it` and writes nothing. After propose, `decisions/full-memo` is `open`, `drafted_by.kind` is `agent`, and `approved_by` is absent. `approve()` by Avery Founder sets `status` to `decided` and `approved_by` to that name. A second approve returns `full-memo is already decided`. |
-| ChecksCanPassAndFail | PASS | `decisions/gap-memo` fails customer, problem, solution, principle, faq, and still-open. `decisions/full-memo` after propose passes those, and passes person-decided. After approve, still-open no longer passes, and person-decided does. |
+| ChecksCanPassAndFail | PASS | `decisions/gap-memo` fails customer, problem, solution, principle, faq, and still-open. `decisions/full-memo` after propose passes those, and passes person-decided. After approve, still-open no longer passes, and person-decided does. No replay row builds a decided record with no approver, because the router refuses one (see below). |
 | NoDeadlock | PASS | The only resting state is "Decided by you". |
 
 The model reported no broken rule. The replay of that path matched the code.
 
-One write the model does not take does reproduce a bad record. An agent `call` write of `decisions/raw-decided` with `status: "decided"` and no `approved_by` is stored that way (`interface/router.mjs` checks the decision-record schema and does not force `status` open). The still-open check and the person-decided check both fail on the record the route reads back. The playbook tells the writer to use `propose()`, which refuses that status, and to treat a decided record with no `approved_by` as a failed check. This change does not patch the router. That write is not one of the playbook's steps.
+The router closes the one write the model does not take. An agent `call` write of `decisions/raw-decided` with `status: "decided"` lands in `_drafts/`, and the route has no live record. A person's write of the same status with no `approved_by` is refused. The replay asserts both. Neither write is one of the playbook's steps.

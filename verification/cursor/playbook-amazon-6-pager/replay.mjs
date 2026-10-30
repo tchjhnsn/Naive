@@ -96,10 +96,7 @@ try {
     segment: "Fixture segment: owners of one shop.",
     evidence: [],
   };
-  const icp = {
-    venture,
-    profiles: [{ id: profileId, who: "Fixture profile: a person who owns one shop.", primary: true }],
-  };
+  const profile = { venture, id: profileId, who: "Fixture profile: a person who owns one shop.", primary: true };
   const alignment = {
     venture,
     principles: [{ id: principleId, statement: "Do not promise a result the records do not show.", source: "fixture, 2026-10-29" }],
@@ -111,7 +108,7 @@ try {
 
   for (const [route, input] of [
     ["foundation/problem", problem],
-    ["foundation/icp", icp],
+    [`foundation/icp/${profileId}`, profile],
     ["foundation/alignment", alignment],
     ["governance/decision-rights", rights],
   ]) {
@@ -120,7 +117,12 @@ try {
     const back = await readRoute(venture, route);
     if (!back.ok || back.result == null) die(`read ${route} after write: ${JSON.stringify(back)}`);
   }
-  note("NoReadBeforeProvided", "PASS", "the four inputs were written, then read, before any memo");
+  const listWrite = await writeRoute(venture, "foundation/icp", { profiles: [profile] });
+  if (listWrite.ok) die("foundation/icp should have no write action");
+  const profiles = await readRoute(venture, "foundation/icp");
+  const primary = Object.values(profiles.result ?? {}).find((p) => p.primary);
+  if (primary?.id !== profileId) die(`foundation/icp read has no primary profile ${profileId}: ${JSON.stringify(profiles.result)}`);
+  note("NoReadBeforeProvided", "PASS", `the four inputs were written, then read, before any memo; foundation/icp lists primary profile ${primary.id}`);
 
   const bare = "bare";
   init(bare);
@@ -170,6 +172,15 @@ try {
   const midChecks = evaluate(mid.result, ctx);
   if (!(midChecks.customer && midChecks.problem && midChecks.solution && midChecks.principle)) die(`narrative checks: ${JSON.stringify(midChecks)}`);
   if (midChecks.faq || midChecks.stillOpen) die("draft must still fail faq and still-open, before the FAQ and the answer");
+
+  const incomplete = await writeRoute(venture, `evidence/${findingId}`, {
+    id: findingId,
+    subject: { kind: "venture", id: venture },
+    results: [{ criterion: "internal-faq", kind: "review", passed: true, output: "Fixture finding." }],
+    passed: true,
+  });
+  if (incomplete.ok) die("evidence with no ran_at or runner should be refused");
+  note("NoReadBeforeProvided", "PASS", "evidence with no ran_at or runner is refused, so the playbook names both");
 
   const finding = {
     id: findingId,
@@ -239,17 +250,19 @@ try {
     status: "decided",
     answer: "The memo says so.",
   }, "agent");
-  if (!raw.ok) {
-    note("MemoNeverDecides", "PASS", `a raw agent write of status decided was refused: ${raw.error.split("\n")[0]}`);
-  } else {
-    const rawRead = await readRoute(venture, "decisions/raw-decided");
-    const rawChecks = evaluate(rawRead.result, ctx);
-    if (rawRead.result?.status !== "decided" || rawChecks.personDecided || rawChecks.stillOpen) {
-      die(`raw write did not reproduce a self-decided memo: ${JSON.stringify({ status: rawRead.result?.status, rawChecks, draft: raw.result?.draft })}`);
-    }
-    note("MemoNeverDecides", "PASS", "playbook steps do not do this; a raw agent write of decisions/raw-decided stored status decided with no approved_by, and the check fails on that record");
-    note("ChecksCanPassAndFail", "PASS", "still-open and person-decided fail on decisions/raw-decided");
-  }
+  if (!raw.ok || raw.result?.draft !== true) die(`raw agent write should land as a draft: ${JSON.stringify(raw)}`);
+  const rawRead = await readRoute(venture, "decisions/raw-decided");
+  if (rawRead.result != null || !rawRead.pending_draft) die(`raw agent write reached the live record: ${JSON.stringify(rawRead.result)}`);
+  note("MemoNeverDecides", "PASS", "a raw agent write of status decided lands in _drafts, and decisions/raw-decided has no live record");
+
+  const personRaw = await writeRoute(venture, "decisions/person-decided", {
+    id: "person-decided",
+    question: "Can a person's raw write skip the approval?",
+    status: "decided",
+    answer: "The memo says so.",
+  });
+  if (personRaw.ok) die("a person's raw write of status decided with no approved_by should be refused");
+  note("MemoNeverDecides", "PASS", `a person's raw write of status decided with no approver was refused: ${personRaw.error}`);
 
   console.log("\nreplay ok");
 } catch (error) {

@@ -86,7 +86,9 @@ The internal FAQ needs a fact the venture may not have yet: a cost, a risk, or a
 - Write `evidence/<finding-id>`.
 - `id` matches the route id.
 - `subject.kind` is `venture` and `subject.id` is this venture.
-- `results` has one entry whose `output` is the fact, in your words, with where it came from.
+- `ran_at` is when you recorded the finding, as a date and time such as `2026-10-29T22:00:00Z`.
+- `runner` is who recorded it: your name, a role, or a session id.
+- `results` has one entry. Its `criterion` names what you looked at, such as `internal-faq`. Its `kind` is `review`. Its `passed` matches the top-level `passed`. Its `output` is the fact, in your words, with where it came from.
 - `passed` is whether you accept the fact as usable in the memo, not whether the decision is yes.
 
 ### 4. FAQ
@@ -108,7 +110,7 @@ The recommendation is one sentence in `answer`. The record is still not decided.
 
 - Read `decisions/<id>` and check that `note` has the labels from steps 2 and 4, that `options` has the "Not doing it" line, and that `outcomes` cites a finding you can read back at `evidence/<finding-id>`.
 - Write `decisions/<id>` with that `answer` and `status` `open`.
-- Prefer `mentura propose`. If the input says `status` is `decided`, `propose()` returns an error and does not write. A raw write of the same route can store `status: "decided"` with no `approved_by`. Do not do that. The check below fails when it sees it.
+- Prefer `mentura propose`. If the input says `status` is `decided`, `propose()` returns an error and does not write. A raw agent write of the same route with `status: "decided"` lands as a draft, not on the record. A person's raw write of that status with no `approved_by` is refused. Do not try either. `mentura decide` is the way a record becomes decided.
 
 ### 6. Read it back
 
