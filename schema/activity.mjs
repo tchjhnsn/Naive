@@ -17,7 +17,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { humanText, transcriptFiles } from "../scripts/diagnose-transcripts.mjs";
-import { addDays, dayIn, daysBetween, zoneFor } from "./clock.mjs";
+import { addDays, localDate, daysBetween, zoneOf } from "./clock.mjs";
 import { ventureFile } from "./venture-paths.mjs";
 import { findWorkspace } from "./workspace.mjs";
 
@@ -44,7 +44,7 @@ export function venturesUnder(root) {
 }
 function ventureAt(dir) {
   const v = readJson(join(dir, "venture.json")) ?? {};
-  return { id: v.id ?? basename(dir), dir: resolve(dir), tz: zoneFor(dir) };
+  return { id: v.id ?? basename(dir), dir: resolve(dir), tz: zoneOf(dir) };
 }
 
 /** Each transcript as a session: its file, working directories, and the founder's messages (timestamp, characters). */
@@ -102,7 +102,7 @@ export function activity({ root, dir, from, to }) {
     if (!rows.has(v.id)) rows.set(v.id, { venture: v, days: new Map() });
     const days = rows.get(v.id).days;
     for (const msg of s.messages) {
-      const day = dayIn(msg.timestamp, v.tz);
+      const day = localDate(msg.timestamp, v.tz);
       if ((from && day < from) || (to && day > to)) continue;
       if (!days.has(day)) days.set(day, { files: new Set(), stamps: [], chars: 0, by: new Set() });
       const d = days.get(day);
@@ -146,7 +146,7 @@ export function writeActivity(result, now = new Date()) {
     const dates = readdirSync(folder).filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).map((f) => f.slice(0, 10))
       .filter((d) => (readJson(join(folder, `${d}.json`))?.messages ?? 0) > 0);
     const p = join(folder, "_summary.json");
-    writeFileSync(p, JSON.stringify(summarize(v.venture, v.time_zone, dates, dayIn(now, v.time_zone)), null, 2) + "\n");
+    writeFileSync(p, JSON.stringify(summarize(v.venture, v.time_zone, dates, localDate(now, v.time_zone)), null, 2) + "\n");
     written.push(p);
   }
   return written;

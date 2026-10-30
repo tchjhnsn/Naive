@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { activeMinutes, activity, summarize, writeActivity } from "./activity.mjs";
-import { dayIn, zoneFor } from "./clock.mjs";
+import { localDate, zoneOf } from "./clock.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "naive-activity-"));
@@ -16,10 +16,10 @@ const studio = join(ws, "ventures/studio"), tandem = join(ws, "ventures/tandem")
 for (const [d, v] of [[studio, { id: "studio", timeZone: "America/Chicago" }], [tandem, { id: "tandem" }], [quiet, { id: "quiet" }]]) { mkdirSync(d, { recursive: true }); writeFileSync(join(d, "venture.json"), JSON.stringify(v)); }
 
 // the clock: the venture's zone, else the workspace's
-assert.equal(zoneFor(studio), "America/Chicago");
-assert.equal(zoneFor(tandem), "Asia/Tokyo");
-assert.equal(dayIn("2026-10-29T03:00:00Z", "America/Chicago"), "2026-10-28");
-assert.equal(dayIn("2026-10-29T20:00:00Z", "Asia/Tokyo"), "2026-10-30");
+assert.equal(zoneOf(studio), "America/Chicago");
+assert.equal(zoneOf(tandem), "Asia/Tokyo");
+assert.equal(localDate("2026-10-29T03:00:00Z", "America/Chicago"), "2026-10-28");
+assert.equal(localDate("2026-10-29T20:00:00Z", "Asia/Tokyo"), "2026-10-30");
 
 // active minutes: gaps over 10 minutes do not count
 assert.equal(activeMinutes(["2026-10-29T10:00:00Z", "2026-10-29T10:05:00Z", "2026-10-29T10:15:00Z", "2026-10-29T10:40:00Z", "2026-10-29T10:42:00Z"]), 17);

@@ -20,7 +20,7 @@
     },
     "name": {
       "type": "string",
-      "description": "The workspace's name, shown to the founder. create-venture names a new workspace \"Naive workspace\"; the founder can rename it"
+      "description": "The workspace's name, shown to the founder. A new workspace is named \"Naive workspace\"; the founder renames it with naive workspace rename"
     },
     "ventures": {
       "type": "array",
@@ -62,7 +62,11 @@
     },
     "timeZone": {
       "type": "string",
-      "description": "The IANA time zone (America/Chicago) the venture's days are counted in: activity, deadlines, \"today\". Unset: the workspace's, else the system's"
+      "description": "The workspace's IANA time zone (for example America/New_York): the clock's zone (schema/clock.mjs). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture"
+    },
+    "calendar": {
+      "type": "string",
+      "description": "The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (schema/calendar.mjs). Created with the workspace"
     }
   },
   "additionalProperties": false

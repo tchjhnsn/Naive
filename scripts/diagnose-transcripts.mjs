@@ -30,7 +30,7 @@ import { pathToFileURL } from "node:url";
 import { redact } from "../schema/redact.mjs";
 import { listFrameworks } from "../schema/user-frameworks.mjs";
 import { findWorkspace } from "../schema/workspace.mjs";
-import { dayIn, zoneFor } from "../schema/clock.mjs";
+import { localDate, zoneOf } from "../schema/clock.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
 
 // v1's coarse rules, kept: what the founder said about frameworks, playbooks, decisions and ideas.
@@ -264,7 +264,7 @@ export function isDue({ root, dir, now = new Date(), since }) {
 export function writeConversations(root, messages, tz) {
   const byDay = new Map();
   for (const m of messages) {
-    const day = m.timestamp ? dayIn(m.timestamp, tz) : null;
+    const day = Number.isNaN(Date.parse(m.timestamp)) ? null : localDate(m.timestamp, tz);
     if (!day) continue;
     if (!byDay.has(day)) byDay.set(day, []);
     byDay.get(day).push(m);
@@ -292,7 +292,7 @@ export function writeConversations(root, messages, tz) {
 }
 const readJson0 = (line) => { try { return JSON.parse(line); } catch { return null; } };
 
-export async function diagnose({ root, dir, since, now = new Date(), env = process.env, tz = zoneFor(root) }) {
+export async function diagnose({ root, dir, since, now = new Date(), env = process.env, tz = zoneOf(root) }) {
   const cursorFile = join(root, ".naive/diagnose-cursor.json");
   const cursor = since ?? cursorOf(root);
   const messages = readMessages(dir, cursor);
@@ -308,7 +308,7 @@ export async function diagnose({ root, dir, since, now = new Date(), env = proce
   }
   const known = knownRecords(root);
   for (const c of candidates) { c.matches = matchKnown(c, known); c.status = c.matches ? "recorded" : "missed"; }
-  const date = dayIn(now, tz);
+  const date = localDate(now, tz);
   const conversations = writeConversations(root, messages, tz);
   let id = `diagnosis-${date}`;
   for (let n = 2; existsSync(join(root, "raw/sources", id)); n++) id = `diagnosis-${date}-${n}`;

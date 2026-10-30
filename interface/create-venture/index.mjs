@@ -314,21 +314,17 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
 // naive-workspace.json above the venture lists it; with none, the venture's parent folder becomes the
 // workspace, named "Naive workspace" until the founder renames it, with an AGENTS.md for rules that hold
 // across every venture. --no-workspace leaves the parent folder as it is.
+// The workspace's file, AGENTS.md, folders, clock (its timeZone) and calendar come from schema/workspace.mjs,
+// the same code naive workspace init runs, so both ways in make the same workspace.
 let workspace = null;
 if (!flag("no-workspace")) {
+  const { ensureWorkspace, addVenture } = await import(join(framework, "schema/workspace.mjs"));
   let up = dirname(dir);
   while (!existsSync(join(up, WORKSPACE_FILE)) && dirname(up) !== up) up = dirname(up);
   const root = existsSync(join(up, WORKSPACE_FILE)) ? up : dirname(dir);
-  const wf = join(root, WORKSPACE_FILE);
-  const ws = existsSync(wf) ? JSON.parse(readFileSync(wf, "utf8")) : { schema: "everything-ecosystem", schema_version: readFileSync(join(framework, "schema/VERSION"), "utf8").trim(), name: "Naive workspace", ventures: [], settings: { cross_venture_reads: true, route_threshold: 0.8 } };
-  const rel = relative(root, dir);
-  if (!ws.ventures.includes(rel)) ws.ventures.push(rel);
-  writeFileSync(wf, JSON.stringify(ws, null, 2) + "\n");
-  if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
-  // The workspace's own folders: raw/ keeps what the founder captures, inbox/ holds what waits for them,
-  // meta/ the logs, founder/ the founder record once.
-  for (const d of ["raw", "inbox", "meta", "founder"]) { mkdirSync(join(root, d), { recursive: true }); if (!readdirSync(join(root, d)).length) writeFileSync(join(root, d, ".gitkeep"), ""); }
-  workspace = { root, name: ws.name };
+  const { ws } = ensureWorkspace(root, { owner: people[0].id });
+  addVenture(root, dir);
+  workspace = { root, name: ws.name, timeZone: ws.timeZone };
 }
 
 try { mkdirSync(dirname(prefsFile), { recursive: true }); writeFileSync(prefsFile, JSON.stringify({ type: vtype.id, role, mode, phase: answers.phase, layers: answers.layers, legalForm: answers.legalForm }, null, 2) + "\n"); } catch {}
@@ -338,7 +334,7 @@ const cd = relative(process.cwd(), dir) || ".";
 const legal = functions.legal?.systems.length ? null : "Legal documents: none connected yet. Point Naive at them later with --source legal=google-drive:<folder> (or docusign, local-folder), and draft the founder agreement with the founding-agreement kit.";
 console.log(`
 ${bold("Success!")} Created ${basename(dir)} at ${dir}
-Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE})` : "none (--no-workspace)"}
+Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE}), clock in ${workspace.timeZone}, calendar in calendar/` : "none (--no-workspace)"}
 Git: ${git}${rhoNote ? `\n${rhoNote}` : ""}${legal ? `\n${legal}` : ""}
 
 Inside that directory, you can run:
