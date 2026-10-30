@@ -200,4 +200,18 @@ t("usage with no venture exits 2", () => {
   ok(r.status === 2 && /usage/.test(r.stderr), r.stderr);
 });
 
+t("a sole-owner venture with no functions: the founder role owns everything", () => {
+  const roles = [{ id: "founder", occupant: "person", needed_by: "discovery", status: "filled" }];
+  const dir = venture({ "venture.json": { id: "solo", name: "Solo", owner: "self", departments: ["products"] }, "people/team-plan.json": plan(roles) });
+  ok(rulesOf(lint(dir), "role-no-function").length === 0, "founder flagged on a sole-owner venture");
+  const named = venture({ "venture.json": { id: "co", name: "Co", owner: "self", functions: { product: { owner: "someone-else" } } }, "people/team-plan.json": plan(roles) });
+  ok(rulesOf(lint(named), "role-no-function").length === 1, "a venture that names function owners must still flag the founder");
+});
+
+t("naive.config.json accepts people_lint", () => {
+  const dir = venture({ "venture.json": { id: "cfg", name: "Cfg", phase: "discovery" }, "naive.config.json": { people_lint: { rules: { "role-no-function": { mode: "fail-closed" } } } } });
+  const r = spawnSync(process.execPath, [join(root, "schema/check-config.mjs"), dir], { encoding: "utf8" });
+  ok(r.status === 0, r.stdout + r.stderr);
+});
+
 process.exit(failed ? 1 : 0);

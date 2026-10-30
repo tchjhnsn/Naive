@@ -147,7 +147,8 @@ export function lint(dir) {
     if (!r || r.occupant !== "person" || typeof r.id !== "string" || !mustOwn(r.id, reg) || reported.has(r.id)) continue;
     const held = people.some((p) => p.role === r.id && personOwns(p, venture));
     const byId = venture?.layout === "structured" && ownersOf(venture).has(r.id);
-    if (held || byId) continue;
+    const soleOwner = r.id === "founder" && typeof venture?.owner === "string" && venture.owner.trim() && !ownersOf(venture).size;
+    if (held || byId || soleOwner) continue;
     add("role-no-function", plan.rel, `role ${r.id} owns no function`, `name ${r.id} as a function owner in venture.json, or give the person who holds it a hat`);
   }
 
