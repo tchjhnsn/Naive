@@ -1,0 +1,35 @@
+{
+  "id": "telos",
+  "title": "Telos: start with the end (BASED, then SMART)",
+  "purpose": "Help the owner state the end the venture exists for, how anyone would know, what the owners intend then, and what must be true to leave each phase. A framework for thinking over canonical goals and exit criteria (EE-023; Torian, 2026-10-30).",
+  "vocabulary": {
+    "telos": "the end a thing exists for: a goal of kind venture",
+    "end state": "what is true in the world when the end is reached: the venture goal's end_state",
+    "measure": "how anyone would know, made SMART: a goal measure with a target",
+    "owner outcome": "what the owners intend once the end is reached: a goal of kind owner",
+    "exit criterion": "what must be true to leave a phase: a canonical exit criterion serving a measure",
+    "BASED": "Big, Aspirational, Stretching, Enduring, Directional: the test for the statement",
+    "SMART": "Specific, Measurable, Achievable, Relevant, Time-bound: the test for each measure"
+  },
+  "frames": [
+    { "id": "end", "question": "What is the venture for when it has done its job? (BASED)", "answers": "statement" },
+    { "id": "end-state", "question": "What is true in the world when the end is reached?", "answers": "end_state" },
+    { "id": "horizon", "question": "By when?", "answers": "horizon" },
+    { "id": "measures", "question": "How would anyone know it was reached? Make each measure SMART.", "answers": "measures" },
+    { "id": "owner-outcome", "question": "What do the owners intend to happen then: hold, sell, list or wind down?", "answers": "owner_outcome" },
+    { "id": "exit", "question": "For this phase, what must be true to leave it, and which measure does each serve?", "answers": "phases.exit_criteria" }
+  ],
+  "template": "purpose/templates/telos-based-smart.md",
+  "skill": "purpose/skills/telos/SKILL.md",
+  "adapter": "frameworks/telos/adapter.mjs",
+  "checks": ["schema/check-telos.mjs"],
+  "maps_to": [
+    { "framework_field": "statement", "canonical_route": "foundation/goals/[id]", "canonical_field": "statement", "note": "goal id telos, kind venture" },
+    { "framework_field": "end_state", "canonical_route": "foundation/goals/[id]", "canonical_field": "end_state" },
+    { "framework_field": "horizon", "canonical_route": "foundation/goals/[id]", "canonical_field": "horizon" },
+    { "framework_field": "measures", "canonical_route": "foundation/goals/[id]", "canonical_field": "measures" },
+    { "framework_field": "owner_outcome.path", "canonical_route": "foundation/goals/[id]", "canonical_field": "value", "note": "goal id owner-outcome, kind owner" },
+    { "framework_field": "owner_outcome.why", "canonical_route": "foundation/goals/[id]", "canonical_field": "why" },
+    { "framework_field": "phases.exit_criteria", "canonical_route": "foundation/exit-criteria/[id]", "canonical_field": "criteria", "note": "one record per phase, id = phase" }
+  ]
+}

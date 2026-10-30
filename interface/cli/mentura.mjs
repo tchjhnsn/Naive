@@ -18,7 +18,16 @@
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route;
 //                                                   [--pick <letter>] [--by <name>] accepts one of drafts kept side by side
-//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--confirm <decision>]
+//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
+//          [--reason "<claim>" | --against "<claim>" | --context "<claim>"] [--cite <ref> [--locator <where>]] ...
+//                                                   reasons with citations, frozen with each cited file's sha256 at approval
+//   mentura decisions --venture <id> [--why <decision>] [--json]
+//                                                   the ranked decisions; --why prints one decision's reasons and citations
+//                                                   a new --answer on a decided decision makes its next version; --rollback restores one
+//   mentura merge <decision> --venture <id> --by <name> [--confirm <decision>]
+//   mentura index --venture <id> [--since <iso>] [--rebuild]   update the live decision index from provenance
+//   mentura impact <decision> --venture <id>       rebuild a merged decision's impact map across the functions
+//                                                   apply a decided version to the records it decides (applies_to)
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
 //   mentura propose --venture <id> --input <file.json> [--as <role>]
 //                                                   an agent proposes a decision; it stays open until a person decides
@@ -62,7 +71,9 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
 import { FRAME, filesOf } from "../../schema/foundation.mjs";
-import { approve, decisions, propose } from "../../schema/decisions.mjs";
+import { approve, decisionFile, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
+import { reasonsFromArgs, whyLines } from "../../schema/reasons.mjs";
+import { impact } from "../../schema/impact.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
 import { asRouted, findVenture } from "./find-venture.mjs";
@@ -226,7 +237,66 @@ if (cmd === "accept") {
   process.exit(0);
 }
 
+if (cmd === "merge") {
+  // A person (or a delegated role) applies a decided version to the records it decides (applies_to).
+  // Approving and merging are separate steps; typing the decision's id confirms the merge.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const d = decisions(dir).decisions.find((x) => x.id === id);
+  if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+  if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
+  const r = merge(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "index") {
+  // The live decision index (schema/decision-index.mjs): re-scores the decisions the provenance events
+  // since its cursor (or --since) touch, spreading with damping, and appends rank history.
+  const venture = opt("venture");
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const { rebuild, update } = await import("../../schema/decision-index.mjs");
+  const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
+  out({ venture: idx.venture, phase: idx.phase, update: { mode: idx.last_update.mode, events: idx.last_update.events, rescored: idx.last_update.touched.map((t) => t.id) },
+    flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),
+    ranked: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, why: e.why })) });
+  process.exit(0);
+}
+
+if (cmd === "impact") {
+  // Which records in each function depend on what a merged decision changed; marks them stale and
+  // proposes an open follow-up decision per function (merge runs this itself).
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const r = impact(dir, id, { via: "cli" });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "decisions") {
+  // The ranked decisions, or with --why one decision's reasons and what they cite.
+  const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const r = decisions(dir);
+  const id = opt("why");
+  if (id) {
+    const f = decisionFile(dir, id);
+    if (!f) { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+    const d = JSON.parse(readFileSync(ventureFile(dir, f), "utf8"));
+    const live = r.decisions.find((x) => x.id === id);
+    out(flag("json") ? { id, reasons: d.reasons ?? [], approved_on: d.provenance?.reasons ?? [], changed: live?.reasons_changed ?? [], render: live?.render } : whyLines(dir, d).join("\n"));
+  } else out(flag("json") ? r : r.decisions.filter((d) => d.rank !== null && d.rank !== undefined).map((d) => `${String(d.rank).padStart(4)} ${d.render.padEnd(8)} ${d.id}${d.why?.length ? `\n       why: ${d.why.join("; ")}` : ""}`).join("\n") || "nothing to decide now");
+  process.exit(0);
+}
+
 if (cmd === "decide") {
+  let givenReasons = [];
+  try { givenReasons = reasonsFromArgs(argv); } catch (e) { console.error(e.message); process.exit(2); }
   // A person makes a decision (EE-058): approves the drafted wording, or gives their own with
   // --answer. Typing the decision's id confirms it. Provenance records who, when and in which phase.
   const venture = opt("venture"), id = action;
@@ -235,7 +305,9 @@ if (cmd === "decide") {
   const d = decisions(dir).decisions.find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
-  const r = approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note") });
+  const r = opt("rollback") !== undefined
+    ? rollback(dir, id, opt("rollback"), { by: opt("by") ?? process.env.MENTURA_PERSON })
+    : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note"), reasons: givenReasons.length ? givenReasons : undefined });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);

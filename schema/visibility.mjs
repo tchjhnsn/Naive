@@ -81,6 +81,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 export const CONFIDENTIAL_LEVELS = ["C1", "C2", "C3", "C4"];
 
 export function confidentialityOf(dir, rel) {
+  // Only a record file has a sidecar; a log such as freshness.jsonl has none, and must not be read as one.
+  if (!/\.(json|md|mdx)$/.test(rel) || /\.visibility\.json$/.test(rel)) return null;
   const f = ventureFile(dir, rel.replace(/\.(json|md|mdx)$/, ".visibility.json"));
   const r = existsSync(f) ? load(f).record : null;
   return r?.visibility === "confidential" ? { level: CONFIDENTIAL_LEVELS.includes(r.level) ? r.level : "C2", access: r.access ?? [] } : null;
