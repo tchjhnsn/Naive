@@ -83,7 +83,11 @@
         "fund-thesis",
         "fund-terms",
         "deal",
-        "money-summary"
+        "money-summary",
+        "goal",
+        "requirement",
+        "exit-criteria",
+        "constraints"
       ],
       "refs": [
         {
@@ -190,8 +194,85 @@
           "checked_by": "schema/validate.py"
         }
       ],
-      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023)",
+      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023). Since foundation 0.5.0 a framework for thinking (frameworks/telos): the telos-to-goals migration splits it into canonical goals and exit criteria and archives it; the route still reads, rendered from them",
       "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "goal",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/goal.schema.json",
+      "paths": [
+        "instance/**/foundation/goals/*.json",
+        "schema/examples/**/foundation/goals/*.json"
+      ],
+      "note": "A canonical goal: statement, kind, horizon, measures with targets, owner. Framework-neutral: the telos, ambition tiers and other frameworks for thinking write goals through their maps_to (Torian, 2026-10-30)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "requirement",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/requirement.schema.json",
+      "paths": [
+        "instance/**/foundation/requirements/*.json",
+        "schema/examples/**/foundation/requirements/*.json"
+      ],
+      "refs": [
+        {
+          "field": "derives_from",
+          "to": "goal",
+          "checked_by": null
+        }
+      ],
+      "note": "A canonical requirement derived from goals or measures, by a phase, constraining functions, verified by a check, evidence or a person (the decision index's Requirements)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "exit-criteria",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/exit-criteria.schema.json",
+      "paths": [
+        "instance/**/foundation/exit-criteria/*.json",
+        "schema/examples/**/foundation/exit-criteria/*.json"
+      ],
+      "refs": [
+        {
+          "field": "criteria.serves",
+          "to": "goal",
+          "checked_by": null
+        },
+        {
+          "field": "phase",
+          "to": "anatomy-framework",
+          "checked_by": "schema/validate.py"
+        }
+      ],
+      "note": "A phase's canonical exit criteria, each serving a goal measure; the lifecycle gate reads these (schema/lifecycle.mjs)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "constraints",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/constraints.schema.json",
+      "paths": [
+        "instance/**/foundation/constraints.json",
+        "schema/examples/**/foundation/constraints.json"
+      ],
+      "note": "What the venture must not do, whatever framework states its goals",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "framework",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/framework.schema.json",
+      "paths": [
+        "frameworks/*/framework.json"
+      ],
+      "note": "A framework for thinking (telos, ambition tiers, OKRs): vocabulary, frames, a template and maps_to into canonical records; it never changes the schema (schema/check-frameworks.mjs)"
     },
     {
       "id": "idea-dump",
@@ -482,6 +563,24 @@
         "schema/examples/**/decisions/*.decision.json"
       ],
       "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node schema/decisions.mjs renders the matrix. The decision log keeps the history"
+    },
+    {
+      "id": "decision-impact",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-impact.schema.json",
+      "paths": [
+        "instance/**/decisions/*.impact.json",
+        "schema/examples/**/decisions/*.impact.json"
+      ],
+      "refs": [
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": null
+        }
+      ],
+      "note": "The impact map of a merged decision version: per function, the records that depend on what changed, which were marked stale, and the follow-up decisions proposed (schema/impact.mjs)"
     },
     {
       "id": "nextjs-status",
@@ -983,6 +1082,30 @@
       ],
       "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
       "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "internal-terms",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/internal-terms.schema.json",
+      "paths": [
+        "schema/internal-terms.json",
+        "instance/**/governance/internal-terms.json",
+        "schema/examples/**/governance/internal-terms.json"
+      ],
+      "note": "Patterns that mark internal text (decision ids, attributions, record paths, codenames, phase jargon, draft markers); public output matches none of them (schema/check-leaks.mjs). Naive's defaults in schema/internal-terms.json, the founder's own in the venture's governance/internal-terms.json",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "publications",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/publications.schema.json",
+      "paths": [
+        "instance/**/governance/publications.json",
+        "schema/examples/**/governance/publications.json"
+      ],
+      "note": "Every place the venture has published: channel, artifact, url, the sha256 of the built output that is live, the person who approved it, when, earlier versions and any embargo. naive publish writes it; schema/check-publications.mjs checks it"
     },
     {
       "id": "marketing-matrix",
@@ -1609,6 +1732,36 @@
         }
       ],
       "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
+    },
+    {
+      "id": "decision-roadmap",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/decision-roadmap.schema.json",
+      "form": "json",
+      "paths": [
+        "packages/*/roadmaps/*.json"
+      ],
+      "refs": [
+        {
+          "field": "steps.*.frame",
+          "to": "frame",
+          "checked_by": "schema/check-roadmap.mjs"
+        }
+      ],
+      "note": "A decision roadmap: an ordered set of frames, each step with its phase, dependencies, door and decider. schema/roadmaps.mjs installs it by proposing each step's decisions open; schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder"
+    },
+    {
+      "id": "lifecycle-playbook",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/lifecycle-playbook.schema.json",
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/product-anatomy/playbooks/*.json"
+      ],
+      "refs": [],
+      "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
     }
   ],
   "ignore": [
@@ -1667,6 +1820,14 @@
     {
       "path": "interface/create-venture/package.json",
       "reason": "The create-venture generator's npm manifest (I-1); not a record"
+    },
+    {
+      "path": "schema/known-leaks.json",
+      "reason": "The dated list of public outputs that leak internal text today, read by schema/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
+    },
+    {
+      "path": "schema/internal-terms.json",
+      "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
     }
   ]
 }

@@ -80,6 +80,11 @@
       "type": "string",
       "description": "The venture's IANA time zone, when it differs from its workspace's (schema/clock.mjs); its dates and derived calendar events are read in it"
     },
+    "lifecycle_playbook": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The lifecycle playbook the venture follows (purpose/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default."
+    },
     "ambition": {
       "enum": [
         "hobby",

@@ -22,6 +22,7 @@ import { basename, dirname, join, relative, resolve } from "node:path";
 import { ventureFile } from "./venture-paths.mjs";
 import { systemZone, validZone } from "./clock.mjs";
 import { initCalendar } from "./calendar.mjs";
+import { goals } from "./canonical.mjs";
 
 export const WORKSPACE_FILE = "naive-workspace.json";
 const DEFAULTS = { cross_venture_reads: true, route_threshold: 0.8 };
@@ -82,10 +83,11 @@ const strings = (o) => typeof o === "string" ? [o] : Array.isArray(o) ? o.flatMa
 
 /** The words a venture is about: its name and its foundation (problem, ICP, telos). */
 export function ventureTerms(dir) {
-  const files = ["venture.json", "foundation/problem.json", "purpose/validation/problem.json", "foundation/icp.json", "purpose/icp.json", "telos.json", "foundation/telos.json", "purpose/telos.json"];
+  const files = ["venture.json", "foundation/problem.json", "purpose/validation/problem.json", "foundation/icp.json", "purpose/icp.json"];
   const icp = ventureFile(dir, "foundation/icp");
   const all = [...files.map((f) => ventureFile(dir, f)), ...(existsSync(icp) ? readdirSync(icp).filter((f) => f.endsWith(".json")).map((f) => join(icp, f)) : [])];
-  return terms(all.flatMap((f) => strings(read(f))).join(" "));
+  // The venture's goals come through the canonical core (schema/canonical.mjs), never from telos.json.
+  return terms([...all.flatMap((f) => strings(read(f))), ...strings(goals(dir))].join(" "));
 }
 
 /** Chunks: paragraphs, with a paragraph of one sentence joined to the last when they share words. A model can replace it (opts.split). */

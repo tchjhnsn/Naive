@@ -18,14 +18,18 @@
       "date": "2026-10-29",
       "summary": "The package folder layout: records move into foundation/, validation/, product/, marketing/, people/ and decisions/, with the old routes kept as aliases (EE-070).",
       "guide": "docs/upgrades/0.2.0.md",
-      "migrations": ["package-layout"]
+      "migrations": [
+        "package-layout"
+      ]
     },
     {
       "version": "0.3.0",
       "date": "2026-10-29",
       "summary": "Packages are Naive's and kits are Mentura's (EE-071): naive.config.json pins the framework and each package, and routes inside records are package routes.",
       "guide": "docs/upgrades/0.3.0.md",
-      "migrations": ["kit-to-package"]
+      "migrations": [
+        "kit-to-package"
+      ]
     }
   ],
   "migrations": [
@@ -50,28 +54,101 @@
       "from": "0.3.0",
       "to": "0.4.0",
       "decision": "Torian, 2026-10-29: one record per ideal customer profile"
+    },
+    {
+      "id": "telos-to-goals",
+      "module": "schema/migrations/telos-to-goals.mjs",
+      "package": "foundation",
+      "from": "0.4.0",
+      "to": "0.5.0",
+      "decision": "Torian, 2026-10-30: an opinionated schema with swappable frameworks for thinking; the telos and ambition tiers become frameworks over canonical goals and exit criteria",
+      "aliases": "interface/route-aliases.json"
     }
   ],
   "packages": {
-    "foundation": { "version": "0.4.0", "channel": "stable" },
-    "validation": { "version": "0.3.0", "channel": "stable" },
-    "product": { "version": "0.3.0", "channel": "stable" },
-    "marketing": { "version": "0.3.0", "channel": "stable" },
-    "finance": { "version": "0.3.0", "channel": "stable" },
-    "people": { "version": "0.3.0", "channel": "stable" },
-    "investor": { "version": "0.3.0", "channel": "stable" },
-    "partner": { "version": "0.3.0", "channel": "stable" },
-    "cofounder": { "version": "0.3.0", "channel": "stable" },
-    "engineering": { "version": "0.3.0", "channel": "stable" },
-    "customers": { "version": "0.3.0", "channel": "stable" },
-    "investors": { "version": "0.3.0", "channel": "stable" },
-    "money": { "version": "0.3.0", "channel": "stable" },
-    "raw": { "version": "0.3.0", "channel": "stable" },
-    "decisions": { "version": "0.3.0", "channel": "stable" },
-    "evidence": { "version": "0.3.0", "channel": "stable" },
-    "legal": { "version": "0.3.0", "channel": "experimental", "note": "Not modeled: matters after Validation or under another governance model (EE-069)" },
-    "operations": { "version": "0.3.0", "channel": "experimental", "note": "Not modeled: matters after Validation or under another governance model (EE-069)" },
-    "relationships": { "version": "0.3.0", "channel": "experimental", "note": "Not modeled: matters after Validation or under another governance model (EE-069)" },
-    "counsel": { "version": "0.3.0", "channel": "experimental", "note": "Not modeled: co-owners, outside money or a regulated field (EE-069)" }
+    "foundation": {
+      "version": "0.5.0",
+      "channel": "stable"
+    },
+    "validation": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "product": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "marketing": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "finance": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "people": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "investor": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "partner": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "cofounder": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "engineering": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "customers": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "investors": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "money": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "raw": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "decisions": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "evidence": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "legal": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: matters after Validation or under another governance model (EE-069)"
+    },
+    "operations": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: matters after Validation or under another governance model (EE-069)"
+    },
+    "relationships": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: matters after Validation or under another governance model (EE-069)"
+    },
+    "counsel": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: co-owners, outside money or a regulated field (EE-069)"
+    }
   }
 }

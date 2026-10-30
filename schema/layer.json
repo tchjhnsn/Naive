@@ -21,6 +21,8 @@
     "naive-config",
     "venture-types",
     "frame",
+    "decision-roadmap",
+    "lifecycle-playbook",
     "upgrade-registry",
     "kit",
     "calendar",
@@ -58,7 +60,10 @@
     "schema/clock.mjs",
     "schema/calendar.mjs",
     "schema/workspace-init.mjs",
-    "schema/workspace-init-test.mjs"
+    "schema/workspace-init-test.mjs",
+    "schema/check-roadmap.mjs",
+    "schema/roadmaps.mjs",
+    "schema/roadmap-test.mjs"
   ],
   "gaps": [],
   "name": "system"
