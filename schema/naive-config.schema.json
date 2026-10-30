@@ -9,6 +9,75 @@
     "$schema": {
       "type": "string"
     },
+    "beta": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The plugin beta's gate (schema/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "jev": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Opt-in for routing feedback through Jev: send lets feedback text leave the machine, and counts only with set_by naming the person who turned it on. A TYPESAFE_API_KEY alone sends nothing.",
+          "properties": {
+            "send": {
+              "type": "boolean"
+            },
+            "set_by": {
+              "type": "object",
+              "required": [
+                "person",
+                "at"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "person": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Usage telemetry (schema/telemetry.mjs, schema/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "send": {
+          "type": "boolean"
+        },
+        "set_by": {
+          "type": "object",
+          "required": [
+            "person",
+            "at"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "person": {
+              "type": "string",
+              "minLength": 1
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
     "gate": {
       "type": "object",
       "additionalProperties": false,
