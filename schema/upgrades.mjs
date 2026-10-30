@@ -96,7 +96,7 @@ export function plan(dir, { reg = registry() } = {}) {
 }
 
 // The changes one migration makes, all through here, so a dry run reports them and a real run logs them.
-function context(dir, { dry, git, cfg, at, onConfig }) {
+export function context(dir, { dry, git, cfg, at, onConfig }) {
   const moved = [], writes = [], escalated = [], notes = [], kept = [];
   const tracked = (p) => git && spawnSync("git", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
   const removeEmpty = (p) => {

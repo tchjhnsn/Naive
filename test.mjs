@@ -50,6 +50,8 @@ const steps = [
   ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],
   ["governance: instance", "node", ["schema/check-governance.mjs", "instance"]],
   ["governance: examples", "node", ["schema/check-governance.mjs", "schema/examples/workspace"]],
+  ["the canonical core and frameworks for thinking (telos-to-goals, canonical exit criteria, fallback)", "node", ["schema/canonical-core-test.mjs"]],
+  ["frameworks map onto canonical records only", "node", ["schema/check-frameworks.mjs"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["publication: instance", "node", ["schema/check-publication.mjs", "instance"]],
