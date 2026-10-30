@@ -3,9 +3,10 @@
 // decision stale ("the reason you decided <id> changed"), and rank carries the cites. Also the CLI.
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { call } from "../interface/router.mjs";
 import { approve, decisions, propose } from "./decisions.mjs";
 import { changedReasons, reasonsFromArgs, shaOf } from "./reasons.mjs";
 
@@ -50,7 +51,21 @@ try {
 
   const a2 = approve(v, "mission", { by: "Founder", answer: "We help solo founders and small teams." });
   const d2 = json(F);
-  expect("a new version keeps the old frozen reasons in versions and freezes fresh shas", a2.ok && d2.versions[0].provenance.reasons.length === 3 && d2.provenance.reasons[0].citations[0].version === shaOf(v, "evidence/interviews.json") && fresh("mission").render === "done", d2);
+  expect("a new version keeps the old frozen reasons in versions", a2.ok && d2.versions[0].provenance.reasons.length === 3, d2);
+  expect("an inherited reason keeps its old hash, so the new version stays stale", d2.provenance.reasons[0].citations[0].version === d2.versions[0].provenance.reasons[0].citations[0].version && d2.provenance.reasons[0].citations[0].version !== shaOf(v, "evidence/interviews.json") && fresh("mission").render === "stale", d2);
+  approve(v, "mission", { by: "Founder", answer: "We help founders who drown in decisions.", reasons: [{ claim: "Interviews say solo founders drown in decisions", kind: "for", citations: [{ ref: "evidence/interviews.json", locator: "quotes[0]" }] }] });
+  expect("restating the reason from the changed file freezes it fresh and clears the staleness", json(F).provenance.reasons.filter((r) => r.claim.startsWith("Interviews")).length === 1 && json(F).provenance.reasons.find((r) => r.claim.startsWith("Interviews")).citations[0].version === shaOf(v, "evidence/interviews.json") && fresh("mission").render === "done", json(F));
+
+  // An inherited reason keeps its hash even when its stored JSON differs from the frozen copy (a hand edit).
+  const inherited = () => json(F).reasons.find((r) => r.claim.startsWith("Interviews"));
+  writeFileSync(join(v, "evidence/interviews.json"), JSON.stringify({ quotes: ["changed again"] }, null, 2));
+  const reordered = json(F);
+  reordered.reasons = reordered.reasons.map(({ claim, kind, ...r }) => ({ kind, claim, ...r }));
+  writeFileSync(join(v, F), JSON.stringify(reordered, null, 2));
+  const hash = inherited().citations[0].version;
+  approve(v, "mission", { by: "Founder", answer: "We help founders with too many decisions." });
+  expect("an inherited reason whose key order differs is not re-frozen at today's hash", inherited().citations[0].version === hash && fresh("mission").render === "stale", json(F));
+  approve(v, "mission", { by: "Founder", answer: "We help founders with too many open decisions.", reasons: [{ claim: inherited().claim, kind: "for", citations: [{ ref: "evidence/interviews.json" }] }] });
 
   expect("reasonsFromArgs pairs each --cite with the reason before it", JSON.stringify(reasonsFromArgs(["x", "--reason", "A", "--cite", "a.json", "--locator", "f", "--cite", "D-1", "--against", "B"])) === JSON.stringify([{ claim: "A", kind: "for", citations: [{ ref: "a.json", locator: "f" }, { ref: "D-1" }] }, { claim: "B", kind: "against" }]));
 
@@ -67,6 +82,46 @@ try {
   writeFileSync(join(v, "evidence/interviews.json"), "{}\n");
   const chk2 = spawnSync("node", [join(repo, "schema/check-reasons.mjs"), v], { encoding: "utf8" });
   expect("check-reasons reports the changed reason and exits 1", chk2.status === 1 && /the reason you decided channel changed: evidence\/interviews\.json/.test(chk2.stdout), chk2.stdout);
+
+  // A stale decision stays stale: a stranger cannot clear it, and an agent's raw write cannot reopen it.
+  const o = join(ws, "rop");
+  mkdirSync(join(o, "decisions"), { recursive: true });
+  mkdirSync(join(o, "evidence"));
+  mkdirSync(join(o, "governance"));
+  writeFileSync(join(o, "venture.json"), JSON.stringify({ id: "rop", name: "Rop", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery" }));
+  writeFileSync(join(o, "governance/delegation.json"), JSON.stringify({ register: "delegation", root: "founder", founder: ["Torian"], grants: [] }));
+  writeFileSync(join(o, "evidence/e.json"), "{\"v\":1}\n");
+  const claim = "The evidence says so";
+  const cited = [{ claim, kind: "for", citations: [{ ref: "evidence/e.json" }] }];
+  propose(o, { id: "pick", question: "Which?", answer: "this", boundary: "fail-open", reasons: cited }, { agentId: "cos" });
+  approve(o, "pick", { by: "Torian" });
+  writeFileSync(join(o, "evidence/e.json"), "{\"v\":2}\n");
+  const rendered = () => decisions(o, Date.now()).decisions.find((d) => d.id === "pick").render;
+  expect("a changed citation makes the decision stale", rendered() === "stale", rendered());
+  const stranger = approve(o, "pick", { by: "Mallory", answer: "that", reasons: cited });
+  expect("a name that is no person cannot clear staleness by restating the claim", !stranger.ok && rendered() === "stale", stranger);
+  const recordPath = join(o, "decisions/pick.decision.json");
+  const before = readFileSync(recordPath, "utf8");
+  const raw = await call({ venture: "rop", route: "decisions/pick", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { id: "pick", question: "Which?", answer: "this", status: "open", reasons: cited } });
+  expect("an agent's raw write that reopens a decided decision is only a draft", raw.ok && raw.result.draft === true && readFileSync(recordPath, "utf8") === before, raw);
+  expect("so the decision stays stale and nothing re-freezes", rendered() === "stale", rendered());
+
+  // One id, one file: a sibling cannot take over a decided id, so the draft rule cannot be walked around.
+  const write = (route, input, actor = "agent") => call({ venture: "rop", route, action: "write", actor, ...(actor === "agent" ? { actor_id: "builder" } : {}), workspace: ws, input });
+  const sibling = { question: "Which?", answer: "other", status: "open" };
+  propose(o, { id: "aside", question: "Aside?", answer: "a" }, { agentId: "cos" });
+  const asideBefore = readFileSync(join(o, "decisions/aside.decision.json"), "utf8");
+  expect("a write whose id differs from the file it lands in is refused", !(await write("decisions/aside", { ...sibling, id: "pick" })).ok && readFileSync(join(o, "decisions/aside.decision.json"), "utf8") === asideBefore);
+  expect("a person's is refused too, so a draft cannot be accepted past it", !(await write("decisions/aside", { ...sibling, id: "pick" }, "person")).ok);
+  expect("a new file cannot carry another id", !(await write("decisions/fresh", { ...sibling, id: "pick" })).ok && !existsSync(join(o, "decisions/fresh.decision.json")));
+  expect("a topic name cannot carry a decided id", !(await write("decisions/x.pick", { ...sibling, id: "pick" })).ok);
+  writeFileSync(join(o, "decisions/terms.decision.json"), JSON.stringify({ id: "fund-terms", question: "Terms?", status: "open" }));
+  const named = await write("decisions/terms", { id: "fund-terms", question: "Terms now?", status: "open" });
+  expect("a shipped record whose id predates the rule stays writable under its own id", named.ok, named);
+
+  // The roster grants founder authority, so an agent's write to it waits for a person, as delegation's does.
+  const roster = await call({ venture: "rop", route: "people", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { venture: "rop", mode: "solo", people: [{ id: "claude", name: "claude", role: "founder" }], updated: "2026-10-30" } });
+  expect("an agent's write to the roster is only a draft", roster.ok && roster.result.draft === true && !existsSync(join(o, "people/people.json")), roster);
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

@@ -10,6 +10,7 @@
 // folder; several markets mark one primary. Warns on a business model outside the vocabulary. Warns when a formalized venture
 // (a legal form, or other members) has no governance layer.
 
+import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -33,9 +34,9 @@ for (const f of walk(dir)) {
   const v = load(f);
   if (ventures.has(v.id)) errors.push(`${f}: duplicate venture id ${v.id}`);
   const root = dirname(f);
-  for (const [k, l] of Object.entries(v.layers ?? {})) if (l && !existsSync(join(root, l.location))) errors.push(`${v.id}: ${k} layer location ${l.location} not found (relative to the venture folder)`);
-  const productFiles = [...jsonIn(join(root, "product")), ...jsonIn(join(root, "products"))];
-  ventures.set(v.id, { ...v, products: productFiles.map(load), accounts: accountsIn(join(root, "accounts")).map(load) });
+  for (const [k, l] of Object.entries(v.layers ?? {})) if (l && !existsSync(ventureFile(root, l.location))) errors.push(`${v.id}: ${k} layer location ${l.location} not found (relative to the venture folder)`);
+  const productFiles = [...jsonIn(ventureFile(root, "product")), ...jsonIn(ventureFile(root, "products"))];
+  ventures.set(v.id, { ...v, products: productFiles.map(load), accounts: accountsIn(ventureFile(root, "accounts")).map(load) });
 }
 if (!ventures.size) { console.error(`no venture.json found under ${dir}`); process.exit(1); }
 
