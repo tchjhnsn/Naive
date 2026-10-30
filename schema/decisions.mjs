@@ -26,7 +26,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
 import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
 import { glob as routeFileGlob, routes } from "../interface/router.mjs";
@@ -277,22 +277,34 @@ const fileOf = (dir, id) => decisionFiles(dir).find((f) => load(ventureFile(dir,
 /** The venture-relative file of a decision record, by id. */
 export const decisionFile = fileOf;
 
+/** Whether an applies_to file is a relative path that stays inside the venture (no "..", not absolute). */
+const inside = (f) => typeof f === "string" && f !== "" && !isAbsolute(f) && !/^[a-zA-Z]:/.test(f) && !f.split(/[\\/]/).includes("..");
+
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
  *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
 export function propose(dir, input, { agentId, via = "router", harness, model } = {}) {
-  const { at = "", name, ...rest } = input ?? {};
+  // Version history, merge state and rollback lineage are written by approve/merge/rollback, never by an agent.
+  const { at = "", name, version: _v, versions: _vs, merged: _m, rolled_back_from: _r, proposed: _p, ...rest } = input ?? {};
   if (!rest.id || !rest.question) return { ok: false, error: "a decision needs an id and a question" };
   if (rest.status && rest.status !== "open") return { ok: false, error: "an agent may only propose an open decision; a person approves it" };
   const existing = fileOf(dir, rest.id);
   const file = existing ?? `${at ? `${at}/` : ""}decisions/${name ?? rest.id}.decision.json`;
   if (!existing && !/^([a-z0-9-]+\/)*decisions\/[a-z0-9.-]+\.decision\.json$/.test(file)) return { ok: false, error: `${file} is not a decisions/ path` };
-  // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
-  // New wording for a decided one opens its next version; the decided version is kept in versions.
+  const outside = (rest.applies_to ?? []).find((t) => !inside(t?.file));
+  if (outside) return { ok: false, error: `applies_to ${outside?.file} is not a path inside the venture` };
   const before = existing ? load(ventureFile(dir, existing)) : {};
-  const next = before.status === "decided" ? nextVersion(before) : before;
-  const { versions, version, merged, rolled_back_from, ...carried } = next;
-  if (rest.reasons) rest.reasons = stamp(dir, rest.reasons);
-  const d = { ...carried, ...rest, status: "open", ...(version ? { version } : {}), ...(versions ? { versions } : {}), ...(merged ? { merged } : {}), provenance: { drafted_by: { kind: "agent", ...(agentId ? { id: agentId } : {}) } } };
+  const drafted_by = { kind: "agent", ...(agentId ? { id: agentId } : {}) };
+  let d;
+  if (before.status === "decided") {
+    // An agent never un-decides (EE-058): the decided version stays current, and the new wording waits
+    // in proposed as a draft of the next version until a person approves it.
+    if (!rest.answer) return { ok: false, error: `${rest.id} is decided; propose new wording as an answer, and a person approves it as the next version` };
+    d = { ...before, proposed: { answer: rest.answer, ...(rest.options ? { options: rest.options } : {}), drafted_by, proposed_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") } };
+  } else {
+    // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
+    if (rest.reasons) rest.reasons = stamp(dir, rest.reasons);
+    d = { ...before, ...rest, status: "open", provenance: { drafted_by } };
+  }
   const bad = validate(d);
   if (bad) return { ok: false, error: `does not match schema/decision-record.schema.json:\n${bad}` };
   mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
@@ -304,8 +316,9 @@ export function propose(dir, input, { agentId, via = "router", harness, model } 
 /** The decision with its current version moved into versions and the version number raised. */
 function nextVersion(d) {
   const { versions = [], ...cur } = d;
-  const snap = { version: cur.version ?? 1, status: cur.status, answer: cur.answer ?? null, ...(cur.options ? { options: cur.options } : {}), ...(cur.provenance ? { provenance: cur.provenance } : {}), ...(cur.merged ? { merged: cur.merged } : {}), superseded_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
-  return { ...cur, version: (cur.version ?? 1) + 1, versions: [...versions, snap] };
+  const snap = { version: cur.version ?? 1, status: cur.status, answer: cur.answer ?? null, ...(cur.options ? { options: cur.options } : {}), ...(cur.provenance ? { provenance: cur.provenance } : {}), ...(cur.merged?.version === (cur.version ?? 1) ? { merged: cur.merged } : {}), superseded_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+  const { rolled_back_from, merged, proposed, ...rest } = cur;
+  return { ...rest, version: (cur.version ?? 1) + 1, versions: [...versions, snap] };
 }
 
 const setField = (o, path, v) => { const ks = path.split("."); let x = o; for (const k of ks.slice(0, -1)) x = x[k] ??= {}; x[ks.at(-1)] = v; };
@@ -324,6 +337,8 @@ export function merge(dir, id, { by, via = "cli", note } = {}) {
   const version = d.version ?? 1;
   if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
   const files = [];
+  const outside = d.applies_to.find((t) => !inside(t?.file));
+  if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
   for (const t of d.applies_to) {
     const f = ventureFile(dir, t.file);
     const rec = existsSync(f) ? load(f) : {};
@@ -351,7 +366,6 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   if (old.status !== "decided") return { ok: false, error: `${id} version ${to} was never decided; only a decided version can be restored` };
   const n = nextVersion(d);
   const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...(old.provenance ?? {}), drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
-  delete out.merged;
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
@@ -366,8 +380,19 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
   const d = load(ventureFile(dir, file));
   // A decided decision changes by a new version: the decided one is kept, and this one supersedes it.
+  // An agent's pending wording (proposed) is what the person approves when they give no answer of their own.
+  if (d.status === "decided" && !answer && d.proposed) answer = d.proposed.answer;
   if (d.status === "decided" && (!answer || answer === d.answer)) return { ok: false, error: `${id} is already decided as worded; give a new --answer to make version ${(d.version ?? 1) + 1}` };
-  if (d.status === "decided") Object.assign(d, nextVersion(d));
+  if (d.status === "decided") {
+    const pending = d.proposed, nv = nextVersion(d);
+    for (const k of Object.keys(d)) delete d[k];
+    Object.assign(d, nv);
+    // The next version is drafted by whoever drafted it: the agent when its proposed wording is approved,
+    // else the person approving their own answer. Its predecessor's wording no longer counts as a draft.
+    d.answer = pending?.answer === answer ? answer : null;
+    if (pending?.answer === answer && pending.options) d.options = pending.options;
+    d.provenance = { drafted_by: pending?.answer === answer ? pending.drafted_by : { kind: "person", id: by } };
+  }
   if (!answer && !d.answer) return { ok: false, error: `${id} has no wording to approve; give an answer` };
   const drafted = d.provenance?.drafted_by ?? { kind: "person", id: by };
   const wording = !d.answer || drafted.kind === "framework" ? "own" : answer && answer !== d.answer ? (drafted.kind === "person" && drafted.id === by ? "own" : "changed") : drafted.kind === "person" ? "own" : "approved";

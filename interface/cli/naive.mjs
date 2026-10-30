@@ -15,8 +15,10 @@
 //                                                   confirming the answers the model relayed (EE-083)
 //   naive frame "<the founder's words>"             match the words to a frame in the decision library, judge its
 //                                                   premises against the venture and propose its decisions, open
+//   naive roadmap [list | install <id>]             a decision roadmap: propose each step's frame decisions, open, in order
 //   naive typegen                                   write .naive/types/ from the route table and the MCP tools
 //   naive upgrade [<venture dir>] [--framework]     move a venture onto the next Naive layout; --framework first
+//   naive upgrade --layout structured [--check]   move a flat venture onto the structured layout: k-base/, meta/ (EE-086)
 //                                                   updates the installed framework with the venture's package manager (I-29)
 //   naive phase [<next phase>] [--meet <criterion> --evidence <text>] [--reason] [--override <why>]
 //                                                   the venture development lifecycle: where the venture is, its gate's exit
@@ -195,6 +197,21 @@ else if (cmd === "build" || cmd === "start") {
   // Outside a venture with none named, upgrade-venture.mjs prints its usage.
   const dir = rest[0] && !rest[0].startsWith("--") ? resolve(rest[0]) : (opt("venture") ? here() : findVenture());
   if (dir && rest.includes("--framework") && upgradeFramework(dir) !== 0) process.exit(1);
+  // --layout structured (EE-086): move a flat venture onto the structured layout. No logical path changes,
+  // so routes, citations and the provenance log read the same; --check says what would move.
+  if (dir && opt("layout") === "structured") {
+    const { apply } = await import("../../schema/migrations/structured-layout.mjs");
+    const dry = rest.includes("--check"), notes = [], escalated = [];
+    apply(dir, { dry, note: (m) => notes.push(m), escalate: (m) => escalated.push(m) });
+    if (!notes.length) console.log("this venture is already on the structured layout");
+    for (const n of notes) console.log(`${dry ? "would: " : ""}${n}`);
+    for (const e of escalated) console.log(`decide: ${e}`);
+    if (!dry && notes.length) {
+      const { agentFromEnv, record } = await import("../provenance.mjs");
+      record(dir, { entity: "venture.json", activity: "write", agent: agentFromEnv("person", "cli"), note: "moved onto the structured layout (EE-086): k-base/ and meta/" });
+    }
+    process.exit(0);
+  }
   // Flags (--check, --guide, --adopt, --canary, --agent, --accept, --confirm) pass through to upgrade-venture.mjs; --framework and --venture are handled here.
   const flags = rest.filter((a, i) => !(i === 0 && !a.startsWith("--")) && a !== "--framework" && a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("schema/upgrade-venture.mjs", dir ? [dir, ...flags] : flags));
@@ -204,6 +221,10 @@ else if (cmd === "build" || cmd === "start") {
   if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("schema/frames.mjs", rest));
   const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
   process.exit(run("schema/frames.mjs", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
+} else if (cmd === "roadmap") {
+  // Decision roadmaps (schema/roadmaps.mjs): naive roadmap install <id> proposes each step's decisions, open.
+  if (rest[0] === "install") process.exit(run("schema/roadmaps.mjs", ["install", here(), rest[1]]));
+  process.exit(run("schema/roadmaps.mjs", ["list"]));
 } else if (cmd === "phase") {
   // The venture development lifecycle (schema/lifecycle.mjs): where the venture is, its gate, and moving on.
   // naive phase | naive phase --meet <criterion> [--evidence <text>] | naive phase <next> [--reason] [--override]
