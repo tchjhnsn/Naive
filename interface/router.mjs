@@ -36,7 +36,7 @@
 //
 // Partial adoption: a route needs only its own record and what its kit reads.
 
-import { mayKnow } from "../schema/visibility.mjs";
+import { mayKnow, publicView } from "../schema/visibility.mjs";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -366,6 +366,7 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Writes hook (interface/writes.mjs): adds what reads, layouts and writes answer.
 export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
 async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+  if (actor === "public" && action !== "read") return { ok: false, error: `the public reader only reads; ${action} needs a person or an agent` };
   const requested = route;
   const { r, params, alias } = resolve(route);
   if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
@@ -486,7 +487,9 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       const { values, errors } = contain(items, parseWith, idOf);
       return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...deprecated };
     }
-    const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
+    // Field visibility: a public reader (actor "public", what a public component reads) sees only the fields
+    // a person approved as public, or their approved variants; every other field is internal and left out.
+    const data = Object.fromEntries(items.map((x) => [x.path, actor === "public" && !remote ? publicView(dir, x.path, parseWith(x)) : parseWith(x)]));
     // V-9 hook: a summary whose source changed since it was written is marked stale (schema/stale.mjs).
     const stale = !remote && items.length === 1 ? staleOf(dir, found[0]) : null;
     return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...loading, ...(stale ? { stale } : {}), ...deprecated };

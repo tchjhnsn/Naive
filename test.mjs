@@ -56,6 +56,7 @@ const steps = [
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
   ["publishing gate: field visibility, leak canaries, internal terms", "node", ["schema/leaks-test.mjs"]],
+  ["field visibility: only a person sets public, the public reader, the publish check", "node", ["schema/visibility-test.mjs"]],
   ["public site carries no internal text", "node", ["schema/check-leaks.mjs", "site/content/marketing"]],
   ["decision versions: propose, approve, merge, rollback", "node", ["schema/decision-versions-test.mjs"]],
   ["decision impact: a merge maps what depends on it across functions, marks it stale, proposes follow-ups", "node", ["schema/decision-impact-test.mjs"]],

@@ -13,7 +13,7 @@
 //   node schema/visibility.mjs <venture dir> <record path> [--json]   each field's visibility
 
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "./venture-paths.mjs";
 
@@ -37,7 +37,48 @@ export function visibilityOf(dir, rel, field) {
   const value = existsSync(f) ? get(load(f), field) : undefined;
   if (value === undefined) return { visibility: "internal", declared: "public", stale: "the field is missing" };
   if (v.sha256 !== hash(value)) return { visibility: "variant", declared: "public", stale: "the wording changed after it was approved as public" };
-  return { visibility: "public", declared: "public", approved_by: v.approved_by ?? null };
+  // Only a person sets public (a recorded two-way-door decision): no approver, or a role's id, is no approval.
+  if (!isPerson(dir, v.approved_by)) return { visibility: "internal", declared: "public", stale: v.approved_by ? `${v.approved_by} is a role, not a person: only a person approves a field as public` : "no person approved it as public" };
+  return { visibility: "public", declared: "public", approved_by: v.approved_by };
+}
+
+/** Whether an approver id names a person: set, and not an agent role (the role template, or a role in the venture's delegation grants). */
+export function isPerson(dir, id) {
+  if (!id || typeof id !== "string") return false;
+  return !roleIds(dir).has(id);
+}
+function roleIds(dir) {
+  const ids = new Set();
+  try { for (const r of load(new URL("../governance/venture-template/roles/agent-roles.json", import.meta.url).pathname).roles ?? []) if (r.id && r.id !== "founder") ids.add(r.id); } catch {}
+  const del = ventureFile(dir, "governance/delegation.json");
+  if (existsSync(del)) try { const d = load(del); for (const g of d.grants ?? []) for (const r of [g.to, g.from]) if (r && r !== d.root) ids.add(r); } catch {}
+  return ids;
+}
+
+/** A record as the public may see it: each top-level field that is public or has an approved variant. */
+export function publicView(dir, rel, rec) {
+  if (!rec || typeof rec !== "object" || Array.isArray(rec)) return null;
+  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, v.value]));
+}
+
+/** A person approves a field as public: pins its current wording by sha256 in the record's sidecar. An
+ *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry. */
+export function setPublic(dir, rel, field, { by, propose = false, agentId } = {}) {
+  const f = ventureFile(dir, rel);
+  if (!existsSync(f)) return { ok: false, error: `no record ${rel}` };
+  const value = get(load(f), field);
+  if (value === undefined) return { ok: false, error: `${rel} has no field ${field}` };
+  const sf = ventureFile(dir, rel.replace(/\.json$/, ".visibility.json"));
+  const side = existsSync(sf) ? load(sf) : {};
+  const fields = side.fields ?? {};
+  const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  if (propose) fields[field] = { ...(fields[field] ?? { visibility: "internal" }), proposed: { visibility: "public", sha256: hash(value), by: agentId ?? "agent", at } };
+  else {
+    if (!isPerson(dir, by)) return { ok: false, error: by ? `${by} is a role: only a person approves a field as public; an agent proposes (--propose)` : "approving a field as public needs the person's name (--by)" };
+    fields[field] = { visibility: "public", sha256: hash(value), approved_by: by, approved_at: at };
+  }
+  writeFileSync(sf, JSON.stringify({ ...side, fields }, null, 2) + "\n");
+  return { ok: true, result: { record: rel, field, ...fields[field] } };
 }
 
 /** The approved public variant of a field: an MDX file whose frontmatter has variant_of: <rel>#<field> and publish: true. */
@@ -50,7 +91,7 @@ export function variantOf(dir, rel, field, contentDirs = ["marketing/content", "
       const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
       if (!m) continue;
       const meta = Object.fromEntries(m[1].split("\n").map((l) => l.match(/^([a-z_]+):\s*(.*)$/)).filter(Boolean).map(([, k, v]) => [k, v.replace(/^["']|["']$/g, "").trim()]));
-      if (meta.variant_of === `${rel}#${field}` && meta.publish === "true" && meta.approved_by) return { value: m[2].trim(), file: `${d}/${name}`, approved_by: meta.approved_by };
+      if (meta.variant_of === `${rel}#${field}` && meta.publish === "true" && isPerson(dir, meta.approved_by)) return { value: m[2].trim(), file: `${d}/${name}`, approved_by: meta.approved_by };
     }
   }
   return null;
