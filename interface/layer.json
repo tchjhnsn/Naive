@@ -23,7 +23,8 @@
   "records": [
     "route-aliases",
     "adapter",
-    "artifact"
+    "artifact",
+    "beta-capabilities"
   ],
   "reads": [
     "integration"

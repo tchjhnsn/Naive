@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-feedback.schema.json",
+  "title": "Beta feedback",
+  "description": "One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (schema/beta-gate.mjs) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided.",
+  "type": "object",
+  "required": ["id", "tester", "capability", "checkpoint", "answers", "at"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "venture": { "type": "string" },
+    "at": { "type": "string", "format": "date-time" },
+    "tester": { "type": "string", "minLength": 1, "description": "The tester's handle or anonymised reference" },
+    "capability": { "type": "string", "description": "A capability id from beta/capabilities.json" },
+    "checkpoint": { "type": "string", "description": "The checkpoint whose form these answer" },
+    "answers": {
+      "type": "object",
+      "description": "Question id to answer",
+      "additionalProperties": { "type": ["string", "number", "boolean"] }
+    },
+    "routed_to": { "type": ["string", "null"], "description": "The route the feedback was filed under (product/bugs, validation/feedback, ...)" },
+    "routing": {
+      "type": "object",
+      "required": ["model", "confidence", "fallback"],
+      "additionalProperties": false,
+      "properties": {
+        "model": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fallback": { "type": "boolean", "description": "True when the injected fallback decided, not Jev" }
+      }
+    }
+  }
+}

@@ -103,6 +103,8 @@ const steps = [
   ["site reader (links and text, offline)", "node", ["platform/integrations/site-test.mjs"]],
   ["Rho money source (package, append-only, read-only client, offline)", "node", ["platform/integrations/rho-test.mjs"]],
   ["workspace: settings, cross-venture reads, naive capture and the inbox", "node", ["schema/workspace-test.mjs"]],
+  ["validation study: interviews, feedback, bugs, telemetry, the beta gate and feedback routing", "node", ["schema/validation-study-test.mjs"]],
+  ["validation study records: instance", "node", ["schema/check-validation-study.mjs", "instance"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
