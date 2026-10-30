@@ -1905,14 +1905,6 @@ export type NaiveConfig = {
     /** Checks that run but do not fail the route's check */
     warn?: string[];
   };
-  /** finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
-  finance_lint?: {
-    rules?: {
-      [key: string]: {
-        mode?: "fail-open" | "fail-closed";
-      };
-    };
-  };
   /** Thresholds by name: confidence (the gate's confidence routing), idea-map (when a System 1 answer becomes a tag) */
   thresholds?: {
     [key: string]: number;
@@ -1957,8 +1949,8 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (schema/triggers.mjs) */
   triggers?: unknown[];
-  /** Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
-  legal_lint?: {
+  /** Per-rule mode for the validation lint (schema/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
+  validation_lint?: {
     rules?: {
       [key: string]: {
         mode?: "fail-open" | "fail-closed";
@@ -1981,6 +1973,22 @@ export type NaiveConfig = {
       conflict?: "off" | "warn" | "error";
       dependency?: "off" | "warn" | "error";
       "phase-mismatch"?: "off" | "warn" | "error";
+    };
+  };
+  /** finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
+  finance_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
+  /** Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
+  legal_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
     };
   };
   /** Foundation lint (foundation/lint): per-rule mode overrides. A rule stays fail-open unless its mode is fail-closed. */

@@ -65,6 +65,7 @@ import { packageSlots } from "./package-routes.mjs";
 import { routable } from "../schema/structure.mjs";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from schema/brand.mjs.
 import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
+import { validationCommands } from "../schema/lint-validation.mjs";
 import { financeCommands } from "../schema/lint-finance.mjs";
 // Legal lint hook: legal/lint (schema/lint-legal.mjs). A lint, not legal advice.
 import { legalCommands } from "../schema/lint-legal.mjs";
@@ -176,6 +177,7 @@ function buildRoutes() {
   );
   out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (schema/caching.mjs).
   out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (schema/brand.mjs).
+  out.push(...validationCommands(cmd)); // Validation lint: claims, shelf life, agent grades, Discovery-grade decisions (schema/lint-validation.mjs).
   out.push(...financeCommands(cmd)); // Finance lint: spend, price below cost, metric targets (schema/lint-finance.mjs).
   out.push(...legalCommands(cmd)); // Legal lint hook: public claims and agreements (schema/lint-legal.mjs).
   out.push(...peopleLintCommands(cmd)); // People lint: role, hire and decision alignment (schema/lint-people.mjs).

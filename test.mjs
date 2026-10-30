@@ -108,6 +108,7 @@ const steps = [
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
+  ["validation lint: claims, shelf life, agent grades, Discovery-grade decisions", "node", ["schema/lint-validation-test.mjs"]],
   ["validation: instance", "node", ["schema/check-validation.mjs", "instance"]],
   ["validation: examples", "node", ["schema/check-validation.mjs", "schema/examples/workspace", "--score"]],
   ["problem assessment behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/kits/validation/features/problem-assessment.feature"]],
