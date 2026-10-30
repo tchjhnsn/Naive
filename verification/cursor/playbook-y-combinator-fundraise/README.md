@@ -23,22 +23,22 @@ node verification/cursor/playbook-y-combinator-fundraise/replay.mjs
 
 ## Rules
 
-TLC on 29 October 2026: 12 distinct states, 15 steps, no error (`out/tlc.out`). The chart draws 14 arrows. Replay: `node verification/cursor/playbook-y-combinator-fundraise/replay.mjs` printed `32/32 passed`.
+TLC on 29 October 2026: 12 distinct states, 15 steps, no error (`out/tlc.out`). The chart draws 14 arrows. Replay: `node verification/cursor/playbook-y-combinator-fundraise/replay.mjs` printed `37/37 passed`.
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
-| RoutesExist. Every step uses a route the router serves. | PASS | PASS. 18 routes from the model are in `mentura routes --json`, and they are the routes the playbook names. `fundraising/plan` is rejected with `no route fundraising/plan`. |
+| RoutesExist. Every step uses a route the router serves. | PASS | PASS. 18 routes from the model are in `node interface/router.mjs`, and they are the routes the playbook names. `fundraising/plan` is rejected with `no route fundraising/plan`. |
 | Accounted. A step only touches a record the venture already has, or a route the template writes. | PASS | PASS. The template does not write `purpose/data-stream/[id]`. A write of `purpose/data-stream/meetings` stored `customers/_streams/meetings/stream.json`, because that glob is first on the route. |
 | NoUnreadSource. A later step does not read a record nothing earlier provided. | PASS | PASS. `foundation/problem` is `not_found` on a new venture. The raise plan's `inputs` are written only after those records exist, and the check fails an input that is still missing. |
 | PassMeansReady. A passing check is a filled plan, investor records, and a checklist. | PASS | PASS. Checks 1 to 3 pass only after the filled plan, one named investor, the checklist, and cited evidence on `foundation/problem`. |
-| FailIsARealMiss. Each failing check is a step that is still missing. | PASS | PASS. A blank `amount` fails the plan check. No investor record fails the investor check. No checklist fails the data room check. Empty `evidence` on the problem fails it again. An optional `foundation/telos` line fails when the criterion is present and the record is missing. |
+| FailIsARealMiss. Each failing check is a step that is still missing. | PASS | PASS. A blank `amount` fails the plan check. No investor record fails the investor check. No checklist fails the data room check. Empty `evidence` on the problem fails it again. A product with no `market` fails it. An optional `foundation/telos` line fails when the criterion is present and the record is missing. |
 | The same checks can pass. | PASS. The chart has "Checks pass". | PASS. The filled fixture passes checks 1, 2, and 3. A person writing `governance/ownership` passes check 4. `kind: "safe"` is rejected by `schema/ownership.schema.json`. |
 
 ## What the model does not cover
 
 The model found no broken rule. Two router behaviors showed up in the replay and are not template steps, so TLC did not report them:
 
-- `decisions/raise-plan` has no decision class. An agent write with `status` `decided` and no `provenance.approved_by` is accepted. The playbook check fails that record. The template tells the founder to use `mentura decide`. This item does not change the router.
+- An agent write of `decisions/raise-plan` with `status` `decided` is held as a draft, and the read stays `open`. A person's raw write of `decided` with no `provenance.approved_by` is refused. The template tells the founder to use `mentura decide --confirm raise-plan`, and the replay runs that command.
 - `purpose/data-stream/[id]` is shared by customers, investors, and money. A new id landed under customers. The playbook does not write it.
 
 Optional routes (`validation/pricing`, `validation/go-to-market`, `foundation/telos`) are in the route set and are not read by a model step. The checklist omits them when they are `not_found`. The model does not send a form, sign one, or choose an amount. Fixture figures in the replay (`amount: 1`, one cent-scale cash field, one share) are there so the schema accepts a write. They are not a round.

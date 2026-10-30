@@ -136,7 +136,7 @@ May be missing. Read them. If the answer is `not_found`, leave the matching chec
 
 ### 2. Write the raise plan
 
-Write `decisions/raise-plan`. This is one open decision. `status` is `open`. `answer` is null. Do not set `decided_by`, `decided_at`, or `provenance.approved_by`. A raw write that sets `status` to `decided` can pass the decision schema, because that route has no decision class. This playbook still counts that record as a failed check until `provenance.approved_by` is a person's name, which `mentura decide` writes.
+Write `decisions/raise-plan`. This is one open decision. `status` is `open`. `answer` is null. Do not set `decided_by`, `decided_at`, or `provenance.approved_by`. An agent's write that sets `status` to `decided` is held as a draft for a person to accept. A person's raw write of `decided` with no `provenance.approved_by` is refused. `mentura decide` writes that name. This playbook counts a decided record without it as a failed check, which only a hand edit of the file can produce.
 
 `question`: Do we raise outside capital now, and if we do, on what instrument, for how many months, and what does the money buy?
 
@@ -168,7 +168,7 @@ inputs:
 
 `needed_in` is the phase from `system/need-now`. `boundary` is `fail-open`, so product work does not wait on this decision. `decides` is `{ "record": "investor", "path": "governance/ownership.json" }`: the decision is about the raise, and the cap table stays the ownership record. `provenance.drafted_by` is `{ "kind": "agent", "id": "<the agent>" }` when an agent drafts it, or `{ "kind": "person", "id": "<name>" }` when the founder writes it.
 
-The founder decides with `mentura decide raise-plan --venture <id> --by "<name>" --answer "<their sentence>"`. That is the only path this playbook treats as decided.
+The founder decides with `mentura decide raise-plan --venture <id> --by "<name>" --confirm raise-plan --answer "<their sentence>"`. That is the only path this playbook treats as decided.
 
 ### 3. Write investor records
 
@@ -222,7 +222,7 @@ Required lines fail while the read is `not_found`, or while the field named here
 
 This step is a person's. Do it after the checks pass, or as a decision not to raise.
 
-- Decide `decisions/raise-plan` with `mentura decide`, as in step 2.
+- Decide `decisions/raise-plan` with `mentura decide ... --confirm raise-plan`, as in step 2.
 - When a form is signed and the money is in the account, the founder writes the instrument on `governance/ownership` as a person (`--as person`). `kind` is `safe-post-money`, `safe-pre-money`, or `convertible-note`, matching what was signed. An agent's write of that route is a draft. A read does not treat the draft as the cap table. Do not record a signature that has not happened.
 
 ## Checks

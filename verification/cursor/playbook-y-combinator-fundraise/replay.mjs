@@ -34,7 +34,7 @@ const modelRoutes = new Set([
   ...[...routeLine[0].matchAll(/"([^"]+)"/g)].map((x) => x[1]),
 ]);
 
-const listed = spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), "routes", "--json"], { encoding: "utf8" });
+const listed = spawnSync("node", [join(repo, "interface/router.mjs")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 if (listed.status !== 0) { console.error(listed.stderr); process.exit(1); }
 const table = new Map(JSON.parse(listed.stdout).map((r) => [r.route, r]));
 
@@ -42,6 +42,7 @@ function normalize(token) {
   return token
     .replaceAll("<id>", "[id]")
     .replace(/^decisions\/raise-plan$/, "decisions/[id]")
+    .replace(/^foundation\/icp\/[a-z0-9-]+$/, "foundation/icp/[id]")
     .replace(/^operations\/handoff\/data-room$/, "operations/handoff/[id]")
     .replace(/^investors\/[a-z0-9-]+$/, "investors/[id]")
     .replace(/^product\/[a-z0-9-]+$/, "product/[id]")
@@ -163,7 +164,7 @@ const ventureRecords = {
   "foundation/problem": {
     venture, statement: "Fixture problem for the replay. Not a customer quote.", segment: "Fixture segment", evidence: [],
   },
-  "foundation/icp": { venture, profiles: [{ id: "fixture-buyer", who: "Fixture buyer, not a real segment." }] },
+  "foundation/icp/fixture-buyer": { id: "fixture-buyer", who: "Fixture buyer, not a real segment.", primary: true },
   "foundation/alignment": {
     venture,
     principles: [{ id: "no-exclusive", statement: "Fixture principle: do not grant an exclusive.", source: "Fixture founder, 2026-10-29", check: null }],
@@ -269,6 +270,7 @@ function roomCheck(handoff, problem) {
     if (!table.has(norm)) return `unknown route ${m[1]}`;
     const read = call(route === "decisions/raise-plan" ? "decisions/raise-plan" : route, "read");
     if (read.body?.result == null) return `${m[2]} missing ${route}`;
+    if (route.startsWith("product/") && !read.body.result.market) return `blank market ${route}`;
   }
   const plan = call("decisions/raise-plan", "read");
   if (planCheck(plan.body?.result) !== "pass") return "raise plan not ready";
@@ -311,7 +313,7 @@ function handoff() {
     max_attempts: 3,
     run_cap: "2h",
     inputs: [
-      "foundation/problem.json", "foundation/icp.json", "foundation/alignment.json", "product/widget.json",
+      "foundation/problem.json", "foundation/icp/fixture-buyer.json", "foundation/alignment.json", "product/widget.json",
       "people/founders/ada.json", "people/team-plan.json", "money/_summary.json", "governance/ownership.json",
       "decisions/raise-plan.decision.json",
     ],
@@ -347,7 +349,11 @@ const wroteEvidence = call("foundation/problem", "write", { as: "person", input:
 const problem2 = call("foundation/problem", "read");
 check("venture provides cited evidence on foundation/problem", wroteEvidence.body?.ok === true && (problem2.body?.result?.evidence?.length ?? 0) === 1,
   wroteEvidence.stderr || "one item");
-check("Checks: data room passes once traction is cited", roomCheck(room.body?.result, problem2.body?.result) === "pass",
+check("Checks: data room fails while the product has no market", roomCheck(room.body?.result, problem2.body?.result) === "blank market product/widget",
+  roomCheck(room.body?.result, problem2.body?.result));
+const wroteMarket = call("product/widget", "write", { as: "person", input: { ...ventureRecords["product/widget"], market: { customer: "b2b", segment: "Fixture segment" } } });
+check("venture provides market on product/widget", wroteMarket.body?.ok === true, wroteMarket.stderr || "written");
+check("Checks: data room passes once traction is cited and the market is on file", roomCheck(room.body?.result, problem2.body?.result) === "pass",
   roomCheck(room.body?.result, problem2.body?.result));
 const optionalMissing = {
   ...room.body.result,
@@ -360,11 +366,22 @@ check("Checks: an optional line fails when the criterion is present and the reco
 const decidedByAgent = { ...filled, status: "decided", provenance: { drafted_by: { kind: "agent", id: "playbook-replay" } } };
 const wroteDecided = call("decisions/raise-plan", "write", { input: decidedByAgent });
 const decidedRead = call("decisions/raise-plan", "read");
-check("Checks: status decided with no approved_by fails, and the router still accepts the write",
-  wroteDecided.body?.ok === true && planCheck(decidedRead.body?.result) === "decided with no approver",
-  planCheck(decidedRead.body?.result));
-const restored = call("decisions/raise-plan", "write", { input: filled });
+check("an agent write of status decided is held as a draft, so the read stays open",
+  wroteDecided.body?.result?.draft === true && decidedRead.body?.result?.status === "open",
+  wroteDecided.body?.result?.note ?? wroteDecided.stderr);
+const wrotePersonDecided = call("decisions/raise-plan", "write", { as: "person", input: decidedByAgent });
+check("a person's raw write of status decided with no approved_by is refused",
+  wrotePersonDecided.status !== 0 && /approved_by/.test(wrotePersonDecided.stderr + wrotePersonDecided.stdout),
+  wrotePersonDecided.stderr.trim().split("\n")[0]);
+check("Checks: status decided with no approved_by fails on a record that holds it", planCheck({ ...decidedRead.body?.result, status: "decided" }) === "decided with no approver", "the case only a file edit can reach");
+const restored = call("decisions/raise-plan", "write", { as: "person", input: filled });
 check("main path: restoring the open filled plan passes again", restored.body?.ok === true && planCheck(call("decisions/raise-plan", "read").body?.result) === "pass", "restored");
+
+const decided = spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), "decide", "raise-plan", "--venture", venture, "--workspace", ws, "--by", "Ada Fixture", "--confirm", "raise-plan", "--answer", "Fixture answer, not a raise.", "--json"], { encoding: "utf8" });
+const decidedPlan = call("decisions/raise-plan", "read").body?.result;
+check("Checks: decide with --confirm settles the plan and it passes",
+  decided.status === 0 && decidedPlan?.status === "decided" && decidedPlan?.provenance?.approved_by === "Ada Fixture" && planCheck(decidedPlan) === "pass",
+  decided.stderr.trim() || planCheck(decidedPlan));
 
 const signed = call("governance/ownership", "write", {
   as: "person",
