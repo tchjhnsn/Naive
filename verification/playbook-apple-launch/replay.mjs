@@ -73,6 +73,7 @@ Fill it, flip its switch, and leave it. The switch ends the boil.
 It is still being built, so there is nothing to buy yet.
 `);
 const cleanDemo = narrative(`# Show the product doing its job
+description: Open on a cold kitchen and a cup that is still empty.
 job: Fill it and start it, so the room sees water heat for tea.
 technology: Flip the switch. The room hears it end the boil on its own.
 status: Say it is still being built, so nothing is for sale today.
@@ -108,6 +109,15 @@ function support(card, demoBody, pricingFound) {
 }
 function marks(bodies) {
   return bodies.filter((b) => MARK.test(b.replace(/^---\n[\s\S]*?\n---\n?/, "")));
+}
+
+const VARIANTS = ["operations/marketing/content/launch-narrative.mdx", "operations/marketing/content/launch-demo.mdx"];
+function sitemapCheck(pages, productFile, before = []) {
+  const launch = pages.find((p) => p.path === "/launch");
+  return !!launch
+    && launch.sections?.map((s) => s.variant).join() === VARIANTS.join()
+    && launch.sections.every((s) => s.source?.file === productFile)
+    && before.every((b) => pages.some((p) => p.path === b.path));
 }
 
 function launchPage(id) {
@@ -260,6 +270,8 @@ warranty: Promise a guarantee the card does not hold.
 
   putContent(dir, "launch-demo.mdx", cleanDemo);
   expect("the clean demo passes support", support(card.result, cleanDemo, false).pass === true, support(card.result, cleanDemo, false));
+  expect("the clean demo opens on the situation beat", beats(cleanDemo)[0].startsWith("description: "), beats(cleanDemo)[0]);
+  expect("a situation field fails support", support(card.result, cleanDemo.replace("description: Open", "situation: Open"), false).pass === false);
 
   const marked = narrative("Think different about boiling water.\n");
   expect("Think different fails the mark check", marks([marked]).length === 1);
@@ -275,7 +287,12 @@ warranty: Promise a guarantee the card does not hold.
   expect("sitemap write of the launch page succeeds", created.ok, created.error);
   const mapped = await go(dir, "marketing/sitemap", "read");
   const pages = mapped.result?.pages ?? [];
-  expect("the new sitemap has /launch and both variants", mapped.ok && pages.some((p) => p.path === "/launch" && p.sections?.every((s) => s.source?.file === "product/kettle.json") && p.sections?.map((s) => s.variant).join() === "operations/marketing/content/launch-narrative.mdx,operations/marketing/content/launch-demo.mdx"), mapped.error ?? pages);
+  expect("the new sitemap passes the sitemap check", mapped.ok && sitemapCheck(pages, "product/kettle.json"), mapped.error ?? pages);
+  expect("the sitemap check fails with no /launch page", sitemapCheck([], "product/kettle.json") === false);
+  const oneVariant = launchPage("kettle");
+  oneVariant.sections = oneVariant.sections.slice(0, 1);
+  expect("the sitemap check fails with a variant missing", sitemapCheck([oneVariant], "product/kettle.json") === false);
+  expect("the sitemap check fails when a section cites another file", sitemapCheck([launchPage("other")], "product/kettle.json") === false);
 
   rmSync(dir, { recursive: true, force: true });
 }
@@ -293,6 +310,8 @@ warranty: Promise a guarantee the card does not hold.
   const after = await go(dir, "marketing/sitemap", "read");
   const paths = (after.result?.pages ?? []).map((p) => p.path).sort();
   expect("the home page is still there beside /launch", after.ok && paths.join() === "/,/launch", paths);
+  expect("the sitemap check passes with the earlier page kept", sitemapCheck(after.result?.pages ?? [], "product/kettle.json", before.result?.pages) === true);
+  expect("the sitemap check fails when an earlier page is dropped", sitemapCheck([launchPage("kettle")], "product/kettle.json", before.result?.pages) === false);
   rmSync(dir, { recursive: true, force: true });
 }
 

@@ -113,6 +113,7 @@ The body is a title line and then one beat per line:
 
 ```text
 # Show the product doing its job
+description: <the situation, the same one as paragraph 2 of the narrative>
 job: <what the presenter does, and what the audience should see, from job>
 technology: <the next beat, only if the card has technology>
 status: <available, or not, from status>
@@ -120,7 +121,7 @@ status: <available, or not, from status>
 
 A beat is a line `field: words`. The field is `job`, `technology`, `description`, `offering`, `status`, `market`, or `name`, and only when that field is on the card and not empty. The field `pricing` is allowed only when step 4 found a record. Any other field fails the support check.
 
-The order is fixed: the situation, then the product doing the job, then availability. Add one fallback beat on the same field as the live path, for the case where the live path fails. The fallback shows the same job. It does not show a result the product does not produce. Keep each beat under ten words of the product file's own sentences.
+The order is fixed: the situation, then the product doing the job, then availability. The situation beat uses the field `description`, or `job` when the card has no description, because a beat's field names the card field that supports it. There is no `situation` field, and the support check fails one. Add one fallback beat on the same field as the live path, for the case where the live path fails. The fallback shows the same job. It does not show a result the product does not produce. Keep each beat under ten words of the product file's own sentences.
 
 ### 7. Point the sitemap at both files
 
@@ -151,7 +152,7 @@ The page you add:
 
 ## Checks
 
-The launch worked when all four of these pass. Each one can fail, and a failure means it is not done.
+The launch worked when all five of these pass. Each one can fail, and a failure means it is not done.
 
 ### Public gate
 
@@ -183,4 +184,4 @@ On the narrative body and the demo body, fail if any of these appear as words, i
 
 route: marketing/sitemap action: read
 
-Pass when a page with path `/launch` has the two variant paths from steps 5 and 6, each section's `source.file` is the product file, and every page that was there before step 7 is still there.
+Pass when a page with path `/launch` has the two variant paths from steps 5 and 6, each section's `source.file` is the product file, and every page that was there before step 7 is still there. Fail when the page is missing, a variant is missing, a section cites another file, or an earlier page is gone. No route computes this check.
