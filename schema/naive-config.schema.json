@@ -237,6 +237,28 @@
         }
       }
     },
+    "customers_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "kits": {
       "type": "array",
       "items": {
