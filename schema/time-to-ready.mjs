@@ -16,6 +16,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { needNow } from "./need-now.mjs";
 import { ventureFile } from "./venture-paths.mjs";
+import { exitCriteria } from "./canonical.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const day = (d) => d ? d.slice(0, 10) : null;
@@ -50,13 +51,13 @@ export function timeToReady(dir) {
   const nn = needNow(dir);
   const products = where("product").map((f) => ({ f, p: load(ventureFile(dir, f)) }));
   const offered = products.filter(({ p }) => p.status === "live");
-  const telosFile = where("telos")[0];
-  const telos = telosFile ? load(ventureFile(dir, telosFile)) : null;
+  // The next phase's exit criteria, canonical or (unmigrated) the telos's, read through schema/canonical.mjs.
+  const nextExit = nn.next ? exitCriteria(dir, nn.next) : null;
   const conditions = {
     promise: v.core?.promise ? firstSeen(join(dir, "venture.json")) : null,
     product_offered: offered.length ? offered.map(({ f }) => firstSeen(ventureFile(dir, f))).sort()[0] : null,
     first_account: seen("account"),
-    next_exit_criteria: nn.next && telos?.phases?.some((p) => p.phase === nn.next) ? firstSeen(ventureFile(dir, telosFile)) : null,
+    next_exit_criteria: nextExit?.criteria.length && nextExit.file ? firstSeen(ventureFile(dir, nextExit.file)) : null,
   };
   const missing = Object.entries(conditions).filter(([, d]) => !d).map(([k]) => k);
   const runningOn = missing.length ? null : Object.values(conditions).sort().at(-1);
