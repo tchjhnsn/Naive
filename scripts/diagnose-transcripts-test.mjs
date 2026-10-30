@@ -1,10 +1,11 @@
 // Tests transcript diagnosis on fixture transcripts: only the human's words, secrets redacted, a cursor, one raw
 // source per run, matches against known frameworks, and the model pass off unless asked for.
 import assert from "node:assert/strict";
-import { utimesSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { utimesSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { diagnose, heuristicCandidates, humanText, isDue, sha256 } from "./diagnose-transcripts.mjs";
+import { diagnose, heuristicCandidates, humanText, isDue, reredactSources, sha256 } from "./diagnose-transcripts.mjs";
 import { redact } from "../schema/redact.mjs";
 
 const fixtures = new URL("./fixtures/transcripts", import.meta.url).pathname;
@@ -27,11 +28,30 @@ for (const [t, gone] of [
 assert.equal(redact('{"password": "fake"}'), '{"password": "[REDACTED:secret]"}', "a JSON value stays a JSON string");
 assert.equal(redact(redact("api_key = fake-1")), redact("api_key = fake-1"), "redacting twice changes nothing");
 assert.equal(redact("the compass: north"), "the compass: north", "an ordinary word before a colon is kept");
+// every shape the review found surviving (all values fake)
+for (const [t, gone] of [
+  ['{"clientSecret": "fakeVal9Qz"}', "fakeVal9Qz"], ['accessToken: "fakeVal9Qz"', "fakeVal9Qz"], ["dbPassword=fakeVal9Qz", "fakeVal9Qz"],
+  ["PGPASSWORD=fakeVal9Qz psql", "fakeVal9Qz"], ["AUTHTOKEN=fakeVal9Qz", "fakeVal9Qz"], ["passphrase: fakeVal9Qz", "fakeVal9Qz"], ["pass=fakeVal9Qz", "fakeVal9Qz"],
+  ["DATABASE_URL=postgres://admin:fakeVal9Qz@localhost:5432/app", "fakeVal9Qz"], ["redis://:fakeVal9Qz@cache.internal:6379", "fakeVal9Qz"],
+  ['{"Authorization": "Basic ZmFrZTpmYWtl"}', "ZmFrZTpmYWtl"], ["headers: { Authorization: 'Basic ZmFrZTpmYWtl' }", "ZmFrZTpmYWtl"],
+  ["Cookie: session=fakeVal9Qz", "fakeVal9Qz"], ["Set-Cookie: sid=fakeVal9Qz; Path=/", "fakeVal9Qz"],
+  ["mysql --password fakeVal9Qz", "fakeVal9Qz"], ["gh api --token fakeVal9Qz", "fakeVal9Qz"], ["curl -u admin:fakeVal9Qz https://x.example", "fakeVal9Qz"],
+  ["the password is fakeVal9Qz for now", "fakeVal9Qz"], ["password: fake horse battery staple", "battery"],
+  ["key AIza" + "A".repeat(35), "AIza"], ["glpat-" + "a".repeat(20), "glpat-"], ["hf_" + "a".repeat(34), "hf_"], ["whsec_" + "a".repeat(32), "whsec_"],
+  ["https://hooks.slack.com/services/TFAKE0000/BFAKE0000/" + "a".repeat(24), "TFAKE0000"], ["eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0." + "a".repeat(30), "eyJzdWIiOiIxIn0"],
+  ["-----BEGIN PGP PRIVATE KEY BLOCK-----\nfakebody\n-----END PGP PRIVATE KEY BLOCK-----", "fakebody"], ['{\\"password\\": \\"fake Val9Qz\\"}', "Val9Qz"],
+]) { const once = redact(t); assert.ok(!once.includes(gone) && once.includes("[REDACTED"), `${t} -> ${once}`); assert.equal(redact(once), once, `redacting twice: ${t}`); }
+for (const plain of ["tokens_in: 120", "secretary: Jane", "pass the salt", "our token is expired"]) assert.equal(redact(plain), plain);
 // shell lines the founder ran are not the founder's words
 assert.equal(humanText({ type: "user", message: { role: "user", content: "<bash-input>ls -la</bash-input><bash-stdout>secret.txt</bash-stdout><bash-stderr>warn</bash-stderr>keep the ledger" } }), "keep the ledger");
 assert.equal(humanText({ type: "user", message: { role: "user", content: "<bash-stdout>only output</bash-stdout>" } }), null);
+// nor is what an agent wrote: subagent reports and compact summaries arrive as user lines
+assert.equal(humanText({ type: "user", message: { role: "user", content: "<task-notification><result>agent output</result></task-notification>keep this" } }), "keep this");
+assert.equal(humanText({ type: "user", isCompactSummary: true, message: { role: "user", content: "This session is being continued" } }), null);
+assert.equal(humanText({ type: "user", isVisibleInTranscriptOnly: true, message: { role: "user", content: "a summary" } }), null);
+assert.equal(humanText({ type: "user", message: { role: "user", content: "<ide_selection>code</ide_selection><user-prompt-submit-hook>hook</user-prompt-submit-hook>mine" } }), "mine");
 
-const r = await diagnose({ root, dir, now: new Date("2026-10-30T02:00:00Z"), env: {}, tz: "UTC" });
+const r = await diagnose({ root, dir, all: true, now: new Date("2026-10-30T02:00:00Z"), env: {}, tz: "UTC" });
 assert.equal(r.messages, 2, "only the human's own messages: no assistant, tool result or meta lines");
 const out = join(root, "raw/sources/diagnosis-2026-10-30");
 const text = readFileSync(join(out, "text.md"), "utf8");
@@ -50,19 +70,19 @@ assert.deepEqual(readdirSync(root).sort(), [".naive", "raw", "venture.json"]);
 assert.equal(JSON.parse(readFileSync(join(root, ".naive/diagnose-cursor.json"), "utf8")).last_timestamp, "2026-10-29T10:02:00Z");
 
 // a second run reads nothing new and writes a separate draft
-const again = await diagnose({ root, dir, now: new Date("2026-10-30T03:00:00Z"), env: {}, tz: "UTC" });
+const again = await diagnose({ root, dir, all: true, now: new Date("2026-10-30T03:00:00Z"), env: {}, tz: "UTC" });
 assert.equal(again.messages, 0);
 assert.ok(existsSync(join(root, "raw/sources/diagnosis-2026-10-30-2")));
 
 // the model pass runs only with the flag, on redacted text
 const mod = join(root, "..", `${root.split("/").pop()}-model.mjs`);
 writeFileSync(mod, `export default async (ms) => { globalThis.__seen = ms; return [{ kind: "decision", quote: "decide on " + ${JSON.stringify(FAKE)} }]; };`);
-await assert.rejects(diagnose({ root, dir, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL: "1" } }), /MODULE/);
-const m = await diagnose({ root, dir, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL: "1", NAIVE_DIAGNOSE_MODEL_MODULE: mod }, tz: "UTC" });
+await assert.rejects(diagnose({ root, dir, all: true, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL: "1" } }), /MODULE/);
+const m = await diagnose({ root, dir, all: true, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL: "1", NAIVE_DIAGNOSE_MODEL_MODULE: mod }, tz: "UTC" });
 assert.ok(globalThis.__seen.every((x) => !x.text.includes(FAKE)), "the model sees redacted text only");
 assert.ok(m.candidates.some((c) => c.by === "model" && !c.quote.includes(FAKE)));
 delete globalThis.__seen;
-const off = await diagnose({ root, dir, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL_MODULE: mod } });
+const off = await diagnose({ root, dir, all: true, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL_MODULE: mod } });
 assert.ok(!off.candidates.some((c) => c.by === "model") && globalThis.__seen === undefined, "off by default");
 
 // v2: typed catches, matched against records, with conversation provenance and a threshold
@@ -159,4 +179,109 @@ assert.ok(readFileSync(join(convDir, "text.md"), "utf8").includes(fixed.sha256) 
 assert.equal(readFileSync(join(convDir, "messages.jsonl"), "utf8").split(snapshot.trim())[0], "", "messages that needed nothing more are untouched");
 // short decisions in reply to options only: a bare yes with no options before it is not one
 assert.equal(heuristicCandidates([{ text: "Yes, A.", file: "x", timestamp: "t", sha256: "0", after_options: false, answered: true }]).length, 0);
+
+// Fresh ventures for the checks below: one structured venture, with a sibling whose session must never be read.
+const fresh = () => {
+  const home = mkdtempSync(join(tmpdir(), "naive-diag3-"));
+  const v = join(home, "kettle"), other = join(home, "other"), t = join(home, "transcripts/-Users-fake-Documents-kettle");
+  mkdirSync(v); mkdirSync(other); mkdirSync(t, { recursive: true });
+  writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle", layout: "structured" }));
+  writeFileSync(join(other, "venture.json"), JSON.stringify({ id: "other" }));
+  return { home, v, other, t, dir: join(home, "transcripts") };
+};
+const says = (ts, text, cwd) => JSON.stringify({ type: "user", timestamp: ts, cwd, message: { role: "user", content: text } });
+const uuid = "e087c27d-08ac-4948-ad1a-b23d923db95e";
+
+// the venture it runs in, and every project only with all
+{
+  const { v, other, t, dir } = fresh();
+  writeFileSync(join(t, `${uuid}.jsonl`), [says("2026-10-28T15:00:00Z", "Let's go with the kettle plan today.", join(v, "codebase")), says("2026-10-28T15:01:00Z", "Let's go with the other venture's secret plan.", other)].join("\n") + "\n");
+  const scoped = await diagnose({ root: v, dir, now: new Date("2026-10-29T00:00:00Z"), env: {}, tz: "UTC" });
+  assert.equal(scoped.messages, 1, "a session from another venture is not read");
+  const sources = join(v, "k-base/raw/sources");
+  assert.ok(existsSync(join(sources, "conversations-2026-10-28/messages.jsonl")) && !existsSync(join(v, "raw")), "the structured layout: sources sit in k-base/raw/sources");
+  assert.ok(!readFileSync(join(sources, "conversations-2026-10-28/messages.jsonl"), "utf8").includes("secret plan"));
+  assert.equal(isDue({ root: v, dir, since: "2026-10-01T00:00:00Z", now: new Date("2026-10-28T15:02:00Z") }).tokens, 9, "the size check counts this venture only");
+  const wide = await diagnose({ root: v, dir, all: true, since: "2026-10-01T00:00:00Z", now: new Date("2026-10-29T01:00:00Z"), env: {}, tz: "UTC" });
+  assert.equal(wide.messages, 2, "all reads every project");
+}
+
+// a second run leaves citations on real-length paths alone
+{
+  const { v, t, dir } = fresh();
+  writeFileSync(join(t, `${uuid}.jsonl`), says("2026-10-28T15:00:00Z", "Let's go with the kettle plan today.", v) + "\n");
+  const first = await diagnose({ root: v, dir, now: new Date("2026-10-29T00:00:00Z"), env: {}, tz: "UTC" });
+  const conv = join(v, "k-base/raw/sources/conversations-2026-10-28/text.md");
+  const before = [readFileSync(conv, "utf8"), readFileSync(join(first.out, "text.md"), "utf8")];
+  assert.ok(before[0].includes(`${uuid}.jsonl`) && before[1].includes(`${uuid}.jsonl`));
+  const second = await diagnose({ root: v, dir, now: new Date("2026-10-29T01:00:00Z"), env: {}, tz: "UTC" });
+  assert.deepEqual(second.reredacted, [], "nothing to redact, so nothing changes");
+  assert.equal(readFileSync(conv, "utf8"), before[0]);
+  assert.equal(readFileSync(join(first.out, "text.md"), "utf8"), before[1]);
+}
+
+// a run that stops before the last write heals, and records' conversation citations move with the hash
+{
+  const { v } = fresh();
+  const src = join(v, "k-base/raw/sources/conversations-2026-10-28");
+  mkdirSync(src, { recursive: true });
+  const old = "we set api_key = fake-kept-too-long today", hash = sha256(old);
+  const record = join(v, "k-base/foundation/goals/launch.json");
+  mkdirSync(join(v, "k-base/foundation/goals"), { recursive: true });
+  writeFileSync(join(src, "messages.jsonl"), JSON.stringify({ file: `p/${uuid}.jsonl`, timestamp: "2026-10-28T09:00:00Z", sha256: hash, text: old }) + "\n");
+  writeFileSync(join(src, "catches.jsonl"), JSON.stringify({ kind: "idea", quote: "x", source: { file: "p", timestamp: "t", sha256: hash } }) + "\n");
+  writeFileSync(join(src, "text.md"), `## 2026-10-28T09:00:00Z (p/${uuid}.jsonl, sha256 ${hash})\n\n${old}\n`);
+  writeFileSync(record, JSON.stringify({ id: "launch", conversation: [{ file: "p", timestamp: "t", sha256: hash }] }, null, 2) + "\n");
+  mkdirSync(join(src, "messages.jsonl.tmp"));
+  assert.throws(() => reredactSources(v), "the last write fails");
+  rmSync(join(src, "messages.jsonl.tmp"), { recursive: true });
+  assert.ok(!readFileSync(join(src, "text.md"), "utf8").includes("fake-kept-too-long"));
+  reredactSources(v);
+  const kept = JSON.parse(readFileSync(join(src, "messages.jsonl"), "utf8"));
+  assert.ok(kept.sha256 !== hash && kept.sha256 === sha256(kept.text), "the message carries its new hash");
+  assert.equal(JSON.parse(readFileSync(join(src, "catches.jsonl"), "utf8")).source.sha256, kept.sha256, "the catch follows after the rerun");
+  assert.equal(JSON.parse(readFileSync(record, "utf8")).conversation[0].sha256, kept.sha256, "a record's citation follows");
+}
+
+// leftovers from a stopped run do not stop the next one
+{
+  const { v, t, dir } = fresh();
+  const sources = join(v, "k-base/raw/sources");
+  mkdirSync(join(sources, "conversations-2026-10-28"), { recursive: true });
+  writeFileSync(join(sources, "conversations-2026-10-28/source.json"), "{}");
+  mkdirSync(join(sources, ".tmp-conversations-2026-10-28-2"), { recursive: true });
+  writeFileSync(join(sources, ".tmp-conversations-2026-10-28-2/stale"), "x");
+  writeFileSync(join(t, `${uuid}.jsonl`), says("2026-10-28T15:00:00Z", "Let's go with the kettle plan today.", v) + "\n");
+  const r = await diagnose({ root: v, dir, now: new Date("2026-10-29T00:00:00Z"), env: {}, tz: "UTC" });
+  assert.deepEqual(r.conversations, ["conversations-2026-10-28-2"]);
+  assert.deepEqual(readdirSync(join(sources, "conversations-2026-10-28-2")).sort(), ["messages.jsonl", "source.json", "text.md"]);
+  assert.ok(!readdirSync(sources).some((d) => d.startsWith(".tmp-")), "no temporary folder is left");
+}
+
+// from a packed npm install, in a generated venture whose .gitignore keeps these sources out of git
+{
+  const repo = new URL("..", import.meta.url).pathname;
+  const pack = mkdtempSync(join(tmpdir(), "naive-diag-pack-"));
+  const env = { ...process.env, XDG_CONFIG_HOME: join(pack, ".config"), CREATE_VENTURE_PROMPTS: "" };
+  const p = spawnSync("npm", ["pack", "--silent", "--pack-destination", pack], { cwd: repo, encoding: "utf8" });
+  assert.equal(p.status, 0, p.stderr);
+  writeFileSync(join(pack, "package.json"), "{}");
+  const i = spawnSync("npm", ["install", "--offline", "--no-audit", "--no-fund", join(pack, p.stdout.trim())], { cwd: pack, encoding: "utf8" });
+  assert.equal(i.status, 0, i.stderr);
+  const naive = join(pack, "node_modules/.bin/naive");
+  const w = spawnSync(naive, ["workspace", "init", "ws", "--venture", "Kettle", "--skip-install"], { cwd: pack, env, encoding: "utf8" });
+  assert.equal(w.status, 0, w.stderr + w.stdout);
+  const venture = join(pack, "ws/kettle");
+  const log = join(pack, "logs");
+  mkdirSync(log);
+  writeFileSync(join(log, `${uuid}.jsonl`), says("2026-10-28T15:00:00Z", "Let's go with the kettle plan today.", venture) + "\n");
+  const d = spawnSync(naive, ["diagnose", "--dir", log], { cwd: venture, env, encoding: "utf8" });
+  assert.equal(d.status, 0, d.stderr + d.stdout);
+  assert.match(d.stdout, /read 1 of the founder's messages/);
+  const a = spawnSync(naive, ["activity", "--dir", log, "--json"], { cwd: venture, env, encoding: "utf8" });
+  assert.equal(a.status, 0, a.stderr + a.stdout);
+  const kept = readdirSync(join(venture, "k-base/raw/sources")).filter((f) => /^(?:conversations|diagnosis)-/.test(f));
+  assert.equal(kept.length, 2);
+  for (const f of kept) assert.equal(spawnSync("git", ["check-ignore", "-q", `k-base/raw/sources/${f}/text.md`], { cwd: venture }).status, 0, `${f} is ignored by git`);
+}
 console.log("transcript diagnosis: human words only, redacted first, cursor, one draft per run, model pass off by default; v2 catches, threshold, conversation provenance");

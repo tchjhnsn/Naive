@@ -2,10 +2,11 @@
 // Transcript diagnosis: find what the founder said they want (frameworks, playbooks, ideas, decisions) in their
 // own words in agent session transcripts, so items the model missed when answering can be picked up later.
 //
-//   naive diagnose [--since <iso>] [--dir <transcripts dir>] [--venture <dir>] [--json] [--if-due]
+//   naive diagnose [--since <iso>] [--dir <transcripts dir>] [--venture <dir>] [--all] [--json] [--if-due]
 //   node scripts/diagnose-transcripts.mjs [same flags]
 //
-// Reads Claude Code transcripts (*.jsonl under ~/.claude/projects unless --dir), keeps only the human's own
+// Reads Claude Code transcripts (*.jsonl under ~/.claude/projects unless --dir). Only sessions that ran in this
+// venture count: records never cross ventures, so reading every project needs --all. Keeps only the human's own
 // messages after the cursor (.naive/diagnose-cursor.json in the venture, else the workspace), REDACTS secrets and
 // emails before anything else touches the text, then finds candidates with heuristics and writes one raw source
 // draft per run: raw/sources/diagnosis-<date>/{source.json, text.md}. Each candidate says whether a matching
@@ -23,7 +24,7 @@
 // raw/sources/conversations-<date>/ (internal, never published), which records made from a catch can cite.
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -82,12 +83,12 @@ export function* transcriptFiles(dir) {
 
 // The human's own words in one transcript line, or null: no tool results, meta lines, commands or reminders.
 export function humanText(entry) {
-  if (entry?.type !== "user" || entry.isMeta || entry.isSidechain || entry.message?.role !== "user") return null;
+  if (entry?.type !== "user" || entry.isMeta || entry.isSidechain || entry.isCompactSummary || entry.isVisibleInTranscriptOnly || entry.message?.role !== "user") return null;
   const c = entry.message.content;
   const parts = typeof c === "string" ? [c] : Array.isArray(c) ? c.filter((b) => b?.type === "text").map((b) => b.text) : [];
   const text = parts.join("\n")
     .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "")
-    .replace(/<(command-[a-z-]+|local-command-[a-z-]+|bash-[a-z-]+)>[\s\S]*?<\/\1>/g, "")
+    .replace(/<(command-[a-z-]+|local-command-[a-z-]+|bash-[a-z-]+|task-notification|user-prompt-submit-hook|ide_[a-z_]+)>[\s\S]*?<\/\1>/g, "")
     .trim();
   return text || null;
 }
@@ -107,7 +108,16 @@ const parseLines = (file) => readFileSync(file, "utf8").split("\n").flatMap((lin
   try { return [JSON.parse(line)]; } catch { return []; }
 });
 
-export function readMessages(dir, since) {
+const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
+
+// Whether a session's working directory is the root's own: inside it, and not in a venture nested under it.
+export function sessionScope(root) {
+  const top = real(root), seen = new Map();
+  const own = (cwd) => { for (let d = resolve(cwd); ; d = dirname(d)) { if (real(d) === top) return true; if (existsSync(join(d, "venture.json")) || dirname(d) === d) return false; } };
+  return (cwd) => { if (typeof cwd !== "string") return false; if (!seen.has(cwd)) seen.set(cwd, own(cwd)); return seen.get(cwd); };
+}
+
+export function readMessages(dir, since, inScope = () => true) {
   const out = [];
   for (const file of transcriptFiles(dir)) {
     if (since && statSync(file).mtime.toISOString() < since) continue;
@@ -116,7 +126,7 @@ export function readMessages(dir, since) {
       const said = assistantText(entry);
       if (said) { lastAssistant = said; if (previous) previous.answered = true; continue; }
       const raw = humanText(entry);
-      if (!raw) continue;
+      if (!raw || !inScope(entry.cwd)) continue;
       const afterOptions = Boolean(lastAssistant && offersOptions(lastAssistant));
       lastAssistant = null;
       if (since && (entry.timestamp ?? "") <= since) { previous = null; continue; }
@@ -239,7 +249,8 @@ const cursorOf = (root) => { const f = join(root, ".naive/diagnose-cursor.json")
 
 // The cheap check: no redaction, no writes. Due when the founder's text since the cursor, at characters / 4, reaches
 // the threshold, or when a session that is new since the cursor started more than stale_hours ago.
-export function isDue({ root, dir, now = new Date(), since }) {
+export function isDue({ root, dir, now = new Date(), since, all = false }) {
+  const inScope = all ? () => true : sessionScope(root);
   const { threshold, stale_hours } = diagnoseConfig(root);
   const cursor = since ?? cursorOf(root);
   let chars = 0, stale = null;
@@ -248,7 +259,7 @@ export function isDue({ root, dir, now = new Date(), since }) {
     let first = null;
     for (const entry of parseLines(file)) {
       const t = humanText(entry);
-      if (!t) continue;
+      if (!t || !inScope(entry.cwd)) continue;
       first ??= entry.timestamp ?? null;
       if (!cursor || (entry.timestamp ?? "") > cursor) chars += t.length;
     }
@@ -263,31 +274,57 @@ export function isDue({ root, dir, now = new Date(), since }) {
 // today's patterns, so a secret an older pattern missed does not stay on disk. A message whose text changes gets
 // the sha256 of its new text, and every catch and text.md that cited the old hash is moved to the new one.
 export function reredactSources(root) {
-  const dir = join(root, "raw/sources");
+  const dir = sourcesDir(root);
   if (!existsSync(dir)) return [];
   const kept = readdirSync(dir).filter((d) => /^(?:conversations|diagnosis)-/.test(d)).map((d) => join(dir, d));
   const moved = new Map();
-  const rewrite = (file, fn) => { if (!existsSync(file)) return false; const was = readFileSync(file, "utf8"); const now = fn(was); if (now === was) return false; writeFileSync(file, now); return true; };
-  const jsonl = (fn) => (text) => text.split("\n").map((line) => { const o = line.trim() && readJson0(line); return o ? JSON.stringify(fn(o)) : line; }).join("\n");
   const changed = new Set();
-  for (const d of kept) if (rewrite(join(d, "messages.jsonl"), jsonl((m) => {
+  const rewrite = (file, fn) => { if (!existsSync(file)) return false; const was = readFileSync(file, "utf8"); const next = fn(was); if (next === was) return false; writeAtomic(file, next); return true; };
+  const jsonl = (fn) => (text) => text.split("\n").map((line) => { const o = line.trim() && readJson0(line); return o ? JSON.stringify(fn(o)) : line; }).join("\n");
+  const redactMessage = (m) => {
     const text = redact(m.text ?? "");
-    if (text !== m.text) { moved.set(m.sha256, sha256(text)); return { ...m, text, sha256: sha256(text) }; }
-    return m;
-  }))) changed.add(d);
+    if (text === m.text) return m;
+    moved.set(m.sha256, sha256(text));
+    return { ...m, text, sha256: sha256(text) };
+  };
+  // messages.jsonl is the only record of which hash became which, so it is written last: a run that stops
+  // earlier leaves it as it was, and the next run works out the same moves and finishes the citations.
+  const messages = kept.map((d) => join(d, "messages.jsonl")).filter(existsSync).map((file) => [file, readFileSync(file, "utf8")]).map(([file, was]) => [file, jsonl(redactMessage)(was)]);
   const remap = (ref) => (ref?.sha256 && moved.has(ref.sha256) ? { ...ref, sha256: moved.get(ref.sha256) } : ref);
-  // text.md cites messages by "sha256 <hex>", which the hex pattern would otherwise take for a secret.
-  const redactKeepingHashes = (t) => { const hs = []; return redact(t.replace(/\bsha256 ([0-9a-f]{12,64})\b/g, (_, h) => `sha256 \u0000${hs.push(h) - 1}\u0000`)).replace(/\u0000(\d+)\u0000/g, (_, i) => hs[i]); };
   const rehash = (text) => [...moved].reduce((t, [a, b]) => t.split(a).join(b).split(a.slice(0, 12)).join(b.slice(0, 12)), text);
   for (const d of kept) {
     if (rewrite(join(d, "catches.jsonl"), jsonl((c) => ({ ...c, quote: redact(c.quote ?? ""), source: remap(c.source), ...(c.sources ? { sources: c.sources.map(remap) } : {}) })))) changed.add(d);
-    if (rewrite(join(d, "text.md"), (t) => rehash(redactKeepingHashes(t)))) changed.add(d);
+    if (rewrite(join(d, "text.md"), (t) => rehash(redactKeepingCitations(t)))) changed.add(d);
   }
+  if (moved.size) {
+    const move = (o) => Array.isArray(o) ? o.map(move) : o && typeof o === "object" ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, k === "conversation" && Array.isArray(v) ? v.map(remap) : move(v)])) : o;
+    for (const f of walk(root)) if (f.endsWith(".json")) rewrite(f, (t) => ([...moved.keys()].some((h) => t.includes(h)) ? JSON.stringify(move(JSON.parse(t)), null, 2) + "\n" : t));
+  }
+  for (const [file, next] of messages) if (rewrite(file, () => next)) changed.add(dirname(file));
   return [...changed].map((d) => relative(root, d));
 }
 
+// A citation's path, or the transcripts folder in the header, is long enough to look like a base64 secret and its hash like a hex one, so those lines keep both.
+const CITATION = /^(?:The founder's own messages .+ redacted before reading\. .+|## \S+ \(.+\.jsonl, sha256 [0-9a-f]{64}\)|  - .+\.jsonl, \S+(?: timestamp)?, (?:heuristic|model)(?:, sha256 [0-9a-f]{12})?(?:; matches .*)?)$/;
+const redactKeepingCitations = (text) => text.split("\n").map((line) => (CITATION.test(line) ? line : redact(line))).join("\n");
+
 // The day's redacted founder messages as a raw source: raw/sources/conversations-<date>/. An existing folder gets no
 // new messages (they go in a new conversations-<date>-<n>); it changes only when reredactSources redacts it further.
+const sourcesDir = (root) => (existsSync(join(root, "venture.json")) ? ventureFile(root, "raw/sources") : join(root, "raw/sources"));
+const writeAtomic = (file, text) => { writeFileSync(`${file}.tmp`, text); renameSync(`${file}.tmp`, file); };
+
+// A raw source appears whole or not at all: it is built in a temporary folder and renamed into place, so a run
+// that stops partway leaves nothing that a later run would trip on.
+function writeSource(root, id, files) {
+  const out = join(sourcesDir(root), id), tmp = join(sourcesDir(root), `.tmp-${id}`);
+  if (!resolve(out).startsWith(resolve(root) + "/")) throw new Error("refusing to write outside the venture");
+  rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(tmp, { recursive: true });
+  for (const [name, text] of Object.entries(files)) writeFileSync(join(tmp, name), text);
+  renameSync(tmp, out);
+  return out;
+}
+
 export function writeConversations(root, messages, tz) {
   const byDay = new Map();
   for (const m of messages) {
@@ -296,34 +333,35 @@ export function writeConversations(root, messages, tz) {
     if (!byDay.has(day)) byDay.set(day, []);
     byDay.get(day).push(m);
   }
+  const sources = sourcesDir(root);
   const written = [];
   for (const [day, list] of [...byDay].sort()) {
     const kept = new Set();
     let id = `conversations-${day}`;
-    for (let n = 2; existsSync(join(root, "raw/sources", id)); n++) {
-      for (const line of (readFileSync(join(root, "raw/sources", id, "messages.jsonl"), "utf8").split("\n"))) if (line.trim()) kept.add(`${readJson0(line)?.sha256}|${readJson0(line)?.timestamp}`);
+    for (let n = 2; existsSync(join(sources, id)); n++) {
+      const file = join(sources, id, "messages.jsonl");
+      for (const line of existsSync(file) ? readFileSync(file, "utf8").split("\n") : []) if (line.trim()) kept.add(`${readJson0(line)?.sha256}|${readJson0(line)?.timestamp}`);
       id = `conversations-${day}-${n}`;
     }
     const fresh = list.filter((m) => !kept.has(`${m.sha256}|${m.timestamp}`)).sort((a, b) => String(a.timestamp).localeCompare(String(b.timestamp)));
     if (!fresh.length) continue;
-    const out = join(root, "raw/sources", id);
-    if (!resolve(out).startsWith(resolve(root) + "/")) throw new Error("refusing to write outside the venture");
-    mkdirSync(out, { recursive: true });
-    writeFileSync(join(out, "source.json"), JSON.stringify({ id, origin: "the founder's own messages in agent transcripts, redacted before writing (naive diagnose); internal, never published", title: `Founder conversations, ${day} (${tz})`, fetched: day }, null, 2) + "\n");
-    writeFileSync(join(out, "messages.jsonl"), fresh.map((m) => JSON.stringify({ file: m.file, timestamp: m.timestamp, sha256: m.sha256, text: m.text })).join("\n") + "\n");
-    writeFileSync(join(out, "text.md"), ["---", "type: raw-source", "source: generated", `created: ${day}`, "visibility: internal", "tags: [naive, conversations, transcripts]", "---", "", `# Founder conversations, ${day}`, "", "Redacted. Never edited except to redact further; never published.", "",
-      ...fresh.flatMap((m) => [`## ${m.timestamp} (${m.file}, sha256 ${m.sha256})`, "", m.text, ""])].join("\n"));
+    writeSource(root, id, {
+      "source.json": JSON.stringify({ id, origin: "the founder's own messages in agent transcripts, redacted before writing (naive diagnose); internal, never published", title: `Founder conversations, ${day} (${tz})`, fetched: day }, null, 2) + "\n",
+      "messages.jsonl": fresh.map((m) => JSON.stringify({ file: m.file, timestamp: m.timestamp, sha256: m.sha256, text: m.text })).join("\n") + "\n",
+      "text.md": ["---", "type: raw-source", "source: generated", `created: ${day}`, "visibility: internal", "tags: [naive, conversations, transcripts]", "---", "", `# Founder conversations, ${day}`, "", "Redacted. Never edited except to redact further; never published.", "",
+      ...fresh.flatMap((m) => [`## ${m.timestamp} (${m.file}, sha256 ${m.sha256})`, "", m.text, ""])].join("\n"),
+    });
     written.push(id);
   }
   return written;
 }
 const readJson0 = (line) => { try { return JSON.parse(line); } catch { return null; } };
 
-export async function diagnose({ root, dir, since, now = new Date(), env = process.env, tz = zoneOf(root) }) {
+export async function diagnose({ root, dir, since, now = new Date(), env = process.env, tz = zoneOf(root), all = false }) {
   const cursorFile = join(root, ".naive/diagnose-cursor.json");
   const cursor = since ?? cursorOf(root);
   const reredacted = reredactSources(root);
-  const messages = readMessages(dir, cursor);
+  const messages = readMessages(dir, cursor, all ? undefined : sessionScope(root));
   let candidates = heuristicCandidates(messages);
   if (env.NAIVE_DIAGNOSE_MODEL === "1") {
     if (!env.NAIVE_DIAGNOSE_MODEL_MODULE) throw new Error("NAIVE_DIAGNOSE_MODEL=1 needs NAIVE_DIAGNOSE_MODEL_MODULE, a module that takes the redacted messages");
@@ -339,13 +377,12 @@ export async function diagnose({ root, dir, since, now = new Date(), env = proce
   const date = localDate(now, tz);
   const conversations = writeConversations(root, messages, tz);
   let id = `diagnosis-${date}`;
-  for (let n = 2; existsSync(join(root, "raw/sources", id)); n++) id = `diagnosis-${date}-${n}`;
-  const out = join(root, "raw/sources", id);
-  if (!resolve(out).startsWith(resolve(root) + "/")) throw new Error("refusing to write outside the venture");
-  mkdirSync(out, { recursive: true });
-  writeFileSync(join(out, "source.json"), JSON.stringify({ id, origin: "transcript diagnosis (naive diagnose): the founder's own messages, redacted", title: `Transcript diagnosis, ${date}`, fetched: date }, null, 2) + "\n");
-  writeFileSync(join(out, "text.md"), render({ candidates, date, since: cursor, dir, conversations }));
-  writeFileSync(join(out, "catches.jsonl"), candidates.map(({ kind, also, quote, status, matches, source, sources, asked, by }) => JSON.stringify({ kind, also, quote, status, matches, source, sources, asked, by })).join("\n") + (candidates.length ? "\n" : ""));
+  for (let n = 2; existsSync(join(sourcesDir(root), id)); n++) id = `diagnosis-${date}-${n}`;
+  const out = writeSource(root, id, {
+    "source.json": JSON.stringify({ id, origin: "transcript diagnosis (naive diagnose): the founder's own messages, redacted", title: `Transcript diagnosis, ${date}`, fetched: date }, null, 2) + "\n",
+    "text.md": render({ candidates, date, since: cursor, dir, conversations }),
+    "catches.jsonl": candidates.map(({ kind, also, quote, status, matches, source, sources, asked, by }) => JSON.stringify({ kind, also, quote, status, matches, source, sources, asked, by })).join("\n") + (candidates.length ? "\n" : ""),
+  });
   const last = messages.map((m) => m.timestamp).filter(Boolean).sort().at(-1) ?? cursor ?? now.toISOString();
   mkdirSync(dirname(cursorFile), { recursive: true });
   writeFileSync(cursorFile, JSON.stringify({ last_run: now.toISOString(), last_timestamp: last }, null, 2) + "\n");
@@ -367,11 +404,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!root) { console.error("no venture.json or workspace here or above: run naive diagnose inside a venture or workspace, or pass --venture <dir>"); process.exit(1); }
   const dir = resolve(opt("dir") ?? join(homedir(), ".claude/projects"));
   if (args.includes("--if-due")) {
-    const d = isDue({ root, dir, since: opt("since") });
+    const d = isDue({ root, dir, since: opt("since"), all: args.includes("--all") });
     if (!d.due) { if (args.includes("--json")) console.log(JSON.stringify(d)); process.exit(0); }
   }
   try {
-    const r = await diagnose({ root, dir, since: opt("since") });
+    const r = await diagnose({ root, dir, since: opt("since"), all: args.includes("--all") });
     if (args.includes("--json")) console.log(JSON.stringify({ out: r.out, messages: r.messages, candidates: r.candidates }, null, 2));
     else console.log(`read ${r.messages} of the founder's messages; ${r.candidates.length} candidates, ${r.candidates.filter((c) => !c.matches).length} with no record; wrote ${relative(root, r.out)}/{source.json, text.md, catches.jsonl}${r.conversations.length ? ` and ${r.conversations.map((c) => `raw/sources/${c}`).join(", ")}` : ""}`);
   } catch (e) { console.error(e.message); process.exit(1); }

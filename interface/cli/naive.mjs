@@ -40,7 +40,7 @@
 //   naive framework list | new <id> | check [<id>] | publish <id> --dry-run
 //                                                   the founder's own frameworks and playbooks in the workspace's frameworks/,
 //                                                   beside the built-in ones; publishing only packs a bundle for now
-//   naive diagnose [--since <iso>] [--dir <transcripts>]  find frameworks, playbooks, ideas and decisions in the founder's own
+//   naive diagnose [--since <iso>] [--dir <transcripts>] [--all]  find frameworks, playbooks, ideas and decisions in the founder's own
 //                                                   words in agent transcripts (redacted first) and draft them as a raw source;
 //                                                   --if-due runs it only past naive.config.json diagnose.threshold
 //   naive activity [--from <date>] [--to <date>] [--write]  time spent in each venture per day from transcript timestamps:
