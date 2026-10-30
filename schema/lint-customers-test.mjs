@@ -143,7 +143,7 @@ function venture(layout = "flat") {
   const badMode = run(v.dir);
   expect("a mode that is not fail-open or fail-closed keeps the default", badMode.status === 1 && rulesOf(badMode.body, "no-icp-match")[0].mode === "fail-open" && rulesOf(badMode.body, "promise-not-kept")[0].mode === "fail-closed");
   const text = cli(v.dir);
-  expect("without --json a fail-closed finding prints FAIL and exits 1", text.status === 1 && /FAIL  \[promise-not-kept\]/.test(text.stdout) && /WARN  \[no-icp-match\]/.test(text.stdout));
+  expect("without --json a fail-closed finding prints FAIL and exits 1", text.status === 1 && /FAIL {2}\[promise-not-kept\]/.test(text.stdout) && /WARN {2}\[no-icp-match\]/.test(text.stdout));
   v.drop();
 }
 
