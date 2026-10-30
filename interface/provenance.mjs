@@ -42,6 +42,8 @@ export function actingAgent(by) {
  * Appends one entry for a file just written: a path relative to the venture folder, or, for a
  * record in another source (EE-037), its address (<source>://<path>) with the content's sha256
  * and the source's version, commit and pull request.
+ * @param {string} dir
+ * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, source?: *, statement?: string }} entry
  */
 export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement }) {
   const prior = entries(dir);

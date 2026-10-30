@@ -12,6 +12,7 @@ import { join } from "node:path";
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
+/** @param {string} name @param {*} ok @param {*} [detail] */
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail).slice(0, 600)}`}`); if (!ok) failed++; };
 
 const ws = mkdtempSync(join(tmpdir(), "writes-test-"));

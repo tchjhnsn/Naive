@@ -80,7 +80,11 @@ export function notify(dir, { source, paths, version, at = now(), via = "framewo
 }
 
 /** Marks named files stale for a reason the caller already worked out (a merged decision's impact map,
- *  schema/impact.mjs), through the same marks notify() writes; returns the files marked. */
+ *  schema/impact.mjs), through the same marks notify() writes; returns the files marked.
+ * @param {string} dir
+ * @param {string[]} files
+ * @param {{ source?: string, paths?: string[], version?: string, reads?: string, via?: string, at?: string }} [opts]
+ */
 export function mark(dir, files, { source = LOCAL, paths = [], version, reads, via = "framework", at = now() } = {}) {
   files = [...new Set(files)].filter(Boolean);
   if (!files.length) return [];

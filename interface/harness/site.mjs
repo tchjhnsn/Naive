@@ -21,7 +21,10 @@ const run = (script, args, input) => new Promise((resolve) => {
   p.stdin.end(input ?? "");
 });
 
-/** Read, judge and score one site. Returns the presence result; writes it into the venture if given. */
+/**
+ * Read, judge and score one site. Returns the presence result; writes it into the venture if given.
+ * @param {string} url @param {{ venture?: string | null, flags?: Record<string, boolean>, pages?: number, log?: (m: string) => void }} [opts]
+ */
 export async function scan(url, { venture = null, flags = {}, pages = 10, log = () => {} } = {}) {
   const t0 = Date.now();
   const r = await run("platform/integrations/site.mjs", [url, "--pages", String(pages)]);

@@ -67,6 +67,7 @@ export const TOOLS = [
 let client = null; // the harness, as it named itself at initialize
 
 // notify sends a notification to the client; progress for a call that carries _meta.progressToken (N-5).
+/** @param {*} msg @param {(m: *) => void} [notify] */
 export async function handle(msg, notify = () => {}) {
   const { id, method, params = {} } = msg;
   const reply = (result) => ({ jsonrpc: "2.0", id, result });
@@ -83,7 +84,7 @@ export async function handle(msg, notify = () => {}) {
       const a = params.arguments ?? {};
       const token = params._meta?.progressToken;
       let step = 0;
-      const progress = token === undefined ? null : ({ progress: p, total, message }) => notify({ jsonrpc: "2.0", method: "notifications/progress", params: { progressToken: token, progress: Math.max(p ?? 0, ++step), ...(total ? { total } : {}), message } });
+      const progress = token === undefined ? null : /** @type {(p: { progress?: number, total?: number, message: string }) => void} */ (({ progress: p, total, message }) => notify({ jsonrpc: "2.0", method: "notifications/progress", params: { progressToken: token, progress: Math.max(p ?? 0, ++step), ...(total ? { total } : {}), message } }));
       let r;
       switch (params.name) {
         case "mentura_routes": r = { ok: true, result: a.group ? routes().filter((x) => x.groups.includes(`(${a.group})`)) : routes() }; break;
