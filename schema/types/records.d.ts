@@ -1933,6 +1933,14 @@ export type NaiveConfig = {
     version?: string;
     channel?: "stable" | "canary";
   };
+  /** Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open. */
+  customers_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
   /** Mentura kits whose automations this venture turns on */
   kits?: string[];
   /** The publish lint (schema/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived */

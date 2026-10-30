@@ -101,6 +101,7 @@ function promisesOf(customer) {
   return out;
 }
 
+/** @returns {{ status: string, file?: string, record?: any }} */
 function productByKey(dir, id) {
   for (const rel of [`product/${id}.json`, `products/${id}.json`]) {
     const got = readJson(dir, rel);
