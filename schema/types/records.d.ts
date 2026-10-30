@@ -1905,6 +1905,14 @@ export type NaiveConfig = {
     /** Checks that run but do not fail the route's check */
     warn?: string[];
   };
+  /** finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
+  finance_lint?: {
+    rules?: {
+      [key: string]: {
+        mode?: "fail-open" | "fail-closed";
+      };
+    };
+  };
   /** Thresholds by name: confidence (the gate's confidence routing), idea-map (when a System 1 answer becomes a tag) */
   thresholds?: {
     [key: string]: number;
@@ -3089,6 +3097,8 @@ export type ValidationPricing = {
   points?: {
     name: string;
     amount: number;
+    /** What it costs to deliver this point, in the same currency as amount. finance/lint warns when amount is below this cost. */
+    cost?: number;
     currency: string;
     period?: "once" | "day" | "week" | "month" | "year" | "use";
   }[];
