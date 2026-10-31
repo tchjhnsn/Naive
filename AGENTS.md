@@ -17,6 +17,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 | `governance/` | Company vault template, roles, decision rights, pillar skills |
 | `interface/` | Interfaces: the router (`router.mjs`) and the CLI, MCP server and HTTP API over it; the install skill; agent harnesses and the operator console |
 | `platform/` | The platform side (EE-041): connectors that reach a vendor (GitHub so far) and, later, hosting, integrations that call outside services and the template gallery. Everything else is framework; framework code never imports from here (`node schema/check-boundary.mjs`). See `platform/README.md` |
+| `console/` | The venture console (Mentura, platform side): a Next.js app that creates and works a venture in the browser through `console/lib/bridge.mjs`; not part of the npm package. See `console/README.md` |
 | `site/` | Naive's docs and marketing pages: a Nextra site on Next.js, unpublished (EE-034, EE-088); see `site/AGENTS.md` |
 | `docs/reference/` | Generated reference: `ROUTES.md`, every route a venture has |
 | `docs/design/` | The ecosystem's own domain and systems design |

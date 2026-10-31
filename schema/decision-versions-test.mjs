@@ -31,6 +31,23 @@ try {
   expect("merging writes the answer into applies_to", m1.ok && json("venture.json").core?.promise === "We help founders.", m1);
   expect("a version cannot be merged twice", !merge(v, "mission", { by: "Founder" }).ok);
 
+  const u = mkdtempSync(join(tmpdir(), "unverified-"));
+  mkdirSync(join(u, "marketing/decisions"), { recursive: true });
+  mkdirSync(join(u, "people"), { recursive: true });
+  writeFileSync(join(u, "venture.json"), readFileSync(join(v, "venture.json")));
+  writeFileSync(join(u, "people/people.json"), readFileSync(join(v, "people/people.json")));
+  const pu = propose(u, { at: "marketing", id: "mission", question: "What is the mission?", answer: "We help founders." }, { agentId: "cos" });
+  expect("the unverified venture's decision is proposed", pu.ok, pu);
+  const au = approve(u, "mission", { by: "Founder", via: "console", unverified: true });
+  const du = JSON.parse(readFileSync(join(u, F), "utf8"));
+  expect("an approval with no sign-in says the signer is unverified and claims no wording", au.ok && du.provenance.signer === "unverified" && !du.provenance.wording && du.provenance.via === "console", du.provenance);
+  const au2 = approve(u, "mission", { by: "Founder", answer: "We help solo founders." });
+  const du2 = JSON.parse(readFileSync(join(u, F), "utf8"));
+  expect("a signed-in approval after an unverified one drops the mark", au2.ok && !du2.provenance.signer && du2.provenance.wording === "own", du2.provenance);
+  const ru = rollback(u, "mission", 1, { by: "Founder" });
+  const dru = JSON.parse(readFileSync(join(u, F), "utf8"));
+  expect("a signed-in rollback to an unverified version drops the mark", ru.ok && !dru.provenance.signer, dru.provenance);
+  rmSync(u, { recursive: true, force: true });
   expect("re-approving the same wording is refused", !approve(v, "mission", { by: "Founder" }).ok);
   const a2 = approve(v, "mission", { by: "Founder", answer: "We help solo founders and small founding teams." });
   const d2 = json(F);
