@@ -421,6 +421,13 @@ function foundersOf(dir, del) {
   return out;
 }
 
+/** Who signs for the venture's founders: every founder it names, else its first person, else no one. */
+export function signers(dir) {
+  const founders = foundersOf(dir, delegationOf(dir));
+  const first = rosterOf(dir)[0];
+  return founders.size || !first ? founders : new Set([first.id, first.name].filter(Boolean));
+}
+
 /** The name setup acts as: the first founder the venture names, else its first person. */
 export function founderName(dir) {
   let del = null;
