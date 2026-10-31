@@ -65,6 +65,8 @@ import { packageSlots } from "./package-routes.mjs";
 import { routable } from "../schema/structure.mjs";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from schema/brand.mjs.
 import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
+// Investors lint hook: investors/lint (schema/lint-investors.mjs).
+import { investorsLintCommands } from "../schema/lint-investors.mjs";
 import { productCommands } from "../schema/lint-product.mjs";
 import { moneyCommands } from "../schema/lint-money.mjs";
 // Customers lint: a customer that matches no ICP, and a promise the product record does not keep.
@@ -181,6 +183,7 @@ function buildRoutes() {
   );
   out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (schema/caching.mjs).
   out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (schema/brand.mjs).
+  out.push(...investorsLintCommands(cmd)); // Investors lint hook: investors/lint (schema/lint-investors.mjs).
   out.push(...productCommands(cmd)); // Product lint hook: product/lint (schema/lint-product.mjs).
   out.push(...moneyCommands(cmd)); // Money lint: transfer decisions and account owners (schema/lint-money.mjs).
   out.push(...customersLintCommands(cmd)); // Customers lint: ICP match and promises read from product records by key.
