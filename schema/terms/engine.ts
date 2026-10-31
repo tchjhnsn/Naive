@@ -64,10 +64,13 @@ export function validTest<F extends Base>(t: Term<F>, cases: F[]): string[] {
   const out: string[] = [];
   const ids = t.props.map((p) => p.id);
   if (new Set(ids).size !== ids.length) out.push(`${t.id}: property ids repeat`);
-  for (const c of cases.slice(0, 2000)) {
+  // every case, not a prefix: a verdict that reads the label only in rare cases is still label-reading.
+  // The term's own label and id are among the labels tried, so a test that checks its own name is caught.
+  const labels = ["", "founder", "mentor", "friend", "nonsense", t.label, t.id];
+  for (const c of cases) {
     const a = JSON.stringify(run(t, c));
     if (a !== JSON.stringify(run(t, structuredClone(c)))) { out.push(`${t.id}: not deterministic`); break; }
-    if (["", "founder", "mentor", "friend", "nonsense"].some((label) => JSON.stringify(run(t, { ...c, label })) !== a)) { out.push(`${t.id}: the label changes a verdict`); break; }
+    if (labels.some((label) => JSON.stringify(run(t, { ...c, label })) !== a)) { out.push(`${t.id}: the label changes a verdict`); break; }
   }
   if (cases.some((c) => !c.confirmed && run(t, c).pass)) out.push(`${t.id}: unconfirmed facts pass`);
   if (!cases.some((c) => run(t, c).pass)) out.push(`${t.id}: never passes (vacuous)`);
@@ -80,8 +83,15 @@ export function passSet<F extends Base>(t: Term<F>, cases: F[]): Set<number> {
   return new Set(cases.flatMap((c, i) => (run(t, c).pass ? [i] : [])));
 }
 
-/** A seeded generator, so a result reproduces. */
+/** A seeded generator, so a result reproduces (mulberry32, 32-bit integer arithmetic throughout).
+ *  The first version multiplied in floating point past 2^53, lost precision and fell into a cycle after
+ *  about 15,000 draws, so a 20,000-case run held as few as 875 distinct cases. engine-test checks this. */
 export function rng(seed: number): () => number {
-  let s = seed;
-  return () => ((s = (s * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(s ^ (s >>> 15), s | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 2 ** 32;
+  };
 }

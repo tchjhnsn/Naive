@@ -34,7 +34,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 4023,
+      "passes": 3972,
       "relations": {
         "co-founder": "has_a_kind",
         "early-employee": "overlap"
@@ -86,7 +86,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 2779,
+      "passes": 2671,
       "relations": {
         "founder": "is_a",
         "early-employee": "overlap"
@@ -136,7 +136,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 3459,
+      "passes": 3318,
       "relations": {
         "founder": "overlap",
         "co-founder": "overlap"
@@ -192,7 +192,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 1120,
+      "passes": 900,
       "relations": {
         "coach": "overlap",
         "friend": "overlap"
@@ -249,7 +249,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 1289,
+      "passes": 1204,
       "relations": {
         "mentor": "overlap",
         "friend": "overlap"
@@ -307,7 +307,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 1074,
+      "passes": 1099,
       "relations": {
         "mentor": "overlap",
         "coach": "overlap"
@@ -364,7 +364,7 @@
       ],
       "rule": "U1 and U2, and any of U3, U4, U5",
       "valid": true,
-      "passes": 3681,
+      "passes": 3971,
       "relations": {
         "threshold-guardian": "overlap",
         "phase-gate": "overlap"
@@ -416,7 +416,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 1388,
+      "passes": 1437,
       "relations": {
         "unearned-candour": "overlap",
         "phase-gate": "has_a_kind"
@@ -468,7 +468,7 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 285,
+      "passes": 430,
       "relations": {
         "unearned-candour": "overlap",
         "threshold-guardian": "is_a"
