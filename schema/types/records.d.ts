@@ -3326,6 +3326,8 @@ export type VentureCore = {
   competence?: string;
   /** The short line you keep across campaigns. */
   tagline?: string;
+  /** The lifecycle playbook the venture follows; it sets the evidence that clears each phase gate. */
+  lifecycle_playbook?: string;
 };
 
 /** The roles a person can hold in a venture (governance/venture-template/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which. */
