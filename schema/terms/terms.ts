@@ -68,7 +68,7 @@ export const coach: Term<Relationship> = {
     { id: "C6", says: "sacred trust T1 to T5 hold", check: (f) => f.trust },
   ],
   sources: ["Mentor and coach doc, 2026-10-31", "ICF core competencies"],
-  predicts: { friend: "disjoint", mentor: "overlap" },
+  predicts: { friend: "overlap", mentor: "overlap" }, // Torian 2026-10-31: a friend can also be a coach
 };
 
 export const friend: Term<Relationship> = {
@@ -82,7 +82,7 @@ export const friend: Term<Relationship> = {
     { id: "FR5", says: "peers: neither holds authority by role", check: (f) => !f.authority },
   ],
   sources: ["Aristotle, Nicomachean Ethics VIII-IX (from memory, to check)"],
-  predicts: { mentor: "overlap", coach: "disjoint" },
+  predicts: { mentor: "overlap", coach: "overlap" },
 };
 
 export const unearnedCandour: Term<Encounter> = {

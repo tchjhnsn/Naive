@@ -252,9 +252,9 @@
       "predictions": [
         {
           "other": "friend",
-          "expected": "disjoint",
+          "expected": "overlap",
           "found": "overlap",
-          "confirmed": false
+          "confirmed": true
         },
         {
           "other": "mentor",
@@ -315,9 +315,9 @@
         },
         {
           "other": "coach",
-          "expected": "disjoint",
+          "expected": "overlap",
           "found": "overlap",
-          "confirmed": false
+          "confirmed": true
         }
       ],
       "lean": [],
