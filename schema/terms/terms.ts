@@ -1,0 +1,128 @@
+// The admitted and proposed terms. Each is defined from its own sources, then run through schema/terms/admit.ts.
+// Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
+
+import type { Term } from "./engine.ts";
+import type { Encounter, Membership, Relationship } from "./levels.ts";
+
+const evidenced = (f: Membership) => f.contributions.some((c) => c.evidenced);
+
+export const founder: Term<Membership> = {
+  id: "founder", label: "Founder", level: "membership", kind: "role",
+  meaning: "A person who brought a founding contribution to a venture at its founding, has a stake in it, and shows up in its record. A venture may have several.",
+  props: [
+    { id: "F1", says: "a person, or an entity whose owners trace to people", check: (f) => f.human },
+    { id: "F2", says: "there before the first hire, investment or paying customer", check: (f) => f.firstOutside === null || f.joined <= f.firstOutside },
+    { id: "F3", says: "brought a founding contribution, evidenced in provenance", check: evidenced },
+    { id: "F4", says: "has a stake: equity or a signed founder agreement", check: (f) => f.stake },
+    { id: "F5", says: "shows up in provenance through decisions or work", check: (f) => f.decisions >= 1 },
+  ],
+  sources: ["Founder suite doc, 2026-10-31", "Paul Graham, The 18 Mistakes That Kill Startups (2006)"],
+  lean: ["unconfirmed_not_founder", "unevidenced_not_founder"],
+};
+
+export const coFounder: Term<Membership> = {
+  ...founder, id: "co-founder", label: "Co-founder",
+  meaning: "A founder of a venture that has at least one other founder.",
+  props: [...founder.props, { id: "CF1", says: "another founder on the same venture", check: (f) => f.otherFounders >= 1 }],
+  lean: ["coFounder_isA_founder"],
+  predicts: { founder: "is_a" },
+};
+
+export const earlyEmployee: Term<Membership> = {
+  id: "early-employee", label: "Early employee", level: "membership", kind: "role",
+  meaning: "Someone with a stake and work in the venture who brought no idea, secret, ethos, mission or capital to its founding.",
+  props: [
+    { id: "F1", says: "a person", check: (f) => f.human },
+    { id: "F4", says: "has a stake", check: (f) => f.stake },
+    { id: "F5", says: "shows up in provenance", check: (f) => f.decisions >= 1 },
+    { id: "EE1", says: "brought no idea, secret, ethos, mission or capital", check: (f) => !f.contributions.some((c) => c.evidenced && !["technical", "network"].includes(c.kind)) },
+  ],
+  sources: ["Founder suite doc, 2026-10-31"],
+  predicts: { founder: "overlap" },
+};
+
+export const mentor: Term<Relationship> = {
+  id: "mentor", label: "Mentor", level: "relationship", kind: "role",
+  meaning: "Someone who has walked the path the other is on, helps the whole person over a long horizon under sacred trust, spends their own standing for them, and aims at their release.",
+  props: [
+    { id: "M1", says: "lived experience of the other's path, drawn on", check: (f) => f.livedPath },
+    { id: "M2", says: "whole-person, long horizon", check: (f) => f.wholePerson },
+    { id: "M3", says: "sacred trust T1 to T5 hold", check: (f) => f.trust },
+    { id: "M4", says: "directive allowed (a permission, never fails)", check: () => true, permission: true },
+    { id: "M5", says: "spends standing for the other at least once", check: (f) => f.spendsStanding },
+    { id: "M6", says: "aims at release: dependence falls", check: (f) => f.dependenceFalls },
+  ],
+  sources: ["Mentor and coach doc, 2026-10-31", "Kram, Mentoring at Work (1985)"],
+  predicts: { friend: "overlap" },
+};
+
+export const coach: Term<Relationship> = {
+  id: "coach", label: "Coach", level: "relationship", kind: "role",
+  meaning: "Someone who, under an explicit agreement, helps the client reach the client's own goal mostly by asking, with an accountability loop and sacred trust.",
+  props: [
+    { id: "C1", says: "explicit agreement: goal, success, duration", check: (f) => f.agreement && f.goalSetBy !== "helper" },
+    { id: "C2", says: "elicitive: most turns are questions or reflections", check: (f) => f.questionShare >= 0.5 },
+    { id: "C3", says: "process, not path (a permission, never fails)", check: () => true, permission: true },
+    { id: "C4", says: "commitments made and reviewed", check: (f) => f.commitmentsReviewed },
+    { id: "C5", says: "the client owns the goal and actions", check: (f) => f.goalSetBy !== "helper" },
+    { id: "C6", says: "sacred trust T1 to T5 hold", check: (f) => f.trust },
+  ],
+  sources: ["Mentor and coach doc, 2026-10-31", "ICF core competencies"],
+  predicts: { friend: "disjoint", mentor: "overlap" },
+};
+
+export const friend: Term<Relationship> = {
+  id: "friend", label: "Friend", level: "relationship", kind: "role",
+  meaning: "Two people who each wish the other well for the other's own sake, know it, and share life over time, as peers. Kind (utility, pleasure, character) is a facet, not a test.",
+  props: [
+    { id: "FR1", says: "goodwill for the other's sake, beyond exchange", check: (f) => f.goodwill },
+    { id: "FR2", says: "mutual and known", check: (f) => f.mutualKnown },
+    { id: "FR3", says: "time together: a shared history", check: (f) => f.sharedHistory },
+    { id: "FR4", says: "not only under a contract", check: (f) => !f.contractOnly },
+    { id: "FR5", says: "peers: neither holds authority by role", check: (f) => !f.authority },
+  ],
+  sources: ["Aristotle, Nicomachean Ethics VIII-IX (from memory, to check)"],
+  predicts: { mentor: "overlap", coach: "disjoint" },
+};
+
+export const unearnedCandour: Term<Encounter> = {
+  id: "unearned-candour", label: "Unearned candour", level: "encounter", kind: "act",
+  meaning: "Advice or judgement offered as candour about another person's path, when the speaker lacks standing, context or consent. An act in one encounter, not a role.",
+  props: [
+    { id: "U1", says: "framed as candour", check: (f) => f.framedAsCandour },
+    { id: "U2", says: "about the other's path", check: (f) => f.aboutOthersPath },
+    { id: "U3", says: "missing standing", check: (f) => !f.standing },
+    { id: "U4", says: "missing context: no inquiry first", check: (f) => !f.inquiredFirst },
+    { id: "U5", says: "missing consent", check: (f) => !f.consented },
+  ],
+  rule: (h) => h.U1 && h.U2 && (h.U3 || h.U4 || h.U5),
+  ruleSays: "U1 and U2, and any of U3, U4, U5",
+  sources: ["Unearned candour doc, 2026-10-31", "Schaerer et al. 2018, Advice Giving: A Subtle Pathway to Power"],
+  predicts: { "threshold-guardian": "overlap" },
+};
+
+export const thresholdGuardian: Term<Encounter> = {
+  id: "threshold-guardian", label: "Threshold guardian", level: "encounter", kind: "role",
+  meaning: "Whoever or whatever stands where someone crosses into a new world and tests whether they are ready. A role relative to one crossing; need not be a person.",
+  props: [
+    { id: "G1", says: "at a crossing into a new world", check: (f) => f.atCrossing },
+    { id: "G2", says: "tests or blocks, not helping outright", check: (f) => f.resists && !f.helpsOutright },
+    { id: "G3", says: "not the main opponent of the whole journey", check: (f) => !f.opposesJourney },
+    { id: "G4", says: "passable without destroying it", check: (f) => f.passableWithoutDestruction },
+    { id: "G5", says: "the role ends once the crossing is made", check: (f) => f.endsAfterCrossing },
+  ],
+  sources: ["Vogler, The Writer's Journey (secondary summaries)"],
+};
+
+export const phaseGate: Term<Encounter> = {
+  ...thresholdGuardian, id: "phase-gate", label: "Phase gate",
+  meaning: "The exit of a venture phase: it tests readiness through exit criteria, is passed by meeting them, and is not a person.",
+  props: [...thresholdGuardian.props,
+    { id: "PG1", says: "the crossing is a phase exit", check: (f) => f.phaseExit },
+    { id: "PG2", says: "not a person", check: (f) => !f.person }],
+  sources: ["Naive lifecycle gate (naive phase)", "Unearned candour doc, 2026-10-31 (prediction)"],
+  lean: ["phaseGate_isA_thresholdGuardian"],
+  predicts: { "threshold-guardian": "is_a" },
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate];

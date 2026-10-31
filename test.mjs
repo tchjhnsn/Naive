@@ -112,6 +112,8 @@ const steps = [
   ["the type gate fails on what it must catch", "node", ["schema/check-types-test.ts"]],
   ["founders before ventures: opaque ids, ideas, references, inspirations, _private/ secrets, only the founder confirms", "node", ["schema/founders-test.ts"]],
   ["founders: examples", "node", ["schema/founders.ts", "check", "schema/examples/workspace"]],
+  ["term engine: bad tests rejected, relations total, freezing notices change", "node", ["schema/terms/engine-test.ts"]],
+  ["every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node schema/terms/admit.ts)", "node", ["schema/terms/admit.ts", "--check"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
