@@ -163,7 +163,7 @@ const cheap = [
   ["docs/reference/ROUTES.md matches the kits (regenerate with node interface/router.mjs --md)", "node", ["interface/router.mjs", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
 ];
 
-// These write the same repo files: site/generated/venture-facts.json, site/artifact and the venture's lint-findings.jsonl.
+// The first two write the same repo files (site/generated/venture-facts.json, site/artifact). The third touched .naive in the venture.
 const exclusive = new Set([
   "publishing gate: field visibility, leak canaries, internal terms",
   "leak canaries: every internal record seeded, site facts and both artifacts built, only known leaks",
@@ -172,7 +172,7 @@ const exclusive = new Set([
 
 for (const name of exclusive) if (!steps.some(([n]) => n === name)) throw new Error(`no step named: ${name}`);
 
-const workers = Number(process.env.TEST_WORKERS) || availableParallelism();
+const workers = Math.max(1, Math.floor(Number(process.env.TEST_WORKERS) || availableParallelism()));
 let failed = 0;
 
 const run = ([, cmd, args, matches]) => new Promise((resolve) => {
