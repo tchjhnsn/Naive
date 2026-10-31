@@ -44,8 +44,8 @@ mkdirSync(join(dir, "section"));
 writeFileSync(join(dir, "section", "index.mdx"), "");
 expect("a README link does not fall back to .mdx", "[a](./onlymdx)\n", false, /the link points at nothing/);
 expect("an .mdx doc falls back to .mdx and index.mdx", "[a](./onlymdx) [b](./section)\n", true, null, ".mdx");
-const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\nschema/README.md\nREADME.md\n" }).stdout.trim().split("\n");
-const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md,schema/README.md,README.md";
+const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\nschema/README.md\nREADME.md\npackages/finance/playbooks/bessemer-saas-metrics.md\npackages/finance/playbooks/x/deep.md\nverification/lint-finance/README.md\n" }).stdout.trim().split("\n");
+const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md,schema/README.md,README.md,packages/finance/playbooks/bessemer-saas-metrics.md,verification/lint-finance/README.md";
 if (!scannedOk) failed++;
 console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
 const tree = join(dir, "tree");
@@ -54,6 +54,8 @@ for (const r of ["schema/README.md", "purpose/README.md", "purpose/deep/README.m
 const owedOf = (input) => spawnSync("node", ["schema/check-docs-claims.mjs", "--readmes", "--root", tree], { cwd: repo, encoding: "utf8", input }).stdout.trim();
 const owed = [
   ["code next to a README owes that README", "schema/x.mjs\n", "schema/README.md"],
+  ["a lint owes the schema README", "schema/lint-finance.mjs\n", "schema/README.md"],
+  ["a playbook with no README in its package owes none", "packages/finance/playbooks/bessemer-saas-metrics.md\n", ""],
   ["changing the README pays it", "schema/x.mjs\nschema/README.md\n", ""],
   ["the nearest README is the one owed", "purpose/deep/x.mjs\n", "purpose/deep/README.md"],
   ["code with no README in its top folder owes none", "interface/x.mjs\n", ""],
@@ -91,6 +93,6 @@ const codeOf = (changed) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$c
 check("the workflow's code is any non-Markdown file", codeOf("schema/notes.md\npurpose/x.mdx\ndocs/a.mjs") === "" && codeOf("schema/data.json\nschema/notes.md") === "schema/data.json", codeLine);
 const all = spawnSync("node", ["schema/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });
 if (all.status !== 0) failed++;
-console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}${all.stderr}`}`);
+console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, playbooks, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}${all.stderr}`}`);
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);
