@@ -478,8 +478,10 @@ export type DecisionRecord = {
     approved_at?: string;
     /** The venture's phase when it was approved */
     phase?: "discovery" | "validation" | "beachhead" | "scale" | "platform";
-    /** unverified: the approval came through a door with no sign-in (the venture console), so approved_by is the venture's founder by default, not a checked identity, and no wording is claimed */
-    signer?: "unverified";
+    /** unverified: the approval came through a door with no sign-in, so approved_by is the venture's founder by default, not a checked identity, and no wording is claimed. verified: the venture console checked the person's session, and signer_account names the account */
+    signer?: "unverified" | "verified";
+    /** The account a door with sign-in checked; set with signer: verified */
+    signer_account?: string;
     /** approved: the drafted wording as it was; changed: the approver altered it; own: the approver wrote it */
     wording?: "approved" | "changed" | "own";
     /** The decision class in governance/decision-rights.json under which the approver could decide, when authority was delegated */
@@ -2307,10 +2309,12 @@ export type ProvenanceEntry = {
   activity: "write" | "draft" | "accept" | "baseline" | "confirm" | "move" | "release" | "publish" | "rollback" | "merge";
   /** Who acted (prov:wasAttributedTo / prov:wasAssociatedWith) */
   agent: {
-    /** unverified: a door with no sign-in (the console) said a person acted; the id is a claimed name */
+    /** unverified: a door with no sign-in said a person acted; the id is a claimed name */
     kind: "person" | "agent" | "unverified";
     /** A person's name or handle, or an agent's role id from the team plan */
     id?: string;
+    /** The account a door with sign-in checked for this person */
+    account?: string;
     /** An AI agent's model */
     model?: string;
     /** A link or id for the session that acted */

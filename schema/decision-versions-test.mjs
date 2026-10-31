@@ -43,6 +43,9 @@ try {
   expect("an approval with no sign-in says the signer is unverified and claims no wording", au.ok && du.provenance.signer === "unverified" && !du.provenance.wording && du.provenance.via === "console", du.provenance);
   const au2 = approve(u, "mission", { by: "Founder", answer: "We help solo founders." });
   const du2 = JSON.parse(readFileSync(join(u, F), "utf8"));
+  const av = approve(u, "mission", { by: "Founder", via: "console", account: "acct-1", answer: "A checked answer" });
+  const dv = JSON.parse(readFileSync(join(u, F), "utf8"));
+  expect("a checked sign-in records the signer as verified with its account", av.ok && av.result.signer === "verified" && dv.provenance.signer === "verified" && dv.provenance.signer_account === "acct-1" && dv.provenance.wording === "own", dv.provenance);
   expect("a signed-in approval after an unverified one drops the mark", au2.ok && !du2.provenance.signer && du2.provenance.wording === "own", du2.provenance);
   const ru = rollback(u, "mission", 1, { by: "Founder" });
   const dru = JSON.parse(readFileSync(join(u, F), "utf8"));

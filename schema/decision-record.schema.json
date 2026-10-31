@@ -185,9 +185,14 @@
         },
         "signer": {
           "enum": [
-            "unverified"
+            "unverified",
+            "verified"
           ],
-          "description": "unverified: the approval came through a door with no sign-in (the venture console), so approved_by is the venture's founder by default, not a checked identity, and no wording is claimed"
+          "description": "unverified: the approval came through a door with no sign-in, so approved_by is the venture's founder by default, not a checked identity, and no wording is claimed. verified: the venture console checked the person's session, and signer_account names the account"
+        },
+        "signer_account": {
+          "type": "string",
+          "description": "The account a door with sign-in checked; set with signer: verified"
         },
         "wording": {
           "enum": [
