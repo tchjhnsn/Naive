@@ -1058,7 +1058,9 @@ export type FreshnessLog = {
     model?: string;
     session?: string;
     harness?: string;
-    via: "cli" | "mcp" | "api" | "router";
+    /** The account a door with sign-in checked for this person */
+    account?: string;
+    via: "cli" | "mcp" | "api" | "router" | "console";
   };
 };
 
