@@ -517,7 +517,7 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   if (!old) return { ok: false, error: `${id} has no version ${to}` };
   if (old.status !== "decided") return { ok: false, error: `${id} version ${to} was never decided; only a decided version can be restored` };
   const n = nextVersion(d);
-  const { signer: _claimed, ...restored } = old.provenance ?? {};
+  const { signer: _claimed, signer_account: _account, ...restored } = old.provenance ?? {};
   const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...restored, drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
   if (old.provenance?.reasons) out.reasons = old.provenance.reasons;
   else delete out.reasons;
@@ -530,11 +530,13 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
 
 /** A person approves a decision: as worded, or with their own answer. unverified marks an approval
  *  from a door with no sign-in: the records say the signer is unverified and claim no wording.
- *  @param {string} dir @param {string} id @param {{ by?: string, answer?: string, via?: string, note?: string, reasons?: object[], unverified?: boolean }} [opts] */
-export function approve(dir, id, { by, answer, via = "cli", note, reasons, unverified = false } = {}) {
+ *  account marks one from a door that checked a sign-in: the records name that account as the signer.
+ *  @param {string} dir @param {string} id @param {{ by?: string, answer?: string, via?: string, note?: string, reasons?: object[], unverified?: boolean, account?: string }} [opts] */
+export function approve(dir, id, { by, answer, via = "cli", note, reasons, unverified = false, account } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
+  if (unverified && account) return { ok: false, error: "an approval is unverified or names a checked account, not both" };
   let del;
   try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${e.message}: no one approves until it is fixed` }; }
   // Setup approves before anyone is recorded, so a venture that names no one has no roster to check.
@@ -566,14 +568,14 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons, unver
   const restated = new Set((reasons ?? []).map((x) => x.claim));
   const kept = (d.reasons ?? []).filter((x) => !restated.has(x.claim));
   const given = [...(d.versions?.length ? kept : stamp(dir, kept, { keep: false })), ...stamp(dir, reasons ?? [], { keep: false })];
-  const { reasons: _old, ...pv } = d.provenance ?? {};
+  const { reasons: _old, signer: _signer, signer_account: _account, ...pv } = d.provenance ?? {};
   const frozen = given.length ? given : null;
-  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, ...(unverified ? { signer: "unverified" } : { wording }), via, ...(frozen ? { reasons: frozen } : {}) } };
+  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, ...(unverified ? { signer: "unverified" } : { wording }), ...(account ? { signer: "verified", signer_account: account } : {}), via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv(unverified ? "unverified" : "person", via, { id: by }), note: note ?? (unverified ? `approved decision ${id} through ${via} with no sign-in: ${by} is unverified` : `approved decision ${id} (${wording})`) }));
-  return { ok: true, result: { decided: id, wording: unverified ? null : wording, ...(unverified ? { signer: "unverified" } : {}), phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv(unverified ? "unverified" : "person", via, { id: by, account }), note: note ?? (unverified ? `approved decision ${id} through ${via} with no sign-in: ${by} is unverified` : `approved decision ${id} (${wording})`) }));
+  return { ok: true, result: { decided: id, wording: unverified ? null : wording, ...(unverified ? { signer: "unverified" } : {}), ...(account ? { signer: "verified" } : {}), phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
 }
 
 /** The matrix: for each layer, the decisions that render now, wait, or come later, by phase. */

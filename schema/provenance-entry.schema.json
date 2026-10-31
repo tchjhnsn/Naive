@@ -59,11 +59,15 @@
             "agent",
             "unverified"
           ],
-          "description": "unverified: a door with no sign-in (the console) said a person acted; the id is a claimed name"
+          "description": "unverified: a door with no sign-in said a person acted; the id is a claimed name"
         },
         "id": {
           "type": "string",
           "description": "A person's name or handle, or an agent's role id from the team plan"
+        },
+        "account": {
+          "type": "string",
+          "description": "The account a door with sign-in checked for this person"
         },
         "model": {
           "type": "string",
@@ -86,6 +90,18 @@
             "console"
           ],
           "description": "The interface the write came through"
+        }
+      },
+      "if": {
+        "required": [
+          "account"
+        ]
+      },
+      "then": {
+        "properties": {
+          "kind": {
+            "const": "person"
+          }
         }
       }
     },

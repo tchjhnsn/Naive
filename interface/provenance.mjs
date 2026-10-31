@@ -29,12 +29,13 @@ export function agentFromEnv(kind, via, extra = {}) {
   return Object.fromEntries(Object.entries(a).filter(([, v]) => v));
 }
 
-/** The agent this process says is acting, when it is not the person named by: MENTURA_ACTOR=agent,
+/** The agent this process says is acting, when it is not the person named by: MENTURA_ACTOR other than person,
  *  MENTURA_MODEL, or a MENTURA_ACTOR_ID other than by. These are environment variables anyone can
  *  unset, so this catches an honest or careless agent; it is not signed identity. */
 export function actingAgent(by) {
   const e = process.env;
-  if (e.MENTURA_ACTOR === "agent" || e.MENTURA_MODEL) return e.MENTURA_ACTOR_ID ?? e.MENTURA_MODEL ?? "agent";
+  const said = e.MENTURA_ACTOR?.trim().toLowerCase();
+  if ((said && said !== "person") || e.MENTURA_MODEL) return e.MENTURA_ACTOR_ID ?? e.MENTURA_MODEL ?? "agent";
   return e.MENTURA_ACTOR_ID && e.MENTURA_ACTOR_ID !== by ? e.MENTURA_ACTOR_ID : null;
 }
 
