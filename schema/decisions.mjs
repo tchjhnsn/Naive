@@ -451,6 +451,11 @@ function notAPerson(dir, del, by, { rosterRequired }) {
   return people.has(by) ? null : `${by} is not a person in people/people.json or a founder in governance/delegation.json`;
 }
 
+/** Why by may not write as a person in this venture, or null: the check approve makes, for a door that writes records. */
+export function refusedPerson(dir, by) {
+  try { return notAPerson(dir, delegationOf(dir), by, { rosterRequired: false }); } catch (e) { return `${e.message}: no one writes until it is fixed`; }
+}
+
 /** Who may merge a decided version. A person may (with no grant, only the founder merges), and only a
  *  founder merges a one-way door. A role (an agent or a delegate acting as one) may only under a live
  *  delegation grant to that role that names may_merge and the decision's class, whose chain reaches the
