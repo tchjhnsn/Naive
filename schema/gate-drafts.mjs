@@ -103,16 +103,16 @@ export function pick(dir, draft, letter) {
  * After a person accepts a draft: removes every variant and the sidecar, and decides the variants decision.
  * @param {string} dir
  * @param {string} draft
- * @param {{ picked?: string, by?: string }} [opts]
+ * @param {{ picked?: string, by?: string, account?: string, via?: string }} [opts]
  *  @returns {{ picked: string, decision?: string, decided?: boolean, error?: string }}
  */
-export function settle(dir, draft, { picked = "a", by } = {}) {
+export function settle(dir, draft, { picked = "a", by, account, via } = {}) {
   const meta = sidecar(dir, draft);
   for (const v of meta?.variants ?? []) rmSync(ventureFile(dir, v.file), { force: true });
   rmSync(ventureFile(dir, draft), { force: true });
   rmSync(join(dir, sidecarOf(draft)), { force: true });
   if (!meta?.decision) return { picked };
-  const d = approve(dir, meta.decision, /** @type {Parameters<typeof approve>[2]} */ ({ by: by ?? process.env.MENTURA_PERSON ?? "founder", answer: picked, note: `accepted draft ${picked} of ${meta.route}` }));
+  const d = approve(dir, meta.decision, /** @type {Parameters<typeof approve>[2]} */ ({ by: by ?? process.env.MENTURA_PERSON ?? "founder", account, via, answer: picked, note: `accepted draft ${picked} of ${meta.route}` }));
   return { picked, decision: meta.decision, decided: d.ok, ...(d.ok ? {} : { error: d.error }) };
 }
 
