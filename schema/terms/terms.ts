@@ -7,7 +7,7 @@ import type { Encounter, Membership, Relationship } from "./levels.ts";
 const evidenced = (f: Membership) => f.contributions.some((c) => c.evidenced);
 
 export const founder: Term<Membership> = {
-  id: "founder", label: "Founder", level: "membership", kind: "role",
+  id: "founder", form: "word", label: "Founder", level: "membership", kind: "role",
   meaning: "A person who brought a founding contribution to a venture at its founding, has a stake in it, and shows up in its record. A venture may have several.",
   props: [
     { id: "F1", says: "a person, or an entity whose owners trace to people", check: (f) => f.human },
@@ -21,7 +21,7 @@ export const founder: Term<Membership> = {
 };
 
 export const coFounder: Term<Membership> = {
-  ...founder, id: "co-founder", label: "Co-founder",
+  ...founder, id: "co-founder", form: "word", label: "Co-founder",
   meaning: "A founder of a venture that has at least one other founder.",
   props: [...founder.props, { id: "CF1", says: "another founder on the same venture", check: (f) => f.otherFounders >= 1 }],
   lean: ["coFounder_isA_founder"],
@@ -29,7 +29,7 @@ export const coFounder: Term<Membership> = {
 };
 
 export const earlyEmployee: Term<Membership> = {
-  id: "early-employee", label: "Early employee", level: "membership", kind: "role",
+  id: "early-employee", form: "compound", label: "Early employee", level: "membership", kind: "role",
   meaning: "Someone with a stake and work in the venture who brought no idea, secret, ethos, mission or capital to its founding.",
   props: [
     { id: "F1", says: "a person", check: (f) => f.human },
@@ -42,7 +42,7 @@ export const earlyEmployee: Term<Membership> = {
 };
 
 export const mentor: Term<Relationship> = {
-  id: "mentor", label: "Mentor", level: "relationship", kind: "role",
+  id: "mentor", form: "word", label: "Mentor", level: "relationship", kind: "role",
   meaning: "Someone who has walked the path the other is on, helps the whole person over a long horizon under sacred trust, spends their own standing for them, and aims at their release.",
   props: [
     { id: "M1", says: "lived experience of the other's path, drawn on", check: (f) => f.livedPath },
@@ -57,7 +57,7 @@ export const mentor: Term<Relationship> = {
 };
 
 export const coach: Term<Relationship> = {
-  id: "coach", label: "Coach", level: "relationship", kind: "role",
+  id: "coach", form: "word", label: "Coach", level: "relationship", kind: "role",
   meaning: "Someone who, under an explicit agreement, helps the client reach the client's own goal mostly by asking, with an accountability loop and sacred trust.",
   props: [
     { id: "C1", says: "explicit agreement: goal, success, duration", check: (f) => f.agreement && f.goalSetBy !== "helper" },
@@ -72,7 +72,7 @@ export const coach: Term<Relationship> = {
 };
 
 export const friend: Term<Relationship> = {
-  id: "friend", label: "Friend", level: "relationship", kind: "role",
+  id: "friend", form: "word", label: "Friend", level: "relationship", kind: "role",
   meaning: "Two people who each wish the other well for the other's own sake, know it, and share life over time, as peers. Kind (utility, pleasure, character) is a facet, not a test.",
   props: [
     { id: "FR1", says: "goodwill for the other's sake, beyond exchange", check: (f) => f.goodwill },
@@ -86,7 +86,7 @@ export const friend: Term<Relationship> = {
 };
 
 export const unearnedCandour: Term<Encounter> = {
-  id: "unearned-candour", label: "Unearned candour", level: "encounter", kind: "act",
+  id: "unearned-candour", form: "compound", label: "Unearned candour", level: "encounter", kind: "act",
   meaning: "Advice or judgement offered as candour about another person's path, when the speaker lacks standing, context or consent. An act in one encounter, not a role.",
   props: [
     { id: "U1", says: "framed as candour", check: (f) => f.framedAsCandour },
@@ -102,7 +102,7 @@ export const unearnedCandour: Term<Encounter> = {
 };
 
 export const thresholdGuardian: Term<Encounter> = {
-  id: "threshold-guardian", label: "Threshold guardian", level: "encounter", kind: "role",
+  id: "threshold-guardian", form: "compound", label: "Threshold guardian", level: "encounter", kind: "role",
   meaning: "Whoever or whatever stands where someone crosses into a new world and tests whether they are ready. A role relative to one crossing; need not be a person.",
   props: [
     { id: "G1", says: "at a crossing into a new world", check: (f) => f.atCrossing },
@@ -115,7 +115,7 @@ export const thresholdGuardian: Term<Encounter> = {
 };
 
 export const phaseGate: Term<Encounter> = {
-  ...thresholdGuardian, id: "phase-gate", label: "Phase gate",
+  ...thresholdGuardian, id: "phase-gate", form: "compound", label: "Phase gate",
   meaning: "The exit of a venture phase: it tests readiness through exit criteria, is passed by meeting them, and is not a person.",
   props: [...thresholdGuardian.props,
     { id: "PG1", says: "the crossing is a phase exit", check: (f) => f.phaseExit },

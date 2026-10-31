@@ -4,6 +4,7 @@
     {
       "id": "founder",
       "label": "Founder",
+      "form": "word",
       "level": "membership",
       "kind": "role",
       "meaning": "A person who brought a founding contribution to a venture at its founding, has a stake in it, and shows up in its record. A venture may have several.",
@@ -51,6 +52,7 @@
     {
       "id": "co-founder",
       "label": "Co-founder",
+      "form": "word",
       "level": "membership",
       "kind": "role",
       "meaning": "A founder of a venture that has at least one other founder.",
@@ -108,6 +110,7 @@
     {
       "id": "early-employee",
       "label": "Early employee",
+      "form": "compound",
       "level": "membership",
       "kind": "role",
       "meaning": "Someone with a stake and work in the venture who brought no idea, secret, ethos, mission or capital to its founding.",
@@ -154,6 +157,7 @@
     {
       "id": "mentor",
       "label": "Mentor",
+      "form": "word",
       "level": "relationship",
       "kind": "role",
       "meaning": "Someone who has walked the path the other is on, helps the whole person over a long horizon under sacred trust, spends their own standing for them, and aims at their release.",
@@ -210,6 +214,7 @@
     {
       "id": "coach",
       "label": "Coach",
+      "form": "word",
       "level": "relationship",
       "kind": "role",
       "meaning": "Someone who, under an explicit agreement, helps the client reach the client's own goal mostly by asking, with an accountability loop and sacred trust.",
@@ -272,6 +277,7 @@
     {
       "id": "friend",
       "label": "Friend",
+      "form": "word",
       "level": "relationship",
       "kind": "role",
       "meaning": "Two people who each wish the other well for the other's own sake, know it, and share life over time, as peers. Kind (utility, pleasure, character) is a facet, not a test.",
@@ -328,6 +334,7 @@
     {
       "id": "unearned-candour",
       "label": "Unearned candour",
+      "form": "compound",
       "level": "encounter",
       "kind": "act",
       "meaning": "Advice or judgement offered as candour about another person's path, when the speaker lacks standing, context or consent. An act in one encounter, not a role.",
@@ -379,6 +386,7 @@
     {
       "id": "threshold-guardian",
       "label": "Threshold guardian",
+      "form": "compound",
       "level": "encounter",
       "kind": "role",
       "meaning": "Whoever or whatever stands where someone crosses into a new world and tests whether they are ready. A role relative to one crossing; need not be a person.",
@@ -422,6 +430,7 @@
     {
       "id": "phase-gate",
       "label": "Phase gate",
+      "form": "compound",
       "level": "encounter",
       "kind": "role",
       "meaning": "The exit of a venture phase: it tests readiness through exit criteria, is passed by meeting them, and is not a person.",

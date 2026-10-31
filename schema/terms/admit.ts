@@ -42,9 +42,11 @@ export function admitAll(): { record: unknown; problems: string[] } {
       const found = relations[other] ?? "cross-level: needs a lift";
       return { other, expected, found, confirmed: found === expected };
     });
+    if (t.form === "word" && /\s/.test(t.label)) problems.push(`${t.id}: label "${t.label}" has several words, so its form is not "word"`);
+    if (t.form !== "word" && !/\s/.test(t.label)) problems.push(`${t.id}: label "${t.label}" is one word, so its form is "word"`);
     for (const thm of t.lean ?? []) if (!new RegExp(`theorem\\s+${thm}\\b`).test(lean)) problems.push(`${t.id}: Lean theorem ${thm} is not in lean/Naive`);
     return {
-      id: t.id, label: t.label, level: t.level, kind: t.kind, meaning: t.meaning, status: "proposed",
+      id: t.id, label: t.label, form: t.form, level: t.level, kind: t.kind, meaning: t.meaning, status: "proposed",
       hash: freeze(t),
       properties: t.props.map((p) => ({ id: p.id, says: p.says, ...(p.permission ? { permission: true } : {}) })),
       rule: t.ruleSays ?? "every property, and P7 (confirmed facts)",

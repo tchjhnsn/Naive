@@ -16,6 +16,10 @@ export type Term<F extends Base> = {
   label: string;
   level: string;
   kind: "role" | "act";
+  /** Linguistic form of the label: one word, a compound (one concept, several words: "threshold guardian"),
+   *  a phrase (a free combination), or an idiom (meaning not built from its parts). The id is kebab-case for
+   *  machines only; prose always uses the label. */
+  form: "word" | "compound" | "phrase" | "idiom";
   meaning: string;
   props: Prop<F>[];
   /** How the properties combine; default: every property holds. P7 (confirmed) is always required on top. */
