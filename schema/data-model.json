@@ -109,6 +109,16 @@
       "note": "The root record of a venture. It names the profile but does not contain it"
     },
     {
+      "id": "venture-core",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/venture-core.schema.json",
+      "view_of": "venture",
+      "decision_class": "strategy-or-constitution",
+      "paths": [],
+      "note": "The founder's words in venture.json: mission (core.promise), competence (core.competence) and tagline (brand.tagline). A view of the venture record: a write touches only these fields, so id, name, parent, phase, owner and status stay out of reach. Only a person writes it, and each write confirms only the statements it names"
+    },
+    {
       "id": "venture-profile",
       "layer": "knowledge",
       "level": "venture",

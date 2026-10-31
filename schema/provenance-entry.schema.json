@@ -171,6 +171,11 @@
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
       "description": "confirm only: the id of the guiding statement confirmed (purpose/guiding-statements.json)"
+    },
+    "statements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "write to foundation/core only: the foundation statements this write confirms. Other statements in the same file stay as they were."
     }
   }
 }

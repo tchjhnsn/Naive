@@ -53,7 +53,8 @@ export function filesOf(dir, type) {
 }
 
 /** Whether a person confirmed one statement in a file: their write or accept of the file, or a
- *  confirm of that statement, after the last write by anyone else. */
+ *  confirm of that statement, after the last write by anyone else. A write that lists statements
+ *  (foundation/core shares venture.json with other statements) confirms only those. */
 export function confirmedIn(dir, file, id, seen = new Set()) {
   if (seen.has(file)) return false;
   seen.add(file);
@@ -62,7 +63,7 @@ export function confirmedIn(dir, file, id, seen = new Set()) {
   const draft = `_drafts/${file.replace(/\//g, "__")}.draft`;
   const es = readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => e.entity === file || e.entity === draft);
   const lastAgentWrite = es.findLastIndex((e) => e.entity === file && e.activity !== "confirm" && e.activity !== "move" && e.activity !== "release" && e.agent?.kind !== "person" && e.activity !== "accept");
-  const direct = es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm" && e.activity !== "move") || (e.activity === "confirm" && e.statement === id)));
+  const direct = es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm" && e.activity !== "move" && (!e.statements || e.statements.includes(id))) || (e.activity === "confirm" && e.statement === id)));
   if (direct) return true;
   return es.filter((e) => e.activity === "move" && e.entity === file).flatMap((e) => e.derived_from ?? []).some((p) => confirmedIn(dir, p, id, seen));
 }

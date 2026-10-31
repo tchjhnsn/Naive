@@ -353,6 +353,8 @@ export type DataModel = {
     schema: string | null;
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
+    /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
+    view_of?: string;
     /** The decision class (governance/venture-template/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032) */
     decision_class?: string;
     /** Globs from the repo root */
@@ -2351,6 +2353,8 @@ export type ProvenanceEntry = {
   hash: string;
   /** confirm only: the id of the guiding statement confirmed (purpose/guiding-statements.json) */
   statement?: string;
+  /** write to foundation/core only: the foundation statements this write confirms. Other statements in the same file stay as they were. */
+  statements?: string[];
 };
 
 /** The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by schema/check-assets.mjs. Version 0.x, unevaluated. */
@@ -3310,6 +3314,16 @@ export type ValidationTeam = {
     scored: string;
     note?: string;
   };
+};
+
+/** The fields of venture.json a founder writes through foundation/core. Anything else, such as id, name or phase, is refused. */
+export type VentureCore = {
+  /** What anyone can claim from this venture, in one or two sentences. */
+  promise?: string;
+  /** What you do well enough that the promise can be kept. */
+  competence?: string;
+  /** The short line you keep across campaigns. */
+  tagline?: string;
 };
 
 /** The roles a person can hold in a venture (governance/venture-template/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which. */
