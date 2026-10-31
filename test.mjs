@@ -202,6 +202,7 @@ const runAll = async (list, size) => {
   }));
 };
 
+console.log(`${workers} workers`);
 await runAll(cheap, workers);
 if (failed && process.env.CI) {
   console.log(`\n${failed} failing (cheap checks; the remaining steps did not run)`);
