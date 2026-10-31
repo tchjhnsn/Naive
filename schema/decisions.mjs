@@ -536,6 +536,7 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons, unver
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
+  if (unverified && account) return { ok: false, error: "an approval is unverified or names a checked account, not both" };
   let del;
   try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${e.message}: no one approves until it is fixed` }; }
   // Setup approves before anyone is recorded, so a venture that names no one has no roster to check.
@@ -567,7 +568,7 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons, unver
   const restated = new Set((reasons ?? []).map((x) => x.claim));
   const kept = (d.reasons ?? []).filter((x) => !restated.has(x.claim));
   const given = [...(d.versions?.length ? kept : stamp(dir, kept, { keep: false })), ...stamp(dir, reasons ?? [], { keep: false })];
-  const { reasons: _old, ...pv } = d.provenance ?? {};
+  const { reasons: _old, signer: _signer, signer_account: _account, ...pv } = d.provenance ?? {};
   const frozen = given.length ? given : null;
   const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, ...(unverified ? { signer: "unverified" } : { wording }), ...(account ? { signer: "verified", signer_account: account } : {}), via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);

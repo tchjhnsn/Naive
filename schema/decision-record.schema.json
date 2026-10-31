@@ -217,7 +217,43 @@
           },
           "description": "The reasons this version was approved on, frozen at approval with each local citation's sha256. If a cited file changes later the decision renders stale: the reason it was decided changed"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "signer"
+            ],
+            "properties": {
+              "signer": {
+                "const": "verified"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "signer_account"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "signer_account"
+            ]
+          },
+          "then": {
+            "required": [
+              "signer"
+            ],
+            "properties": {
+              "signer": {
+                "const": "verified"
+              }
+            }
+          }
+        }
+      ]
     },
     "outcomes": {
       "type": "array",

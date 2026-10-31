@@ -91,6 +91,18 @@
           ],
           "description": "The interface the write came through"
         }
+      },
+      "if": {
+        "required": [
+          "account"
+        ]
+      },
+      "then": {
+        "properties": {
+          "kind": {
+            "const": "person"
+          }
+        }
       }
     },
     "derived_from": {
