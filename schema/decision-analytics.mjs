@@ -43,7 +43,7 @@ export function analytics(dir, now) {
       id: d.id, question: d.question, kind: d.source === "draft" ? "acceptance" : d.source === "foundation" ? "foundation statement" : "decision",
       type: raw.type ?? titleOf(statement ?? record ?? d.id), function: fn ? PACKAGES.core[fn].title : "Venture", function_id: fn ?? "venture",
       state, render: d.render, decided_by: pv?.approved_by ?? null, decided_at: pv?.approved_at ?? null, phase: pv?.phase ?? null,
-      wording: state === "decided" ? (pv?.wording ?? "unknown") : null,
+      wording: state === "decided" ? (pv?.wording ?? (pv?.signer === "unverified" ? "unverified" : "unknown")) : null,
       outcomes: (raw.outcomes ?? []).map((o) => o.result ?? "pending"),
     };
   });

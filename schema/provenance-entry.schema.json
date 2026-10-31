@@ -56,8 +56,10 @@
         "kind": {
           "enum": [
             "person",
-            "agent"
-          ]
+            "agent",
+            "unverified"
+          ],
+          "description": "unverified: a door with no sign-in (the console) said a person acted; the id is a claimed name"
         },
         "id": {
           "type": "string",
@@ -80,7 +82,8 @@
             "cli",
             "mcp",
             "api",
-            "router"
+            "router",
+            "console"
           ],
           "description": "The interface the write came through"
         }

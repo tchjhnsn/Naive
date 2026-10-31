@@ -15,5 +15,5 @@
     "skipLibCheck": true
   },
   "include": ["**/*.mjs", "**/*.ts"],
-  "exclude": ["node_modules", "site", ".naive", "**/fixtures/**"]
+  "exclude": ["node_modules", "site", "console", ".naive", "**/fixtures/**"]
 }
