@@ -2629,6 +2629,43 @@ export type RouteAliases = {
   }[];
 };
 
+/** Naive's knowledge of the software development life cycle (R-26), after ISO/IEC/IEEE 12207: process groups, processes, activities and tasks, each task with the decision classes it needs, the phase it is first needed in and its owning role. It holds no execution detail: MAD owns how (R-27) and the agent router owns who does it (R-25). A task is referred to as <mad_module>/<activity>/<task>, the form MAD's method-request uses. Checked across files by schema/check-sdlc-catalog.ts. */
+export type SdlcCatalog = {
+  sdlc_catalog: "0.1.0";
+  version: string;
+  standard: string;
+  note?: string;
+  groups: {
+    id: "agreement" | "organizational-project-enabling" | "technical-management" | "technical";
+    name: string;
+    processes: {
+      id: string;
+      name: string;
+      clause: string;
+      /** Technical processes only: the MAD process module that routes its methods, or null when it is not MAD's (business or mission analysis is the product function's). */
+      mad_module?: "requirements" | "system-design" | "implementation" | "integration" | "verification" | "transition" | "validation" | "operation" | "maintenance" | null;
+      /** Other groups: the MAD layer whose questions cover how it is run. */
+      mad_layer?: "governance" | "delivery" | "software-engineering" | "automation";
+      owner_role: string;
+      note?: string;
+      activities?: {
+        id: "prepare" | "perform" | "manage-results";
+        name: string;
+        tasks: {
+          id: string;
+          name: string;
+          /** Decision classes the task needs, from the venture's decision rights. */
+          decision_classes: string[];
+          /** The earliest phase in which a venture building software needs this task. */
+          needed_from: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+          /** The role that owns the task's decisions, a role template id. */
+          owner_role: string;
+        }[];
+      }[];
+    }[];
+  }[];
+};
+
 /** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by operations/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated. */
 export type SitePresence = {
   version: string;

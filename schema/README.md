@@ -28,6 +28,7 @@ Status:
 | Nouns | `docs/ontology.json`, `schema/check-nouns.mjs` | defined | Standards first; retired nouns fail the check |
 | References | `schema/reference.schema.json`, `<layer>/references/references.json` | defined | Purpose has one so far; filled by `knowledge/skills/find-reference/` |
 | Data model | `schema/data-model.json`, `schema/data-model.schema.json`, `schema/check-data-model.mjs` | defined | Every record type, its owning layer and references; no JSON file may sit outside it |
+| SDLC catalog | `schema/sdlc-catalog.schema.json`, `knowledge/sdlc/catalog.json`, `schema/check-sdlc-catalog.ts` | defined | What software work exists, after ISO/IEC/IEEE 12207: processes, activities and tasks with their decision classes, phase and owning role (R-26). No execution detail; MAD routes how. See `knowledge/sdlc/README.md` |
 | Layer manifests | `schema/layer.schema.json`, `<layer>/layer.json`, system layer `schema/layer.json` | defined | Each layer's skills, record types it still owns, reads and writes; layer relationships are derived from them (EE-071). Venture packages are `packages/<name>/package.json` |
 
 ## Inside a venture, by layer

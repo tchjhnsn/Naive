@@ -108,6 +108,7 @@ const steps = [
   ["departments: instance", "node", ["schema/check-departments.mjs", "instance"]],
   ["departments: examples", "node", ["schema/check-departments.mjs", "schema/examples/workspace"]],
   ["framework/platform boundary", "node", ["schema/check-boundary.mjs"]],
+  ["sdlc catalog: decision classes, roles, clauses and task references", "node", ["schema/check-sdlc-catalog.ts"]],
   ["types (tsc checkJs, outside the pending folders)", "node", ["schema/check-types.ts"]],
   ["the type gate fails on what it must catch", "node", ["schema/check-types-test.ts"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],

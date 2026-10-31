@@ -21,6 +21,7 @@
     "knowledge-sources",
     "where-used",
     "freshness-profiles",
+    "sdlc-catalog",
     "freshness-log",
     "judgment",
     "systems-catalog",
@@ -37,7 +38,8 @@
   ],
   "checks": [
     "schema/check-sources.mjs",
-    "schema/check-where-used.mjs"
+    "schema/check-where-used.mjs",
+    "schema/check-sdlc-catalog.ts"
   ],
   "gaps": [
     "No check on the venture profile or design documents of its own; design-coverage (evidence) is the only one",
