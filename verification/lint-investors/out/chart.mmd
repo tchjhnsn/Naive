@@ -1,0 +1,71 @@
+---
+title: "An investor update, and what investors/lint flags"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: clean
+    lg1: draft
+    lg2: sent
+    lg3: flagged
+    lg4: fails
+    lg5: broken
+  }
+  class lg0 teal
+  class lg1 blue
+  class lg2 teal
+  class lg3 yellow
+  class lg4 orange
+  class lg5 tan
+  s0: Clean venture
+  s1: Raise has no use of funds
+  s2: A record is missing or broken
+  s3: Clean venture, a rule is fail-closed
+  s4: Draft update, unconfirmed numbers flagged
+  s5: Terms conflict with alignment
+  s6: Raise has no use of funds, run fails
+  s7: Draft update, numbers confirmed
+  s8: Sent update, unconfirmed numbers flagged
+  s9: Draft update, unconfirmed numbers, run fails
+  s10: Terms conflict with alignment, run fails
+  s11: Sent update, numbers confirmed
+  s12: Sent update, unconfirmed numbers, run fails
+  [*] --> s0
+  s0 --> s1: you record a raise with no use of funds
+  s0 --> s2: a record is missing or not valid JSON
+  s0 --> s3: you set a rule fail-closed [while nothing is flagged]
+  s0 --> s4: you draft an update with unconfirmed numbers
+  s0 --> s5: you record terms a principle forbids
+  s1 --> s0: you add a use of funds
+  s1 --> s2: the raise decision is not valid JSON
+  s1 --> s6: you set the raise rule fail-closed
+  s2 --> s0: you repair the record [the venture is clean again]
+  s3 --> s0: you set the rule fail-open
+  s4 --> s7: you confirm the numbers
+  s4 --> s8: you send the update
+  s4 --> s9: you set the update rule fail-closed
+  s5 --> s0: you change the terms to match alignment
+  s5 --> s10: you set the terms rule fail-closed
+  s2 --> s1: you repair the record [the raise finding returns]
+  s6 --> s1: you set the rule fail-open
+  s7 --> s11: you send the update
+  s8 --> s11: you confirm the numbers
+  s8 --> s12: you set the update rule fail-closed
+  s9 --> s4: you set the rule fail-open
+  s9 --> s7: you confirm the numbers
+  s9 --> s12: you send the update
+  s10 --> s5: you set the rule fail-open
+  s12 --> s8: you set the rule fail-open
+  s12 --> s11: you confirm the numbers
+  class s0 teal
+  class s1 yellow
+  class s2 tan
+  class s3 teal
+  class s4 yellow
+  class s5 yellow
+  class s6 orange
+  class s7 blue
+  class s8 yellow
+  class s9 orange
+  class s10 orange
+  class s11 teal
+  class s12 orange

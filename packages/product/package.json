@@ -42,7 +42,8 @@
   ],
   "templates": [],
   "checks": [
-    "schema/check-ventures.mjs"
+    "schema/check-ventures.mjs",
+    "schema/lint-product.mjs"
   ],
   "skill": {
     "id": "product-function",

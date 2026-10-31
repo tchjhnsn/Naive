@@ -1,0 +1,34 @@
+---
+title: "The showcase: entries loaded from their sources, then one filter"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: opening
+    lg1: all
+    lg2: filtered
+  }
+  class lg0 tan
+  class lg1 blue
+  class lg2 teal
+  s0: Opening
+  s1: Every entry, featured tiles first
+  s2: Examples
+  s3: One phase
+  s4: One piece on the records
+  s5: The recorded venture
+  [*] --> s0
+  s0 --> s1: the page loads each entry from its source
+  s1 --> s2: you show the examples
+  s1 --> s3: you choose a phase
+  s1 --> s4: you choose a piece
+  s1 --> s5: you show the recorded venture
+  s2 --> s1: you show every entry
+  s3 --> s1: you show every entry
+  s4 --> s1: you show every entry
+  s5 --> s1: you show every entry
+  class s0 tan
+  class s1 blue
+  class s2 teal
+  class s3 teal
+  class s4 teal
+  class s5 teal
