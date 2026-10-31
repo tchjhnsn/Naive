@@ -115,9 +115,7 @@
       "schema": "schema/venture-core.schema.json",
       "view_of": "venture",
       "decision_class": "strategy-or-constitution",
-      "paths": [
-        "instance/**/venture.json"
-      ],
+      "paths": [],
       "note": "The founder's words in venture.json: mission (core.promise), competence (core.competence) and tagline (brand.tagline). A view of the venture record: a write touches only these fields, so id, name, parent, phase, owner and status stay out of reach. Only a person writes it, and each write confirms only the statements it names"
     },
     {

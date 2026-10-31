@@ -204,6 +204,7 @@ if (cmd === "init") {
 }
 
 if (cmd === "accept") {
+  if (routes().find((r) => r.route === action)?.view_of) { console.error("not accepted: this route takes no drafts; a person writes it directly"); process.exit(1); }
   // The person at the keyboard accepts a draft: it is checked again and moved into place. The CLI
   // cannot tell a person from an agent running it, so the repository's review (a pull request a
   // person merges) remains the gate that holds; this makes the person's step explicit.

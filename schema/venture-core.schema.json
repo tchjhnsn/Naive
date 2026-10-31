@@ -5,9 +5,9 @@
   "type": "object",
   "minProperties": 1,
   "properties": {
-    "promise": { "type": "string", "minLength": 1, "description": "What anyone can claim from this venture, in one or two sentences." },
-    "competence": { "type": "string", "minLength": 1, "description": "What you do well enough that the promise can be kept." },
-    "tagline": { "type": "string", "minLength": 1, "description": "The short line you keep across campaigns." }
+    "promise": { "type": "string", "pattern": "\\S", "description": "What anyone can claim from this venture, in one or two sentences." },
+    "competence": { "type": "string", "pattern": "\\S", "description": "What you do well enough that the promise can be kept." },
+    "tagline": { "type": "string", "pattern": "\\S", "description": "The short line you keep across campaigns." }
   },
   "additionalProperties": false
 }

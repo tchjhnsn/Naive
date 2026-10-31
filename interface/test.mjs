@@ -53,6 +53,13 @@ expect("foundation/core refuses an empty value", !(await call({ venture: "tandem
 const coreWritten = await call({ venture: "tandem", route: "foundation/core", action: "write", actor: "person", input: { tagline: "Ride together" } });
 const coreRead = await call({ venture: "tandem", route: "foundation/core", action: "read", actor: "person" });
 expect("foundation/core writes its field and reads only its view", coreWritten.ok && coreRead.result.tagline === "Ride together" && !("id" in coreRead.result) && !("phase" in coreRead.result));
+const envAgent = spawnSync("node", [join(root, "interface/cli/mentura.mjs"), "foundation/core", "write", "--as", "person", "--venture", "tandem", "--input", '{"tagline":"Signed by a model"}'], { env: { ...process.env, MENTURA_WORKSPACE: process.env.MENTURA_WORKSPACE, MENTURA_ACTOR: "agent", MENTURA_MODEL: "m" }, encoding: "utf8" });
+expect("a declared agent saying --as person cannot write foundation/core", envAgent.status !== 0 && !readFileSync(join(tandem, "venture.json"), "utf8").includes("Signed by a model"));
+expect("no route claims venture.json as its file", !routes().some((r) => r.files?.includes("venture.json")));
+writeFileSync(join(tandem, "_drafts/venture.json.draft"), '{"tagline":"planted"}');
+const plantedAccept = spawnSync("node", [join(root, "interface/cli/mentura.mjs"), "accept", "foundation/core", "--venture", "tandem"], { env: process.env, encoding: "utf8" });
+expect("foundation/core takes no accept, so a planted draft signs nothing", plantedAccept.status !== 0 && readFileSync(join(tandem, "venture.json"), "utf8").includes('"id"'));
+rmSync(join(tandem, "_drafts/venture.json.draft"), { force: true });
 writeFileSync(join(tandem, "venture.json"), identityBefore);
 // The venture's naive.config.json gate (EE-073): a fail-closed route holds an agent's write, never a person's.
 writeFileSync(join(tandem, "naive.config.json"), JSON.stringify({ gate: { fail_closed: ["validation"] } }));

@@ -42,7 +42,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
-import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
+import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
 import { decisionFile, holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
@@ -147,7 +147,7 @@ function buildRoutes() {
         actions: ["read", "view", "layout", ...(writable ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     } else {
       out.push({ ...common, route: base, files: filesOf,
-        actions: ["read", "view", "layout", ...(writable && !filesOf[0].includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
+        actions: ["read", "view", "layout", ...(writable && !filesOf[0]?.includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     }
   }
   const cmd = (route, script, note, extra = {}) => ({ route, kind: "command", actions: ["run", "view", "layout"], script, groups: [], note, ...extra });
@@ -294,6 +294,7 @@ const PACKAGE_ROUTE = {
 
 // Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
 const fileFor = (r, params, dir) => {
+  if (r.view_of) return "venture.json";
   const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", params.id)) : r.files).filter((f) => !f.includes("*"));
   if (dir) {
     const hit = cands.find((f) => existsSync(ventureFile(dir, f)));
@@ -460,7 +461,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "read") {
     // Approvals live in the venture folder's sidecars, so a public reader of another source fails closed.
     if (actor === "public" && remote) return { ok: false, error: `the public reader reads only records in the venture's own folder; ${route} lives in ${src.id}` };
-    const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
+    const patterns = r.collection === "item" || r.view_of ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
       // a file named _* is never an item; routable: private _folders (P-22)
@@ -557,7 +558,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
     if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
     // Agent drafts are refused here because accepting one moves the whole file into place, and this draft holds only a view of it.
-    if (r.view_of && (actor !== "person" || remote || attrs.length)) return { ok: false, error: `only a person writes ${route}, in the venture's own folder; it holds part of ${file}` };
+    if (r.view_of && (actor !== "person" || actingAgent(provenance.agent?.id) || remote || attrs.length)) return { ok: false, error: `only a person writes ${route}, in the venture's own folder; it holds part of ${file}` };
     const gate = gateOf(r, dir);
     const text = JSON.stringify(input, null, 2) + "\n";
     // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
@@ -567,7 +568,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", tmp], { encoding: "utf8" });
     rmSync(scratch, { recursive: true, force: true });
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) };
-    const whole = r.view_of ? JSON.stringify(withCore(load(ventureFile(dir, file)), input), null, 2) + "\n" : null;
+    const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
+    const whole = base && JSON.stringify(withCore(JSON.parse(base), input), null, 2) + "\n";
     if (whole) {
       const held = mkdtempSync(join(tmpdir(), "mentura-write-")), copy = join(held, basename(file));
       writeFileSync(copy, whole);
@@ -646,7 +648,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Gate group hook (X-2): the held draft, the owner it was sent to and any variants kept side by side.
     let held2 = null;
     if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent });
-    else await store.write(file, recordText);
+    else {
+      if (base !== null && readFileSync(ventureFile(dir, file), "utf8") !== base) return { ok: false, error: `${file} changed while this was being checked, so nothing was written: try again` };
+      await store.write(file, recordText);
+    }
     const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write", r.view_of ? { statements: statementsIn(input) } : {});
     return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
   }

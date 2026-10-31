@@ -20,7 +20,7 @@ root = Path(__file__).resolve().parent.parent
 # Markdown records are validated by ee.mjs.
 model = json.loads((root / "schema/data-model.json").read_text())
 RULES = [(r["id"], r["schema"], r.get("form", "json"), r["paths"]) for r in model["records"]
-         if r["schema"] and not r.get("view_of") and r["schema"].startswith("schema/") and r.get("form", "json") in ("json", "json-list", "json-lines")]
+         if r["schema"] and r["schema"].startswith("schema/") and r.get("form", "json") in ("json", "json-list", "json-lines")]
 from referencing import Registry, Resource
 
 # Every schema is registered by its $id, so one may $ref another (or itself) by file name.
