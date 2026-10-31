@@ -51,11 +51,14 @@ console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs 
 const tree = join(dir, "tree");
 for (const d of ["schema", "purpose/deep", "interface"]) mkdirSync(join(tree, d), { recursive: true });
 for (const r of ["schema/README.md", "purpose/README.md", "purpose/deep/README.md"]) writeFileSync(join(tree, r), "");
+mkdirSync(join(tree, "purpose/deep/playbooks"), { recursive: true });
 const owedOf = (input) => spawnSync("node", ["schema/check-docs-claims.mjs", "--readmes", "--root", tree], { cwd: repo, encoding: "utf8", input }).stdout.trim();
 const owed = [
   ["code next to a README owes that README", "schema/x.mjs\n", "schema/README.md"],
   ["a lint owes the schema README", "schema/lint-finance.mjs\n", "schema/README.md"],
   ["a playbook with no README in its package owes none", "packages/finance/playbooks/bessemer-saas-metrics.md\n", ""],
+  ["a playbook JSON next to a README owes none", "purpose/deep/playbooks/first.json\n", ""],
+  ["a playbook schema is code and owes its README", "schema/playbook.schema.json\n", "schema/README.md"],
   ["changing the README pays it", "schema/x.mjs\nschema/README.md\n", ""],
   ["the nearest README is the one owed", "purpose/deep/x.mjs\n", "purpose/deep/README.md"],
   ["code with no README in its top folder owes none", "interface/x.mjs\n", ""],
@@ -67,7 +70,7 @@ for (const [name, input, want] of owed) {
   console.log(`${got === want ? "pass" : "FAIL"}  ${name}${got === want ? "" : `\n  want ${want || "(none)"}, got ${got || "(none)"}`}`);
 }
 const workflow = readFileSync(join(repo, ".github/workflows/docs-required.yml"), "utf8");
-const wired = workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --scanned') && workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --readmes');
+const wired = workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --scanned') && workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --readmes') && workflow.includes('echo "$changed" | node schema/check-docs-claims.mjs --code');
 if (!wired) failed++;
 console.log(`${wired ? "pass" : "FAIL"}  the docs-required workflow asks this linter which changes are docs`);
 const check = (name, good, detail) => { if (!good) failed++; console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n  ${detail}`}`); };
@@ -89,8 +92,9 @@ for (const [name, body, ok] of [
 ]) check(`the escape line ${ok ? "takes" : "rejects"} ${name}`, escapes(body) === ok, `pattern ${escapePattern}`);
 check("the failure message never offers the placeholder", message !== "" && !workflow.includes("'No docs change: <"), message);
 const codeLine = workflow.split("\n").find((l) => l.trim().startsWith("code="))?.trim() ?? "";
-const codeOf = (changed) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$code"`], { encoding: "utf8", env: { ...process.env, changed } }).stdout;
+const codeOf = (changed) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$code"`], { cwd: repo, encoding: "utf8", env: { ...process.env, changed } }).stdout.trim();
 check("the workflow's code is any non-Markdown file", codeOf("schema/notes.md\npurpose/x.mdx\ndocs/a.mjs") === "" && codeOf("schema/data.json\nschema/notes.md") === "schema/data.json", codeLine);
+check("the workflow's code skips playbooks but keeps playbook schemas", codeOf("purpose/playbooks/torians-playbook.json\npackages/finance/playbooks/x.json") === "" && codeOf("schema/playbook.schema.json") === "schema/playbook.schema.json", codeLine);
 const all = spawnSync("node", ["schema/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });
 if (all.status !== 0) failed++;
 console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, playbooks, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}${all.stderr}`}`);

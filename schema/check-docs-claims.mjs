@@ -14,6 +14,7 @@
 //
 //   node schema/check-docs-claims.mjs [--root <dir>] [files...]
 //   node schema/check-docs-claims.mjs --scanned < paths   prints the repo-relative paths this linter scans
+//   node schema/check-docs-claims.mjs --code < paths      prints the changed paths the docs-required check counts as code
 //   node schema/check-docs-claims.mjs --readmes < paths   prints the README.md nearest each changed code file that
 //                                                         the change leaves untouched (docs next to the code)
 // Prints each failure as file:line: claim: why. Exit 1 if any.
@@ -37,11 +38,16 @@ if (argv[0] === "--scanned") {
   process.exit(0);
 }
 // The README.md nearest a code file, searched up to its top-level folder (never the repo root README).
-const CODE = /^(schema|interface|packages|purpose)\/.*(?<!\.mdx?)$/;
+// Anything under a playbooks/ folder is content, not code (Torian's decision for now).
+const CODE = /^(schema|interface|packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
 const nearestReadme = (r) => {
   for (let d = r.split("/").slice(0, -1); d.length; d.pop()) if (existsSync(join(repo, ...d, "README.md"))) return [...d, "README.md"].join("/");
   return null;
 };
+if (argv[0] === "--code") {
+  for (const r of stdinPaths()) if (CODE.test(r)) console.log(r);
+  process.exit(0);
+}
 if (argv[0] === "--readmes") {
   const changed = stdinPaths();
   const owed = new Set(changed.filter((r) => CODE.test(r)).map(nearestReadme).filter((r) => r && !changed.includes(r)));

@@ -55,7 +55,7 @@ Status:
 
 ## Docs next to the code
 
-Every README in this repo, this one included, and every playbook under `packages/*/playbooks/` is checked by `schema/check-docs-claims.mjs`: the paths, commands and routes it names must exist and its relative Markdown links, inline or reference-style, must resolve (HTML `href` and `src` are not checked). A pull request that changes code here, meaning any file that is not `.md` or `.mdx`, owes this README an update, or a line in its body that starts with `No docs change: ` and gives a real reason (`.github/workflows/docs-required.yml`). New READMEs follow `docs/readme-template.md`.
+Every README in this repo, this one included, and every playbook under `packages/*/playbooks/` is checked by `schema/check-docs-claims.mjs`: the paths, commands and routes it names must exist and its relative Markdown links, inline or reference-style, must resolve (HTML `href` and `src` are not checked). A pull request that changes code here, meaning any file that is not `.md` or `.mdx` and not under a `playbooks/` folder, owes this README an update, or a line in its body that starts with `No docs change: ` and gives a real reason (`.github/workflows/docs-required.yml`). New READMEs follow `docs/readme-template.md`.
 
 ## Open reconciliations
 
