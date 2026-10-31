@@ -23,6 +23,19 @@ Feature: Problem assessment
       Then it lists "purpose/validation/problem.json" as missing
       And it offers to fill them in or to run as is
 
+    Scenario: A problem stored where the foundation/problem route writes it is still the problem
+      Given a problem record with a statement and a segment only, at foundation/problem.json
+      When the founder runs the assessment
+      Then it does not assess yet
+      And it lists "cost or workarounds" as missing
+      And it does not list "purpose/validation/problem.json" as missing
+
+    Scenario: A complete problem at foundation/problem.json is assessed
+      Given a complete problem record at foundation/problem.json
+      When the founder runs the assessment
+      Then it assesses
+      And the evidence supports "prototype"
+
     Scenario: Running as is assesses and still names what was missing
       Given a problem record with a statement and a segment only
       When the founder runs the assessment as is
