@@ -1,0 +1,19 @@
+{
+  "id": "p-0a0a0a0a",
+  "handle": "ada",
+  "created": "2026-10-31",
+  "verification": "self",
+  "ventures": [
+    { "venture": "ventures/tandem", "role": "founder", "since": "2026-10-31", "from_idea": "a-calendar-that-plans-for-you" }
+  ],
+  "profile": {
+    "summary": "An example founder, made up for the schema.",
+    "attributes": {
+      "strengths": [{ "text": "I see how the parts of a system fit", "type": "general" }],
+      "weaknesses": [{ "text": "I put off selling", "type": "venture-function", "function": "marketing-and-sales" }]
+    },
+    "confirmed": true
+  },
+  "drafted_by": { "kind": "agent", "id": "mentor" },
+  "confirmed_by": { "kind": "person", "id": "p-0a0a0a0a", "at": "2026-10-31" }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "startups-in-13-sentences",
+  "type": "post-weblog",
+  "title": "Startups in 13 Sentences",
+  "author": [{ "given": "Paul", "family": "Graham" }],
+  "issued": "2009-02",
+  "URL": "https://paulgraham.com/13sentences.html",
+  "why": "Made me look for a co-founder before building",
+  "ethos": ["pick good cofounders"],
+  "added_by": { "kind": "person", "id": "p-0a0a0a0a" }
+}
