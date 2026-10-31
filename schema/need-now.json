@@ -507,6 +507,16 @@
       },
       "why": "What the venture must not do holds whatever framework it thinks in"
     },
+    "venture-core": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "The mission, core competence and tagline are foundation statements; say them in your own words"
+    },
     "alignment": {
       "base": {
         "discovery": 0.6,

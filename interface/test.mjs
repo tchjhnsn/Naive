@@ -44,6 +44,16 @@ expect("an agent's write to an ungated record is written in place", direct.ok &&
 const gatedProblem = await call({ venture: "tandem", route: "purpose/validation/problem", action: "write", input: (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result });
 expect("an agent's write to the problem record is a draft for the founder to accept (EE-050)", gatedProblem.ok && gatedProblem.result.draft === true);
 rmSync(join(tandem, "_drafts/purpose__validation__problem.json.draft"), { force: true });
+const identityBefore = readFileSync(join(tandem, "venture.json"), "utf8");
+const coreAsAgent = await call({ venture: "tandem", route: "foundation/core", action: "write", input: { tagline: "Ride together" } });
+expect("an agent cannot write foundation/core, and leaves no draft", !coreAsAgent.ok && !existsSync(join(tandem, "_drafts/venture.json.draft")) && readFileSync(join(tandem, "venture.json"), "utf8") === identityBefore);
+const coreIdentity = await call({ venture: "tandem", route: "foundation/core", action: "write", actor: "person", input: { tagline: "Ride together", phase: "scale" } });
+expect("foundation/core refuses any field but its own", !coreIdentity.ok && /does not match/.test(coreIdentity.error) && readFileSync(join(tandem, "venture.json"), "utf8") === identityBefore);
+expect("foundation/core refuses an empty value", !(await call({ venture: "tandem", route: "foundation/core", action: "write", actor: "person", input: { tagline: "" } })).ok);
+const coreWritten = await call({ venture: "tandem", route: "foundation/core", action: "write", actor: "person", input: { tagline: "Ride together" } });
+const coreRead = await call({ venture: "tandem", route: "foundation/core", action: "read", actor: "person" });
+expect("foundation/core writes its field and reads only its view", coreWritten.ok && coreRead.result.tagline === "Ride together" && !("id" in coreRead.result) && !("phase" in coreRead.result));
+writeFileSync(join(tandem, "venture.json"), identityBefore);
 // The venture's naive.config.json gate (EE-073): a fail-closed route holds an agent's write, never a person's.
 writeFileSync(join(tandem, "naive.config.json"), JSON.stringify({ gate: { fail_closed: ["validation"] } }));
 const solution = (await call({ venture: "tandem", route: "purpose/validation/solution", action: "read" })).result;

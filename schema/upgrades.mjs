@@ -309,7 +309,7 @@ export function runChecks(vdir, { reg = registry() } = {}) {
   const files = Object.keys(snapshot(vdir, { skipPrivate: true })).filter((f) => f.endsWith(".json"));
   const bad = [];
   let n = 0;
-  for (const r of routes().filter((x) => x.kind === "record" && x.schema && (x.form ?? "json") === "json")) {
+  for (const r of routes().filter((x) => x.kind === "record" && x.schema && !x.view_of && (x.form ?? "json") === "json")) {
     for (const f of files.filter((f) => r.files.some((g) => glob(g).test(f)))) {
       n++;
       const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", ventureFile(vdir, f)], { encoding: "utf8" });
