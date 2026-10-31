@@ -1,6 +1,6 @@
 {
-  "sdlc_catalog": "0.1.0",
-  "version": "0.1.0",
+  "sdlc_catalog": "0.2.0",
+  "version": "0.2.0",
   "standard": "ISO/IEC/IEEE 12207:2017",
   "note": "What software work exists (R-26): processes, activities and tasks, with the decisions each task needs, the phase it is first needed in and the role that owns it. No execution detail: how each is done is MAD's (R-27), and who does it is the agent router's (R-25). Names are Naive's own wording; clause numbers cite the standard, whose text is never copied. Technical processes carry activities and tasks; the other groups are listed at process level until something needs more.",
   "groups": [
@@ -12,6 +12,7 @@
           "id": "acquisition",
           "name": "Acquisition",
           "clause": "6.1.1",
+          "function": "supply-chain",
           "mad_layer": "governance",
           "owner_role": "founder"
         },
@@ -19,6 +20,7 @@
           "id": "supply",
           "name": "Supply",
           "clause": "6.1.2",
+          "function": "marketing-and-sales",
           "mad_layer": "governance",
           "owner_role": "founder"
         }
@@ -32,6 +34,7 @@
           "id": "life-cycle-model-management",
           "name": "Life cycle model management",
           "clause": "6.2.1",
+          "function": "capabilities",
           "mad_layer": "delivery",
           "owner_role": "architect",
           "note": "Choosing the life cycle model is MAD's delivery layer."
@@ -40,6 +43,7 @@
           "id": "infrastructure-management",
           "name": "Infrastructure management",
           "clause": "6.2.2",
+          "function": "it",
           "mad_layer": "automation",
           "owner_role": "architect"
         },
@@ -47,6 +51,7 @@
           "id": "portfolio-management",
           "name": "Portfolio management",
           "clause": "6.2.3",
+          "function": "capabilities",
           "mad_layer": "governance",
           "owner_role": "founder",
           "note": "Across ventures and products: Naive's workspace and docket."
@@ -55,6 +60,7 @@
           "id": "human-resource-management",
           "name": "Human resource management",
           "clause": "6.2.4",
+          "function": "human-capital",
           "mad_layer": "governance",
           "owner_role": "people-lead",
           "note": "People and agents: Naive's team plan and roles."
@@ -63,6 +69,7 @@
           "id": "quality-management",
           "name": "Quality management",
           "clause": "6.2.5",
+          "function": "capabilities",
           "mad_layer": "governance",
           "owner_role": "architect"
         },
@@ -70,6 +77,7 @@
           "id": "knowledge-management",
           "name": "Knowledge management",
           "clause": "6.2.6",
+          "function": "capabilities",
           "mad_layer": "governance",
           "owner_role": "chief-of-staff",
           "note": "Naive's knowledge layer itself."
@@ -84,6 +92,7 @@
           "id": "project-planning",
           "name": "Project planning",
           "clause": "6.3.1",
+          "function": "products",
           "mad_layer": "delivery",
           "owner_role": "architect"
         },
@@ -91,6 +100,7 @@
           "id": "project-assessment-and-control",
           "name": "Project assessment and control",
           "clause": "6.3.2",
+          "function": "products",
           "mad_layer": "delivery",
           "owner_role": "architect"
         },
@@ -98,6 +108,7 @@
           "id": "decision-management",
           "name": "Decision management",
           "clause": "6.3.3",
+          "function": "products",
           "mad_layer": "governance",
           "owner_role": "founder",
           "note": "Naive's decision records, rights and docket."
@@ -106,6 +117,7 @@
           "id": "risk-management",
           "name": "Risk management",
           "clause": "6.3.4",
+          "function": "risk-and-compliance",
           "mad_layer": "governance",
           "owner_role": "architect",
           "note": "MAD judges the risk of each method decision (MAD requirement 4)."
@@ -114,6 +126,7 @@
           "id": "configuration-management",
           "name": "Configuration management",
           "clause": "6.3.5",
+          "function": "products",
           "mad_layer": "automation",
           "owner_role": "architect"
         },
@@ -121,6 +134,7 @@
           "id": "information-management",
           "name": "Information management",
           "clause": "6.3.6",
+          "function": "it",
           "mad_layer": "governance",
           "owner_role": "chief-of-staff"
         },
@@ -128,6 +142,7 @@
           "id": "measurement",
           "name": "Measurement",
           "clause": "6.3.7",
+          "function": "capabilities",
           "mad_layer": "governance",
           "owner_role": "founder"
         },
@@ -135,6 +150,7 @@
           "id": "quality-assurance",
           "name": "Quality assurance",
           "clause": "6.3.8",
+          "function": "products",
           "mad_layer": "delivery",
           "owner_role": "architect"
         }
@@ -148,6 +164,7 @@
           "id": "business-or-mission-analysis",
           "name": "Business or mission analysis",
           "clause": "6.4.1",
+          "function": "products",
           "mad_module": null,
           "owner_role": "product-design-lead",
           "note": "Whether and why to build: the product function's question, answered in Naive's purpose and product records. MAD never routes it.",
@@ -203,6 +220,7 @@
           "id": "stakeholder-needs",
           "name": "Stakeholder needs and requirements definition",
           "clause": "6.4.2",
+          "function": "products",
           "mad_module": "requirements",
           "owner_role": "product-design-lead",
           "note": "What to build: who the stakeholders are and what they need. Naive's product function owns the business side; the requirements module routes how needs are written down.",
@@ -258,6 +276,7 @@
           "id": "system-requirements",
           "name": "System/software requirements definition",
           "clause": "6.4.3",
+          "function": "products",
           "mad_module": "requirements",
           "owner_role": "architect",
           "activities": [
@@ -312,6 +331,7 @@
           "id": "architecture-definition",
           "name": "Architecture definition",
           "clause": "6.4.4",
+          "function": "products",
           "mad_module": "system-design",
           "owner_role": "architect",
           "activities": [
@@ -366,6 +386,7 @@
           "id": "design-definition",
           "name": "Design definition",
           "clause": "6.4.5",
+          "function": "products",
           "mad_module": "system-design",
           "owner_role": "architect",
           "activities": [
@@ -420,6 +441,7 @@
           "id": "system-analysis",
           "name": "System analysis",
           "clause": "6.4.6",
+          "function": "products",
           "mad_module": "system-design",
           "owner_role": "architect",
           "activities": [
@@ -474,6 +496,7 @@
           "id": "implementation",
           "name": "Implementation",
           "clause": "6.4.7",
+          "function": "products",
           "mad_module": "implementation",
           "owner_role": "architect",
           "activities": [
@@ -528,6 +551,7 @@
           "id": "integration",
           "name": "Integration",
           "clause": "6.4.8",
+          "function": "products",
           "mad_module": "integration",
           "owner_role": "architect",
           "activities": [
@@ -582,6 +606,7 @@
           "id": "verification",
           "name": "Verification",
           "clause": "6.4.9",
+          "function": "products",
           "mad_module": "verification",
           "owner_role": "architect",
           "activities": [
@@ -636,6 +661,7 @@
           "id": "transition",
           "name": "Transition",
           "clause": "6.4.10",
+          "function": "products",
           "mad_module": "transition",
           "owner_role": "architect",
           "activities": [
@@ -691,6 +717,7 @@
           "id": "validation",
           "name": "Validation",
           "clause": "6.4.11",
+          "function": "products",
           "mad_module": "validation",
           "owner_role": "validation-lead",
           "note": "Its evidence feeds Naive's validation records and phase gates.",
@@ -746,6 +773,7 @@
           "id": "operation",
           "name": "Operation",
           "clause": "6.4.12",
+          "function": "it",
           "mad_module": "operation",
           "owner_role": "architect",
           "activities": [
@@ -800,6 +828,7 @@
           "id": "maintenance",
           "name": "Maintenance",
           "clause": "6.4.13",
+          "function": "products",
           "mad_module": "maintenance",
           "owner_role": "architect",
           "activities": [
@@ -854,6 +883,7 @@
           "id": "disposal",
           "name": "Disposal",
           "clause": "6.4.14",
+          "function": "products",
           "mad_module": null,
           "owner_role": "architect",
           "note": "Retiring a system. Listed for completeness; no tasks until something needs it."

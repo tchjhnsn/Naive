@@ -13,7 +13,7 @@
   "additionalProperties": false,
   "properties": {
     "sdlc_catalog": {
-      "const": "0.1.0"
+      "const": "0.2.0"
     },
     "version": {
       "type": "string",
@@ -56,6 +56,7 @@
                 "id",
                 "name",
                 "clause",
+                "function",
                 "owner_role"
               ],
               "additionalProperties": false,
@@ -70,6 +71,11 @@
                 "clause": {
                   "type": "string",
                   "pattern": "^6\\.[1-4]\\.\\d+$"
+                },
+                "function": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$",
+                  "description": "The venture function (one of the 13 APQC categories in operations/departments.json) whose work this process is. The software processes are mostly the products function's; operating the software is IT's, and the organizational processes belong where APQC files them. The check makes sure it names a department."
                 },
                 "mad_module": {
                   "description": "Technical processes only: the MAD process module that routes its methods, or null when it is not MAD's (business or mission analysis is the product function's).",

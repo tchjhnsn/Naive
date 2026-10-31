@@ -3,10 +3,17 @@
 // are classes in the venture template's decision rights, and every owner role is a role
 // template; a technical process names a MAD module unless it is the product function's or
 // listed for completeness; task references (<mad_module>/<activity>/<task>) are unique, so
-// MAD's method-request can name a task by them. It prints the references with --refs.
+// MAD's method-request can name a task by them; every process names one of the venture
+// functions in operations/departments.json. It prints the references with --refs.
 //
-//   node schema/check-sdlc-catalog.ts [--refs]
+// --phase <id> [--processes a,b] prints what a method-request's `open` and `enumeration`
+// carry for that phase: the catalog file's sha256, the count, and each task a MAD module
+// routes that is needed by then (needed_from at or before the phase), so `open` is a
+// projection of the catalog, never a hand-made list (R-63, MAD contract 0.2.0).
+//
+//   node schema/check-sdlc-catalog.ts [--refs] [--phase <id> [--processes a,b]]
 
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +22,10 @@ import type { SdlcCatalog } from "./types/records.d.ts";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const read = (rel: string): unknown => JSON.parse(readFileSync(join(root, rel), "utf8"));
 
-const catalog = read("knowledge/sdlc/catalog.json") as SdlcCatalog;
+const CATALOG = "knowledge/sdlc/catalog.json";
+const catalog = read(CATALOG) as SdlcCatalog;
+const functions = new Set((read("operations/departments.json") as { departments: { id: string }[] }).departments.map((d) => d.id));
+const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const rights = read("governance/venture-template/decision-rights.json") as { classes: { id: string }[] };
 const classes = new Set(rights.classes.map((c) => c.id));
 const isRole = (id: string): boolean => existsSync(join(root, "governance/venture-template/roles", `${id}.json`));
@@ -27,6 +37,7 @@ const NOT_MAD = new Set(["business-or-mission-analysis", "disposal"]);
 const errors: string[] = [];
 const ids = new Set<string>();
 const refs = new Map<string, string>();
+const neededFrom = new Map<string, string>();
 
 for (const group of catalog.groups) {
   for (const p of group.processes) {
@@ -34,6 +45,7 @@ for (const group of catalog.groups) {
     ids.add(p.id);
     if (!p.clause.startsWith(CLAUSE[group.id])) errors.push(`${p.id}: clause ${p.clause} is not in group ${group.id} (${CLAUSE[group.id]}x)`);
     if (!isRole(p.owner_role)) errors.push(`${p.id}: owner role ${p.owner_role} is not a role template`);
+    if (!functions.has(p.function)) errors.push(`${p.id}: function ${p.function} is not a department in operations/departments.json`);
     if (group.id === "technical") {
       if (p.mad_layer) errors.push(`${p.id}: a technical process names a MAD module, not a layer`);
       if (!p.mad_module && !NOT_MAD.has(p.id)) errors.push(`${p.id}: technical process with no MAD module`);
@@ -49,11 +61,27 @@ for (const group of catalog.groups) {
         const ref = `${p.mad_module}/${a.id}/${t.id}`;
         if (refs.has(ref)) errors.push(`${where}: reference ${ref} is also ${refs.get(ref)}`);
         refs.set(ref, where);
+        neededFrom.set(ref, t.needed_from);
       }
     }
   }
 }
 
+const arg = (name: string): string | undefined => {
+  const i = process.argv.indexOf(name);
+  return i < 0 ? undefined : process.argv[i + 1];
+};
+const phase = arg("--phase");
+if (phase) {
+  if (!PHASES.includes(phase)) errors.push(`--phase ${phase} is not one of ${PHASES.join(", ")}`);
+  const only = arg("--processes")?.split(",");
+  const open = [...neededFrom]
+    .filter(([ref, from]) => PHASES.indexOf(from) <= PHASES.indexOf(phase) && (!only || only.includes(ref.split("/")[0])))
+    .map(([ref]) => ref)
+    .sort();
+  const catalog_sha256 = createHash("sha256").update(readFileSync(join(root, CATALOG))).digest("hex");
+  console.log(JSON.stringify({ catalog_version: catalog.version, enumeration: { catalog_sha256, phase, ...(only ? { processes: only } : {}), needed: open.length }, open }, null, 2));
+}
 if (process.argv.includes("--refs")) for (const ref of [...refs.keys()].sort()) console.log(ref);
 for (const e of errors) console.error(e);
 console.log(errors.length ? `sdlc catalog: ${errors.length} problem${errors.length === 1 ? "" : "s"}` : `sdlc catalog: ok, ${ids.size} processes, ${refs.size} task references`);

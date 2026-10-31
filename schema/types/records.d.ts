@@ -2631,7 +2631,7 @@ export type RouteAliases = {
 
 /** Naive's knowledge of the software development life cycle (R-26), after ISO/IEC/IEEE 12207: process groups, processes, activities and tasks, each task with the decision classes it needs, the phase it is first needed in and its owning role. It holds no execution detail: MAD owns how (R-27) and the agent router owns who does it (R-25). A task is referred to as <mad_module>/<activity>/<task>, the form MAD's method-request uses. Checked across files by schema/check-sdlc-catalog.ts. */
 export type SdlcCatalog = {
-  sdlc_catalog: "0.1.0";
+  sdlc_catalog: "0.2.0";
   version: string;
   standard: string;
   note?: string;
@@ -2642,6 +2642,8 @@ export type SdlcCatalog = {
       id: string;
       name: string;
       clause: string;
+      /** The venture function (one of the 13 APQC categories in operations/departments.json) whose work this process is. The software processes are mostly the products function's; operating the software is IT's, and the organizational processes belong where APQC files them. The check makes sure it names a department. */
+      function: string;
       /** Technical processes only: the MAD process module that routes its methods, or null when it is not MAD's (business or mission analysis is the product function's). */
       mad_module?: "requirements" | "system-design" | "implementation" | "integration" | "verification" | "transition" | "validation" | "operation" | "maintenance" | null;
       /** Other groups: the MAD layer whose questions cover how it is run. */
