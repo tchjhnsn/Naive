@@ -118,6 +118,7 @@ const steps = [
   ["term engine: bad tests rejected, relations total, freezing notices change", "node", ["schema/terms/engine-test.ts"]],
   ["every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node schema/terms/admit.ts)", "node", ["schema/terms/admit.ts", "--check"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
+  ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["schema/record-types-test.ts"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
   ["validation lint: claims, shelf life, agent grades, Discovery-grade decisions", "node", ["schema/lint-validation-test.mjs"]],

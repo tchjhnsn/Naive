@@ -26,7 +26,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 - `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` (TypeScript is the one dev dependency, with its Node types), and python3 with `jsonschema` for `schema/validate.py`.
 - `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
-- `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale.
+- `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node schema/record-types-test.ts`).
 - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
 - `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules.
 - `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
