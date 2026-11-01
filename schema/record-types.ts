@@ -41,7 +41,7 @@ const KEYWORDS = new Set([
   "$schema", "$id", "title", "default",
   // checks TypeScript cannot express
   "pattern", "minimum", "maximum", "exclusiveMinimum", "minLength", "minItems", "maxItems", "uniqueItems",
-  "minProperties", "maxProperties", "not", "if", "then", "dependentRequired",
+  "minProperties", "maxProperties", "not", "if", "then", "else", "dependentRequired",
 ]);
 
 const subschemas = (s: Schema) => [
