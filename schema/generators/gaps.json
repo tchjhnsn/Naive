@@ -38,6 +38,10 @@
   "exit-criteria",
   "founder",
   "founder-agreement",
+  "founder-idea",
+  "founder-inspiration",
+  "founder-private",
+  "founder-reference",
   "frame",
   "framework",
   "freshness-log",
@@ -88,6 +92,7 @@
   "role-template",
   "route-aliases",
   "scaffold",
+  "sdlc-catalog",
   "site-presence",
   "strategic-foundation",
   "systems-catalog",
@@ -114,6 +119,7 @@
   "venture-role",
   "venture-types",
   "where-used",
-  "workspace"
+  "workspace",
+  "workspace-founder"
  ]
 }
