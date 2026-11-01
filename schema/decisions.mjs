@@ -189,7 +189,7 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
 
 // The route that writes a venture-relative file, for the commands a founder runs.
 function routeOf(path, record) {
-  const r = routes().find((x) => x.kind === "record" && (path ? x.files.some((g) => routeFileGlob(g).test(path)) : (x.record === record || x.view_of === record) && x.collection !== "item"));
+  const r = routes().find((x) => x.kind === "record" && (path ? x.collection !== "list" && x.files.some((g) => routeFileGlob(g).test(path)) : (x.record === record || x.view_of === record) && x.collection !== "item"));
   if (!r) return null;
   return r.collection === "item" && path ? r.route.replace("[id]", path.split("/").at(-1).replace(/\.json$/, "")) : r.route;
 }
