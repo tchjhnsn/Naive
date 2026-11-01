@@ -1,6 +1,6 @@
 {
   "layer": "interface",
-  "purpose": "Let a person, with agents, work across at least three of the five other layers in one session: agent harnesses (Claude Code, Cursor) and custom interfaces (the operator console), all reaching the system through one route table that a CLI, an MCP server and an HTTP API share (EE-030).",
+  "purpose": "Let a person, with agents, work across at least three of the five other layers in one session: agent harnesses (Claude Code, Cursor) and custom harnesses (the operator console), all reaching the system through one route table that a CLI, an MCP server and an HTTP API share (EE-030).",
   "product": "everything-ecosystem/console",
   "skills": [
     {
