@@ -112,6 +112,7 @@ const steps = [
   ["departments: instance", "node", ["schema/check-departments.mjs", "instance"]],
   ["departments: examples", "node", ["schema/check-departments.mjs", "schema/examples/workspace"]],
   ["framework/platform boundary", "node", ["schema/check-boundary.mjs"]],
+  ["sdlc catalog: decision classes, roles, clauses and task references", "node", ["schema/check-sdlc-catalog.ts"]],
   ["the type gate fails on what it must catch", "node", ["schema/check-types-test.ts"]],
   ["founders before ventures: opaque ids, ideas, references, inspirations, _private/ secrets, only the founder confirms", "node", ["schema/founders-test.ts"]],
   ["founders: examples", "node", ["schema/founders.ts", "check", "schema/examples/workspace"]],

@@ -779,6 +779,34 @@
       "note": "Default freshness profiles by record type (Revalidating V-2): stale, revalidate and expire after Next.js cacheLife, plus per_phase and live; a venture overrides them under freshness in naive.config.json"
     },
     {
+      "id": "sdlc-catalog",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/sdlc-catalog.schema.json",
+      "form": "json",
+      "paths": [
+        "knowledge/sdlc/catalog.json"
+      ],
+      "refs": [
+        {
+          "field": "groups[].processes[].activities[].tasks[].decision_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        },
+        {
+          "field": "groups[].processes[].owner_role",
+          "to": "role-template",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        },
+        {
+          "field": "groups[].processes[].function",
+          "to": "department-catalog",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        }
+      ],
+      "note": "What software work exists, after ISO/IEC/IEEE 12207 (R-26): processes, activities and tasks with the decisions each task needs, the phase it is first needed in, its owning role and the venture function it belongs to. No execution detail: MAD routes how, the agent router picks who. MAD's method-request names a task as <mad_module>/<activity>/<task>."
+    },
+    {
       "id": "freshness-log",
       "layer": "knowledge",
       "level": "venture",
