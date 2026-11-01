@@ -10,7 +10,7 @@ Every process also names its **function**: one of the venture's 13 functions (th
 
 ## What is not here
 
-- **How the work is done.** Methods, templates and conventions are MAD's (R-27). Each technical process names the `mad_module` that routes its methods; MAD's own description of each module is in the MAD repository under `processes/<module>/README.md`. Business or mission analysis has no MAD module: whether and why to build is the product function's question (R-21).
+- **How the work is done.** Methods, templates and conventions are MAD's (R-27). Each technical process names the `mad_module` that routes its methods; MAD's own description of each module is in the MAD repository under `processes/<module>/README.md`. Business or mission analysis has no MAD module: whether and why to build is the product function's question (R-21). Disposal has none yet either, because it has no activities so far.
 - **Who does it.** The agent router in Naive resolves a task by role, then delegation, then an assignee chosen by capability (R-25). Executors such as pstack, Claude Code, Cursor or a person are never named here (R-28).
 - **The standard's text.** Names and wording are Naive's own; clause numbers cite the standard. Clause numbers are from 12207:2017 and should be checked against a licensed copy before anything relies on them.
 
@@ -18,7 +18,7 @@ Every process also names its **function**: one of the venture's 13 functions (th
 
 MAD's `method-request` names a task as `<mad_module>/<activity>/<task>`, for example `implementation/perform/write-code`. `node schema/check-sdlc-catalog.ts --refs` prints every such reference, and the check fails if two tasks would share one. The catalog's `version` is the `catalog_version` a request carries, so MAD knows which catalog it was asked against.
 
-A request's `open` list is a projection of this file, never a hand-made list. `node schema/check-sdlc-catalog.ts --phase <phase> [--processes a,b]` prints it: every task a MAD module routes that is needed by that phase, with the `enumeration` block MAD's contract 0.2.0 requires (the catalog file's sha256, the phase, and the count). MAD refuses a request whose `open` list differs in length from the count, so a task can't silently drop out.
+A request's `open` list is a projection of this file, never a hand-made list. `node schema/check-sdlc-catalog.ts --phase <phase> [--processes a,b]` prints it, where `--processes` takes process ids and fails on an id the catalog does not have: every task a MAD module routes that is needed by that phase, with the `enumeration` block MAD's contract 0.2.0 requires (the catalog file's sha256, the phase, and the count). MAD refuses a request whose `open` list differs in length from the count, so a task can't silently drop out.
 
 Only the technical processes carry activities and tasks so far. The management, enabling and agreement processes are listed with their owning role and the MAD layer whose questions cover them (`mad_layer`); their tasks are added when a venture needs them.
 

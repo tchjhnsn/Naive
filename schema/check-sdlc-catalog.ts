@@ -6,7 +6,7 @@
 // MAD's method-request can name a task by them; every process names one of the venture
 // functions in operations/departments.json. It prints the references with --refs.
 //
-// --phase <id> [--processes a,b] prints what a method-request's `open` and `enumeration`
+// --phase <id> [--processes a,b] (process ids) prints what a method-request's `open` and `enumeration`
 // carry for that phase: the catalog file's sha256, the count, and each task a MAD module
 // routes that is needed by then (needed_from at or before the phase), so `open` is a
 // projection of the catalog, never a hand-made list (R-63, MAD contract 0.2.0).
@@ -38,6 +38,7 @@ const errors: string[] = [];
 const ids = new Set<string>();
 const refs = new Map<string, string>();
 const neededFrom = new Map<string, string>();
+const processOf = new Map<string, string>();
 
 for (const group of catalog.groups) {
   for (const p of group.processes) {
@@ -62,6 +63,7 @@ for (const group of catalog.groups) {
         if (refs.has(ref)) errors.push(`${where}: reference ${ref} is also ${refs.get(ref)}`);
         refs.set(ref, where);
         neededFrom.set(ref, t.needed_from);
+        processOf.set(ref, p.id);
       }
     }
   }
@@ -69,14 +71,18 @@ for (const group of catalog.groups) {
 
 const arg = (name: string): string | undefined => {
   const i = process.argv.indexOf(name);
-  return i < 0 ? undefined : process.argv[i + 1];
+  if (i < 0) return undefined;
+  const value = process.argv[i + 1];
+  if (value === undefined || value.startsWith("--")) errors.push(`${name} needs a value`);
+  else return value;
 };
 const phase = arg("--phase");
 if (phase) {
   if (!PHASES.includes(phase)) errors.push(`--phase ${phase} is not one of ${PHASES.join(", ")}`);
   const only = arg("--processes")?.split(",");
+  for (const id of only ?? []) if (!ids.has(id)) errors.push(`--processes ${id} is not a process id in the catalog`);
   const open = [...neededFrom]
-    .filter(([ref, from]) => PHASES.indexOf(from) <= PHASES.indexOf(phase) && (!only || only.includes(ref.split("/")[0])))
+    .filter(([ref, from]) => PHASES.indexOf(from) <= PHASES.indexOf(phase) && (!only || only.includes(processOf.get(ref) ?? "")))
     .map(([ref]) => ref)
     .sort();
   const catalog_sha256 = createHash("sha256").update(readFileSync(join(root, CATALOG))).digest("hex");
