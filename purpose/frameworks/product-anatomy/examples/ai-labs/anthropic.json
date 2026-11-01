@@ -1,0 +1,138 @@
+{
+  "venture": {
+    "name": "Anthropic",
+    "phase": "scale",
+    "team": "A public benefit corporation of several thousand people; research lab first (S-1, Overview).",
+    "current_state": "Claude is sold through three layers the S-1 names: models, platform, applications. Revenue grew from $0 in Q1 2023; the preliminary S-1 leaves current figures blank. Filed S-1 on 2026-10-26.",
+    "sources": [
+      "anthropic-s-1-2026"
+    ],
+    "standing_decisions": [
+      "Responsible Scaling Policy: a model release can be delayed or restricted for safety (S-1, Our Approach to Model Releases).",
+      "Enterprise strategy: research, roadmap and go-to-market organised around enterprise use cases (S-1, Core Advantages)."
+    ]
+  },
+  "core": {
+    "source": "Anthropic S-1 (2026-10-26), Overview and Claude as a Virtual Collaborator. Wording here is ours, not Anthropic's.",
+    "promise": "Organisations can hand Claude real professional work and trust what comes back: frontier capability that is safe, steerable and predictable enough for mission-critical workloads.",
+    "promised_to": "Enterprises and the knowledge workers and developers inside them (the S-1 puts knowledge workers above one billion by 2028).",
+    "must_not": "Catastrophic misuse, misaligned or unsanctioned autonomous action, or harm delivered under Anthropic's name (the S-1's own top risk factors).",
+    "competence": "Frontier capability and safety research done as one programme, run on a single fungible multi-chip compute pool, with each Claude model helping build the next ('closing the loop')."
+  },
+  "products": {
+    "models": {
+      "name": "Claude models (Mythos, Opus, Sonnet, Haiku)",
+      "faces": "developers and enterprises through the API and clouds",
+      "description": "The model family across the capability-cost-speed curve."
+    },
+    "platform": {
+      "name": "Claude Platform",
+      "faces": "developers",
+      "description": "API primitives: extended and adaptive thinking, tool use, long context, structured outputs, code execution, web search, Files API, MCP, agent skills, prompt caching, batch, fast mode. The same primitives Anthropic builds its own apps on."
+    },
+    "harnesses": {
+      "name": "Harnesses (Agent SDK, Claude Managed Agents)",
+      "faces": "developers building agents",
+      "description": "The secure environment, credentials, memory and orchestration loop an agent needs to run in production."
+    },
+    "code": {
+      "name": "Claude Code",
+      "faces": "developers, increasingly non-technical teams",
+      "description": "The coding agent; the S-1 calls it the clearest case of a Virtual Collaborator."
+    },
+    "cowork": {
+      "name": "Claude Cowork",
+      "faces": "knowledge workers",
+      "description": "Claude Code's agentic architecture extended to all knowledge work."
+    },
+    "chat": {
+      "name": "Claude app (Chat)",
+      "faces": "individuals and teams",
+      "description": "The conversational app: collaborate with Claude."
+    },
+    "tag": {
+      "name": "Claude Tag",
+      "faces": "teams in Slack and similar tools",
+      "description": "An ambient agent tagged into channels and threads, with channel-scoped memory."
+    },
+    "security": {
+      "name": "Claude Security and OSS Scanner",
+      "faces": "security teams",
+      "description": "Continuous codebase scanning with proposed fixes; rides the models' exploit capability."
+    },
+    "applied": {
+      "name": "Applied AI ('Work with us')",
+      "faces": "large enterprises",
+      "description": "Building custom agents together with customers; feeds the improvement loop."
+    },
+    "hardware": {
+      "name": "Model Hardware Standard",
+      "faces": "labs and manufacturers",
+      "allowed_from": "platform",
+      "allowed_from_reason": "Robotics and lab equipment are an extension the S-1 describes as early.",
+      "description": "Lets agents operate lab and manufacturing equipment."
+    }
+  },
+  "flows": [
+    {
+      "from": "models",
+      "to": "platform",
+      "carries": "intelligence"
+    },
+    {
+      "from": "models",
+      "to": "chat",
+      "carries": "intelligence"
+    },
+    {
+      "from": "platform",
+      "to": "harnesses",
+      "carries": "primitives"
+    },
+    {
+      "from": "platform",
+      "to": "code",
+      "carries": "primitives"
+    },
+    {
+      "from": "platform",
+      "to": "cowork",
+      "carries": "primitives"
+    },
+    {
+      "from": "platform",
+      "to": "tag",
+      "carries": "primitives"
+    },
+    {
+      "from": "platform",
+      "to": "security",
+      "carries": "primitives"
+    },
+    {
+      "from": "harnesses",
+      "to": "code",
+      "carries": "agent loop"
+    },
+    {
+      "from": "code",
+      "to": "cowork",
+      "carries": "agentic architecture and users"
+    },
+    {
+      "from": "applied",
+      "to": "models",
+      "carries": "enterprise feedback"
+    },
+    {
+      "from": "code",
+      "to": "models",
+      "carries": "usage that improves the next model"
+    },
+    {
+      "from": "platform",
+      "to": "hardware",
+      "carries": "primitives"
+    }
+  ]
+}

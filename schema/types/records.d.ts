@@ -353,6 +353,8 @@ export type DataModel = {
     level: "method" | "workspace" | "venture";
     /** Path to the schema that governs it, or null when it has none yet */
     schema: string | null;
+    /** EE-099: the record generator beside the schema; it describes what to ask and drafts one record that passes the schema, and stores nothing itself */
+    generator?: string;
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */

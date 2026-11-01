@@ -631,7 +631,8 @@
         "instance/**/product/anatomy/answers*.json",
         "instance/**/product/anatomy.answers*.json",
         "instance/**/purpose/anatomy.answers*.json",
-        "purpose/frameworks/product-anatomy/examples/*.json"
+        "purpose/frameworks/product-anatomy/examples/*.json",
+        "purpose/frameworks/product-anatomy/examples/*/*.json"
       ],
       "refs": [
         {
@@ -871,6 +872,7 @@
       "layer": "system",
       "level": "method",
       "schema": "schema/reference.schema.json",
+      "generator": "schema/generators/reference.mjs",
       "paths": [
         "*/references/references.json",
         "*/kits/*/references/references.json"
@@ -1869,6 +1871,7 @@
       "layer": "knowledge",
       "level": "venture",
       "schema": "schema/glossary.schema.json",
+      "generator": "schema/generators/glossary.mjs",
       "paths": [
         "instance/**/glossary/*.json",
         "schema/examples/**/glossary/*.json"
@@ -1959,6 +1962,7 @@
       "layer": "evidence",
       "level": "venture",
       "schema": "schema/bug.schema.json",
+      "generator": "schema/generators/bug.mjs",
       "paths": [
         "instance/**/product/bugs/*.json",
         "schema/examples/**/product/bugs/*.json"
@@ -2082,6 +2086,17 @@
         }
       ],
       "confidential": true
+    },
+    {
+      "id": "term-list",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "docs/design/term-harvest/*.json"
+      ],
+      "note": "Public seed list of terms for the term-harvest skill to run through the term engine (Grokbot handoff, 2026-11-01); public terms only, never a founder glossary"
     }
   ],
   "ignore": [
@@ -2200,6 +2215,10 @@
     {
       "path": "schema/internal-terms.json",
       "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
+    },
+    {
+      "path": "schema/generators/gaps.json",
+      "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
     }
   ]
 }

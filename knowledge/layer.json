@@ -25,7 +25,8 @@
     "freshness-log",
     "judgment",
     "systems-catalog",
-    "glossary"
+    "glossary",
+    "term-list"
   ],
   "reads": [
     "venture",

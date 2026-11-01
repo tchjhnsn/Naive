@@ -131,6 +131,7 @@ const steps = [
   ["strategic foundation: examples", "node", ["schema/foundation.mjs", "schema/examples/workspace"]],
   ["foundation statement behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/features/strategic-foundation.feature"]],
   ["decision affects grammar: malformed entries rejected, well-formed accepted", "node", ["schema/decision-affects-test.mjs"]],
+  ["record generators (EE-099): glossary, reference and bug describe and draft records that pass their schemas", "node", ["schema/generators/generators-test.mjs"]],
   ["decisions: instance", "node", ["schema/decisions.mjs", "instance"]],
   ["decisions: examples", "node", ["schema/decisions.mjs", "schema/examples/workspace"]],
   ["decision behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "governance/features/decisions.feature"]],

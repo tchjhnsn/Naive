@@ -40,7 +40,7 @@ node anatomy.mjs score examples/polity.json out.json --send      # Jev; needs TY
 node anatomy.mjs matrix examples/polity.json examples/polity.answers.reasoned.json
 ```
 
-Without a key, a reasoning model fills the answers file by hand and names itself in `scorer`. `examples/polity.answers.reasoned.json` is that kind of draft.
+Without a key, a reasoning model fills the answers file by hand and names itself in `scorer`. `examples/polity.answers.reasoned.json` is that kind of draft. `examples/ai-labs/` holds four more: Anthropic, OpenAI, SpaceX with xAI and Thinking Machines, run as studies of other ventures.
 
 ## JSON output
 

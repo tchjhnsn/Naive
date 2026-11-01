@@ -288,7 +288,7 @@
       "date": "2026-10-27",
       "decision": "Working name for the system: Mentura, from mentor and Ventura: a mentor that guides a venture into its future. Files keep 'Everything Ecosystem' until the name is checked (trademark, domains) and a rename is decided.",
       "why": "The owner: 'We can go with the name Mentura for now.'",
-      "status": "proposed",
+      "status": "superseded",
       "related": [
         "EE-024"
       ]
@@ -476,7 +476,7 @@
       "id": "EE-043",
       "date": "2026-10-28",
       "decision": "Names (Torian): the platform is Mentura (EE-027), and the framework is Naive, the conventions side of EE-041. Naive replaces the earlier working name Memento, which collides with Memento Database. Files keep 'Everything Ecosystem' until a rename is decided; a trademark check on both names is pending.",
-      "status": "proposed"
+      "status": "superseded"
     },
     {
       "id": "EE-044",
@@ -1147,6 +1147,178 @@
           "kind": "term",
           "target": "interface",
           "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-097",
+      "date": "2026-11-01",
+      "status": "superseded",
+      "decision": "Names, using Anthropic as the template for the venture's structure. Moses David is the parent company, as Anthropic is to Claude. Mentura is the kind of AI the company builds, as Claude is Anthropic's and Jev is TypeSafe's. It is our own type of model, not a language model like Claude. Naive stays the framework and the records system: a knowledge graph of record whose records change mechanistically (a records mechanism: deterministic, rule-stated, traceable transitions on typed records, with nothing learned deciding). Mentura is no longer the name of the platform. Whether Naive is also the platform is open.",
+      "why": "Torian, 2026-11-01 06:26Z, in words. A parent company, a model type and a records framework are three different kinds of thing; using one name for two of them blurred what belongs where. Anthropic's records (studied 2026-11-01) give a tested shape: company, research, models, products and platform, safety.",
+      "related": [
+        "EE-041",
+        "EE-071",
+        "EE-089"
+      ],
+      "supersedes": [
+        "EE-027",
+        "EE-043"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "moses-david",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "mentura",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "naive",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "records-mechanism",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-043",
+          "expect": "superseded"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-027",
+          "expect": "superseded"
+        }
+      ]
+    },
+    {
+      "id": "EE-098",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Restates the names of EE-097 with Torian's corrections. Moses David is the parent company. Mentura is a model, in the position Claude holds at Anthropic; what kind of model it is stays open (the comparison with Jev was not a claim that Mentura is a typed decision model). Mentura has two products besides the model: the Mentura app (one app on web, desktop and mobile, as the Claude app is) and the Mentura console (a venture development platform, as the Claude Console is a developer platform, but for running a venture). The console is the platform, so the platform question of EE-097 is settled. Naive is the framework: where people customise their records, their modules and how their agents act on records; it acts the same whichever agents drive it. Precog is a capability of Mentura, not a product; parts of it are records in Naive and delivery in the app.",
+      "why": "Torian, 2026-11-01 07:14Z, in words, after the Anthropic product records were researched. Checked against records before recording: offering-vocab.ts (18/18) and placement.ts (T1-T3), both built in Lean (Placement.lean, 20 theorems).",
+      "related": [
+        "EE-041",
+        "EE-071",
+        "EE-089"
+      ],
+      "supersedes": [
+        "EE-097"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "mentura",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "mentura-app",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "mentura-console",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "naive",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "capability",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "console",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-097",
+          "expect": "superseded"
+        }
+      ]
+    },
+    {
+      "id": "EE-099",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Every record type in Naive's data model names a record generator: a script beside its schema that tells the agent what to ask, drafts one record that passes the schema, and hands it to the write chain without storing anything itself. Records computed from other records name the script that computes them. The data-model check fails a record type that names none. First built for three types: glossary, reference and bug; the other record types without one stay listed as open gaps until built.",
+      "why": "Torian, 2026-11-01 07:55Z ('every endpoint should have an engine next to it') and his pick on the decision card at 07:58Z (require it, pilot on 3 types). A scan of schema/data-model.json found 117 record types, none naming a generator, and 35 with no script anywhere that writes them (naive-design engine-scan.json). The glossary's engine means a part that returns a verdict, so the term is record generator (generator-vocab.ts, 18/18).",
+      "related": [
+        "EE-018",
+        "EE-073"
+      ],
+      "supersedes": [],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "record-generator",
+          "expect": "defined"
+        },
+        {
+          "kind": "record",
+          "target": "data-model.generator",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/glossary.mjs",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/reference.mjs",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/bug.mjs",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-100",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Routes are declarative chains that end in generative endpoints. A chain is declared as data, step by step, like the write chain. When a module, a package or an agent reaches an endpoint whose record type has no schema, route or record generator yet, the endpoint does not stop at 'no such record type': it opens a research item for that record type, and the research proposes the schema, the record generator (EE-099) and the route, with their requirements and constraints. A person admits them, and the new endpoint then exists. So an endpoint can produce new endpoints, and the record generators are what agents read to know how generation works.",
+      "why": "Torian, 2026-11-01 09:00Z, in words: 'The routes should have generative endpoints... declarative chains with generative endpoints... so that an endpoint can produce new endpoints. This was the point of the scripts.'",
+      "related": [
+        "EE-099",
+        "EE-018"
+      ],
+      "supersedes": [],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "generative-endpoint",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "declarative-chain",
+          "expect": "defined"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/generate.mjs",
+          "root": "repo",
+          "expect": "exists"
         }
       ]
     }

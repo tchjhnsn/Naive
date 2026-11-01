@@ -1,0 +1,96 @@
+{
+  "scorer": "reasoning model (Claude), not Jev: no TYPESAFE_API_KEY in the session that wrote this. Desk research from public filings and press, 2026-11-01. Draft for Torian to correct; replace by running `score --send`.",
+  "scored": "2026-11-01T02:40:00Z",
+  "answers": {
+    "models": {
+      "promise_delivery": 2,
+      "competence_draw": 3,
+      "promise_breach": 0.15,
+      "job_intensity": 3,
+      "ready": 3,
+      "revenue": 3,
+      "reversibility": 1
+    },
+    "platform": {
+      "promise_delivery": 2,
+      "competence_draw": 2,
+      "promise_breach": 0.1,
+      "job_intensity": 3,
+      "ready": 3,
+      "revenue": 3,
+      "reversibility": 2
+    },
+    "harnesses": {
+      "promise_delivery": 2,
+      "competence_draw": 2,
+      "promise_breach": 0.15,
+      "job_intensity": 2,
+      "ready": 2,
+      "revenue": 2,
+      "reversibility": 2
+    },
+    "code": {
+      "promise_delivery": 3,
+      "competence_draw": 2,
+      "promise_breach": 0.15,
+      "job_intensity": 3,
+      "ready": 3,
+      "revenue": 3,
+      "reversibility": 1
+    },
+    "cowork": {
+      "promise_delivery": 3,
+      "competence_draw": 2,
+      "promise_breach": 0.2,
+      "job_intensity": 2,
+      "ready": 2,
+      "revenue": 2,
+      "reversibility": 2
+    },
+    "chat": {
+      "promise_delivery": 2,
+      "competence_draw": 2,
+      "promise_breach": 0.2,
+      "job_intensity": 2,
+      "ready": 3,
+      "revenue": 3,
+      "reversibility": 2
+    },
+    "tag": {
+      "promise_delivery": 3,
+      "competence_draw": 2,
+      "promise_breach": 0.2,
+      "job_intensity": 2,
+      "ready": 2,
+      "revenue": 1,
+      "reversibility": 3
+    },
+    "security": {
+      "promise_delivery": 2,
+      "competence_draw": 3,
+      "promise_breach": 0.35,
+      "job_intensity": 3,
+      "ready": 2,
+      "revenue": 2,
+      "reversibility": 1
+    },
+    "applied": {
+      "promise_delivery": 2,
+      "competence_draw": 1,
+      "promise_breach": 0.1,
+      "job_intensity": 3,
+      "ready": 3,
+      "revenue": 2,
+      "reversibility": 2
+    },
+    "hardware": {
+      "promise_delivery": 1,
+      "competence_draw": 2,
+      "promise_breach": 0.3,
+      "job_intensity": 1,
+      "ready": 1,
+      "revenue": 0,
+      "reversibility": 2
+    }
+  }
+}
