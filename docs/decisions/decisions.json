@@ -1081,7 +1081,7 @@
     {
       "id": "EE-093",
       "date": "2026-11-01",
-      "status": "in-force",
+      "status": "superseded",
       "decision": "The ontology's \"interface\" (a tool a person works through across most layers) is renamed \"harness\". \"interface\" keeps its standard sense: the agreed boundary where two elements meet (C4, ISO/IEC/IEEE 42010). AI harness and agent harness are kinds of harness. The ontology's console and custom interface (now custom harness) rows and the operator console README use the new word. The sixth layer keeps its folder name, interface/; renaming it is not decided. Not built yet: harness and interface are not yet terms in schema/terms.",
       "why": "Torian, 2026-11-01 (card). The term engine found the two senses disjoint (issue #143); the ontology marked its sense \"ours\", so standards first renames ours. Workspace decision G-039 already gave \"agent harness\" its industry meaning and returned G-029's first-party entity class to \"app\", so \"harness\" is free for this sense.",
       "related": [
@@ -1121,6 +1121,33 @@
       "related": [
         "EE-014",
         "EE-094"
+      ]
+    },
+    {
+      "id": "EE-096",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "\"Harness\" takes its industry sense, the one Anthropic's S-1 uses: the software around a model that runs it, giving it context and tools and carrying out what it asks (the Agent SDK, Claude Managed Agents, Claude Code). AI harness and agent harness are kinds of harness. The tool a person works through across at least four of the six layers, which EE-093 called harness, is renamed \"workbench\"; custom harness becomes custom workbench. The ontology, the integration schema, interface/layer.json and the operator console README use the new words. The sixth layer keeps its folder name, interface/. Not built yet: harness and workbench are not yet terms in schema/terms.",
+      "why": "Torian, 2026-11-01 (card), after reading Anthropic's S-1 (filed 2026-10-26). The term engine found the S-1's harness and EE-093's harness overlap, not equal: the Agent SDK is a harness no person works through, and a coding agent used on one layer is an agent harness but not an EE-093 harness. Standards first (EE-014): the standard sense keeps the word. The code and docs already used harness in this sense (interface/harness, adapters, provenance). Workbench narrows the industry workbench (Eclipse; Fowler). Engine and Lean runs are a prototype outside this repository (s1-vocab.ts, S1.lean) that lands with the glossary PR (issue #143).",
+      "supersedes": [
+        "EE-093"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "harness",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "workbench",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "interface",
+          "expect": "defined"
+        }
       ]
     }
   ]

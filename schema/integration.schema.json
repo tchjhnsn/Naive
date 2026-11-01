@@ -68,7 +68,7 @@
         "agent-harness",
         "custom"
       ],
-      "description": "Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom harness built for the system or a venture."
+      "description": "Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom workbench built for the system or a venture."
     },
     "status": {
       "enum": [

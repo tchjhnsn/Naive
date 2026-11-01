@@ -1470,7 +1470,7 @@ export type Integration = {
   interfaces: ("files" | "mcp" | "api" | "sdk" | "cli" | "webhook" | "app")[];
   /** Interface layer only: the other layers a person can work in through it, in one session. At least three of the five. */
   reach?: ("purpose" | "knowledge" | "operations" | "evidence" | "governance")[];
-  /** Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom harness built for the system or a venture. */
+  /** Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom workbench built for the system or a venture. */
   interface_kind?: "agent-harness" | "custom";
   status: "in-use" | "candidate" | "rejected";
   /** Why it is in use, a candidate, or rejected */
