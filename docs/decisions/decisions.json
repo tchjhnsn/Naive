@@ -1242,6 +1242,36 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-100",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Routes are declarative chains that end in generative endpoints. A chain is declared as data, step by step, like the write chain. When a module, a package or an agent reaches an endpoint whose record type has no schema, route or record generator yet, the endpoint does not stop at 'no such record type': it opens a research item for that record type, and the research proposes the schema, the record generator (EE-099) and the route, with their requirements and constraints. A person admits them, and the new endpoint then exists. So an endpoint can produce new endpoints, and the record generators are what agents read to know how generation works.",
+      "why": "Torian, 2026-11-01 09:00Z, in words: 'The routes should have generative endpoints... declarative chains with generative endpoints... so that an endpoint can produce new endpoints. This was the point of the scripts.'",
+      "related": [
+        "EE-099",
+        "EE-018"
+      ],
+      "supersedes": [],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "generative-endpoint",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "declarative-chain",
+          "expect": "defined"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/generate.mjs",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
