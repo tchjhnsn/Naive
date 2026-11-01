@@ -31,10 +31,16 @@ export function variantsDecision(file) {
 
 const readJson = (f) => JSON.parse(readFileSync(f, "utf8"));
 
-/** The sidecar of a draft, or null. */
+/** The sidecar of a draft, or null. A sidecar is a file's word, so a variant's path always comes from the draft's own name. */
 export function sidecar(dir, draft) {
   const f = ventureFile(dir, sidecarOf(draft));
-  return existsSync(f) ? readJson(f) : null;
+  if (!existsSync(f)) return null;
+  const meta = readJson(f);
+  if (!Array.isArray(meta.variants)) return { ...meta, variants: undefined };
+  const seen = new Set();
+  const variants = meta.variants.filter((v) => /^[a-z]$/.test(v?.variant) && !seen.has(v.variant) && seen.add(v.variant))
+    .map((v) => ({ ...v, file: variantPath(draft, v.variant) })).filter((v) => existsSync(ventureFile(dir, v.file)));
+  return { ...meta, variants };
 }
 
 /**
