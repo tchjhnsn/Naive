@@ -26,7 +26,12 @@
     "upgrade-registry",
     "kit",
     "calendar",
-    "calendar-event"
+    "calendar-event",
+    "workspace-founder",
+    "founder-idea",
+    "founder-reference",
+    "founder-inspiration",
+    "founder-private"
   ],
   "reads": [
     "product",
@@ -59,6 +64,7 @@
     "schema/stale.mjs",
     "schema/clock.mjs",
     "schema/calendar.mjs",
+    "schema/founders.ts",
     "schema/workspace-init.mjs",
     "schema/workspace-init-test.mjs",
     "schema/check-roadmap.mjs",

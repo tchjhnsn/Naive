@@ -21,6 +21,7 @@ Status:
 | Record | Where | Status | Notes |
 |---|---|---|---|
 | Workspace | `schema/workspace.schema.json`, `schema/VERSION` | defined | Grouping folders carry no meaning. Always a vault; a code folder of repositories once a venture builds software (EE-020) |
+| Founder (workspace) | `schema/workspace-founder.schema.json`, `schema/founder-idea.schema.json`, `schema/founder-reference.schema.json`, `schema/founder-inspiration.schema.json`, `schema/founder-private.schema.json`, `schema/founders.ts` | defined | `founders/<handle>/`, above every venture: opaque id, ventures by role, profile only the founder confirms, ideas, references (CSL-JSON names), inspirations; name, puzzle and secrets in `_private/` (Torian, 2026-10-31) |
 | Venture | `schema/venture.schema.json`, `schema/check-ventures.mjs` | defined | Phase, ambition, form, industry, core product, parent, owner, layers, venture profile, one-way links |
 | Product (card) | `schema/product.schema.json` | defined | `products/<id>.json`: market, job, technology, offering, business model, flows |
 | Account | `schema/account.schema.json` | defined | Optional. `accounts/<id>/account.json` inside the venture that serves it; relationship client, customer, user, member, partner or other (EE-021) |
