@@ -661,6 +661,17 @@
       "note": "Domain, product, experience, interface and systems design documents; which ones a venture needs is in the design-documents registry"
     },
     {
+      "id": "term-list",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "docs/design/term-harvest/*.json"
+      ],
+      "note": "Public seed list of terms for the term-harvest skill to run through the term engine (Grokbot handoff, 2026-11-01); public terms only, never a founder glossary"
+    },
+    {
       "id": "knowledge-sources",
       "layer": "knowledge",
       "level": "venture",
