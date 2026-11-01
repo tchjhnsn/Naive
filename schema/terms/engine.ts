@@ -54,6 +54,9 @@ export function relation(a: Set<number>, b: Set<number>): Relation {
 }
 
 /** Hash of what the test is: its properties' ids and code, and its rule. Changing a test changes its hash (R1). */
+// The hash covers each check's own source (check.toString()), not the helpers it calls. No check calls a helper
+// today (evidenced is passed as the check itself, so its source is what is hashed). A check that calls a helper
+// needs the helper's source added here, or a change to the helper leaves the hash the same and R1 stops holding.
 export function freeze<F extends Base>(t: Term<F>): string {
   const body = JSON.stringify({ id: t.id, level: t.level, props: t.props.map((p) => [p.id, p.check.toString(), Boolean(p.permission)]), rule: t.rule?.toString() ?? "all" });
   return createHash("sha256").update(body).digest("hex").slice(0, 16);

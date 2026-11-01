@@ -18,8 +18,8 @@ def relationOf (a b inter : Nat) : Relation :=
   else if inter = b then .hasAKind
   else .overlap
 
-/-- The relation is total and single-valued: every pair of sets gets exactly one relation (R3).
-    Single-valued holds because relationOf is a function; total, because each value lands in the list. -/
+/-- Every value of relationOf is one of the six relations. This holds for any function into Relation, so it says
+    nothing about the engine: that the TypeScript relation and this relationOf agree is not checked yet. -/
 theorem relationOf_total (a b i : Nat) :
     relationOf a b i ∈ [Relation.equal, .isA, .hasAKind, .overlap, .disjoint, .inconclusive] := by
   unfold relationOf

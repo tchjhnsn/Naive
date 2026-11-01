@@ -17,6 +17,9 @@ const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`
 const put = (f: string, o: unknown): void => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
 type Rec = { id?: string; status?: string; ventures?: string[]; private?: boolean; founder?: string };
 const read = (f: string): Rec => JSON.parse(readFileSync(f, "utf8")) as Rec;
+// A missing validator is not an invalid record: say so once and stop, so a local run is not misread (review of #135, finding 5).
+const hasValidator = spawnSync("python3", ["-I", "-c", "import jsonschema, referencing"], { encoding: "utf8" }).status === 0;
+if (!hasValidator) { console.error("founders-test needs the jsonschema package for schema checks: pip install jsonschema"); process.exit(2); }
 const valid = (schema: string, f: string): boolean => spawnSync("python3", ["-I", join(repo, "schema/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" }).status === 0;
 const fails = (ws: string, re: RegExp): boolean => check(ws).some((p) => !p.startsWith("warn:") && re.test(p));
 
@@ -79,10 +82,10 @@ expect("confirmed founder.json is valid", valid("workspace-founder.schema.json",
 
 // Secrets, the puzzle and names stay in _private/.
 put(join(ws, "founders/tj/secrets/thesis.json"), { text: "x" });
-expect("fails: secrets outside _private/", fails(ws, /secrets and the founder puzzle go in/));
+expect("fails: secrets outside _private/", fails(ws, /go in founders\/tj\/_private/));
 rmSync(join(ws, "founders/tj/secrets"), { recursive: true });
 put(join(ws, "founders/tj/puzzle/report.json"), { text: "x" });
-expect("fails: the puzzle outside _private/", fails(ws, /secrets and the founder puzzle go in/));
+expect("fails: the puzzle outside _private/", fails(ws, /go in founders\/tj\/_private/));
 rmSync(join(ws, "founders/tj/puzzle"), { recursive: true });
 put(join(ws, "founders/tj/_private/secrets/thesis.json"), { text: "x" });
 expect("fails: a _private/ record without private: true", fails(ws, /says private: true/));
@@ -105,12 +108,31 @@ put(join(ws, "founders/xy/founder.json"), { id: "p-1b1b1b1b", handle: "xy", crea
 expect("a venture may have several founders", check(ws).length === 0, check(ws).join("; "));
 rmSync(join(ws, "founders/xy"), { recursive: true });
 
-// The privacy guard catches files as well as folders, with any extension (review of #135, finding 1).
-for (const name of ["puzzle.json", "secrets.json", "secret.md", "puzzles/a.json"]) {
+// Only the public layout passes outside _private/, whatever a private file is named (review of #135, finding 1, and of 1e6a0a4, finding 2).
+for (const name of ["puzzle.json", "secrets.json", "secret.md", "puzzles/a.json", "founder-puzzle.json", "my-secrets.md", "notes/puzzle-answer.txt", "secret_key.txt", "ideas/drafts/x.json", "ideas/x.md"]) {
   put(join(ws, "founders/tj", name), { note: "test" });
   expect(`fails: ${name} outside _private/`, fails(ws, /go in founders\/tj\/_private/));
-  rmSync(join(ws, "founders/tj", name.split("/")[0]), { recursive: true, force: true });
+  rmSync(join(ws, "founders/tj", name.includes("/") && !name.startsWith("ideas/") ? name.split("/")[0] : name), { recursive: true, force: true });
 }
+rmSync(join(ws, "founders/tj/ideas/drafts"), { recursive: true, force: true });
+put(join(ws, "founders/tj/_private/founder-puzzle.json"), { private: true, note: "test" });
+expect("the founder puzzle passes inside _private/", check(ws).length === 0, check(ws).join("; "));
+rmSync(join(ws, "founders/tj/_private/founder-puzzle.json"));
+
+// Roles and paths are checked at the CLI and by check (review of 1e6a0a4, findings 3 and 4).
+threw = false; try { link(ws, { handle: "tj", venture: "ventures/mentura", role: "ceo" as "founder" }); } catch { threw = true; }
+expect("link refuses a role outside the enum", threw);
+threw = false; try { link(ws, { handle: "tj", venture: "../../..", role: "founder" }); } catch { threw = true; }
+expect("link refuses a venture outside the workspace", threw);
+threw = false; try { show(ws, "../x"); } catch { threw = true; }
+expect("show refuses a handle that is not a handle", threw);
+const fr = read(join(ws, "founders/tj/founder.json")) as Rec & { ventures?: unknown[] };
+put(join(ws, "founders/tj/founder.json"), { ...fr, ventures: [...(fr.ventures ?? []), { venture: "ventures/mentura2", role: "ceo", since: "2026-10-31" }] });
+mkdirSync(join(ws, "ventures/mentura2"), { recursive: true });
+expect("fails: a role outside the enum", fails(ws, /has role ceo/));
+put(join(ws, "founders/tj/founder.json"), { ...fr, ventures: [...(fr.ventures ?? []), { venture: "../outside", role: "founder", since: "2026-10-31" }] });
+expect("fails: a venture outside the workspace", fails(ws, /outside the workspace/));
+put(join(ws, "founders/tj/founder.json"), fr);
 expect("passes again once they are gone", check(ws).length === 0, check(ws).join("; "));
 
 // Founders are workspace records: no venture route reads them.

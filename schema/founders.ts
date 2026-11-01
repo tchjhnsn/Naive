@@ -21,11 +21,17 @@
 
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type { FounderIdea, FounderInspiration, FounderReference, WorkspaceFounder } from "./types/records.d.ts";
 
 export const FOUNDERS = "founders";
 const PRIVATE = "_private";
+const ROLES = ["founder", "co-founder", "general-partner"] as const;
+type Role = (typeof ROLES)[number];
+const HANDLE = /^[a-z0-9][a-z0-9-]*$/;
+// The public layout of founders/<handle>/. Anything else at the top fails check, so a private file cannot pass
+// by being named something the guard did not guess (review of #135 at 1e6a0a4, finding 2).
+const PUBLIC_DIRS = ["ideas", "references", "inspirations"];
 const readJson = <T>(f: string): T => JSON.parse(readFileSync(f, "utf8")) as T;
 const writeJson = (f: string, o: unknown): void => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
 const today = (now: Date = new Date()): string => now.toISOString().slice(0, 10);
@@ -41,7 +47,16 @@ function uniqueId(d: string, base: string): string {
   while (existsSync(join(d, `${id}.json`))) id = `${base}-${n++}`;
   return id;
 }
+function validHandle(handle: string): void {
+  if (!HANDLE.test(handle)) throw new Error(`handle ${handle}: lowercase letters, digits and hyphens`);
+}
+/** A venture link must name a folder inside the workspace: no absolute path, no "..". */
+function insideWorkspace(ws: string, p: string): boolean {
+  const r = relative(resolve(ws), resolve(ws, p));
+  return r !== "" && !r.startsWith("..") && !isAbsolute(p) && !isAbsolute(r);
+}
 function load(ws: string, handle: string): WorkspaceFounder {
+  validHandle(handle);
   const f = founderFile(ws, handle);
   if (!existsSync(f)) throw new Error(`no founder ${handle}: run init first (${relative(ws, f)})`);
   return readJson<WorkspaceFounder>(f);
@@ -49,7 +64,7 @@ function load(ws: string, handle: string): WorkspaceFounder {
 
 /** Make founders/<handle>/ and point workspace.json at it when it names no founder yet. */
 export function init(ws: string, o: { handle: string; verification?: WorkspaceFounder["verification"]; now?: Date }): WorkspaceFounder {
-  if (!/^[a-z0-9][a-z0-9-]*$/.test(o.handle)) throw new Error(`handle ${o.handle}: lowercase letters, digits and hyphens`);
+  validHandle(o.handle);
   const f = founderFile(ws, o.handle);
   if (existsSync(f)) throw new Error(`${relative(ws, f)} already exists`);
   const taken = new Set(founderDirs(ws).map((h) => readJson<WorkspaceFounder>(founderFile(ws, h)).id));
@@ -67,9 +82,11 @@ export function init(ws: string, o: { handle: string; verification?: WorkspaceFo
 }
 
 /** Link a venture to the founder by role. */
-export function link(ws: string, o: { handle: string; venture: string; role: "founder" | "co-founder" | "general-partner"; since?: string; idea?: string; now?: Date }): WorkspaceFounder {
+export function link(ws: string, o: { handle: string; venture: string; role: Role; since?: string; idea?: string; now?: Date }): WorkspaceFounder {
   const rec = load(ws, o.handle);
   // validate everything before writing anything, so a refused link leaves no partial record
+  if (!ROLES.includes(o.role)) throw new Error(`role ${o.role}: one of ${ROLES.join(", ")}`);
+  if (!insideWorkspace(ws, o.venture)) throw new Error(`venture ${o.venture} is outside the workspace`);
   if (!existsSync(join(ws, o.venture))) throw new Error(`no venture folder ${o.venture}`);
   const ideaFile = o.idea ? join(folder(ws, o.handle), "ideas", `${o.idea}.json`) : undefined;
   if (ideaFile && !existsSync(ideaFile)) throw new Error(`no idea ${o.idea}`);
@@ -142,6 +159,7 @@ export function check(ws: string): string[] {
   const ids = new Map<string, string>();
   const records = new Map<string, WorkspaceFounder>();
   for (const h of readdirSync(root).filter((x) => statSync(join(root, x)).isDirectory())) {
+    if (!HANDLE.test(h)) { out.push(`founders/${h}: a handle is lowercase letters, digits and hyphens`); continue; }
     if (!existsSync(join(root, h, "founder.json"))) { out.push(`founders/${h}: no founder.json`); continue; }
     const f = readJson<WorkspaceFounder>(join(root, h, "founder.json"));
     records.set(h, f);
@@ -156,7 +174,9 @@ export function check(ws: string): string[] {
     for (const v of f.ventures ?? []) {
       if (seenV.has(v.venture)) out.push(`${at}: venture ${v.venture} is linked twice`);
       seenV.add(v.venture);
-      if (!existsSync(join(ws, v.venture))) out.push(`${at}: venture ${v.venture} does not exist`);
+      if (!ROLES.includes(v.role)) out.push(`${at}: venture ${v.venture} has role ${v.role}; one of ${ROLES.join(", ")}`);
+      if (!insideWorkspace(ws, v.venture)) out.push(`${at}: venture ${v.venture} is outside the workspace`);
+      else if (!existsSync(join(ws, v.venture))) out.push(`${at}: venture ${v.venture} does not exist`);
       if (v.from_idea && !existsSync(join(root, h, "ideas", `${v.from_idea}.json`))) out.push(`${at}: venture ${v.venture} cites idea ${v.from_idea}, which is not in ideas/`);
     }
 
@@ -179,16 +199,22 @@ export function check(ws: string): string[] {
       for (const r of x.references ?? []) if (!refs.has(r)) out.push(`${p}: cites reference ${r}, which is not in references/`);
     }
 
-    // Secrets, the puzzle and the real name live only in _private/; anything there is marked private.
+    // Only the public layout lives outside _private/: founder.json, and <id>.json records directly in ideas/,
+    // references/ and inspirations/. Everything else fails, whatever it is named, so the puzzle, secrets and the real
+    // name can only pass inside _private/. Anything in _private/ is marked private.
     for (const file of walk(join(root, h))) {
       const rel = relative(join(root, h), file);
-      const inPrivate = rel.split("/")[0] === PRIVATE;
-      // a folder or a file of that name, with or without an extension: secrets/, secrets.json, puzzle.md
-      if (!inPrivate && /(^|\/)(secrets?|puzzles?)(\.[^/]*)?(\/|$)/i.test(rel)) out.push(`founders/${h}/${rel}: secrets and the founder puzzle go in founders/${h}/_private/`);
-      if (inPrivate && file.endsWith(".json")) {
-        try { if (readJson<{ private?: boolean }>(file).private !== true) out.push(`founders/${h}/${rel}: a _private/ record says private: true`); }
-        catch { out.push(`founders/${h}/${rel}: not valid JSON`); }
+      const parts = rel.split("/");
+      if (parts[0] === PRIVATE) {
+        if (file.endsWith(".json")) {
+          try { if (readJson<{ private?: boolean }>(file).private !== true) out.push(`founders/${h}/${rel}: a _private/ record says private: true`); }
+          catch { out.push(`founders/${h}/${rel}: not valid JSON`); }
+        }
+        continue;
       }
+      if (parts[parts.length - 1] === ".DS_Store") continue; // macOS writes these everywhere
+      const isPublic = rel === "founder.json" || (parts.length === 2 && PUBLIC_DIRS.includes(parts[0]) && parts[1].endsWith(".json"));
+      if (!isPublic) out.push(`founders/${h}/${rel}: not part of the public founder layout; secrets, the founder puzzle and anything else private go in founders/${h}/_private/`);
     }
   }
 
@@ -234,7 +260,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!cmd || !ws) throw new Error("usage: node schema/founders.ts init|link|idea|reference|inspiration|show|check <workspace> ...");
     const handle = (): string => need(rest, "handle");
     if (cmd === "init") console.log(JSON.stringify(init(ws, { handle: handle(), verification: flag(rest, "verification") as WorkspaceFounder["verification"] }), null, 2));
-    else if (cmd === "link") console.log(JSON.stringify(link(ws, { handle: handle(), venture: need(rest, "venture"), role: need(rest, "role") as "founder", since: flag(rest, "since"), idea: flag(rest, "idea") }), null, 2));
+    else if (cmd === "link") console.log(JSON.stringify(link(ws, { handle: handle(), venture: need(rest, "venture"), role: need(rest, "role") as Role, since: flag(rest, "since"), idea: flag(rest, "idea") }), null, 2));
     else if (cmd === "idea") console.log(JSON.stringify(addIdea(ws, { handle: handle(), text: need(rest, "text"), source: flag(rest, "source") }), null, 2));
     else if (cmd === "reference") console.log(JSON.stringify(addReference(ws, { handle: handle(), type: need(rest, "type") as FounderReference["type"], title: need(rest, "title"), authors: flags(rest, "author"), issued: flag(rest, "issued"), container: flag(rest, "container"), url: flag(rest, "url"), why: flag(rest, "why") }), null, 2));
     else if (cmd === "inspiration") console.log(JSON.stringify(addInspiration(ws, { handle: handle(), zeal: need(rest, "zeal"), name: flag(rest, "name"), knownFor: flag(rest, "known-for") }), null, 2));
