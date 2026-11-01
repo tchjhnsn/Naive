@@ -9,6 +9,7 @@ export const record = "bug";
 export const describe = () => ({ record, ask: questions(schemaOf(record)).filter((q) => !["id", "venture", "status", "fixed_in"].includes(q.field)),
   derived: { id: "from the title, unique among product/bugs", status: "open", fixed_in: "null until a release fixes it" } });
 
+/** @param {any} a @param {{ venture?: string }} [o] */
 export function draft(a, { venture } = {}) {
   if (!a.title) return { ok: false, record, errors: ["a bug needs a title"] };
   const taken = venture && existsSync(ventureFile(venture, "product/bugs")) ? new Set(readdirSync(ventureFile(venture, "product/bugs")).map((f) => f.replace(/\.json$/, ""))) : new Set();

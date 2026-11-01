@@ -9,6 +9,7 @@ export const record = "glossary";
 export const describe = () => ({ record, ask: [{ field: "package", required: true, type: "string", says: schemaOf(record).properties.package.description },
   ...questions(schemaOf(record).properties.terms.items, "terms[].")], derived: { terms: "the file's current terms plus this one, in the order written" } });
 
+/** @param {any} a @param {{ venture?: string }} [o] */
 export function draft(a, { venture } = {}) {
   if (!a.package || !a.term || !a.meaning) return { ok: false, record, errors: ["a glossary entry needs package, term and meaning"] };
   const now = (venture && readJson(ventureFile(venture, `glossary/${a.package}.json`))) ?? { package: a.package, terms: [] };
