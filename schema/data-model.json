@@ -800,6 +800,7 @@
       "layer": "system",
       "level": "method",
       "schema": "schema/reference.schema.json",
+      "generator": "schema/generators/reference.mjs",
       "paths": [
         "*/references/references.json",
         "*/kits/*/references/references.json"
@@ -1798,6 +1799,7 @@
       "layer": "knowledge",
       "level": "venture",
       "schema": "schema/glossary.schema.json",
+      "generator": "schema/generators/glossary.mjs",
       "paths": [
         "instance/**/glossary/*.json",
         "schema/examples/**/glossary/*.json"
@@ -1888,6 +1890,7 @@
       "layer": "evidence",
       "level": "venture",
       "schema": "schema/bug.schema.json",
+      "generator": "schema/generators/bug.mjs",
       "paths": [
         "instance/**/product/bugs/*.json",
         "schema/examples/**/product/bugs/*.json"
@@ -1954,6 +1957,10 @@
     }
   ],
   "ignore": [
+    {
+      "path": "schema/generators/gaps.json",
+      "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
+    },
     {
       "path": "interface/plugin-mcp.json",
       "reason": "The MCP server the Claude Code plugin starts, from its own copy of the framework (EE-084); not a record"

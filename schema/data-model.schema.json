@@ -67,6 +67,11 @@
             ],
             "description": "Path to the schema that governs it, or null when it has none yet"
           },
+          "generator": {
+            "type": "string",
+            "pattern": "^schema/generators/[a-z0-9-]+\\.mjs$",
+            "description": "EE-099: the record generator beside the schema; it describes what to ask and drafts one record that passes the schema, and stores nothing itself"
+          },
           "form": {
             "enum": [
               "json",

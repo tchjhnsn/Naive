@@ -21,6 +21,7 @@ import { ventureFile } from "./venture-paths.mjs";
 
 // EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
+const GAPS = new Set(existsSync(join(root, "schema/generators/gaps.json")) ? JSON.parse(readFileSync(join(root, "schema/generators/gaps.json"), "utf8")).gaps : []);
 const load = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
 const model = load("schema/data-model.json");
 const errors = [];
@@ -43,6 +44,10 @@ for (const r of model.records) {
   types.set(r.id, r);
   if (!layers.has(r.layer)) errors.push(`${r.id}: unknown layer ${r.layer}`);
   if (r.schema && !existsSync(join(root, r.schema))) errors.push(`${r.id}: schema ${r.schema} not found`);
+  // EE-099: a record generator beside each schema. gaps.json lists the types still without one; it only shrinks.
+  if (r.generator && !existsSync(join(root, r.generator))) errors.push(`${r.id}: generator ${r.generator} not found`);
+  if (!r.generator && !GAPS.has(r.id)) errors.push(`${r.id}: names no record generator (EE-099): add schema/generators/${r.id}.mjs and the generator field`);
+  if (r.generator && GAPS.has(r.id)) errors.push(`${r.id}: has a generator, so remove it from schema/generators/gaps.json`);
   r.files = [...new Set(r.paths.flatMap(matches))];
   if (!r.files.length) warnings.push(`${r.id}: no records yet at ${r.paths.join(", ")}`);
 }
