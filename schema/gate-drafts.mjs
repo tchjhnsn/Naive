@@ -31,15 +31,15 @@ export function variantsDecision(file) {
 
 const readJson = (f) => JSON.parse(readFileSync(f, "utf8"));
 
-/** The sidecar of a draft, or null. A sidecar is a file's word, so a variant's path always comes from the draft's own name. */
+/** The sidecar of a draft, or null. A sidecar is a file's word, so which variants exist and their paths come from
+ *  the disk and the draft's own name. It only adds who wrote each one. */
 export function sidecar(dir, draft) {
   const f = ventureFile(dir, sidecarOf(draft));
-  if (!existsSync(f)) return null;
-  const meta = readJson(f);
-  if (!Array.isArray(meta.variants)) return { ...meta, variants: undefined };
-  const seen = new Set();
-  const variants = meta.variants.filter((v) => /^[a-z]$/.test(v?.variant) && !seen.has(v.variant) && seen.add(v.variant))
-    .map((v) => ({ ...v, file: variantPath(draft, v.variant) })).filter((v) => existsSync(ventureFile(dir, v.file)));
+  const meta = existsSync(f) ? readJson(f) : null;
+  const listed = Array.isArray(meta?.variants) ? meta.variants : [];
+  const variants = [...LETTERS].map((variant) => ({ variant, file: variantPath(draft, variant) })).filter((v) => existsSync(ventureFile(dir, v.file)))
+    .map((v) => ({ ...listed.find((x) => x?.variant === v.variant), ...v, sha256: sha(readFileSync(ventureFile(dir, v.file))) }));
+  if (!meta && variants.length < 2) return null;
   return { ...meta, variants };
 }
 
@@ -70,7 +70,7 @@ export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }
   const variants = meta?.variants?.length ? meta.variants : [{ variant: "a", file: draft, by: "agent", at, sha256: sha(readFileSync(dest)) }];
   const same = variants.find((v) => v.sha256 === sha(text));
   if (same) return { written: same.file, variant: same.variant, variants: variants.map((v) => v.variant), decision: meta?.decision ?? null };
-  const next = LETTERS[variants.length];
+  const next = [...LETTERS].find((l) => !variants.some((v) => v.variant === l));
   if (!next) throw new Error(`${route} already holds ${variants.length} drafts side by side; accept one first`);
   const vfile = variantPath(draft, next);
   writeFileSync(ventureFile(dir, vfile), text);
