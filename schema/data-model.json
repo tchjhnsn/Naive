@@ -576,7 +576,8 @@
         "instance/**/product/anatomy/answers*.json",
         "instance/**/product/anatomy.answers*.json",
         "instance/**/purpose/anatomy.answers*.json",
-        "purpose/frameworks/product-anatomy/examples/*.json"
+        "purpose/frameworks/product-anatomy/examples/*.json",
+        "purpose/frameworks/product-anatomy/examples/*/*.json"
       ],
       "refs": [
         {
