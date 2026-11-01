@@ -221,7 +221,8 @@ if (cmd === "accept") {
   try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error(e.message); process.exit(1); }
   const chosenFile = ventureFile(d.dir, chosen);
   const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
-  const touched = foundationOf(recType);
+  const touched = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !s.derived_from).map((s) => ({ ...s, ...statementFiles(d.dir, s) })).filter((s) => s.files.includes(d.file));
+  touched.push(...foundationOf(recType).filter((s) => !touched.some((t) => t.id === s.id)));
   if (touched.length) {
     const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
     const now = existsSync(ventureFile(d.dir, d.file)) ? JSON.parse(readFileSync(ventureFile(d.dir, d.file), "utf8")) : {};
