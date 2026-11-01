@@ -35,11 +35,11 @@ const readJson = (f) => JSON.parse(readFileSync(f, "utf8"));
  *  the disk and the draft's own name. It only adds who wrote each one. */
 export function sidecar(dir, draft) {
   const f = ventureFile(dir, sidecarOf(draft));
-  if (!existsSync(f)) return null;
-  const meta = readJson(f);
-  if (!Array.isArray(meta.variants)) return { ...meta, variants: undefined };
+  const meta = existsSync(f) ? readJson(f) : null;
+  const listed = Array.isArray(meta?.variants) ? meta.variants : [];
   const variants = [...LETTERS].map((variant) => ({ variant, file: variantPath(draft, variant) })).filter((v) => existsSync(ventureFile(dir, v.file)))
-    .map((v) => ({ ...meta.variants.find((x) => x?.variant === v.variant), ...v, sha256: sha(readFileSync(ventureFile(dir, v.file))) }));
+    .map((v) => ({ ...listed.find((x) => x?.variant === v.variant), ...v, sha256: sha(readFileSync(ventureFile(dir, v.file))) }));
+  if (!meta && variants.length < 2) return null;
   return { ...meta, variants };
 }
 

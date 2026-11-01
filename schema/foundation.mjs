@@ -73,9 +73,8 @@ function wrote(dir, file, by, seen = new Set()) {
   return es.some((e) => by(e) && !["confirm", "move", "release", "accept"].includes(e.activity))
     || es.filter((e) => e.activity === "move").flatMap((e) => e.derived_from ?? []).some((p) => wrote(dir, p, by, seen));
 }
-/** An agent wrote this file's content: what a card may say. A baseline only adopts a file, and a write derived
- *  from the file itself (a migration lifting a field out) keeps the words already there. */
-export const agentWrote = (dir, file) => wrote(dir, file, (e) => e.agent?.kind === "agent" && e.activity !== "baseline" && !e.derived_from?.includes(e.entity));
+/** An agent wrote this file's content: what a card may say. A baseline only adopts a file. */
+export const agentWrote = (dir, file) => wrote(dir, file, (e) => e.agent?.kind === "agent" && e.activity !== "baseline");
 /** Anyone but a person wrote this file's content: what waits for a person to confirm. */
 export const unsignedWrite = (dir, file) => wrote(dir, file, (e) => e.agent?.kind !== "person");
 
