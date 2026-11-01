@@ -32,6 +32,7 @@ import { loadPackages } from "./load-packages.mjs";
 // Upgrades hook (U-5): packages a venture adopted early in naive.config.json open now.
 import { adopted } from "./naive-config.mjs";
 import { ventureFile } from "./venture-paths.mjs";
+import { scale } from "./canonical.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -42,7 +43,11 @@ const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const r2 = (x) => Math.round(x * 100) / 100;
 const json = (dir, f) => existsSync(ventureFile(dir, f)) ? load(ventureFile(dir, f)) : null;
 
-/** The facts the packages test: need-now's, the founder's flags, and the question matrix's answers. */
+/**
+ * The facts the packages test: need-now's, the founder's flags, and the question matrix's answers.
+ * @param {string} dir
+ * @param {{ flags?: Record<string, *>, answers?: Record<string, *> | null }} [opts]
+ */
 export function situation(dir, { flags = {}, answers = null } = {}) {
   const f = needFacts(dir);
   const phase = PHASES.includes(f.phase) ? f.phase : "discovery";
@@ -81,7 +86,7 @@ export function request(dir) {
   const dump = dumpFile ? readFileSync(ventureFile(dir, dumpFile), "utf8").slice(0, 2500) : null;
   const problem = json(dir, "foundation/problem.json") ?? json(dir, "purpose/validation/problem.json");
   const icpRec = icpProfiles(dir).map(({ file, ...p }) => p);
-  return { state: { venture: say({ name: v.name, phase: v.phase, ambition: v.ambition, form: v.form, core: v.core }), problem: say(problem), icp: say(icpRec.length ? { profiles: icpRec } : null),
+  return { state: { venture: say({ name: v.name, phase: v.phase, ambition: scale(dir, v), form: v.form, core: v.core }), problem: say(problem), icp: say(icpRec.length ? { profiles: icpRec } : null),
     products: say(filesOf(dir, "product").map((p) => json(dir, p)).filter(Boolean).map((p) => ({ name: p.name, offering: p.offering, description: p.description }))), ideas: dump,
     guidelines: "These are one venture's own records and its founder's idea dump. Answer only from what they say; when they do not say, answer low." },
     model: "jev-latest", questions: Object.fromEntries(questions.filter((q) => q.by === "open").map((q) => [`q:${q.id}`, { type: "noul", instructions: q.ask, criteria: { true: "Yes, the records say or clearly imply it", false: "No, or the records do not say" } }])) };

@@ -18,7 +18,17 @@
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route;
 //                                                   [--pick <letter>] [--by <name>] accepts one of drafts kept side by side
-//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--confirm <decision>]
+//   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
+//          [--reason "<claim>" | --against "<claim>" | --context "<claim>"] [--cite <ref> [--locator <where>]] ...
+//                                                   reasons with citations, frozen with each cited file's sha256 at approval
+//   mentura decisions --venture <id> [--why <decision>] [--json]
+//                                                   the ranked decisions; --why prints one decision's reasons and citations
+//                                                   a new --answer on a decided decision makes its next version; --rollback restores one
+//   mentura visibility <record> [<field>] --venture <id> [--public --by <name> | --propose]   field visibility; a person approves public
+//   mentura merge <decision> --venture <id> --by <name> | --role <role> [--confirm <decision>]
+//   mentura index --venture <id> [--since <iso>] [--rebuild]   update the live decision index from provenance
+//   mentura impact <decision> --venture <id>       rebuild a merged decision's impact map across the functions
+//                                                   apply a decided version to the records it decides (applies_to)
 //                                                   a person makes a decision: approves its wording or gives their own (EE-058)
 //   mentura propose --venture <id> --input <file.json> [--as <role>]
 //                                                   an agent proposes a decision; it stays open until a person decides
@@ -61,12 +71,15 @@ import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
-import { FRAME, filesOf } from "../../schema/foundation.mjs";
-import { approve, decisions, propose } from "../../schema/decisions.mjs";
+import { FRAME, filesOf, statementFiles } from "../../schema/foundation.mjs";
+import { approve, decisionFile, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
+import { reasonsFromArgs, whyLines } from "../../schema/reasons.mjs";
+import { impact } from "../../schema/impact.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../schema/gate-drafts.mjs";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { ventureFile } from "../../schema/venture-paths.mjs";
+import { setPublic, visibilityOf } from "../../schema/visibility.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
@@ -191,6 +204,7 @@ if (cmd === "init") {
 }
 
 if (cmd === "accept") {
+  if (routes().find((r) => r.route === action)?.view_of) { console.error("not accepted: this route takes no drafts; a person writes it directly"); process.exit(1); }
   // The person at the keyboard accepts a draft: it is checked again and moved into place. The CLI
   // cannot tell a person from an agent running it, so the repository's review (a pull request a
   // person merges) remains the gate that holds; this makes the person's step explicit.
@@ -207,9 +221,10 @@ if (cmd === "accept") {
   try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error(e.message); process.exit(1); }
   const chosenFile = ventureFile(d.dir, chosen);
   const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
-  const touched = foundationOf(recType);
+  const touched = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !s.derived_from).map((s) => ({ ...s, ...statementFiles(d.dir, s) })).filter((s) => s.files.includes(d.file) || (s.id === "exit-criteria" && d.file.startsWith("foundation/exit-criteria/")));
+  touched.push(...foundationOf(recType).filter((s) => !touched.some((t) => t.id === s.id)));
   if (touched.length) {
-    const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+    const get = (o, p) => p === "." ? o : p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
     const now = existsSync(ventureFile(d.dir, d.file)) ? JSON.parse(readFileSync(ventureFile(d.dir, d.file), "utf8")) : {};
     const next = JSON.parse(readFileSync(chosenFile, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
@@ -226,7 +241,93 @@ if (cmd === "accept") {
   process.exit(0);
 }
 
+if (cmd === "visibility") {
+  // Field visibility (publishing gate): each field's level, or a person approves one as public, pinning
+  // its wording by sha256. An agent may only propose (--propose); the field stays as it was.
+  const venture = opt("venture"), rel = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !rel) usage();
+  const file = rel.endsWith(".json") ? rel : `${rel}.json`;
+  const field = positional[2];
+  if (flag("public") || flag("propose")) {
+    if (!field) { console.error("name the field: mentura visibility <record> <field> --venture <id> --public --by <name>"); process.exit(2); }
+    const by = opt("by") ?? process.env.MENTURA_PERSON;
+    const actor = process.env.MENTURA_ACTOR_ID;
+    if (flag("public") && (process.env.MENTURA_ACTOR === "agent" || process.env.MENTURA_MODEL || (actor && actor !== by))) { console.error(`an agent (${actor ?? process.env.MENTURA_MODEL ?? "MENTURA_ACTOR"}) is acting: only a person approves a field as public; an agent proposes (--propose)`); process.exit(1); }
+    const r = setPublic(dir, file, field, flag("propose") ? { propose: true, agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID } : { by });
+    if (!r.ok) { console.error(r.error); process.exit(1); }
+    record(dir, { entity: file.replace(/\.json$/, ".visibility.json"), route: "governance/visibility", activity: flag("propose") ? "draft" : "accept", agent: agentFromEnv(flag("propose") ? "agent" : "person", "cli", flag("propose") ? {} : { id: by }), note: `${flag("propose") ? "proposed" : "approved"} ${file}#${field} as public` });
+    out(r.result);
+    process.exit(0);
+  }
+  if (!existsSync(ventureFile(dir, file))) { console.error(`no record ${file} in ${venture}`); process.exit(1); }
+  const rec = JSON.parse(readFileSync(ventureFile(dir, file), "utf8"));
+  out(Object.fromEntries(Object.keys(rec).filter((k) => !field || k === field).map((k) => [k, visibilityOf(dir, file, k)])));
+  process.exit(0);
+}
+
+if (cmd === "merge") {
+  // A person (or a delegated role) applies a decided version to the records it decides (applies_to).
+  // Approving and merging are separate steps; typing the decision's id confirms the merge.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const d = decisions(dir).decisions.find((x) => x.id === id);
+  if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+  if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
+  // --role merges as a role under a delegation grant that names may_merge (an agent with no --by merges as its role).
+  const by = opt("by") ?? (opt("role") ? undefined : process.env.MENTURA_PERSON);
+  const r = merge(dir, id, { by, role: opt("role") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "index") {
+  // The live decision index (schema/decision-index.mjs): re-scores every active decision
+  // (an update equals a rebuild) and appends rank history for what moved.
+  const venture = opt("venture");
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const { rebuild, update } = await import("../../schema/decision-index.mjs");
+  const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
+  out({ venture: idx.venture, phase: idx.phase, update: { mode: idx.last_update.mode, events: idx.last_update.events, rescored: idx.last_update.touched.map((t) => t.id) },
+    flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),
+    ranked: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, why: e.why })) });
+  process.exit(0);
+}
+
+if (cmd === "impact") {
+  // Which records in each function depend on what a merged decision changed; marks them stale and
+  // proposes an open follow-up decision per function (merge runs this itself).
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const r = impact(dir, id, { via: "cli" });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "decisions") {
+  // The ranked decisions, or with --why one decision's reasons and what they cite.
+  const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
+  if (!dir) usage();
+  const r = decisions(dir);
+  const id = opt("why");
+  if (id) {
+    const f = decisionFile(dir, id);
+    if (!f) { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+    const d = JSON.parse(readFileSync(ventureFile(dir, f), "utf8"));
+    const live = r.decisions.find((x) => x.id === id);
+    out(flag("json") ? { id, reasons: d.reasons ?? [], approved_on: d.provenance?.reasons ?? [], changed: live?.reasons_changed ?? [], render: live?.render } : whyLines(dir, d).join("\n"));
+  } else out(flag("json") ? r : r.decisions.filter((d) => d.rank !== null && d.rank !== undefined).map((d) => `${String(d.rank).padStart(4)} ${d.render.padEnd(8)} ${d.id}${d.why?.length ? `\n       why: ${d.why.join("; ")}` : ""}`).join("\n") || "nothing to decide now");
+  process.exit(0);
+}
+
 if (cmd === "decide") {
+  let givenReasons = [];
+  try { givenReasons = reasonsFromArgs(argv); } catch (e) { console.error(e.message); process.exit(2); }
   // A person makes a decision (EE-058): approves the drafted wording, or gives their own with
   // --answer. Typing the decision's id confirms it. Provenance records who, when and in which phase.
   const venture = opt("venture"), id = action;
@@ -235,7 +336,9 @@ if (cmd === "decide") {
   const d = decisions(dir).decisions.find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
-  const r = approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note") });
+  const r = opt("rollback") !== undefined
+    ? rollback(dir, id, opt("rollback"), { by: opt("by") ?? process.env.MENTURA_PERSON })
+    : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note"), reasons: givenReasons.length ? givenReasons : undefined });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
@@ -272,10 +375,11 @@ if (cmd === "confirm") {
   const s = FRAME.questions.flatMap((q) => q.statements).find((x) => x.id === id);
   if (!s?.record) { console.error(`${id} is not a foundation statement with a record (see mentura purpose/foundation run)`); process.exit(1); }
   const rt = routes().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
-  const hits = filesOf(dir, s.record).filter((f) => existsSync(ventureFile(dir, f)));
+  const { files: home, attribute } = statementFiles(dir, s);
+  const hits = home.filter((f) => existsSync(ventureFile(dir, f)));
   if (!hits.length) { console.error(`${venture} has no ${s.record} record to confirm`); process.exit(1); }
   const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
-  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), s.attribute) ?? null)}`).join("\n");
+  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), attribute) ?? null)}`).join("\n");
   if (!(await typed(id, `Confirming ${id} as yours:\n${shown}`))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
   for (const f of hits) record(dir, { entity: f, route: rt, activity: "confirm", statement: id, agent: agentFromEnv("person", "cli"), note: opt("note") });
   out(`confirmed: ${id}`);
@@ -323,7 +427,7 @@ if (["read", "view"].includes(action) && flag("hierarchy")) input = { ...(input 
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
 // Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
 if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
-let r = await call({ venture, route: cmd, action, input, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+let r = await call({ venture, route: cmd, action, input, actor: ["person", "public"].includes(opt("as")) ? opt("as") : "agent", workspace, via: "cli", provenance });
 // Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
 if (r.ok && r.needs_input && !flag("json")) {
   const n = r.needs_input;
@@ -334,7 +438,7 @@ if (r.ok && r.needs_input && !flag("json")) {
   const a = (await rl.question("Fill in (f) or run as is (r)? ")).trim().toLowerCase();
   rl.close();
   if (!a.startsWith("r")) { console.log(`Fill in: ${n.options[0].how}`); process.exit(0); }
-  r = await call({ venture, route: cmd, action, input: { ...(input ?? {}), as_is: true }, actor: opt("as") === "person" ? "person" : "agent", workspace, via: "cli", provenance });
+  r = await call({ venture, route: cmd, action, input: { ...(input ?? {}), as_is: true }, actor: ["person", "public"].includes(opt("as")) ? opt("as") : "agent", workspace, via: "cli", provenance });
 }
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);

@@ -16,7 +16,7 @@ tags: [operator-console, methodology-product, orchestration-software, mockup, ht
 
 # `operator-console/` — The Operator Console
 
-*Renamed from `harness/` on 2026-10-26 (G-029): "harness" now means only the entity class for a first-party interface over a product.*
+*Renamed from `harness/` on 2026-10-26 (G-029). G-039 later returned that entity class to "app"; EE-096 gave "harness" its industry sense (the software around a model) and named the operator console's kind of tool a workbench, so the operator console is a custom workbench.*
 
 > Working folder for the operator console — the operational software layered on top of the SAD methodology. Per §39, the trajectory is HTML now → real software later. The first mockup is **[[project-view-mockup-2026-05-14.html]]**. Open it in a browser.
 

@@ -37,9 +37,12 @@
         "baseline",
         "confirm",
         "move",
-        "release"
+        "release",
+        "publish",
+        "rollback",
+        "merge"
       ],
-      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release"
+      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity."
     },
     "agent": {
       "type": "object",
@@ -53,12 +56,18 @@
         "kind": {
           "enum": [
             "person",
-            "agent"
-          ]
+            "agent",
+            "unverified"
+          ],
+          "description": "unverified: a door with no sign-in said a person acted; the id is a claimed name"
         },
         "id": {
           "type": "string",
           "description": "A person's name or handle, or an agent's role id from the team plan"
+        },
+        "account": {
+          "type": "string",
+          "description": "The account a door with sign-in checked for this person"
         },
         "model": {
           "type": "string",
@@ -77,9 +86,22 @@
             "cli",
             "mcp",
             "api",
-            "router"
+            "router",
+            "console"
           ],
           "description": "The interface the write came through"
+        }
+      },
+      "if": {
+        "required": [
+          "account"
+        ]
+      },
+      "then": {
+        "properties": {
+          "kind": {
+            "const": "person"
+          }
         }
       }
     },
@@ -149,6 +171,11 @@
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
       "description": "confirm only: the id of the guiding statement confirmed (purpose/guiding-statements.json)"
+    },
+    "statements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "write to foundation/core only: the foundation statements this write confirms. Other statements in the same file stay as they were."
     }
   }
 }

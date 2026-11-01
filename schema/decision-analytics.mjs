@@ -43,7 +43,7 @@ export function analytics(dir, now) {
       id: d.id, question: d.question, kind: d.source === "draft" ? "acceptance" : d.source === "foundation" ? "foundation statement" : "decision",
       type: raw.type ?? titleOf(statement ?? record ?? d.id), function: fn ? PACKAGES.core[fn].title : "Venture", function_id: fn ?? "venture",
       state, render: d.render, decided_by: pv?.approved_by ?? null, decided_at: pv?.approved_at ?? null, phase: pv?.phase ?? null,
-      wording: state === "decided" ? (pv?.wording ?? "unknown") : null,
+      wording: state === "decided" ? (pv?.wording ?? (pv?.signer === "unverified" ? "unverified" : "unknown")) : null,
       outcomes: (raw.outcomes ?? []).map((o) => o.result ?? "pending"),
     };
   });
@@ -60,7 +60,7 @@ export function analytics(dir, now) {
     venture: r.venture, phase: r.phase, total: rows.length, decided: decided.length, open: rows.filter((x) => x.state === "open").length,
     functions, types: count(rows, (x) => x.type), kinds: count(rows, (x) => x.kind),
     wording: count(decided, (x) => x.wording), by: count(decided.filter((x) => x.decided_by), (x) => x.decided_by), phases: count(decided.filter((x) => x.phase), (x) => x.phase),
-    outcomes: { total: outcomes.length, ...Object.fromEntries(["met", "partly", "missed", "pending"].map((k) => [k, outcomes.filter((o) => o === k).length])) },
+    outcomes: /** @type {{ total: number, met: number, partly: number, missed: number, pending: number }} */ ({ total: outcomes.length, ...Object.fromEntries(["met", "partly", "missed", "pending"].map((k) => [k, outcomes.filter((o) => o === k).length])) }),
     over_time: days.map(({ key, n }) => ({ day: key, decided: n })),
     decisions: rows,
     next: [

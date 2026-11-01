@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "conversation-ref.schema.json",
+  "title": "Conversation citation",
+  "description": "Where a record came from in the founder's own words: the transcript file, the message's timestamp and the sha256 of the redacted message, as kept in raw/sources/conversations-<date>/messages.jsonl (naive diagnose)",
+  "type": "object",
+  "required": [
+    "file",
+    "timestamp",
+    "sha256"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "The raw source holding the message: conversations-<date>[-n]"
+    },
+    "file": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -84,7 +84,8 @@ function git(src) {
   if (statSync(g).isFile()) return { linked: true, worktrees: [], uncommitted: null };
   const run = (...a) => spawnSync("git", ["-C", src, ...a], { encoding: "utf8" });
   const wt = (run("worktree", "list", "--porcelain").stdout ?? "").split("\n").filter((l) => l.startsWith("worktree ")).map((l) => l.slice(9)).filter((p) => real(p) !== real(src));
-  const st = run("status", "--porcelain");
+  // --no-optional-locks: status must not rewrite .git/index. The plan reads the folder and writes nothing (EE-076).
+  const st = run("--no-optional-locks", "status", "--porcelain");
   return { linked: false, worktrees: wt, uncommitted: st.status === 0 ? st.stdout.split("\n").filter(Boolean).length : null };
 }
 
@@ -105,7 +106,12 @@ export function busy(src) {
 const readPlan = (dir) => existsSync(ventureFile(dir, PLAN)) ? JSON.parse(readFileSync(ventureFile(dir, PLAN), "utf8")) : null;
 const readMap = (dir) => existsSync(ventureFile(dir, MAP)) ? JSON.parse(readFileSync(ventureFile(dir, MAP), "utf8")) : { sources: [], records: {} };
 
-/** The planned move of `folder` into the venture at `dir`. Reads both, writes neither. */
+/**
+ * The planned move of `folder` into the venture at `dir`. Reads both, writes neither.
+ * @param {string} folder
+ * @param {string} dir
+ * @param {{ to?: string, links?: string[] }} [opts]
+ */
 export function planOne(folder, dir, { to, links = [] } = {}) {
   if (!existsSync(folder) || !lstatSync(folder).isDirectory()) throw new Error(`${folder} is not a directory`);
   if (!existsSync(join(dir, "venture.json"))) throw new Error(`${dir} is not a venture: create one first with naive init`);
@@ -114,7 +120,8 @@ export function planOne(folder, dir, { to, links = [] } = {}) {
   if (inside(v, src)) throw new Error("the venture cannot sit inside the folder it ports");
   const dest = resolve(v, to ?? join(CODEBASE, basename(src)));
   const s = statSync(src);
-  const item = { action: "move", from: src, to: dest, source: slug(basename(src)), identity: { dev: s.dev, ino: s.ino }, ...measure(src) };
+  const item = /** @type {ReturnType<typeof measure> & { action: string, from: string, to: string, source: string, identity: { dev: number, ino: number }, reason?: string,
+    git?: ReturnType<typeof git>, links?: ReturnType<typeof linksInto>, busy?: ReturnType<typeof busy>, warnings?: string[] }} */ ({ action: "move", from: src, to: dest, source: slug(basename(src)), identity: { dev: s.dev, ino: s.ino }, ...measure(src) });
   const warnings = [];
   const leave = (why) => Object.assign(item, { action: "leave", reason: why });
   if (existsSync(dest)) leave(`${dest} already exists; a port never overwrites`);
@@ -174,7 +181,7 @@ export function apply(dir, p, { agent = agentFromEnv("person", "cli"), evenIfBus
     map.sources.push({ id: i.source, connector: "filesystem", writes: "none", root, note: `source of truth, moved here unchanged from ${i.from} by naive port` });
     mkdirSync(dirname(ventureFile(dir, MAP)), { recursive: true });
     writeFileSync(ventureFile(dir, MAP), JSON.stringify(map, null, 2) + "\n");
-    record(dir, { entity: root, activity: "port", agent, derived_from: [`file://${i.from}`], sha256: measure(i.to).manifest, note: `moved unchanged (${i.files} files); named in sources.json as source ${i.source}` });
+    record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: root, activity: "port", agent, derived_from: [`file://${i.from}`], sha256: measure(i.to).manifest, note: `moved unchanged (${i.files} files); named in sources.json as source ${i.source}` }));
     i.done = new Date().toISOString();
     done.push(i);
     writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");

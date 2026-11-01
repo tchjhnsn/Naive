@@ -11,7 +11,10 @@
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
+//                      [--door <door>] [--account <id>]
 //
+// --door names the interface when it is not the CLI. Without --account the founder's name is a claim
+// and the provenance log says unverified; --account names the account that door checked.
 // --source says where a function keeps its truth (schema/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
 // --source finance=rho. Rho is synced at setup: its sandbox, the founder's own with RHO_API_TOKEN, or a
@@ -47,7 +50,7 @@ const FORMS = JSON.parse(readFileSync(join(framework, "schema/venture.schema.jso
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name", "door", "account"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
@@ -90,6 +93,10 @@ ventureName ??= basename(dir);
 const id = slug(basename(dir));
 if (!id) fail(`${basename(dir)} has no letters or digits to make a venture id from`);
 if (existsSync(dir) && readdirSync(dir).length) fail(`${dir} already exists and is not empty. create-venture only creates new ventures; to bring an existing project in, create one here and run naive port or naive migrate.`);
+// A workspace file that does not parse stops here, before the venture folder is made.
+const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(join(framework, "schema/workspace.mjs"));
+let ownWorkspace = null;
+if (!flag("no-workspace")) try { ownWorkspace = findWorkspace(dirname(dir)); if (ownWorkspace) loadWorkspace(ownWorkspace); } catch (e) { fail(e.message); }
 
 // The framework's registries: venture types, roles and functions (EE-082).
 const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "schema/venture-type.mjs")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
@@ -239,7 +246,10 @@ const { ventureFile: vf, physical } = await import(join(framework, "schema/ventu
 const { agentFromEnv, record } = await import(join(framework, "interface/provenance.mjs"));
 const today = new Date().toISOString().slice(0, 10);
 mkdirSync(vf(dir, "people/founders"), { recursive: true });
-const asPerson = agentFromEnv("person", "cli", { id: people[0].id });
+const door = opt("door") ?? "cli";
+const account = opt("account");
+const founderKind = door === "cli" || account ? "person" : "unverified";
+const asPerson = agentFromEnv(founderKind, door, { id: people[0].id, account });
 for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
   p.founder_file = `people/founders/${p.id}.json`;
   writeFileSync(vf(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, ...(structured ? {} : { hats: p.hats }), joined: today }, null, 2) + "\n");
@@ -250,7 +260,7 @@ record(dir, { entity: "people/people.json", route: "people", activity: "write", 
 if (answers.dump) {
   mkdirSync(vf(dir, "raw"), { recursive: true });
   copyFileSync(resolve(answers.dump), vf(dir, "raw/dump.md"));
-  record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv("person", "cli"), note: `the founder's idea dump, verbatim, from ${resolve(answers.dump)}` });
+  record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv(founderKind, door, { account }), note: `the founder's idea dump, verbatim${door === "cli" ? `, from ${resolve(answers.dump)}` : ""}` });
 }
 
 // knowledge/sources.json: each function's systems of record, as pointers (EE-083). Rho is read by code, so it is synced now.
@@ -285,7 +295,7 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
   devDependencies: { [fw.name]: spec },
 }, null, 2) + "\n");
-writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
+writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder conversations and what is caught in them stay local, in case a redaction misses something.\n**/raw/sources/conversations-*/\n**/raw/sources/diagnosis-*/\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(join(framework, "interface/router.mjs"));
@@ -314,18 +324,14 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
 // naive-workspace.json above the venture lists it; with none, the venture's parent folder becomes the
 // workspace, named "Naive workspace" until the founder renames it, with an AGENTS.md for rules that hold
 // across every venture. --no-workspace leaves the parent folder as it is.
+// The workspace's file, AGENTS.md, folders, clock (its timeZone) and calendar come from schema/workspace.mjs,
+// the same code naive workspace init runs, so both ways in make the same workspace.
 let workspace = null;
 if (!flag("no-workspace")) {
-  let up = dirname(dir);
-  while (!existsSync(join(up, WORKSPACE_FILE)) && dirname(up) !== up) up = dirname(up);
-  const root = existsSync(join(up, WORKSPACE_FILE)) ? up : dirname(dir);
-  const wf = join(root, WORKSPACE_FILE);
-  const ws = existsSync(wf) ? JSON.parse(readFileSync(wf, "utf8")) : { schema: "everything-ecosystem", schema_version: readFileSync(join(framework, "schema/VERSION"), "utf8").trim(), name: "Naive workspace", ventures: [] };
-  const rel = relative(root, dir);
-  if (!ws.ventures.includes(rel)) ws.ventures.push(rel);
-  writeFileSync(wf, JSON.stringify(ws, null, 2) + "\n");
-  if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
-  workspace = { root, name: ws.name };
+  const root = ownWorkspace ?? dirname(dir);
+  const { ws } = ensureWorkspace(root, { owner: people[0].id });
+  addVenture(root, dir);
+  workspace = { root, name: ws.name, timeZone: ws.timeZone };
 }
 
 try { mkdirSync(dirname(prefsFile), { recursive: true }); writeFileSync(prefsFile, JSON.stringify({ type: vtype.id, role, mode, phase: answers.phase, layers: answers.layers, legalForm: answers.legalForm }, null, 2) + "\n"); } catch {}
@@ -335,7 +341,7 @@ const cd = relative(process.cwd(), dir) || ".";
 const legal = functions.legal?.systems.length ? null : "Legal documents: none connected yet. Point Naive at them later with --source legal=google-drive:<folder> (or docusign, local-folder), and draft the founder agreement with the founding-agreement kit.";
 console.log(`
 ${bold("Success!")} Created ${basename(dir)} at ${dir}
-Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE})` : "none (--no-workspace)"}
+Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE}), clock in ${workspace.timeZone}, calendar in calendar/` : "none (--no-workspace)"}
 Git: ${git}${rhoNote ? `\n${rhoNote}` : ""}${legal ? `\n${legal}` : ""}
 
 Inside that directory, you can run:

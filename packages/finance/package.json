@@ -42,7 +42,9 @@
   ],
   "schemas": [],
   "templates": [],
-  "checks": [],
+  "checks": [
+    "schema/lint-finance.mjs"
+  ],
   "skill": {
     "id": "finance-function",
     "path": "packages/finance/skill/SKILL.md"

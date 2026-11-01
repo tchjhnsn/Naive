@@ -43,8 +43,20 @@ export const LADDER = [
 const LABEL = { 2: "demonstrated", 1: "inferred" };
 const MIN_SAMPLE = 5, MAX_AGE_MONTHS = 18;
 
-const months = (from, to) => (to - new Date(from)) / (1000 * 60 * 60 * 24 * 30.44);
+const months = (from, to) => (to - +new Date(from)) / (1000 * 60 * 60 * 24 * 30.44);
 export const originOf = (e) => e.origin ?? (e.source?.path && !e.source?.url ? "first-hand" : "reported");
+
+// The foundation/problem route writes foundation/problem.json (the first path in the data model)
+// and keeps purpose/validation/problem.json when that file is already the record. Read the same
+// file the route reads, or the assessment cannot see a claim the template just wrote.
+const PROBLEM_FILES = ["foundation/problem.json", "purpose/validation/problem.json"];
+export function problemFile(dir) {
+  for (const rel of PROBLEM_FILES) {
+    const p = ventureFile(dir, rel);
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
 
 /** How strongly one item bears on its assumption: 2 demonstrates, 1 infers, 0 counts for nothing. */
 export function strength(e, today = new Date()) {
@@ -96,13 +108,20 @@ export function preflight(rec) {
 
 export const ASK = "Some things the assessment reads are missing. Fill them in first, or run it as is?";
 
-/** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. */
+/** @typedef {{ field: string, items?: string[], why: string, as_is: string }} Missing */
+/** @typedef {ReturnType<typeof ladder>} Rung */
+/**
+ * @typedef {{ needs_input?: { ask: string, missing: Missing[], options: { choice: string, how: string }[] } } & Partial<Rung & { venture: string | null, ran_as_is: boolean, missing: Missing[], assumptions: ReturnType<typeof label>,
+ *   forms: ({ form: string, statement: string, assumptions: ReturnType<typeof label> } & Pick<Rung, "supports" | "next" | "blocking">)[] }>} Assessment
+ */
+
+/** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. @returns {Assessment} */
 export function assess(dir, { as_is = false, today = new Date() } = {}) {
-  const f = join(ventureFile(dir, "purpose/validation/problem.json"));
-  const rec = existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
+  const f = problemFile(dir);
+  const rec = f ? JSON.parse(readFileSync(f, "utf8")) : null;
   const missing = preflight(rec);
   if (missing.length && !as_is) return { needs_input: { ask: ASK, missing, options: [
-    { choice: "fill-in", how: "write the missing fields to purpose/validation/problem.json (template: purpose/kits/validation/templates/problem.md), then run again" },
+    { choice: "fill-in", how: "write the missing fields through foundation/problem (foundation/problem.json, or purpose/validation/problem.json when that file is already the record; template: purpose/kits/validation/templates/problem.md), then run again" },
     { choice: "run-as-is", how: "run again with as_is (CLI --as-is; MCP and API as_is: true)" }] } };
   const labels = label(rec, today);
   // Each open form is assessed from its own evidence; its evidence also counts for the root.
@@ -118,7 +137,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   if (!dir) { console.error("usage: node schema/assess-problem.mjs <venture dir> [--json] [--preflight] [--as-is]"); process.exit(2); }
   const flag = (f) => process.argv.includes(f);
-  const out = flag("--preflight") ? { missing: preflight(existsSync(join(ventureFile(dir, "purpose/validation/problem.json"))) ? JSON.parse(readFileSync(join(ventureFile(dir, "purpose/validation/problem.json")), "utf8")) : null) } : assess(dir, { as_is: flag("--as-is") });
+  const loaded = problemFile(dir);
+  /** @type {Assessment} */
+  const out = flag("--preflight") ? { missing: preflight(loaded ? JSON.parse(readFileSync(loaded, "utf8")) : null) } : assess(dir, { as_is: flag("--as-is") });
   if (flag("--json")) { console.log(JSON.stringify(out, null, 2)); process.exit(0); }
   const list = (m) => m.map((x) => `  - ${x.field}${x.items ? ` (${x.items.join(", ")})` : ""}: ${x.why}. As is: ${x.as_is}`).join("\n");
   if (out.needs_input) { console.log(`${out.needs_input.ask}\n${list(out.needs_input.missing)}\nFill in: ${out.needs_input.options[0].how}\nRun as is: ${out.needs_input.options[1].how}`); process.exit(0); }

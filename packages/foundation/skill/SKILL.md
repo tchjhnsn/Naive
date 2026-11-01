@@ -22,10 +22,14 @@ Package `packages/foundation`. A venture function is a part of the venture with 
 |---|---|---|
 | `foundation/problem` | The problem claim and its graded evidence | `validation-problem` |
 | `foundation/icp` | Who the venture serves; one primary profile | `icp` |
-| `foundation/telos` | The end the venture exists to reach, with exit criteria per phase | `telos` |
+| `foundation/goals/telos` | The end the venture exists to reach, with its measures | `goal` |
+| `foundation/goals/owner-outcome` | What the owners intend once the end is reached | `goal` |
+| `foundation/exit-criteria/<phase>` | What must be true to leave a phase | `exit-criteria` |
 | `foundation/alignment` | How products and agents must behave | `alignment` |
 | `knowledge/venture-profile` | The story and thesis in prose (read only) | `venture-profile` |
 | `purpose/foundation` | Command: the Five Ws and How, each confirmed, drafted, waiting or missing | command or item |
+
+`foundation/telos` is the read view of those records once a venture has any. A write to it is refused then; a venture with none can still write it, and `telos-to-goals` moves it later.
 
 The schemas are listed in `packages/foundation/package.json`. Call `mentura_layout` with a route to get its schema, template, gate and what need-now says before you act.
 
@@ -44,7 +48,7 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-telos.mjs`, `schema/check-validation.mjs`, `schema/foundation.mjs` and the schema checks (`schema/validate.py`). Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `schema/check-telos.mjs`, `schema/check-validation.mjs`, `schema/foundation.mjs`, `schema/lint-foundation.mjs` (route `foundation/lint`) and the schema checks (`schema/validate.py`). `foundation/lint` warns, and does not fail, unless `naive.config.json` sets `foundation_lint.rules.<id>.mode` to `fail-closed`. Run it after each write, and fix a failure before you report the work done.
 
 ## Actions and artifacts
 

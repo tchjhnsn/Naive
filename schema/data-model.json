@@ -24,6 +24,90 @@
       ]
     },
     {
+      "id": "calendar",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar.schema.json",
+      "paths": [
+        "instance/calendar/calendars/*.json",
+        "schema/examples/workspace/calendar/calendars/*.json"
+      ],
+      "note": "A workspace calendar: owner, members, visibility. Created with the workspace (default.json, named Venture); schema/calendar.mjs (Torian, 2026-10-30)"
+    },
+    {
+      "id": "workspace-founder",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/workspace-founder.schema.json",
+      "paths": [
+        "instance/founders/*/founder.json",
+        "schema/examples/workspace/founders/*/founder.json"
+      ],
+      "note": "A founder as a person of the workspace, before any venture: opaque id, handle, ventures by role, profile only the founder confirms. schema/founders.ts (Torian, 2026-10-31)"
+    },
+    {
+      "id": "founder-idea",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-idea.schema.json",
+      "paths": [
+        "instance/founders/*/ideas/*.json",
+        "schema/examples/workspace/founders/*/ideas/*.json"
+      ],
+      "note": "An idea owned by the founder, verbatim; a venture cites the idea it grew from"
+    },
+    {
+      "id": "founder-reference",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-reference.schema.json",
+      "paths": [
+        "instance/founders/*/references/*.json",
+        "schema/examples/workspace/founders/*/references/*.json"
+      ],
+      "note": "A work that forms the founder (book, podcast, film, essay), CSL-JSON field names, stored once at founder scope and cited by id"
+    },
+    {
+      "id": "founder-inspiration",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-inspiration.schema.json",
+      "paths": [
+        "instance/founders/*/inspirations/*.json",
+        "schema/examples/workspace/founders/*/inspirations/*.json"
+      ],
+      "note": "A person who inspires the founder and what invokes their zeal; a private person is opaque"
+    },
+    {
+      "id": "founder-private",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-private.schema.json",
+      "paths": [
+        "instance/founders/*/_private/**/*.json",
+        "schema/examples/workspace/founders/*/_private/**/*.json"
+      ],
+      "note": "The founder's real name, contact, puzzle and secrets, private: true, so they never reach a model or a release"
+    },
+    {
+      "id": "calendar-event",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar-event.schema.json",
+      "paths": [
+        "instance/calendar/events/*.json",
+        "schema/examples/workspace/calendar/events/*.json"
+      ],
+      "refs": [
+        {
+          "field": "calendar",
+          "to": "calendar",
+          "checked_by": "schema/workspace-init-test.mjs"
+        }
+      ],
+      "note": "One JSCalendar-shaped event (RFC 8984) per file. Derived events (decisions with a due time, releases) are a view in schema/calendar.mjs, never stored; naive calendar export writes .ics"
+    },
+    {
       "id": "venture",
       "layer": "system",
       "level": "venture",
@@ -54,7 +138,11 @@
         "fund-thesis",
         "fund-terms",
         "deal",
-        "money-summary"
+        "money-summary",
+        "goal",
+        "requirement",
+        "exit-criteria",
+        "constraints"
       ],
       "refs": [
         {
@@ -74,6 +162,16 @@
         }
       ],
       "note": "The root record of a venture. It names the profile but does not contain it"
+    },
+    {
+      "id": "venture-core",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/venture-core.schema.json",
+      "view_of": "venture",
+      "decision_class": "strategy-or-constitution",
+      "paths": [],
+      "note": "The founder's words in venture.json: mission (core.promise), competence (core.competence), tagline (brand.tagline) and the chosen lifecycle_playbook. A view of the venture record: a write touches only these fields, so id, name, parent, phase, owner and status stay out of reach. Only a person writes it, and each write confirms only the statements it names"
     },
     {
       "id": "venture-profile",
@@ -161,8 +259,85 @@
           "checked_by": "schema/validate.py"
         }
       ],
-      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023)",
+      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023). Since foundation 0.5.0 a framework for thinking (frameworks/telos): the telos-to-goals migration splits it into canonical goals and exit criteria and archives it; the route still reads, rendered from them",
       "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "goal",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/goal.schema.json",
+      "paths": [
+        "instance/**/foundation/goals/*.json",
+        "schema/examples/**/foundation/goals/*.json"
+      ],
+      "note": "A canonical goal: statement, kind, horizon, measures with targets, owner. Framework-neutral: the telos, ambition tiers and other frameworks for thinking write goals through their maps_to (Torian, 2026-10-30)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "requirement",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/requirement.schema.json",
+      "paths": [
+        "instance/**/foundation/requirements/*.json",
+        "schema/examples/**/foundation/requirements/*.json"
+      ],
+      "refs": [
+        {
+          "field": "derives_from",
+          "to": "goal",
+          "checked_by": null
+        }
+      ],
+      "note": "A canonical requirement derived from goals or measures, by a phase, constraining functions, verified by a check, evidence or a person (the decision index's Requirements)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "exit-criteria",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/exit-criteria.schema.json",
+      "paths": [
+        "instance/**/foundation/exit-criteria/*.json",
+        "schema/examples/**/foundation/exit-criteria/*.json"
+      ],
+      "refs": [
+        {
+          "field": "criteria.serves",
+          "to": "goal",
+          "checked_by": null
+        },
+        {
+          "field": "phase",
+          "to": "anatomy-framework",
+          "checked_by": "schema/validate.py"
+        }
+      ],
+      "note": "A phase's canonical exit criteria, each serving a goal measure; the lifecycle gate reads these (schema/lifecycle.mjs)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "constraints",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/constraints.schema.json",
+      "paths": [
+        "instance/**/foundation/constraints.json",
+        "schema/examples/**/foundation/constraints.json"
+      ],
+      "note": "What the venture must not do, whatever framework states its goals",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "framework",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/framework.schema.json",
+      "paths": [
+        "frameworks/*/framework.json"
+      ],
+      "note": "A framework for thinking (telos, ambition tiers, OKRs): vocabulary, frames, a template and maps_to into canonical records; it never changes the schema (schema/check-frameworks.mjs)"
     },
     {
       "id": "idea-dump",
@@ -225,6 +400,52 @@
       ],
       "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares schema/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts.",
       "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "validation-interview",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-interview.schema.json",
+      "paths": [
+        "instance/**/validation/interviews/*.json",
+        "schema/examples/**/validation/interviews/*.json"
+      ],
+      "refs": [
+        {
+          "field": "icp",
+          "to": "icp",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "transcript.source",
+          "to": "raw-source",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "follow_up.evidence",
+          "to": "evidence",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "One problem interview in the validation study: an anonymised person, consent, the transcript's raw source, bottlenecks, current solutions, the chosen problem, a prediction with Naive and without, and the follow-up that checks it. Names stay in _private."
+    },
+    {
+      "id": "validation-feedback",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-feedback.schema.json",
+      "paths": [
+        "instance/**/validation/feedback/*.json",
+        "schema/examples/**/validation/feedback/*.json"
+      ],
+      "refs": [
+        {
+          "field": "capability",
+          "to": "beta-capabilities",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (schema/beta-gate.mjs)."
     },
     {
       "id": "validation-solution",
@@ -453,6 +674,24 @@
         "schema/examples/**/decisions/*.decision.json"
       ],
       "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node schema/decisions.mjs renders the matrix. The decision log keeps the history"
+    },
+    {
+      "id": "decision-impact",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-impact.schema.json",
+      "paths": [
+        "instance/**/decisions/*.impact.json",
+        "schema/examples/**/decisions/*.impact.json"
+      ],
+      "refs": [
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": null
+        }
+      ],
+      "note": "The impact map of a merged decision version: per function, the records that depend on what changed, which were marked stale, and the follow-up decisions proposed (schema/impact.mjs)"
     },
     {
       "id": "nextjs-status",
@@ -735,6 +974,28 @@
       "note": "Execution folded into operations (EE-038)."
     },
     {
+      "id": "activity",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity.schema.json",
+      "paths": [
+        "instance/**/operations/activity/*.json",
+        "schema/examples/**/operations/activity/*.json"
+      ],
+      "note": "Time spent in the venture on one day from transcript timestamps alone: sessions, active minutes, messages, estimated tokens in, in the venture's time zone; internal by default (naive activity, TRANSCRIPT_DIAGNOSIS_V2)"
+    },
+    {
+      "id": "activity-summary",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity-summary.schema.json",
+      "paths": [
+        "instance/**/operations/activity/_summary.json",
+        "schema/examples/**/operations/activity/_summary.json"
+      ],
+      "note": "Days since last touch and the streak, for the docket; a long silence is a gentle nudge (naive activity --write)"
+    },
+    {
       "id": "evidence",
       "layer": "evidence",
       "level": "venture",
@@ -954,6 +1215,30 @@
       ],
       "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
       "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "internal-terms",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/internal-terms.schema.json",
+      "paths": [
+        "schema/internal-terms.json",
+        "instance/**/governance/internal-terms.json",
+        "schema/examples/**/governance/internal-terms.json"
+      ],
+      "note": "Patterns that mark internal text (decision ids, attributions, record paths, codenames, phase jargon, draft markers); public output matches none of them (schema/check-leaks.mjs). Naive's defaults in schema/internal-terms.json, the founder's own in the venture's governance/internal-terms.json",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "publications",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/publications.schema.json",
+      "paths": [
+        "instance/**/governance/publications.json",
+        "schema/examples/**/governance/publications.json"
+      ],
+      "note": "Every place the venture has published: channel, artifact, url, the sha256 of the built output that is live, the person who approved it, when, earlier versions and any embargo. naive publish writes it; schema/check-publications.mjs checks it"
     },
     {
       "id": "marketing-matrix",
@@ -1361,6 +1646,17 @@
       "note": "Where a founder-supplied source came from. Raw is immutable (EE-070)."
     },
     {
+      "id": "artifact",
+      "layer": "interface",
+      "level": "venture",
+      "schema": "schema/artifact.schema.json",
+      "paths": [
+        "instance/**/artifacts/*.json",
+        "schema/examples/**/artifacts/*.json"
+      ],
+      "note": "A view built from records for a reader (document, deck, dashboard, design, page, file, site), naming the records it read; artifacts are what get published, records never are. schema/check-artifacts.mjs flags one stale when a record it cites changes"
+    },
+    {
       "id": "raw-text",
       "layer": "purpose",
       "level": "venture",
@@ -1416,6 +1712,65 @@
       "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
     },
     {
+      "id": "role-template",
+      "layer": "governance",
+      "level": "method",
+      "schema": "schema/role-template.schema.json",
+      "paths": [
+        "governance/venture-template/roles/founder.json",
+        "governance/venture-template/roles/chief-of-staff.json",
+        "governance/venture-template/roles/product-design-lead.json",
+        "governance/venture-template/roles/architect.json",
+        "governance/venture-template/roles/builder.json",
+        "governance/venture-template/roles/marketing-lead.json",
+        "governance/venture-template/roles/finance-lead.json",
+        "governance/venture-template/roles/validation-lead.json",
+        "governance/venture-template/roles/people-lead.json",
+        "governance/venture-template/roles/counsel.json"
+      ],
+      "refs": [
+        {
+          "field": "verified_by",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grantable_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "note": "One role a venture can install: function, grantable decision classes, default tier, lint suites, verifier (never itself) and skill"
+    },
+    {
+      "id": "delegation",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/delegation.schema.json",
+      "paths": [
+        "governance/venture-template/delegation.json",
+        "instance/**/governance/delegation.json"
+      ],
+      "refs": [
+        {
+          "field": "grants.from",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.to",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "decision_class": "strategy-or-constitution"
+    },
+    {
       "id": "people",
       "layer": "operations",
       "level": "venture",
@@ -1424,7 +1779,8 @@
         "instance/**/people/people.json",
         "schema/examples/**/people/people.json"
       ],
-      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)"
+      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)",
+      "decision_class": "strategy-or-constitution"
     },
     {
       "id": "founder",
@@ -1571,6 +1927,75 @@
       "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
     },
     {
+      "id": "bug",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/bug.schema.json",
+      "paths": [
+        "instance/**/product/bugs/*.json",
+        "schema/examples/**/product/bugs/*.json"
+      ],
+      "note": "One defect: title, severity P0 to P3, status, the version it was found and fixed in, and how to reproduce it. Stable means no open P0 or P1 (naive bugs, schema/bugs.mjs).",
+      "refs": [
+        {
+          "field": "fixed_in",
+          "to": "(release)",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ]
+    },
+    {
+      "id": "telemetry-event",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/telemetry.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/.naive/telemetry.jsonl"
+      ],
+      "note": "Opt-in usage events shared by the plugin beta and Mentura: which capability ran, when, how long, how it ended; no record contents, no _private paths, the venture id hashed with a per-venture salt (schema/telemetry.mjs). Not routed: the router never routes .naive/, so events stay off MCP and the API."
+    },
+    {
+      "id": "beta-capabilities",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/beta-capabilities.schema.json",
+      "paths": [
+        "beta/capabilities.json"
+      ],
+      "note": "The plugin beta's capabilities in unlock order, each with its checkpoint feedback form (schema/beta-gate.mjs)."
+    },
+    {
+      "id": "decision-roadmap",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/decision-roadmap.schema.json",
+      "form": "json",
+      "paths": [
+        "packages/*/roadmaps/*.json"
+      ],
+      "refs": [
+        {
+          "field": "steps.*.frame",
+          "to": "frame",
+          "checked_by": "schema/check-roadmap.mjs"
+        }
+      ],
+      "note": "A decision roadmap: an ordered set of frames, each step with its phase, dependencies, door and decider. schema/roadmaps.mjs installs it by proposing each step's decisions open; schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder"
+    },
+    {
+      "id": "lifecycle-playbook",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/lifecycle-playbook.schema.json",
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/product-anatomy/playbooks/*.json"
+      ],
+      "refs": [],
+      "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
+    },
+    {
       "id": "research-cell",
       "layer": "system",
       "level": "method",
@@ -1633,12 +2058,48 @@
   ],
   "ignore": [
     {
+      "path": "schema/terms/admitted.json",
+      "reason": "Generated by node schema/terms/admit.ts: every term with its hash, validity, relations, predictions and Lean theorems; checked by --check, not a record"
+    },
+    {
+      "path": "lean/lake-manifest.json",
+      "reason": "Lake's package manifest for the Lean proofs (lean/); generated by lake, not a record"
+    },
+    {
+      "path": "interface/plugin-mcp.json",
+      "reason": "The MCP server the Claude Code plugin starts, from its own copy of the framework (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/plugin.json",
+      "reason": "The Claude Code plugin manifest: Naive's skills and MCP server for an agent (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "reason": "The Claude Code marketplace for a clone of the repository (EE-084); not a record"
+    },
+    {
       "path": "site/package.json",
       "reason": "The developer-docs site's npm manifest (EE-034); not a record"
     },
     {
       "path": "site/package-lock.json",
       "reason": "npm lockfile for the developer-docs site; generated by npm"
+    },
+    {
+      "path": "console/package.json",
+      "reason": "The venture console's npm manifest (Mentura demo beta, 2026-10-30); not a record"
+    },
+    {
+      "path": "console/package-lock.json",
+      "reason": "npm lockfile for the venture console; generated by npm"
+    },
+    {
+      "path": "console/tsconfig.json",
+      "reason": "TypeScript settings for the venture console; not a record"
+    },
+    {
+      "path": "console/components.json",
+      "reason": "shadcn/ui settings for the venture console; not a record"
     },
     {
       "path": "platform/integrations/fixtures/rho-sandbox.json",
@@ -1649,8 +2110,20 @@
       "reason": "Venture states with a source-argued next step, the evidence set schema/docket-eval.mjs scores the docket against (EE-075); test data, not a record"
     },
     {
+      "path": "package-lock.json",
+      "reason": "npm lockfile for the repository's dev dependencies (typescript and its Node types); generated by npm"
+    },
+    {
+      "path": "tsconfig.strict.json",
+      "reason": "Strict TypeScript config for .ts files (schema/check-types.ts); not a record"
+    },
+    {
+      "path": "tsconfig.json",
+      "reason": "TypeScript config for type-checking the repository (schema/check-types.ts); not a record"
+    },
+    {
       "path": "site/tsconfig.json",
-      "reason": "TypeScript config for the Fumadocs site (EE-080); not a record"
+      "reason": "TypeScript config for the Nextra site (EE-088); not a record"
     },
     {
       "path": "site/brand/tokens.json",
@@ -1658,27 +2131,27 @@
     },
     {
       "path": "site/content/docs/meta.json",
-      "reason": "Fumadocs sidebar order for the docs collection (EE-080); not a record"
+      "reason": "Sidebar order for the docs collection (EE-088); not a record"
     },
     {
       "path": "site/content/docs/get-started/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
     },
     {
       "path": "site/content/docs/guides/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
     },
     {
       "path": "site/content/docs/concepts/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
     },
     {
       "path": "site/content/docs/reference/meta.json",
-      "reason": "Fumadocs sidebar order (EE-080); not a record"
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
     },
     {
       "path": "site/content/marketing/meta.json",
-      "reason": "Fumadocs sidebar order for marketing pages (EE-080); not a record"
+      "reason": "Sidebar order for marketing pages (EE-088); not a record"
     },
     {
       "path": "package.json",
@@ -1687,6 +2160,18 @@
     {
       "path": "interface/create-venture/package.json",
       "reason": "The create-venture generator's npm manifest (I-1); not a record"
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "The framework's npm lockfile for its dev tools (ESLint), installed by npm ci in CI; not a record"
+    },
+    {
+      "path": "schema/known-leaks.json",
+      "reason": "The dated list of public outputs that leak internal text today, read by schema/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
+    },
+    {
+      "path": "schema/internal-terms.json",
+      "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
     }
   ]
 }

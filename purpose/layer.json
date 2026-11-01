@@ -31,7 +31,13 @@
     "idea-map-conventions",
     "idea-graph",
     "playbook",
-    "profile-attributes"
+    "profile-attributes",
+    "framework",
+    "goal",
+    "requirement",
+    "exit-criteria",
+    "constraints",
+    "venture-core"
   ],
   "reads": [
     "venture",

@@ -96,7 +96,7 @@ export function plan(dir, { reg = registry() } = {}) {
 }
 
 // The changes one migration makes, all through here, so a dry run reports them and a real run logs them.
-function context(dir, { dry, git, cfg, at, onConfig }) {
+export function context(dir, { dry, git, cfg, at, onConfig }) {
   const moved = [], writes = [], escalated = [], notes = [], kept = [];
   const tracked = (p) => git && spawnSync("git", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
   const removeEmpty = (p) => {
@@ -116,6 +116,7 @@ function context(dir, { dry, git, cfg, at, onConfig }) {
       }
       moved.push([a, b]);
     },
+    /** @param {string} rel @param {string} text @param {{ activity?: string, note?: string, derived_from?: string[], log?: boolean }} [opts] */
     write(rel, text, { activity = "write", note, derived_from, log = true } = {}) {
       if (!dry) { mkdirSync(dirname(ventureFile(dir, rel)), { recursive: true }); writeFileSync(ventureFile(dir, rel), text); }
       writes.push({ path: rel, activity, note, derived_from, log });
@@ -157,8 +158,8 @@ export async function upgrade(dir, { reg = registry(), dry = false, git = true }
       ran.push({ id: m.id, version: m.version, describe: mod.describe, decision: m.decision ?? null, moves: ctx.moved.map(([from, to]) => ({ from, to })),
         rewrote: ctx.writes.filter((w) => w.activity === "write").map((w) => w.path), escalated: ctx.escalated, notes: ctx.notes });
       if (dry) continue;
-      for (const [from, to] of ctx.moved) record(dir, { entity: to, activity: "move", agent, derived_from: [from], note: `moved from ${from} (${m.decision ?? m.id})` });
-      for (const w of ctx.writes.filter((x) => x.log)) record(dir, { entity: w.path, activity: w.activity, agent, derived_from: w.derived_from, note: `${m.id}: ${w.note ?? "rewritten"}`, decision: m.decision ?? undefined });
+      for (const [from, to] of ctx.moved) record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: to, activity: "move", agent, derived_from: [from], note: `moved from ${from} (${m.decision ?? m.id})` }));
+      for (const w of ctx.writes.filter((x) => x.log)) record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: w.path, activity: w.activity, agent, derived_from: w.derived_from, note: `${m.id}: ${w.note ?? "rewritten"}`, decision: m.decision ?? undefined }));
     }
     // Pins (U-1, U-4): the framework, the channel, and every package the venture uses.
     const before = JSON.stringify(cfg);
@@ -176,11 +177,11 @@ export async function upgrade(dir, { reg = registry(), dry = false, git = true }
     const release = { version: p.to, from: p.from, at, venture: p.venture, channel: cfg.naive.channel, migrations: ran,
       packages: p.packages.filter((x) => !x.missing).map((x) => ({ name: x.name, from: x.from, to: x.to })), guides: p.steps.map((s) => s.guide).filter(Boolean), escalated: [...ran.flatMap((r) => r.escalated), ...escalated] };
     if (!dry && (p.pending || configChanged)) {
-      if (configChanged) { writeConfig(dir, cfg); record(dir, { entity: CONFIG, activity: "write", agent, note: `pinned Naive ${p.to} and ${Object.keys(cfg.packages).length} packages (U-1)` }); }
+      if (configChanged) { writeConfig(dir, cfg); record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: CONFIG, activity: "write", agent, note: `pinned Naive ${p.to} and ${Object.keys(cfg.packages).length} packages (U-1)` })); }
       const rel = `.release/upgrade-${p.to}.json`;
       mkdirSync(join(ventureFile(dir, ".release")), { recursive: true });
       writeFileSync(ventureFile(dir, rel), JSON.stringify(release, null, 2) + "\n");
-      record(dir, { entity: rel, activity: "release", agent, derived_from: [...new Set([...ran.flatMap((r) => [...r.moves.map((m) => m.to), ...r.rewrote]), ...(configChanged ? [CONFIG] : [])])], note: `upgraded from Naive ${p.from} to ${p.to}` });
+      record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: rel, activity: "release", agent, derived_from: [...new Set([...ran.flatMap((r) => [...r.moves.map((m) => m.to), ...r.rewrote]), ...(configChanged ? [CONFIG] : [])])], note: `upgraded from Naive ${p.from} to ${p.to}` }));
       // Adapters installed in the venture (Z-4) are refreshed, so their copies of package skills follow the upgrade.
       release.adapters = await refreshAdapters(dir);
     }
@@ -206,7 +207,7 @@ export function setChannel(dir, channel, { reg = registry() } = {}) {
   if (channel === "stable" && experimental.length) throw new Error(`the venture uses experimental packages (${experimental.join(", ")}): drop them first (--drop <package>)`);
   cfg.naive = { version: versionOf(dir), ...(cfg.naive ?? {}), channel };
   writeConfig(dir, cfg);
-  record(dir, { entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `channel set to ${channel} (U-5)` });
+  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `channel set to ${channel} (U-5)` }));
   return { changed: true, channel };
 }
 
@@ -229,7 +230,7 @@ export function adopt(dir, name, { reg = registry() } = {}) {
   current[name] = { version: info.version, early: true, ...(info.channel === "experimental" ? { channel: "experimental" } : {}) };
   cfg.packages = Object.fromEntries(Object.entries(current).sort(([a], [b]) => a.localeCompare(b)));
   writeConfig(dir, cfg);
-  record(dir, { entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `adopted the ${name} package early (U-5)` });
+  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `adopted the ${name} package early (U-5)` }));
   return { changed: true, name, version: info.version, channel: info.channel, fit: fit?.fit ?? null };
 }
 
@@ -241,7 +242,7 @@ export function drop(dir, name) {
   delete current[name];
   cfg.packages = current;
   writeConfig(dir, cfg);
-  record(dir, { entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `dropped the early adoption of ${name} (U-5)` });
+  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `dropped the early adoption of ${name} (U-5)` }));
   return { changed: true, name };
 }
 
@@ -316,6 +317,7 @@ export function runChecks(vdir, { reg = registry() } = {}) {
     }
   }
   out.push({ check: "records match their schemas", passed: !bad.length, output: bad.length ? bad.join("\n") : `${n} records valid` });
+  /** @type {{ pending?: boolean, error?: string, from?: string, to?: string }} */
   let left;
   try { left = plan(vdir, { reg }); } catch (e) { left = { pending: true, error: e.message }; }
   out.push({ check: "nothing left to upgrade", passed: !left.pending, output: left.pending ? (left.error ?? `still on ${left.from}, or a package is not pinned to ${left.to}`) : `on Naive ${left.to}` });
@@ -345,6 +347,8 @@ export function check(dir, { reg = registry() } = {}) {
  * Lands a staged upgrade (U-3): only with the typed confirmation, only when the checks pass again now,
  * and only when the venture has not changed since the copy was made. Its provenance log continues the
  * venture's, so the chain holds; the person's acceptance is the last line.
+ * @param {string} dir
+ * @param {{ confirm?: string, by?: string, reg?: ReturnType<typeof registry> }} [opts]
  */
 export async function accept(dir, { confirm, by, reg = registry() } = {}) {
   const d = draft(dir);
@@ -374,7 +378,7 @@ async function refreshAdapters(dir) {
 
 async function landed(dir, d, ch, by) {
   const rel = `.release/upgrade-${d.to}.json`;
-  const e = existsSync(ventureFile(dir, rel)) ? record(dir, { entity: rel, activity: "accept", agent: agentFromEnv("person", "cli", by ? { id: by } : {}), note: `accepted the staged upgrade to Naive ${d.to}${d.by && d.by !== "naive" ? ` (worked by ${d.by})` : ""}` }) : null;
+  const e = existsSync(ventureFile(dir, rel)) ? record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: rel, activity: "accept", agent: agentFromEnv("person", "cli", by ? { id: by } : {}), note: `accepted the staged upgrade to Naive ${d.to}${d.by && d.by !== "naive" ? ` (worked by ${d.by})` : ""}` })) : null;
   return { accepted: d.to, from: d.from, added: ch.added.length, changed: ch.changed.length, removed: ch.removed.length, provenance: e?.hash ?? null, adapters: await refreshAdapters(dir) };
 }
 

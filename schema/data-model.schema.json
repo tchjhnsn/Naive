@@ -81,13 +81,13 @@
             ],
             "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only"
           },
+          "view_of": { "type": "string", "description": "This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written." },
           "decision_class": {
             "type": "string",
             "description": "The decision class (governance/venture-template/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032)"
           },
           "paths": {
             "type": "array",
-            "minItems": 1,
             "items": {
               "type": "string"
             },

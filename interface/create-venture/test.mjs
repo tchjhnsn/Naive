@@ -11,6 +11,7 @@ const repo = new URL("../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "create-venture-test-"));
 const home = join(base, "home");
 mkdirSync(home);
+/** @type {NodeJS.ProcessEnv} */
 const env = { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, ".config"), npm_config_user_agent: "" };
 // The generator calls a real model when TYPESAFE_API_KEY is set; these tests use the stand-in or the list.
 for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
@@ -48,6 +49,8 @@ t("the first venture is My first venture, in a workspace named Naive workspace; 
   const w = load(join(ws, "naive-workspace.json"));
   ok(w.name === "Naive workspace" && w.ventures.join() === "my-first-venture", JSON.stringify(w));
   ok(existsSync(join(ws, "AGENTS.md")), "the workspace has its own AGENTS.md");
+  ok(typeof w.timeZone === "string" && w.timeZone.length > 0, "the workspace starts with its clock's zone");
+  ok(load(join(ws, "calendar/calendars/default.json")).visibility === "workspace", "and its default calendar");
   ok(create(["--yes", "--skip-install", "--no-git", "--venture-name", "Acme Labs"], ws).status === 0);
   ok(load(join(ws, "acme-labs/venture.json")).name === "Acme Labs");
   ok(load(join(ws, "naive-workspace.json")).ventures.join() === "my-first-venture,acme-labs", "a second venture joins the same workspace");
@@ -239,7 +242,7 @@ t("naive build and start say plainly when the release scripts are missing, and o
 // naive dev: the board answers, a missing root layout is written, and a bad save is reported (I-2, I-21, I-24).
 async function devTest() {
   rmSync(join(v, "AGENTS.md"));
-  const child = spawn("node", [join(v, "node_modules/.bin/naive"), "dev", "--port", "4391"], { cwd: v, env });
+  const child = spawn("node", [join(v, "node_modules/.bin/naive"), "dev", "--port", "0"], { cwd: v, env });
   let out = "";
   child.stdout.on("data", (d) => (out += d));
   child.stderr.on("data", (d) => (out += d));

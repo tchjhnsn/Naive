@@ -64,11 +64,11 @@ function draft(name, change, pattern) {
 }
 const briefOf = (d) => join(d, "operations/handoffs/anatomy-runner-fixes.md");
 draft("check-ready passes on a complete draft", () => {});
-draft("a brief with no Outcome is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8").replace(/## Outcome/, "## Background")), /FAIL  brief has its Outcome section/);
-draft("a brief with a TBD is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8") + "\nStep 4: TBD\n"), /FAIL  brief has no placeholders left: TBD/);
-draft("an unknown product is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.products = ["nope"]; }), /FAIL  every product it serves exists: nope/);
-draft("an unknown decision is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.governed_by = ["EE-999"]; }), /FAIL  every governing decision exists.*EE-999/);
-draft("a criterion calling a missing script is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.done_criteria[0].check = "node purpose/nope.mjs"; }), /FAIL  every script a criterion runs exists/);
+draft("a brief with no Outcome is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8").replace(/## Outcome/, "## Background")), /FAIL {2}brief has its Outcome section/);
+draft("a brief with a TBD is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8") + "\nStep 4: TBD\n"), /FAIL {2}brief has no placeholders left: TBD/);
+draft("an unknown product is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.products = ["nope"]; }), /FAIL {2}every product it serves exists: nope/);
+draft("an unknown decision is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.governed_by = ["EE-999"]; }), /FAIL {2}every governing decision exists.*EE-999/);
+draft("a criterion calling a missing script is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.done_criteria[0].check = "node purpose/nope.mjs"; }), /FAIL {2}every script a criterion runs exists/);
 broken("in progress without a readiness check fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.status = "in-progress"; h.attempts = 1; }), /without a recorded readiness check/);
 
 // check-governance and payouts, on broken copies of the venture-backed example.
@@ -288,13 +288,13 @@ edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { list.find((t
 const ignored = new Set((spawnSync("git", ["ls-files", "--others", "--ignored", "--exclude-standard", "--directory"], { cwd: root, encoding: "utf8" }).stdout ?? "").split("\n").filter(Boolean).map((p) => join(root, p).replace(/\/$/, "")));
 const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !ignored.has(s) && !/\/(\.git|\.claude|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
-for (const [name, change, pattern] of [
+for (const [name, change, pattern] of /** @type {[string, (d: string) => void, RegExp][]} */ ([
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
   ["a schema no record type names fails", (d) => writeFileSync(join(d, "schema/stray.schema.json"), "{}"), /a schema no record type names/],
   ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
   ["a layer owning another layer's record fails", (d) => edit(join(d, "purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
   ["a layer reading an unknown record type fails", (d) => edit(join(d, "operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
-]) {
+])) {
   const d = copy(`dm${++n}`);
   change(d);
   const r = run("check-data-model.mjs", [], { EE_ROOT: d });

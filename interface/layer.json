@@ -1,6 +1,6 @@
 {
   "layer": "interface",
-  "purpose": "Let a person, with agents, work across at least three of the five other layers in one session: agent harnesses (Claude Code, Cursor) and custom interfaces (the operator console), all reaching the system through one route table that a CLI, an MCP server and an HTTP API share (EE-030).",
+  "purpose": "Let a person, with agents, work across at least three of the five other layers in one session: agent harnesses (Claude Code, Cursor) and custom workbenches (the operator console), all reaching the system through one route table that a CLI, an MCP server and an HTTP API share (EE-030).",
   "product": "everything-ecosystem/console",
   "skills": [
     {
@@ -10,6 +10,10 @@
     {
       "id": "naive-setup",
       "path": "interface/skills/naive-setup/SKILL.md"
+    },
+    {
+      "id": "naive-create",
+      "path": "interface/skills/naive-create/SKILL.md"
     },
     {
       "id": "choosing-artifacts",
@@ -22,7 +26,9 @@
   ],
   "records": [
     "route-aliases",
-    "adapter"
+    "adapter",
+    "artifact",
+    "beta-capabilities"
   ],
   "reads": [
     "integration"

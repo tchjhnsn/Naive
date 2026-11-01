@@ -33,6 +33,13 @@
       "status": "new"
     },
     {
+      "noun": "central data management structure",
+      "level": "venture",
+      "meaning": "What a venture's scaffolding is (EE-085): one structure for everything the venture knows, under one set of conventions, with pointers to the systems of record that keep the rest. It suits solo founders and small founding teams, for whom one central structure replaces separate SaaS silos and gives agents the whole picture",
+      "standard": "master data management, centralized style (DAMA-DMBOK)",
+      "status": "new"
+    },
+    {
       "noun": "method",
       "level": "system",
       "meaning": "What to do: Product Anatomy, handoffs; MAD, the method for building software, is a separate product (EE-038)",
@@ -374,21 +381,28 @@
     {
       "noun": "console",
       "level": "interface",
-      "meaning": "A custom interface built for the system: a viewer over a venture's records",
+      "meaning": "A custom workbench built for the system: a viewer over a venture's records",
       "standard": "common software usage",
       "status": "kept"
     },
     {
-      "noun": "interface",
+      "noun": "workbench",
       "level": "interface",
-      "meaning": "A tool through which a person, with agents, works across all or most other layers at once in one session (reaches at least four of the six). A tool that serves one or two layers is an integration of those layers, however good its screen is",
-      "standard": "ours, a narrowed sense of user interface",
+      "meaning": "A tool through which a person, with agents, works across all or most other layers at once in one session (reaches at least four of the six). A tool that serves one or two layers is an integration of those layers, however good its screen is. Renamed from \"harness\" (EE-096), which was renamed from \"interface\" (EE-093)",
+      "standard": "workbench (Eclipse Platform Workbench; Fowler, language workbench), narrowed",
+      "status": "new"
+    },
+    {
+      "noun": "harness",
+      "level": "interface",
+      "meaning": "The software around a model that runs it: it gives the model its context and tools and carries out what the model asks (the Agent SDK, Claude Managed Agents, Claude Code). AI harness and agent harness are kinds of harness. A harness needs no person (the Agent SDK); one a person works through across most layers is also a workbench (EE-096)",
+      "standard": "harness (industry usage; Anthropic S-1, 2026); workspace rule G-039",
       "status": "new"
     },
     {
       "noun": "agent harness",
       "level": "interface",
-      "meaning": "An AI harness in which the model directs its own steps and tool use in a loop toward a goal, acting on files, tools and systems between the person's turns, under permissions (Claude Code, Cursor, Codex, Hermes Agent). The default kind of interface. Every agent harness is an AI harness; a chatbot is not an agent harness",
+      "meaning": "An AI harness in which the model directs its own steps and tool use in a loop toward a goal, acting on files, tools and systems between the person's turns, under permissions (Claude Code, Cursor, Codex, Hermes Agent). Every agent harness is an AI harness; a chatbot is not an agent harness. One a person uses across at least four layers is also a workbench",
       "standard": "agent harness (industry usage)",
       "status": "new",
       "references": [
@@ -416,16 +430,16 @@
       "status": "new"
     },
     {
-      "noun": "custom interface",
+      "noun": "custom workbench",
       "level": "interface",
-      "meaning": "An interface built for the system or a venture rather than bought, such as the operator console",
+      "meaning": "A workbench built for the system or a venture rather than bought, such as the operator console. Was \"custom interface\" (EE-093), then \"custom harness\" (EE-096)",
       "standard": "common software usage",
       "status": "new"
     },
     {
       "noun": "integration",
       "level": "system",
-      "meaning": "A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). An interface reaches integrations; it is not one",
+      "meaning": "A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). A workbench reaches integrations; it is not one",
       "standard": "systems integration",
       "status": "kept"
     },

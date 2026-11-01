@@ -1,0 +1,33 @@
+TLC2 Version 2026.10.28.014557 (rev: 56d37a9)
+Running breadth-first search Model-Checking with fp 107 and seed 2267807300914611834 with 10 workers on 10 cores with 7282MB heap and 64MB offheap memory [pid: 72187] (Mac OS X 26.0.1 aarch64, Homebrew 21.0.12.1 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file ~/workspace/code/ee-gate/pr-59/verification/playbook-sales-founder-led/FounderLedSales.tla
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-4520441749498170446/FiniteSets.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-4520441749498170446/_TLCTrace.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-4520441749498170446/Naturals.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-4520441749498170446/Sequences.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-4520441749498170446/TLC.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-4520441749498170446/TLCExt.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-4520441749498170446/Integers.tla (jar:file:<tmp>
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module FounderLedSales
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module FounderLedSales
+Starting... (2026-10-30 13:47:09)
+Computing initial states...
+Computed 2 initial states...
+Finished computing initial states: 4 distinct states generated at 2026-10-30 13:47:09.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.4E-15
+324 states generated, 158 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 11.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 4).
+Finished in 00s at (2026-10-30 13:47:09)

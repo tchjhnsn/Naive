@@ -55,6 +55,10 @@ const ORDER = ["tag", "changed", "drift", "decision", "depends", "path", "packag
 const iso = (ms) => new Date(ms).toISOString();
 const count = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const isUrl = (s) => /^[a-z][a-z0-9+.-]*:\/\//.test(s);
+/** @typedef {{ path: string, record: string, route: string, package: string | null, layer: string }} RecordFile */
+/** @typedef {{ kind: string, since: string, note: string, dependency?: string, pivot?: boolean }} Reason */
+/** @typedef {RecordFile & { checked_at: number, basis: string, changed_at: number, depends_on: string[], profile: string, reasons: Reason[], hole: boolean, revalidate_at: string | null, expire_at: string | null, reuse_for: number | null, state: "fresh" | "stale" | "expired", precise: boolean, fix: string | null }} Item */
+/** @template R @typedef {{ ok: boolean, error?: string, suggest?: string[], or?: string, blocked?: string[], result?: R }} Outcome */
 
 /** The time freshness is judged at: an explicit input, else NAIVE_NOW, else the clock (C-9). */
 export function nowOf(now) {
@@ -103,7 +107,7 @@ export function profileFor(P, record, route) {
   return prefixes.length ? P.records[prefixes[0]] : P.records[record] ?? P.default;
 }
 
-/** Every record file in a venture, with its record type, concrete route, package and route entry. */
+/** Every record file in a venture, with its record type, concrete route, package and route entry. @returns {RecordFile[]} */
 export function recordFiles(dir) {
   const table = routes().filter((r) => r.kind === "record" && r.collection !== "list");
   const out = [];
@@ -204,13 +208,15 @@ async function whereUsed(dir, byRoute, byPath, unchecked) {
  * state (fresh, stale or expired), hole (a live record, never frozen), when it was last checked
  * and on what basis, when it is due, and the reasons it is stale, exact dependencies first (V-8).
  * options: now; light (skip the decision matrix, for the router's read flag).
+ * @param {string} dir
+ * @param {{ now?: string | number, light?: boolean }} [opts]
  */
 export async function freshness(dir, { now, light = false } = {}) {
   const t = nowOf(now);
   const venture = load(join(dir, "venture.json"));
   const P = profiles(dir);
   const warnings = [], unchecked = [];
-  const items = recordFiles(dir);
+  const items = /** @type {Item[]} */ (recordFiles(dir));
   const byPath = new Map(items.map((i) => [i.path, i]));
   const byRoute = new Map(items.map((i) => [i.route, i.path]));
   const log = provEntries(dir).filter((e) => !e.source);
@@ -223,7 +229,7 @@ export async function freshness(dir, { now, light = false } = {}) {
   for (const i of items) {
     const write = lastOf(i.path, CONTENT), confirmed = lastOf(i.path, CHECKED);
     const verified = evs.filter((e) => e.event === "verify" && e.target && covers(e.target, i, dir)).map((e) => Date.parse(e.at)).at(-1) ?? null;
-    const known = [[write, "provenance log: written"], [confirmed, "provenance log: confirmed"], [verified, "freshness log: verified"]].filter(([x]) => x !== null).sort((a, b) => b[0] - a[0]);
+    const known = /** @type {[number, string][]} */ ([[write, "provenance log: written"], [confirmed, "provenance log: confirmed"], [verified, "freshness log: verified"]]).filter(([x]) => x !== null).sort((a, b) => b[0] - a[0]);
     i.checked_at = known.length ? known[0][0] : statSync(ventureFile(dir, i.path)).mtimeMs;
     i.basis = known.length ? known[0][1] : "file time (not in the provenance log)";
     i.changed_at = write ?? statSync(ventureFile(dir, i.path)).mtimeMs;
@@ -296,7 +302,6 @@ export async function freshness(dir, { now, light = false } = {}) {
     i.reasons.sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
     i.state = i.reasons.some((r) => r.kind === "expired") ? "expired" : i.reasons.length ? "stale" : "fresh";
     i.precise = i.reasons.some((r) => EXACT.has(r.kind));
-    i.checked_at = iso(i.checked_at); i.changed_at = iso(i.changed_at);
     i.fix = i.state === "fresh" ? null : `redo it (a write), or check it is still right: mentura verify ${i.route} --venture ${venture.id}`;
   }
   const holes = items.filter((i) => i.hole);
@@ -306,7 +311,7 @@ export async function freshness(dir, { now, light = false } = {}) {
     summary: { records: items.length, fresh: items.filter((i) => i.state === "fresh").length, stale: items.filter((i) => i.state === "stale").length, expired: items.filter((i) => i.state === "expired").length, holes: holes.length,
       stale_by_dependency: items.filter((i) => i.state !== "fresh" && i.precise).length, stale_by_folder_only: items.filter((i) => i.state !== "fresh" && !i.precise && i.reasons.some((r) => r.kind === "path" || r.kind === "package")).length },
     shell: { frozen: items.filter((i) => !i.hole && i.state !== "expired").map((i) => i.path), holes: holes.map((i) => i.path), blocked: items.filter((i) => !i.hole && i.state === "expired").map((i) => i.path) },
-    items: items.map(({ layer, ...i }) => i),
+    items: items.map(({ layer, ...i }) => ({ ...i, checked_at: iso(i.checked_at), changed_at: iso(i.changed_at) })),
     copies, unchecked, warnings,
   };
 }
@@ -356,10 +361,10 @@ function append(dir, event, by) {
   const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "freshness-log.schema.json", "--file", join(scratch, "line.json")], { encoding: "utf8" });
   rmSync(scratch, { recursive: true, force: true });
   if (v.status !== 0) throw new Error(`does not match schema/freshness-log.schema.json:\n${(v.stdout + v.stderr).trim()}`);
-  mkdirSync(join(dir, dirname(LOG)), { recursive: true });
+  mkdirSync(dirname(ventureFile(dir, LOG)), { recursive: true });
   appendFileSync(ventureFile(dir, LOG), JSON.stringify(line) + "\n");
   const what = event.target ? `${event.target.kind}:${event.target.value}` : `${event.from} -> ${event.to}`;
-  const entry = prov(dir, { entity: LOG, route: "knowledge/freshness-log", activity: "write", agent: by, note: `${event.event} ${what}${event.reason ? `: ${event.reason}` : ""}` });
+  const entry = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: LOG, route: "knowledge/freshness-log", activity: "write", agent: by, note: `${event.event} ${what}${event.reason ? `: ${event.reason}` : ""}` }));
   return { line, provenance: entry.hash };
 }
 
@@ -370,6 +375,10 @@ const byDefault = (by) => by ?? agentFromEnv(process.env.MENTURA_ACTOR === "pers
  * record and what depends on it), path:<folder>, package:<name>, pivot (the validation package), or
  * a plain route or file (a tag). A plain folder is refused with the exact tags to use instead.
  * Returns { ok, result: { target, records, dependents, provenance } } or { ok: false, error, suggest }.
+ * @param {string} dir
+ * @param {string} target
+ * @param {{ reason?: string, by?: object, now?: string | number }} [opts]
+ * @returns {Promise<Outcome<{ target: string, at: string, pivot?: boolean, records: string[], dependents: string[], provenance: string, note: string }>>}
  */
 export async function revalidate(dir, target, { reason, by, now } = {}) {
   const pivot = target === "pivot";
@@ -387,7 +396,12 @@ export async function revalidate(dir, target, { reason, by, now } = {}) {
     note: t.kind === "tag" ? (dependents.length ? `${records[0]} and ${count(dependents.length, "record")} that depend on it are stale` : `${records[0]} is stale; nothing recorded depends on it (pass --derived-from on writes so a tag finds what uses it)`) : `${count(records.length, "record")} under ${t.kind}:${t.value} ${records.length === 1 ? "is" : "are"} stale${dependents.length ? `, and ${count(dependents.length, "record")} that depend on ${records.length === 1 ? "it" : "them"}` : ""}` } };
 }
 
-/** Records that a person or agent checked a record (or a folder of them) is still right, unchanged: its age starts again. */
+/**
+ * Records that a person or agent checked a record (or a folder of them) is still right, unchanged: its age starts again.
+ * @param {string} dir
+ * @param {string} target
+ * @param {{ reason?: string, by?: object, now?: string | number }} [opts]
+ */
 export function verify(dir, target, { reason, by, now } = {}) {
   const items = recordFiles(dir);
   const t = parseTarget(dir, target, items);
@@ -400,7 +414,12 @@ export function verify(dir, target, { reason, by, now } = {}) {
   return { ok: true, result: { verified: `${tt.kind}:${tt.value}`, at: stamp, records: covered.map((i) => i.path), provenance: w.provenance, note: `${covered.length === 1 ? covered[0].path : count(covered.length, "record")} checked and still right; fresh again from ${stamp}` } };
 }
 
-/** Moves the venture to another phase and records when, so per-phase records go stale (V-2). */
+/**
+ * Moves the venture to another phase and records when, so per-phase records go stale (V-2).
+ * @param {string} dir
+ * @param {string} to
+ * @param {{ reason?: string, by?: object, now?: string | number }} [opts]
+ */
 export function phase(dir, to, { reason, by, now } = {}) {
   if (!PHASES.includes(to)) return { ok: false, error: `${to} is not a phase (${PHASES.join(", ")})` };
   const file = join(dir, "venture.json");
@@ -415,10 +434,11 @@ export function phase(dir, to, { reason, by, now } = {}) {
   rmSync(scratch, { recursive: true, force: true });
   if (ok.status !== 0) return { ok: false, error: `venture.json would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
   const agent = by ?? agentFromEnv("person", "router");
-  writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
-  prov(dir, { entity: "venture.json", activity: "write", agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` });
+  // The log goes first: it can refuse, and a refused move must leave the phase where it was.
   const stamp = iso(Math.max(nowOf(now), ...events(dir).map((e) => Date.parse(e.at) + 1)));
   const w = append(dir, { at: stamp, event: "phase", from, to, reason }, agent);
+  writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
+  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: "venture.json", activity: "write", agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` }));
   const P = profiles(dir);
   const due = recordFiles(dir).filter((i) => P.profiles[profileFor(P, i.record, i.route)].per_phase).map((i) => i.path);
   return { ok: true, result: { venture: v.id, from, to, at: stamp, stale: due, provenance: w.provenance, note: `${count(due.length, "record")} with a per-phase profile ${due.length === 1 ? "is" : "are"} stale until checked or redone in ${to}${next.core && !v.core ? "; fill in the core product in venture.json" : ""}` } };
@@ -429,6 +449,10 @@ export function phase(dir, to, { reason, by, now } = {}) {
  * hole and has not expired is copied in; live records stay holes, named in shell.json with the
  * route that reads them. Refuses when a record has expired (it must be checked first) or when out
  * is a routed folder inside the venture.
+ * @param {string} dir
+ * @param {string} out
+ * @param {{ now?: string | number }} [opts]
+ * @returns {Promise<Outcome<{ out: string, frozen: number, stale: number, holes: string[], note: string }>>}
  */
 export async function freeze(dir, out, { now } = {}) {
   const f = await freshness(dir, { now });
