@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VentureCore",
+  "description": "The fields of venture.json a founder writes through foundation/core. Anything else, such as id, name or phase, is refused.",
+  "type": "object",
+  "minProperties": 1,
+  "properties": {
+    "promise": { "type": "string", "pattern": "\\S", "description": "What anyone can claim from this venture, in one or two sentences." },
+    "competence": { "type": "string", "pattern": "\\S", "description": "What you do well enough that the promise can be kept." },
+    "tagline": { "type": "string", "pattern": "\\S", "description": "The short line you keep across campaigns." },
+    "lifecycle_playbook": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The lifecycle playbook the venture follows; it sets the evidence that clears each phase gate." }
+  },
+  "additionalProperties": false
+}

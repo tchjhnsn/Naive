@@ -109,9 +109,9 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
   // A foundation statement no person has confirmed is a decision the founder still owes. It is
   // part of the foundation rather than under it, so the foundation does not hold it.
   for (const s of statements.filter((x) => !["confirmed", "planned"].includes(x.status) && !x.derived_from && !covered.has(x.id))) {
-    const question = { missing: `Write the ${s.id} statement`, draft: `Accept or change the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement an agent wrote` }[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
+    const question = { missing: `Write the ${s.id} statement`, draft: `Accept the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement${s.agent_wrote ? " an agent wrote" : ""}` }[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
     list.push({ id: `foundation-${s.id}`, question, source: "foundation", statement_status: s.status, layer: MODEL.records.find((r) => r.id === s.record)?.layer ?? "purpose",
-      decides: { record: s.record }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
+      decides: { record: s.record, ...(s.path ? { path: s.path } : {}) }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
   }
   const statementFor = (record) => list.find((x) => x.part_of === "foundation" && x.status === "open" && x.decides?.record === record);
   // An agent's draft of a gated record waits for a person to accept it.
@@ -122,7 +122,8 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
     // A draft of a foundation record is settled through its statement, which says to accept it.
     const s = statementFor(record);
     if (s?.statement_status === "draft") { s.decides = { record, path }; continue; }
-    list.push({ id: `draft-${path.replace(/[^a-z0-9]+/g, "-").replace(/-json$/, "")}`, question: `Accept or reject the agent's draft of ${path}`, source: "draft",
+    if (list.some((x) => x.statement_status === "draft" && x.decides?.path === path)) continue;
+    list.push({ id: `draft-${path.replace(/[^a-z0-9]+/g, "-").replace(/-json$/, "")}`, question: `Accept the agent's draft of ${path}`, source: "draft",
       layer: MODEL.records.find((r) => r.id === record)?.layer ?? path.split("/")[0], decides: { record, path }, parent: FOUNDATION_RECORDS.has(record) ? (statementFor(record)?.id ?? "venture") : "venture",
       boundary: "inherit", status: "open", needed_in: venture.phase });
   }
@@ -189,7 +190,7 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
 
 // The route that writes a venture-relative file, for the commands a founder runs.
 function routeOf(path, record) {
-  const r = routes().find((x) => x.kind === "record" && (path ? x.files.some((g) => routeFileGlob(g).test(path)) : x.record === record && x.collection !== "item"));
+  const r = routes().find((x) => x.kind === "record" && (path ? x.collection !== "list" && x.files.some((g) => routeFileGlob(g).test(path)) : (x.record === record || x.view_of === record) && x.collection !== "item"));
   if (!r) return null;
   return r.collection === "item" && path ? r.route.replace("[id]", path.split("/").at(-1).replace(/\.json$/, "")) : r.route;
 }
@@ -421,6 +422,13 @@ function foundersOf(dir, del) {
   return out;
 }
 
+/** Who signs for the venture's founders: every founder it names, else its first person, else no one. */
+export function signers(dir) {
+  const founders = foundersOf(dir, delegationOf(dir));
+  const first = rosterOf(dir)[0];
+  return founders.size || !first ? founders : new Set([first.id, first.name].filter(Boolean));
+}
+
 /** The name setup acts as: the first founder the venture names, else its first person. */
 export function founderName(dir) {
   let del = null;
@@ -449,6 +457,11 @@ function notAPerson(dir, del, by, { rosterRequired }) {
   const people = peopleOf(dir);
   if (!people.size) return rosterRequired ? "the venture names no people (people/people.json) or founder (governance/delegation.json): no one can act as a person" : null;
   return people.has(by) ? null : `${by} is not a person in people/people.json or a founder in governance/delegation.json`;
+}
+
+/** Why by may not write as a person in this venture, or null: the check approve makes, for a door that writes records. */
+export function refusedPerson(dir, by) {
+  try { return notAPerson(dir, delegationOf(dir), by, { rosterRequired: false }); } catch (e) { return `${e.message}: no one writes until it is fixed`; }
 }
 
 /** Who may merge a decided version. A person may (with no grant, only the founder merges), and only a

@@ -44,13 +44,13 @@ export function actingAgent(by) {
  * record in another source (EE-037), its address (<source>://<path>) with the content's sha256
  * and the source's version, commit and pull request.
  * @param {string} dir
- * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, source?: *, statement?: string }} entry
+ * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, source?: *, statement?: string, statements?: string[] }} entry
  */
-export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement }) {
+export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement, statements }) {
   const prior = entries(dir);
   const prev = prior.length ? prior.at(-1).hash : "genesis";
   const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
-    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, statements, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
   entry.hash = lineHash(prev, entry);
   appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\n");
   // Context hook: every provenance entry (write, draft, accept, confirm, decision) is an instrumentation event (P-4).

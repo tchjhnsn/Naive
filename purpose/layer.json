@@ -36,7 +36,8 @@
     "goal",
     "requirement",
     "exit-criteria",
-    "constraints"
+    "constraints",
+    "venture-core"
   ],
   "reads": [
     "venture",

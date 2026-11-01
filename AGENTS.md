@@ -26,7 +26,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 - `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` (TypeScript is the one dev dependency, with its Node types), and python3 with `jsonschema` for `schema/validate.py`.
 - `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors except those under the folders in its `PENDING` list, which are counted and reported until their own PR clears them. A new top-level folder is checked from its first commit, and a syntax error anywhere fails the run, because tsc stops type-checking when it finds one. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
-- `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale.
+- `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node schema/record-types-test.ts`).
 - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
 - `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules.
 - `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
@@ -52,8 +52,9 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 - The docs (site/content/docs/, docs/, every SKILL.md, and docs/master/naive-docs.md, exported from the master article) state only what is decided and built. Something not built says "not built" in that sentence.
 - Ideas go through `naive capture`, not into the docs.
-- Every PR updates the docs or says "No docs change: <why>" in its body; .github/workflows/docs-required.yml enforces it. Only the docs `schema/check-docs-claims.mjs` scans count (`--scanned` lists them): `site/content/docs/**/*.mdx`, `docs/master/*.md` and every SKILL.md.
-- `node schema/check-docs-claims.mjs` must pass: every command, flag, repository path and route the docs name exists in the code.
+- READMEs are docs as code: each sits next to the code it describes, the code is the source of truth, and new ones follow `docs/readme-template.md`. READMEs link each other with relative links, which work on GitHub and in an editor.
+- Every PR updates the docs or starts a line of its body with "No docs change: " and a real reason (a placeholder, a blank reason or the phrase quoted mid-line does not count); .github/workflows/docs-required.yml enforces it. Code here means any file that is not `.md` or `.mdx`, so JSON, CSV and images count. A PR that changes code under `schema/`, `interface/`, `packages/` or `purpose/` must update the README nearest that code, searched up to its top-level folder (`node schema/check-docs-claims.mjs --readmes` lists the ones owed). Only the docs `schema/check-docs-claims.mjs` scans count (`--scanned` lists them): `site/content/docs/**/*.mdx`, `docs/master/*.md`, `packages/*/playbooks/*.md`, every SKILL.md and every README.md.
+- `node schema/check-docs-claims.mjs` must pass: every command, flag, repository path and route the docs name exists in the code, and every relative Markdown link, inline or reference-style, resolves. HTML `href` and `src` are not checked.
 
 ## TypeScript
 

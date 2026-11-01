@@ -16,6 +16,8 @@ import { ambitionOf } from "../frameworks/ambition-tier/adapter.mjs";
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const collection = (dir, rel) => { const d = ventureFile(dir, rel); return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => ({ file: `${rel}/${f}`, rec: load(join(d, f)) })) : []; };
 
+const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
+
 export const goals = (dir) => collection(dir, "foundation/goals").map((x) => x.rec);
 export const requirements = (dir) => collection(dir, "foundation/requirements").map((x) => x.rec);
 export const exitCriteriaFile = (phase) => `foundation/exit-criteria/${phase}.json`;
@@ -33,10 +35,22 @@ export function exitCriteria(dir, phase) {
 
 /** Phases that have exit criteria, canonical or (unmigrated) the telos's. */
 export function phasesWithCriteria(dir) {
-  const c = collection(dir, "foundation/exit-criteria").map((x) => x.rec.phase);
+  // A record's phase becomes a file path, so only a real phase counts.
+  const c = collection(dir, "foundation/exit-criteria").map((x) => x.rec.phase).filter((p) => PHASES.includes(p));
   if (c.length || migrated(dir)) return c;
-  return ["discovery", "validation", "beachhead", "scale", "platform"].filter((p) => telosExitCriteria(dir, p)?.criteria.length);
+  return PHASES.filter((p) => telosExitCriteria(dir, p)?.criteria.length);
 }
+
+/** Where a venture's exit criteria live: each phase that has them, else the current phase's file, still to be written. */
+function criteriaFiles(dir) {
+  const phases = phasesWithCriteria(dir);
+  return (phases.length ? phases : [load(join(dir, "venture.json")).phase]).map(exitCriteriaFile);
+}
+
+/** The canonical files and attribute that hold a telos statement of a migrated venture. */
+export const canonicalHome = (dir, statement) => statement === "vision"
+  ? { files: ["foundation/goals/telos.json"], attribute: "end_state" }
+  : { files: criteriaFiles(dir), attribute: "criteria" };
 
 /** How far the venture means to go: its scale goal's value, else venture.json through the ambition-tier adapter. */
 export function scale(dir, v) {

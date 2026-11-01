@@ -33,7 +33,8 @@
         "model": { "type": "string" },
         "session": { "type": "string" },
         "harness": { "type": "string" },
-        "via": { "enum": ["cli", "mcp", "api", "router"] }
+        "account": { "type": "string", "description": "The account a door with sign-in checked for this person" },
+        "via": { "enum": ["cli", "mcp", "api", "router", "console"] }
       }
     }
   }
