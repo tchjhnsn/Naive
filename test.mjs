@@ -4,9 +4,13 @@
 //
 // Needs Node 22.18 or later, npm install (typescript), and python3 with the jsonschema package. Exit code 1 if any fails.
 // Generated files are checked for staleness by regenerating them into memory and comparing.
+//
+// Steps run in parallel, one worker per core (TEST_WORKERS overrides), and report in the order listed here.
+// The cheap checks run first; under CI a failure there stops the run. Steps in `exclusive` run alone, last.
 
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { availableParallelism } from "node:os";
 import { join } from "node:path";
 
 const root = new URL(".", import.meta.url).pathname;
@@ -108,7 +112,6 @@ const steps = [
   ["departments: instance", "node", ["schema/check-departments.mjs", "instance"]],
   ["departments: examples", "node", ["schema/check-departments.mjs", "schema/examples/workspace"]],
   ["framework/platform boundary", "node", ["schema/check-boundary.mjs"]],
-  ["types (tsc checkJs, outside the pending folders)", "node", ["schema/check-types.ts"]],
   ["the type gate fails on what it must catch", "node", ["schema/check-types-test.ts"]],
   ["founders before ventures: opaque ids, ideas, references, inspirations, _private/ secrets, only the founder confirms", "node", ["schema/founders-test.ts"]],
   ["founders: examples", "node", ["schema/founders.ts", "check", "schema/examples/workspace"]],
@@ -124,6 +127,7 @@ const steps = [
   ["strategic foundation: instance", "node", ["schema/foundation.mjs", "instance"]],
   ["strategic foundation: examples", "node", ["schema/foundation.mjs", "schema/examples/workspace"]],
   ["foundation statement behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "purpose/features/strategic-foundation.feature"]],
+  ["decision affects grammar: malformed entries rejected, well-formed accepted", "node", ["schema/decision-affects-test.mjs"]],
   ["decisions: instance", "node", ["schema/decisions.mjs", "instance"]],
   ["decisions: examples", "node", ["schema/decisions.mjs", "schema/examples/workspace"]],
   ["decision behaviors (Gherkin scenarios)", "node", ["schema/bdd.mjs", "governance/features/decisions.feature"]],
@@ -144,48 +148,72 @@ const steps = [
   ["validation study records: instance", "node", ["schema/check-validation-study.mjs", "instance"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   ["PR review agent (content findings from fixture markdown, screenshot mode, preview noindex)", "node", ["scripts/pr-review/pr-review-test.mjs"]],
-  // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.
-  ...(existsSync(join(root, "node_modules/eslint")) ? [["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]]] : []),
   // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
   ...(existsSync(join(root, "site/node_modules")) ? [["site page gate: internal wording, drafts, blog approval, showcase fixtures", "node", ["site/scripts/gate-pages-test.ts"]]] : []),
   ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
 
 // Generated files: the committed copy must equal a fresh render.
-const glossary = () => {
-  const md = spawnSync("node", ["schema/check-nouns.mjs", "--md"], { cwd: root, encoding: "utf8" }).stdout;
-  const doc = readFileSync(join(root, "docs/ontology.md"), "utf8");
-  return doc.slice(doc.indexOf("\n### System")).trim() === md.trim();
+const rendered = (path, marker) => (md) => {
+  const doc = readFileSync(join(root, path), "utf8");
+  return doc.slice(doc.indexOf(marker)).trim() === md.trim();
 };
 
-const layerGraph = () => {
-  const md = spawnSync("node", ["schema/check-data-model.mjs", "--md"], { cwd: root, encoding: "utf8" }).stdout;
-  const doc = readFileSync(join(root, "docs/design/LAYERS_AND_KITS_2026-10-27.md"), "utf8");
-  return doc.slice(doc.indexOf("### Layer relationships")).trim() === md.trim();
-};
+const cheap = [
+  // ESLint is not skipped when missing: that hid real lint errors while the suite said "all passing" (02d5581).
+  ["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]],
+  ["types (tsc checkJs, outside the pending folders)", "node", ["schema/check-types.ts"]],
+  ["docs/ontology.md matches docs/ontology.json (regenerate with node schema/check-nouns.mjs --md)", "node", ["schema/check-nouns.mjs", "--md"], rendered("docs/ontology.md", "\n### System")],
+  ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node schema/check-data-model.mjs --md)", "node", ["schema/check-data-model.mjs", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
+  ["docs/reference/ROUTES.md matches the kits (regenerate with node interface/router.mjs --md)", "node", ["interface/router.mjs", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
+];
 
-const routeTable = () => {
-  const md = spawnSync("node", ["interface/router.mjs", "--md"], { cwd: root, encoding: "utf8" }).stdout;
-  const doc = readFileSync(join(root, "docs/reference/ROUTES.md"), "utf8");
-  return doc.slice(doc.indexOf("## Routes")).trim() === md.trim();
-};
+// The first two write the same repo files (site/generated/venture-facts.json, site/artifact). The third touched .naive in the venture.
+const exclusive = new Set([
+  "publishing gate: field visibility, leak canaries, internal terms",
+  "leak canaries: every internal record seeded, site facts and both artifacts built, only known leaks",
+  "PR review agent (content findings from fixture markdown, screenshot mode, preview noindex)",
+]);
 
+for (const name of exclusive) if (!steps.some(([n]) => n === name)) throw new Error(`no step named: ${name}`);
+
+const workers = Math.max(1, Math.floor(Number(process.env.TEST_WORKERS) || availableParallelism()));
 let failed = 0;
-for (const [name, cmd, args] of steps) {
-  const r = spawnSync(cmd, args, { cwd: root, encoding: "utf8" });
-  const ok = r.status === 0;
+
+const run = ([, cmd, args, matches]) => new Promise((resolve) => {
+  const child = spawn(cmd, args, { cwd: root, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, GIT_OPTIONAL_LOCKS: "0" } });
+  let stdout = "", stderr = "";
+  child.stdout.setEncoding("utf8").on("data", (d) => { stdout += d; });
+  child.stderr.setEncoding("utf8").on("data", (d) => { stderr += d; });
+  child.on("error", (e) => resolve({ ok: false, output: e.message }));
+  child.on("close", (code) => resolve({ ok: matches ? matches(stdout) : code === 0, output: stdout + stderr }));
+});
+
+const report = ([name], { ok, output }) => {
   if (!ok) failed++;
   console.log(`${ok ? "pass" : "FAIL"}  ${name}`);
-  if (!ok) console.log((r.stdout + r.stderr).trim().split("\n").filter((l) => /FAIL|✗|error|Error|not /.test(l)).slice(0, 8).map((l) => `      ${l}`).join("\n"));
+  if (!ok) console.log(output.trim().split("\n").filter((l) => /FAIL|✗|error|Error|not /.test(l)).slice(0, 8).map((l) => `      ${l}`).join("\n"));
+};
+
+const runAll = async (list, size) => {
+  const results = [];
+  let next = 0, reported = 0;
+  await Promise.all(Array.from({ length: size }, async () => {
+    while (next < list.length) {
+      const i = next++;
+      results[i] = await run(list[i]);
+      for (; results[reported]; reported++) report(list[reported], results[reported]);
+    }
+  }));
+};
+
+console.log(`${workers} workers`);
+await runAll(cheap, workers);
+if (failed && process.env.CI) {
+  console.log(`\n${failed} failing (cheap checks; the remaining steps did not run)`);
+  process.exit(1);
 }
-const fresh = glossary();
-if (!fresh) failed++;
-console.log(`${fresh ? "pass" : "FAIL"}  docs/ontology.md matches docs/ontology.json (regenerate with node schema/check-nouns.mjs --md)`);
-const graph = layerGraph();
-if (!graph) failed++;
-console.log(`${graph ? "pass" : "FAIL"}  layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node schema/check-data-model.mjs --md)`);
-const table = routeTable();
-if (!table) failed++;
-console.log(`${table ? "pass" : "FAIL"}  docs/reference/ROUTES.md matches the kits (regenerate with node interface/router.mjs --md)`);
+await runAll(steps.filter(([name]) => !exclusive.has(name)), workers);
+await runAll(steps.filter(([name]) => exclusive.has(name)), 1);
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);

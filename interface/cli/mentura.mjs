@@ -71,7 +71,7 @@ import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
-import { FRAME, filesOf } from "../../schema/foundation.mjs";
+import { FRAME, filesOf, statementFiles } from "../../schema/foundation.mjs";
 import { approve, decisionFile, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
 import { reasonsFromArgs, whyLines } from "../../schema/reasons.mjs";
 import { impact } from "../../schema/impact.mjs";
@@ -374,10 +374,11 @@ if (cmd === "confirm") {
   const s = FRAME.questions.flatMap((q) => q.statements).find((x) => x.id === id);
   if (!s?.record) { console.error(`${id} is not a foundation statement with a record (see mentura purpose/foundation run)`); process.exit(1); }
   const rt = routes().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
-  const hits = filesOf(dir, s.record).filter((f) => existsSync(ventureFile(dir, f)));
+  const { files: home, attribute } = statementFiles(dir, s);
+  const hits = home.filter((f) => existsSync(ventureFile(dir, f)));
   if (!hits.length) { console.error(`${venture} has no ${s.record} record to confirm`); process.exit(1); }
   const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
-  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), s.attribute) ?? null)}`).join("\n");
+  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), attribute) ?? null)}`).join("\n");
   if (!(await typed(id, `Confirming ${id} as yours:\n${shown}`))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
   for (const f of hits) record(dir, { entity: f, route: rt, activity: "confirm", statement: id, agent: agentFromEnv("person", "cli"), note: opt("note") });
   out(`confirmed: ${id}`);

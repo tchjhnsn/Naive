@@ -688,6 +688,16 @@ export type Decision = {
     status: "proposed" | "in-force" | "superseded" | "withdrawn";
     supersedes?: string[];
     related?: string[];
+    /** What the decision changes, so a check can tell whether the repository agrees. An in-force decision with affects is a requirement on the codebase until every entry holds. */
+    affects?: {
+      kind: "path" | "term" | "record" | "decision";
+      /** path: a relative glob (no leading / and no .. segment); term: a glossary term id; record: a record type, or <type>.<field>; decision: an id */
+      target: string;
+      /** For a path: repo-relative (this repository), workspace-relative (the folder holding workspace.json) or venture-relative (every venture) */
+      root?: "repo" | "workspace" | "venture";
+      /** path: exists or absent; term: defined or retired; record: exists or absent; decision: superseded or narrowed. Each names an end state, so an entry fails until the decision is built */
+      expect: "exists" | "absent" | "defined" | "retired" | "superseded" | "narrowed";
+    }[];
   }[];
 };
 
@@ -1144,7 +1154,9 @@ export type FreshnessLog = {
     model?: string;
     session?: string;
     harness?: string;
-    via: "cli" | "mcp" | "api" | "router";
+    /** The account a door with sign-in checked for this person */
+    account?: string;
+    via: "cli" | "mcp" | "api" | "router" | "console";
   };
 };
 
@@ -1458,7 +1470,7 @@ export type Integration = {
   interfaces: ("files" | "mcp" | "api" | "sdk" | "cli" | "webhook" | "app")[];
   /** Interface layer only: the other layers a person can work in through it, in one session. At least three of the five. */
   reach?: ("purpose" | "knowledge" | "operations" | "evidence" | "governance")[];
-  /** Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom interface built for the system or a venture. */
+  /** Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom harness built for the system or a venture. */
   interface_kind?: "agent-harness" | "custom";
   status: "in-use" | "candidate" | "rejected";
   /** Why it is in use, a candidate, or rejected */
@@ -3410,6 +3422,8 @@ export type VentureCore = {
   competence?: string;
   /** The short line you keep across campaigns. */
   tagline?: string;
+  /** The lifecycle playbook the venture follows; it sets the evidence that clears each phase gate. */
+  lifecycle_playbook?: string;
 };
 
 /** The roles a person can hold in a venture (governance/venture-template/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which. */

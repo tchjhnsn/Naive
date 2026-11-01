@@ -500,7 +500,7 @@
       "id": "EE-047",
       "date": "2026-10-28",
       "decision": "A venture is organized by department in two layers. The departments are the top-level categories of APQC's Process Classification Framework under short ids (operations/departments.json), each tagged with its place in Porter's value chain: primary (products, marketing and sales, supply chain, service delivery, customer service) or support (strategy, human capital, IT, finance, assets, legal risk and compliance, external relationships, business capabilities). A department's governance side (charter, policies, decision rights) sits in governance/departments/<id>/, and its work, assets and tools in operations/departments/<id>/. HR is a support activity, not governance: governance is who decides and oversees, and every department has a governance side (Torian asked, 2026-10-28). Each department folder holds a department.json tag, and the tag, not the folder, says what it is: grouping departments under primary/ and support/ folders is optional and for looking at only (Torian). Pillars stay: they group the work by part of the company, departments by function. Checked by schema/check-departments.mjs.",
-      "status": "proposed"
+      "status": "superseded"
     },
     {
       "id": "EE-048",
@@ -945,12 +945,172 @@
       ]
     },
     {
+      "id": "EE-089",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "The knowledge base and the code base are separate, joined only by a handshake at the glossary. The knowledge base defines terms (id, senses by scope, hash); code, schemas and docs cite term ids and never redefine a term. A changed term hash marks every citing file stale. Prose in one function's local meaning (term@scope) does not leak into another's. The router routes records inside a venture; it does not guard this boundary. Not built yet: no check yet marks a citing file stale when a term's hash changes (it is planned as schema/terms/stale.ts), the glossary is not yet a term in schema/terms, and the knowledge base still shares this repository's tree.",
+      "why": "Torian, 2026-11-01 (card): decisions were decaying before reaching the code, partly because knowledge and code shared one tree and two vocabularies used the same words (department, function, pipeline). Evidence: issues #141 and #143.",
+      "affects": [
+        {
+          "kind": "term",
+          "target": "glossary",
+          "expect": "defined"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/stale.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ],
+      "related": [
+        "EE-014",
+        "EE-095"
+      ]
+    },
+    {
+      "id": "EE-090",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Every venture has a top-level functions/ folder with one folder per function, named for the 13 functions of the catalog (strategy, products, marketing-and-sales, supply-chain, service-delivery, customer-service, human-capital, it, finance, assets, risk-and-compliance, external-relationships, capabilities); venture.json lists them. A function exists even when it is empty. Departments are not part of Naive's core: a department is how one venture groups functions, so it is an optional add-on module on top of the schema, and operations/departments.json leaves the core. This narrows EE-048: function folders always exist, even empty; every other part (departments included) still gets a folder only when the venture lists it. Not built yet: ventures have no functions/ folder, and operations/departments.json and the department schemas are still core.",
+      "why": "Torian, 2026-11-01 (card): a department is a sibling of a function, not a function; ventures group functions differently across org charts. Running the org vocabulary through the term engine (prototype outside this repository, lands with the glossary PR; issue #143) classed the 13 catalog entries as functions. This supersedes EE-047 and records the 2026-10-28 decision that departments are functions with their own team.",
+      "supersedes": [
+        "EE-047"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "functions/*/",
+          "root": "venture",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "operations/departments.json",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "**/departments/**",
+          "root": "venture",
+          "expect": "absent"
+        },
+        {
+          "kind": "record",
+          "target": "venture.departments",
+          "expect": "absent"
+        },
+        {
+          "kind": "term",
+          "target": "function",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "department",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-048",
+          "expect": "narrowed"
+        }
+      ],
+      "related": [
+        "EE-047",
+        "EE-048"
+      ]
+    },
+    {
+      "id": "EE-091",
+      "date": "2026-10-30",
+      "status": "in-force",
+      "decision": "A venture's foundation/ records move to identity/ (JSON). venture.json stays the manifest. Old foundation/ routes resolve through an alias during the upgrade. Not built yet: ventures still keep foundation/, and no alias exists.",
+      "why": "Torian, 2026-10-30 22:05Z (card in the phases thread). Recorded on 2026-11-01: it was decided but never written as a decision record, which is one of the causes in the decision-decay problem record.",
+      "affects": [
+        {
+          "kind": "path",
+          "target": "foundation/**",
+          "root": "venture",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "identity/**",
+          "root": "venture",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "identity",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-092",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "A venture is born from the founder's ideas, not created first. The blank venture template lives in the founder suite as a venture draft, filled as ideas arrive. It becomes a venture when it is a minimally viable venture: a founder, a stated identity (who it is for and its essential why), a root problem someone has, every function addressed (a position or an explicit null) and Discovery exit criteria. Then it enters Discovery. A legal entity comes later and is not required. Not built yet: the founder suite has no venture draft and create-venture does not check the minimally viable venture. founders/ lands in PR #135 (EE-094).",
+      "why": "Torian, 2026-11-01 (card): an idea or a succession of ideas produces a venture; the minimally viable venture is the venture's equivalent of a minimum viable product. The terms venture draft, minimally viable venture and legal venture were run through the term engine in a prototype outside this repository (4/4 predictions confirmed); they land with the glossary PR (issue #143).",
+      "related": [
+        "EE-082",
+        "EE-090",
+        "EE-091"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "founders/*/drafts/**",
+          "root": "workspace",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "venture-draft",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "minimally-viable-venture",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-093",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "The ontology's \"interface\" (a tool a person works through across most layers) is renamed \"harness\". \"interface\" keeps its standard sense: the agreed boundary where two elements meet (C4, ISO/IEC/IEEE 42010). AI harness and agent harness are kinds of harness. The ontology's console and custom interface (now custom harness) rows and the operator console README use the new word. The sixth layer keeps its folder name, interface/; renaming it is not decided. Not built yet: harness and interface are not yet terms in schema/terms.",
+      "why": "Torian, 2026-11-01 (card). The term engine found the two senses disjoint (issue #143); the ontology marked its sense \"ours\", so standards first renames ours. Workspace decision G-039 already gave \"agent harness\" its industry meaning and returned G-029's first-party entity class to \"app\", so \"harness\" is free for this sense.",
+      "related": [
+        "EE-014",
+        "EE-089"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "interface",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "harness",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
       "id": "EE-094",
       "date": "2026-10-31",
       "status": "in-force",
       "decision": "A founder exists before any venture, so a workspace keeps founders in a top-level founders/<handle>/ folder above ventures: founder.json (an opaque person id), ideas/, references/ (CSL-JSON), inspirations/, and _private/ for the real name, secrets and the founder puzzle, which never reach a route or a model. workspace.json names the founder at founders/<handle>/founder.json. A venture may have several founders; each links to it by role (founder, co-founder, general-partner) and may cite the idea it grew from. Built in schema/founders.ts (init, link, idea, reference, inspiration, check, show).",
       "why": "Torian, 2026-10-31 (cards): founders folder above ventures, yes; one founder of record, no (several founders, contributions weighed from provenance later); disclosure tiers as a starting point. Ids EE-089 to EE-093 are taken by PR #142, so this takes EE-094.",
-      "related": ["EE-011", "EE-020"]
+      "related": [
+        "EE-011",
+        "EE-020"
+      ]
     },
     {
       "id": "EE-095",
@@ -958,7 +1118,10 @@
       "status": "in-force",
       "decision": "Every new or contested glossary term goes through one admission: its meaning is written as properties checked on facts (never on the label), frozen by hash, checked as a valid test, cross-run against every admitted term at its level, and recorded as proposed in schema/terms/admitted.json, with the Lean theorems it names present in lean/Naive. A definition dispute is settled by running this, not by asking. Lean lives in lean/ in this repository, built in CI by the lean job. Not built yet: admission does not check that a named theorem proves the current properties (only that it exists), and founder records are not yet checked against the founder term.",
       "why": "Torian, 2026-10-31 21:07Z: every new term runs the full pipeline (definition tests, cross-run, verified in code, proved in Lean) without being asked; 21:13Z (card): Lean lives in lean/ in everything-ecosystem.",
-      "related": ["EE-014", "EE-094"]
+      "related": [
+        "EE-014",
+        "EE-094"
+      ]
     }
   ]
 }

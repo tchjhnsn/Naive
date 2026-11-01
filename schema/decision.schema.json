@@ -20,7 +20,28 @@
           "why": { "type": "string" },
           "status": { "enum": ["proposed", "in-force", "superseded", "withdrawn"] },
           "supersedes": { "type": "array", "items": { "type": "string" } },
-          "related": { "type": "array", "items": { "type": "string" } }
+          "related": { "type": "array", "items": { "type": "string" } },
+          "affects": {
+            "type": "array",
+            "description": "What the decision changes, so a check can tell whether the repository agrees. An in-force decision with affects is a requirement on the codebase until every entry holds.",
+            "items": {
+              "type": "object",
+              "required": ["kind", "target", "expect"],
+              "additionalProperties": false,
+              "properties": {
+                "kind": { "enum": ["path", "term", "record", "decision"] },
+                "target": { "type": "string", "minLength": 1, "description": "path: a relative glob (no leading / and no .. segment); term: a glossary term id; record: a record type, or <type>.<field>; decision: an id" },
+                "root": { "enum": ["repo", "workspace", "venture"], "description": "For a path: repo-relative (this repository), workspace-relative (the folder holding workspace.json) or venture-relative (every venture)" },
+                "expect": { "enum": ["exists", "absent", "defined", "retired", "superseded", "narrowed"], "description": "path: exists or absent; term: defined or retired; record: exists or absent; decision: superseded or narrowed. Each names an end state, so an entry fails until the decision is built" }
+              },
+              "allOf": [
+                { "if": { "properties": { "kind": { "const": "path" } } }, "then": { "required": ["root"], "properties": { "target": { "pattern": "^(?!/)(?!(.*/)?\\.\\.(/|$)).+$" }, "expect": { "enum": ["exists", "absent"] } } }, "else": { "not": { "required": ["root"] } } },
+                { "if": { "properties": { "kind": { "const": "term" } } }, "then": { "properties": { "target": { "pattern": "^[a-z0-9-]+(@[a-z0-9-]+)?$" }, "expect": { "enum": ["defined", "retired"] } } } },
+                { "if": { "properties": { "kind": { "const": "record" } } }, "then": { "properties": { "target": { "pattern": "^[a-z0-9-]+(\\.[a-z0-9_]+)?$" }, "expect": { "enum": ["exists", "absent"] } } } },
+                { "if": { "properties": { "kind": { "const": "decision" } } }, "then": { "properties": { "target": { "pattern": "^[A-Z]+-[0-9]{3}$" }, "expect": { "enum": ["superseded", "narrowed"] } } } }
+              ]
+            }
+          }
         },
         "additionalProperties": false
       }

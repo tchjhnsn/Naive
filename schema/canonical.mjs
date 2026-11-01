@@ -38,6 +38,17 @@ export function phasesWithCriteria(dir) {
   return ["discovery", "validation", "beachhead", "scale", "platform"].filter((p) => telosExitCriteria(dir, p)?.criteria.length);
 }
 
+/** Where a venture's exit criteria live: each phase that has them, else the current phase's file, still to be written. */
+function criteriaFiles(dir) {
+  const phases = phasesWithCriteria(dir);
+  return (phases.length ? phases : [load(join(dir, "venture.json")).phase]).map(exitCriteriaFile);
+}
+
+/** The canonical files and attribute that hold a telos statement of a migrated venture. */
+export const canonicalHome = (dir, statement) => statement === "vision"
+  ? { files: ["foundation/goals/telos.json"], attribute: "end_state" }
+  : { files: criteriaFiles(dir), attribute: "criteria" };
+
 /** How far the venture means to go: its scale goal's value, else venture.json through the ambition-tier adapter. */
 export function scale(dir, v) {
   const g = goals(dir).find((x) => x.kind === "scale");
