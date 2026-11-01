@@ -361,7 +361,7 @@ function append(dir, event, by) {
   const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "freshness-log.schema.json", "--file", join(scratch, "line.json")], { encoding: "utf8" });
   rmSync(scratch, { recursive: true, force: true });
   if (v.status !== 0) throw new Error(`does not match schema/freshness-log.schema.json:\n${(v.stdout + v.stderr).trim()}`);
-  mkdirSync(join(dir, dirname(LOG)), { recursive: true });
+  mkdirSync(dirname(ventureFile(dir, LOG)), { recursive: true });
   appendFileSync(ventureFile(dir, LOG), JSON.stringify(line) + "\n");
   const what = event.target ? `${event.target.kind}:${event.target.value}` : `${event.from} -> ${event.to}`;
   const entry = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: LOG, route: "knowledge/freshness-log", activity: "write", agent: by, note: `${event.event} ${what}${event.reason ? `: ${event.reason}` : ""}` }));
@@ -434,10 +434,11 @@ export function phase(dir, to, { reason, by, now } = {}) {
   rmSync(scratch, { recursive: true, force: true });
   if (ok.status !== 0) return { ok: false, error: `venture.json would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
   const agent = by ?? agentFromEnv("person", "router");
-  writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
-  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: "venture.json", activity: "write", agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` }));
+  // The log goes first: it can refuse, and a refused move must leave the phase where it was.
   const stamp = iso(Math.max(nowOf(now), ...events(dir).map((e) => Date.parse(e.at) + 1)));
   const w = append(dir, { at: stamp, event: "phase", from, to, reason }, agent);
+  writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
+  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: "venture.json", activity: "write", agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` }));
   const P = profiles(dir);
   const due = recordFiles(dir).filter((i) => P.profiles[profileFor(P, i.record, i.route)].per_phase).map((i) => i.path);
   return { ok: true, result: { venture: v.id, from, to, at: stamp, stale: due, provenance: w.provenance, note: `${count(due.length, "record")} with a per-phase profile ${due.length === 1 ? "is" : "are"} stale until checked or redone in ${to}${next.core && !v.core ? "; fill in the core product in venture.json" : ""}` } };

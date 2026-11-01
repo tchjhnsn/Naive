@@ -147,6 +147,25 @@
         }
       }
     },
+    "investors_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Investors lint (investors/lint). Each rule is fail-open unless its mode is fail-closed, which makes that rule's findings fail the run.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": ["fail-open", "fail-closed"]
+              }
+            }
+          }
+        }
+      }
+    },
     "thresholds": {
       "type": "object",
       "description": "Thresholds by name: confidence (the gate's confidence routing), idea-map (when a System 1 answer becomes a tag)",
@@ -309,10 +328,10 @@
       "type": "array",
       "description": "What starts the next step on an event (schema/triggers.mjs)"
     },
-    "legal_lint": {
+    "product_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "description": "Per-rule mode for the product lint (schema/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed.",
       "properties": {
         "rules": {
           "type": "object",
@@ -412,6 +431,116 @@
                 "warn",
                 "error"
               ]
+            }
+          }
+        }
+      }
+    },
+    "money_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-rule mode for the money lint (schema/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "customers_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Customers lint (customers/lint). Per rule, mode fail-closed makes that rule's findings exit 1. The default is fail-open.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "validation_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-rule mode for the validation lint (schema/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "finance_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "finance/lint (schema/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "legal_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-rule mode for the legal lint (schema/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "enum": [
+                  "fail-open",
+                  "fail-closed"
+                ]
+              }
             }
           }
         }

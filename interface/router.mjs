@@ -42,7 +42,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
-import { agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
+import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
 import { decisionFile, holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
@@ -65,6 +65,14 @@ import { packageSlots } from "./package-routes.mjs";
 import { routable } from "../schema/structure.mjs";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from schema/brand.mjs.
 import { BRAND_ROUTES, brandCommands, brandLayout } from "../schema/brand.mjs";
+// Investors lint hook: investors/lint (schema/lint-investors.mjs).
+import { investorsLintCommands } from "../schema/lint-investors.mjs";
+import { productCommands } from "../schema/lint-product.mjs";
+import { moneyCommands } from "../schema/lint-money.mjs";
+// Customers lint: a customer that matches no ICP, and a promise the product record does not keep.
+import { customersLintCommands } from "../schema/lint-customers.mjs";
+import { validationCommands } from "../schema/lint-validation.mjs";
+import { financeCommands } from "../schema/lint-finance.mjs";
 // Legal lint hook: legal/lint (schema/lint-legal.mjs). A lint, not legal advice.
 import { legalCommands } from "../schema/lint-legal.mjs";
 import { peopleLintCommands } from "../schema/lint-people.mjs";
@@ -72,6 +80,7 @@ import { foundationLintCommands } from "../schema/lint-foundation.mjs";
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../schema/stale.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
+import { coreOf, statementsIn, withCore } from "../schema/venture-core.mjs";
 import { telosView } from "../frameworks/telos/adapter.mjs";
 import { migrated, scale } from "../schema/canonical.mjs";
 
@@ -127,7 +136,7 @@ function buildRoutes() {
     const form = r.form ?? "json";
     const groups = PHASES.map((p) => p.id).filter((p) => (N.records[r.id]?.base?.[p] ?? 0) >= N.suggest).map((p) => `(${p})`);
     const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
-      decision_class: r.decision_class ?? null, groups, note: r.note ?? "" };
+      decision_class: r.decision_class ?? null, groups, note: r.note ?? "", ...(r.view_of ? { view_of: r.view_of } : {}) };
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
     const collection = filesOf.length >= 1 && filesOf.every((p) => (p.match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(p) && !p.includes("**"));
     const concrete = filesOf.every((f) => !f.includes("*"));
@@ -138,7 +147,7 @@ function buildRoutes() {
         actions: ["read", "view", "layout", ...(writable ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     } else {
       out.push({ ...common, route: base, files: filesOf,
-        actions: ["read", "view", "layout", ...(writable && !filesOf[0].includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
+        actions: ["read", "view", "layout", ...(writable && !filesOf[0]?.includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     }
   }
   const cmd = (route, script, note, extra = {}) => ({ route, kind: "command", actions: ["run", "view", "layout"], script, groups: [], note, ...extra });
@@ -175,6 +184,12 @@ function buildRoutes() {
   );
   out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (schema/caching.mjs).
   out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (schema/brand.mjs).
+  out.push(...investorsLintCommands(cmd)); // Investors lint hook: investors/lint (schema/lint-investors.mjs).
+  out.push(...productCommands(cmd)); // Product lint hook: product/lint (schema/lint-product.mjs).
+  out.push(...moneyCommands(cmd)); // Money lint: transfer decisions and account owners (schema/lint-money.mjs).
+  out.push(...customersLintCommands(cmd)); // Customers lint: ICP match and promises read from product records by key.
+  out.push(...validationCommands(cmd)); // Validation lint: claims, shelf life, agent grades, Discovery-grade decisions (schema/lint-validation.mjs).
+  out.push(...financeCommands(cmd)); // Finance lint: spend, price below cost, metric targets (schema/lint-finance.mjs).
   out.push(...legalCommands(cmd)); // Legal lint hook: public claims and agreements (schema/lint-legal.mjs).
   out.push(...peopleLintCommands(cmd)); // People lint: role, hire and decision alignment (schema/lint-people.mjs).
   out.push(...foundationLintCommands(cmd)); // Foundation lint: mission, ICP jobs, alignment checks, problem forms (schema/lint-foundation.mjs).
@@ -264,7 +279,7 @@ export function allowed(dir, actorId, action, route) {
 
 const PACKAGE_ROUTE = {
   "validation-problem": "foundation/problem", icp: "foundation/icp", telos: "foundation/telos", alignment: "foundation/alignment",
-  goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints",
+  goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints", "venture-core": "foundation/core",
   "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-go-to-market": "validation/go-to-market",
   "validation-product-market-fit": "validation/product-market-fit", "validation-operations-readiness": "validation/operations-readiness",
   "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content",
@@ -279,6 +294,7 @@ const PACKAGE_ROUTE = {
 
 // Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
 const fileFor = (r, params, dir) => {
+  if (r.view_of) return "venture.json";
   const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", params.id)) : r.files).filter((f) => !f.includes("*"));
   if (dir) {
     const hit = cands.find((f) => existsSync(ventureFile(dir, f)));
@@ -445,7 +461,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "read") {
     // Approvals live in the venture folder's sidecars, so a public reader of another source fails closed.
     if (actor === "public" && remote) return { ok: false, error: `the public reader reads only records in the venture's own folder; ${route} lives in ${src.id}` };
-    const patterns = r.collection === "item" ? [fileFor(r, params, dir)] : r.files;
+    const patterns = r.collection === "item" || r.view_of ? [fileFor(r, params, dir)] : r.files;
     let items;
     try {
       // a file named _* is never an item; routable: private _folders (P-22)
@@ -474,7 +490,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, ...(remote ? { source: src.id } : {}), template: r.template, schema: r.schema, need_now: pub ? null : layout(r, dir).need_now ?? null, skills: fix(r).skills }, ...(pub ? {} : loading), ...deprecated };
     };
     if (!found.length) return absent();
-    const parse = (x) => x.path.endsWith(".json") ? JSON.parse(x.content) : x.path.endsWith(".jsonl") ? x.content.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : x.content;
+    const parse = (x) => r.view_of ? coreOf(JSON.parse(x.content)) : x.path.endsWith(".json") ? JSON.parse(x.content) : x.path.endsWith(".jsonl") ? x.content.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : x.content;
     // Overlay each attribute mastered elsewhere with the value its system of record holds, and
     // cite where it came from. A source that holds nothing for it leaves the record's own value.
     const overlays = new Map();
@@ -541,6 +557,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
     if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
+    // Agent drafts are refused here because accepting one moves the whole file into place, and this draft holds only a view of it.
+    if (r.view_of && (actor !== "person" || actingAgent(provenance.agent?.id) || remote || attrs.length)) return { ok: false, error: `only a person writes ${route}, in the venture's own folder; it holds part of ${file}` };
     const gate = gateOf(r, dir);
     const text = JSON.stringify(input, null, 2) + "\n";
     // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
@@ -550,6 +568,15 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", tmp], { encoding: "utf8" });
     rmSync(scratch, { recursive: true, force: true });
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) };
+    const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
+    const whole = base && JSON.stringify(withCore(JSON.parse(base), input), null, 2) + "\n";
+    if (whole) {
+      const held = mkdtempSync(join(tmpdir(), "mentura-write-")), copy = join(held, basename(file));
+      writeFileSync(copy, whole);
+      const w = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", "venture.schema.json", "--file", copy], { encoding: "utf8" });
+      rmSync(held, { recursive: true, force: true });
+      if (w.status !== 0) return { ok: false, error: `${file} does not match schema/venture.schema.json, so nothing was written:\n${(w.stdout + w.stderr).trim()}`, fix: fix(r) };
+    }
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
     const log = (entity, activity, extra = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, ...extra });
 
@@ -600,7 +627,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       input = Object.fromEntries(Object.entries(input).filter(([k]) => !split.some((a) => a.attribute === k)));
     }
     const attributesOut = attributeWrites.length ? { attributes: attributeWrites } : {};
-    const recordText = attributeWrites.length ? JSON.stringify(input, null, 2) + "\n" : text;
+    const recordText = whole ?? (attributeWrites.length ? JSON.stringify(input, null, 2) + "\n" : text);
 
     if (remote) {
       // Another source: its connector decides how a write lands. A pull-request source opens a
@@ -621,8 +648,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Gate group hook (X-2): the held draft, the owner it was sent to and any variants kept side by side.
     let held2 = null;
     if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent });
-    else await store.write(file, recordText);
-    const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write");
+    else {
+      if (base !== null && readFileSync(ventureFile(dir, file), "utf8") !== base) return { ok: false, error: `${file} changed while this was being checked, so nothing was written: try again` };
+      await store.write(file, recordText);
+    }
+    const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write", r.view_of ? { statements: statementsIn(input) } : {});
     return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };

@@ -31,10 +31,16 @@ export function variantsDecision(file) {
 
 const readJson = (f) => JSON.parse(readFileSync(f, "utf8"));
 
-/** The sidecar of a draft, or null. */
+/** The sidecar of a draft, or null. A sidecar is a file's word, so which variants exist and their paths come from
+ *  the disk and the draft's own name. It only adds who wrote each one. */
 export function sidecar(dir, draft) {
-  const f = join(dir, sidecarOf(draft));
-  return existsSync(f) ? readJson(f) : null;
+  const f = ventureFile(dir, sidecarOf(draft));
+  const meta = existsSync(f) ? readJson(f) : null;
+  const listed = Array.isArray(meta?.variants) ? meta.variants : [];
+  const variants = [...LETTERS].map((variant) => ({ variant, file: variantPath(draft, variant) })).filter((v) => existsSync(ventureFile(dir, v.file)))
+    .map((v) => ({ ...listed.find((x) => x?.variant === v.variant), ...v, sha256: sha(readFileSync(ventureFile(dir, v.file))) }));
+  if (!meta && variants.length < 2) return null;
+  return { ...meta, variants };
 }
 
 /**
@@ -53,18 +59,18 @@ export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }
   const keep = !!verdict?.variants && existsSync(dest);
   if (!keep) {
     writeFileSync(dest, text);
-    for (const v of meta?.variants ?? []) if (v.variant !== "a") rmSync(join(dir, variantPath(draft, v.variant)), { force: true });
+    for (const v of meta?.variants ?? []) if (v.variant !== "a") rmSync(ventureFile(dir, variantPath(draft, v.variant)), { force: true });
     if (verdict && verdict.then !== "pass") {
-      writeFileSync(join(dir, sidecarOf(draft)), JSON.stringify({ route, file, rule: verdict.rule, source: verdict.source, then: verdict.then,
+      writeFileSync(ventureFile(dir, sidecarOf(draft)), JSON.stringify({ route, file, rule: verdict.rule, source: verdict.source, then: verdict.then,
         ...(verdict.owner ? { owner: verdict.owner, function: verdict.function ?? null } : {}), variants: [{ variant: "a", file: draft, by, at, sha256: sha(text) }] }, null, 2) + "\n");
-    } else rmSync(join(dir, sidecarOf(draft)), { force: true });
+    } else rmSync(ventureFile(dir, sidecarOf(draft)), { force: true });
     return { written: draft, variant: "a" };
   }
   // Variants: the first draft stays as a; a draft equal to one already held is that variant.
   const variants = meta?.variants?.length ? meta.variants : [{ variant: "a", file: draft, by: "agent", at, sha256: sha(readFileSync(dest)) }];
   const same = variants.find((v) => v.sha256 === sha(text));
   if (same) return { written: same.file, variant: same.variant, variants: variants.map((v) => v.variant), decision: meta?.decision ?? null };
-  const next = LETTERS[variants.length];
+  const next = [...LETTERS].find((l) => !variants.some((v) => v.variant === l));
   if (!next) throw new Error(`${route} already holds ${variants.length} drafts side by side; accept one first`);
   const vfile = variantPath(draft, next);
   writeFileSync(ventureFile(dir, vfile), text);
@@ -84,7 +90,7 @@ export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }
   };
   mkdirSync(dirname(ventureFile(dir, dec.path)), { recursive: true });
   writeFileSync(ventureFile(dir, dec.path), JSON.stringify(record, null, 2) + "\n");
-  writeFileSync(join(dir, sidecarOf(draft)), JSON.stringify({ ...(meta ?? { route, file, rule: verdict.rule, source: verdict.source, then: verdict.then, ...(verdict.owner ? { owner: verdict.owner, function: verdict.function ?? null } : {}) }), variants, decision: dec.id }, null, 2) + "\n");
+  writeFileSync(ventureFile(dir, sidecarOf(draft)), JSON.stringify({ ...(meta ?? { route, file, rule: verdict.rule, source: verdict.source, then: verdict.then, ...(verdict.owner ? { owner: verdict.owner, function: verdict.function ?? null } : {}) }), variants, decision: dec.id }, null, 2) + "\n");
   return { written: vfile, variant: next, variants: variants.map((v) => v.variant), decision: dec.id };
 }
 
@@ -103,17 +109,20 @@ export function pick(dir, draft, letter) {
  * After a person accepts a draft: removes every variant and the sidecar, and decides the variants decision.
  * @param {string} dir
  * @param {string} draft
- * @param {{ picked?: string, by?: string }} [opts]
+ * @param {{ picked?: string, by?: string, account?: string, via?: string }} [opts]
  *  @returns {{ picked: string, decision?: string, decided?: boolean, error?: string }}
  */
-export function settle(dir, draft, { picked = "a", by } = {}) {
+export function settle(dir, draft, { picked = "a", by, account, via } = {}) {
   const meta = sidecar(dir, draft);
   for (const v of meta?.variants ?? []) rmSync(ventureFile(dir, v.file), { force: true });
   rmSync(ventureFile(dir, draft), { force: true });
-  rmSync(join(dir, sidecarOf(draft)), { force: true });
-  if (!meta?.decision) return { picked };
-  const d = approve(dir, meta.decision, /** @type {Parameters<typeof approve>[2]} */ ({ by: by ?? process.env.MENTURA_PERSON ?? "founder", answer: picked, note: `accepted draft ${picked} of ${meta.route}` }));
-  return { picked, decision: meta.decision, decided: d.ok, ...(d.ok ? {} : { error: d.error }) };
+  rmSync(ventureFile(dir, sidecarOf(draft)), { force: true });
+  // The draft's own name decides which decision this signs, and only a round that opened it signs it.
+  const { id, path } = variantsDecision(draft.replace(/^_drafts\//, "").replace(/\.draft$/, "").replace(/__/g, "/"));
+  if (meta?.decision !== id || !existsSync(ventureFile(dir, path))) return { picked };
+  const d = approve(dir, id, /** @type {Parameters<typeof approve>[2]} */ ({ by: by ?? process.env.MENTURA_PERSON ?? "founder", account, via, answer: picked, note: `accepted draft ${picked} of ${meta?.route ?? draft}` }));
+  const decided = d.ok || /already decided as worded/.test(d.error);
+  return { picked, decision: id, decided, ...(decided ? {} : { error: d.error }) };
 }
 
 /** The drafts waiting in a venture: route, rule, owner and variants. A draft with no sidecar was held by its decision class. */

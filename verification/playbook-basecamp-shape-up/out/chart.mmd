@@ -1,0 +1,76 @@
+---
+title: "One six-week cycle: shape a pitch, bet, build, then cool down"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: shaping
+    lg1: betting
+    lg2: building
+    lg3: failed
+    lg4: declined
+    lg5: breaker
+    lg6: cooldown
+  }
+  class lg0 blue
+  class lg1 purple
+  class lg2 teal
+  class lg3 pink
+  class lg4 tan
+  class lg5 orange
+  class lg6 yellow
+  s0: Venture has a product and an ICP
+  s1: The offer is read
+  s2: Who it is for is read
+  s3: Shaping
+  s4: Pitch drafted
+  s5: Pitch drafted with a blank section
+  s6: Pitch check failed
+  s7: Pitch check passed
+  s8: The bet is open
+  s9: You declined the bet
+  s10: You placed the bet
+  s11: Building for six weeks
+  s12: The cycle check failed
+  s13: The cycle check passed
+  s14: The circuit breaker tripped
+  s15: Cool-down between cycles
+  s16: Shipped inside the appetite
+  [*] --> s0
+  s0 --> s1: you read the product card
+  s1 --> s2: you read who it is for
+  s2 --> s3: you read the decision rights
+  s3 --> s4: you write the pitch as a handoff
+  s3 --> s5: you write the pitch and leave a section blank
+  s4 --> s7: the pitch check passes
+  s5 --> s6: the pitch check fails
+  s6 --> s4: you fill the blank section
+  s7 --> s8: you propose the bet and leave it open
+  s8 --> s9: you decline the bet
+  s8 --> s10: you bet one six-week cycle
+  s10 --> s11: you open the cycle handoff
+  s11 --> s12: the cycle check fails
+  s11 --> s13: the cycle check passes
+  s11 --> s14: the appetite is spent and the circuit breaker trips
+  s12 --> s11: you correct the cycle handoff
+  s12 --> s14: the appetite is spent and the circuit breaker trips
+  s13 --> s16: the work ships and the evidence is written
+  s13 --> s14: the appetite is spent and the circuit breaker trips
+  s14 --> s15: you open the cool-down handoff
+  s16 --> s15: you open the cool-down handoff
+  class s0 blue
+  class s1 blue
+  class s2 blue
+  class s3 blue
+  class s4 blue
+  class s5 blue
+  class s6 pink
+  class s7 blue
+  class s8 purple
+  class s9 tan
+  class s10 purple
+  class s11 teal
+  class s12 pink
+  class s13 teal
+  class s14 orange
+  class s15 yellow
+  class s16 teal

@@ -29,12 +29,13 @@ export function agentFromEnv(kind, via, extra = {}) {
   return Object.fromEntries(Object.entries(a).filter(([, v]) => v));
 }
 
-/** The agent this process says is acting, when it is not the person named by: MENTURA_ACTOR=agent,
+/** The agent this process says is acting, when it is not the person named by: MENTURA_ACTOR other than person,
  *  MENTURA_MODEL, or a MENTURA_ACTOR_ID other than by. These are environment variables anyone can
  *  unset, so this catches an honest or careless agent; it is not signed identity. */
 export function actingAgent(by) {
   const e = process.env;
-  if (e.MENTURA_ACTOR === "agent" || e.MENTURA_MODEL) return e.MENTURA_ACTOR_ID ?? e.MENTURA_MODEL ?? "agent";
+  const said = e.MENTURA_ACTOR?.trim().toLowerCase();
+  if ((said && said !== "person") || e.MENTURA_MODEL) return e.MENTURA_ACTOR_ID ?? e.MENTURA_MODEL ?? "agent";
   return e.MENTURA_ACTOR_ID && e.MENTURA_ACTOR_ID !== by ? e.MENTURA_ACTOR_ID : null;
 }
 
@@ -43,13 +44,13 @@ export function actingAgent(by) {
  * record in another source (EE-037), its address (<source>://<path>) with the content's sha256
  * and the source's version, commit and pull request.
  * @param {string} dir
- * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, source?: *, statement?: string }} entry
+ * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, source?: *, statement?: string, statements?: string[] }} entry
  */
-export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement }) {
+export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement, statements }) {
   const prior = entries(dir);
   const prev = prior.length ? prior.at(-1).hash : "genesis";
   const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
-    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, statements, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
   entry.hash = lineHash(prev, entry);
   appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\n");
   // Context hook: every provenance entry (write, draft, accept, confirm, decision) is an instrumentation event (P-4).

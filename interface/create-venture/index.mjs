@@ -11,7 +11,10 @@
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
+//                      [--door <door>] [--account <id>]
 //
+// --door names the interface when it is not the CLI. Without --account the founder's name is a claim
+// and the provenance log says unverified; --account names the account that door checked.
 // --source says where a function keeps its truth (schema/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
 // --source finance=rho. Rho is synced at setup: its sandbox, the founder's own with RHO_API_TOKEN, or a
@@ -47,7 +50,7 @@ const FORMS = JSON.parse(readFileSync(join(framework, "schema/venture.schema.jso
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name", "door", "account"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
@@ -243,7 +246,10 @@ const { ventureFile: vf, physical } = await import(join(framework, "schema/ventu
 const { agentFromEnv, record } = await import(join(framework, "interface/provenance.mjs"));
 const today = new Date().toISOString().slice(0, 10);
 mkdirSync(vf(dir, "people/founders"), { recursive: true });
-const asPerson = agentFromEnv("person", "cli", { id: people[0].id });
+const door = opt("door") ?? "cli";
+const account = opt("account");
+const founderKind = door === "cli" || account ? "person" : "unverified";
+const asPerson = agentFromEnv(founderKind, door, { id: people[0].id, account });
 for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
   p.founder_file = `people/founders/${p.id}.json`;
   writeFileSync(vf(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, ...(structured ? {} : { hats: p.hats }), joined: today }, null, 2) + "\n");
@@ -254,7 +260,7 @@ record(dir, { entity: "people/people.json", route: "people", activity: "write", 
 if (answers.dump) {
   mkdirSync(vf(dir, "raw"), { recursive: true });
   copyFileSync(resolve(answers.dump), vf(dir, "raw/dump.md"));
-  record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv("person", "cli"), note: `the founder's idea dump, verbatim, from ${resolve(answers.dump)}` });
+  record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv(founderKind, door, { account }), note: `the founder's idea dump, verbatim${door === "cli" ? `, from ${resolve(answers.dump)}` : ""}` });
 }
 
 // knowledge/sources.json: each function's systems of record, as pointers (EE-083). Rho is read by code, so it is synced now.

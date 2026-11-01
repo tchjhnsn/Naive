@@ -1,0 +1,57 @@
+---
+title: "Jobs on each customer profile"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: working
+    lg1: draft
+    lg2: blocked
+    lg3: done
+  }
+  class lg0 blue
+  class lg1 yellow
+  class lg2 orange
+  class lg3 teal
+  s0: Start
+  s1: Problem record is open
+  s2: Stopped: no problem record
+  s3: Each profile is open
+  s4: Stopped: no customer profile
+  s5: Ready to write, no product card
+  s6: Ready to write, product job in view
+  s7: Draft: job copies who or the product
+  s8: Draft: profile has no job
+  s9: Draft: progress in a circumstance
+  s10: Check failed
+  s11: Check passed, waiting for you
+  s12: You accepted the jobs
+  [*] --> s0
+  s0 --> s2: you stop [no problem record yet]
+  s0 --> s1: you read the problem record [when the venture has one]
+  s1 --> s4: you stop [no customer profile yet]
+  s1 --> s3: you read the customer profiles [when the venture has them]
+  s3 --> s5: you find no product card
+  s3 --> s6: you read the product's claimed job
+  s5 --> s7: you write a copy of who they are, or of the product's job
+  s5 --> s8: you leave the job blank
+  s5 --> s9: you write the progress they are trying to make
+  s6 --> s7: you write a copy of who they are, or of the product's job
+  s6 --> s8: you leave the job blank
+  s6 --> s9: you write the progress they are trying to make
+  s7 --> s10: you run the checks
+  s8 --> s10: you run the checks
+  s9 --> s11: you run the checks
+  s11 --> s12: you accept the draft
+  class s0 blue
+  class s1 blue
+  class s2 orange
+  class s3 blue
+  class s4 orange
+  class s5 blue
+  class s6 blue
+  class s7 yellow
+  class s8 yellow
+  class s9 yellow
+  class s10 orange
+  class s11 teal
+  class s12 teal
