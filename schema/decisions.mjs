@@ -109,9 +109,9 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
   // A foundation statement no person has confirmed is a decision the founder still owes. It is
   // part of the foundation rather than under it, so the foundation does not hold it.
   for (const s of statements.filter((x) => !["confirmed", "planned"].includes(x.status) && !x.derived_from && !covered.has(x.id))) {
-    const question = { missing: `Write the ${s.id} statement`, draft: `Accept or change the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement an agent wrote` }[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
+    const question = { missing: `Write the ${s.id} statement`, draft: `Accept the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement${s.agent_wrote ? " an agent wrote" : ""}` }[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
     list.push({ id: `foundation-${s.id}`, question, source: "foundation", statement_status: s.status, layer: MODEL.records.find((r) => r.id === s.record)?.layer ?? "purpose",
-      decides: { record: s.record }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
+      decides: { record: s.record, ...(s.path ? { path: s.path } : {}) }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
   }
   const statementFor = (record) => list.find((x) => x.part_of === "foundation" && x.status === "open" && x.decides?.record === record);
   // An agent's draft of a gated record waits for a person to accept it.
@@ -122,7 +122,8 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
     // A draft of a foundation record is settled through its statement, which says to accept it.
     const s = statementFor(record);
     if (s?.statement_status === "draft") { s.decides = { record, path }; continue; }
-    list.push({ id: `draft-${path.replace(/[^a-z0-9]+/g, "-").replace(/-json$/, "")}`, question: `Accept or reject the agent's draft of ${path}`, source: "draft",
+    if (list.some((x) => x.statement_status === "draft" && x.decides?.path === path)) continue;
+    list.push({ id: `draft-${path.replace(/[^a-z0-9]+/g, "-").replace(/-json$/, "")}`, question: `Accept the agent's draft of ${path}`, source: "draft",
       layer: MODEL.records.find((r) => r.id === record)?.layer ?? path.split("/")[0], decides: { record, path }, parent: FOUNDATION_RECORDS.has(record) ? (statementFor(record)?.id ?? "venture") : "venture",
       boundary: "inherit", status: "open", needed_in: venture.phase });
   }
@@ -189,7 +190,7 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
 
 // The route that writes a venture-relative file, for the commands a founder runs.
 function routeOf(path, record) {
-  const r = routes().find((x) => x.kind === "record" && (path ? x.files.some((g) => routeFileGlob(g).test(path)) : x.record === record && x.collection !== "item"));
+  const r = routes().find((x) => x.kind === "record" && (path ? x.collection !== "list" && x.files.some((g) => routeFileGlob(g).test(path)) : (x.record === record || x.view_of === record) && x.collection !== "item"));
   if (!r) return null;
   return r.collection === "item" && path ? r.route.replace("[id]", path.split("/").at(-1).replace(/\.json$/, "")) : r.route;
 }
@@ -421,6 +422,13 @@ function foundersOf(dir, del) {
   return out;
 }
 
+/** Who signs for the venture's founders: every founder it names, else its first person, else no one. */
+export function signers(dir) {
+  const founders = foundersOf(dir, delegationOf(dir));
+  const first = rosterOf(dir)[0];
+  return founders.size || !first ? founders : new Set([first.id, first.name].filter(Boolean));
+}
+
 /** The name setup acts as: the first founder the venture names, else its first person. */
 export function founderName(dir) {
   let del = null;
@@ -449,6 +457,11 @@ function notAPerson(dir, del, by, { rosterRequired }) {
   const people = peopleOf(dir);
   if (!people.size) return rosterRequired ? "the venture names no people (people/people.json) or founder (governance/delegation.json): no one can act as a person" : null;
   return people.has(by) ? null : `${by} is not a person in people/people.json or a founder in governance/delegation.json`;
+}
+
+/** Why by may not write as a person in this venture, or null: the check approve makes, for a door that writes records. */
+export function refusedPerson(dir, by) {
+  try { return notAPerson(dir, delegationOf(dir), by, { rosterRequired: false }); } catch (e) { return `${e.message}: no one writes until it is fixed`; }
 }
 
 /** Who may merge a decided version. A person may (with no grant, only the founder merges), and only a
@@ -517,7 +530,8 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   if (!old) return { ok: false, error: `${id} has no version ${to}` };
   if (old.status !== "decided") return { ok: false, error: `${id} version ${to} was never decided; only a decided version can be restored` };
   const n = nextVersion(d);
-  const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...(old.provenance ?? {}), drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
+  const { signer: _claimed, signer_account: _account, ...restored } = old.provenance ?? {};
+  const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...restored, drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
   if (old.provenance?.reasons) out.reasons = old.provenance.reasons;
   else delete out.reasons;
   const bad = validate(out);
@@ -527,11 +541,15 @@ export function rollback(dir, id, to, { by, via = "cli" } = {}) {
   return { ok: true, result: { decided: id, version: out.version, restored: Number(to), provenance: e.hash, next: out.applies_to?.length ? `mentura merge ${id}` : null } };
 }
 
-/** A person approves a decision: as worded, or with their own answer. @param {string} dir @param {string} id @param {{ by?: string, answer?: string, via?: string, note?: string, reasons?: object[] }} [opts] */
-export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}) {
+/** A person approves a decision: as worded, or with their own answer. unverified marks an approval
+ *  from a door with no sign-in: the records say the signer is unverified and claim no wording.
+ *  account marks one from a door that checked a sign-in: the records name that account as the signer.
+ *  @param {string} dir @param {string} id @param {{ by?: string, answer?: string, via?: string, note?: string, reasons?: object[], unverified?: boolean, account?: string }} [opts] */
+export function approve(dir, id, { by, answer, via = "cli", note, reasons, unverified = false, account } = {}) {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "approving needs the person's name (--by)" };
+  if (unverified && account) return { ok: false, error: "an approval is unverified or names a checked account, not both" };
   let del;
   try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${e.message}: no one approves until it is fixed` }; }
   // Setup approves before anyone is recorded, so a venture that names no one has no roster to check.
@@ -563,14 +581,14 @@ export function approve(dir, id, { by, answer, via = "cli", note, reasons } = {}
   const restated = new Set((reasons ?? []).map((x) => x.claim));
   const kept = (d.reasons ?? []).filter((x) => !restated.has(x.claim));
   const given = [...(d.versions?.length ? kept : stamp(dir, kept, { keep: false })), ...stamp(dir, reasons ?? [], { keep: false })];
-  const { reasons: _old, ...pv } = d.provenance ?? {};
+  const { reasons: _old, signer: _signer, signer_account: _account, ...pv } = d.provenance ?? {};
   const frozen = given.length ? given : null;
-  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, wording, via, ...(frozen ? { reasons: frozen } : {}) } };
+  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, ...(unverified ? { signer: "unverified" } : { wording }), ...(account ? { signer: "verified", signer_account: account } : {}), via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: note ?? `approved decision ${id} (${wording})` }));
-  return { ok: true, result: { decided: id, wording, phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
+  const e = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv(unverified ? "unverified" : "person", via, { id: by, account }), note: note ?? (unverified ? `approved decision ${id} through ${via} with no sign-in: ${by} is unverified` : `approved decision ${id} (${wording})`) }));
+  return { ok: true, result: { decided: id, wording: unverified ? null : wording, ...(unverified ? { signer: "unverified" } : {}), ...(account ? { signer: "verified" } : {}), phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
 }
 
 /** The matrix: for each layer, the decisions that render now, wait, or come later, by phase. */

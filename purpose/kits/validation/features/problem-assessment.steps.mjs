@@ -13,6 +13,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 
 const venture = (w) => w.dir ??= (() => { const d = mkdtempSync(join(tmpdir(), "assess-")); w.cleanup = () => rmSync(d, { recursive: true, force: true }); return d; })();
 const save = (w) => { mkdirSync(join(venture(w), "purpose/validation"), { recursive: true }); writeFileSync(join(w.dir, "purpose/validation/problem.json"), JSON.stringify(w.rec)); };
+const writeAt = (w, rel) => { const d = venture(w); mkdirSync(join(d, rel.split("/").slice(0, -1).join("/")), { recursive: true }); writeFileSync(join(d, rel), JSON.stringify(w.rec)); };
 const item = (w, e) => { w.rec.evidence.push({ id: `e${w.rec.evidence.length + 1}`, summary: "test", collected: TODAY, ...e }); save(w); };
 const result = (w) => w.out ??= assess(venture(w));
 const label = (w, a) => result(w).assumptions?.find((x) => x.assumption === a)?.label;
@@ -34,6 +35,13 @@ export const steps = [
   [/^a complete problem record$/, (w) => { w.rec = { venture: "t", statement: "It hurts", segment: "Shop owners", cost: "Six hours a week", why_now: "Agents can now do the admin", evidence: [] }; save(w);
     for (const a of ["exists", "segment", "hurts", "why-now"]) item(w, { kind: "desk-research", audience: "unknown", assumption: a, source: { url: "https://example.com", checked: TODAY } }); }],
   [/^a venture with no problem record$/, (w) => { venture(w); }],
+  [/^a problem record with a statement and a segment only, at foundation\/problem.json$/, (w) => { w.rec = { venture: "t", statement: "It hurts", segment: "Shop owners", evidence: [] }; writeAt(w, "foundation/problem.json"); }],
+  [/^a complete problem record at foundation\/problem.json$/, (w) => {
+    w.rec = { venture: "t", statement: "It hurts", segment: "Shop owners", cost: "Six hours a week", why_now: "Agents can now do the admin", evidence: [] };
+    for (const a of ["exists", "segment", "hurts", "why-now"]) w.rec.evidence.push({ id: `e${w.rec.evidence.length + 1}`, summary: "test", collected: TODAY, kind: "desk-research", audience: "unknown", assumption: a, source: { url: "https://example.com", checked: TODAY } });
+    writeAt(w, "foundation/problem.json");
+  }],
+  [/^it does not list "([^"]+)" as missing$/, (w, f) => ok(!(result(w).needs_input?.missing ?? result(w).missing ?? []).some((m) => m.field === f), `${f} was listed as missing`)],
   [/^a reported item that competitors have paying customers, bearing on "([a-z-]+)"$/, (w, a) => item(w, { kind: "behavior", audience: "adjacent", assumption: a, sample: { n: 1000 }, source: { url: "https://example.com/competitor", checked: TODAY } })],
   [/^a reported item that people pay for workarounds, bearing on "([a-z-]+)"$/, (w, a) => item(w, { kind: "desk-research", audience: "target", assumption: a, source: { url: "https://example.com/report", checked: TODAY } })],
   [/^an item against "([a-z-]+)" from the wrong audience$/, (w, a) => item(w, { kind: "opinion", audience: "wrong", assumption: a, supports: false, source: { path: "notes/friends.md" } })],

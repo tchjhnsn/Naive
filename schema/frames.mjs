@@ -163,10 +163,11 @@ export function fresh(f, lookup, now = Date.now()) {
 
 /**
  * Match (or take) a frame, judge its premises against the venture, and propose its decisions, open.
+ * via is the interface the proposals are recorded as coming through (mcp unless the caller says).
  * @param {string} dir
- * @param {{ id?: string, text?: string, lookup?: *, now?: number, agentId?: string, harness?: string, model?: string }} [opts]
+ * @param {{ id?: string, text?: string, lookup?: *, now?: number, agentId?: string, harness?: string, model?: string, via?: string }} [opts]
  */
-export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "frames", harness, model } = {}) {
+export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "frames", harness, model, via = "mcp" } = {}) {
   const f = id ? frameOf(id) : (text ? frameOf(match(text)[0]?.id) : null);
   if (!f) return { ok: false, error: id ? `no frame ${id}` : `no frame fits "${text ?? ""}"; node schema/frames.mjs list shows them` };
   const bad = check(f);
@@ -187,7 +188,7 @@ export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "
     const looked = (e.options_from ?? "frame") === "lookup" ? fresh(f, lookup, now) : null;
     const options = looked ? looked.kept.map((o) => `${o.option} (${o.source}, ${o.as_of.slice(0, 10)})`) : e.options;
     const note = `${said}From the frame ${f.id}: ${reframe} Premises: ${summary}${v.dichotomy ? `; the trade reads as ${v.dichotomy.reading}` : ""}.${looked && !looked.kept.length ? ` Options come from a dated, cited lookup for: ${f.freshness.look_for.join("; ")} (no more than ${f.freshness.max_age_days} days old); none is on file yet.` : ""}`;
-    const r = propose(dir, { id: e.id, question: e.question, ...(options?.length ? { options } : {}), ...(e.layer ? { layer: e.layer } : {}), ...(e.needed_in ? { needed_in: e.needed_in } : {}), note }, { agentId, via: "mcp", harness, model: judged.model ?? model });
+    const r = propose(dir, { id: e.id, question: e.question, ...(options?.length ? { options } : {}), ...(e.layer ? { layer: e.layer } : {}), ...(e.needed_in ? { needed_in: e.needed_in } : {}), note }, { agentId, via, harness, model: judged.model ?? model });
     if (!r.ok) return { ok: false, error: r.error };
     proposed.push({ id: e.id, question: e.question, options: options ?? [], awaiting: "the founder" });
   }

@@ -1,0 +1,35 @@
+TLC2 Version 2026.10.28.014557 (rev: 56d37a9)
+Running breadth-first search Model-Checking with fp 24 and seed -613486376796242681 with 10 workers on 10 cores with 7282MB heap and 64MB offheap memory [pid: 72021] (Mac OS X 26.0.1 aarch64, Homebrew 21.0.12.1 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file ~/workspace/code/ee-gate/pr-57/verification/cursor/playbook-hubspot-inbound/HubspotInbound.tla
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-13898782940399610299/Sequences.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-13898782940399610299/_TLCTrace.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-13898782940399610299/Naturals.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-13898782940399610299/TLC.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-13898782940399610299/TLCExt.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-13898782940399610299/FiniteSets.tla (jar:file:<tmp>
+Parsing file /private/var/folders/fx/6sc2b62j5ggbyvhxpzh_m1mc0000gn/T/tlc-13898782940399610299/Integers.tla (jar:file:<tmp>
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module HubspotInbound
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module HubspotInbound
+Starting... (2026-10-30 13:47:08)
+Warning: The invariant ChecksCanPassOrFail is a constant-level formula (i.e., it contains no variables, primes, or temporal operators) and evaluates to TRUE. To assert constant-level formulas in your spec, use ASSUME ConstInv. If you optionally want to give the assumption a name, write ASSUME YourAssumption == ConstInv instead. See https://explain.tlapl.us/assumptions-and-invariants for additional details.
+(Use the -nowarning option to disable this warning.)
+Computing initial states...
+Computed 2 initial states...
+Finished computing initial states: 3 distinct states generated at 2026-10-30 13:47:09.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 7.8E-18
+26 states generated, 18 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 12.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 2 and the 95th percentile is 2).
+Finished in 00s at (2026-10-30 13:47:09)

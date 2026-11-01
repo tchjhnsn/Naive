@@ -16,6 +16,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "./venture-paths.mjs";
+import { canonicalHome, migrated } from "./canonical.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -42,7 +43,7 @@ export function filesOf(dir, type) {
   // A collection item waiting as a draft counts too: _drafts/foundation__icp__<id>.json.draft.
   for (const g of gs.filter((x) => x.includes("*") && !x.slice(x.indexOf("*") + 1).includes("*"))) {
     const star = g.indexOf("*"), pre = g.slice(0, star).replace(/\//g, "__"), rest = `${g.slice(star + 1)}.draft`;
-    if (existsSync(join(dir, "_drafts"))) for (const f of readdirSync(join(dir, "_drafts"))) if (f.startsWith(pre) && f.endsWith(rest)) {
+    if (existsSync(ventureFile(dir, "_drafts"))) for (const f of readdirSync(ventureFile(dir, "_drafts"))) if (f.startsWith(pre) && f.endsWith(rest)) {
       const item = g.slice(0, star) + f.slice(pre.length, -".draft".length);
       if (!found.includes(item)) found.push(item);
     }
@@ -52,17 +53,40 @@ export function filesOf(dir, type) {
   return drafted.length ? drafted : gs.slice(0, 1);
 }
 
+/** The files and attribute that hold a statement. A migrated venture has no telos record, so its statements
+ *  read the canonical records. */
+export function statementFiles(dir, s) {
+  if (s.record !== "telos" || !migrated(dir)) return { files: filesOf(dir, s.record), attribute: s.attribute };
+  return canonicalHome(dir, s.id);
+}
+
+const logOf = (dir, ...files) => {
+  const log = ventureFile(dir, "provenance.jsonl");
+  return existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => files.includes(e.entity)) : [];
+};
+
+/** Whether a writer of the given kind wrote this file's content, following a migration's move back to its source. */
+function wrote(dir, file, by, seen = new Set()) {
+  if (seen.has(file)) return false;
+  seen.add(file);
+  const es = logOf(dir, file);
+  return es.some((e) => by(e) && !["confirm", "move", "release", "accept"].includes(e.activity))
+    || es.filter((e) => e.activity === "move").flatMap((e) => e.derived_from ?? []).some((p) => wrote(dir, p, by, seen));
+}
+/** An agent wrote this file's content: what a card may say. A baseline only adopts a file. */
+export const agentWrote = (dir, file) => wrote(dir, file, (e) => e.agent?.kind === "agent" && e.activity !== "baseline");
+/** Anyone but a person wrote this file's content: what waits for a person to confirm. */
+export const unsignedWrite = (dir, file) => wrote(dir, file, (e) => e.agent?.kind !== "person");
+
 /** Whether a person confirmed one statement in a file: their write or accept of the file, or a
- *  confirm of that statement, after the last write by anyone else. */
+ *  confirm of that statement, after the last write by anyone else. A write that lists statements
+ *  (foundation/core shares venture.json with other statements) confirms only those. */
 export function confirmedIn(dir, file, id, seen = new Set()) {
   if (seen.has(file)) return false;
   seen.add(file);
-  const log = join(ventureFile(dir, "provenance.jsonl"));
-  if (!existsSync(log)) return false;
-  const draft = `_drafts/${file.replace(/\//g, "__")}.draft`;
-  const es = readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => e.entity === file || e.entity === draft);
+  const es = logOf(dir, file, `_drafts/${file.replace(/\//g, "__")}.draft`);
   const lastAgentWrite = es.findLastIndex((e) => e.entity === file && e.activity !== "confirm" && e.activity !== "move" && e.activity !== "release" && e.agent?.kind !== "person" && e.activity !== "accept");
-  const direct = es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm" && e.activity !== "move") || (e.activity === "confirm" && e.statement === id)));
+  const direct = es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm" && e.activity !== "move" && (!e.statements || e.statements.includes(id))) || (e.activity === "confirm" && e.statement === id)));
   if (direct) return true;
   return es.filter((e) => e.activity === "move" && e.entity === file).flatMap((e) => e.derived_from ?? []).some((p) => confirmedIn(dir, p, id, seen));
 }
@@ -72,15 +96,17 @@ export function foundation(dir) {
   const report = FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => {
     if (s.derived_from) return s;
     if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
-    const files = filesOf(dir, s.record);
+    const { files, attribute } = statementFiles(dir, s);
     // A retired product no longer answers for the venture.
-    const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), s.attribute) })).filter((x) => filled(x.v));
+    const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), attribute) })).filter((x) => filled(x.v));
     const drafts = files.filter((f) => existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
-    if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing" };
+    // A migrated venture's statement sits on a canonical record, which its record type does not name.
+    const home = s.record === "telos" && migrated(dir) ? drafts[0] ?? files[0] : null;
+    if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing", ...(home ? { path: home } : {}) };
     // A record with no log entry existed before the log; a person's baseline or write confirms it.
     const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
-    return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent",
-      value: s.attribute === "." ? values.map(({ v }) => v) : values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
+    return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", confirmed, ...(home ? { path: home } : {}), agent_wrote: values.some(({ f }) => agentWrote(dir, f)), unsigned_write: values.some(({ f }) => unsignedWrite(dir, f)),
+      value: attribute === "." ? values.map(({ v }) => v) : values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
   }) }));
   // A derived statement takes its source's status and shows the primary ICP profile's short form.
   const all = report.flatMap((q) => q.statements);

@@ -71,7 +71,7 @@ import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../router.mjs";
 import { agentFromEnv, entries, record } from "../provenance.mjs";
-import { FRAME, filesOf } from "../../schema/foundation.mjs";
+import { FRAME, filesOf, statementFiles } from "../../schema/foundation.mjs";
 import { approve, decisionFile, decisions, merge, propose, rollback } from "../../schema/decisions.mjs";
 import { reasonsFromArgs, whyLines } from "../../schema/reasons.mjs";
 import { impact } from "../../schema/impact.mjs";
@@ -204,6 +204,7 @@ if (cmd === "init") {
 }
 
 if (cmd === "accept") {
+  if (routes().find((r) => r.route === action)?.view_of) { console.error("not accepted: this route takes no drafts; a person writes it directly"); process.exit(1); }
   // The person at the keyboard accepts a draft: it is checked again and moved into place. The CLI
   // cannot tell a person from an agent running it, so the repository's review (a pull request a
   // person merges) remains the gate that holds; this makes the person's step explicit.
@@ -220,9 +221,10 @@ if (cmd === "accept") {
   try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error(e.message); process.exit(1); }
   const chosenFile = ventureFile(d.dir, chosen);
   const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
-  const touched = foundationOf(recType);
+  const touched = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !s.derived_from).map((s) => ({ ...s, ...statementFiles(d.dir, s) })).filter((s) => s.files.includes(d.file) || (s.id === "exit-criteria" && d.file.startsWith("foundation/exit-criteria/")));
+  touched.push(...foundationOf(recType).filter((s) => !touched.some((t) => t.id === s.id)));
   if (touched.length) {
-    const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+    const get = (o, p) => p === "." ? o : p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
     const now = existsSync(ventureFile(d.dir, d.file)) ? JSON.parse(readFileSync(ventureFile(d.dir, d.file), "utf8")) : {};
     const next = JSON.parse(readFileSync(chosenFile, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
@@ -373,10 +375,11 @@ if (cmd === "confirm") {
   const s = FRAME.questions.flatMap((q) => q.statements).find((x) => x.id === id);
   if (!s?.record) { console.error(`${id} is not a foundation statement with a record (see mentura purpose/foundation run)`); process.exit(1); }
   const rt = routes().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
-  const hits = filesOf(dir, s.record).filter((f) => existsSync(ventureFile(dir, f)));
+  const { files: home, attribute } = statementFiles(dir, s);
+  const hits = home.filter((f) => existsSync(ventureFile(dir, f)));
   if (!hits.length) { console.error(`${venture} has no ${s.record} record to confirm`); process.exit(1); }
   const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
-  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), s.attribute) ?? null)}`).join("\n");
+  const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), attribute) ?? null)}`).join("\n");
   if (!(await typed(id, `Confirming ${id} as yours:\n${shown}`))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
   for (const f of hits) record(dir, { entity: f, route: rt, activity: "confirm", statement: id, agent: agentFromEnv("person", "cli"), note: opt("note") });
   out(`confirmed: ${id}`);

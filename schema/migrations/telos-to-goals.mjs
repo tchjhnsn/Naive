@@ -39,7 +39,7 @@ export function apply(dir, ctx) {
   if (old) ctx.mv(old, "_private/archive/telos.json");
   if (v.ambition) {
     const { ambition, ...rest } = v;
-    ctx.write("venture.json", json(rest), { note: "ambition moved to foundation/goals/scale.json", derived_from: ["venture.json"] });
+    ctx.write("venture.json", json(rest), { activity: "move", note: "ambition moved to foundation/goals/scale.json", derived_from: ["venture.json"] });
   }
   ctx.note(`${old ? `${old} is now canonical goals and exit criteria (archived at _private/archive/telos.json); ` : ""}${v.ambition ? "ambition is foundation/goals/scale.json" : ""}`);
 }

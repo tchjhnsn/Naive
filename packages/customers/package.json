@@ -21,7 +21,8 @@
   ],
   "templates": [],
   "checks": [
-    "schema/check-data-packages.mjs"
+    "schema/check-data-packages.mjs",
+    "schema/lint-customers.mjs"
   ],
   "skill": {
     "id": "customers-function",

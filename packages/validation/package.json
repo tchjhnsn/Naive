@@ -72,7 +72,8 @@
   "checks": [
     "schema/check-validation.mjs",
     "schema/assess-problem.mjs",
-    "schema/bdd.mjs"
+    "schema/bdd.mjs",
+    "schema/lint-validation.mjs"
   ],
   "skill": {
     "id": "problem-validation",

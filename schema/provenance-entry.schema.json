@@ -56,12 +56,18 @@
         "kind": {
           "enum": [
             "person",
-            "agent"
-          ]
+            "agent",
+            "unverified"
+          ],
+          "description": "unverified: a door with no sign-in said a person acted; the id is a claimed name"
         },
         "id": {
           "type": "string",
           "description": "A person's name or handle, or an agent's role id from the team plan"
+        },
+        "account": {
+          "type": "string",
+          "description": "The account a door with sign-in checked for this person"
         },
         "model": {
           "type": "string",
@@ -80,9 +86,22 @@
             "cli",
             "mcp",
             "api",
-            "router"
+            "router",
+            "console"
           ],
           "description": "The interface the write came through"
+        }
+      },
+      "if": {
+        "required": [
+          "account"
+        ]
+      },
+      "then": {
+        "properties": {
+          "kind": {
+            "const": "person"
+          }
         }
       }
     },
@@ -152,6 +171,11 @@
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
       "description": "confirm only: the id of the guiding statement confirmed (purpose/guiding-statements.json)"
+    },
+    "statements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "write to foundation/core only: the foundation statements this write confirms. Other statements in the same file stay as they were."
     }
   }
 }
