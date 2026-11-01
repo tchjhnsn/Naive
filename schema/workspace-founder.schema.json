@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workspace-founder.schema.json",
+  "title": "Workspace founder",
+  "description": "A founder as a person of the workspace, before and apart from any venture (founders/<handle>/founder.json, Torian 2026-10-31). The founder owns their ideas, references, inspirations and secrets; a venture links to its founder here by role instead of owning them. Owners are always humans, so the id is a person's. Real name and contact details live in founders/<handle>/_private/, which never reaches a model or a release.",
+  "type": "object",
+  "required": [
+    "id",
+    "handle",
+    "created"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^p-[a-z0-9]{6,}$",
+      "description": "Opaque, unique and permanent person id"
+    },
+    "handle": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Unique handle, the folder name under founders/. Shown in place of the real name"
+    },
+    "created": {
+      "type": "string",
+      "format": "date"
+    },
+    "verification": {
+      "enum": [
+        "self",
+        "email",
+        "identity",
+        "legal"
+      ],
+      "description": "How sure the workspace is that this is the person: rises with what compliance needs. self = the founder said so"
+    },
+    "ventures": {
+      "type": "array",
+      "description": "The ventures this founder founded or joined, by role",
+      "items": {
+        "type": "object",
+        "required": [
+          "venture",
+          "role",
+          "since"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "venture": {
+            "type": "string",
+            "description": "The venture folder, relative to the workspace"
+          },
+          "role": {
+            "enum": [
+              "founder",
+              "co-founder",
+              "general-partner"
+            ],
+            "description": "A venture may have several founders; what each contributes is weighed from provenance, not fixed by the role"
+          },
+          "since": {
+            "type": "string",
+            "format": "date"
+          },
+          "until": {
+            "type": "string",
+            "format": "date"
+          },
+          "from_idea": {
+            "type": "string",
+            "description": "The founder's idea (ideas/<id>.json) the venture grew from, if any"
+          }
+        }
+      }
+    },
+    "profile": {
+      "$ref": "founder.schema.json#/$defs/profile",
+      "description": "Who the founder is: attributes from purpose/frameworks/founder-profile/attributes.json in the founder's own words. An agent may draft it; only the founder confirms it"
+    },
+    "confirmed_by": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id",
+        "at"
+      ],
+      "additionalProperties": false,
+      "description": "Who confirmed the profile reads true. Must be this founder (kind person, id = this id); an agent never confirms",
+      "properties": {
+        "kind": {
+          "enum": [
+            "person",
+            "agent"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "drafted_by": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "person",
+            "agent"
+          ]
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

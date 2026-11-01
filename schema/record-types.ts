@@ -1,7 +1,11 @@
 // Generates schema/types/records.d.ts, one TypeScript type per record schema (schema/*.schema.json),
-// so a record's type has one source, its JSON Schema (EE-087, phase 2). It converts only the JSON Schema
-// features these schemas use; a constraint TypeScript cannot express (pattern, minimum, not, if/then,
-// dependentRequired) is left out of the type, and a value the schema leaves open is unknown.
+// so a record's type has one source, its JSON Schema (EE-087, phase 2). Every valid record must fit its
+// type, so a type may accept more than the schema and never less. A keyword outside KEYWORDS throws.
+//
+// Left out of the types, each of which only accepts more: the checks in KEYWORDS that TypeScript cannot
+// express, siblings of a $ref, required beside a propertyNames enum, and oneOf's "exactly one", so a
+// required-only oneOf renders as anyOf ({ route, action, propose } fits trigger.run; the schema rejects it).
+// A value the schema leaves open is unknown.
 //
 //   node schema/record-types.ts            write schema/types/records.d.ts
 //   node schema/record-types.ts --check    exit 1 if the committed file differs from a fresh render
@@ -25,6 +29,30 @@ type Schema = {
   anyOf?: Schema[];
   allOf?: Schema[];
   $defs?: Record<string, Schema>;
+};
+
+// What each keyword does here. A new one needs a decision: applicators such as patternProperties can make
+// a type reject valid records, so they throw until render handles them.
+const KEYWORDS = new Set([
+  // rendered
+  "$ref", "$defs", "description", "format", "type", "properties", "required", "additionalProperties",
+  "propertyNames", "items", "enum", "const", "oneOf", "anyOf", "allOf",
+  // annotations, with no effect on what is valid
+  "$schema", "$id", "title", "default",
+  // checks TypeScript cannot express
+  "pattern", "minimum", "maximum", "exclusiveMinimum", "minLength", "minItems", "maxItems", "uniqueItems",
+  "minProperties", "maxProperties", "not", "if", "then", "else", "dependentRequired",
+]);
+
+const subschemas = (s: Schema) => [
+  ...Object.values(s.properties ?? {}), ...Object.values(s.$defs ?? {}),
+  ...(s.oneOf ?? []), ...(s.anyOf ?? []), ...(s.allOf ?? []),
+  ...[s.items, s.additionalProperties, s.propertyNames].filter((x): x is Schema => typeof x === "object"),
+];
+
+const checkKeywords = (s: Schema, file: string) => {
+  for (const k of Object.keys(s)) if (!KEYWORDS.has(k)) throw new Error(`${file}: unsupported keyword ${k}`);
+  for (const sub of subschemas(s)) checkKeywords(sub, file);
 };
 
 const dir = new URL(".", import.meta.url).pathname;
@@ -89,7 +117,17 @@ const objectType = (s: Schema, file: string, depth: number): string => {
 };
 
 // A oneOf branch that only lists required keys picks which of the parent's properties must be present.
-const requiredOnly = (b: Schema) => Object.keys(b).every((k) => k === "required" || k === "description");
+const requiredOnly = (b: Schema) => !!b.required?.length && Object.keys(b).every((k) => k === "required" || k === "description");
+
+const branch = (b: Schema, parent: Schema, file: string, depth: number) => {
+  if (requiredOnly(b)) {
+    return render({ type: "object", additionalProperties: false, required: b.required,
+      properties: Object.fromEntries((b.required ?? []).map((k) => [k, parent.properties?.[k] ?? {}])) }, file, depth);
+  }
+  // Under a closed parent, a branch's index signature would let any key through the intersection.
+  const closed = parent.additionalProperties === false && b.additionalProperties === undefined && Object.keys(b.properties ?? {}).length > 0;
+  return render(closed ? { ...b, additionalProperties: false } : b, file, depth);
+};
 
 const render = (s: Schema, file: string, depth: number): string => {
   if (s.$ref) return refName(s.$ref, file);
@@ -98,14 +136,9 @@ const render = (s: Schema, file: string, depth: number): string => {
   const variants = s.oneOf ?? s.anyOf;
   const base = s.type !== undefined || s.properties || s.additionalProperties !== undefined ? single(s, file, depth) : undefined;
   const parts: string[] = [];
-  if (variants) {
-    parts.push(union(variants.map((b) => requiredOnly(b)
-      ? render({ type: "object", additionalProperties: false, required: b.required,
-        properties: Object.fromEntries((b.required ?? []).map((k) => [k, s.properties?.[k] ?? {}])) }, file, depth)
-      : render(b, file, depth))));
-  }
+  if (variants) parts.push(union(variants.map((b) => branch(b, s, file, depth))));
   for (const b of s.allOf ?? []) {
-    const t = render(b, file, depth);
+    const t = branch(b, s, file, depth);
     if (t !== "unknown") parts.push(t);
   }
   if (base && base !== "unknown") parts.unshift(base);
@@ -130,10 +163,18 @@ const single = (s: Schema, file: string, depth: number): string => {
 const declare = (name: string, s: Schema, file: string) => `${doc(s, "")}export type ${name} = ${render(s, file, 0)};\n`;
 
 const renderAll = () => {
+  const declared = new Map<string, string>();
   const blocks = files.flatMap((f) => {
     const s = schemas.get(f) ?? {};
+    checkKeywords(s, f);
     const { $defs, ...root } = s;
-    return [declare(typeName(f), root, f), ...Object.entries($defs ?? {}).map(([d, ds]) => declare(typeName(f) + pascal(d), ds, f))];
+    const entries: [string, Schema][] = [[typeName(f), root], ...Object.entries($defs ?? {}).map(([d, ds]): [string, Schema] => [typeName(f) + pascal(d), ds])];
+    return entries.map(([name, schema]) => {
+      const other = declared.get(name);
+      if (other) throw new Error(`${f}: type ${name} is already declared by ${other}`);
+      declared.set(name, f);
+      return declare(name, schema, f);
+    });
   });
   return `// Generated by node schema/record-types.ts from schema/*.schema.json. Do not edit; edit the schema and regenerate.\n\n${blocks.join("\n")}`;
 };

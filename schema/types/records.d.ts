@@ -907,6 +907,90 @@ export type FounderAgreement = {
   deadlock?: string;
 };
 
+/** One idea of the founder's (founders/<handle>/ideas/<id>.json), owned by the founder, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the founder's, verbatim; an agent never rewrites it. */
+export type FounderIdea = {
+  id: string;
+  /** The idea in the founder's own words */
+  text: string;
+  /**
+   * @format date
+   */
+  captured: string;
+  /** Where it was said: a conversation, a note, a voice memo */
+  source?: string;
+  /** in-venture = a venture grew from it; dropped needs a note */
+  status?: "open" | "in-venture" | "shelved" | "dropped";
+  /** Venture folders that cite this idea */
+  ventures?: string[];
+  /** references/<id> that shaped it */
+  references?: string[];
+  note?: string;
+};
+
+/** A person who inspires the founder, and what about them invokes the founder's zeal (founders/<handle>/inspirations/<id>.json). A public figure may be named; a private person is an opaque id whose name sits in founders/<handle>/_private/. */
+export type FounderInspiration = {
+  id: string;
+  /** Only for a public figure. A private person has no name here */
+  name?: string;
+  /** true = a public figure, named; false = a private person, opaque */
+  public?: boolean;
+  /** What they did, briefly */
+  known_for?: string;
+  /** What about them invokes the founder's zeal, in the founder's own words */
+  zeal: string;
+  /** references/<id> by or about them */
+  references?: string[];
+};
+
+/** Anything under founders/<handle>/_private/: the real name and contact (person.json), the founder puzzle, the founder's secrets. Always private: true, so it never reaches a model or a release, and shared into a venture or with a person only by an act of the founder's own. */
+export type FounderPrivate = {
+  private: true;
+  /** The founder's person id, for person.json */
+  id?: string;
+  name?: string;
+  note?: string;
+  [key: string]: unknown;
+};
+
+/** One work that forms the founder: a book, podcast, film, video, essay or talk (founders/<handle>/references/<id>.json). Stored once at founder scope and cited by id from ideas, ventures and decisions. The bibliographic fields follow CSL-JSON names (type, title, author, issued, container-title, URL) so a citation tool reads them as they are; why and met are the founder's. */
+export type FounderReference = {
+  id: string;
+  /** CSL type. A podcast episode is broadcast; a film is motion_picture; a talk is speech */
+  type: "book" | "chapter" | "article-journal" | "article-magazine" | "post-weblog" | "post" | "webpage" | "broadcast" | "interview" | "speech" | "motion_picture" | "song" | "software" | "report";
+  title: string;
+  author?: {
+    family?: string;
+    given?: string;
+    /** An organization, or a name that does not split */
+    literal?: string;
+  }[];
+  /** Year, or year-month(-day) */
+  issued?: string;
+  /** The show, publication or site it appeared in */
+  "container-title"?: string;
+  /**
+   * @format uri
+   */
+  URL?: string;
+  /** When the founder first read, heard or watched it */
+  met?: string;
+  /** What it did for the founder, in their own words */
+  why?: string;
+  /** Exact quotes only. A paraphrase goes in why, never here */
+  quotes?: {
+    text: string;
+    /** Page, chapter, timestamp or section */
+    locator?: string;
+  }[];
+  /** The ideas of the founder's ethos it supports, in short phrases */
+  ethos?: string[];
+  /** An agent may add a reference it found; only the founder's own list says it formed them */
+  added_by?: {
+    kind: "person" | "agent";
+    id: string;
+  };
+};
+
 /** One founder of the venture (people/founders/<id>.json): role, the functions they own, when they joined, and where their founder agreement is. One file per founder, so each founder's record changes on its own. */
 export type Founder = {
   id: string;
@@ -922,25 +1006,27 @@ export type Founder = {
     path: string;
     signed: boolean;
   };
-  /** Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in purpose/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type */
-  profile?: {
-    /** The template it started from; default if absent */
-    template?: string;
-    /** The mentor's prose portrait, for reasoning models */
-    summary?: string;
-    attributes?: {
-      [key: string]: {
-        /** In the founder's own words */
-        text: string;
-        /** One of the attribute's types in purpose/frameworks/founder-profile/attributes.json */
-        type?: string;
-        /** For a strength or weakness of type venture-function: the venture function it is about */
-        function?: string;
-      }[];
-    };
-    /** The founder said the profile reads true */
-    confirmed?: boolean;
+  profile?: FounderProfile;
+};
+
+/** Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in purpose/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type */
+export type FounderProfile = {
+  /** The template it started from; default if absent */
+  template?: string;
+  /** The mentor's prose portrait, for reasoning models */
+  summary?: string;
+  attributes?: {
+    [key: string]: {
+      /** In the founder's own words */
+      text: string;
+      /** One of the attribute's types in purpose/frameworks/founder-profile/attributes.json */
+      type?: string;
+      /** For a strength or weakness of type venture-function: the venture function it is about */
+      function?: string;
+    }[];
   };
+  /** The founder said the profile reads true */
+  confirmed?: boolean;
 };
 
 /** One recurring venture problem, as a shape, at packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. schema/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide. */
@@ -1386,7 +1472,7 @@ export type Integration = {
   interfaces: ("files" | "mcp" | "api" | "sdk" | "cli" | "webhook" | "app")[];
   /** Interface layer only: the other layers a person can work in through it, in one session. At least three of the five. */
   reach?: ("purpose" | "knowledge" | "operations" | "evidence" | "governance")[];
-  /** Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom harness built for the system or a venture. */
+  /** Interface layer only: an agent harness (built around an AI agent's loop, tools and files) or a custom workbench built for the system or a venture. */
   interface_kind?: "agent-harness" | "custom";
   status: "in-use" | "candidate" | "rejected";
   /** Why it is in use, a candidate, or rejected */
@@ -2647,6 +2733,45 @@ export type RouteAliases = {
   }[];
 };
 
+/** Naive's knowledge of the software development life cycle (R-26), after ISO/IEC/IEEE 12207: process groups, processes, activities and tasks, each task with the decision classes it needs, the phase it is first needed in and its owning role. It holds no execution detail: MAD owns how (R-27) and the agent router owns who does it (R-25). A task is referred to as <mad_module>/<activity>/<task>, the form MAD's method-request uses. Checked across files by schema/check-sdlc-catalog.ts. */
+export type SdlcCatalog = {
+  sdlc_catalog: "0.2.0";
+  version: string;
+  standard: string;
+  note?: string;
+  groups: {
+    id: "agreement" | "organizational-project-enabling" | "technical-management" | "technical";
+    name: string;
+    processes: {
+      id: string;
+      name: string;
+      clause: string;
+      /** The venture function (one of the 13 APQC categories in operations/departments.json) whose work this process is. The software processes are mostly the products function's; operating the software is IT's, and the organizational processes belong where APQC files them. The check makes sure it names a department. */
+      function: string;
+      /** Technical processes only: the MAD process module that routes its methods, or null when it is not MAD's (business or mission analysis is the product function's). */
+      mad_module?: "requirements" | "system-design" | "implementation" | "integration" | "verification" | "transition" | "validation" | "operation" | "maintenance" | null;
+      /** Other groups: the MAD layer whose questions cover how it is run. */
+      mad_layer?: "governance" | "delivery" | "software-engineering" | "automation";
+      owner_role: string;
+      note?: string;
+      activities?: {
+        id: "prepare" | "perform" | "manage-results";
+        name: string;
+        tasks: {
+          id: string;
+          name: string;
+          /** Decision classes the task needs, from the venture's decision rights. */
+          decision_classes: string[];
+          /** The earliest phase in which a venture building software needs this task. */
+          needed_from: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+          /** The role that owns the task's decisions, a role template id. */
+          owner_role: string;
+        }[];
+      }[];
+    }[];
+  }[];
+};
+
 /** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by operations/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated. */
 export type SitePresence = {
   version: string;
@@ -3545,6 +3670,52 @@ export type WhereUsed = {
   note?: string;
 };
 
+/** A founder as a person of the workspace, before and apart from any venture (founders/<handle>/founder.json, Torian 2026-10-31). The founder owns their ideas, references, inspirations and secrets; a venture links to its founder here by role instead of owning them. Owners are always humans, so the id is a person's. Real name and contact details live in founders/<handle>/_private/, which never reaches a model or a release. */
+export type WorkspaceFounder = {
+  /** Opaque, unique and permanent person id */
+  id: string;
+  /** Unique handle, the folder name under founders/. Shown in place of the real name */
+  handle: string;
+  /**
+   * @format date
+   */
+  created: string;
+  /** How sure the workspace is that this is the person: rises with what compliance needs. self = the founder said so */
+  verification?: "self" | "email" | "identity" | "legal";
+  /** The ventures this founder founded or joined, by role */
+  ventures?: {
+    /** The venture folder, relative to the workspace */
+    venture: string;
+    /** A venture may have several founders; what each contributes is weighed from provenance, not fixed by the role */
+    role: "founder" | "co-founder" | "general-partner";
+    /**
+     * @format date
+     */
+    since: string;
+    /**
+     * @format date
+     */
+    until?: string;
+    /** The founder's idea (ideas/<id>.json) the venture grew from, if any */
+    from_idea?: string;
+  }[];
+  /** Who the founder is: attributes from purpose/frameworks/founder-profile/attributes.json in the founder's own words. An agent may draft it; only the founder confirms it */
+  profile?: FounderProfile;
+  /** Who confirmed the profile reads true. Must be this founder (kind person, id = this id); an agent never confirms */
+  confirmed_by?: {
+    kind: "person" | "agent";
+    id: string;
+    /**
+     * @format date
+     */
+    at: string;
+  };
+  drafted_by?: {
+    kind: "person" | "agent";
+    id: string;
+  };
+};
+
 /** A builder's workspace: one instance of the system. A naive-workspace.json (earlier workspace.json) at its top says which schema version it follows, where its vault is and where its repositories are (EE-002, EE-011, EE-020). A workspace always has a vault; it has a code folder of repositories once any venture builds software. One schema covers both file names; naive-workspace.json is the name create-venture writes. A teammate's own workspace can list ventures they work for or with; each venture keeps its own settings, and the workspace's settings govern what crosses between them. */
 export type Workspace = {
   schema: "everything-ecosystem";
@@ -3565,7 +3736,7 @@ export type Workspace = {
     /** How sure naive capture must be before it files a chunk in a venture's inbox by itself; below it the chunk waits in the workspace inbox for the founder */
     route_threshold?: number;
   };
-  /** The founder record, relative to the workspace (normally founder/founder.json) */
+  /** The founder record, relative to the workspace (normally founders/<handle>/founder.json, schema/founders.ts) */
   founder?: string;
   /** The workspace's IANA time zone (for example America/New_York): the clock's zone (schema/clock.mjs). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture */
   timeZone?: string;

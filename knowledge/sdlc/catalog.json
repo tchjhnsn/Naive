@@ -1,0 +1,894 @@
+{
+  "sdlc_catalog": "0.2.0",
+  "version": "0.2.0",
+  "standard": "ISO/IEC/IEEE 12207:2017",
+  "note": "What software work exists (R-26): processes, activities and tasks, with the decisions each task needs, the phase it is first needed in and the role that owns it. No execution detail: how each is done is MAD's (R-27), and who does it is the agent router's (R-25). Names are Naive's own wording; clause numbers cite the standard, whose text is never copied. Technical processes carry activities and tasks; the other groups are listed at process level until something needs more.",
+  "groups": [
+    {
+      "id": "agreement",
+      "name": "Agreement processes",
+      "processes": [
+        {
+          "id": "acquisition",
+          "name": "Acquisition",
+          "clause": "6.1.1",
+          "function": "supply-chain",
+          "mad_layer": "governance",
+          "owner_role": "founder"
+        },
+        {
+          "id": "supply",
+          "name": "Supply",
+          "clause": "6.1.2",
+          "function": "marketing-and-sales",
+          "mad_layer": "governance",
+          "owner_role": "founder"
+        }
+      ]
+    },
+    {
+      "id": "organizational-project-enabling",
+      "name": "Organizational project-enabling processes",
+      "processes": [
+        {
+          "id": "life-cycle-model-management",
+          "name": "Life cycle model management",
+          "clause": "6.2.1",
+          "function": "capabilities",
+          "mad_layer": "delivery",
+          "owner_role": "architect",
+          "note": "Choosing the life cycle model is MAD's delivery layer."
+        },
+        {
+          "id": "infrastructure-management",
+          "name": "Infrastructure management",
+          "clause": "6.2.2",
+          "function": "it",
+          "mad_layer": "automation",
+          "owner_role": "architect"
+        },
+        {
+          "id": "portfolio-management",
+          "name": "Portfolio management",
+          "clause": "6.2.3",
+          "function": "capabilities",
+          "mad_layer": "governance",
+          "owner_role": "founder",
+          "note": "Across ventures and products: Naive's workspace and docket."
+        },
+        {
+          "id": "human-resource-management",
+          "name": "Human resource management",
+          "clause": "6.2.4",
+          "function": "human-capital",
+          "mad_layer": "governance",
+          "owner_role": "people-lead",
+          "note": "People and agents: Naive's team plan and roles."
+        },
+        {
+          "id": "quality-management",
+          "name": "Quality management",
+          "clause": "6.2.5",
+          "function": "capabilities",
+          "mad_layer": "governance",
+          "owner_role": "architect"
+        },
+        {
+          "id": "knowledge-management",
+          "name": "Knowledge management",
+          "clause": "6.2.6",
+          "function": "capabilities",
+          "mad_layer": "governance",
+          "owner_role": "chief-of-staff",
+          "note": "Naive's knowledge layer itself."
+        }
+      ]
+    },
+    {
+      "id": "technical-management",
+      "name": "Technical management processes",
+      "processes": [
+        {
+          "id": "project-planning",
+          "name": "Project planning",
+          "clause": "6.3.1",
+          "function": "products",
+          "mad_layer": "delivery",
+          "owner_role": "architect"
+        },
+        {
+          "id": "project-assessment-and-control",
+          "name": "Project assessment and control",
+          "clause": "6.3.2",
+          "function": "products",
+          "mad_layer": "delivery",
+          "owner_role": "architect"
+        },
+        {
+          "id": "decision-management",
+          "name": "Decision management",
+          "clause": "6.3.3",
+          "function": "products",
+          "mad_layer": "governance",
+          "owner_role": "founder",
+          "note": "Naive's decision records, rights and docket."
+        },
+        {
+          "id": "risk-management",
+          "name": "Risk management",
+          "clause": "6.3.4",
+          "function": "risk-and-compliance",
+          "mad_layer": "governance",
+          "owner_role": "architect",
+          "note": "MAD judges the risk of each method decision (MAD requirement 4)."
+        },
+        {
+          "id": "configuration-management",
+          "name": "Configuration management",
+          "clause": "6.3.5",
+          "function": "products",
+          "mad_layer": "automation",
+          "owner_role": "architect"
+        },
+        {
+          "id": "information-management",
+          "name": "Information management",
+          "clause": "6.3.6",
+          "function": "it",
+          "mad_layer": "governance",
+          "owner_role": "chief-of-staff"
+        },
+        {
+          "id": "measurement",
+          "name": "Measurement",
+          "clause": "6.3.7",
+          "function": "capabilities",
+          "mad_layer": "governance",
+          "owner_role": "founder"
+        },
+        {
+          "id": "quality-assurance",
+          "name": "Quality assurance",
+          "clause": "6.3.8",
+          "function": "products",
+          "mad_layer": "delivery",
+          "owner_role": "architect"
+        }
+      ]
+    },
+    {
+      "id": "technical",
+      "name": "Technical processes",
+      "processes": [
+        {
+          "id": "business-or-mission-analysis",
+          "name": "Business or mission analysis",
+          "clause": "6.4.1",
+          "function": "products",
+          "mad_module": null,
+          "owner_role": "product-design-lead",
+          "note": "Whether and why to build: the product function's question, answered in Naive's purpose and product records. MAD never routes it.",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "frame-problem",
+                  "name": "Frame the problem or opportunity the product answers",
+                  "decision_classes": [
+                    "strategy-or-constitution"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "founder"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "compare-options",
+                  "name": "Compare ways to solve it, including not building",
+                  "decision_classes": [
+                    "continue-or-stop"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "founder"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-choice",
+                  "name": "Record the choice and its reasons",
+                  "decision_classes": [
+                    "continue-or-stop"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "founder"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "stakeholder-needs",
+          "name": "Stakeholder needs and requirements definition",
+          "clause": "6.4.2",
+          "function": "products",
+          "mad_module": "requirements",
+          "owner_role": "product-design-lead",
+          "note": "What to build: who the stakeholders are and what they need. Naive's product function owns the business side; the requirements module routes how needs are written down.",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "identify-stakeholders",
+                  "name": "Name the stakeholders and how to reach them",
+                  "decision_classes": [
+                    "experience-design"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "product-design-lead"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "elicit-needs",
+                  "name": "Gather and write down their needs",
+                  "decision_classes": [
+                    "experience-design"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "product-design-lead"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "trace-needs",
+                  "name": "Keep needs traceable to the product's purpose",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "product-design-lead"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "system-requirements",
+          "name": "System/software requirements definition",
+          "clause": "6.4.3",
+          "function": "products",
+          "mad_module": "requirements",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "choose-requirement-form",
+                  "name": "Choose how requirements are written and where they live",
+                  "decision_classes": [
+                    "new-structure"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "write-requirements",
+                  "name": "Write what the system must do, each one checkable",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "baseline-requirements",
+                  "name": "Agree the current requirements and track changes to them",
+                  "decision_classes": [
+                    "schema-change-within-adr"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "architecture-definition",
+          "name": "Architecture definition",
+          "clause": "6.4.4",
+          "function": "products",
+          "mad_module": "system-design",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "frame-architecture",
+                  "name": "Name the concerns and constraints the architecture must meet",
+                  "decision_classes": [
+                    "new-adr-within-strategy"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "define-architecture",
+                  "name": "Choose the structure: parts, interfaces and data",
+                  "decision_classes": [
+                    "new-adr-within-strategy"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-architecture",
+                  "name": "Record architecture decisions with their reasons",
+                  "decision_classes": [
+                    "new-adr-within-strategy"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "design-definition",
+          "name": "Design definition",
+          "clause": "6.4.5",
+          "function": "products",
+          "mad_module": "system-design",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "choose-design-form",
+                  "name": "Choose how designs are recorded",
+                  "decision_classes": [
+                    "new-structure"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "design-part",
+                  "name": "Design each part to its interfaces",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "keep-design-current",
+                  "name": "Keep designs in step with the code",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "system-analysis",
+          "name": "System analysis",
+          "clause": "6.4.6",
+          "function": "products",
+          "mad_module": "system-design",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "scope-analysis",
+                  "name": "Say what a decision needs analysed",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "analyse-options",
+                  "name": "Analyse options with evidence (cost, risk, performance)",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-analysis",
+                  "name": "Record the analysis beside the decision it informs",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "implementation",
+          "name": "Implementation",
+          "clause": "6.4.7",
+          "function": "products",
+          "mad_module": "implementation",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "set-up-environment",
+                  "name": "Set up the tools and environment to build in",
+                  "decision_classes": [
+                    "new-dependency-free"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "builder"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "write-code",
+                  "name": "Write the code for a part to its design",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "builder"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-implementation",
+                  "name": "Record what was built and any deviation from the design",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "builder"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "integration",
+          "name": "Integration",
+          "clause": "6.4.8",
+          "function": "products",
+          "mad_module": "integration",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "plan-integration",
+                  "name": "Decide how and how often parts are put together",
+                  "decision_classes": [
+                    "new-structure"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "merge-to-main",
+                  "name": "Put a change into the shared main line and build it",
+                  "decision_classes": [
+                    "production-ship"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "builder"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-integration",
+                  "name": "Record build results and what broke",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "builder"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "verification",
+          "name": "Verification",
+          "clause": "6.4.9",
+          "function": "products",
+          "mad_module": "verification",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "plan-verification",
+                  "name": "Decide what proves each requirement and who checks it",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "run-tests",
+                  "name": "Run the checks and gather the evidence",
+                  "decision_classes": [
+                    "accept-verified-work"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "builder"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-verification",
+                  "name": "Record results and turn repeated failures into checks",
+                  "decision_classes": [
+                    "accept-verified-work"
+                  ],
+                  "needed_from": "discovery",
+                  "owner_role": "architect"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "transition",
+          "name": "Transition",
+          "clause": "6.4.10",
+          "function": "products",
+          "mad_module": "transition",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "plan-release",
+                  "name": "Decide how releases are made and rolled back",
+                  "decision_classes": [
+                    "production-ship"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "release",
+                  "name": "Release a version to where it is used",
+                  "decision_classes": [
+                    "production-ship",
+                    "public-commitment"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-release",
+                  "name": "Record what was released, where and when",
+                  "decision_classes": [
+                    "production-ship"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "validation",
+          "name": "Validation",
+          "clause": "6.4.11",
+          "function": "products",
+          "mad_module": "validation",
+          "owner_role": "validation-lead",
+          "note": "Its evidence feeds Naive's validation records and phase gates.",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "plan-validation",
+                  "name": "Decide how real use will show the product meets its needs",
+                  "decision_classes": [
+                    "experience-design"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "validation-lead"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "validate-in-use",
+                  "name": "Observe the product in real use against stakeholder needs",
+                  "decision_classes": [
+                    "accept-verified-work"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "validation-lead"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-validation",
+                  "name": "Record the evidence as validation records",
+                  "decision_classes": [
+                    "accept-verified-work"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "validation-lead"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "operation",
+          "name": "Operation",
+          "clause": "6.4.12",
+          "function": "it",
+          "mad_module": "operation",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "plan-operation",
+                  "name": "Set reliability targets and who answers incidents",
+                  "decision_classes": [
+                    "production-ship"
+                  ],
+                  "needed_from": "beachhead",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "run-system",
+                  "name": "Run the system and support its users",
+                  "decision_classes": [
+                    "production-data-write"
+                  ],
+                  "needed_from": "beachhead",
+                  "owner_role": "builder"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "review-operation",
+                  "name": "Review incidents and production feedback",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "beachhead",
+                  "owner_role": "architect"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "maintenance",
+          "name": "Maintenance",
+          "clause": "6.4.13",
+          "function": "products",
+          "mad_module": "maintenance",
+          "owner_role": "architect",
+          "activities": [
+            {
+              "id": "prepare",
+              "name": "Prepare",
+              "tasks": [
+                {
+                  "id": "plan-maintenance",
+                  "name": "Decide how defects and changes are taken in and sized",
+                  "decision_classes": [
+                    "set-priorities"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "architect"
+                }
+              ]
+            },
+            {
+              "id": "perform",
+              "name": "Perform",
+              "tasks": [
+                {
+                  "id": "fix-or-change",
+                  "name": "Fix a defect or make a change after release",
+                  "decision_classes": [
+                    "implementation-detail"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "builder"
+                }
+              ]
+            },
+            {
+              "id": "manage-results",
+              "name": "Manage results",
+              "tasks": [
+                {
+                  "id": "record-maintenance",
+                  "name": "Record the fix and the check that now guards it",
+                  "decision_classes": [
+                    "accept-verified-work"
+                  ],
+                  "needed_from": "validation",
+                  "owner_role": "builder"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "disposal",
+          "name": "Disposal",
+          "clause": "6.4.14",
+          "function": "products",
+          "mad_module": null,
+          "owner_role": "architect",
+          "note": "Retiring a system. Listed for completeness; no tasks until something needs it."
+        }
+      ]
+    }
+  ]
+}

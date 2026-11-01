@@ -21,6 +21,7 @@ Status:
 | Record | Where | Status | Notes |
 |---|---|---|---|
 | Workspace | `schema/workspace.schema.json`, `schema/VERSION` | defined | Grouping folders carry no meaning. Always a vault; a code folder of repositories once a venture builds software (EE-020) |
+| Founder (workspace) | `schema/workspace-founder.schema.json`, `schema/founder-idea.schema.json`, `schema/founder-reference.schema.json`, `schema/founder-inspiration.schema.json`, `schema/founder-private.schema.json`, `schema/founders.ts` | defined | `founders/<handle>/`, above every venture: opaque id, ventures by role, profile only the founder confirms, ideas, references (CSL-JSON names), inspirations; name, puzzle and secrets in `_private/` (Torian, 2026-10-31) |
 | Venture | `schema/venture.schema.json`, `schema/check-ventures.mjs` | defined | Phase, ambition, form, industry, core product, parent, owner, layers, venture profile, one-way links |
 | Product (card) | `schema/product.schema.json` | defined | `products/<id>.json`: market, job, technology, offering, business model, flows |
 | Account | `schema/account.schema.json` | defined | Optional. `accounts/<id>/account.json` inside the venture that serves it; relationship client, customer, user, member, partner or other (EE-021) |
@@ -28,6 +29,7 @@ Status:
 | Nouns | `docs/ontology.json`, `schema/check-nouns.mjs` | defined | Standards first; retired nouns fail the check |
 | References | `schema/reference.schema.json`, `<layer>/references/references.json` | defined | Purpose has one so far; filled by `knowledge/skills/find-reference/` |
 | Data model | `schema/data-model.json`, `schema/data-model.schema.json`, `schema/check-data-model.mjs` | defined | Every record type, its owning layer and references; no JSON file may sit outside it |
+| SDLC catalog | `schema/sdlc-catalog.schema.json`, `knowledge/sdlc/catalog.json`, `schema/check-sdlc-catalog.ts` | defined | What software work exists, after ISO/IEC/IEEE 12207: processes, activities and tasks with their decision classes, phase and owning role (R-26). No execution detail; MAD routes how. See `knowledge/sdlc/README.md` |
 | Layer manifests | `schema/layer.schema.json`, `<layer>/layer.json`, system layer `schema/layer.json` | defined | Each layer's skills, record types it still owns, reads and writes; layer relationships are derived from them (EE-071). Venture packages are `packages/<name>/package.json` |
 
 ## Inside a venture, by layer
@@ -52,6 +54,10 @@ Status:
 | Governance | Roles | `governance/venture-template/roles/agent-roles.json` | shape used, no schema |
 | Product | Business models | `schema/vocab/business-models.json` (St. Gallen 55 plus named extras) | defined |
 | Every layer | Tool integrations | `schema/integration.schema.json`, `<layer>/tooling/integrations.json`, `check-integrations.mjs` (interfaces reach at least four layers) | defined |
+
+## Docs next to the code
+
+Every README in this repo, this one included, and every playbook under `packages/*/playbooks/` is checked by `schema/check-docs-claims.mjs`: the paths, commands and routes it names must exist and its relative Markdown links, inline or reference-style, must resolve (HTML `href` and `src` are not checked). A pull request that changes code here, meaning any file that is not `.md` or `.mdx` and not under a `playbooks/` folder, owes this README an update, or a line in its body that starts with `No docs change: ` and gives a real reason (`.github/workflows/docs-required.yml`). New READMEs follow `docs/readme-template.md`.
 
 ## Open reconciliations
 

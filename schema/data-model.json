@@ -35,6 +35,61 @@
       "note": "A workspace calendar: owner, members, visibility. Created with the workspace (default.json, named Venture); schema/calendar.mjs (Torian, 2026-10-30)"
     },
     {
+      "id": "workspace-founder",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/workspace-founder.schema.json",
+      "paths": [
+        "instance/founders/*/founder.json",
+        "schema/examples/workspace/founders/*/founder.json"
+      ],
+      "note": "A founder as a person of the workspace, before any venture: opaque id, handle, ventures by role, profile only the founder confirms. schema/founders.ts (Torian, 2026-10-31)"
+    },
+    {
+      "id": "founder-idea",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-idea.schema.json",
+      "paths": [
+        "instance/founders/*/ideas/*.json",
+        "schema/examples/workspace/founders/*/ideas/*.json"
+      ],
+      "note": "An idea owned by the founder, verbatim; a venture cites the idea it grew from"
+    },
+    {
+      "id": "founder-reference",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-reference.schema.json",
+      "paths": [
+        "instance/founders/*/references/*.json",
+        "schema/examples/workspace/founders/*/references/*.json"
+      ],
+      "note": "A work that forms the founder (book, podcast, film, essay), CSL-JSON field names, stored once at founder scope and cited by id"
+    },
+    {
+      "id": "founder-inspiration",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-inspiration.schema.json",
+      "paths": [
+        "instance/founders/*/inspirations/*.json",
+        "schema/examples/workspace/founders/*/inspirations/*.json"
+      ],
+      "note": "A person who inspires the founder and what invokes their zeal; a private person is opaque"
+    },
+    {
+      "id": "founder-private",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-private.schema.json",
+      "paths": [
+        "instance/founders/*/_private/**/*.json",
+        "schema/examples/workspace/founders/*/_private/**/*.json"
+      ],
+      "note": "The founder's real name, contact, puzzle and secrets, private: true, so they never reach a model or a release"
+    },
+    {
       "id": "calendar-event",
       "layer": "system",
       "level": "workspace",
@@ -661,17 +716,6 @@
       "note": "Domain, product, experience, interface and systems design documents; which ones a venture needs is in the design-documents registry"
     },
     {
-      "id": "term-list",
-      "layer": "knowledge",
-      "level": "method",
-      "schema": null,
-      "form": "json",
-      "paths": [
-        "docs/design/term-harvest/*.json"
-      ],
-      "note": "Public seed list of terms for the term-harvest skill to run through the term engine (Grokbot handoff, 2026-11-01); public terms only, never a founder glossary"
-    },
-    {
       "id": "knowledge-sources",
       "layer": "knowledge",
       "level": "venture",
@@ -734,6 +778,34 @@
         }
       ],
       "note": "Default freshness profiles by record type (Revalidating V-2): stale, revalidate and expire after Next.js cacheLife, plus per_phase and live; a venture overrides them under freshness in naive.config.json"
+    },
+    {
+      "id": "sdlc-catalog",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/sdlc-catalog.schema.json",
+      "form": "json",
+      "paths": [
+        "knowledge/sdlc/catalog.json"
+      ],
+      "refs": [
+        {
+          "field": "groups[].processes[].activities[].tasks[].decision_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        },
+        {
+          "field": "groups[].processes[].owner_role",
+          "to": "role-template",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        },
+        {
+          "field": "groups[].processes[].function",
+          "to": "department-catalog",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        }
+      ],
+      "note": "What software work exists, after ISO/IEC/IEEE 12207 (R-26): processes, activities and tasks with the decisions each task needs, the phase it is first needed in, its owning role and the venture function it belongs to. No execution detail: MAD routes how, the agent router picks who. MAD's method-request names a task as <mad_module>/<activity>/<task>."
     },
     {
       "id": "freshness-log",
@@ -1954,12 +2026,27 @@
       ],
       "refs": [],
       "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
+    },
+    {
+      "id": "term-list",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "docs/design/term-harvest/*.json"
+      ],
+      "note": "Public seed list of terms for the term-harvest skill to run through the term engine (Grokbot handoff, 2026-11-01); public terms only, never a founder glossary"
     }
   ],
   "ignore": [
     {
-      "path": "schema/generators/gaps.json",
-      "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
+      "path": "schema/terms/admitted.json",
+      "reason": "Generated by node schema/terms/admit.ts: every term with its hash, validity, relations, predictions and Lean theorems; checked by --check, not a record"
+    },
+    {
+      "path": "lean/lake-manifest.json",
+      "reason": "Lake's package manifest for the Lean proofs (lean/); generated by lake, not a record"
     },
     {
       "path": "interface/plugin-mcp.json",
@@ -2068,6 +2155,10 @@
     {
       "path": "schema/internal-terms.json",
       "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
+    },
+    {
+      "path": "schema/generators/gaps.json",
+      "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
     }
   ]
 }

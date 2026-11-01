@@ -1081,7 +1081,7 @@
     {
       "id": "EE-093",
       "date": "2026-11-01",
-      "status": "in-force",
+      "status": "superseded",
       "decision": "The ontology's \"interface\" (a tool a person works through across most layers) is renamed \"harness\". \"interface\" keeps its standard sense: the agreed boundary where two elements meet (C4, ISO/IEC/IEEE 42010). AI harness and agent harness are kinds of harness. The ontology's console and custom interface (now custom harness) rows and the operator console README use the new word. The sixth layer keeps its folder name, interface/; renaming it is not decided. Not built yet: harness and interface are not yet terms in schema/terms.",
       "why": "Torian, 2026-11-01 (card). The term engine found the two senses disjoint (issue #143); the ontology marked its sense \"ours\", so standards first renames ours. Workspace decision G-039 already gave \"agent harness\" its industry meaning and returned G-029's first-party entity class to \"app\", so \"harness\" is free for this sense.",
       "related": [
@@ -1097,6 +1097,55 @@
         {
           "kind": "term",
           "target": "harness",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-094",
+      "date": "2026-10-31",
+      "status": "in-force",
+      "decision": "A founder exists before any venture, so a workspace keeps founders in a top-level founders/<handle>/ folder above ventures: founder.json (an opaque person id), ideas/, references/ (CSL-JSON), inspirations/, and _private/ for the real name, secrets and the founder puzzle, which never reach a route or a model. workspace.json names the founder at founders/<handle>/founder.json. A venture may have several founders; each links to it by role (founder, co-founder, general-partner) and may cite the idea it grew from. Built in schema/founders.ts (init, link, idea, reference, inspiration, check, show).",
+      "why": "Torian, 2026-10-31 (cards): founders folder above ventures, yes; one founder of record, no (several founders, contributions weighed from provenance later); disclosure tiers as a starting point. Ids EE-089 to EE-093 are taken by PR #142, so this takes EE-094.",
+      "related": [
+        "EE-011",
+        "EE-020"
+      ]
+    },
+    {
+      "id": "EE-095",
+      "date": "2026-10-31",
+      "status": "in-force",
+      "decision": "Every new or contested glossary term goes through one admission: its meaning is written as properties checked on facts (never on the label), frozen by hash, checked as a valid test, cross-run against every admitted term at its level, and recorded as proposed in schema/terms/admitted.json, with the Lean theorems it names present in lean/Naive. A definition dispute is settled by running this, not by asking. Lean lives in lean/ in this repository, built in CI by the lean job. Not built yet: admission does not check that a named theorem proves the current properties (only that it exists), and founder records are not yet checked against the founder term.",
+      "why": "Torian, 2026-10-31 21:07Z: every new term runs the full pipeline (definition tests, cross-run, verified in code, proved in Lean) without being asked; 21:13Z (card): Lean lives in lean/ in everything-ecosystem.",
+      "related": [
+        "EE-014",
+        "EE-094"
+      ]
+    },
+    {
+      "id": "EE-096",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "\"Harness\" takes its industry sense, the one Anthropic's S-1 uses: the software around a model that runs it, giving it context and tools and carrying out what it asks (the Agent SDK, Claude Managed Agents, Claude Code). AI harness and agent harness are kinds of harness. The tool a person works through across at least four of the six layers, which EE-093 called harness, is renamed \"workbench\"; custom harness becomes custom workbench. The ontology, the integration schema, interface/layer.json and the operator console README use the new words. The sixth layer keeps its folder name, interface/. Not built yet: harness and workbench are not yet terms in schema/terms.",
+      "why": "Torian, 2026-11-01 (card), after reading Anthropic's S-1 (filed 2026-10-26). The term engine found the S-1's harness and EE-093's harness overlap, not equal: the Agent SDK is a harness no person works through, and a coding agent used on one layer is an agent harness but not an EE-093 harness. Standards first (EE-014): the standard sense keeps the word. The code and docs already used harness in this sense (interface/harness, adapters, provenance). Workbench narrows the industry workbench (Eclipse; Fowler). Engine and Lean runs are a prototype outside this repository (s1-vocab.ts, S1.lean) that lands with the glossary PR (issue #143).",
+      "supersedes": [
+        "EE-093"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "harness",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "workbench",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "interface",
           "expect": "defined"
         }
       ]

@@ -4,7 +4,7 @@ Model of `packages/finance/playbooks/bessemer-saas-metrics.md`: the states a fou
 
 The chart hides two kinds of step. `CiteTarget` stays on "Metrics record proposed" (a later phase may cite a published number only after the Bessemer pages are filed, and discovery and validation never do). `Done` is the stutter on the end states: checks failed, you decided with no telos on file, and targets drafted on the telos. The earlier TLC run counted 88 of those model steps. The drawn chart is the path a reader follows.
 
-`venture` is not a row in `node interface/router.mjs`. `call()` still answers it: `interface/writes.mjs` hands an unknown route to `specialCall` in `interface/package-routes.mjs`. The replay reads `phase` from it. `finance/metrics` is not a route. The playbook does not use it.
+`venture` is not a row in `node interface/router.mjs`. `call()` still answers it: `interface/writes.mjs` hands an unknown route to `specialCall` in `interface/package-routes.mjs`. The replay reads `phase` from it. `finance/metrics` is not a route. The playbook does not use it. <!-- claim-ok: this line says the route does not exist -->
 
 ## Regenerate
 
@@ -33,7 +33,7 @@ An earlier run of TLC 1.7.4 (the statechart script's pinned jar) reported 496 st
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
-| EveryStepUsesARealRoute | PASS | PASS. `call` on `finance/metrics` returns `no route finance/metrics`. On the beachhead fixture, reads of `venture`, `product/ledger`, `validation/pricing`, `purpose/money/summary`, `validation/product-market-fit`, `foundation/telos`, `raw/sources/bessemer-scaling-100m`, `decisions/finance-saas-metrics`, and `evidence/bessemer-saas-metrics` all return a record. |
+| EveryStepUsesARealRoute | PASS | PASS. `call` on `finance/metrics` returns `no route finance/metrics`. On the beachhead fixture, reads of `venture`, `product/ledger`, `validation/pricing`, `purpose/money/summary`, `validation/product-market-fit`, `foundation/telos`, `raw/sources/bessemer-scaling-100m`, `decisions/finance-saas-metrics`, and `evidence/bessemer-saas-metrics` all return a record. | <!-- claim-ok: this line says the route does not exist -->
 | NoUseBeforeProvided | PASS | PASS. A scale-phase note with `arr_band` `$1-10MM` and value `125% net retention` sourced to `bessemer-scaling-100m` passes. `130% net retention` fails `targets-sourced`. Discovery with `125% net retention` fails `no-early-number`. A runway figure with no `purpose/money/summary` fails `actuals-from-records`. `400% year-over-year` is not a phase target. |
 | CheckMatches | PASS | PASS. With a subscription product, filed sources, a money summary, and every phase target `no published Bessemer target`, `evidence/bessemer-saas-metrics` is written with `passed` true. With no product card, the same evidence route is written with `passed` false (`cloud-fit`). |
 | TypeOK | PASS | The fixture records that were written came back from the router valid against their schemas. |

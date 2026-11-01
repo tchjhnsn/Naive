@@ -58,7 +58,7 @@
     },
     "founder": {
       "type": "string",
-      "description": "The founder record, relative to the workspace (normally founder/founder.json)"
+      "description": "The founder record, relative to the workspace (normally founders/<handle>/founder.json, schema/founders.ts)"
     },
     "timeZone": {
       "type": "string",
