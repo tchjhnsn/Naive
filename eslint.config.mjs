@@ -11,7 +11,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["**/node_modules/**", "**/.next/**", "**/.source/**", "site/out/**", "**/_catalog/**", "**/.naive/**", "**/next-env.d.ts"],
+    ignores: ["**/node_modules/**", "**/.next/**", "**/.source/**", "site/out/**", "**/_catalog/**", "**/.naive/**", "**/next-env.d.ts", "site/public/_pagefind/**"],
   },
   {
     files: ["**/*.{mjs,js,cjs,jsx}"],
@@ -25,6 +25,12 @@ export default tseslint.config(
     rules: {
       "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" }],
     },
+  },
+  {
+    // Espree's scope analysis does not count a JSX tag as a use, so a component used only as a tag reads as
+    // unused. typescript-eslint's parser counts it.
+    files: ["**/*.jsx"],
+    languageOptions: { parser: tseslint.parser },
   },
   {
     files: ["**/*.{ts,tsx}"],
