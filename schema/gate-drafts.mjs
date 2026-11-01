@@ -111,10 +111,10 @@ export function settle(dir, draft, { picked = "a", by, account, via } = {}) {
   for (const v of meta?.variants ?? []) rmSync(ventureFile(dir, v.file), { force: true });
   rmSync(ventureFile(dir, draft), { force: true });
   rmSync(ventureFile(dir, sidecarOf(draft)), { force: true });
-  if (!meta?.decision) return { picked };
-  // Only this draft's own decision: the sidecar's id is a file's word, and accepting signs what it names.
-  const { id } = variantsDecision(meta.file);
-  const d = approve(dir, id, /** @type {Parameters<typeof approve>[2]} */ ({ by: by ?? process.env.MENTURA_PERSON ?? "founder", account, via, answer: picked, note: `accepted draft ${picked} of ${meta.route}` }));
+  // The draft's own name decides which decision this signs: a sidecar is a file's word, so nothing in it may.
+  const { id, path } = variantsDecision(draft.replace(/^_drafts\//, "").replace(/\.draft$/, "").replace(/__/g, "/"));
+  if (!existsSync(ventureFile(dir, path))) return { picked };
+  const d = approve(dir, id, /** @type {Parameters<typeof approve>[2]} */ ({ by: by ?? process.env.MENTURA_PERSON ?? "founder", account, via, answer: picked, note: `accepted draft ${picked} of ${meta?.route ?? draft}` }));
   const decided = d.ok || /already decided as worded/.test(d.error);
   return { picked, decision: id, decided, ...(decided ? {} : { error: d.error }) };
 }

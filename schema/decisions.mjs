@@ -109,7 +109,7 @@ function decisionsAt(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || D
   // A foundation statement no person has confirmed is a decision the founder still owes. It is
   // part of the foundation rather than under it, so the foundation does not hold it.
   for (const s of statements.filter((x) => !["confirmed", "planned"].includes(x.status) && !x.derived_from && !covered.has(x.id))) {
-    const question = { missing: `Write the ${s.id} statement`, draft: `Accept or change the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement an agent wrote` }[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
+    const question = { missing: `Write the ${s.id} statement`, draft: `Accept or change the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement${s.agent_wrote ? " an agent wrote" : ""}` }[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
     list.push({ id: `foundation-${s.id}`, question, source: "foundation", statement_status: s.status, layer: MODEL.records.find((r) => r.id === s.record)?.layer ?? "purpose",
       decides: { record: s.record }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
   }
