@@ -70,13 +70,13 @@ function wrote(dir, file, by, seen = new Set()) {
   if (seen.has(file)) return false;
   seen.add(file);
   const es = logOf(dir, file);
-  return es.some((e) => by(e.agent?.kind) && !["confirm", "move", "release", "accept"].includes(e.activity))
+  return es.some((e) => by(e) && !["confirm", "move", "release", "accept"].includes(e.activity))
     || es.filter((e) => e.activity === "move").flatMap((e) => e.derived_from ?? []).some((p) => wrote(dir, p, by, seen));
 }
-/** An agent wrote this file's content: what a card may say. */
-export const agentWrote = (dir, file) => wrote(dir, file, (k) => k === "agent");
+/** An agent wrote this file's content: what a card may say. A baseline only adopts a file. */
+export const agentWrote = (dir, file) => wrote(dir, file, (e) => e.agent?.kind === "agent" && e.activity !== "baseline");
 /** Anyone but a person wrote this file's content: what waits for a person to confirm. */
-export const unsignedWrite = (dir, file) => wrote(dir, file, (k) => k !== "person");
+export const unsignedWrite = (dir, file) => wrote(dir, file, (e) => e.agent?.kind !== "person");
 
 /** Whether a person confirmed one statement in a file: their write or accept of the file, or a
  *  confirm of that statement, after the last write by anyone else. A write that lists statements
@@ -100,10 +100,12 @@ export function foundation(dir) {
     // A retired product no longer answers for the venture.
     const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), attribute) })).filter((x) => filled(x.v));
     const drafts = files.filter((f) => existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
-    if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing", ...(s.record === "telos" && migrated(dir) ? { path: files[0] } : {}) };
+    // A migrated venture's statement sits on a canonical record, which its record type does not name.
+    const home = s.record === "telos" && migrated(dir) ? drafts[0] ?? files[0] : null;
+    if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing", ...(home ? { path: home } : {}) };
     // A record with no log entry existed before the log; a person's baseline or write confirms it.
     const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
-    return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", agent_wrote: values.some(({ f }) => agentWrote(dir, f)), unsigned_write: values.some(({ f }) => unsignedWrite(dir, f)),
+    return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", confirmed, ...(home ? { path: home } : {}), agent_wrote: values.some(({ f }) => agentWrote(dir, f)), unsigned_write: values.some(({ f }) => unsignedWrite(dir, f)),
       value: attribute === "." ? values.map(({ v }) => v) : values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
   }) }));
   // A derived statement takes its source's status and shows the primary ICP profile's short form.

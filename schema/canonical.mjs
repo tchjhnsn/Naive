@@ -16,6 +16,8 @@ import { ambitionOf } from "../frameworks/ambition-tier/adapter.mjs";
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const collection = (dir, rel) => { const d = ventureFile(dir, rel); return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => ({ file: `${rel}/${f}`, rec: load(join(d, f)) })) : []; };
 
+const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
+
 export const goals = (dir) => collection(dir, "foundation/goals").map((x) => x.rec);
 export const requirements = (dir) => collection(dir, "foundation/requirements").map((x) => x.rec);
 export const exitCriteriaFile = (phase) => `foundation/exit-criteria/${phase}.json`;
@@ -33,9 +35,10 @@ export function exitCriteria(dir, phase) {
 
 /** Phases that have exit criteria, canonical or (unmigrated) the telos's. */
 export function phasesWithCriteria(dir) {
-  const c = collection(dir, "foundation/exit-criteria").map((x) => x.rec.phase);
+  // A record's phase becomes a file path, so only a real phase counts.
+  const c = collection(dir, "foundation/exit-criteria").map((x) => x.rec.phase).filter((p) => PHASES.includes(p));
   if (c.length || migrated(dir)) return c;
-  return ["discovery", "validation", "beachhead", "scale", "platform"].filter((p) => telosExitCriteria(dir, p)?.criteria.length);
+  return PHASES.filter((p) => telosExitCriteria(dir, p)?.criteria.length);
 }
 
 /** Where a venture's exit criteria live: each phase that has them, else the current phase's file, still to be written. */

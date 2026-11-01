@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "founder-inspiration.schema.json",
+  "title": "Founder inspiration",
+  "description": "A person who inspires the founder, and what about them invokes the founder's zeal (founders/<handle>/inspirations/<id>.json). A public figure may be named; a private person is an opaque id whose name sits in founders/<handle>/_private/.",
+  "type": "object",
+  "required": ["id", "zeal"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "name": { "type": "string", "description": "Only for a public figure. A private person has no name here" },
+    "public": { "type": "boolean", "description": "true = a public figure, named; false = a private person, opaque" },
+    "known_for": { "type": "string", "description": "What they did, briefly" },
+    "zeal": { "type": "string", "description": "What about them invokes the founder's zeal, in the founder's own words" },
+    "references": { "type": "array", "items": { "type": "string" }, "uniqueItems": true, "description": "references/<id> by or about them" }
+  }
+}

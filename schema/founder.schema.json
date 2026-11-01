@@ -69,6 +69,11 @@
       }
     },
     "profile": {
+      "$ref": "#/$defs/profile"
+    }
+  },
+  "$defs": {
+    "profile": {
       "type": "object",
       "additionalProperties": false,
       "description": "Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in purpose/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type",

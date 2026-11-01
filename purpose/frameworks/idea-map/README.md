@@ -13,8 +13,8 @@ Version 0.1.0, ours and unevaluated (EE-059, EE-060, EE-061). Each step has its 
 
 | Step | File | What the founder gets | Command |
 |---|---|---|---|
-| Idea dump | `purpose/ideas/dump.md` | Everything out of their head, kept verbatim | (the founder writes it) |
-| Idea map | `purpose/ideas/map.mdx` | Their ideas on one canvas, by pillar and department: strengths and gaps at a glance | `purpose/ideas` |
+| Idea dump | `purpose/ideas/dump.md` <!-- claim-ok: a path in the venture --> | Everything out of their head, kept verbatim | (the founder writes it) |
+| Idea map | `purpose/ideas/map.mdx` <!-- claim-ok: a path in the venture --> | Their ideas on one canvas, by pillar and department: strengths and gaps at a glance | `purpose/ideas` |
 | Idea graph | `purpose/ideas/graph.json` | Structure on the same ideas: what builds on what, what to develop next, what moves in order and what moves on its own | `purpose/ideas/graph` |
 | Idea routes | computed, not stored | Next steps: each idea at its destination in the framework, each destination with the one step that moves it | `purpose/ideas/routes` |
 
