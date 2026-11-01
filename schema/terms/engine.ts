@@ -1,4 +1,4 @@
-// The term engine (Torian, 2026-10-31): a contested definition is settled by running checks and proofs,
+// The term engine (EE-095; Torian, 2026-10-31): a contested definition is settled by running checks and proofs,
 // never by asking how it was defined. A term is a set of necessary properties, each a pure check over the
 // FACTS of one record at one level (a relationship, an encounter, a person in a venture). The label anyone
 // uses is a field of the facts that no check may read. Relations between terms are read off pass sets.
@@ -72,6 +72,8 @@ export function validTest<F extends Base>(t: Term<F>, cases: F[]): string[] {
     if (a !== JSON.stringify(run(t, structuredClone(c)))) { out.push(`${t.id}: not deterministic`); break; }
     if (labels.some((label) => JSON.stringify(run(t, { ...c, label })) !== a)) { out.push(`${t.id}: the label changes a verdict`); break; }
   }
+  // Guards run() itself: run forces pass to false without confirmed facts, so this cannot fail for any
+  // term today. It stays so a change to run that lets unconfirmed facts through is caught here.
   if (cases.some((c) => !c.confirmed && run(t, c).pass)) out.push(`${t.id}: unconfirmed facts pass`);
   if (!cases.some((c) => run(t, c).pass)) out.push(`${t.id}: never passes (vacuous)`);
   if (!cases.some((c) => c.confirmed && !run(t, c).pass)) out.push(`${t.id}: never fails on confirmed facts (vacuous)`);

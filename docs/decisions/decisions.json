@@ -943,6 +943,22 @@
         "EE-034",
         "EE-080"
       ]
+    },
+    {
+      "id": "EE-094",
+      "date": "2026-10-31",
+      "status": "in-force",
+      "decision": "A founder exists before any venture, so a workspace keeps founders in a top-level founders/<handle>/ folder above ventures: founder.json (an opaque person id), ideas/, references/ (CSL-JSON), inspirations/, and _private/ for the real name, secrets and the founder puzzle, which never reach a route or a model. workspace.json names the founder at founders/<handle>/founder.json. A venture may have several founders; each links to it by role (founder, co-founder, general-partner) and may cite the idea it grew from. Built in schema/founders.ts (init, link, idea, reference, inspiration, check, show).",
+      "why": "Torian, 2026-10-31 (cards): founders folder above ventures, yes; one founder of record, no (several founders, contributions weighed from provenance later); disclosure tiers as a starting point. Ids EE-089 to EE-093 are taken by PR #142, so this takes EE-094.",
+      "related": ["EE-011", "EE-020"]
+    },
+    {
+      "id": "EE-095",
+      "date": "2026-10-31",
+      "status": "in-force",
+      "decision": "Every new or contested glossary term goes through one admission: its meaning is written as properties checked on facts (never on the label), frozen by hash, checked as a valid test, cross-run against every admitted term at its level, and recorded as proposed in schema/terms/admitted.json, with the Lean theorems it names present in lean/Naive. A definition dispute is settled by running this, not by asking. Lean lives in lean/ in this repository, built in CI by the lean job. Not built yet: admission does not check that a named theorem proves the current properties (only that it exists), and founder records are not yet checked against the founder term.",
+      "why": "Torian, 2026-10-31 21:07Z: every new term runs the full pipeline (definition tests, cross-run, verified in code, proved in Lean) without being asked; 21:13Z (card): Lean lives in lean/ in everything-ecosystem.",
+      "related": ["EE-014", "EE-094"]
     }
   ]
 }

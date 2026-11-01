@@ -2,8 +2,10 @@ import Naive.Concept
 
 /-
   Founder (founders/<handle>/, schema/founders.ts). A venture may have several founders; each is a
-  founder by these properties, never by the label anyone uses. The TypeScript check runs the same
-  properties on records; these theorems hold for every possible case, not a sample.
+  founder by these properties, never by the label anyone uses. These theorems hold for every possible
+  case, not a sample. They are a hand copy of the properties in schema/terms/terms.ts, and
+  schema/founders.ts does not yet run those properties on founder records (it checks file layout and
+  privacy only); tying the two together is follow-up work.
 -/
 
 inductive Contribution | idea | secret | ethos | mission | technical | capital | network

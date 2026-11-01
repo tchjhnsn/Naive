@@ -1,4 +1,4 @@
-// Founders before ventures (Torian, 2026-10-31): a founder is a person of the workspace, with a folder of
+// Founders before ventures (EE-094; Torian, 2026-10-31): a founder is a person of the workspace, with a folder of
 // their own above every venture. The founder owns their ideas, the references that form them, the people who
 // inspire them and their secrets; a venture links to its founder by role instead of owning any of it.
 //
@@ -69,16 +69,19 @@ export function init(ws: string, o: { handle: string; verification?: WorkspaceFo
 /** Link a venture to the founder by role. */
 export function link(ws: string, o: { handle: string; venture: string; role: "founder" | "co-founder" | "general-partner"; since?: string; idea?: string; now?: Date }): WorkspaceFounder {
   const rec = load(ws, o.handle);
+  // validate everything before writing anything, so a refused link leaves no partial record
   if (!existsSync(join(ws, o.venture))) throw new Error(`no venture folder ${o.venture}`);
-  const ventures = (rec.ventures ?? []).filter((v) => v.venture !== o.venture);
-  ventures.push({ venture: o.venture, role: o.role, since: o.since ?? today(o.now), ...(o.idea ? { from_idea: o.idea } : {}) });
+  const ideaFile = o.idea ? join(folder(ws, o.handle), "ideas", `${o.idea}.json`) : undefined;
+  if (ideaFile && !existsSync(ideaFile)) throw new Error(`no idea ${o.idea}`);
+  // re-linking keeps what the earlier link recorded (since, until, from_idea) unless this call sets it
+  const before = (rec.ventures ?? []).find((v) => v.venture === o.venture);
+  const entry = { ...before, venture: o.venture, role: o.role, since: o.since ?? before?.since ?? today(o.now), ...(o.idea ? { from_idea: o.idea } : {}) };
+  const ventures = [...(rec.ventures ?? []).filter((v) => v.venture !== o.venture), entry];
   const next: WorkspaceFounder = { ...rec, ventures };
   writeJson(founderFile(ws, o.handle), next);
-  if (o.idea) {
-    const f = join(folder(ws, o.handle), "ideas", `${o.idea}.json`);
-    if (!existsSync(f)) throw new Error(`no idea ${o.idea}`);
-    const idea = readJson<FounderIdea>(f);
-    writeJson(f, { ...idea, status: "in-venture", ventures: [...new Set([...(idea.ventures ?? []), o.venture])] });
+  if (ideaFile) {
+    const idea = readJson<FounderIdea>(ideaFile);
+    writeJson(ideaFile, { ...idea, status: "in-venture", ventures: [...new Set([...(idea.ventures ?? []), o.venture])] });
   }
   return next;
 }
@@ -180,7 +183,8 @@ export function check(ws: string): string[] {
     for (const file of walk(join(root, h))) {
       const rel = relative(join(root, h), file);
       const inPrivate = rel.split("/")[0] === PRIVATE;
-      if (!inPrivate && /(^|\/)(secrets?|puzzles?)(\/|$)/i.test(rel)) out.push(`founders/${h}/${rel}: secrets and the founder puzzle go in founders/${h}/_private/`);
+      // a folder or a file of that name, with or without an extension: secrets/, secrets.json, puzzle.md
+      if (!inPrivate && /(^|\/)(secrets?|puzzles?)(\.[^/]*)?(\/|$)/i.test(rel)) out.push(`founders/${h}/${rel}: secrets and the founder puzzle go in founders/${h}/_private/`);
       if (inPrivate && file.endsWith(".json")) {
         try { if (readJson<{ private?: boolean }>(file).private !== true) out.push(`founders/${h}/${rel}: a _private/ record says private: true`); }
         catch { out.push(`founders/${h}/${rel}: not valid JSON`); }

@@ -58,6 +58,13 @@ expect("link marks the idea in-venture", linked.status === "in-venture" && linke
 expect("a linked founder passes", check(ws).length === 0, check(ws).join("; "));
 threw = false; try { link(ws, { handle: "tj", venture: "ventures/none", role: "founder" }); } catch { threw = true; }
 expect("link refuses a venture that does not exist", threw);
+// A refused link writes nothing, and re-linking keeps since and from_idea (review of #135, findings 3 and 7).
+const beforeBad = readFileSync(join(ws, "founders/tj/founder.json"), "utf8");
+threw = false; try { link(ws, { handle: "tj", venture: "ventures/mentura", role: "co-founder", idea: "nope" }); } catch { threw = true; }
+expect("link refuses an idea that does not exist and writes nothing", threw && readFileSync(join(ws, "founders/tj/founder.json"), "utf8") === beforeBad);
+link(ws, { handle: "tj", venture: "ventures/mentura", role: "founder", now: new Date("2026-12-01T00:00:00Z") });
+const relinked = read(join(ws, "founders/tj/founder.json")).ventures?.find((v: { venture: string }) => v.venture === "ventures/mentura");
+expect("re-linking keeps since and from_idea", relinked?.since === "2026-10-31" && relinked?.from_idea === idea.id, JSON.stringify(relinked));
 
 // Only the founder confirms the profile.
 const file = join(ws, "founders/tj/founder.json");
@@ -97,6 +104,14 @@ expect("fails: two founders with one id", fails(ws, /is also founders/));
 put(join(ws, "founders/xy/founder.json"), { id: "p-1b1b1b1b", handle: "xy", created: "2026-10-31", ventures: [{ venture: "ventures/mentura", role: "founder", since: "2026-10-31" }] });
 expect("a venture may have several founders", check(ws).length === 0, check(ws).join("; "));
 rmSync(join(ws, "founders/xy"), { recursive: true });
+
+// The privacy guard catches files as well as folders, with any extension (review of #135, finding 1).
+for (const name of ["puzzle.json", "secrets.json", "secret.md", "puzzles/a.json"]) {
+  put(join(ws, "founders/tj", name), { note: "test" });
+  expect(`fails: ${name} outside _private/`, fails(ws, /go in founders\/tj\/_private/));
+  rmSync(join(ws, "founders/tj", name.split("/")[0]), { recursive: true, force: true });
+}
+expect("passes again once they are gone", check(ws).length === 0, check(ws).join("; "));
 
 // Founders are workspace records: no venture route reads them.
 const leaks = (routes() as { route?: string; files?: string[] }[]).filter((r) => (r.files ?? []).some((x) => x.startsWith("founders/") || x.includes("_private/")));
