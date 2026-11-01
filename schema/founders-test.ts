@@ -63,7 +63,7 @@ const beforeBad = readFileSync(join(ws, "founders/tj/founder.json"), "utf8");
 threw = false; try { link(ws, { handle: "tj", venture: "ventures/mentura", role: "co-founder", idea: "nope" }); } catch { threw = true; }
 expect("link refuses an idea that does not exist and writes nothing", threw && readFileSync(join(ws, "founders/tj/founder.json"), "utf8") === beforeBad);
 link(ws, { handle: "tj", venture: "ventures/mentura", role: "founder", now: new Date("2026-12-01T00:00:00Z") });
-const relinked = read(join(ws, "founders/tj/founder.json")).ventures?.find((v: { venture: string }) => v.venture === "ventures/mentura");
+const relinked = (JSON.parse(readFileSync(join(ws, "founders/tj/founder.json"), "utf8")) as { ventures?: { venture: string; since?: string; from_idea?: string }[] }).ventures?.find((v) => v.venture === "ventures/mentura");
 expect("re-linking keeps since and from_idea", relinked?.since === "2026-10-31" && relinked?.from_idea === idea.id, JSON.stringify(relinked));
 
 // Only the founder confirms the profile.
