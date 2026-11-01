@@ -34,7 +34,12 @@ import { findWorkspace } from "../schema/workspace.mjs";
 import { localDate, zoneOf } from "../schema/clock.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
 
+/** @typedef {{ file: string, timestamp: string | null, sha256: string }} Citation */
+/** @typedef {{ kind: string, also: string[], quote: string, file: string | null, timestamp: string | null, source: Citation | null, by: "heuristic" | "model", asked?: number, sources?: Citation[], matches?: string | null, status?: "recorded" | "missed" }} Candidate */
+/** @typedef {{ type: string, ref: string, name?: string, words: Set<string> }} KnownRecord */
+
 // v1's coarse rules, kept: what the founder said about frameworks, playbooks, decisions and ideas.
+/** @type {[string, RegExp][]} */
 export const RULES = [
   ["framework", /\b(?:thinking )?frameworks?\b|\bmental models?\b/i],
   ["playbook", /\bplaybooks?\b|\btemplates?\b|\bchecklists?\b/i],
@@ -117,6 +122,7 @@ export function sessionScope(root) {
   return (cwd) => { if (typeof cwd !== "string") return false; if (!seen.has(cwd)) seen.set(cwd, own(cwd)); return seen.get(cwd); };
 }
 
+/** @param {string} dir @param {string} [since] @param {(cwd: string) => boolean} [inScope] */
 export function readMessages(dir, since, inScope = () => true) {
   const out = [];
   for (const file of transcriptFiles(dir)) {
@@ -144,6 +150,7 @@ const cite = (m) => ({ file: m.file, timestamp: m.timestamp, sha256: m.sha256 })
 
 // Typed pattern rules over each sentence, then frames: a question the founder asks again in another message.
 export function heuristicCandidates(messages) {
+  /** @type {Candidate[]} */
   const out = [];
   const questions = [];
   for (const m of messages) {
@@ -185,6 +192,7 @@ const textOf = (o, fields) => fields.map((f) => o?.[f]).filter((x) => typeof x =
 // What exists already: frameworks (built-in and the workspace's), decision records, foundation goals,
 // requirements, constraints and ICPs, and frames, under the root.
 export function knownRecords(root) {
+  /** @type {KnownRecord[]} */
   const known = listFrameworks(root).frameworks.map((f) => ({ type: "framework", ref: `framework ${f.id}`, name: f.id.replace(/-/g, " "), words: words(`${f.id} ${f.title}`) }));
   const add = (type, ref, text) => { if (text) known.push({ type, ref, words: words(text) }); };
   for (const p of walk(root)) {
@@ -249,6 +257,7 @@ const cursorOf = (root) => { const f = join(root, ".naive/diagnose-cursor.json")
 
 // The cheap check: no redaction, no writes. Due when the founder's text since the cursor, at characters / 4, reaches
 // the threshold, or when a session that is new since the cursor started more than stale_hours ago.
+/** @param {{ root: string, dir: string, now?: Date, since?: string, all?: boolean }} opts */
 export function isDue({ root, dir, now = new Date(), since, all = false }) {
   const inScope = all ? () => true : sessionScope(root);
   const { threshold, stale_hours } = diagnoseConfig(root);
@@ -357,6 +366,7 @@ export function writeConversations(root, messages, tz) {
 }
 const readJson0 = (line) => { try { return JSON.parse(line); } catch { return null; } };
 
+/** @param {{ root: string, dir: string, since?: string, now?: Date, env?: NodeJS.ProcessEnv, tz?: string, all?: boolean }} opts */
 export async function diagnose({ root, dir, since, now = new Date(), env = process.env, tz = zoneOf(root), all = false }) {
   const cursorFile = join(root, ".naive/diagnose-cursor.json");
   const cursor = since ?? cursorOf(root);

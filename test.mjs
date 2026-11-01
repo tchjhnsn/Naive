@@ -163,7 +163,7 @@ const rendered = (path, marker) => (md) => {
 const cheap = [
   // ESLint is not skipped when missing: that hid real lint errors while the suite said "all passing" (02d5581).
   ["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]],
-  ["types (tsc checkJs, outside the pending folders)", "node", ["schema/check-types.ts"]],
+  ["types (tsc checkJs, every file)", "node", ["schema/check-types.ts"]],
   ["docs/ontology.md matches docs/ontology.json (regenerate with node schema/check-nouns.mjs --md)", "node", ["schema/check-nouns.mjs", "--md"], rendered("docs/ontology.md", "\n### System")],
   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node schema/check-data-model.mjs --md)", "node", ["schema/check-data-model.mjs", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
   ["docs/reference/ROUTES.md matches the kits (regenerate with node interface/router.mjs --md)", "node", ["interface/router.mjs", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
