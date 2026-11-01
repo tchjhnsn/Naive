@@ -345,6 +345,8 @@ export type DataModel = {
   layers: string[];
   records: {
     id: string;
+    /** Mentura's confidential records (platform/research/): checked like any other, left out of generated docs */
+    confidential?: boolean;
     /** The owning layer, or system for records every layer shares */
     layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
     /** method: this repo's own records; workspace: one per builder; venture: inside a venture folder */

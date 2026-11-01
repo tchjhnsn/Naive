@@ -2022,6 +2022,66 @@
       ],
       "refs": [],
       "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
+    },
+    {
+      "id": "research-cell",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/research-cell.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/cells.jsonl"
+      ],
+      "note": "A research cell (confidential, Mentura): state(subject, time, aspect) for a venture, function and frame. Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-source",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/source.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/sources.jsonl"
+      ],
+      "note": "A source the research engine read, with credibility factors 1-4 (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-claim",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/claim.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/claims.jsonl"
+      ],
+      "note": "A claim for a research cell; confidence and verdict computed in code by platform/research/credibility.mjs (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-citation",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/citation.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/citations.jsonl"
+      ],
+      "note": "Ties a research claim to a source with a locator and an optional short quote (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "refs": [
+        {
+          "field": "claim_id",
+          "to": "research-claim",
+          "checked_by": null
+        },
+        {
+          "field": "source_id",
+          "to": "research-source",
+          "checked_by": null
+        }
+      ],
+      "confidential": true
     }
   ],
   "ignore": [

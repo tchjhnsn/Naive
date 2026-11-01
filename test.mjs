@@ -59,6 +59,7 @@ const steps = [
   ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["schema/structure-checks-test.mjs"]],
   ["kits", "node", ["platform/kits/test.mjs"]],
   ["webhooks", "node", ["platform/webhooks/test.mjs"]],
+  ["research engine (cells, credibility, adapters, queue; stubs only)", "node", ["platform/research/research-test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["schema/frames-test.mjs"]],
   ["premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)", "node", ["schema/premise-lint-test.mjs"]],
   ["frames: instance", "node", ["schema/frames.mjs", "check"]],
