@@ -59,7 +59,7 @@ function rulesFor(root: string, file: string): OperatingRules {
   try {
     return operatingRulesFor(root, file);
   } catch (e) {
-    if (e instanceof OperatingRulesError || (e instanceof Error && e.name === "OperatingRulesError")) throw new GateToolError(e.message);
+    if (e instanceof OperatingRulesError) throw new GateToolError(e.message);
     throw e;
   }
 }

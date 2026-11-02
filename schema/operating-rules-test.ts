@@ -43,6 +43,13 @@ const throws = (fn: () => unknown) => {
   try { fn(); return ""; }
   catch (e) { return e instanceof Error ? e.message : String(e); }
 };
+/** The loader reports the same line schema/validate.py prints. */
+const agrees = (file: string) => {
+  const ran = python(file);
+  const message = throws(() => readOperatingRules(file));
+  const line = (ran.stdout ?? "").split("\n").map((l) => l.trim()).find((l) => l && l !== "valid");
+  return ran.status !== 0 && !!line && message.includes(line);
+};
 
 const rules = readOperatingRules(modulePath);
 const schema = python(modulePath);
@@ -56,69 +63,61 @@ expect("the design-diff verb set is create, amend and delete", rules.design.diff
 expect("Jev records and does not block, at the suggested Noul thresholds", rules.jev.mode === "record-only" && rules.jev.yes === 0.7 && rules.jev.no === 0.3);
 expect("a question type is verb, noun and asking function", rules.questions.type.parts.join(",") === "verb,noun,asking_function");
 expect("the most specific routing rule wins, and a tie goes to the founder", rules.questions.routing.specificity === "most_specific" && rules.questions.routing.tie === "founder" && rules.questions.routing.match === "any_subset" && rules.questions.routing.destinations.join(",") === "function_agent,founder,standing_answer" && rules.questions.routing.rules.length === 0);
-expect("pattern learning keeps its shape, and its numbers are not pinned", typeof rules.questions.pattern_learning.min_answers === "number" && typeof rules.questions.pattern_learning.wilson_lower_bound === "number" && rules.questions.pattern_learning.founder_approves === true && rules.questions.pattern_learning.never_verb === "delete" && rules.questions.pattern_learning.pause_when === "founder_answers_differently");
-expect("standing-rule decay keeps its shape, and its numbers are not pinned", typeof rules.questions.decay.decay_window === "number" && typeof rules.questions.decay.decay_floor === "number" && rules.questions.decay.satisfied.join(",") === "acceptance,moving_on" && rules.questions.decay.unsatisfied.join(",") === "override,correction,frustration" && rules.questions.decay.frustration === "jev_noul" && rules.questions.decay.below_floor === "suspend_and_ask" && rules.questions.decay.show === "uses_that_lowered_it");
+expect("pattern learning keeps the rules that are decided", rules.questions.pattern_learning.founder_approves === true && rules.questions.pattern_learning.never_verb === "delete" && rules.questions.pattern_learning.pause_when === "founder_answers_differently");
+expect("standing-rule decay keeps the outcomes that are decided", rules.questions.decay.satisfied.join(",") === "acceptance,moving_on" && rules.questions.decay.unsatisfied.join(",") === "override,correction,frustration" && rules.questions.decay.frustration === "jev_noul" && rules.questions.decay.below_floor === "suspend_and_ask" && rules.questions.decay.show === "uses_that_lowered_it");
 
 {
   const file = copyModule((m) => { (m.rejection as { retry: { retries: number } }).retry.retries = -1; });
-  const message = throws(() => readOperatingRules(file));
-  const ran = python(file);
-  expect("a negative retry count is invalid", ran.status !== 0 && /retries/.test(message));
+  expect("a negative retry count is invalid", agrees(file));
 }
 {
   const file = copyModule((m) => { m.extra = true; });
-  const message = throws(() => readOperatingRules(file));
-  expect("an unknown field is invalid", python(file).status !== 0 && /unknown field extra/.test(message));
+  expect("an unknown field is invalid", agrees(file));
 }
 {
   const file = copyModule((m) => { (m.jev as { yes: number }).yes = 0.2; });
   const message = throws(() => readOperatingRules(file));
-  expect("a yes threshold that is not above no is invalid", /jev.yes must be above jev.no/.test(message));
+  expect("a yes threshold that is not above no is invalid", python(file).status === 0 && /jev.yes must be above jev.no/.test(message));
 }
 {
   const file = copyModule((m) => { (m.questions as { pattern_learning: { min_answers: number } }).pattern_learning.min_answers = 0; });
-  const message = throws(() => readOperatingRules(file));
-  expect("pattern learning with no minimum answers is invalid", python(file).status !== 0 && /min_answers/.test(message));
+  expect("pattern learning with no minimum answers is invalid", agrees(file));
 }
 {
   const file = copyModule((m) => { (m.questions as { pattern_learning: { wilson_lower_bound: number } }).pattern_learning.wilson_lower_bound = 0; });
-  const message = throws(() => readOperatingRules(file));
-  expect("a Wilson lower bound of 0 is invalid", python(file).status !== 0 && /wilson_lower_bound/.test(message));
+  expect("a Wilson lower bound of 0 is invalid", agrees(file));
 }
 {
   const file = copyModule((m) => { (m.questions as { decay: { decay_floor: number } }).decay.decay_floor = 0; });
-  const message = throws(() => readOperatingRules(file));
-  expect("a decay floor of 0 is invalid", python(file).status !== 0 && /decay_floor/.test(message));
+  expect("a decay floor of 0 is invalid", agrees(file));
 }
 {
   const file = copyModule((m) => { (m.questions as { decay: { decay_floor: number } }).decay.decay_floor = 1.2; });
-  expect("a decay floor above 1 is invalid", python(file).status !== 0 && /decay_floor/.test(throws(() => readOperatingRules(file))));
+  expect("a decay floor above 1 is invalid", agrees(file));
 }
 {
   const file = copyModule((m) => { (m.questions as { decay: { decay_window: number } }).decay.decay_window = 0; });
-  expect("a decay window of 0 is invalid", python(file).status !== 0 && /decay_window/.test(throws(() => readOperatingRules(file))));
+  expect("a decay window of 0 is invalid", agrees(file));
 }
 {
   const rule = { id: "drop-price", verb: "delete", kind: "remove", to: "standing_answer", answer: "No." };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  const message = throws(() => readOperatingRules(file));
-  expect("a standing answer on a delete verb is invalid", python(file).status !== 0 && /standing rules never apply to a delete verb/.test(message), message);
+  expect("a standing answer on a delete verb is invalid", agrees(file));
 }
 {
   const rule = { id: "bad-kind", verb: "create", kind: "remove", noun: "pricing decision", to: "founder" };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  const message = throws(() => readOperatingRules(file));
-  expect("a kind from another verb is invalid", python(file).status !== 0 && /exactly one verb shape/.test(message), message);
+  expect("a kind from another verb is invalid", agrees(file));
 }
 {
   const rule = { id: "bare", to: "founder" };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  expect("a rule that names no part is invalid", python(file).status !== 0 && /must name a verb, a noun, or an asking function/.test(throws(() => readOperatingRules(file))));
+  expect("a rule that names no part is invalid", agrees(file));
 }
 {
   const rule = { id: "no-agent", verb: "amend", kind: "revise", noun: "pricing decision", to: "function_agent" };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  expect("a function agent with no function is invalid", python(file).status !== 0 && /missing function/.test(throws(() => readOperatingRules(file))));
+  expect("a function agent with no function is invalid", agrees(file));
 }
 
 const venture = join(tmp, "venture");
@@ -159,7 +158,7 @@ writeFileSync(join(structured, "venture.json"), JSON.stringify({ id: "structured
 writeFileSync(join(structured, "operating-rules.json"), JSON.stringify({ questions: { decay: { decay_floor: 0.25 } } }));
 writeFileSync(join(structured, "meta/operating-rules.json"), JSON.stringify({ rejection: { retry: { retries: 2 } } }));
 const fromMeta = operatingRulesFor(root, join(structured, "package.json"));
-expect("a structured venture reads meta/operating-rules.json", fromMeta.rejection.retry.retries === 2 && fromMeta.questions.decay.decay_floor === rules.questions.decay.decay_floor);
+expect("a structured venture reads meta/operating-rules.json", fromMeta.rejection.retry.retries === 2 && fromMeta.questions.decay.decay_floor === rules.questions.decay.decay_floor && fromMeta.questions.decay.decay_floor !== 0.25);
 
 const packageFile = join(venture, "unknown-term.json");
 cpSync(join(root, "schema/fixtures/ontology-gate/unknown-term.json"), packageFile);

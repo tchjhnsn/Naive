@@ -184,7 +184,7 @@
     },
     "judgment": {
       "type": "object",
-        "description": "gate only: the one verdict for this package at this function. A rejection's disposition is copied from the operating-rules module. The verdict is not copied onto the handoff (R-17).",
+      "description": "gate only: the one verdict for this package at this function. A rejection's disposition is copied from the operating-rules module. The verdict is not copied onto the handoff (R-17).",
       "required": ["verdict", "function", "witness"],
       "additionalProperties": false,
       "properties": {
