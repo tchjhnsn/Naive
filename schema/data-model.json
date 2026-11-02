@@ -851,7 +851,7 @@
           "checked_by": "schema/operating-rules-test.ts"
         }
       ],
-      "note": "The default operating-rules module. A venture's operating-rules.json merges over it. The membership gate reads rejection.retry. Parent-only edits, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, pattern learning and standing-rule decay are declared for later pull requests"
+      "note": "The default operating-rules module. A venture's operating-rules.json merges over it. The membership gate reads rejection.retry. Parent-only edits, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, pattern learning and standing-rule decay are declared for later pull requests. min_answers, wilson_lower_bound, decay_window and decay_floor are provisional placeholders, TBD"
     },
     {
       "id": "department",

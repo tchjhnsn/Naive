@@ -56,8 +56,8 @@ expect("the design-diff verb set is create, amend and delete", rules.design.diff
 expect("Jev records and does not block, at the suggested Noul thresholds", rules.jev.mode === "record-only" && rules.jev.yes === 0.7 && rules.jev.no === 0.3);
 expect("a question type is verb, noun and asking function", rules.questions.type.parts.join(",") === "verb,noun,asking_function");
 expect("the most specific routing rule wins, and a tie goes to the founder", rules.questions.routing.specificity === "most_specific" && rules.questions.routing.tie === "founder" && rules.questions.routing.match === "any_subset" && rules.questions.routing.destinations.join(",") === "function_agent,founder,standing_answer" && rules.questions.routing.rules.length === 0);
-expect("pattern learning proposes after 10 answers at a Wilson lower bound of 0.9", rules.questions.pattern_learning.min_answers === 10 && rules.questions.pattern_learning.wilson_lower_bound === 0.9 && rules.questions.pattern_learning.founder_approves === true && rules.questions.pattern_learning.never_verb === "delete" && rules.questions.pattern_learning.pause_when === "founder_answers_differently");
-expect("standing-rule decay uses the last 20 uses and a floor of 0.8", rules.questions.decay.decay_window === 20 && rules.questions.decay.decay_floor === 0.8 && rules.questions.decay.satisfied.join(",") === "acceptance,moving_on" && rules.questions.decay.unsatisfied.join(",") === "override,correction,frustration" && rules.questions.decay.frustration === "jev_noul" && rules.questions.decay.below_floor === "suspend_and_ask" && rules.questions.decay.show === "uses_that_lowered_it");
+expect("pattern learning keeps its shape, and its numbers are not pinned", typeof rules.questions.pattern_learning.min_answers === "number" && typeof rules.questions.pattern_learning.wilson_lower_bound === "number" && rules.questions.pattern_learning.founder_approves === true && rules.questions.pattern_learning.never_verb === "delete" && rules.questions.pattern_learning.pause_when === "founder_answers_differently");
+expect("standing-rule decay keeps its shape, and its numbers are not pinned", typeof rules.questions.decay.decay_window === "number" && typeof rules.questions.decay.decay_floor === "number" && rules.questions.decay.satisfied.join(",") === "acceptance,moving_on" && rules.questions.decay.unsatisfied.join(",") === "override,correction,frustration" && rules.questions.decay.frustration === "jev_noul" && rules.questions.decay.below_floor === "suspend_and_ask" && rules.questions.decay.show === "uses_that_lowered_it");
 
 {
   const file = copyModule((m) => { (m.rejection as { retry: { retries: number } }).retry.retries = -1; });
@@ -134,7 +134,7 @@ writeFileSync(join(venture, "operating-rules.json"), JSON.stringify({
 }));
 const resolved = operatingRulesFor(root, join(venture, "package.json"));
 expect("a venture overlay changes the retry and leaves the rest", resolved.rejection.retry.retries === 4 && resolved.rejection.retry.escalate_to === "architect" && resolved.rejection.retry.retry_by === "lead" && resolved.self_fix.requires_founder_approval === true && resolved.jev.mode === "record-only");
-expect("a venture overlay changes pattern learning and decay without dropping their other fields", resolved.questions.pattern_learning.min_answers === 12 && resolved.questions.pattern_learning.wilson_lower_bound === 0.9 && resolved.questions.decay.decay_window === 30 && resolved.questions.decay.decay_floor === 0.8 && resolved.questions.routing.rules.length === 1 && resolved.questions.routing.tie === "founder");
+expect("a venture overlay changes pattern learning and decay without dropping their other fields", resolved.questions.pattern_learning.min_answers === 12 && resolved.questions.pattern_learning.wilson_lower_bound === rules.questions.pattern_learning.wilson_lower_bound && resolved.questions.pattern_learning.founder_approves === true && resolved.questions.decay.decay_window === 30 && resolved.questions.decay.decay_floor === rules.questions.decay.decay_floor && resolved.questions.decay.below_floor === "suspend_and_ask" && resolved.questions.routing.rules.length === 1 && resolved.questions.routing.tie === "founder");
 {
   let caught: unknown;
   try { applyOverlay(rules, { rejection: { retry: { retries: -1 } } }, "overlay"); }
@@ -156,10 +156,10 @@ expect("a venture overlay changes pattern learning and decay without dropping th
 const structured = join(tmp, "structured");
 mkdirSync(join(structured, "meta"), { recursive: true });
 writeFileSync(join(structured, "venture.json"), JSON.stringify({ id: "structured", name: "Structured", layout: "structured" }));
-writeFileSync(join(structured, "operating-rules.json"), JSON.stringify({ questions: { decay: { decay_floor: 0.7 } } }));
+writeFileSync(join(structured, "operating-rules.json"), JSON.stringify({ questions: { decay: { decay_floor: 0.25 } } }));
 writeFileSync(join(structured, "meta/operating-rules.json"), JSON.stringify({ rejection: { retry: { retries: 2 } } }));
 const fromMeta = operatingRulesFor(root, join(structured, "package.json"));
-expect("a structured venture reads meta/operating-rules.json", fromMeta.rejection.retry.retries === 2 && fromMeta.questions.decay.decay_floor === 0.8);
+expect("a structured venture reads meta/operating-rules.json", fromMeta.rejection.retry.retries === 2 && fromMeta.questions.decay.decay_floor === rules.questions.decay.decay_floor);
 
 const packageFile = join(venture, "unknown-term.json");
 cpSync(join(root, "schema/fixtures/ontology-gate/unknown-term.json"), packageFile);

@@ -2323,12 +2323,12 @@ export type OperatingRules = {
       /** The routing rules. The default module has none. A venture adds its own. Not enforced yet. */
       rules: OperatingRulesRoutingRule[];
     };
-    /** When an agent may propose a standing answer rule. Declared for a later pull request. The membership gate does not read this. */
+    /** When an agent may propose a standing answer rule. min_answers and wilson_lower_bound are provisional, TBD, and are not decided thresholds. Declared for a later pull request. The membership gate does not read this. */
     pattern_learning: {
       note?: string;
-      /** The smallest number of answers before an agent may propose a standing rule. The default is 10. */
+      /** The smallest number of answers before an agent may propose a standing rule. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
       min_answers: number;
-      /** The agent may propose when the Wilson lower bound of one answer's share is >= this. The default is 0.9. */
+      /** The agent may propose when the Wilson lower bound of one answer's share is >= this. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
       wilson_lower_bound: number;
       /** The founder approves each proposed standing rule. */
       founder_approves: true;
@@ -2337,12 +2337,12 @@ export type OperatingRules = {
       /** A standing rule pauses when the founder answers differently. */
       pause_when: "founder_answers_differently";
     };
-    /** Standing-rule decay. After a standing rule answers, the founder's next reaction is an outcome. The score is the Wilson lower bound of satisfied outcomes over the last decay_window uses. Below decay_floor the rule is suspended. Declared for a later pull request. The membership gate does not read this. */
+    /** Standing-rule decay. After a standing rule answers, the founder's next reaction is an outcome. The score is the Wilson lower bound of satisfied outcomes over the last decay_window uses. Below decay_floor the rule is suspended. decay_window and decay_floor are provisional, TBD, and are not decided thresholds. Declared for a later pull request. The membership gate does not read this. */
     decay: {
       note?: string;
-      /** How many of the rule's latest uses the score looks at. The default is 20. */
+      /** How many of the rule's latest uses the score looks at. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
       decay_window: number;
-      /** Below this Wilson lower bound the rule is suspended. The default is 0.8. */
+      /** Below this Wilson lower bound the rule is suspended. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
       decay_floor: number;
       /** Outcomes that count for the rule: the founder accepts the answer, or moves on. */
       satisfied: ["acceptance","moving_on"];

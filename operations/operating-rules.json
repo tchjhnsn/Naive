@@ -80,7 +80,7 @@
       "founder_approves": true,
       "never_verb": "delete",
       "pause_when": "founder_answers_differently",
-      "note": "An agent may propose a standing answer rule for a question type when, over at least min_answers answers, the Wilson lower bound of one answer's share is >= wilson_lower_bound. The founder approves each rule. Standing rules never apply to delete verbs. A rule pauses when the founder answers differently."
+      "note": "Provisional, TBD: min_answers and wilson_lower_bound are placeholders, not decided thresholds. The founder is redesigning them. An agent may propose a standing answer rule for a question type when, over at least min_answers answers, the Wilson lower bound of one answer's share is >= wilson_lower_bound. The founder approves each rule. Standing rules never apply to delete verbs. A rule pauses when the founder answers differently."
     },
     "decay": {
       "decay_window": 20,
@@ -90,7 +90,7 @@
       "frustration": "jev_noul",
       "below_floor": "suspend_and_ask",
       "show": "uses_that_lowered_it",
-      "note": "After a standing rule answers, the founder's next reaction is an outcome. Override, correction, or detected frustration or disappointment (a recorded Jev Noul with its probability) counts against the rule. Acceptance or moving on counts for it. The score is the Wilson lower bound of satisfied outcomes over the rule's last decay_window uses. Below decay_floor the rule is suspended and the agent asks the founder whether to reconfigure it, showing the uses that lowered it. Not enforced yet."
+      "note": "Provisional, TBD: decay_window and decay_floor are placeholders, not decided thresholds. The founder is redesigning them. After a standing rule answers, the founder's next reaction is an outcome. Override, correction, or detected frustration or disappointment (a recorded Jev Noul with its probability) counts against the rule. Acceptance or moving on counts for it. The score is the Wilson lower bound of satisfied outcomes over the rule's last decay_window uses. Below decay_floor the rule is suspended and the agent asks the founder whether to reconfigure it, showing the uses that lowered it. Not enforced yet."
     }
   }
 }
