@@ -1,9 +1,8 @@
 name: lean
 on:
   # `branches` is the pull request base. Paths still apply: both filters have to match.
-  # `edited` is how a base change arrives. The job guard runs the build only when that change is the base.
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    # A PR retargeted onto main needs a push, or a close and reopen, before its suite runs.
     branches: [main]
     paths: ["lean/**", ".github/workflows/lean.yml"]
   push:
@@ -11,7 +10,6 @@ on:
     paths: ["lean/**"]
 jobs:
   build:
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
