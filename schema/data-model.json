@@ -837,6 +837,23 @@
       "note": "The departments a venture can import: APQC categories tagged with Porter's value chain, with need-now priors (EE-047)"
     },
     {
+      "id": "operating-rules",
+      "layer": "operations",
+      "level": "method",
+      "schema": "schema/operating-rules.schema.json",
+      "paths": [
+        "operations/operating-rules.json"
+      ],
+      "refs": [
+        {
+          "field": "rejection.edit.role",
+          "to": "role-template",
+          "checked_by": "schema/operating-rules-test.ts"
+        }
+      ],
+      "note": "The default operating-rules module. A venture's operating-rules.json merges over it. The membership gate reads rejection.retry. Parent-only edits, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, pattern learning and standing-rule decay are declared for later pull requests"
+    },
+    {
       "id": "department",
       "layer": "operations",
       "level": "venture",

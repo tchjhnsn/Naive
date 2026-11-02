@@ -2207,6 +2207,187 @@ export type NextjsStatus = {
   }[];
 };
 
+/** Naive's operating rules as a module. The default module is operations/operating-rules.json. schema/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, pattern learning and standing-rule decay are declared for later pull requests and are not enforced yet. */
+export type OperatingRules = {
+  $schema?: string;
+  /** Module id. The framework's module is default. A venture overlay may set its own id. */
+  id: string;
+  /** Module version. The default module is 1. */
+  version: string;
+  note?: string;
+  /** What happens to a rejected handoff package. edit and rejector are for a later pull request that enforces parent-only edits. retry is read by the membership gate. */
+  rejection: {
+    note?: string;
+    /** Who may edit a rejected handoff package. Declared for the later parent-only edits pull request. The membership gate does not read it. */
+    edit: {
+      note?: string;
+      /** Only the package's parent node, the sender, may edit a rejected package. */
+      who: "parent";
+      /** The role id of that parent in this module. The default is chief-of-staff, the Naive Lead. */
+      role: string;
+    };
+    /** What the function that rejects a package may do. Declared for the later parent-only edits pull request. The membership gate does not read it. */
+    rejector: {
+      note?: string;
+      /** Whether a function bot that rejects a package may modify it. The default is false. */
+      may_modify: boolean;
+      /** A rejecting function returns the package to its parent. */
+      return_to: "parent";
+      /** What the return carries: the failing gate and the reason. Nothing else. */
+      carries: ["failing_gate","reason"];
+    };
+    /** How many times the package is retried, by whom, and who receives it next. The membership gate copies these fields onto a rejection disposition. The retry itself is not built. */
+    retry: {
+      note?: string;
+      on_reject: "retry";
+      /** Who retries. The default module says lead, the Naive Lead. */
+      retry_by: string;
+      /** How many times that actor retries a rejected package before escalating. The default is 1. */
+      retries: number;
+      then: "escalate";
+      /** Who receives the package after the retries. The default is founder. */
+      escalate_to: string;
+    };
+  };
+  /** The Lead's self-fix proposals. Declared for a later pull request. The membership gate does not read this. */
+  self_fix: {
+    note?: string;
+    /** Whether a self-fix proposal needs founder approval before it is applied. The default is true. */
+    requires_founder_approval: boolean;
+  };
+  /** How an agent shows a design. Declared for later pull requests. The membership gate does not read this. */
+  design: {
+    note?: string;
+    /** Every agent runs the gates on its draft before showing the founder a design. The default is true. A later pull request enforces it. */
+    gates_before_founder: boolean;
+    /** The design-diff verb set. A later pull request enforces it. The membership gate does not read it. */
+    diff: {
+      note?: string;
+      /** One kind per diff line. The default is true. */
+      one_kind_per_line: boolean;
+      /** A compound change is split into separate lines. The default is true. */
+      split_compound: boolean;
+      /** A move that keeps the id counts as rename. */
+      move_keeps_id: "rename";
+      verbs: {
+        create: {
+          note?: string;
+          /** Create kinds. derive must name its source. */
+          kinds: ["originate","derive"];
+          derive_names: "source";
+        };
+        amend: {
+          note?: string;
+          /** Amend kinds. */
+          kinds: ["append","rename","deprecate","revise"];
+        };
+        delete: {
+          note?: string;
+          /** Delete kinds. merge must name its successor. */
+          kinds: ["remove","merge"];
+          merge_names: "successor";
+        };
+      };
+    };
+  };
+  /** The Jev layer. Suggested Noul thresholds, and whether a judgment blocks. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a module whose yes is not above no. */
+  jev: {
+    note?: string;
+    /** record-only writes the judgment and does not block. blocking is reserved until the thresholds are decided; nothing enforces it yet. The default is record-only. */
+    mode: "record-only" | "blocking";
+    /** At or above this, a Noul judgment is a yes. The suggested threshold is 0.7. */
+    yes: number;
+    /** At or below this, a Noul judgment is a no. The suggested threshold is 0.3. */
+    no: number;
+  };
+  /** Question routing, pattern learning and standing-rule decay. Declared for a later pull request. The membership gate does not read this. */
+  questions: {
+    note?: string;
+    /** A question type is three parts: a verb with its kind, a noun or a scoped noun, and the function that asks. */
+    type: {
+      note?: string;
+      /** The three parts, in that order. verb stands for the verb and its kind. */
+      parts: ["verb","noun","asking_function"];
+    };
+    /** How a question is routed. A rule names any non-empty subset of the three parts. The most specific matching rule wins. Equally specific matches go to the founder. Not enforced yet. */
+    routing: {
+      note?: string;
+      /** A rule matches when every part it names is the question's part. It may name one, two, or all three. */
+      match: "any_subset";
+      /** The matching rule that names the most parts wins. */
+      specificity: "most_specific";
+      /** When two matching rules name the same number of parts, the question goes to the founder. */
+      tie: "founder";
+      /** A rule routes to a function agent, to the founder, or to a standing answer. */
+      destinations: ["function_agent","founder","standing_answer"];
+      /** The routing rules. The default module has none. A venture adds its own. Not enforced yet. */
+      rules: OperatingRulesRoutingRule[];
+    };
+    /** When an agent may propose a standing answer rule. Declared for a later pull request. The membership gate does not read this. */
+    pattern_learning: {
+      note?: string;
+      /** The smallest number of answers before an agent may propose a standing rule. The default is 10. */
+      min_answers: number;
+      /** The agent may propose when the Wilson lower bound of one answer's share is >= this. The default is 0.9. */
+      wilson_lower_bound: number;
+      /** The founder approves each proposed standing rule. */
+      founder_approves: true;
+      /** Standing rules never apply to delete verbs. */
+      never_verb: "delete";
+      /** A standing rule pauses when the founder answers differently. */
+      pause_when: "founder_answers_differently";
+    };
+    /** Standing-rule decay. After a standing rule answers, the founder's next reaction is an outcome. The score is the Wilson lower bound of satisfied outcomes over the last decay_window uses. Below decay_floor the rule is suspended. Declared for a later pull request. The membership gate does not read this. */
+    decay: {
+      note?: string;
+      /** How many of the rule's latest uses the score looks at. The default is 20. */
+      decay_window: number;
+      /** Below this Wilson lower bound the rule is suspended. The default is 0.8. */
+      decay_floor: number;
+      /** Outcomes that count for the rule: the founder accepts the answer, or moves on. */
+      satisfied: ["acceptance","moving_on"];
+      /** Outcomes that count against the rule: an override, a correction, or detected frustration or disappointment. */
+      unsatisfied: ["override","correction","frustration"];
+      /** Frustration or disappointment is a recorded Jev Noul, with its probability. It counts against the rule. */
+      frustration: "jev_noul";
+      /** Below decay_floor the rule is suspended and the agent asks the founder whether to reconfigure it. */
+      below_floor: "suspend_and_ask";
+      /** That ask shows the uses that lowered the score. */
+      show: "uses_that_lowered_it";
+    };
+  };
+};
+
+/** One routing rule. It names any non-empty subset of verb (with kind), noun and asking function, and one destination. */
+export type OperatingRulesRoutingRule = {
+  /** Rule id, unique in the module. */
+  id: string;
+  /** The design-diff verb. When set, kind is required and must be one of that verb's kinds. */
+  verb?: "create" | "amend" | "delete";
+  /** The verb's kind. One kind. */
+  kind?: string;
+  /** A noun, or a scoped noun such as name@function. */
+  noun?: string;
+  /** The function that asks. A department id. */
+  asking_function?: string;
+  /** Where a matching question goes. */
+  to: "function_agent" | "founder" | "standing_answer";
+  /** The function agent. Required when to is function_agent, and only then. */
+  function?: string;
+  /** The standing answer. Required when to is standing_answer, and only then. */
+  answer?: string;
+  note?: string;
+} & ({
+  verb: "create";
+  kind: "originate" | "derive";
+} | {
+  verb: "amend";
+  kind: "append" | "rename" | "deprecate" | "revise";
+} | {
+  verb: "delete";
+  kind: "remove" | "merge";
+} | unknown);
+
 /** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). schema/check-governance.mjs checks it; schema/payouts.mjs computes payouts from it. */
 export type Ownership = {
   /**
@@ -2477,7 +2658,7 @@ export type ProvenanceEntry = {
   statements?: string[];
   /** gate only: the function id the membership gate ran as. */
   gate?: string;
-  /** gate only: the one verdict for this package at this function. A rejected package is retried once by the lead and then escalated to the founder. The verdict is not copied onto the handoff (R-17). */
+  /** gate only: the one verdict for this package at this function. A rejection's disposition is copied from the operating-rules module. The verdict is not copied onto the handoff (R-17). */
   judgment?: {
     /** admit: the package belongs to this function. refer: it belongs to owner instead. reject: it belongs to nobody until it is fixed. */
     verdict: "admit" | "refer" | "reject";
@@ -2496,13 +2677,16 @@ export type ProvenanceEntry = {
     /** incomplete only: the function id that touches left out. */
     missing?: string;
     detail?: string;
-    /** reject only: the lead retries once, then the founder decides. The retry itself is not built. */
+    /** reject only: copied from the operating-rules module. The default is that the lead retries once, then the founder decides. The retry itself is not built. */
     disposition?: {
       on_reject: "retry";
-      retry_by: "lead";
-      retries: 1;
+      /** Who retries. The default module says lead. */
+      retry_by: string;
+      /** How many times that actor retries before escalating. The default module says 1. */
+      retries: number;
       then: "escalate";
-      escalate_to: "founder";
+      /** Who receives the package after the retries. The default module says founder. */
+      escalate_to: string;
     };
   };
 };

@@ -1,0 +1,96 @@
+{
+  "$schema": "../schema/operating-rules.schema.json",
+  "id": "default",
+  "version": "1",
+  "note": "The default operating-rules module. schema/operating-rules.ts loads this file and merges a venture's operating-rules.json over it. That file sits at the venture root, or at meta/operating-rules.json when the layout is structured. The membership gate reads rejection.retry. The other settings are declared for later pull requests and are not enforced yet.",
+  "rejection": {
+    "note": "A rejected handoff package. edit and rejector are for the later parent-only edits pull request. retry is read by the membership gate.",
+    "edit": {
+      "who": "parent",
+      "role": "chief-of-staff",
+      "note": "Only the package's parent node, the sender, may edit a rejected package. In this module that role is the Naive Lead, the chief-of-staff role. Not enforced yet."
+    },
+    "rejector": {
+      "may_modify": false,
+      "return_to": "parent",
+      "carries": ["failing_gate", "reason"],
+      "note": "A function bot that rejects a package cannot modify it. It may only return the package to the parent with the failing gate and the reason. Not enforced yet."
+    },
+    "retry": {
+      "on_reject": "retry",
+      "retry_by": "lead",
+      "retries": 1,
+      "then": "escalate",
+      "escalate_to": "founder",
+      "note": "The Lead retries a rejected package once, then it escalates to the founder. The membership gate copies these fields onto the rejection disposition. The retry itself is not built."
+    }
+  },
+  "self_fix": {
+    "requires_founder_approval": true,
+    "note": "The Lead's self-fix proposals need founder approval before they are applied. A later pull request enforces this. The membership gate does not read it."
+  },
+  "design": {
+    "gates_before_founder": true,
+    "note": "Every agent runs the gates on its draft before showing the founder a design. A later pull request enforces this. The membership gate does not read it.",
+    "diff": {
+      "one_kind_per_line": true,
+      "split_compound": true,
+      "move_keeps_id": "rename",
+      "note": "The design-diff verb set. One kind per diff line. A compound change is split into separate lines. A move that keeps the id counts as rename. A later pull request enforces this.",
+      "verbs": {
+        "create": {
+          "kinds": ["originate", "derive"],
+          "derive_names": "source",
+          "note": "derive must name its source."
+        },
+        "amend": {
+          "kinds": ["append", "rename", "deprecate", "revise"]
+        },
+        "delete": {
+          "kinds": ["remove", "merge"],
+          "merge_names": "successor",
+          "note": "merge must name its successor."
+        }
+      }
+    }
+  },
+  "jev": {
+    "mode": "record-only",
+    "yes": 0.7,
+    "no": 0.3,
+    "note": "Suggested Noul thresholds: at or above yes is a yes, at or below no is a no. mode record-only writes the judgment and does not block, until the thresholds are decided. A later pull request reads this. The membership gate does not."
+  },
+  "questions": {
+    "note": "Question routing, pattern learning and standing-rule decay. A later pull request implements them. The membership gate does not read this.",
+    "type": {
+      "parts": ["verb", "noun", "asking_function"],
+      "note": "A question type is a verb with its kind, a noun or a scoped noun, and the function that asks."
+    },
+    "routing": {
+      "match": "any_subset",
+      "specificity": "most_specific",
+      "tie": "founder",
+      "destinations": ["function_agent", "founder", "standing_answer"],
+      "rules": [],
+      "note": "A rule names any non-empty subset of those three parts and routes to a function agent, to the founder, or to a standing answer. The most specific matching rule wins. Equally specific matches go to the founder."
+    },
+    "pattern_learning": {
+      "min_answers": 10,
+      "wilson_lower_bound": 0.9,
+      "founder_approves": true,
+      "never_verb": "delete",
+      "pause_when": "founder_answers_differently",
+      "note": "An agent may propose a standing answer rule for a question type when, over at least min_answers answers, the Wilson lower bound of one answer's share is >= wilson_lower_bound. The founder approves each rule. Standing rules never apply to delete verbs. A rule pauses when the founder answers differently."
+    },
+    "decay": {
+      "decay_window": 20,
+      "decay_floor": 0.8,
+      "satisfied": ["acceptance", "moving_on"],
+      "unsatisfied": ["override", "correction", "frustration"],
+      "frustration": "jev_noul",
+      "below_floor": "suspend_and_ask",
+      "show": "uses_that_lowered_it",
+      "note": "After a standing rule answers, the founder's next reaction is an outcome. Override, correction, or detected frustration or disappointment (a recorded Jev Noul with its probability) counts against the rule. Acceptance or moving on counts for it. The score is the Wilson lower bound of satisfied outcomes over the rule's last decay_window uses. Below decay_floor the rule is suspended and the agent asks the founder whether to reconfigure it, showing the uses that lowered it. Not enforced yet."
+    }
+  }
+}

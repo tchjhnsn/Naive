@@ -39,6 +39,7 @@ export const RESERVED = {
     "AGENTS.md": "a layout: instructions for agents in this folder and below",
     "venture.json": "a venture's manifest; a folder holding one is a nested venture",
     "naive.config.json": "the venture's overrides, at the venture root",
+    "operating-rules.json": "the venture's operating-rules module, at the venture root (meta/ when the layout is structured)",
     "provenance.jsonl": "the venture's provenance log, at the venture root",
     _drafts: PRIVATE._drafts,
     _streams: PRIVATE._streams,
@@ -99,7 +100,7 @@ export function structure(dir) {
     if (e.dir && name === "_drafts" && parent) errors.push(`${e.path}/: _drafts/ is reserved for the venture root, where Naive writes held drafts (P-32)`);
     if (!e.dir && segs[0] === "_drafts" && segs.length === 2 && !name.endsWith(".draft") && name !== ".gitkeep") errors.push(`${e.path}: only Naive's .draft files belong in _drafts/ (P-32)`);
     if (e.dir && name === "_streams" && !DATA_PACKAGES.includes(parent)) errors.push(`${e.path}/: _streams/ belongs directly under a data package (${DATA_PACKAGES.join(", ")}) (P-32)`);
-    if (!e.dir && ["naive.config.json", "provenance.jsonl"].includes(name) && parent) errors.push(`${e.path}: ${name} is read only at the venture root; move it or rename it (P-32)`);
+    if (!e.dir && ["naive.config.json", "provenance.jsonl", "operating-rules.json"].includes(name) && parent) errors.push(`${e.path}: ${name} is read only at the venture root; move it or rename it (P-32)`);
     if (e.dir && name === ".release" && parent) errors.push(`${e.path}/: .release/ is reserved for the venture root (P-32)`);
     if (RESERVED.future[name] && !segs.some(isPrivate)) warnings.push(`${e.path}: ${name} is reserved for ${RESERVED.future[name]}; rename it so a later Naive does not read it as that (P-32)`);
     if (e.dir) for (const s of RESERVED.shapes) {

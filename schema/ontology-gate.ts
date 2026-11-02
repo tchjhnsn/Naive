@@ -11,16 +11,19 @@
 // record, and the term's own checks run. A boolean claim is checked as well: false fails that
 // property even when another fact's record would let the check pass. The verdict is written to
 // <id>.provenance.jsonl, not onto the handoff. A schema checker that cannot run (exit 2) is a
-// tool error: no verdict is printed and nothing is recorded.
+// tool error: no verdict is printed and nothing is recorded. A rejection's disposition
+// is read from the operating-rules module. The default is one retry by the lead, then
+// the founder. An operating-rules module that cannot be read is the same kind of tool error.
 
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recordGate } from "../interface/provenance.mjs";
+import { dispositionOf, operatingRulesFor, OperatingRulesError } from "./operating-rules.ts";
 import { run, type Base, type Term } from "./terms/engine.ts";
 import { TERMS } from "./terms/terms.ts";
-import type { Handoff, ProvenanceEntry } from "./types/records.d.ts";
+import type { Handoff, OperatingRules, ProvenanceEntry } from "./types/records.d.ts";
 
 export type Judgment = NonNullable<ProvenanceEntry["judgment"]>;
 type Block = NonNullable<Handoff["ontology"]>;
@@ -49,15 +52,16 @@ export class GateToolError extends Error {
   }
 }
 
-const DISPOSITION = {
-  on_reject: "retry",
-  retry_by: "lead",
-  retries: 1,
-  then: "escalate",
-  escalate_to: "founder",
-} as const;
-
 const isRecord = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x);
+
+function rulesFor(root: string, file: string): OperatingRules {
+  try {
+    return operatingRulesFor(root, file);
+  } catch (e) {
+    if (e instanceof OperatingRulesError || (e instanceof Error && e.name === "OperatingRulesError")) throw new GateToolError(e.message);
+    throw e;
+  }
+}
 const strings = (x: unknown): string[] | undefined => Array.isArray(x) ? x.filter((v): v is string => typeof v === "string") : undefined;
 
 function loadNouns(root: string): Noun[] {
@@ -209,8 +213,8 @@ function schemaProblems(file: string): string[] {
   return text.length ? text : ["the package is not a valid handoff"];
 }
 
-function reject(fields: Omit<Judgment, "verdict" | "disposition">): Judgment {
-  return { verdict: "reject", disposition: DISPOSITION, ...fields };
+function reject(fields: Omit<Judgment, "verdict" | "disposition">, rules: OperatingRules): Judgment {
+  return { verdict: "reject", disposition: dispositionOf(rules), ...fields };
 }
 
 function factsOf(raw: Record<string, unknown>): Block["facts"] {
@@ -237,6 +241,7 @@ function blockOf(raw: Record<string, unknown>): Block | null {
 /** One verdict. The first failing check wins, so a package is never both rejected and referred. */
 export function decidePackage(file: string, functionId: string, options: { root: string; record?: boolean }): Judgment {
   if (!file.endsWith(".json")) throw new GateToolError("a handoff package is a .json file");
+  const rules = rulesFor(options.root, file);
   const problems = schemaProblems(file);
   let parsed: unknown = null;
   try { parsed = JSON.parse(readFileSync(file, "utf8")) as unknown; } catch { parsed = null; }
@@ -245,57 +250,57 @@ export function decidePackage(file: string, functionId: string, options: { root:
     if (options.record && isRecord(parsed)) recordGate(file, judgment);
     return judgment;
   };
-  if (problems.length || !isRecord(parsed)) return finish(reject({ code: "schema", function: functionId, witness: id, detail: problems[0] ?? "the package is not a valid handoff" }));
+  if (problems.length || !isRecord(parsed)) return finish(reject({ code: "schema", function: functionId, witness: id, detail: problems[0] ?? "the package is not a valid handoff" }, rules));
   const ontology = blockOf(parsed);
-  if (!ontology) return finish(reject({ code: "schema", function: functionId, witness: id, detail: "the package has no ontology block" }));
-  return finish(judge(ontology, functionId, options.root));
+  if (!ontology) return finish(reject({ code: "schema", function: functionId, witness: id, detail: "the package has no ontology block" }, rules));
+  return finish(judge(ontology, functionId, options.root, rules));
 }
 
-function judge(ontology: Block, functionId: string, root: string): Judgment {
+function judge(ontology: Block, functionId: string, root: string, rules: OperatingRules): Judgment {
   const nouns = loadNouns(root);
   const byName = new Map(nouns.map((n) => [n.noun, n]));
   const departments = departmentIds(root);
   const active = new Set(nouns.filter((n) => n.level === "function" && n.status !== "retired").map((n) => n.noun));
-  if (!active.has(functionId)) return reject({ code: "unknown", function: functionId, witness: functionId, detail: `${functionId} is not a function` });
+  if (!active.has(functionId)) return reject({ code: "unknown", function: functionId, witness: functionId, detail: `${functionId} is not a function` }, rules);
 
   const typeNoun = byName.get(ontology.type);
-  if (!typeNoun) return reject({ code: "unknown", function: functionId, witness: ontology.type, detail: `${ontology.type} is not a noun` });
-  if (typeNoun.status === "retired") return retired(functionId, typeNoun);
+  if (!typeNoun) return reject({ code: "unknown", function: functionId, witness: ontology.type, detail: `${ontology.type} is not a noun` }, rules);
+  if (typeNoun.status === "retired") return retired(functionId, typeNoun, rules);
 
   for (const term of ontology.terms) {
     const noun = byName.get(term);
-    if (!noun) return reject({ code: "unknown", function: functionId, witness: term, detail: `${term} is not a noun` });
-    if (noun.status === "retired") return retired(functionId, noun);
+    if (!noun) return reject({ code: "unknown", function: functionId, witness: term, detail: `${term} is not a noun` }, rules);
+    if (noun.status === "retired") return retired(functionId, noun, rules);
   }
 
-  if (typeNoun.handoff_type !== true) return reject({ code: "not-a-type", function: functionId, witness: typeNoun.noun, detail: `${typeNoun.noun} is not a handoff type` });
-  if (typeNoun.function == null) return reject({ code: "untyped", function: functionId, witness: typeNoun.noun, detail: `${typeNoun.noun} has no function, so it cannot decide a package` });
+  if (typeNoun.handoff_type !== true) return reject({ code: "not-a-type", function: functionId, witness: typeNoun.noun, detail: `${typeNoun.noun} is not a handoff type` }, rules);
+  if (typeNoun.function == null) return reject({ code: "untyped", function: functionId, witness: typeNoun.noun, detail: `${typeNoun.noun} has no function, so it cannot decide a package` }, rules);
   if (typeNoun.function !== functionId) return { verdict: "refer", code: "refer", function: functionId, witness: typeNoun.noun, owner: typeNoun.function, detail: `${typeNoun.noun} belongs to ${typeNoun.function}` };
 
-  for (const touch of ontology.touches) if (!departments.has(touch)) return reject({ code: "unknown", function: functionId, witness: touch, detail: `${touch} is not a function` });
+  for (const touch of ontology.touches) if (!departments.has(touch)) return reject({ code: "unknown", function: functionId, witness: touch, detail: `${touch} is not a function` }, rules);
 
   const owned: string[] = [];
   for (const term of ontology.terms) {
     const noun = byName.get(term);
     if (!noun || noun.status === "retired" || noun.function == null) continue;
     if (noun.function === functionId) { owned.push(term); continue; }
-    if (!ontology.touches.includes(noun.function)) return reject({ code: "incomplete", function: functionId, witness: term, missing: noun.function, detail: `${term} is owned by ${noun.function}, which is not in touches` });
+    if (!ontology.touches.includes(noun.function)) return reject({ code: "incomplete", function: functionId, witness: term, missing: noun.function, detail: `${term} is owned by ${noun.function}, which is not in touches` }, rules);
   }
-  if (!owned.length) return reject({ code: "incomplete", function: functionId, witness: typeNoun.noun, detail: `no term owned by ${functionId}` });
-  for (const need of typeNoun.required_touches ?? []) if (!ontology.touches.includes(need)) return reject({ code: "incomplete", function: functionId, witness: typeNoun.noun, missing: need, detail: `${need} is required in touches` });
+  if (!owned.length) return reject({ code: "incomplete", function: functionId, witness: typeNoun.noun, detail: `no term owned by ${functionId}` }, rules);
+  for (const need of typeNoun.required_touches ?? []) if (!ontology.touches.includes(need)) return reject({ code: "incomplete", function: functionId, witness: typeNoun.noun, missing: need, detail: `${need} is required in touches` }, rules);
   const used = new Set(typeNoun.required_touches ?? []);
   for (const term of ontology.terms) {
     const owner = byName.get(term)?.function;
     if (owner && owner !== functionId) used.add(owner);
   }
-  for (const touch of ontology.touches) if (touch !== functionId && !used.has(touch)) return reject({ code: "incomplete", function: functionId, witness: touch, detail: `${touch} is in touches but the package does not use it` });
+  for (const touch of ontology.touches) if (touch !== functionId && !used.has(touch)) return reject({ code: "incomplete", function: functionId, witness: touch, detail: `${touch} is in touches but the package does not use it` }, rules);
 
   const failed = failedProperties(typeNoun, ontology.facts);
-  if (failed.length) return reject({ code: "properties", function: functionId, witness: typeNoun.noun, failed, detail: `failed: ${failed.join(", ")}` });
+  if (failed.length) return reject({ code: "properties", function: functionId, witness: typeNoun.noun, failed, detail: `failed: ${failed.join(", ")}` }, rules);
   return { verdict: "admit", code: "admit", function: functionId, witness: owned[0] ?? typeNoun.noun, detail: `${owned[0]} belongs to ${functionId}` };
 }
 
-function retired(functionId: string, noun: Noun): Judgment {
+function retired(functionId: string, noun: Noun, rules: OperatingRules): Judgment {
   const instead = noun.replaced_by ?? "the noun that replaced it";
-  return reject({ code: "retired", function: functionId, witness: noun.noun, replaced_by: noun.replaced_by, detail: `${noun.noun} is retired; use ${instead}` });
+  return reject({ code: "retired", function: functionId, witness: noun.noun, replaced_by: noun.replaced_by, detail: `${noun.noun} is retired; use ${instead}` }, rules);
 }

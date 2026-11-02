@@ -184,7 +184,7 @@
     },
     "judgment": {
       "type": "object",
-      "description": "gate only: the one verdict for this package at this function. A rejected package is retried once by the lead and then escalated to the founder. The verdict is not copied onto the handoff (R-17).",
+        "description": "gate only: the one verdict for this package at this function. A rejection's disposition is copied from the operating-rules module. The verdict is not copied onto the handoff (R-17).",
       "required": ["verdict", "function", "witness"],
       "additionalProperties": false,
       "properties": {
@@ -226,15 +226,15 @@
         },
         "disposition": {
           "type": "object",
-          "description": "reject only: the lead retries once, then the founder decides. The retry itself is not built.",
+          "description": "reject only: copied from the operating-rules module. The default is that the lead retries once, then the founder decides. The retry itself is not built.",
           "required": ["on_reject", "retry_by", "retries", "then", "escalate_to"],
           "additionalProperties": false,
           "properties": {
             "on_reject": { "const": "retry" },
-            "retry_by": { "const": "lead" },
-            "retries": { "const": 1 },
+            "retry_by": { "type": "string", "minLength": 1, "description": "Who retries. The default module says lead." },
+            "retries": { "type": "integer", "minimum": 0, "description": "How many times that actor retries before escalating. The default module says 1." },
             "then": { "const": "escalate" },
-            "escalate_to": { "const": "founder" }
+            "escalate_to": { "type": "string", "minLength": 1, "description": "Who receives the package after the retries. The default module says founder." }
           }
         }
       }
