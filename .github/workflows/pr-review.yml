@@ -9,7 +9,9 @@ name: pr-review
 
 on:
   # `branches` is the pull request base. A pull request into main still lints. Other bases do not run this event.
+  # `edited` is how a base change arrives. The checks job runs only when that change is the base.
   pull_request:
+    types: [opened, synchronize, reopened, edited]
     branches: [main]
   # No branch filter on this event. The preview job skips a pull request whose base is not main.
   deployment_status:
@@ -29,11 +31,12 @@ permissions:
 
 concurrency:
   group: pr-review-${{ github.event.pull_request.number || github.event.deployment.sha || github.event.inputs.pr }}
-  cancel-in-progress: true
+  # A title or body edit skips the lint. Cancelling the run already in progress would replace it with that skip.
+  cancel-in-progress: ${{ github.event.action != 'edited' || github.event.changes.base != null }}
 
 jobs:
   checks:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && (github.event.action != 'edited' || github.event.changes.base != null)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -2,13 +2,16 @@ name: test
 
 on:
   # `branches` is the pull request base. A pull request into main still runs these jobs, and so does a push to main.
+  # `edited` is how a base change arrives. The job guard below runs the suite only when that change is the base.
   pull_request:
+    types: [opened, synchronize, reopened, edited]
     branches: [main]
   push:
     branches: [main]
 
 jobs:
   test:
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +29,7 @@ jobs:
       - run: node test.mjs
 
   site:
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,6 +47,7 @@ jobs:
       - run: npm run build
 
   console:
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     defaults:
       run:
