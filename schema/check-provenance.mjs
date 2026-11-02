@@ -18,7 +18,7 @@
 import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { contentHash, gateLineKey, gateSidecar, lineHash, LOG } from "../interface/provenance.mjs";
+import { contentHash, gateLineKey, gateSidecar, lineHash, LOG, packageForSidecar } from "../interface/provenance.mjs";
 
 const errors = [], warnings = [];
 let logs = 0, lines = 0;
@@ -58,6 +58,7 @@ if (packageFlag !== -1) {
   const file = process.argv[packageFlag + 1];
   if (!file) { console.error("usage: node schema/check-provenance.mjs --package <handoff.json>"); process.exit(2); }
   const abs = resolve(file);
+  if (!abs.endsWith(".json")) { console.error("a handoff package is a .json file"); process.exit(2); }
   if (!existsSync(gateSidecar(abs))) { console.error(`no sidecar beside ${abs}`); process.exit(1); }
   checkSidecar(abs);
   for (const w of warnings) console.warn(`warning: ${w}`);
@@ -76,7 +77,7 @@ const sidecars = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e
 for (const root of walk(dir)) {
   const f = ventureFile(root, LOG);
   if (!existsSync(f)) {
-    for (const side of sidecars(root)) checkSidecar(side.replace(/\.provenance\.jsonl$/, ".json"));
+    for (const side of sidecars(root)) checkSidecar(packageForSidecar(side));
     continue;
   }
   logs++;
@@ -103,7 +104,7 @@ for (const root of walk(dir)) {
     if (!existsSync(p)) { if (e.activity !== "draft") warnings.push(`${id}: ${entity} is in the log but gone; git holds what happened`); continue; }
     if (contentHash(p) !== e.sha256) warnings.push(`${id}: ${entity} changed outside the router since ${e.at}; git holds that history`);
   }
-  for (const side of sidecars(root)) checkSidecar(side.replace(/\.provenance\.jsonl$/, ".json"));
+  for (const side of sidecars(root)) checkSidecar(packageForSidecar(side));
 }
 
 for (const w of warnings) console.warn(`warning: ${w}`);

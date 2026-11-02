@@ -8,8 +8,10 @@
 // receiver, otherwise refer to its owner. G4 some term is owned by the receiver, and every term
 // owned by another function names that function in touches. G5 where the type lists properties,
 // schema/terms/engine.ts runs over facts (EE-095). A fact value that is an object is the term's
-// record, and the term's own checks run. A boolean is an assertion, and the term's rule runs
-// through the same engine. The verdict is written to <id>.provenance.jsonl, not onto the handoff.
+// record, and the term's own checks run. A boolean claim is checked as well: false fails that
+// property even when another fact's record would let the check pass. The verdict is written to
+// <id>.provenance.jsonl, not onto the handoff. A schema checker that cannot run (exit 2) is a
+// tool error: no verdict is printed and nothing is recorded.
 
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -38,6 +40,14 @@ type Noun = {
   hasFunction: boolean;
   hasHandoffType: boolean;
 };
+
+/** The schema checker could not run. Not a verdict about the package, and not recorded. */
+export class GateToolError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GateToolError";
+  }
+}
 
 const DISPOSITION = {
   on_reject: "retry",
@@ -121,6 +131,8 @@ export function failedProperties(noun: Noun, facts: Block["facts"]): string[] {
     if (!known.has(id) && !failed.includes(id)) failed.push(id);
     const fact = facts?.[id];
     if ((!fact || fact.quote.trim() === "") && !failed.includes(id)) failed.push(id);
+    // The package's own claim. A false boolean is not dropped when some other fact is a record.
+    if (fact && fact.value === false && !failed.includes(id)) failed.push(id);
   }
   return failed;
 }
@@ -152,7 +164,23 @@ export function checkOntology(root: string): string[] {
     if (!caps.length) errors.push(`docs/ontology.json: function ${noun.noun}: no capabilities`);
     for (const cap of caps) checkCapability(noun.noun, cap, byName, errors);
   }
+  checkScopes(nouns, departments, errors);
   return errors;
+}
+
+/** A scoped sense is `name@function`. The suffix is a function id and is the noun's owner. A bare name does not sit beside one. */
+function checkScopes(nouns: Noun[], departments: Set<string>, errors: string[]): void {
+  const stems = new Set<string>();
+  for (const noun of nouns) {
+    const match = /^(.+)@([^@]+)$/.exec(noun.noun);
+    if (!match) continue;
+    const stem = match[1] ?? "";
+    const suffix = match[2] ?? "";
+    stems.add(stem);
+    if (!departments.has(suffix)) errors.push(`docs/ontology.json: ${noun.noun}: scope ${suffix} is not a function id`);
+    if (noun.function !== suffix) errors.push(`docs/ontology.json: ${noun.noun}: function ${noun.function ?? "nobody"} does not match its scope ${suffix}`);
+  }
+  for (const noun of nouns) if (!noun.noun.includes("@") && stems.has(noun.noun)) errors.push(`docs/ontology.json: ${noun.noun}: bare noun beside a scoped sense`);
 }
 
 function checkProperties(noun: Noun, errors: string[]): void {
@@ -175,8 +203,9 @@ function checkCapability(owner: string, cap: string, byName: Map<string, Noun>, 
 function schemaProblems(file: string): string[] {
   const script = fileURLToPath(new URL("./validate.py", import.meta.url));
   const ran = spawnSync("python3", ["-I", script, "--schema", "handoff.schema.json", "--file", file], { encoding: "utf8" });
+  const text = `${ran.stdout ?? ""}\n${ran.stderr ?? ""}\n${ran.error?.message ?? ""}`.split("\n").map((l) => l.trim()).filter(Boolean);
+  if (ran.error || ran.status === 2 || ran.status === null) throw new GateToolError(text.join("\n") || "the schema checker could not run");
   if (ran.status === 0) return [];
-  const text = `${ran.stdout ?? ""}\n${ran.stderr ?? ""}`.split("\n").map((l) => l.trim()).filter(Boolean);
   return text.length ? text : ["the package is not a valid handoff"];
 }
 
@@ -207,10 +236,11 @@ function blockOf(raw: Record<string, unknown>): Block | null {
 
 /** One verdict. The first failing check wins, so a package is never both rejected and referred. */
 export function decidePackage(file: string, functionId: string, options: { root: string; record?: boolean }): Judgment {
+  if (!file.endsWith(".json")) throw new GateToolError("a handoff package is a .json file");
+  const problems = schemaProblems(file);
   let parsed: unknown = null;
   try { parsed = JSON.parse(readFileSync(file, "utf8")) as unknown; } catch { parsed = null; }
   const id = isRecord(parsed) && typeof parsed.id === "string" ? parsed.id : "package";
-  const problems = schemaProblems(file);
   const finish = (judgment: Judgment): Judgment => {
     if (options.record && isRecord(parsed)) recordGate(file, judgment);
     return judgment;
@@ -225,7 +255,8 @@ function judge(ontology: Block, functionId: string, root: string): Judgment {
   const nouns = loadNouns(root);
   const byName = new Map(nouns.map((n) => [n.noun, n]));
   const departments = departmentIds(root);
-  if (!departments.has(functionId)) return reject({ code: "unknown", function: functionId, witness: functionId, detail: `${functionId} is not a function` });
+  const active = new Set(nouns.filter((n) => n.level === "function" && n.status !== "retired").map((n) => n.noun));
+  if (!active.has(functionId)) return reject({ code: "unknown", function: functionId, witness: functionId, detail: `${functionId} is not a function` });
 
   const typeNoun = byName.get(ontology.type);
   if (!typeNoun) return reject({ code: "unknown", function: functionId, witness: ontology.type, detail: `${ontology.type} is not a noun` });
@@ -252,6 +283,12 @@ function judge(ontology: Block, functionId: string, root: string): Judgment {
   }
   if (!owned.length) return reject({ code: "incomplete", function: functionId, witness: typeNoun.noun, detail: `no term owned by ${functionId}` });
   for (const need of typeNoun.required_touches ?? []) if (!ontology.touches.includes(need)) return reject({ code: "incomplete", function: functionId, witness: typeNoun.noun, missing: need, detail: `${need} is required in touches` });
+  const used = new Set(typeNoun.required_touches ?? []);
+  for (const term of ontology.terms) {
+    const owner = byName.get(term)?.function;
+    if (owner && owner !== functionId) used.add(owner);
+  }
+  for (const touch of ontology.touches) if (touch !== functionId && !used.has(touch)) return reject({ code: "incomplete", function: functionId, witness: touch, detail: `${touch} is in touches but the package does not use it` });
 
   const failed = failedProperties(typeNoun, ontology.facts);
   if (failed.length) return reject({ code: "properties", function: functionId, witness: typeNoun.noun, failed, detail: `failed: ${failed.join(", ")}` });

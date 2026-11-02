@@ -6,13 +6,19 @@
 Needs the jsonschema package (pip install jsonschema). Which files each schema governs comes from schema/data-model.json;
 schema/check-data-model.mjs makes sure no JSON file is left without a record type.
 """
-import glob, json, sys
+import glob, json, os, sys
 from pathlib import Path
 
+# Exit 2 is a broken tool, not an invalid record. The membership gate must not record that as a reject.
+# NAIVE_VALIDATE_NO_JSONSCHEMA=1 is how the gate test simulates a missing dependency.
+if os.environ.get("NAIVE_VALIDATE_NO_JSONSCHEMA") == "1":
+    sys.stderr.write("validate.py needs jsonschema: pip install jsonschema\n")
+    sys.exit(2)
 try:
     import jsonschema
 except ImportError:
-    sys.exit("validate.py needs jsonschema: pip install jsonschema")
+    sys.stderr.write("validate.py needs jsonschema: pip install jsonschema\n")
+    sys.exit(2)
 
 root = Path(__file__).resolve().parent.parent
 # The data model names every record type, its schema and where its records live (EE-018).

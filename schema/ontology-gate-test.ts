@@ -3,9 +3,9 @@
 //
 //   node schema/ontology-gate-test.ts
 
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -142,6 +142,33 @@ for (const [file, fn, , verdict, witness] of rows) {
   const got = gate(file, "strategy");
   expect("a boolean assertion the term's rule rejects names that property", got.body?.code === "properties" && got.body?.failed?.includes("F4") === true);
 }
+{
+  // On fe748f5 the record path dropped boolean facts, so this was admitted.
+  const src = JSON.parse(readFileSync(fix("founder-properties.json"), "utf8")) as { ontology: { facts: { F1: { value: { stake?: boolean } }; F4: { value: unknown; quote: string } } } };
+  src.ontology.facts.F1.value.stake = true;
+  src.ontology.facts.F4 = { value: false, quote: "No stake." };
+  const file = join(tmp, "founder-false-claim.json");
+  writeFileSync(file, JSON.stringify(src));
+  const got = gate(file, "strategy");
+  expect("a false fact is still checked when another fact carries the record", got.status !== 0 && got.body?.verdict === "reject" && got.body.code === "properties" && got.body.failed?.includes("F4") === true);
+}
+{
+  const got = gate(fix("pricing-admit.json"), "human-capital");
+  expect("a department with no function noun is not a receiver", got.body?.code === "unknown" && got.body.verdict === "reject" && got.body.owner === undefined);
+}
+{
+  const file = handoff("extra-touch", { type: "pricing decision", terms: ["customer@marketing-and-sales"], touches: ["finance", "strategy"] });
+  const got = gate(file, "marketing-and-sales");
+  expect("a touch the package does not use is incomplete", got.body?.code === "incomplete" && got.body.witness === "strategy");
+}
+{
+  const dir = join(tmp, "tool");
+  mkdirSync(dir);
+  const file = join(dir, "pricing-admit.json");
+  cpSync(fix("pricing-admit.json"), file);
+  const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"], { NAIVE_VALIDATE_NO_JSONSCHEMA: "1" });
+  expect("a missing schema checker is a tool error and records nothing", ran.status === 2 && !ran.stdout.includes("\"verdict\"") && !existsSync(join(dir, "pricing-admit.provenance.jsonl")));
+}
 
 // Provenance stays off the handoff. The sidecar binds to the body's sha256, so the same gate
 // on the same body writes nothing the second time, and a later gate does not need an earlier one.
@@ -235,6 +262,41 @@ expect("the repository ontology passes", run(process.execPath, [join(root, "sche
   const ran = check(dir);
   expect("a retired capability fails", ran.status !== 0 && /capability client is retired/.test(ran.stderr));
 }
+{
+  const dir = sparse((o) => { o.nouns.push({ noun: "vendor@finance", level: "venture", meaning: "A stand-in sense.", standard: "ours", status: "proposed", function: "products", handoff_type: false }); });
+  const ran = check(dir);
+  expect("a scoped noun must be owned by the function it names", ran.status !== 0 && /vendor@finance: function products does not match its scope finance/.test(ran.stderr));
+}
+{
+  const dir = sparse((o) => { o.nouns.push({ noun: "customer", level: "venture", meaning: "The unscoped word.", standard: "ours", status: "proposed", function: null, handoff_type: false }); });
+  const ran = check(dir);
+  expect("a bare noun cannot sit beside a scoped sense", ran.status !== 0 && /customer: bare noun beside a scoped sense/.test(ran.stderr));
+}
+{
+  const dir = sparse((o) => { o.nouns.push({ noun: "vendor@nope", level: "venture", meaning: "A sense with no function.", standard: "ours", status: "proposed", function: null, handoff_type: false }); });
+  const ran = check(dir);
+  expect("a scope that is not a function id fails", ran.status !== 0 && /vendor@nope: scope nope is not a function id/.test(ran.stderr));
+}
+
+function spawnGate(file: string, fn: string): Promise<{ status: number | null }> {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [join(root, "schema/check-nouns.mjs"), "--package", file, "--function", fn, "--record"], { cwd: root });
+    child.on("close", (status) => resolve({ status }));
+  });
+}
+let races = 0;
+for (let i = 0; i < 15; i++) {
+  const dir = join(tmp, `race-${i}`);
+  mkdirSync(dir);
+  const file = join(dir, "pricing-admit.json");
+  cpSync(fix("pricing-admit.json"), file);
+  await Promise.all(["finance", "marketing-and-sales", "products"].map((fn) => spawnGate(file, fn)));
+  const side = join(dir, "pricing-admit.provenance.jsonl");
+  const checked = run(process.execPath, [join(root, "schema/check-provenance.mjs"), "--package", file]);
+  const count = existsSync(side) ? readFileSync(side, "utf8").trim().split("\n").length : 0;
+  if (checked.status !== 0 || count !== 3) races++;
+}
+expect("concurrent gates on one package keep a single chain", races === 0);
 
 if (failed) { console.log(`${failed} failed`); process.exit(1); }
 console.log("ontology membership gate: all passed");

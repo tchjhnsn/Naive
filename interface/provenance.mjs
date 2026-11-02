@@ -9,7 +9,7 @@
 
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { emit } from "./instrumentation.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
@@ -20,9 +20,40 @@ const sorted = (x) => Array.isArray(x) ? x.map(sorted) : x && typeof x === "obje
 export const lineHash = (prev, entry) => { const { hash: _hash, ...rest } = entry; return sha(prev + JSON.stringify(sorted(rest))); };
 export const contentHash = (file) => sha(readFileSync(file));
 
-/** The membership-gate sidecar for one package: <id>.provenance.jsonl beside the file. */
+/** The membership-gate sidecar for one .json package: <id>.provenance.jsonl beside the file. */
 export function gateSidecar(packageFile) {
-  return join(dirname(packageFile), `${basename(packageFile, ".json")}.provenance.jsonl`);
+  if (!packageFile.endsWith(".json")) throw new Error("a handoff package is a .json file");
+  return join(dirname(packageFile), `${basename(packageFile).slice(0, -".json".length)}.provenance.jsonl`);
+}
+
+/** The package a sidecar was written for. The inverse of gateSidecar. */
+export function packageForSidecar(sidecar) {
+  if (!sidecar.endsWith(".provenance.jsonl")) throw new Error("not a gate sidecar");
+  return `${sidecar.slice(0, -".provenance.jsonl".length)}.json`;
+}
+
+function sleepMs(ms) {
+  const ran = spawnSync("sleep", [String(ms / 1000)]);
+  if (ran.error) { const end = Date.now() + ms; while (Date.now() < end) Date.now(); }
+}
+
+/** One writer at a time for a package sidecar. The chain is read again inside the lock. */
+function withSidecarLock(packageFile, fn) {
+  const lock = `${gateSidecar(packageFile)}.lock`;
+  const start = Date.now();
+  for (;;) {
+    let fd;
+    try { fd = openSync(lock, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR); }
+    catch (e) {
+      if (e?.code !== "EEXIST") throw e;
+      try { if (Date.now() - statSync(lock).mtimeMs > 30000) unlinkSync(lock); } catch { /* the holder just released it */ }
+      if (Date.now() - start > 10000) throw new Error(`could not lock ${lock}`);
+      sleepMs(5);
+      continue;
+    }
+    try { return fn(); }
+    finally { closeSync(fd); try { unlinkSync(lock); } catch { /* already released */ } }
+  }
 }
 
 /** @param {string} file */
@@ -42,20 +73,22 @@ export function gateLineKey(entry) {
  * @param {{ function: string }} judgment
  */
 export function recordGate(packageFile, judgment) {
-  const file = gateSidecar(packageFile);
-  const sha256 = contentHash(packageFile);
-  const prior = existsSync(file) ? readJsonl(file) : [];
-  const draft = { activity: "gate", gate: judgment.function, sha256, judgment };
-  const existing = prior.find((e) => e.activity === "gate" && gateLineKey(e) === gateLineKey(draft));
-  if (existing) return existing;
-  const prev = prior.length ? prior.at(-1).hash : "genesis";
-  const entry = {
-    at: new Date().toISOString(), entity: basename(packageFile), activity: "gate",
-    agent: { kind: "agent", via: "cli", id: "ontology-gate" }, sha256, gate: judgment.function, judgment, prev,
-  };
-  entry.hash = lineHash(prev, entry);
-  appendFileSync(file, JSON.stringify(entry) + "\n");
-  return entry;
+  return withSidecarLock(packageFile, () => {
+    const file = gateSidecar(packageFile);
+    const sha256 = contentHash(packageFile);
+    const prior = existsSync(file) ? readJsonl(file) : [];
+    const draft = { activity: "gate", gate: judgment.function, sha256, judgment };
+    const existing = prior.find((e) => e.activity === "gate" && gateLineKey(e) === gateLineKey(draft));
+    if (existing) return existing;
+    const prev = prior.length ? prior.at(-1).hash : "genesis";
+    const entry = {
+      at: new Date().toISOString(), entity: basename(packageFile), activity: "gate",
+      agent: { kind: "agent", via: "cli", id: "ontology-gate" }, sha256, gate: judgment.function, judgment, prev,
+    };
+    entry.hash = lineHash(prev, entry);
+    appendFileSync(file, JSON.stringify(entry) + "\n");
+    return entry;
+  });
 }
 
 export function entries(dir) {
