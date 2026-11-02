@@ -50,6 +50,8 @@
     "schema/check-data-model.mjs",
     "schema/check-ventures.mjs",
     "schema/check-nouns.mjs",
+    "schema/ontology-gate.ts",
+    "schema/ontology-gate-test.ts",
     "schema/check-integrations.mjs",
     "schema/init-venture.mjs",
     "schema/test.mjs",

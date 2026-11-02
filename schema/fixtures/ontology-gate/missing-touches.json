@@ -1,0 +1,25 @@
+{
+  "id": "missing-touches",
+  "title": "Change the offering",
+  "venture": "fixture",
+  "role": "founder",
+  "brief": "missing-touches.md",
+  "decision_classes": ["implementation-detail"],
+  "done_criteria": [
+    {
+      "id": "offering",
+      "kind": "review",
+      "reviewer": "founder",
+      "check": "Does this change the offering the venture sells?"
+    }
+  ],
+  "status": "draft",
+  "attempts": 0,
+  "max_attempts": 3,
+  "run_cap": "2h",
+  "ontology": {
+    "type": "product decision",
+    "terms": ["product decision", "customer@finance"],
+    "touches": []
+  }
+}

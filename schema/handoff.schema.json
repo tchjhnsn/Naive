@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "handoff.schema.json",
   "title": "Handoff",
-  "description": "One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence.",
+  "description": "One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (schema/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17).",
   "type": "object",
   "required": [
     "id",
@@ -231,6 +231,50 @@
         },
         "content": {
           "type": "string"
+        }
+      }
+    },
+    "ontology": {
+      "type": "object",
+      "description": "The package's terminology. type is the one noun that decides which function the package belongs to. terms are the other nouns it uses (a noun with no function may appear in any package and never decides the type). touches lists the other functions it names. facts maps a term-engine property id to the value asserted for it and the quote that value rests on, and is read only when the type noun defines properties.",
+      "required": ["type", "terms", "touches"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Noun id from docs/ontology.json. A package belongs to that noun's function and to no other."
+        },
+        "terms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Nouns the package uses. At least one must be owned by the receiving function, or the gate rejects the package as incomplete."
+        },
+        "touches": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Function ids, other than the receiver, whose nouns appear in terms. A term owned by a function that is not listed here is an incomplete package."
+        },
+        "facts": {
+          "type": "object",
+          "description": "Term-engine property id to the asserted value and the quote it rests on (EE-095). The membership gate runs the term engine over these when the type noun lists properties.",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["value", "quote"],
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "description": "The value the property is asserted to have. An object is the term's fact record and the engine's own checks run on it. A boolean is the assertion the engine's rule combines."
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The words in the package the value rests on."
+              }
+            }
+          }
         }
       }
     }

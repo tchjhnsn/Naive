@@ -1,0 +1,44 @@
+{
+  "id": "founder-properties",
+  "title": "Record a founder",
+  "venture": "fixture",
+  "role": "founder",
+  "brief": "founder-properties.md",
+  "decision_classes": ["implementation-detail"],
+  "done_criteria": [
+    {
+      "id": "founder",
+      "kind": "review",
+      "reviewer": "founder",
+      "check": "Do the founder properties hold on the facts in this package?"
+    }
+  ],
+  "status": "draft",
+  "attempts": 0,
+  "max_attempts": 3,
+  "run_cap": "2h",
+  "ontology": {
+    "type": "founder appointment",
+    "terms": ["founder appointment"],
+    "touches": [],
+    "facts": {
+      "F1": {
+        "value": {
+          "confirmed": true,
+          "human": true,
+          "joined": 0,
+          "firstOutside": null,
+          "contributions": [{ "kind": "idea", "evidenced": true }],
+          "stake": false,
+          "decisions": 2,
+          "otherFounders": 1
+        },
+        "quote": "A person, present at the start, with an evidenced idea and decisions, and no stake."
+      },
+      "F2": { "value": true, "quote": "There before anyone outside the venture." },
+      "F3": { "value": true, "quote": "The founding idea is on the record." },
+      "F4": { "value": true, "quote": "The package claims a stake." },
+      "F5": { "value": true, "quote": "Decisions are in the record." }
+    }
+  }
+}

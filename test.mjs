@@ -23,6 +23,7 @@ const steps = [
   ["ventures: instance", "node", ["schema/check-ventures.mjs", "instance"]],
   ["ventures: examples", "node", ["schema/check-ventures.mjs", "schema/examples/workspace"]],
   ["nouns", "node", ["schema/check-nouns.mjs"]],
+  ["ontology membership gate", "node", ["schema/ontology-gate-test.ts"]],
   ["integrations and interfaces", "node", ["schema/check-integrations.mjs"]],
   ["data model and kits", "node", ["schema/check-data-model.mjs"]],
   ["data packages and raw", "node", ["schema/check-data-packages.mjs", "instance"]],

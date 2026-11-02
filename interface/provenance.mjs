@@ -1,21 +1,149 @@
 // The provenance log (EE-031): one append-only JSON line per write, after W3C PROV (entity,
 // activity, agent, derived from). Each line carries the previous line's hash, so an edited or
 // deleted line breaks the chain. Lives at <venture>/provenance.jsonl, in the system layer, so it
-// is on whatever layers a venture uses. Git history stays the implicit provenance for anything
+// is on whatever layers a venture uses. A handoff package's membership gate writes a second log,
+// <id>.provenance.jsonl beside the package: the line's sha256 is the package body's, so a gate
+// does not depend on another gate having run first, and running the same gate on the same body
+// again returns the line already written. Git history stays the implicit provenance for anything
 // written outside the router.
 
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { appendFileSync, closeSync, constants, existsSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import { emit } from "./instrumentation.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
 
 export const LOG = "provenance.jsonl";
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 const sorted = (x) => Array.isArray(x) ? x.map(sorted) : x && typeof x === "object" ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, sorted(x[k])])) : x;
-export const lineHash = (prev, entry) => { const { hash, ...rest } = entry; return sha(prev + JSON.stringify(sorted(rest))); };
+export const lineHash = (prev, entry) => { const { hash: _hash, ...rest } = entry; return sha(prev + JSON.stringify(sorted(rest))); };
 export const contentHash = (file) => sha(readFileSync(file));
+
+/** The membership-gate sidecar for one .json package: <id>.provenance.jsonl beside the file. */
+export function gateSidecar(packageFile) {
+  if (!packageFile.endsWith(".json")) throw new Error("a handoff package is a .json file");
+  return join(dirname(packageFile), `${basename(packageFile).slice(0, -".json".length)}.provenance.jsonl`);
+}
+
+/** The package a sidecar was written for. The inverse of gateSidecar. */
+export function packageForSidecar(sidecar) {
+  if (!sidecar.endsWith(".provenance.jsonl")) throw new Error("not a gate sidecar");
+  return `${sidecar.slice(0, -".provenance.jsonl".length)}.json`;
+}
+
+function sleepMs(ms) {
+  const ran = spawnSync("sleep", [String(ms / 1000)]);
+  if (ran.error) { const end = Date.now() + ms; while (Date.now() < end) Date.now(); }
+}
+
+const LOCK_STALE_MS = 2000;
+const LOCK_WAIT_MS = 15000;
+
+/** @param {number} pid */
+function pidAlive(pid) {
+  try { process.kill(pid, 0); return true; }
+  catch (e) { return e?.code === "EPERM"; }
+}
+
+/** The pid written into the lock, or null when the file is empty or unreadable. */
+function holderPid(lock) {
+  try {
+    const pid = Number(readFileSync(lock, "utf8").trim());
+    return Number.isInteger(pid) && pid > 0 ? pid : null;
+  } catch { return null; }
+}
+
+/**
+ * Remove the lock only when the renamed file is still the one `judged`.
+ * A rename that catches a newer lock puts that lock back and removes nothing.
+ * @param {string} lock
+ * @param {{ ino: number, mtimeMs: number }} judged
+ * @returns {boolean} true when this process removed the judged file
+ */
+export function takeStaleLock(lock, judged) {
+  const parked = `${lock}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}`;
+  try { renameSync(lock, parked); } catch { return false; }
+  let parkedSt;
+  try { parkedSt = statSync(parked); } catch { return false; }
+  if (parkedSt.ino !== judged.ino || parkedSt.mtimeMs !== judged.mtimeMs) {
+    try { linkSync(parked, lock); } catch { /* a live lock is already at the path */ }
+    try { unlinkSync(parked); } catch { /* the extra name is already gone */ }
+    return false;
+  }
+  try { unlinkSync(parked); } catch { /* already gone */ }
+  return true;
+}
+
+/** Drop a lock whose holder is gone. A live pid is never removed, however old the file is. */
+export function stealDeadLock(lock) {
+  let st;
+  try { st = statSync(lock); } catch { return false; }
+  if (st.isDirectory()) throw new Error(`could not lock ${lock}: not a lock file`);
+  const pid = holderPid(lock);
+  if (pid !== null && pidAlive(pid)) return false;
+  // An empty lock may be a writer that has created it and not yet written its pid.
+  if (pid === null && Date.now() - st.mtimeMs < LOCK_STALE_MS) return false;
+  return takeStaleLock(lock, { ino: st.ino, mtimeMs: st.mtimeMs });
+}
+
+/** One writer at a time for a package sidecar. The chain is read again inside the lock. */
+function withSidecarLock(packageFile, fn) {
+  const lock = `${gateSidecar(packageFile)}.lock`;
+  const start = Date.now();
+  for (;;) {
+    let fd;
+    try {
+      fd = openSync(lock, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR);
+      writeSync(fd, String(process.pid));
+    }
+    catch (e) {
+      if (fd !== undefined) { try { closeSync(fd); } catch { /* not opened */ } }
+      if (e?.code !== "EEXIST") throw new Error(`could not lock ${lock}: ${e?.code ?? e?.message ?? e}`);
+      stealDeadLock(lock);
+      if (Date.now() - start > LOCK_WAIT_MS) throw new Error(`could not lock ${lock}`);
+      sleepMs(5);
+      continue;
+    }
+    try { return fn(); }
+    finally { closeSync(fd); try { unlinkSync(lock); } catch { /* already released */ } }
+  }
+}
+
+/** @param {string} file */
+export function readJsonl(file) {
+  return existsSync(file) ? readFileSync(file, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : [];
+}
+
+/** What a gate line is about: the function, the body's sha256, and the verdict. Not its place in the chain. */
+export function gateLineKey(entry) {
+  return `${entry.gate}\0${entry.sha256}\0${JSON.stringify(sorted(entry.judgment))}`;
+}
+
+/**
+ * Appends one membership-gate line bound to the package body's sha256.
+ * The same gate, the same body and the same verdict return the existing line and do not append.
+ * @param {string} packageFile
+ * @param {{ function: string }} judgment
+ */
+export function recordGate(packageFile, judgment) {
+  return withSidecarLock(packageFile, () => {
+    const file = gateSidecar(packageFile);
+    const sha256 = contentHash(packageFile);
+    const prior = existsSync(file) ? readJsonl(file) : [];
+    const draft = { activity: "gate", gate: judgment.function, sha256, judgment };
+    const existing = prior.find((e) => e.activity === "gate" && gateLineKey(e) === gateLineKey(draft));
+    if (existing) return existing;
+    const prev = prior.length ? prior.at(-1).hash : "genesis";
+    const entry = {
+      at: new Date().toISOString(), entity: basename(packageFile), activity: "gate",
+      agent: { kind: "agent", via: "cli", id: "ontology-gate" }, sha256, gate: judgment.function, judgment, prev,
+    };
+    entry.hash = lineHash(prev, entry);
+    appendFileSync(file, JSON.stringify(entry) + "\n");
+    return entry;
+  });
+}
 
 export function entries(dir) {
   const f = ventureFile(dir, LOG);
