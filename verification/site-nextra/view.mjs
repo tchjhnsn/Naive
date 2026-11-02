@@ -2,28 +2,25 @@ export const title = "What you get back when you ask the Naive site for a page";
 
 export const state = (v) => {
   if (v.outcome === "waiting") return "Nothing asked yet";
-  if (v.outcome === "redirect") return "Sent on to a docs page";
-  if (v.outcome === "not-found") return "Not found";
-  if (v.outcome === "markdown" && v.asked === "llms") return "llms.txt";
-  if (v.outcome === "markdown") return "The page as Markdown";
+  if (v.outcome === "redirect") return "Sent on from an old address";
+  if (v.outcome === "gated") return "Sent to the waitlist";
   if (v.asked === "nav") return "A page the nav names";
-  return "A docs page";
+  if (v.asked === "waitlist") return "The waitlist page";
+  return "A public page";
 };
 
 export const group = (v) => {
   if (v.outcome === "waiting") return "start";
   if (v.outcome === "page") return "page";
-  if (v.outcome === "markdown") return "markdown";
   if (v.outcome === "redirect") return "redirect";
-  return "missing";
+  return "gated";
 };
 
 export const colors = {
   start: "tan",
   page: "teal",
-  markdown: "blue",
   redirect: "orange",
-  missing: "pink",
+  gated: "blue",
 };
 
 export const step = (action) => ({
@@ -31,9 +28,12 @@ export const step = (action) => ({
   OpenDotMd: "you open the .md address",
   OpenAccept: "you ask for Markdown",
   OpenMissing: "you open a docs address that is not a page",
+  OpenTemplates: "you open templates",
   OpenOldPath: "you open an old address",
-  FollowRedirect: "you follow the redirect",
+  FollowRedirect: "you follow the old address",
+  FollowGate: "you follow the redirect",
   OpenNav: "you use the nav",
+  OpenWaitlist: "you open the waitlist",
   OpenLlms: "you read llms.txt",
   Again: "you ask for something else",
   Done: null,
