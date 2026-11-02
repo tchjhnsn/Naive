@@ -1,0 +1,25 @@
+{
+  "id": "retired-term",
+  "title": "Set the beachhead price",
+  "venture": "fixture",
+  "role": "founder",
+  "brief": "retired-term.md",
+  "decision_classes": ["implementation-detail"],
+  "done_criteria": [
+    {
+      "id": "price",
+      "kind": "review",
+      "reviewer": "founder",
+      "check": "Does this price match the evidence the package cites?"
+    }
+  ],
+  "status": "draft",
+  "attempts": 0,
+  "max_attempts": 3,
+  "run_cap": "2h",
+  "ontology": {
+    "type": "pricing decision",
+    "terms": ["client", "customer@marketing-and-sales"],
+    "touches": ["finance"]
+  }
+}

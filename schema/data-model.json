@@ -865,7 +865,7 @@
       "paths": [
         "docs/ontology.json"
       ],
-      "note": "Canonical nouns; checked by schema/check-nouns.mjs, rendered to docs/ontology.md"
+      "note": "Canonical nouns; checked by schema/check-nouns.mjs, rendered to docs/ontology.md. Each noun names its function (or null) and whether it can type a handoff package"
     },
     {
       "id": "reference",
@@ -1469,7 +1469,7 @@
           "checked_by": "schema/check-provenance.mjs"
         }
       ],
-      "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031)"
+      "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031). A handoff package's membership gate writes <id>.provenance.jsonl beside the package; the line's sha256 is the package body's, so gates need not run in order, and the same gate on the same body is written once"
     },
     {
       "id": "naive-config",
@@ -2219,6 +2219,30 @@
     {
       "path": "schema/generators/gaps.json",
       "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/pricing-admit.json",
+      "reason": "A handoff package the membership gate admits, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/unknown-term.json",
+      "reason": "A handoff package with a term that is not a noun, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/retired-term.json",
+      "reason": "A handoff package that uses a retired noun, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/missing-touches.json",
+      "reason": "A handoff package whose term is owned by a function it does not touch, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/pricing-no-finance.json",
+      "reason": "A pricing package that does not touch finance, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/founder-properties.json",
+      "reason": "A handoff package whose founder facts fail a term-engine check, read by schema/ontology-gate-test.ts; a fixture, not a record"
     }
   ]
 }

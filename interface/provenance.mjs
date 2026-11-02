@@ -1,21 +1,62 @@
 // The provenance log (EE-031): one append-only JSON line per write, after W3C PROV (entity,
 // activity, agent, derived from). Each line carries the previous line's hash, so an edited or
 // deleted line breaks the chain. Lives at <venture>/provenance.jsonl, in the system layer, so it
-// is on whatever layers a venture uses. Git history stays the implicit provenance for anything
+// is on whatever layers a venture uses. A handoff package's membership gate writes a second log,
+// <id>.provenance.jsonl beside the package: the line's sha256 is the package body's, so a gate
+// does not depend on another gate having run first, and running the same gate on the same body
+// again returns the line already written. Git history stays the implicit provenance for anything
 // written outside the router.
 
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { emit } from "./instrumentation.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
 
 export const LOG = "provenance.jsonl";
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 const sorted = (x) => Array.isArray(x) ? x.map(sorted) : x && typeof x === "object" ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, sorted(x[k])])) : x;
-export const lineHash = (prev, entry) => { const { hash, ...rest } = entry; return sha(prev + JSON.stringify(sorted(rest))); };
+export const lineHash = (prev, entry) => { const { hash: _hash, ...rest } = entry; return sha(prev + JSON.stringify(sorted(rest))); };
 export const contentHash = (file) => sha(readFileSync(file));
+
+/** The membership-gate sidecar for one package: <id>.provenance.jsonl beside the file. */
+export function gateSidecar(packageFile) {
+  return join(dirname(packageFile), `${basename(packageFile, ".json")}.provenance.jsonl`);
+}
+
+/** @param {string} file */
+export function readJsonl(file) {
+  return existsSync(file) ? readFileSync(file, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : [];
+}
+
+/** What a gate line is about: the function, the body's sha256, and the verdict. Not its place in the chain. */
+export function gateLineKey(entry) {
+  return `${entry.gate}\0${entry.sha256}\0${JSON.stringify(sorted(entry.judgment))}`;
+}
+
+/**
+ * Appends one membership-gate line bound to the package body's sha256.
+ * The same gate, the same body and the same verdict return the existing line and do not append.
+ * @param {string} packageFile
+ * @param {{ function: string }} judgment
+ */
+export function recordGate(packageFile, judgment) {
+  const file = gateSidecar(packageFile);
+  const sha256 = contentHash(packageFile);
+  const prior = existsSync(file) ? readJsonl(file) : [];
+  const draft = { activity: "gate", gate: judgment.function, sha256, judgment };
+  const existing = prior.find((e) => e.activity === "gate" && gateLineKey(e) === gateLineKey(draft));
+  if (existing) return existing;
+  const prev = prior.length ? prior.at(-1).hash : "genesis";
+  const entry = {
+    at: new Date().toISOString(), entity: basename(packageFile), activity: "gate",
+    agent: { kind: "agent", via: "cli", id: "ontology-gate" }, sha256, gate: judgment.function, judgment, prev,
+  };
+  entry.hash = lineHash(prev, entry);
+  appendFileSync(file, JSON.stringify(entry) + "\n");
+  return entry;
+}
 
 export function entries(dir) {
   const f = ventureFile(dir, LOG);

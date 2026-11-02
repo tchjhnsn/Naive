@@ -9,22 +9,76 @@
 // The schema of each line is checked by schema/validate.py.
 //
 //   node schema/check-provenance.mjs <workspace or venture dir>
+//   node schema/check-provenance.mjs --package <handoff.json>
+//
+// --package checks the membership-gate sidecar <id>.provenance.jsonl beside that file.
+// A gate line is about the package body's sha256, not about its position, so any gate may be
+// the first line. Two identical lines for the same gate and the same body are an error.
 
 import { ventureFile } from "./venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
-import { contentHash, lineHash, LOG } from "../interface/provenance.mjs";
+import { join, resolve } from "node:path";
+import { contentHash, gateLineKey, gateSidecar, lineHash, LOG } from "../interface/provenance.mjs";
+
+const errors = [], warnings = [];
+let logs = 0, lines = 0;
+
+// One sidecar. The chain still detects an edited line. Nothing here requires one gate to precede another.
+function checkSidecar(packageFile) {
+  const log = gateSidecar(packageFile);
+  if (!existsSync(log)) return;
+  logs++;
+  const label = log;
+  let prev = "genesis";
+  const seen = new Set();
+  /** @type {any} */
+  let last = null;
+  readFileSync(log, "utf8").split("\n").forEach((l, i) => {
+    if (!l.trim()) return;
+    const where = `${label}:${i + 1}`;
+    let e;
+    try { e = JSON.parse(l); } catch { errors.push(`${where}: not JSON`); prev = null; return; }
+    lines++;
+    if (e.activity !== "gate") errors.push(`${where}: a package sidecar holds gate lines only`);
+    if (prev !== null && e.prev !== prev) errors.push(`${where}: chain broken: prev does not match the line before (a line was edited, removed or reordered)`);
+    if (e.hash !== lineHash(e.prev, e)) errors.push(`${where}: hash does not match the line's content (the line was edited)`);
+    if (!/^[0-9a-f]{64}$/.test(e.sha256 ?? "")) errors.push(`${where}: sha256 is not the package body's hash`);
+    if (!e.judgment || !e.gate) errors.push(`${where}: a gate line names the function and the verdict`);
+    const key = e.judgment ? gateLineKey(e) : "";
+    if (key && seen.has(key)) errors.push(`${where}: the same gate on the same body is recorded twice`);
+    if (key) seen.add(key);
+    prev = e.hash;
+    last = e;
+  });
+  if (existsSync(packageFile) && last && last.sha256 !== contentHash(packageFile)) warnings.push(`${label}: the last line is for a different body; the package changed after that gate`);
+}
+
+const packageFlag = process.argv.indexOf("--package");
+if (packageFlag !== -1) {
+  const file = process.argv[packageFlag + 1];
+  if (!file) { console.error("usage: node schema/check-provenance.mjs --package <handoff.json>"); process.exit(2); }
+  const abs = resolve(file);
+  if (!existsSync(gateSidecar(abs))) { console.error(`no sidecar beside ${abs}`); process.exit(1); }
+  checkSidecar(abs);
+  for (const w of warnings) console.warn(`warning: ${w}`);
+  if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
+  console.log(`${logs} provenance logs, ${lines} entries: every chain holds.`);
+  process.exit(0);
+}
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-provenance.mjs <workspace or venture dir>"); process.exit(2); }
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const errors = [], warnings = [];
-let logs = 0, lines = 0;
+const sidecars = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+  : e.isDirectory() ? sidecars(join(d, e.name)) : e.name.endsWith(".provenance.jsonl") && e.name !== LOG ? [join(d, e.name)] : []);
 
 for (const root of walk(dir)) {
   const f = ventureFile(root, LOG);
-  if (!existsSync(f)) continue;
+  if (!existsSync(f)) {
+    for (const side of sidecars(root)) checkSidecar(side.replace(/\.provenance\.jsonl$/, ".json"));
+    continue;
+  }
   logs++;
   const id = JSON.parse(readFileSync(join(root, "venture.json"), "utf8")).id;
   let prev = "genesis", at = "";
@@ -49,6 +103,7 @@ for (const root of walk(dir)) {
     if (!existsSync(p)) { if (e.activity !== "draft") warnings.push(`${id}: ${entity} is in the log but gone; git holds what happened`); continue; }
     if (contentHash(p) !== e.sha256) warnings.push(`${id}: ${entity} changed outside the router since ${e.at}; git holds that history`);
   }
+  for (const side of sidecars(root)) checkSidecar(side.replace(/\.provenance\.jsonl$/, ".json"));
 }
 
 for (const w of warnings) console.warn(`warning: ${w}`);

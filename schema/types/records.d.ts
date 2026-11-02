@@ -1289,7 +1289,7 @@ export type Goal = {
   decision?: string;
 };
 
-/** One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence. */
+/** One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (schema/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17). */
 export type Handoff = {
   id: string;
   title: string;
@@ -1361,6 +1361,24 @@ export type Handoff = {
   publication?: {
     channel: string;
     content: string;
+  };
+  /** The package's terminology. type is the one noun that decides which function the package belongs to. terms are the other nouns it uses (a noun with no function may appear in any package and never decides the type). touches lists the other functions it names. facts maps a term-engine property id to the value asserted for it and the quote that value rests on, and is read only when the type noun defines properties. */
+  ontology?: {
+    /** Noun id from docs/ontology.json. A package belongs to that noun's function and to no other. */
+    type: string;
+    /** Nouns the package uses. At least one must be owned by the receiving function, or the gate rejects the package as incomplete. */
+    terms: string[];
+    /** Function ids, other than the receiver, whose nouns appear in terms. A term owned by a function that is not listed here is an incomplete package. */
+    touches: string[];
+    /** Term-engine property id to the asserted value and the quote it rests on (EE-095). The membership gate runs the term engine over these when the type noun lists properties. */
+    facts?: {
+      [key: string]: {
+        /** The value the property is asserted to have. An object is the term's fact record and the engine's own checks run on it. A boolean is the assertion the engine's rule combines. */
+        value: unknown;
+        /** The words in the package the value rests on. */
+        quote: string;
+      };
+    };
   };
 };
 
@@ -2409,8 +2427,8 @@ export type ProvenanceEntry = {
   entity: string;
   /** The route the write went through, when it went through the router */
   route?: string;
-  /** write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity. */
-  activity: "write" | "draft" | "accept" | "baseline" | "confirm" | "move" | "release" | "publish" | "rollback" | "merge";
+  /** write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity. gate: the membership gate ran on a handoff package. The line lives in the sidecar <id>.provenance.jsonl and binds to the package body's sha256, so gates may be recorded in any order. */
+  activity: "write" | "draft" | "accept" | "baseline" | "confirm" | "move" | "release" | "publish" | "rollback" | "merge" | "gate";
   /** Who acted (prov:wasAttributedTo / prov:wasAssociatedWith) */
   agent: {
     /** unverified: a door with no sign-in said a person acted; the id is a claimed name */
@@ -2457,6 +2475,36 @@ export type ProvenanceEntry = {
   statement?: string;
   /** write to foundation/core only: the foundation statements this write confirms. Other statements in the same file stay as they were. */
   statements?: string[];
+  /** gate only: the function id the membership gate ran as. */
+  gate?: string;
+  /** gate only: the one verdict for this package at this function. A rejected package is retried once by the lead and then escalated to the founder. The verdict is not copied onto the handoff (R-17). */
+  judgment?: {
+    /** admit: the package belongs to this function. refer: it belongs to owner instead. reject: it belongs to nobody until it is fixed. */
+    verdict: "admit" | "refer" | "reject";
+    /** Why a refer or reject happened: schema, unknown, retired, not-a-type, untyped, incomplete, properties, refer. */
+    code?: string;
+    /** The function the gate ran as. */
+    function: string;
+    /** The noun that decided the verdict. */
+    witness: string;
+    /** refer only: the function the type noun belongs to. */
+    owner?: string;
+    /** retired only: the noun to use instead. */
+    replaced_by?: string;
+    /** properties only: term-engine property ids that did not hold. */
+    failed?: string[];
+    /** incomplete only: the function id that touches left out. */
+    missing?: string;
+    detail?: string;
+    /** reject only: the lead retries once, then the founder decides. The retry itself is not built. */
+    disposition?: {
+      on_reject: "retry";
+      retry_by: "lead";
+      retries: 1;
+      then: "escalate";
+      escalate_to: "founder";
+    };
+  };
 };
 
 /** The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by schema/check-assets.mjs. Version 0.x, unevaluated. */

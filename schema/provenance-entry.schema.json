@@ -40,9 +40,10 @@
         "release",
         "publish",
         "rollback",
-        "merge"
+        "merge",
+        "gate"
       ],
-      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity."
+      "description": "write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity. gate: the membership gate ran on a handoff package. The line lives in the sidecar <id>.provenance.jsonl and binds to the package body's sha256, so gates may be recorded in any order."
     },
     "agent": {
       "type": "object",
@@ -176,6 +177,74 @@
       "type": "array",
       "items": { "type": "string" },
       "description": "write to foundation/core only: the foundation statements this write confirms. Other statements in the same file stay as they were."
+    },
+    "gate": {
+      "type": "string",
+      "description": "gate only: the function id the membership gate ran as."
+    },
+    "judgment": {
+      "type": "object",
+      "description": "gate only: the one verdict for this package at this function. A rejected package is retried once by the lead and then escalated to the founder. The verdict is not copied onto the handoff (R-17).",
+      "required": ["verdict", "function", "witness"],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "enum": ["admit", "refer", "reject"],
+          "description": "admit: the package belongs to this function. refer: it belongs to owner instead. reject: it belongs to nobody until it is fixed."
+        },
+        "code": {
+          "type": "string",
+          "description": "Why a refer or reject happened: schema, unknown, retired, not-a-type, untyped, incomplete, properties, refer."
+        },
+        "function": {
+          "type": "string",
+          "description": "The function the gate ran as."
+        },
+        "witness": {
+          "type": "string",
+          "description": "The noun that decided the verdict."
+        },
+        "owner": {
+          "type": "string",
+          "description": "refer only: the function the type noun belongs to."
+        },
+        "replaced_by": {
+          "type": "string",
+          "description": "retired only: the noun to use instead."
+        },
+        "failed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "properties only: term-engine property ids that did not hold."
+        },
+        "missing": {
+          "type": "string",
+          "description": "incomplete only: the function id that touches left out."
+        },
+        "detail": {
+          "type": "string"
+        },
+        "disposition": {
+          "type": "object",
+          "description": "reject only: the lead retries once, then the founder decides. The retry itself is not built.",
+          "required": ["on_reject", "retry_by", "retries", "then", "escalate_to"],
+          "additionalProperties": false,
+          "properties": {
+            "on_reject": { "const": "retry" },
+            "retry_by": { "const": "lead" },
+            "retries": { "const": 1 },
+            "then": { "const": "escalate" },
+            "escalate_to": { "const": "founder" }
+          }
+        }
+      }
     }
+  },
+  "if": {
+    "properties": { "activity": { "const": "gate" } },
+    "required": ["activity"]
+  },
+  "then": {
+    "required": ["gate", "judgment"]
   }
 }
