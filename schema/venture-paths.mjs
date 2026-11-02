@@ -5,7 +5,7 @@
 //   flat (no layout in venture.json, every venture made before EE-086): the logical path, unchanged
 //   structured (venture.json layout: "structured"):
 //     venture.json, AGENTS.md, README.md, package.json, lockfiles, .vscode/   at the top (profile.md is README.md)
-//     provenance.jsonl, sources.json, naive.config.json   in meta/; .release/ is meta/releases/
+//     provenance.jsonl, sources.json, naive.config.json, operating-rules.json   in meta/; .release/ is meta/releases/
 //     every package (foundation/, people/, _drafts/ ...)  in k-base/, or in k-base/(group)/ when the
 //                                                         founder mirrors a function as a folder
 //     code the venture keeps (a marketing site, a ported repository)  in codebase/
@@ -55,7 +55,7 @@ export function readDelegation(file) {
 
 /** What stays at the top of a structured venture: its own files and what tools keep there. The migration moves everything else. */
 export const TOP = new Set(["venture.json", "AGENTS.md", "README.md", "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb", ".gitignore", ".vscode"]);
-const META = { "provenance.jsonl": "meta/provenance.jsonl", "knowledge/sources.json": "meta/sources.json", "sources.json": "meta/sources.json", "naive.config.json": "meta/naive.config.json" };
+const META = { "provenance.jsonl": "meta/provenance.jsonl", "knowledge/sources.json": "meta/sources.json", "sources.json": "meta/sources.json", "naive.config.json": "meta/naive.config.json", "operating-rules.json": "meta/operating-rules.json" };
 const cache = new Map();
 export const KBASE = "k-base";
 export const CODEBASE = "codebase";

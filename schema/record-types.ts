@@ -40,7 +40,7 @@ const KEYWORDS = new Set([
   // annotations, with no effect on what is valid
   "$schema", "$id", "title", "default",
   // checks TypeScript cannot express
-  "pattern", "minimum", "maximum", "exclusiveMinimum", "minLength", "minItems", "maxItems", "uniqueItems",
+  "pattern", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "minLength", "minItems", "maxItems", "uniqueItems",
   "minProperties", "maxProperties", "not", "if", "then", "else", "dependentRequired",
 ]);
 

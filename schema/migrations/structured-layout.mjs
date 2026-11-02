@@ -5,7 +5,7 @@
 //
 //   k-base/    every package folder and record file at the top; the old knowledge/ layer folder
 //              becomes k-base/knowledge/, so its logical paths are unchanged
-//   meta/      provenance.jsonl, naive.config.json and knowledge/sources.json, and .release/ as meta/releases/
+//   meta/      provenance.jsonl, naive.config.json, operating-rules.json and knowledge/sources.json, and .release/ as meta/releases/
 //   README.md  profile.md, when there is no README.md yet
 //
 // venture.json gains layout: structured. Its functions are left as they are; hats leave people/. Files git tracks move with
@@ -38,6 +38,7 @@ export function apply(dir, ctx) {
   // meta/ first, so knowledge/sources.json leaves the old layer folder before that folder moves.
   move("provenance.jsonl", "meta/provenance.jsonl");
   move("naive.config.json", "meta/naive.config.json");
+  move("operating-rules.json", "meta/operating-rules.json");
   move("knowledge/sources.json", "meta/sources.json");
   move(".release", "meta/releases");
   if (!existsSync(join(dir, "README.md"))) move("profile.md", "README.md");

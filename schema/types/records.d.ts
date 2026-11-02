@@ -2207,6 +2207,273 @@ export type NextjsStatus = {
   }[];
 };
 
+/** Naive's operating rules as a module. The default module is operations/operating-rules.json. schema/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry, except the one_way_door skip, which is declared and not enforced. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests and are not enforced yet. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. */
+export type OperatingRules = {
+  $schema?: string;
+  /** Module id. The framework's module is default. A venture overlay may set its own id. */
+  id: string;
+  /** Module version. The default module is 1. */
+  version: string;
+  note?: string;
+  /** What happens to a rejected handoff package. edit and rejector are for a later pull request that enforces parent-only edits. retry is read by the membership gate. */
+  rejection: {
+    note?: string;
+    /** Who may edit a rejected handoff package. Declared for the later parent-only edits pull request. The membership gate does not read it. */
+    edit: {
+      note?: string;
+      /** Only the package's parent node, the sender, may edit a rejected package. */
+      who: "parent";
+      /** The role id of that parent in this module. The default is chief-of-staff, the Naive Lead. */
+      role: string;
+    };
+    /** What the function that rejects a package may do. Declared for the later parent-only edits pull request. The membership gate does not read it. */
+    rejector: {
+      note?: string;
+      /** Whether a function bot that rejects a package may modify it. The default is false. */
+      may_modify: boolean;
+      /** A rejecting function returns the package to its parent. */
+      return_to: "parent";
+      /** What the return carries: the failing gate and the reason. Nothing else. */
+      carries: ["failing_gate","reason"];
+    };
+    /** How many times the package is retried, by whom, and who receives it next. The membership gate copies on_reject, retry_by, retries, then and escalate_to onto a rejection disposition. one_way_door is declared for a later pull request: those packages skip the retry. The retry itself is not built. */
+    retry: {
+      note?: string;
+      on_reject: "retry";
+      /** Who retries. The default module says lead, the Naive Lead. */
+      retry_by: string;
+      /** How many times that actor retries a rejected package before escalating. The default is 1. */
+      retries: number;
+      then: "escalate";
+      /** Who receives the package after the retries. The default is founder. */
+      escalate_to: string;
+      /** A one_way_door package skips the retry and escalates to the founder. Declared for a later pull request. The membership gate does not read this. */
+      one_way_door: {
+        note?: string;
+        /** No retry. */
+        retries: 0;
+        then: "escalate";
+        escalate_to: "founder";
+      };
+    };
+  };
+  /** The Lead's self-fix proposals. Declared for a later pull request. The membership gate does not read this. */
+  self_fix: {
+    note?: string;
+    /** Whether a self-fix proposal needs founder approval before it is applied. The default is true. */
+    requires_founder_approval: boolean;
+  };
+  /** How an agent shows a design. Declared for later pull requests. The membership gate does not read this. */
+  design: {
+    note?: string;
+    /** Every agent runs the gates on its draft before showing the founder a design. The default is true. A later pull request enforces it. */
+    gates_before_founder: boolean;
+    /** The design-diff verb set. A later pull request enforces it. The membership gate does not read it. */
+    diff: {
+      note?: string;
+      /** One kind per diff line. The default is true. */
+      one_kind_per_line: boolean;
+      /** A compound change is split into separate lines. The default is true. */
+      split_compound: boolean;
+      /** A move that keeps the id counts as rename. */
+      move_keeps_id: "rename";
+      verbs: {
+        create: {
+          note?: string;
+          /** Create kinds. derive must name its source. */
+          kinds: ["originate","derive"];
+          derive_names: "source";
+        };
+        amend: {
+          note?: string;
+          /** Amend kinds. */
+          kinds: ["append","rename","deprecate","revise"];
+        };
+        delete: {
+          note?: string;
+          /** Delete kinds. merge must name its successor. */
+          kinds: ["remove","merge"];
+          merge_names: "successor";
+        };
+      };
+    };
+  };
+  /** The Jev layer. Suggested Noul thresholds, and whether a judgment blocks. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a module whose yes is not above no. */
+  jev: {
+    note?: string;
+    /** record-only writes the judgment and does not block. blocking is reserved until the thresholds are decided; nothing enforces it yet. The default is record-only. */
+    mode: "record-only" | "blocking";
+    /** At or above this, a Noul judgment is a yes. The suggested threshold is 0.7. */
+    yes: number;
+    /** At or below this, a Noul judgment is a no. The suggested threshold is 0.3. */
+    no: number;
+  };
+  /** Question routing, impact tiers, standing rules, how a rule is lost, signals, time to detect, suspension, notifications and the Lean requirement. Declared for a later pull request. The membership gate does not read this. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. */
+  questions: {
+    note?: string;
+    /** A question type is three parts: a verb with its kind, a noun or a scoped noun, and the function that asks. */
+    type: {
+      note?: string;
+      /** The three parts, in that order. verb stands for the verb and its kind. */
+      parts: ["verb","noun","asking_function"];
+    };
+    /** How a question is routed. A rule names any non-empty subset of the three parts. The most specific matching rule wins. Equally specific matches go to the founder. Not enforced yet. */
+    routing: {
+      note?: string;
+      /** A rule matches when every part it names is the question's part. It may name one, two, or all three. */
+      match: "any_subset";
+      /** The matching rule that names the most parts wins. */
+      specificity: "most_specific";
+      /** When two matching rules name the same number of parts, the question goes to the founder. */
+      tie: "founder";
+      /** A rule routes to a function agent, to the founder, or to a standing answer. */
+      destinations: ["function_agent","founder","standing_answer"];
+      /** The routing rules. The default module has none. A venture adds its own. Not enforced yet. */
+      rules: OperatingRulesRoutingRule[];
+    };
+    /** Impact tiers for a question type. The tier is the max of four scores, each from score_min to score_max. Agents may raise a tier. Only the founder may lower one. Declared for a later pull request. The membership gate does not read this. */
+    impact: {
+      note?: string;
+      /** The tiers, from smallest to largest. */
+      tiers: ["low","costly","one_way_door"];
+      /** The four scores whose maximum is the tier. */
+      scores: ["severity","reversibility","time_to_detect","blast_radius"];
+      score_min: 1;
+      score_max: 3;
+      /** The tier is the maximum of the four scores. */
+      tier_of: "max";
+      /** An agent may raise a tier. */
+      agent: "raise";
+      /** Only the founder may lower a tier. */
+      founder: "lower";
+    };
+    /** Earning a standing rule. The Wilson lower bound is taken over the full answer history. There is no separate minimum number of answers. low and costly name the bound that must be reached, and costly is at least low. one_way_door and delete never stand. z, low and costly are provisional, pending Lean proofs. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a costly threshold below the low one. */
+    standing: {
+      note?: string;
+      bound: "wilson_lower";
+      /** The bound uses the full answer history, not a window. There is no separate minimum number of answers. The lower bound is what requires enough of them. */
+      history: "full";
+      /** The normal quantile for the Wilson lower bound, above 0 and at most 10. Provisional, pending a Lean proof: the number in the default module is not a settled constant. */
+      z: number;
+      /** A low-tier question type may stand when the Wilson lower bound is >= this. Provisional, pending a Lean proof. */
+      low: number;
+      /** A costly question type may stand when the Wilson lower bound is >= this. Provisional, pending a Lean proof. */
+      costly: number;
+      /** A one_way_door question type never earns a standing rule. */
+      one_way_door: "never";
+      /** A delete verb never earns a standing rule. */
+      delete: "never";
+      /** The founder approves each proposed standing rule. */
+      founder_approves: true;
+      /** A standing rule pauses when the founder answers differently. */
+      pause_when: "founder_answers_differently";
+    };
+    /** Losing a standing rule. SPRT on recent outcomes. The statistic is floored at 0. p0, p1, alpha and beta are provisional, pending Lean proofs. Each of alpha and beta is above 0 and below 1, and their sum is below 1. p0 and p1 are above 0 and below 1, and p0 is below p1. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a sum of alpha and beta that is not below 1, and a p0 that is not below p1. */
+    loss: {
+      note?: string;
+      method: "sprt";
+      /** The failure rate of a rule that is still good. Above 0 and below 1, and below p1. Provisional, pending a Lean proof. */
+      p0: number;
+      /** The failure rate of a rule that should be suspended. Above 0 and below 1, and above p0. Provisional, pending a Lean proof. */
+      p1: number;
+      /** The chance of suspending a rule that is still good. Above 0 and below 1, and alpha + beta is below 1. Provisional, pending a Lean proof. */
+      alpha: number;
+      /** The chance of keeping a rule that should be suspended. Above 0 and below 1, and alpha + beta is below 1. Provisional, pending a Lean proof. */
+      beta: number;
+      /** The SPRT statistic is floored at 0. */
+      statistic_floor: 0;
+    };
+    /** What counts as an outcome of a standing rule. Declared for a later pull request. The membership gate does not read this. */
+    signals: {
+      note?: string;
+      /** An override or a correction counts against the rule. */
+      against: ["override","correction"];
+      /** Silence is no data. It does not count for or against. */
+      silence: "no_data";
+      /** A frustration flag triggers a confirming question. It does not count as a failure. */
+      frustration: "confirming_question";
+      /** Periodic spot checks look at a sample of the rule's answers. */
+      spot_checks: "sample";
+      /** A package rejection counts as a failure for the rule that produced it. */
+      package_rejection: "failure";
+    };
+    /** When an outcome may be scored. Declared for a later pull request. The membership gate does not read this. */
+    time_to_detect: {
+      note?: string;
+      /** Each question type has its own time_to_detect. */
+      scope: "question_type";
+      /** Outcomes are scored only after time_to_detect has passed. */
+      score_when: "after_it_passes";
+      /** A slow-to-detect question type stays costly or higher. */
+      slow_minimum_tier: "costly";
+    };
+    /** What happens after a rule is suspended, and to a rule that runs a long time. Declared for a later pull request. The membership gate does not read this. */
+    suspension: {
+      note?: string;
+      /** A suspended rule restarts from zero. */
+      restart: "from_zero";
+      /** The restart waits out a cooldown. */
+      after: "cooldown";
+      /** A long-running rule gets periodic reconfirmation. */
+      long_running: "periodic_reconfirmation";
+    };
+    /** How the founder hears about a question, by tier. Declared for a later pull request. The membership gate does not read this. */
+    notifications: {
+      note?: string;
+      /** A one_way_door question interrupts immediately. */
+      one_way_door: "interrupt";
+      /** A costly question gets a veto window. */
+      costly: "veto_window";
+      /** A low question goes in a daily digest. */
+      low: "daily_digest";
+    };
+    /** What proof each tier needs before its math is used. Declared for a later pull request. The membership gate does not read this. */
+    lean: {
+      note?: string;
+      /** one_way_door math must be proven in Lean before use. */
+      one_way_door: "proven_before_use";
+      /** CI blocks until that proof is in. */
+      one_way_door_ci: "block";
+      /** costly runs record-only until the math is proven. */
+      costly: "record_only_until_proven";
+      /** low needs tests. */
+      low: "tests";
+      /** Lean is optional for low. */
+      low_lean: "optional";
+    };
+  };
+};
+
+/** One routing rule. It names any non-empty subset of verb (with kind), noun and asking function, and one destination. */
+export type OperatingRulesRoutingRule = {
+  /** Rule id, unique in the module. */
+  id: string;
+  /** The design-diff verb. When set, kind is required and must be one of that verb's kinds. */
+  verb?: "create" | "amend" | "delete";
+  /** The verb's kind. One kind. */
+  kind?: string;
+  /** A noun, or a scoped noun such as name@function. */
+  noun?: string;
+  /** The function that asks. A department id. */
+  asking_function?: string;
+  /** Where a matching question goes. */
+  to: "function_agent" | "founder" | "standing_answer";
+  /** The function agent. Required when to is function_agent, and only then. */
+  function?: string;
+  /** The standing answer. Required when to is standing_answer, and only then. */
+  answer?: string;
+  note?: string;
+} & ({
+  verb: "create";
+  kind: "originate" | "derive";
+} | {
+  verb: "amend";
+  kind: "append" | "rename" | "deprecate" | "revise";
+} | {
+  verb: "delete";
+  kind: "remove" | "merge";
+} | unknown);
+
 /** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). schema/check-governance.mjs checks it; schema/payouts.mjs computes payouts from it. */
 export type Ownership = {
   /**
@@ -2477,7 +2744,7 @@ export type ProvenanceEntry = {
   statements?: string[];
   /** gate only: the function id the membership gate ran as. */
   gate?: string;
-  /** gate only: the one verdict for this package at this function. A rejected package is retried once by the lead and then escalated to the founder. The verdict is not copied onto the handoff (R-17). */
+  /** gate only: the one verdict for this package at this function. A rejection's disposition is copied from the operating-rules module. The verdict is not copied onto the handoff (R-17). */
   judgment?: {
     /** admit: the package belongs to this function. refer: it belongs to owner instead. reject: it belongs to nobody until it is fixed. */
     verdict: "admit" | "refer" | "reject";
@@ -2496,13 +2763,16 @@ export type ProvenanceEntry = {
     /** incomplete only: the function id that touches left out. */
     missing?: string;
     detail?: string;
-    /** reject only: the lead retries once, then the founder decides. The retry itself is not built. */
+    /** reject only: copied from the operating-rules module. The default is that the lead retries once, then the founder decides. The retry itself is not built. */
     disposition?: {
       on_reject: "retry";
-      retry_by: "lead";
-      retries: 1;
+      /** Who retries. The default module says lead. */
+      retry_by: string;
+      /** How many times that actor retries before escalating. The default module says 1. */
+      retries: number;
       then: "escalate";
-      escalate_to: "founder";
+      /** Who receives the package after the retries. The default module says founder. */
+      escalate_to: string;
     };
   };
 };

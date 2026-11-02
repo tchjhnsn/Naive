@@ -24,6 +24,7 @@ const steps = [
   ["ventures: examples", "node", ["schema/check-ventures.mjs", "schema/examples/workspace"]],
   ["nouns", "node", ["schema/check-nouns.mjs"]],
   ["ontology membership gate", "node", ["schema/ontology-gate-test.ts"]],
+  ["operating rules: default module, invalid module, venture override", "node", ["schema/operating-rules-test.ts"]],
   ["integrations and interfaces", "node", ["schema/check-integrations.mjs"]],
   ["data model and kits", "node", ["schema/check-data-model.mjs"]],
   ["data packages and raw", "node", ["schema/check-data-packages.mjs", "instance"]],
