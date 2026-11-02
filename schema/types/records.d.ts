@@ -2347,13 +2347,13 @@ export type OperatingRules = {
       /** Only the founder may lower a tier. */
       founder: "lower";
     };
-    /** Earning a standing rule. The Wilson lower bound is taken over the full answer history. low and costly name the bound that must be reached. one_way_door and delete never stand. z, low and costly are provisional, pending Lean proofs. Declared for a later pull request. The membership gate does not read this. */
+    /** Earning a standing rule. The Wilson lower bound is taken over the full answer history. There is no separate minimum number of answers. low and costly name the bound that must be reached, and costly is at least low. one_way_door and delete never stand. z, low and costly are provisional, pending Lean proofs. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a costly threshold below the low one. */
     standing: {
       note?: string;
       bound: "wilson_lower";
-      /** The bound uses the full answer history, not a window. */
+      /** The bound uses the full answer history, not a window. There is no separate minimum number of answers. The lower bound is what requires enough of them. */
       history: "full";
-      /** The normal quantile for the Wilson lower bound. Provisional, pending a Lean proof: the number in the default module is not a settled constant. */
+      /** The normal quantile for the Wilson lower bound, above 0 and at most 10. Provisional, pending a Lean proof: the number in the default module is not a settled constant. */
       z: number;
       /** A low-tier question type may stand when the Wilson lower bound is >= this. Provisional, pending a Lean proof. */
       low: number;
@@ -2368,20 +2368,20 @@ export type OperatingRules = {
       /** A standing rule pauses when the founder answers differently. */
       pause_when: "founder_answers_differently";
     };
-    /** Losing a standing rule. SPRT on recent outcomes, with the statistic floored. p0, p1, alpha, beta and statistic_floor are provisional, pending Lean proofs. This replaces decay_window and decay_floor. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a module whose p0 is not below p1. */
+    /** Losing a standing rule. SPRT on recent outcomes. The statistic is floored at 0. p0, p1, alpha and beta are provisional, pending Lean proofs. Each of alpha and beta is above 0 and below 1, and their sum is below 1. p0 and p1 are above 0 and below 1, and p0 is below p1. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a sum of alpha and beta that is not below 1, and a p0 that is not below p1. */
     loss: {
       note?: string;
       method: "sprt";
-      /** The failure rate of a rule that is still good. Provisional, pending a Lean proof. */
+      /** The failure rate of a rule that is still good. Above 0 and below 1, and below p1. Provisional, pending a Lean proof. */
       p0: number;
-      /** The failure rate of a rule that should be suspended. Provisional, pending a Lean proof. */
+      /** The failure rate of a rule that should be suspended. Above 0 and below 1, and above p0. Provisional, pending a Lean proof. */
       p1: number;
-      /** The chance of suspending a rule that is still good. Provisional, pending a Lean proof. */
+      /** The chance of suspending a rule that is still good. Above 0 and below 1, and alpha + beta is below 1. Provisional, pending a Lean proof. */
       alpha: number;
-      /** The chance of keeping a rule that should be suspended. Provisional, pending a Lean proof. */
+      /** The chance of keeping a rule that should be suspended. Above 0 and below 1, and alpha + beta is below 1. Provisional, pending a Lean proof. */
       beta: number;
-      /** The SPRT statistic is floored at this. Provisional, pending a Lean proof. */
-      statistic_floor: number;
+      /** The SPRT statistic is floored at 0. */
+      statistic_floor: 0;
     };
     /** What counts as an outcome of a standing rule. Declared for a later pull request. The membership gate does not read this. */
     signals: {

@@ -302,15 +302,16 @@
           "type": "object",
           "additionalProperties": false,
           "required": ["bound", "history", "z", "low", "costly", "one_way_door", "delete", "founder_approves", "pause_when"],
-          "description": "Earning a standing rule. The Wilson lower bound is taken over the full answer history. low and costly name the bound that must be reached. one_way_door and delete never stand. z, low and costly are provisional, pending Lean proofs. Declared for a later pull request. The membership gate does not read this.",
+          "description": "Earning a standing rule. The Wilson lower bound is taken over the full answer history. There is no separate minimum number of answers. low and costly name the bound that must be reached, and costly is at least low. one_way_door and delete never stand. z, low and costly are provisional, pending Lean proofs. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a costly threshold below the low one.",
           "properties": {
             "note": { "type": "string" },
             "bound": { "const": "wilson_lower" },
-            "history": { "const": "full", "description": "The bound uses the full answer history, not a window." },
+            "history": { "const": "full", "description": "The bound uses the full answer history, not a window. There is no separate minimum number of answers. The lower bound is what requires enough of them." },
             "z": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "description": "The normal quantile for the Wilson lower bound. Provisional, pending a Lean proof: the number in the default module is not a settled constant."
+              "maximum": 10,
+              "description": "The normal quantile for the Wilson lower bound, above 0 and at most 10. Provisional, pending a Lean proof: the number in the default module is not a settled constant."
             },
             "low": {
               "type": "number",
@@ -334,37 +335,37 @@
           "type": "object",
           "additionalProperties": false,
           "required": ["method", "p0", "p1", "alpha", "beta", "statistic_floor"],
-          "description": "Losing a standing rule. SPRT on recent outcomes, with the statistic floored. p0, p1, alpha, beta and statistic_floor are provisional, pending Lean proofs. This replaces decay_window and decay_floor. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a module whose p0 is not below p1.",
+          "description": "Losing a standing rule. SPRT on recent outcomes. The statistic is floored at 0. p0, p1, alpha and beta are provisional, pending Lean proofs. Each of alpha and beta is above 0 and below 1, and their sum is below 1. p0 and p1 are above 0 and below 1, and p0 is below p1. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a sum of alpha and beta that is not below 1, and a p0 that is not below p1.",
           "properties": {
             "note": { "type": "string" },
             "method": { "const": "sprt" },
             "p0": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "maximum": 1,
-              "description": "The failure rate of a rule that is still good. Provisional, pending a Lean proof."
+              "exclusiveMaximum": 1,
+              "description": "The failure rate of a rule that is still good. Above 0 and below 1, and below p1. Provisional, pending a Lean proof."
             },
             "p1": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "maximum": 1,
-              "description": "The failure rate of a rule that should be suspended. Provisional, pending a Lean proof."
+              "exclusiveMaximum": 1,
+              "description": "The failure rate of a rule that should be suspended. Above 0 and below 1, and above p0. Provisional, pending a Lean proof."
             },
             "alpha": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "maximum": 1,
-              "description": "The chance of suspending a rule that is still good. Provisional, pending a Lean proof."
+              "exclusiveMaximum": 1,
+              "description": "The chance of suspending a rule that is still good. Above 0 and below 1, and alpha + beta is below 1. Provisional, pending a Lean proof."
             },
             "beta": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "maximum": 1,
-              "description": "The chance of keeping a rule that should be suspended. Provisional, pending a Lean proof."
+              "exclusiveMaximum": 1,
+              "description": "The chance of keeping a rule that should be suspended. Above 0 and below 1, and alpha + beta is below 1. Provisional, pending a Lean proof."
             },
             "statistic_floor": {
-              "type": "number",
-              "description": "The SPRT statistic is floored at this. Provisional, pending a Lean proof."
+              "const": 0,
+              "description": "The SPRT statistic is floored at 0."
             }
           }
         },

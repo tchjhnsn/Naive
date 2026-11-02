@@ -43,11 +43,11 @@ const throws = (fn: () => unknown) => {
   try { fn(); return ""; }
   catch (e) { return e instanceof Error ? e.message : String(e); }
 };
-/** The loader reports the same line schema/validate.py prints. */
-const agrees = (file: string) => {
+/** The loader reports the validate.py line that names this field. */
+const agrees = (file: string, field: string) => {
   const ran = python(file);
   const message = throws(() => readOperatingRules(file));
-  const line = (ran.stdout ?? "").split("\n").map((l) => l.trim()).find((l) => l && l !== "valid");
+  const line = (ran.stdout ?? "").split("\n").map((l) => l.trim()).find((l) => l.includes(field));
   return ran.status !== 0 && !!line && message.includes(line);
 };
 
@@ -66,7 +66,7 @@ expect("the most specific routing rule wins, and a tie goes to the founder", rul
 expect("a one_way_door package skips the retry and goes to the founder", rules.rejection.retry.one_way_door.retries === 0 && rules.rejection.retry.one_way_door.then === "escalate" && rules.rejection.retry.one_way_door.escalate_to === "founder" && rules.rejection.retry.retries === 1);
 expect("impact is the max of four scores, and only the founder may lower a tier", rules.questions.impact.tiers.join(",") === "low,costly,one_way_door" && rules.questions.impact.scores.join(",") === "severity,reversibility,time_to_detect,blast_radius" && rules.questions.impact.score_min === 1 && rules.questions.impact.score_max === 3 && rules.questions.impact.tier_of === "max" && rules.questions.impact.agent === "raise" && rules.questions.impact.founder === "lower");
 expect("one_way_door and delete never stand, and the founder still approves a rule", rules.questions.standing.bound === "wilson_lower" && rules.questions.standing.history === "full" && rules.questions.standing.one_way_door === "never" && rules.questions.standing.delete === "never" && rules.questions.standing.founder_approves === true && rules.questions.standing.pause_when === "founder_answers_differently");
-expect("a rule is lost by SPRT", rules.questions.loss.method === "sprt");
+expect("a rule is lost by SPRT and the statistic is floored at 0", rules.questions.loss.method === "sprt" && rules.questions.loss.statistic_floor === 0);
 expect("signals count override and correction, and not silence or frustration", rules.questions.signals.against.join(",") === "override,correction" && rules.questions.signals.silence === "no_data" && rules.questions.signals.frustration === "confirming_question" && rules.questions.signals.spot_checks === "sample" && rules.questions.signals.package_rejection === "failure");
 expect("outcomes wait for time_to_detect, and a slow type stays costly or higher", rules.questions.time_to_detect.scope === "question_type" && rules.questions.time_to_detect.score_when === "after_it_passes" && rules.questions.time_to_detect.slow_minimum_tier === "costly");
 expect("a suspended rule restarts from zero after a cooldown", rules.questions.suspension.restart === "from_zero" && rules.questions.suspension.after === "cooldown" && rules.questions.suspension.long_running === "periodic_reconfirmation");
@@ -75,11 +75,11 @@ expect("Lean is required before one_way_door math is used", rules.questions.lean
 
 {
   const file = copyModule((m) => { (m.rejection as { retry: { retries: number } }).retry.retries = -1; });
-  expect("a negative retry count is invalid", agrees(file));
+  expect("a negative retry count is invalid", agrees(file, "retries"));
 }
 {
   const file = copyModule((m) => { m.extra = true; });
-  expect("an unknown field is invalid", agrees(file));
+  expect("an unknown field is invalid", agrees(file, "extra"));
 }
 {
   const file = copyModule((m) => { (m.jev as { yes: number }).yes = 0.2; });
@@ -88,15 +88,41 @@ expect("Lean is required before one_way_door math is used", rules.questions.lean
 }
 {
   const file = copyModule((m) => { (m.questions as { standing: { z: number } }).standing.z = 0; });
-  expect("a Wilson z of 0 is invalid", agrees(file));
+  expect("a Wilson z of 0 is invalid", agrees(file, "standing/z"));
+}
+{
+  const file = copyModule((m) => { (m.questions as { standing: { z: number } }).standing.z = 50; });
+  expect("a Wilson z of 50 is invalid", agrees(file, "standing/z"));
 }
 {
   const file = copyModule((m) => { (m.questions as { standing: { low: number } }).standing.low = 1.2; });
-  expect("a low-tier Wilson threshold above 1 is invalid", agrees(file));
+  expect("a low-tier Wilson threshold above 1 is invalid", agrees(file, "standing/low"));
+}
+{
+  const file = copyModule((m) => { (m.questions as { standing: { costly: number } }).standing.costly = 0.5; });
+  const message = throws(() => readOperatingRules(file));
+  expect("a costly threshold below the low one is invalid", python(file).status === 0 && /costly must be at least/.test(message));
 }
 {
   const file = copyModule((m) => { (m.questions as { loss: { p0: number } }).loss.p0 = 0; });
-  expect("an SPRT p0 of 0 is invalid", agrees(file));
+  expect("an SPRT p0 of 0 is invalid", agrees(file, "loss/p0"));
+}
+{
+  const file = copyModule((m) => { (m.questions as { loss: { p1: number } }).loss.p1 = 1; });
+  expect("an SPRT p1 of 1 is invalid", agrees(file, "loss/p1"));
+}
+{
+  const file = copyModule((m) => { (m.questions as { loss: { alpha: number } }).loss.alpha = 1; });
+  expect("an SPRT alpha of 1 is invalid", agrees(file, "loss/alpha"));
+}
+{
+  const file = copyModule((m) => { (m.questions as { loss: { alpha: number; beta: number } }).loss.alpha = 0.6; (m.questions as { loss: { beta: number } }).loss.beta = 0.6; });
+  const message = throws(() => readOperatingRules(file));
+  expect("SPRT alpha + beta must be below 1", python(file).status === 0 && /alpha \+ questions.loss.beta must be below 1/.test(message));
+}
+{
+  const file = copyModule((m) => { (m.questions as { loss: { statistic_floor: number } }).loss.statistic_floor = 5; });
+  expect("an SPRT statistic floor other than 0 is invalid", agrees(file, "statistic_floor"));
 }
 {
   const file = copyModule((m) => { (m.questions as { loss: { p0: number; p1: number } }).loss.p0 = 0.4; (m.questions as { loss: { p1: number } }).loss.p1 = 0.2; });
@@ -106,22 +132,22 @@ expect("Lean is required before one_way_door math is used", rules.questions.lean
 {
   const rule = { id: "drop-price", verb: "delete", kind: "remove", to: "standing_answer", answer: "No." };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  expect("a standing answer on a delete verb is invalid", agrees(file));
+  expect("a standing answer on a delete verb is invalid", agrees(file, "delete"));
 }
 {
   const rule = { id: "bad-kind", verb: "create", kind: "remove", noun: "pricing decision", to: "founder" };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  expect("a kind from another verb is invalid", agrees(file));
+  expect("a kind from another verb is invalid", agrees(file, "rules/0"));
 }
 {
   const rule = { id: "bare", to: "founder" };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  expect("a rule that names no part is invalid", agrees(file));
+  expect("a rule that names no part is invalid", agrees(file, "rules/0"));
 }
 {
   const rule = { id: "no-agent", verb: "amend", kind: "revise", noun: "pricing decision", to: "function_agent" };
   const file = copyModule((m) => { ((m.questions as { routing: { rules: unknown[] } }).routing.rules) = [rule]; });
-  expect("a function agent with no function is invalid", agrees(file));
+  expect("a function agent with no function is invalid", agrees(file, "function"));
 }
 
 const venture = join(tmp, "venture");

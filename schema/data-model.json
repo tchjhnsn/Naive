@@ -851,7 +851,7 @@
           "checked_by": "schema/operating-rules-test.ts"
         }
       ],
-      "note": "The default operating-rules module. A venture's operating-rules.json merges over it. The membership gate reads rejection.retry. Parent-only edits, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests. The Wilson z and tier thresholds, and the SPRT parameters, are provisional, pending Lean proofs"
+      "note": "The default operating-rules module. A venture's operating-rules.json merges over it. The membership gate reads rejection.retry. Parent-only edits, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests. The Wilson z and tier thresholds, and the SPRT rates p0, p1, alpha and beta, are provisional, pending Lean proofs. The SPRT statistic is floored at 0"
     },
     {
       "id": "department",

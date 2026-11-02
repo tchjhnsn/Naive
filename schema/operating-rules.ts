@@ -5,11 +5,13 @@
 // meta/operating-rules.json. Scalars and arrays in the overlay replace the default.
 // Objects merge key by key. The merged module is checked by schema/validate.py, the
 // same checker the handoff schema uses. Three checks the schema does not express stay
-// here: jev.yes must be above jev.no, loss.p0 must be below loss.p1, and a routing rule id is unique.
+// here: jev.yes above jev.no, loss.p0 below loss.p1, alpha + beta below 1,
+// standing.costly at least standing.low, and a routing rule id is unique.
 //
 // The membership gate reads rejection.retry (schema/ontology-gate.ts). Question
-// routing, pattern learning, standing-rule decay and the other settings are
-// declared for later pull requests. This module validates them and does not enforce them.
+// routing, impact tiers, standing rules, SPRT loss, signals, time to detect,
+// suspension, notifications and the Lean requirement are declared for later
+// pull requests. This module validates them and does not enforce them.
 //
 //   node schema/operating-rules-test.ts
 
@@ -42,15 +44,16 @@ function schemaProblems(value: unknown): string[] {
     const script = fileURLToPath(new URL("./validate.py", import.meta.url));
     const ran = spawnSync("python3", ["-I", script, "--schema", "operating-rules.schema.json", "--file", file], { encoding: "utf8" });
     const text = `${ran.stdout ?? ""}\n${ran.stderr ?? ""}\n${ran.error?.message ?? ""}`.split("\n").map((line) => line.trim()).filter(Boolean);
-    if (ran.error || ran.status === 2 || ran.status === null) throw new OperatingRulesError(text.join("\n") || "the schema checker could not run");
     if (ran.status === 0) return [];
-    return text.length ? text : ["the module is not valid"];
+    // Exit 1 is the checker reporting that this module failed its schema. Every other exit is the tool.
+    if (ran.status === 1) return text.length ? text : ["the module is not valid"];
+    throw new OperatingRulesError(text.join("\n") || "the schema checker could not run");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
 
-/** Schema problems for one module document, plus the two checks the schema does not express. */
+/** Schema problems for one module document, plus the checks the schema does not express. */
 export function moduleProblems(value: unknown): string[] {
   const errors = schemaProblems(value);
   if (isRecord(value) && isRecord(value.jev) && typeof value.jev.yes === "number" && typeof value.jev.no === "number" && value.jev.yes <= value.jev.no) {
@@ -59,6 +62,13 @@ export function moduleProblems(value: unknown): string[] {
   const loss = isRecord(value) && isRecord(value.questions) ? value.questions.loss : undefined;
   if (isRecord(loss) && typeof loss.p0 === "number" && typeof loss.p1 === "number" && loss.p0 >= loss.p1) {
     errors.push("questions.loss.p0 must be below questions.loss.p1");
+  }
+  if (isRecord(loss) && typeof loss.alpha === "number" && typeof loss.beta === "number" && loss.alpha + loss.beta >= 1) {
+    errors.push("questions.loss.alpha + questions.loss.beta must be below 1");
+  }
+  const standing = isRecord(value) && isRecord(value.questions) ? value.questions.standing : undefined;
+  if (isRecord(standing) && typeof standing.low === "number" && typeof standing.costly === "number" && standing.costly < standing.low) {
+    errors.push("questions.standing.costly must be at least questions.standing.low");
   }
   const rules = isRecord(value) && isRecord(value.questions) && isRecord(value.questions.routing) ? value.questions.routing.rules : undefined;
   if (Array.isArray(rules)) {

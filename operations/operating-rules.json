@@ -100,7 +100,7 @@
       "delete": "never",
       "founder_approves": true,
       "pause_when": "founder_answers_differently",
-      "note": "Provisional, pending Lean: z, low and costly. A standing rule is earned when the Wilson lower bound over the full answer history reaches the tier's threshold. one_way_door never stands. Deletes never stand. The founder approves each rule. A rule pauses when the founder answers differently. Not enforced yet."
+      "note": "Provisional, pending Lean: z, low and costly. A standing rule is earned when the Wilson lower bound over the full answer history reaches the tier's threshold. There is no separate minimum number of answers. The lower bound is what requires enough of them. one_way_door never stands. Deletes never stand. The founder approves each rule. A rule pauses when the founder answers differently. Not enforced yet."
     },
     "loss": {
       "method": "sprt",
@@ -109,7 +109,7 @@
       "alpha": 0.05,
       "beta": 0.05,
       "statistic_floor": 0,
-      "note": "Provisional, pending Lean: p0, p1, alpha, beta and statistic_floor. A standing rule is lost by SPRT on recent outcomes, and the statistic is floored. This replaces decay_window and decay_floor. Not enforced yet."
+      "note": "Provisional, pending Lean: p0, p1, alpha and beta. Each is above 0 and below 1, alpha + beta is below 1, and p0 is below p1. The statistic is floored at 0. A standing rule is lost by SPRT on recent outcomes. Not enforced yet."
     },
     "signals": {
       "against": ["override", "correction"],
