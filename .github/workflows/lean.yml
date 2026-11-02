@@ -16,4 +16,7 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
       - name: Build the proofs
         working-directory: lean
-        run: lake build
+        run: |
+          lake update
+          lake exe cache get
+          lake build
