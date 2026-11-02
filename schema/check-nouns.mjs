@@ -14,7 +14,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { checkOntology, decidePackage, GateToolError } from "./ontology-gate.ts";
+import { checkOntology, decidePackage } from "./ontology-gate.ts";
 
 // EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
@@ -48,8 +48,8 @@ if (packageAt !== -1) {
     console.log(JSON.stringify(verdict, null, 2));
     process.exit(verdict.verdict === "admit" ? 0 : 1);
   } catch (e) {
-    if (e instanceof GateToolError || e?.name === "GateToolError") { console.error(e.message); process.exit(2); }
-    throw e;
+    console.error(e instanceof Error ? e.message : String(e));
+    process.exit(2);
   }
 }
 

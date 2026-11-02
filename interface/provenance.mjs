@@ -9,7 +9,7 @@
 
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { appendFileSync, closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, statSync, unlinkSync } from "node:fs";
+import { appendFileSync, closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { emit } from "./instrumentation.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
@@ -37,6 +37,20 @@ function sleepMs(ms) {
   if (ran.error) { const end = Date.now() + ms; while (Date.now() < end) Date.now(); }
 }
 
+const LOCK_STALE_MS = 2000;
+const LOCK_WAIT_MS = 15000;
+
+/** Move a dead writer's lock aside, then delete that copy. rename is atomic, so a second waiter cannot unlink the lock the first waiter just took. */
+function stealStaleLock(lock) {
+  let st;
+  try { st = statSync(lock); } catch { return; }
+  if (st.isDirectory()) throw new Error(`could not lock ${lock}: not a lock file`);
+  if (Date.now() - st.mtimeMs < LOCK_STALE_MS) return;
+  const parked = `${lock}.${process.pid}.${Date.now()}`;
+  try { renameSync(lock, parked); } catch { return; }
+  try { unlinkSync(parked); } catch { /* already gone */ }
+}
+
 /** One writer at a time for a package sidecar. The chain is read again inside the lock. */
 function withSidecarLock(packageFile, fn) {
   const lock = `${gateSidecar(packageFile)}.lock`;
@@ -45,9 +59,9 @@ function withSidecarLock(packageFile, fn) {
     let fd;
     try { fd = openSync(lock, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR); }
     catch (e) {
-      if (e?.code !== "EEXIST") throw e;
-      try { if (Date.now() - statSync(lock).mtimeMs > 30000) unlinkSync(lock); } catch { /* the holder just released it */ }
-      if (Date.now() - start > 10000) throw new Error(`could not lock ${lock}`);
+      if (e?.code !== "EEXIST") throw new Error(`could not lock ${lock}: ${e?.code ?? e?.message ?? e}`);
+      stealStaleLock(lock);
+      if (Date.now() - start > LOCK_WAIT_MS) throw new Error(`could not lock ${lock}`);
       sleepMs(5);
       continue;
     }

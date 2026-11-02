@@ -7,11 +7,11 @@
 // G1 the handoff schema. G2 every term is a live noun. G3 the type noun's function is the
 // receiver, otherwise refer to its owner. G4 some term is owned by the receiver, and every term
 // owned by another function names that function in touches. G5 where the type lists properties,
-// schema/terms/engine.ts runs over facts (EE-095). A fact value that is an object is the term's
-// record, and the term's own checks run. A boolean claim is checked as well: false fails that
-// property even when another fact's record would let the check pass. The verdict is written to
-// <id>.provenance.jsonl, not onto the handoff. A schema checker that cannot run (exit 2) is a
-// tool error: no verdict is printed and nothing is recorded.
+// schema/terms/engine.ts runs over facts (EE-095). A fact value is either the boolean true or a
+// record. Anything else fails that property. Two records that give one field different values
+// are a reject, not a merge. The verdict is written to <id>.provenance.jsonl, not onto the
+// handoff. Only a real schema-validation failure (the checker exits 1) is recorded as a reject.
+// Any other failure of the checker is a tool error: no verdict, and nothing is recorded.
 
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -110,29 +110,53 @@ function assertionTerm(term: Term<Base>): Term<Base> {
   };
 }
 
+/** A fact record is a plain object. An array, null, a number or a string is not one. */
+function plainRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+/** Stable equality, so two records of the same fields in a different order do not conflict. */
+function stable(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stable).join(",")}]`;
+  const record = plainRecord(value);
+  if (record) return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stable(record[key])}`).join(",")}}`;
+  return JSON.stringify(value) ?? "undefined";
+}
+
 /** Property ids that do not hold. Empty when the type defines none, or when every one holds. */
 export function failedProperties(noun: Noun, facts: Block["facts"]): string[] {
   const properties = noun.properties ?? [];
   if (!properties.length) return [];
   const term = noun.term ? termById(noun.term) : null;
   if (!term) return [...properties];
-  const record: Record<string, unknown> = { confirmed: true };
+  const record: Record<string, unknown> = {};
   let sawObject = false;
+  const conflicts: string[] = [];
   for (const id of properties) {
-    const value = facts?.[id]?.value;
-    if (value && typeof value === "object") { Object.assign(record, value); sawObject = true; }
+    const value = plainRecord(facts?.[id]?.value);
+    if (!value) continue;
+    sawObject = true;
+    const clash = Object.entries(value).some(([key, field]) => Object.prototype.hasOwnProperty.call(record, key) && stable(record[key]) !== stable(field));
+    if (clash) conflicts.push(id);
+    else Object.assign(record, value);
   }
+  // Who confirms a package's facts is still open. Until that is decided, a record that does not
+  // say is treated as confirmed, and one that says otherwise is left as it said.
+  if (!Object.prototype.hasOwnProperty.call(record, "confirmed")) record.confirmed = true;
   const ran = sawObject
     ? run(term, record as Base)
     : run(assertionTerm(term), { confirmed: true, ...(facts ?? {}) } as Base);
   const failed = [...ran.failed];
+  for (const id of conflicts) if (!failed.includes(id)) failed.push(id);
   const known = new Set(term.props.map((p) => p.id));
   for (const id of properties) {
     if (!known.has(id) && !failed.includes(id)) failed.push(id);
     const fact = facts?.[id];
     if ((!fact || fact.quote.trim() === "") && !failed.includes(id)) failed.push(id);
-    // The package's own claim. A false boolean is not dropped when some other fact is a record.
-    if (fact && fact.value === false && !failed.includes(id)) failed.push(id);
+    // true, or a record. null, 0, a string, false, an array: the property does not hold.
+    const value = fact?.value;
+    if (fact && value !== true && !plainRecord(value) && !failed.includes(id)) failed.push(id);
   }
   return failed;
 }
@@ -176,11 +200,15 @@ function checkScopes(nouns: Noun[], departments: Set<string>, errors: string[]):
     if (!match) continue;
     const stem = match[1] ?? "";
     const suffix = match[2] ?? "";
+    if (noun.status === "retired") continue;
     stems.add(stem);
     if (!departments.has(suffix)) errors.push(`docs/ontology.json: ${noun.noun}: scope ${suffix} is not a function id`);
     if (noun.function !== suffix) errors.push(`docs/ontology.json: ${noun.noun}: function ${noun.function ?? "nobody"} does not match its scope ${suffix}`);
   }
-  for (const noun of nouns) if (!noun.noun.includes("@") && stems.has(noun.noun)) errors.push(`docs/ontology.json: ${noun.noun}: bare noun beside a scoped sense`);
+  for (const noun of nouns) {
+    if (noun.status === "retired" || noun.noun.includes("@")) continue;
+    if (stems.has(noun.noun)) errors.push(`docs/ontology.json: ${noun.noun}: bare noun beside a scoped sense`);
+  }
 }
 
 function checkProperties(noun: Noun, errors: string[]): void {
@@ -204,9 +232,10 @@ function schemaProblems(file: string): string[] {
   const script = fileURLToPath(new URL("./validate.py", import.meta.url));
   const ran = spawnSync("python3", ["-I", script, "--schema", "handoff.schema.json", "--file", file], { encoding: "utf8" });
   const text = `${ran.stdout ?? ""}\n${ran.stderr ?? ""}\n${ran.error?.message ?? ""}`.split("\n").map((l) => l.trim()).filter(Boolean);
-  if (ran.error || ran.status === 2 || ran.status === null) throw new GateToolError(text.join("\n") || "the schema checker could not run");
   if (ran.status === 0) return [];
-  return text.length ? text : ["the package is not a valid handoff"];
+  // Exit 1 is the checker reporting that this package failed its schema. Every other exit is the tool.
+  if (ran.status === 1) return text.length ? text : ["the package is not a valid handoff"];
+  throw new GateToolError(text.join("\n") || "the schema checker could not run");
 }
 
 function reject(fields: Omit<Judgment, "verdict" | "disposition">): Judgment {

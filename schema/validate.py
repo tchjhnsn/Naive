@@ -6,18 +6,29 @@
 Needs the jsonschema package (pip install jsonschema). Which files each schema governs comes from schema/data-model.json;
 schema/check-data-model.mjs makes sure no JSON file is left without a record type.
 """
-import glob, json, os, sys
+import glob, json, os, sys, traceback
 from pathlib import Path
 
-# Exit 2 is a broken tool, not an invalid record. The membership gate must not record that as a reject.
-# NAIVE_VALIDATE_NO_JSONSCHEMA=1 is how the gate test simulates a missing dependency.
+# Exit 1 means the record failed validation. Exit 2 means the checker itself failed, and the
+# membership gate must not record that as a reject. SystemExit keeps the code it was given.
+def tool_crash(kind, value, tb):
+    traceback.print_exception(kind, value, tb)
+    os._exit(2)
+
+sys.excepthook = tool_crash
+
+# NAIVE_VALIDATE_NO_JSONSCHEMA=1 simulates a missing dependency. NAIVE_VALIDATE_CRASH=1 raises,
+# so the test runs this hook instead of a special exit.
 if os.environ.get("NAIVE_VALIDATE_NO_JSONSCHEMA") == "1":
     sys.stderr.write("validate.py needs jsonschema: pip install jsonschema\n")
     sys.exit(2)
+if os.environ.get("NAIVE_VALIDATE_CRASH") == "1":
+    raise RuntimeError("schema checker crashed")
 try:
     import jsonschema
-except ImportError:
-    sys.stderr.write("validate.py needs jsonschema: pip install jsonschema\n")
+    from referencing import Registry, Resource
+except ImportError as error:
+    sys.stderr.write(f"validate.py needs jsonschema: pip install jsonschema ({error})\n")
     sys.exit(2)
 
 root = Path(__file__).resolve().parent.parent
@@ -27,14 +38,16 @@ root = Path(__file__).resolve().parent.parent
 model = json.loads((root / "schema/data-model.json").read_text())
 RULES = [(r["id"], r["schema"], r.get("form", "json"), r["paths"]) for r in model["records"]
          if r["schema"] and r["schema"].startswith("schema/") and r.get("form", "json") in ("json", "json-list", "json-lines")]
-from referencing import Registry, Resource
-
 # Every schema is registered by its $id, so one may $ref another (or itself) by file name.
 schemas = {p.name: json.loads(p.read_text()) for p in (root / "schema").glob("*.schema.json")}
 registry = Registry().with_resources((s.get("$id", n), Resource.from_contents(s)) for n, s in schemas.items())
 failed = checked = 0
 if "--file" in sys.argv:
-    one = json.loads(Path(sys.argv[sys.argv.index("--file") + 1]).read_text())
+    try:
+        one = json.loads(Path(sys.argv[sys.argv.index("--file") + 1]).read_text())
+    except ValueError as error:
+        print(f"(root): {error}")
+        sys.exit(1)
     v = jsonschema.Draft202012Validator(schemas[sys.argv[sys.argv.index("--schema") + 1]], registry=registry, format_checker=jsonschema.FormatChecker())
     errs = [f"{'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}" for e in v.iter_errors(one)]
     print("\n".join(errs) if errs else "valid")
@@ -52,8 +65,13 @@ validators = {}
 for f in sorted(best):
     _, schema, form = best[f]
     v = validators.setdefault(schema, jsonschema.Draft202012Validator(schemas[Path(schema).name], registry=registry, format_checker=jsonschema.FormatChecker()))
-    text = Path(f).read_text()
-    docs = [json.loads(l) for l in text.splitlines() if l.strip()] if form == "json-lines" else json.loads(text)
+    try:
+        text = Path(f).read_text()
+        docs = [json.loads(l) for l in text.splitlines() if l.strip()] if form == "json-lines" else json.loads(text)
+    except ValueError as error:
+        failed += 1
+        print(f"{Path(f).relative_to(root)}: (root): {error}")
+        continue
     docs = docs if form != "json" else [docs]
     for d in docs:
         checked += 1

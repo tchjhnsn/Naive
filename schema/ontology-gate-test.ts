@@ -5,7 +5,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -153,6 +153,34 @@ for (const [file, fn, , verdict, witness] of rows) {
   expect("a false fact is still checked when another fact carries the record", got.status !== 0 && got.body?.verdict === "reject" && got.body.code === "properties" && got.body.failed?.includes("F4") === true);
 }
 {
+  // On f8b1b52 only boolean false was rejected. null, 0, strings and arrays were admitted once any fact was a record.
+  const claim = (value: unknown, name: string) => {
+    const src = JSON.parse(readFileSync(fix("founder-properties.json"), "utf8")) as { ontology: { facts: { F1: { value: { stake?: boolean } }; F4: { value: unknown; quote: string } } } };
+    src.ontology.facts.F1.value.stake = true;
+    src.ontology.facts.F4 = { value, quote: "The claim about the stake." };
+    const file = join(tmp, name);
+    writeFileSync(file, JSON.stringify(src));
+    return gate(file, "strategy");
+  };
+  for (const [label, value] of [["null", null], ["zero", 0], ["string", "no stake"], ["array", []], ["one", 1]] as [string, unknown][]) {
+    const got = claim(value, `claim-${label}.json`);
+    expect(`a fact value of ${label} fails its property`, got.status !== 0 && got.body?.verdict === "reject" && got.body?.code === "properties" && got.body?.failed?.includes("F4") === true);
+  }
+  const clash = JSON.parse(readFileSync(fix("founder-properties.json"), "utf8")) as { ontology: { facts: { F1: { value: { stake?: boolean } }; F4: { value: unknown; quote: string } } } };
+  clash.ontology.facts.F1.value.stake = false;
+  clash.ontology.facts.F4 = { value: { stake: true }, quote: "This record says there is a stake." };
+  const clashFile = join(tmp, "claim-clash.json");
+  writeFileSync(clashFile, JSON.stringify(clash));
+  const clashed = gate(clashFile, "strategy");
+  expect("records that disagree are a reject, not a merge", clashed.status !== 0 && clashed.body?.verdict === "reject" && clashed.body?.failed?.includes("F4") === true);
+  const agree = JSON.parse(readFileSync(fix("founder-properties.json"), "utf8")) as { ontology: { facts: { F1: { value: { stake?: boolean } }; F4: { value: unknown; quote: string } } } };
+  agree.ontology.facts.F1.value.stake = true;
+  agree.ontology.facts.F4 = { value: { stake: true }, quote: "The same stake." };
+  const agreeFile = join(tmp, "claim-agree.json");
+  writeFileSync(agreeFile, JSON.stringify(agree));
+  expect("records that agree on a field still admit", gate(agreeFile, "strategy").body?.verdict === "admit");
+}
+{
   const got = gate(fix("pricing-admit.json"), "human-capital");
   expect("a department with no function noun is not a receiver", got.body?.code === "unknown" && got.body.verdict === "reject" && got.body.owner === undefined);
 }
@@ -168,6 +196,41 @@ for (const [file, fn, , verdict, witness] of rows) {
   cpSync(fix("pricing-admit.json"), file);
   const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"], { NAIVE_VALIDATE_NO_JSONSCHEMA: "1" });
   expect("a missing schema checker is a tool error and records nothing", ran.status === 2 && !ran.stdout.includes("\"verdict\"") && !existsSync(join(dir, "pricing-admit.provenance.jsonl")));
+}
+{
+  const dir = join(tmp, "crash");
+  mkdirSync(dir);
+  const file = join(dir, "pricing-admit.json");
+  cpSync(fix("pricing-admit.json"), file);
+  const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"], { NAIVE_VALIDATE_CRASH: "1" });
+  expect("a schema checker crash is a tool error and records nothing", ran.status === 2 && !ran.stdout.includes("\"verdict\"") && !existsSync(join(dir, "pricing-admit.provenance.jsonl")));
+}
+{
+  const bad = join(tmp, "not-json.json");
+  writeFileSync(bad, "{");
+  const got = gate(bad, "marketing-and-sales");
+  expect("a package that is not JSON is a schema reject, not a tool error", got.status === 1 && got.body?.code === "schema");
+}
+{
+  const dir = join(tmp, "stale-lock");
+  mkdirSync(dir);
+  const file = join(dir, "pricing-admit.json");
+  cpSync(fix("pricing-admit.json"), file);
+  const lock = join(dir, "pricing-admit.provenance.jsonl.lock");
+  writeFileSync(lock, "");
+  const then = (Date.now() - 10000) / 1000;
+  utimesSync(lock, then, then);
+  const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"]);
+  expect("a dead sidecar lock is taken and the gate still records", ran.status === 0 && existsSync(join(dir, "pricing-admit.provenance.jsonl")));
+}
+{
+  const dir = join(tmp, "lock-dir");
+  mkdirSync(dir);
+  const file = join(dir, "pricing-admit.json");
+  cpSync(fix("pricing-admit.json"), file);
+  mkdirSync(join(dir, "pricing-admit.provenance.jsonl.lock"));
+  const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"]);
+  expect("a lock error exits 2 and records nothing", ran.status === 2 && !ran.stdout.includes("\"verdict\"") && !existsSync(join(dir, "pricing-admit.provenance.jsonl")));
 }
 
 // Provenance stays off the handoff. The sidecar binds to the body's sha256, so the same gate
@@ -276,6 +339,11 @@ expect("the repository ontology passes", run(process.execPath, [join(root, "sche
   const dir = sparse((o) => { o.nouns.push({ noun: "vendor@nope", level: "venture", meaning: "A sense with no function.", standard: "ours", status: "proposed", function: null, handoff_type: false }); });
   const ran = check(dir);
   expect("a scope that is not a function id fails", ran.status !== 0 && /vendor@nope: scope nope is not a function id/.test(ran.stderr));
+}
+{
+  const dir = sparse((o) => { o.nouns.push({ noun: "customer", level: "venture", meaning: "Retired once the word was split.", standard: "ours", status: "retired", replaced_by: "customer@finance", function: null, handoff_type: false }); });
+  const ran = check(dir);
+  expect("a retired bare noun may sit beside its scoped senses", ran.status === 0);
 }
 
 function spawnGate(file: string, fn: string): Promise<{ status: number | null }> {
