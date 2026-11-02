@@ -1,6 +1,9 @@
 name: lean
 on:
+  # `branches` is the pull request base. Paths still apply: both filters have to match.
   pull_request:
+    # A PR retargeted onto main needs a push, or a close and reopen, before its suite runs.
+    branches: [main]
     paths: ["lean/**", ".github/workflows/lean.yml"]
   push:
     branches: [main]
