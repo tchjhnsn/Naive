@@ -1,6 +1,8 @@
 name: lean
 on:
+  # `branches` is the pull request base. Paths still apply: both filters have to match.
   pull_request:
+    branches: [main]
     paths: ["lean/**", ".github/workflows/lean.yml"]
   push:
     branches: [main]

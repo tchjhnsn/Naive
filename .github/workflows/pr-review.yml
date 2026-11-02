@@ -8,7 +8,10 @@
 name: pr-review
 
 on:
+  # `branches` is the pull request base. A pull request into main still lints. Other bases do not run this event.
   pull_request:
+    branches: [main]
+  # No branch filter on this event. The preview job skips a pull request whose base is not main.
   deployment_status:
   workflow_dispatch:
     inputs:
@@ -61,10 +64,15 @@ jobs:
             if (!number) {
               const sha = context.payload.deployment.sha;
               const { data } = await github.rest.repos.listPullRequestsAssociatedWithCommit({ ...context.repo, commit_sha: sha });
-              number = data.find((p) => p.state === "open")?.number;
+              const open = data.filter((p) => p.state === "open");
+              number = (open.find((p) => p.base?.ref === "main") ?? open[0])?.number;
             }
             if (!number) { core.notice("No open PR for this deployment."); return; }
             const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: Number(number) });
+            if (pr.base.ref !== "main") {
+              core.notice(`PR #${pr.number} targets ${pr.base.ref}, not main. Skipping the preview review.`);
+              return;
+            }
             core.setOutput("number", String(pr.number));
             core.setOutput("head", pr.head.sha);
             core.setOutput("base", pr.base.ref);
