@@ -9,7 +9,7 @@
 
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { appendFileSync, closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync } from "node:fs";
+import { appendFileSync, closeSync, constants, existsSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { emit } from "./instrumentation.mjs";
 import { ventureFile } from "../schema/venture-paths.mjs";
@@ -40,15 +40,51 @@ function sleepMs(ms) {
 const LOCK_STALE_MS = 2000;
 const LOCK_WAIT_MS = 15000;
 
-/** Move a dead writer's lock aside, then delete that copy. rename is atomic, so a second waiter cannot unlink the lock the first waiter just took. */
-function stealStaleLock(lock) {
-  let st;
-  try { st = statSync(lock); } catch { return; }
-  if (st.isDirectory()) throw new Error(`could not lock ${lock}: not a lock file`);
-  if (Date.now() - st.mtimeMs < LOCK_STALE_MS) return;
-  const parked = `${lock}.${process.pid}.${Date.now()}`;
-  try { renameSync(lock, parked); } catch { return; }
+/** @param {number} pid */
+function pidAlive(pid) {
+  try { process.kill(pid, 0); return true; }
+  catch (e) { return e?.code === "EPERM"; }
+}
+
+/** The pid written into the lock, or null when the file is empty or unreadable. */
+function holderPid(lock) {
+  try {
+    const pid = Number(readFileSync(lock, "utf8").trim());
+    return Number.isInteger(pid) && pid > 0 ? pid : null;
+  } catch { return null; }
+}
+
+/**
+ * Remove the lock only when the renamed file is still the one `judged`.
+ * A rename that catches a newer lock puts that lock back and removes nothing.
+ * @param {string} lock
+ * @param {{ ino: number, mtimeMs: number }} judged
+ * @returns {boolean} true when this process removed the judged file
+ */
+export function takeStaleLock(lock, judged) {
+  const parked = `${lock}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}`;
+  try { renameSync(lock, parked); } catch { return false; }
+  let parkedSt;
+  try { parkedSt = statSync(parked); } catch { return false; }
+  if (parkedSt.ino !== judged.ino || parkedSt.mtimeMs !== judged.mtimeMs) {
+    try { linkSync(parked, lock); } catch { /* a live lock is already at the path */ }
+    try { unlinkSync(parked); } catch { /* the extra name is already gone */ }
+    return false;
+  }
   try { unlinkSync(parked); } catch { /* already gone */ }
+  return true;
+}
+
+/** Drop a lock whose holder is gone. A live pid is never removed, however old the file is. */
+export function stealDeadLock(lock) {
+  let st;
+  try { st = statSync(lock); } catch { return false; }
+  if (st.isDirectory()) throw new Error(`could not lock ${lock}: not a lock file`);
+  const pid = holderPid(lock);
+  if (pid !== null && pidAlive(pid)) return false;
+  // An empty lock may be a writer that has created it and not yet written its pid.
+  if (pid === null && Date.now() - st.mtimeMs < LOCK_STALE_MS) return false;
+  return takeStaleLock(lock, { ino: st.ino, mtimeMs: st.mtimeMs });
 }
 
 /** One writer at a time for a package sidecar. The chain is read again inside the lock. */
@@ -57,10 +93,14 @@ function withSidecarLock(packageFile, fn) {
   const start = Date.now();
   for (;;) {
     let fd;
-    try { fd = openSync(lock, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR); }
+    try {
+      fd = openSync(lock, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR);
+      writeSync(fd, String(process.pid));
+    }
     catch (e) {
+      if (fd !== undefined) { try { closeSync(fd); } catch { /* not opened */ } }
       if (e?.code !== "EEXIST") throw new Error(`could not lock ${lock}: ${e?.code ?? e?.message ?? e}`);
-      stealStaleLock(lock);
+      stealDeadLock(lock);
       if (Date.now() - start > LOCK_WAIT_MS) throw new Error(`could not lock ${lock}`);
       sleepMs(5);
       continue;

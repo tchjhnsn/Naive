@@ -5,9 +5,10 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
+import { closeSync, constants, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, statSync, unlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { stealDeadLock, takeStaleLock } from "../interface/provenance.mjs";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -179,6 +180,28 @@ for (const [file, fn, , verdict, witness] of rows) {
   const agreeFile = join(tmp, "claim-agree.json");
   writeFileSync(agreeFile, JSON.stringify(agree));
   expect("records that agree on a field still admit", gate(agreeFile, "strategy").body?.verdict === "admit");
+}
+{
+  // On a2375b8 the term engine throws and the gate reports a broken tool (exit 2, no verdict, no sidecar).
+  const broken = (label: string, mutate: (value: Record<string, unknown>) => void) => {
+    const src = JSON.parse(readFileSync(fix("founder-properties.json"), "utf8")) as { ontology: { facts: { F1: { value: Record<string, unknown> } } } };
+    mutate(src.ontology.facts.F1.value);
+    const dir = join(tmp, `shape-${label}`);
+    mkdirSync(dir);
+    const file = join(dir, "founder-properties.json");
+    writeFileSync(file, JSON.stringify(src));
+    const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--package", file, "--function", "strategy", "--record"]);
+    let body: Verdict | null = null;
+    try { body = JSON.parse(ran.stdout) as Verdict; } catch { body = null; }
+    const side = join(dir, "founder-properties.provenance.jsonl");
+    const recorded = existsSync(side) && readFileSync(side, "utf8").includes("\"properties\"");
+    const failed = body?.failed ?? [];
+    const every = ["F1", "F2", "F3", "F4", "F5"].every((id) => failed.includes(id));
+    expect(`a record the term cannot read (${label}) is a properties reject and is recorded`, ran.status === 1 && body?.verdict === "reject" && body?.code === "properties" && every && recorded);
+  };
+  broken("missing-field", (value) => { delete value.contributions; });
+  broken("bad-field", (value) => { value.contributions = "x"; });
+  broken("empty-record", (value) => { for (const key of Object.keys(value)) delete value[key]; });
 }
 {
   const got = gate(fix("pricing-admit.json"), "human-capital");
@@ -365,6 +388,27 @@ for (let i = 0; i < 15; i++) {
   if (checked.status !== 0 || count !== 3) races++;
 }
 expect("concurrent gates on one package keep a single chain", races === 0);
+
+{
+  const lock = join(tmp, "live.lock");
+  writeFileSync(lock, String(process.pid));
+  const old = (Date.now() - 10000) / 1000;
+  utimesSync(lock, old, old);
+  const held = statSync(lock);
+  expect("a live holder's lock is never stolen, however old it is", stealDeadLock(lock) === false && statSync(lock).ino === held.ino);
+  unlinkSync(lock);
+  writeFileSync(lock, "");
+  utimesSync(lock, old, old);
+  const judged = statSync(lock);
+  unlinkSync(lock);
+  const fd = openSync(lock, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR);
+  writeFileSync(lock, String(process.pid));
+  const live = statSync(lock);
+  const took = takeStaleLock(lock, { ino: judged.ino, mtimeMs: judged.mtimeMs });
+  const after = statSync(lock);
+  closeSync(fd);
+  expect("a stale-lock cleanup never deletes a live lock that replaced it", took === false && after.ino === live.ino);
+}
 
 if (failed) { console.log(`${failed} failed`); process.exit(1); }
 console.log("ontology membership gate: all passed");

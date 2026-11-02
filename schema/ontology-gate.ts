@@ -144,9 +144,16 @@ export function failedProperties(noun: Noun, facts: Block["facts"]): string[] {
   // Who confirms a package's facts is still open. Until that is decided, a record that does not
   // say is treated as confirmed, and one that says otherwise is left as it said.
   if (!Object.prototype.hasOwnProperty.call(record, "confirmed")) record.confirmed = true;
-  const ran = sawObject
-    ? run(term, record as Base)
-    : run(assertionTerm(term), { confirmed: true, ...(facts ?? {}) } as Base);
+  // A throw here means the record is not one the term can read (a missing field, a field of the
+  // wrong shape). That is a fact about the package: every property under evaluation fails.
+  let ran;
+  try {
+    ran = sawObject
+      ? run(term, record as Base)
+      : run(assertionTerm(term), { confirmed: true, ...(facts ?? {}) } as Base);
+  } catch {
+    return [...properties];
+  }
   const failed = [...ran.failed];
   for (const id of conflicts) if (!failed.includes(id)) failed.push(id);
   const known = new Set(term.props.map((p) => p.id));
