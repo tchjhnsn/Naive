@@ -2207,7 +2207,7 @@ export type NextjsStatus = {
   }[];
 };
 
-/** Naive's operating rules as a module. The default module is operations/operating-rules.json. schema/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, pattern learning and standing-rule decay are declared for later pull requests and are not enforced yet. */
+/** Naive's operating rules as a module. The default module is operations/operating-rules.json. schema/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry, except the one_way_door skip, which is declared and not enforced. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests and are not enforced yet. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. */
 export type OperatingRules = {
   $schema?: string;
   /** Module id. The framework's module is default. A venture overlay may set its own id. */
@@ -2236,7 +2236,7 @@ export type OperatingRules = {
       /** What the return carries: the failing gate and the reason. Nothing else. */
       carries: ["failing_gate","reason"];
     };
-    /** How many times the package is retried, by whom, and who receives it next. The membership gate copies these fields onto a rejection disposition. The retry itself is not built. */
+    /** How many times the package is retried, by whom, and who receives it next. The membership gate copies on_reject, retry_by, retries, then and escalate_to onto a rejection disposition. one_way_door is declared for a later pull request: those packages skip the retry. The retry itself is not built. */
     retry: {
       note?: string;
       on_reject: "retry";
@@ -2247,6 +2247,14 @@ export type OperatingRules = {
       then: "escalate";
       /** Who receives the package after the retries. The default is founder. */
       escalate_to: string;
+      /** A one_way_door package skips the retry and escalates to the founder. Declared for a later pull request. The membership gate does not read this. */
+      one_way_door: {
+        note?: string;
+        /** No retry. */
+        retries: 0;
+        then: "escalate";
+        escalate_to: "founder";
+      };
     };
   };
   /** The Lead's self-fix proposals. Declared for a later pull request. The membership gate does not read this. */
@@ -2300,7 +2308,7 @@ export type OperatingRules = {
     /** At or below this, a Noul judgment is a no. The suggested threshold is 0.3. */
     no: number;
   };
-  /** Question routing, pattern learning and standing-rule decay. Declared for a later pull request. The membership gate does not read this. */
+  /** Question routing, impact tiers, standing rules, how a rule is lost, signals, time to detect, suspension, notifications and the Lean requirement. Declared for a later pull request. The membership gate does not read this. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. */
   questions: {
     note?: string;
     /** A question type is three parts: a verb with its kind, a noun or a scoped noun, and the function that asks. */
@@ -2323,37 +2331,115 @@ export type OperatingRules = {
       /** The routing rules. The default module has none. A venture adds its own. Not enforced yet. */
       rules: OperatingRulesRoutingRule[];
     };
-    /** When an agent may propose a standing answer rule. min_answers and wilson_lower_bound are provisional, TBD, and are not decided thresholds. Declared for a later pull request. The membership gate does not read this. */
-    pattern_learning: {
+    /** Impact tiers for a question type. The tier is the max of four scores, each from score_min to score_max. Agents may raise a tier. Only the founder may lower one. Declared for a later pull request. The membership gate does not read this. */
+    impact: {
       note?: string;
-      /** The smallest number of answers before an agent may propose a standing rule. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
-      min_answers: number;
-      /** The agent may propose when the Wilson lower bound of one answer's share is >= this. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
-      wilson_lower_bound: number;
+      /** The tiers, from smallest to largest. */
+      tiers: ["low","costly","one_way_door"];
+      /** The four scores whose maximum is the tier. */
+      scores: ["severity","reversibility","time_to_detect","blast_radius"];
+      score_min: 1;
+      score_max: 3;
+      /** The tier is the maximum of the four scores. */
+      tier_of: "max";
+      /** An agent may raise a tier. */
+      agent: "raise";
+      /** Only the founder may lower a tier. */
+      founder: "lower";
+    };
+    /** Earning a standing rule. The Wilson lower bound is taken over the full answer history. low and costly name the bound that must be reached. one_way_door and delete never stand. z, low and costly are provisional, pending Lean proofs. Declared for a later pull request. The membership gate does not read this. */
+    standing: {
+      note?: string;
+      bound: "wilson_lower";
+      /** The bound uses the full answer history, not a window. */
+      history: "full";
+      /** The normal quantile for the Wilson lower bound. Provisional, pending a Lean proof: the number in the default module is not a settled constant. */
+      z: number;
+      /** A low-tier question type may stand when the Wilson lower bound is >= this. Provisional, pending a Lean proof. */
+      low: number;
+      /** A costly question type may stand when the Wilson lower bound is >= this. Provisional, pending a Lean proof. */
+      costly: number;
+      /** A one_way_door question type never earns a standing rule. */
+      one_way_door: "never";
+      /** A delete verb never earns a standing rule. */
+      delete: "never";
       /** The founder approves each proposed standing rule. */
       founder_approves: true;
-      /** Standing rules never apply to delete verbs. */
-      never_verb: "delete";
       /** A standing rule pauses when the founder answers differently. */
       pause_when: "founder_answers_differently";
     };
-    /** Standing-rule decay. After a standing rule answers, the founder's next reaction is an outcome. The score is the Wilson lower bound of satisfied outcomes over the last decay_window uses. Below decay_floor the rule is suspended. decay_window and decay_floor are provisional, TBD, and are not decided thresholds. Declared for a later pull request. The membership gate does not read this. */
-    decay: {
+    /** Losing a standing rule. SPRT on recent outcomes, with the statistic floored. p0, p1, alpha, beta and statistic_floor are provisional, pending Lean proofs. This replaces decay_window and decay_floor. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a module whose p0 is not below p1. */
+    loss: {
       note?: string;
-      /** How many of the rule's latest uses the score looks at. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
-      decay_window: number;
-      /** Below this Wilson lower bound the rule is suspended. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold. */
-      decay_floor: number;
-      /** Outcomes that count for the rule: the founder accepts the answer, or moves on. */
-      satisfied: ["acceptance","moving_on"];
-      /** Outcomes that count against the rule: an override, a correction, or detected frustration or disappointment. */
-      unsatisfied: ["override","correction","frustration"];
-      /** Frustration or disappointment is a recorded Jev Noul, with its probability. It counts against the rule. */
-      frustration: "jev_noul";
-      /** Below decay_floor the rule is suspended and the agent asks the founder whether to reconfigure it. */
-      below_floor: "suspend_and_ask";
-      /** That ask shows the uses that lowered the score. */
-      show: "uses_that_lowered_it";
+      method: "sprt";
+      /** The failure rate of a rule that is still good. Provisional, pending a Lean proof. */
+      p0: number;
+      /** The failure rate of a rule that should be suspended. Provisional, pending a Lean proof. */
+      p1: number;
+      /** The chance of suspending a rule that is still good. Provisional, pending a Lean proof. */
+      alpha: number;
+      /** The chance of keeping a rule that should be suspended. Provisional, pending a Lean proof. */
+      beta: number;
+      /** The SPRT statistic is floored at this. Provisional, pending a Lean proof. */
+      statistic_floor: number;
+    };
+    /** What counts as an outcome of a standing rule. Declared for a later pull request. The membership gate does not read this. */
+    signals: {
+      note?: string;
+      /** An override or a correction counts against the rule. */
+      against: ["override","correction"];
+      /** Silence is no data. It does not count for or against. */
+      silence: "no_data";
+      /** A frustration flag triggers a confirming question. It does not count as a failure. */
+      frustration: "confirming_question";
+      /** Periodic spot checks look at a sample of the rule's answers. */
+      spot_checks: "sample";
+      /** A package rejection counts as a failure for the rule that produced it. */
+      package_rejection: "failure";
+    };
+    /** When an outcome may be scored. Declared for a later pull request. The membership gate does not read this. */
+    time_to_detect: {
+      note?: string;
+      /** Each question type has its own time_to_detect. */
+      scope: "question_type";
+      /** Outcomes are scored only after time_to_detect has passed. */
+      score_when: "after_it_passes";
+      /** A slow-to-detect question type stays costly or higher. */
+      slow_minimum_tier: "costly";
+    };
+    /** What happens after a rule is suspended, and to a rule that runs a long time. Declared for a later pull request. The membership gate does not read this. */
+    suspension: {
+      note?: string;
+      /** A suspended rule restarts from zero. */
+      restart: "from_zero";
+      /** The restart waits out a cooldown. */
+      after: "cooldown";
+      /** A long-running rule gets periodic reconfirmation. */
+      long_running: "periodic_reconfirmation";
+    };
+    /** How the founder hears about a question, by tier. Declared for a later pull request. The membership gate does not read this. */
+    notifications: {
+      note?: string;
+      /** A one_way_door question interrupts immediately. */
+      one_way_door: "interrupt";
+      /** A costly question gets a veto window. */
+      costly: "veto_window";
+      /** A low question goes in a daily digest. */
+      low: "daily_digest";
+    };
+    /** What proof each tier needs before its math is used. Declared for a later pull request. The membership gate does not read this. */
+    lean: {
+      note?: string;
+      /** one_way_door math must be proven in Lean before use. */
+      one_way_door: "proven_before_use";
+      /** CI blocks until that proof is in. */
+      one_way_door_ci: "block";
+      /** costly runs record-only until the math is proven. */
+      costly: "record_only_until_proven";
+      /** low needs tests. */
+      low: "tests";
+      /** Lean is optional for low. */
+      low_lean: "optional";
     };
   };
 };

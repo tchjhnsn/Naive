@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "operating-rules.schema.json",
   "title": "Operating rules",
-  "description": "Naive's operating rules as a module. The default module is operations/operating-rules.json. schema/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, pattern learning and standing-rule decay are declared for later pull requests and are not enforced yet.",
+  "description": "Naive's operating rules as a module. The default module is operations/operating-rules.json. schema/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry, except the one_way_door skip, which is declared and not enforced. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests and are not enforced yet. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "version", "rejection", "self_fix", "design", "jev", "questions"],
@@ -70,8 +70,8 @@
         "retry": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["on_reject", "retry_by", "retries", "then", "escalate_to"],
-          "description": "How many times the package is retried, by whom, and who receives it next. The membership gate copies these fields onto a rejection disposition. The retry itself is not built.",
+          "required": ["on_reject", "retry_by", "retries", "then", "escalate_to", "one_way_door"],
+          "description": "How many times the package is retried, by whom, and who receives it next. The membership gate copies on_reject, retry_by, retries, then and escalate_to onto a rejection disposition. one_way_door is declared for a later pull request: those packages skip the retry. The retry itself is not built.",
           "properties": {
             "note": { "type": "string" },
             "on_reject": { "const": "retry" },
@@ -92,6 +92,18 @@
               "minLength": 1,
               "pattern": "^[a-z][a-z0-9-]*$",
               "description": "Who receives the package after the retries. The default is founder."
+            },
+            "one_way_door": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["retries", "then", "escalate_to"],
+              "description": "A one_way_door package skips the retry and escalates to the founder. Declared for a later pull request. The membership gate does not read this.",
+              "properties": {
+                "note": { "type": "string" },
+                "retries": { "const": 0, "description": "No retry." },
+                "then": { "const": "escalate" },
+                "escalate_to": { "const": "founder" }
+              }
             }
           }
         }
@@ -217,8 +229,8 @@
     "questions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "routing", "pattern_learning", "decay"],
-      "description": "Question routing, pattern learning and standing-rule decay. Declared for a later pull request. The membership gate does not read this.",
+      "required": ["type", "routing", "impact", "standing", "loss", "signals", "time_to_detect", "suspension", "notifications", "lean"],
+      "description": "Question routing, impact tiers, standing rules, how a rule is lost, signals, time to detect, suspension, notifications and the Lean requirement. Declared for a later pull request. The membership gate does not read this. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs.",
       "properties": {
         "note": { "type": "string" },
         "type": {
@@ -264,76 +276,163 @@
             }
           }
         },
-        "pattern_learning": {
+        "impact": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["min_answers", "wilson_lower_bound", "founder_approves", "never_verb", "pause_when"],
-          "description": "When an agent may propose a standing answer rule. min_answers and wilson_lower_bound are provisional, TBD, and are not decided thresholds. Declared for a later pull request. The membership gate does not read this.",
+          "required": ["tiers", "scores", "score_min", "score_max", "tier_of", "agent", "founder"],
+          "description": "Impact tiers for a question type. The tier is the max of four scores, each from score_min to score_max. Agents may raise a tier. Only the founder may lower one. Declared for a later pull request. The membership gate does not read this.",
           "properties": {
             "note": { "type": "string" },
-            "min_answers": {
-              "type": "integer",
-              "minimum": 1,
-              "description": "The smallest number of answers before an agent may propose a standing rule. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold."
+            "tiers": {
+              "const": ["low", "costly", "one_way_door"],
+              "description": "The tiers, from smallest to largest."
             },
-            "wilson_lower_bound": {
+            "scores": {
+              "const": ["severity", "reversibility", "time_to_detect", "blast_radius"],
+              "description": "The four scores whose maximum is the tier."
+            },
+            "score_min": { "const": 1 },
+            "score_max": { "const": 3 },
+            "tier_of": { "const": "max", "description": "The tier is the maximum of the four scores." },
+            "agent": { "const": "raise", "description": "An agent may raise a tier." },
+            "founder": { "const": "lower", "description": "Only the founder may lower a tier." }
+          }
+        },
+        "standing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bound", "history", "z", "low", "costly", "one_way_door", "delete", "founder_approves", "pause_when"],
+          "description": "Earning a standing rule. The Wilson lower bound is taken over the full answer history. low and costly name the bound that must be reached. one_way_door and delete never stand. z, low and costly are provisional, pending Lean proofs. Declared for a later pull request. The membership gate does not read this.",
+          "properties": {
+            "note": { "type": "string" },
+            "bound": { "const": "wilson_lower" },
+            "history": { "const": "full", "description": "The bound uses the full answer history, not a window." },
+            "z": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "The normal quantile for the Wilson lower bound. Provisional, pending a Lean proof: the number in the default module is not a settled constant."
+            },
+            "low": {
               "type": "number",
               "exclusiveMinimum": 0,
               "maximum": 1,
-              "description": "The agent may propose when the Wilson lower bound of one answer's share is >= this. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold."
+              "description": "A low-tier question type may stand when the Wilson lower bound is >= this. Provisional, pending a Lean proof."
             },
-            "founder_approves": {
-              "const": true,
-              "description": "The founder approves each proposed standing rule."
+            "costly": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "description": "A costly question type may stand when the Wilson lower bound is >= this. Provisional, pending a Lean proof."
             },
-            "never_verb": {
-              "const": "delete",
-              "description": "Standing rules never apply to delete verbs."
+            "one_way_door": { "const": "never", "description": "A one_way_door question type never earns a standing rule." },
+            "delete": { "const": "never", "description": "A delete verb never earns a standing rule." },
+            "founder_approves": { "const": true, "description": "The founder approves each proposed standing rule." },
+            "pause_when": { "const": "founder_answers_differently", "description": "A standing rule pauses when the founder answers differently." }
+          }
+        },
+        "loss": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "p0", "p1", "alpha", "beta", "statistic_floor"],
+          "description": "Losing a standing rule. SPRT on recent outcomes, with the statistic floored. p0, p1, alpha, beta and statistic_floor are provisional, pending Lean proofs. This replaces decay_window and decay_floor. Declared for a later pull request. The membership gate does not read this. schema/operating-rules.ts rejects a module whose p0 is not below p1.",
+          "properties": {
+            "note": { "type": "string" },
+            "method": { "const": "sprt" },
+            "p0": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "description": "The failure rate of a rule that is still good. Provisional, pending a Lean proof."
             },
-            "pause_when": {
-              "const": "founder_answers_differently",
-              "description": "A standing rule pauses when the founder answers differently."
+            "p1": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "description": "The failure rate of a rule that should be suspended. Provisional, pending a Lean proof."
+            },
+            "alpha": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "description": "The chance of suspending a rule that is still good. Provisional, pending a Lean proof."
+            },
+            "beta": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "description": "The chance of keeping a rule that should be suspended. Provisional, pending a Lean proof."
+            },
+            "statistic_floor": {
+              "type": "number",
+              "description": "The SPRT statistic is floored at this. Provisional, pending a Lean proof."
             }
           }
         },
-        "decay": {
+        "signals": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["decay_window", "decay_floor", "satisfied", "unsatisfied", "frustration", "below_floor", "show"],
-          "description": "Standing-rule decay. After a standing rule answers, the founder's next reaction is an outcome. The score is the Wilson lower bound of satisfied outcomes over the last decay_window uses. Below decay_floor the rule is suspended. decay_window and decay_floor are provisional, TBD, and are not decided thresholds. Declared for a later pull request. The membership gate does not read this.",
+          "required": ["against", "silence", "frustration", "spot_checks", "package_rejection"],
+          "description": "What counts as an outcome of a standing rule. Declared for a later pull request. The membership gate does not read this.",
           "properties": {
             "note": { "type": "string" },
-            "decay_window": {
-              "type": "integer",
-              "minimum": 1,
-              "description": "How many of the rule's latest uses the score looks at. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold."
+            "against": {
+              "const": ["override", "correction"],
+              "description": "An override or a correction counts against the rule."
             },
-            "decay_floor": {
-              "type": "number",
-              "exclusiveMinimum": 0,
-              "maximum": 1,
-              "description": "Below this Wilson lower bound the rule is suspended. Provisional, TBD: the number in the default module is a placeholder, not a decided threshold."
-            },
-            "satisfied": {
-              "const": ["acceptance", "moving_on"],
-              "description": "Outcomes that count for the rule: the founder accepts the answer, or moves on."
-            },
-            "unsatisfied": {
-              "const": ["override", "correction", "frustration"],
-              "description": "Outcomes that count against the rule: an override, a correction, or detected frustration or disappointment."
-            },
-            "frustration": {
-              "const": "jev_noul",
-              "description": "Frustration or disappointment is a recorded Jev Noul, with its probability. It counts against the rule."
-            },
-            "below_floor": {
-              "const": "suspend_and_ask",
-              "description": "Below decay_floor the rule is suspended and the agent asks the founder whether to reconfigure it."
-            },
-            "show": {
-              "const": "uses_that_lowered_it",
-              "description": "That ask shows the uses that lowered the score."
-            }
+            "silence": { "const": "no_data", "description": "Silence is no data. It does not count for or against." },
+            "frustration": { "const": "confirming_question", "description": "A frustration flag triggers a confirming question. It does not count as a failure." },
+            "spot_checks": { "const": "sample", "description": "Periodic spot checks look at a sample of the rule's answers." },
+            "package_rejection": { "const": "failure", "description": "A package rejection counts as a failure for the rule that produced it." }
+          }
+        },
+        "time_to_detect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scope", "score_when", "slow_minimum_tier"],
+          "description": "When an outcome may be scored. Declared for a later pull request. The membership gate does not read this.",
+          "properties": {
+            "note": { "type": "string" },
+            "scope": { "const": "question_type", "description": "Each question type has its own time_to_detect." },
+            "score_when": { "const": "after_it_passes", "description": "Outcomes are scored only after time_to_detect has passed." },
+            "slow_minimum_tier": { "const": "costly", "description": "A slow-to-detect question type stays costly or higher." }
+          }
+        },
+        "suspension": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["restart", "after", "long_running"],
+          "description": "What happens after a rule is suspended, and to a rule that runs a long time. Declared for a later pull request. The membership gate does not read this.",
+          "properties": {
+            "note": { "type": "string" },
+            "restart": { "const": "from_zero", "description": "A suspended rule restarts from zero." },
+            "after": { "const": "cooldown", "description": "The restart waits out a cooldown." },
+            "long_running": { "const": "periodic_reconfirmation", "description": "A long-running rule gets periodic reconfirmation." }
+          }
+        },
+        "notifications": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["one_way_door", "costly", "low"],
+          "description": "How the founder hears about a question, by tier. Declared for a later pull request. The membership gate does not read this.",
+          "properties": {
+            "note": { "type": "string" },
+            "one_way_door": { "const": "interrupt", "description": "A one_way_door question interrupts immediately." },
+            "costly": { "const": "veto_window", "description": "A costly question gets a veto window." },
+            "low": { "const": "daily_digest", "description": "A low question goes in a daily digest." }
+          }
+        },
+        "lean": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["one_way_door", "one_way_door_ci", "costly", "low", "low_lean"],
+          "description": "What proof each tier needs before its math is used. Declared for a later pull request. The membership gate does not read this.",
+          "properties": {
+            "note": { "type": "string" },
+            "one_way_door": { "const": "proven_before_use", "description": "one_way_door math must be proven in Lean before use." },
+            "one_way_door_ci": { "const": "block", "description": "CI blocks until that proof is in." },
+            "costly": { "const": "record_only_until_proven", "description": "costly runs record-only until the math is proven." },
+            "low": { "const": "tests", "description": "low needs tests." },
+            "low_lean": { "const": "optional", "description": "Lean is optional for low." }
           }
         }
       }

@@ -22,7 +22,13 @@
       "retries": 1,
       "then": "escalate",
       "escalate_to": "founder",
-      "note": "The Lead retries a rejected package once, then it escalates to the founder. The membership gate copies these fields onto the rejection disposition. The retry itself is not built."
+      "one_way_door": {
+        "retries": 0,
+        "then": "escalate",
+        "escalate_to": "founder",
+        "note": "A one_way_door package skips the retry and escalates to the founder. Not enforced yet."
+      },
+      "note": "The Lead retries a rejected package once, then it escalates to the founder. The membership gate copies on_reject, retry_by, retries, then and escalate_to. The one_way_door skip is not enforced yet."
     }
   },
   "self_fix": {
@@ -61,7 +67,7 @@
     "note": "Suggested Noul thresholds: at or above yes is a yes, at or below no is a no. mode record-only writes the judgment and does not block, until the thresholds are decided. A later pull request reads this. The membership gate does not."
   },
   "questions": {
-    "note": "Question routing, pattern learning and standing-rule decay. A later pull request implements them. The membership gate does not read this.",
+    "note": "Question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement. A later pull request implements them. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. The membership gate does not read this.",
     "type": {
       "parts": ["verb", "noun", "asking_function"],
       "note": "A question type is a verb with its kind, a noun or a scoped noun, and the function that asks."
@@ -74,23 +80,70 @@
       "rules": [],
       "note": "A rule names any non-empty subset of those three parts and routes to a function agent, to the founder, or to a standing answer. The most specific matching rule wins. Equally specific matches go to the founder."
     },
-    "pattern_learning": {
-      "min_answers": 10,
-      "wilson_lower_bound": 0.9,
-      "founder_approves": true,
-      "never_verb": "delete",
-      "pause_when": "founder_answers_differently",
-      "note": "Provisional, TBD: min_answers and wilson_lower_bound are placeholders, not decided thresholds. The founder is redesigning them. An agent may propose a standing answer rule for a question type when, over at least min_answers answers, the Wilson lower bound of one answer's share is >= wilson_lower_bound. The founder approves each rule. Standing rules never apply to delete verbs. A rule pauses when the founder answers differently."
+    "impact": {
+      "tiers": ["low", "costly", "one_way_door"],
+      "scores": ["severity", "reversibility", "time_to_detect", "blast_radius"],
+      "score_min": 1,
+      "score_max": 3,
+      "tier_of": "max",
+      "agent": "raise",
+      "founder": "lower",
+      "note": "A question type's tier is the max of four scores, each 1, 2 or 3: severity, reversibility, time_to_detect, blast_radius. Agents may raise a tier. Only the founder may lower one. Not enforced yet."
     },
-    "decay": {
-      "decay_window": 20,
-      "decay_floor": 0.8,
-      "satisfied": ["acceptance", "moving_on"],
-      "unsatisfied": ["override", "correction", "frustration"],
-      "frustration": "jev_noul",
-      "below_floor": "suspend_and_ask",
-      "show": "uses_that_lowered_it",
-      "note": "Provisional, TBD: decay_window and decay_floor are placeholders, not decided thresholds. The founder is redesigning them. After a standing rule answers, the founder's next reaction is an outcome. Override, correction, or detected frustration or disappointment (a recorded Jev Noul with its probability) counts against the rule. Acceptance or moving on counts for it. The score is the Wilson lower bound of satisfied outcomes over the rule's last decay_window uses. Below decay_floor the rule is suspended and the agent asks the founder whether to reconfigure it, showing the uses that lowered it. Not enforced yet."
+    "standing": {
+      "bound": "wilson_lower",
+      "history": "full",
+      "z": 1.96,
+      "low": 0.8,
+      "costly": 0.9,
+      "one_way_door": "never",
+      "delete": "never",
+      "founder_approves": true,
+      "pause_when": "founder_answers_differently",
+      "note": "Provisional, pending Lean: z, low and costly. A standing rule is earned when the Wilson lower bound over the full answer history reaches the tier's threshold. one_way_door never stands. Deletes never stand. The founder approves each rule. A rule pauses when the founder answers differently. Not enforced yet."
+    },
+    "loss": {
+      "method": "sprt",
+      "p0": 0.05,
+      "p1": 0.30,
+      "alpha": 0.05,
+      "beta": 0.05,
+      "statistic_floor": 0,
+      "note": "Provisional, pending Lean: p0, p1, alpha, beta and statistic_floor. A standing rule is lost by SPRT on recent outcomes, and the statistic is floored. This replaces decay_window and decay_floor. Not enforced yet."
+    },
+    "signals": {
+      "against": ["override", "correction"],
+      "silence": "no_data",
+      "frustration": "confirming_question",
+      "spot_checks": "sample",
+      "package_rejection": "failure",
+      "note": "Override and correction count against the rule. Silence is no data. A frustration flag triggers a confirming question and does not count as a failure. Periodic spot checks sample the rule's answers. A package rejection counts as a failure for the rule that produced it. Not enforced yet."
+    },
+    "time_to_detect": {
+      "scope": "question_type",
+      "score_when": "after_it_passes",
+      "slow_minimum_tier": "costly",
+      "note": "Each question type has time_to_detect. Outcomes are scored only after it passes. A slow-to-detect type stays costly or higher. Not enforced yet."
+    },
+    "suspension": {
+      "restart": "from_zero",
+      "after": "cooldown",
+      "long_running": "periodic_reconfirmation",
+      "note": "A suspended rule restarts from zero after a cooldown. A long-running rule gets periodic reconfirmation. Not enforced yet."
+    },
+    "notifications": {
+      "one_way_door": "interrupt",
+      "costly": "veto_window",
+      "low": "daily_digest",
+      "note": "A one_way_door question interrupts immediately. A costly question gets a veto window. A low question goes in a daily digest. Not enforced yet."
+    },
+    "lean": {
+      "one_way_door": "proven_before_use",
+      "one_way_door_ci": "block",
+      "costly": "record_only_until_proven",
+      "low": "tests",
+      "low_lean": "optional",
+      "note": "one_way_door math must be proven in Lean before use, and CI blocks until it is. costly runs record-only until proven. low needs tests, and Lean is optional. Not enforced yet."
     }
   }
 }

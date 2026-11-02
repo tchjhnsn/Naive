@@ -4,8 +4,8 @@
 // operating-rules.json, merged over the default. On a structured venture that file is
 // meta/operating-rules.json. Scalars and arrays in the overlay replace the default.
 // Objects merge key by key. The merged module is checked by schema/validate.py, the
-// same checker the handoff schema uses. Two checks the schema does not express stay
-// here: jev.yes must be above jev.no, and a routing rule id is unique.
+// same checker the handoff schema uses. Three checks the schema does not express stay
+// here: jev.yes must be above jev.no, loss.p0 must be below loss.p1, and a routing rule id is unique.
 //
 // The membership gate reads rejection.retry (schema/ontology-gate.ts). Question
 // routing, pattern learning, standing-rule decay and the other settings are
@@ -55,6 +55,10 @@ export function moduleProblems(value: unknown): string[] {
   const errors = schemaProblems(value);
   if (isRecord(value) && isRecord(value.jev) && typeof value.jev.yes === "number" && typeof value.jev.no === "number" && value.jev.yes <= value.jev.no) {
     errors.push("jev.yes must be above jev.no");
+  }
+  const loss = isRecord(value) && isRecord(value.questions) ? value.questions.loss : undefined;
+  if (isRecord(loss) && typeof loss.p0 === "number" && typeof loss.p1 === "number" && loss.p0 >= loss.p1) {
+    errors.push("questions.loss.p0 must be below questions.loss.p1");
   }
   const rules = isRecord(value) && isRecord(value.questions) && isRecord(value.questions.routing) ? value.questions.routing.rules : undefined;
   if (Array.isArray(rules)) {
