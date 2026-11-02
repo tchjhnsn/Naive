@@ -5,40 +5,31 @@ stateDiagram-v2
   state "Legend" as legend {
     lg0: start
     lg1: page
-    lg2: markdown
-    lg3: redirect
-    lg4: missing
+    lg2: redirect
+    lg3: gated
   }
   class lg0 tan
   class lg1 teal
-  class lg2 blue
-  class lg3 orange
-  class lg4 pink
+  class lg2 orange
+  class lg3 blue
   s0: Nothing asked yet
-  s1: The page as Markdown
-  s2: llms.txt
-  s3: Not found
-  s4: A docs page
-  s5: A page the nav names
-  s6: Sent on to a docs page
+  s1: Sent to the waitlist
+  s2: A page the nav names
+  s3: The waitlist page
+  s4: Sent on from an old address
   [*] --> s0
-  s0 --> s1: you ask for Markdown or you open the .md address
-  s0 --> s2: you read llms.txt
-  s0 --> s3: you open a docs address that is not a page
-  s0 --> s4: you open a docs page
-  s0 --> s5: you use the nav
-  s0 --> s6: you open an old address
+  s0 --> s1: you ask for Markdown or you open a docs page or you open the .md address or you read llms.txt or you open a docs address that is not a page or you open templates
+  s0 --> s2: you use the nav
+  s0 --> s3: you open the waitlist
+  s0 --> s4: you open an old address
   s1 --> s0: you ask for something else
+  s1 --> s3: you follow the redirect
   s2 --> s0: you ask for something else
   s3 --> s0: you ask for something else
   s4 --> s0: you ask for something else
-  s5 --> s0: you ask for something else
-  s6 --> s0: you ask for something else
-  s6 --> s4: you follow the redirect
+  s4 --> s1: you follow the old address
   class s0 tan
   class s1 blue
-  class s2 blue
-  class s3 pink
-  class s4 teal
-  class s5 teal
-  class s6 orange
+  class s2 teal
+  class s3 teal
+  class s4 orange
