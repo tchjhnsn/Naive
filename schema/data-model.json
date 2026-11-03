@@ -2138,6 +2138,10 @@
       "reason": "The Claude Code marketplace for a clone of the repository (EE-084); not a record"
     },
     {
+      "path": ".claude/settings.json",
+      "reason": "Claude Code project settings for the builder (EE-111): the cursor/plugins marketplace and pstack only. Not a record"
+    },
+    {
       "path": "site/package.json",
       "reason": "The developer-docs site's npm manifest (EE-034); not a record"
     },
