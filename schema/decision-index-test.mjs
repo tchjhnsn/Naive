@@ -61,12 +61,12 @@ try {
   expect("an update counts the events since its cursor", idx.last_update.events === 1, idx.last_update);
 
   // A due time passing with no provenance event re-ranks the decision: update matches rebuild.
-  propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", due: "2026-11-05T00:00:00Z" }, { agentId: "cos" });
-  rebuild(v, { now: Date.parse("2026-11-01T00:00:00Z") });
-  idx = update(v, { now: Date.parse("2026-11-06T00:00:00Z") });
+  propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", due: "2099-11-05T00:00:00Z" }, { agentId: "cos" });
+  rebuild(v, { now: Date.parse("2099-11-01T00:00:00Z") });
+  idx = update(v, { now: Date.parse("2099-11-06T00:00:00Z") });
   const ld = entryOf(idx, "launch-date");
   expect("a decision whose due time passed is overdue and ranks first after an update", ld.render === "overdue" && idx.entries[0].id === "launch-date", idx.entries.map((e) => [e.id, e.score, e.render]));
-  const fresh = rebuild(v, { now: Date.parse("2026-11-06T00:00:00Z") });
+  const fresh = rebuild(v, { now: Date.parse("2099-11-06T00:00:00Z") });
   expect("update and rebuild give the same ranking", JSON.stringify(idx.entries.map((e) => [e.id, e.score])) === JSON.stringify(fresh.entries.map((e) => [e.id, e.score])));
   expect("history records the move", rankHistory(v, "launch-date").some((r) => r.cause === "rank moved" && r.rank === 1));
   propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", status: "withdrawn" }, { agentId: "cos" });
