@@ -1339,6 +1339,48 @@
         "EE-095",
         "EE-102"
       ]
+    },
+    {
+      "id": "EE-111",
+      "date": "2026-11-03",
+      "status": "in-force",
+      "decision": "Claude Code, running in the cloud through the Claude GitHub Action, does the heavy building in this repository. Torian and Grok Bot plan, design, and decide. They write each decision and a brief into the repo, then open a GitHub issue that links that decision and that brief and mentions @claude. Claude Code builds from that issue and opens a pull request. It runs pstack (plugin pstack@cursor-plugins from the cursor/plugins marketplace) with poteto-mode on every task, and with no other skill and no personal skill. Its config lives only in the repo. .claude/settings.json enables only that plugin from the cursor/plugins GitHub source. The settings schema cannot store an enforced version pin: enabledPlugins takes a boolean, a marketplace ref is a branch or tag, and cursor/plugins publishes no tag for pstack, so the committed file does not invent one. CLAUDE.md points at AGENTS.md. .claude/rules/pstack-models.md maps each role to a model, and Torian can change it. The same independent verifier and merge rule apply. The builder is not the verifier. A verifier posts PASS or PASS+NOTES on the current head, the checks are green, and the pull request has no hold label. An agent then merges, bottom-up. Nobody pushes to main. GitHub writes stay on a pull request (EE-037). This entry does not edit AGENTS.md, which still says Torian merges. Pull request 166 is the open edit that aligns that file. EE-084 remains the product plugin. This decision is who builds the repository.",
+      "why": "Torian (founder), 2026-11-03. He decided that Claude Code does the heavy building through the Claude GitHub Action, and that he and Grok Bot plan and design, write the decision and the brief, and hand the work over as a GitHub issue that mentions @claude. EE-111 is free. EE-108 and EE-109 are on main. EE-110 is open pull request 170. EE-101 through EE-107 are open pull requests.",
+      "related": [
+        "EE-016",
+        "EE-030",
+        "EE-037",
+        "EE-084",
+        "EE-095",
+        "EE-109",
+        "EE-110"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": ".github/workflows/claude.yml",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": ".claude/settings.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "CLAUDE.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": ".claude/rules/pstack-models.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
