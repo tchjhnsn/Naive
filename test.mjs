@@ -79,6 +79,7 @@ const steps = [
   ["frameworks map onto canonical records only", "node", ["schema/check-frameworks.mjs"]],
   ["a founder's own frameworks and playbooks (list, new, check, publish --dry-run)", "node", ["schema/user-frameworks-test.mjs"]],
   ["transcript diagnosis (human words only, redacted first, one raw draft per run)", "node", ["scripts/diagnose-transcripts-test.mjs"]],
+  ["architecture inventory (the review matches a fresh run of the script)", "node", ["scripts/architecture-inventory-test.ts"]],
   ["activity (active minutes, days in the venture's zone, streak)", "node", ["schema/activity-test.mjs"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
