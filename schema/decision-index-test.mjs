@@ -69,8 +69,11 @@ try {
   const fresh = rebuild(v, { now: Date.parse("2099-11-06T00:00:00Z") });
   expect("update and rebuild give the same ranking", JSON.stringify(idx.entries.map((e) => [e.id, e.score])) === JSON.stringify(fresh.entries.map((e) => [e.id, e.score])));
   expect("history records the move", rankHistory(v, "launch-date").some((r) => r.cause === "rank moved" && r.rank === 1));
-  propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", status: "withdrawn" }, { agentId: "cos" });
-  rebuild(v);
+  expect("an agent may not withdraw a decision", propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", status: "withdrawn" }, { agentId: "cos" }).ok === false);
+  const ldFile = join(v, "marketing/decisions/launch-date.decision.json");
+  writeFileSync(ldFile, JSON.stringify({ ...JSON.parse(readFileSync(ldFile, "utf8")), status: "withdrawn" }, null, 2) + "\n");
+  idx = rebuild(v);
+  expect("a person's withdrawal takes the decision out of the ranking", !idx.entries.some((e) => e.id === "launch-date"), idx.entries.map((e) => e.id));
 
   // (c) requirements: a heavy one lifts a later decision into this phase; a violation is flagged now
   put("foundation/requirements/scale-to-millions.json", { id: "scale-to-millions", statement: "Serve hundreds of millions of users", derives_from: { ambition: "platform" }, phase: "scale", functions: ["product"], verified_by: "load test evidence", weight: 0.9, check: { answer_must_not_match: "sqlite" } });
