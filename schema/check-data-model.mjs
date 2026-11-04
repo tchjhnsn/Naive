@@ -60,13 +60,15 @@ for (const c of model.records.filter((r) => r.contains)) for (const t of c.conta
 
 // Every JSON file is a record of some type; every schema file governs one.
 const claimed = new Set([...types.values()].flatMap((r) => r.files));
-const ignored = new Set(model.ignore.map((i) => i.path));
+// An ignore path may be a glob (`*` within a folder, `**/` across folders), as record type paths are.
+const ignorePatterns = model.ignore.map((i) => glob(i.path));
+const isIgnored = (f) => ignorePatterns.some((re) => re.test(f));
 const schemas = new Set([...types.values()].map((r) => r.schema).filter(Boolean));
 // A schema that a named schema $refs (a shared part, such as the validation evidence item) counts as named.
 for (const s of [...schemas]) for (const m of readFileSync(join(root, s), "utf8").matchAll(/"\$ref":\s*"([a-z0-9-]+\.schema\.json)/g)) schemas.add(`schema/${m[1]}`);
 for (const f of all.filter((f) => f.endsWith(".json"))) {
   if (f.endsWith(".schema.json")) { if (!schemas.has(f)) errors.push(`${f}: a schema no record type names`); continue; }
-  if (!claimed.has(f) && !ignored.has(f)) errors.push(`${f}: no record type in schema/data-model.json covers this file`);
+  if (!claimed.has(f) && !isIgnored(f)) errors.push(`${f}: no record type in schema/data-model.json covers this file`);
 }
 
 // Decision classes a record type names must exist in the decision-rights template (EE-032).

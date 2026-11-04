@@ -294,11 +294,18 @@ for (const [name, change, pattern] of /** @type {[string, (d: string) => void, R
   ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
   ["a layer owning another layer's record fails", (d) => edit(join(d, "purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
   ["a layer reading an unknown record type fails", (d) => edit(join(d, "operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
+  ["a JSON file beside, not under, an ignored glob fails", (d) => writeFileSync(join(d, "docs/design/preserved.json"), "{}"), /docs\/design\/preserved.json: no record type/],
 ])) {
   const d = copy(`dm${++n}`);
   change(d);
   const r = run("check-data-model.mjs", [], { EE_ROOT: d });
   expect(name, r.status !== 0 && pattern.test(r.stderr));
+}
+{
+  const d = copy("dmglob");
+  mkdirSync(join(d, "docs/design/preserved/someone-2026-11-04/deep"), { recursive: true });
+  writeFileSync(join(d, "docs/design/preserved/someone-2026-11-04/deep/copy.json"), "{}");
+  expect("a JSON file under an ignored glob passes", run("check-data-model.mjs", [], { EE_ROOT: d }).status === 0);
 }
 {
   const d = copy("priv");

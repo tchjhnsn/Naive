@@ -2118,8 +2118,8 @@
   ],
   "ignore": [
     {
-      "path": "docs/design/preserved/claude-2026-11-03/architecture/everything-ecosystem.architecture.json",
-      "reason": "Preserved byte for byte from preserve/sources-2026-11-03 and not reconciled (ledger N-003, Claude ids C-087 and C-S3-archcheck); an agent draft of the architecture record that Torian never confirmed, not a live record"
+      "path": "docs/design/preserved/**/*.json",
+      "reason": "Copies preserved byte for byte by the ontology program's stage 1 and not reconciled; each has a .preserved.md sidecar naming its source, sha256 and ledger row. Records of off-main sources, not live records"
     },
     {
       "path": "docs/design/term-harvest/claude-2026-11-03/TERM_LIST_2026-11-01.json",
