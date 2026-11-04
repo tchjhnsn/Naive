@@ -1121,6 +1121,56 @@
       "related": [
         "EE-014",
         "EE-094"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "schema/terms/engine.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/admit.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/admitted.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/terms.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Concept.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Terms.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": ".github/workflows/lean.yml",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/ontology-gate.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
       ]
     },
     {
@@ -1377,6 +1427,48 @@
         {
           "kind": "path",
           "target": ".claude/rules/pstack-models.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-113",
+      "date": "2026-11-04",
+      "status": "proposed",
+      "decision": "Naive's ontology core has four parts, each built from one preserved source and each checked through the EE-095 term engine (schema/terms) and the Lean proofs (lean/Naive). The metamodel follows the EE-107 vocabulary objects and change line (preserved PRs 164 and 163), without their separate vocabulary check. The upper ontology follows the EE-103 broader relation (preserved PR 157), and gains a check that every noun reaches exactly one top category. The catalog of name@function scopes follows the admission rule and invariant in section 23 of the preserved venture meta-schema. The term labels scope, origin, grade and designation follow docs/design/TERM_LABELS_2026-11-02.md. docs/design/ONTOLOGY_CORE_2026-11-04.md names, for each part, the winning source, the rejected sources and why, the hook in schema/terms and the hook in lean/Naive, and traces each choice to a merged-ledger row. It picks no meaning for the word layer, which the term engine settles. Not built yet: plan units S2-PR5 to S2-PR8 build the four parts.",
+      "why": "Plan unit S2-PR1 in docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md asks for one version of each ontology part from the stage 1 preserved files. Torian closed stage 1 on 2026-11-04 at 18:52Z (pull request 203). He decided gate G4 at 18:58Z, so EE-095 gains affects entries in the same change. He withdrew gate G2 at 19:05Z and left the word layer to the term engine. EE-112 is held by the staged venture-standard decision (not yet pushed), so this is EE-113. EE-101 to EE-107 and EE-110 are taken by open pull requests.",
+      "related": [
+        "EE-013",
+        "EE-014",
+        "EE-089",
+        "EE-095",
+        "EE-103",
+        "EE-107",
+        "EE-108"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "docs/design/ONTOLOGY_CORE_2026-11-04.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/ontology-metamodel.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Upper.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "docs/ontology-catalog.json",
           "root": "repo",
           "expect": "exists"
         }
