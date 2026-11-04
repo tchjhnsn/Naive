@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Encounter, Membership, Relationship } from "./levels.ts";
+import type { Arrangement, Encounter, Membership, Relationship } from "./levels.ts";
 
 const evidenced = (f: Membership) => f.contributions.some((c) => c.evidenced);
 
@@ -125,4 +125,35 @@ export const phaseGate: Term<Encounter> = {
   predicts: { "threshold-guardian": "is_a" },
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate];
+/** reach[a][b]: part a depends on part b, directly or through other parts (Warshall's transitive closure). */
+const reach = (f: Arrangement): boolean[][] => {
+  const r = Array.from({ length: f.parts }, (_, a) => Array.from({ length: f.parts }, (_, b) => f.dependsOn.some(([x, y]) => x === a && y === b)));
+  for (let k = 0; k < f.parts; k++) for (let i = 0; i < f.parts; i++) for (let j = 0; j < f.parts; j++) if (r[i][k] && r[k][j]) r[i][j] = true;
+  return r;
+};
+
+export const layer: Term<Arrangement> = {
+  id: "layer", form: "word", label: "Layer", level: "arrangement", kind: "role",
+  meaning: "A part of an ordered arrangement in which each part depends only on the parts beneath it, the standard technical sense (the OSI model, a layered software architecture). Whether a part is a layer depends on the whole arrangement, so the test runs on the whole: its dependencies hold no cycle and put every part in one stack, and beneath means depended on. The ontology's three layers pass. Naive's groupings fail, both the seven EE-001 decided (a loop) and the seven manifests as built (their reads form cycles), so for them \"layer\" is the system's name for its parts, not this term.",
+  props: [
+    { id: "L1", says: "an arrangement of at least two parts", check: (f) => f.parts >= 2 },
+    { id: "L2", says: "no part depends on itself, directly or through other parts (no cycle)", check: (f) => reach(f).every((row, a) => !row[a]), uses: [reach] },
+    { id: "L3", says: "one stack: of any two parts, one depends on the other, directly or through other parts", check: (f) => { const r = reach(f); return r.every((row, a) => row.every((x, b) => a === b || x || r[b][a])); }, uses: [reach] },
+  ],
+  sources: ["ISO/IEC 7498-1:1994, the OSI basic reference model", "Buschmann et al., Pattern-Oriented Software Architecture, vol. 1 (1996), the Layers pattern", "Dijkstra, The structure of the THE multiprogramming system (1968)", "Ledger N-096 and C-086 (2026-10-31): layer reserved for the technical sense"],
+  lean: ["downward_order_no_cycle", "cycle_no_downward_order", "ee001_loop_no_downward_order"],
+  predicts: { area: "overlap" },
+};
+
+export const area: Term<Arrangement> = {
+  id: "area", form: "word", label: "Area", level: "arrangement", kind: "role",
+  meaning: "A part of an arrangement drawn around one concern, with nothing required of the order among the parts: dependencies may run any way, loops included. The contrast to layer, and the word C-086 proposed for Naive's groupings. A layer need not be an area, and an area need not be a layer.",
+  props: [
+    { id: "A1", says: "an arrangement of at least two parts", check: (f) => f.parts >= 2 },
+    { id: "A2", says: "each part drawn around one concern", check: (f) => f.byConcern },
+  ],
+  sources: ["Dijkstra, On the role of scientific thought (EWD447, 1974): separation of concerns", "Parnas, On the criteria to be used in decomposing systems into modules (1972)", "Ledger C-086 (2026-10-31): Naive's groupings proposed as areas"],
+  predicts: { layer: "overlap" },
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area];

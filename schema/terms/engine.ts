@@ -10,7 +10,8 @@
 import { createHash } from "node:crypto";
 
 export type Base = { confirmed: boolean; label?: string };
-export type Prop<F> = { id: string; says: string; check: (f: F) => boolean; permission?: true };
+/** `uses` lists the helpers a check calls, so freezing hashes their source too (R1). */
+export type Prop<F> = { id: string; says: string; check: (f: F) => boolean; permission?: true; uses?: ((...args: never[]) => unknown)[] };
 export type Term<F extends Base> = {
   id: string;
   label: string;
@@ -54,11 +55,11 @@ export function relation(a: Set<number>, b: Set<number>): Relation {
 }
 
 /** Hash of what the test is: its properties' ids and code, and its rule. Changing a test changes its hash (R1). */
-// The hash covers each check's own source (check.toString()), not the helpers it calls. No check calls a helper
-// today (evidenced is passed as the check itself, so its source is what is hashed). A check that calls a helper
-// needs the helper's source added here, or a change to the helper leaves the hash the same and R1 stops holding.
+// The hash covers each check's own source and the source of every helper it lists in `uses`. A check that calls
+// a helper it does not list leaves the hash the same when the helper changes, and R1 stops holding.
 export function freeze<F extends Base>(t: Term<F>): string {
-  const body = JSON.stringify({ id: t.id, level: t.level, props: t.props.map((p) => [p.id, p.check.toString(), Boolean(p.permission)]), rule: t.rule?.toString() ?? "all" });
+  const props = t.props.map((p) => [p.id, p.check.toString(), Boolean(p.permission), ...(p.uses ? [p.uses.map(String)] : [])]);
+  const body = JSON.stringify({ id: t.id, level: t.level, props, rule: t.rule?.toString() ?? "all" });
   return createHash("sha256").update(body).digest("hex").slice(0, 16);
 }
 

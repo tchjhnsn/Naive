@@ -36,6 +36,14 @@ export type Encounter = Base & {
   passableWithoutDestruction: boolean; endsAfterCrossing: boolean; person: boolean;
 };
 
+/** An arrangement of parts and what each part depends on. Whether a part is a layer depends on the whole
+ *  arrangement, so the facts describe the whole. Parts are numbered 0 to parts - 1; names stay out of the facts. */
+export type Arrangement = Base & {
+  parts: number;
+  dependsOn: [number, number][];  // [a, b]: part a depends on part b (uses it, builds on it, or follows its rules)
+  byConcern: boolean;             // each part was drawn around one concern: one subject or one job
+};
+
 const N = 20000;
 export function membershipCases(seed = 11): Membership[] {
   const r = rng(seed);
@@ -68,5 +76,27 @@ export function encounterCases(seed = 17): Encounter[] {
       atCrossing: phaseExit || b(), phaseExit, resists: b(), helpsOutright: b(0.3), opposesJourney: b(0.2),
       passableWithoutDestruction: b(0.7), endsAfterCrossing: b(0.7), person: phaseExit ? b(0.1) : b(0.8),
     };
+  });
+}
+
+/** Half the cases are stacks (a random order with each part depending on the one beneath, plus some skips),
+ *  so layered arrangements are common; the other half draw dependencies at random and often hold a cycle. */
+export function arrangementCases(seed = 19): Arrangement[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => {
+    const parts = 1 + Math.floor(r() * 8);
+    const dependsOn: [number, number][] = [];
+    if (b()) {
+      const order = Array.from({ length: parts }, (_, i) => i);
+      for (let i = parts - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+      for (let i = 1; i < parts; i++) {
+        if (b(0.9)) dependsOn.push([order[i], order[i - 1]]);
+        for (let j = 0; j < i - 1; j++) if (b(0.15)) dependsOn.push([order[i], order[j]]);
+      }
+    } else {
+      for (let a = 0; a < parts; a++) for (let c = 0; c < parts; c++) if (a !== c && b(0.25)) dependsOn.push([a, c]);
+    }
+    return { confirmed: b(0.9), label: ["layer", "area", "tier", undefined][Math.floor(r() * 4)], parts, dependsOn, byConcern: b(0.6) };
   });
 }

@@ -488,6 +488,214 @@
         "Naive lifecycle gate (naive phase)",
         "Unearned candour doc, 2026-10-31 (prediction)"
       ]
+    },
+    {
+      "id": "layer",
+      "label": "Layer",
+      "form": "word",
+      "level": "arrangement",
+      "kind": "role",
+      "meaning": "A part of an ordered arrangement in which each part depends only on the parts beneath it, the standard technical sense (the OSI model, a layered software architecture). Whether a part is a layer depends on the whole arrangement, so the test runs on the whole: its dependencies hold no cycle and put every part in one stack, and beneath means depended on. The ontology's three layers pass. Naive's groupings fail, both the seven EE-001 decided (a loop) and the seven manifests as built (their reads form cycles), so for them \"layer\" is the system's name for its parts, not this term.",
+      "status": "proposed",
+      "hash": "8471b26bcb1b07d5",
+      "properties": [
+        {
+          "id": "L1",
+          "says": "an arrangement of at least two parts"
+        },
+        {
+          "id": "L2",
+          "says": "no part depends on itself, directly or through other parts (no cycle)"
+        },
+        {
+          "id": "L3",
+          "says": "one stack: of any two parts, one depends on the other, directly or through other parts"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 6031,
+      "relations": {
+        "area": "overlap"
+      },
+      "predictions": [
+        {
+          "other": "area",
+          "expected": "overlap",
+          "found": "overlap",
+          "confirmed": true
+        }
+      ],
+      "fixtures": [
+        {
+          "fixture": "naive-seven-ee-001",
+          "pass": false,
+          "failed": [
+            "L2",
+            "L3"
+          ],
+          "expected": false,
+          "confirmed": true
+        },
+        {
+          "fixture": "naive-layer-manifests",
+          "pass": false,
+          "failed": [
+            "L2"
+          ],
+          "expected": false,
+          "confirmed": true
+        },
+        {
+          "fixture": "osi-model",
+          "pass": true,
+          "failed": [],
+          "expected": true,
+          "confirmed": true
+        },
+        {
+          "fixture": "ontology-three",
+          "pass": true,
+          "failed": [],
+          "expected": true,
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "downward_order_no_cycle",
+        "cycle_no_downward_order",
+        "ee001_loop_no_downward_order"
+      ],
+      "sources": [
+        "ISO/IEC 7498-1:1994, the OSI basic reference model",
+        "Buschmann et al., Pattern-Oriented Software Architecture, vol. 1 (1996), the Layers pattern",
+        "Dijkstra, The structure of the THE multiprogramming system (1968)",
+        "Ledger N-096 and C-086 (2026-10-31): layer reserved for the technical sense"
+      ]
+    },
+    {
+      "id": "area",
+      "label": "Area",
+      "form": "word",
+      "level": "arrangement",
+      "kind": "role",
+      "meaning": "A part of an arrangement drawn around one concern, with nothing required of the order among the parts: dependencies may run any way, loops included. The contrast to layer, and the word C-086 proposed for Naive's groupings. A layer need not be an area, and an area need not be a layer.",
+      "status": "proposed",
+      "hash": "407b7334034790a7",
+      "properties": [
+        {
+          "id": "A1",
+          "says": "an arrangement of at least two parts"
+        },
+        {
+          "id": "A2",
+          "says": "each part drawn around one concern"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 9345,
+      "relations": {
+        "layer": "overlap"
+      },
+      "predictions": [
+        {
+          "other": "layer",
+          "expected": "overlap",
+          "found": "overlap",
+          "confirmed": true
+        }
+      ],
+      "fixtures": [
+        {
+          "fixture": "naive-seven-ee-001",
+          "pass": true,
+          "failed": [],
+          "expected": true,
+          "confirmed": true
+        },
+        {
+          "fixture": "naive-layer-manifests",
+          "pass": true,
+          "failed": [],
+          "expected": true,
+          "confirmed": true
+        },
+        {
+          "fixture": "osi-model",
+          "pass": true,
+          "failed": [],
+          "expected": true,
+          "confirmed": true
+        },
+        {
+          "fixture": "ontology-three",
+          "pass": true,
+          "failed": [],
+          "expected": true,
+          "confirmed": true
+        }
+      ],
+      "lean": [],
+      "sources": [
+        "Dijkstra, On the role of scientific thought (EWD447, 1974): separation of concerns",
+        "Parnas, On the criteria to be used in decomposing systems into modules (1972)",
+        "Ledger C-086 (2026-10-31): Naive's groupings proposed as areas"
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "naive-seven-ee-001",
+      "says": "Naive's seven groupings as EE-001 decided them: five that form a loop, each taking from the one before, and governance and interface cutting across (EE-001 states no dependency for those two)",
+      "source": "EE-001 (2026-10-26)",
+      "parts": [
+        "purpose",
+        "knowledge",
+        "operations",
+        "execution",
+        "evidence",
+        "governance",
+        "interface"
+      ]
+    },
+    {
+      "id": "naive-layer-manifests",
+      "says": "Naive's layers as built: the six layer manifests and the system manifest, with the dependencies their reads declare",
+      "source": "<layer>/layer.json, schema/layer.json and schema/data-model.json",
+      "parts": [
+        "purpose",
+        "knowledge",
+        "operations",
+        "evidence",
+        "governance",
+        "interface",
+        "system"
+      ]
+    },
+    {
+      "id": "osi-model",
+      "says": "The OSI model's seven layers, each using the services of the one beneath it",
+      "source": "ISO/IEC 7498-1:1994",
+      "parts": [
+        "physical",
+        "data link",
+        "network",
+        "transport",
+        "session",
+        "presentation",
+        "application"
+      ]
+    },
+    {
+      "id": "ontology-three",
+      "says": "The ontology's three layers, each constraining the one below: the upper ontology's categories are written to the metamodel, and each scope the catalog lists traces its nouns to the upper ontology",
+      "source": "docs/design/ONTOLOGY_LAYERS_2026-11-02.md (ledger N-047)",
+      "parts": [
+        "metamodel",
+        "upper ontology",
+        "catalog"
+      ]
     }
   ]
 }
