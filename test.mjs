@@ -123,6 +123,7 @@ const steps = [
   ["founders: examples", "node", ["schema/founders.ts", "check", "schema/examples/workspace"]],
   ["term engine: bad tests rejected, relations total, freezing notices change", "node", ["schema/terms/engine-test.ts"]],
   ["every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node schema/terms/admit.ts)", "node", ["schema/terms/admit.ts", "--check"]],
+  ["no symbolic check bypasses EE-095: each check and gate is registered, and a symbolic one reaches the engine, admit or a Lean theorem", "node", ["schema/terms/bypass-guard-test.ts"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["schema/record-types-test.ts"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
