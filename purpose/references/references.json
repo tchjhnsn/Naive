@@ -1,0 +1,324 @@
+{
+  "layer": "purpose",
+  "references": [
+    {
+      "id": "blank-2005-four-steps",
+      "title": "The Four Steps to the Epiphany",
+      "authors": [
+        "Steve Blank"
+      ],
+      "year": 2005,
+      "kind": "book",
+      "summary": "Customer development: customer discovery, customer validation, customer creation, company building. Discovery and validation search for a repeatable business model; creation and building execute it.",
+      "url": "https://steveblank.com/2009/09/17/the-path-of-warriors-and-winners/",
+      "checked": "2026-10-27",
+      "informs": [
+        "phase:discovery",
+        "phase:validation",
+        "gate:problem-solution-fit"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Discovery and Validation take Blank's names and meaning."
+      }
+    },
+    {
+      "id": "moore-1991-crossing-the-chasm",
+      "title": "Crossing the Chasm",
+      "authors": [
+        "Geoffrey A. Moore"
+      ],
+      "year": 1991,
+      "kind": "book",
+      "summary": "The technology adoption life cycle and the chasm between visionaries and pragmatists; cross it by winning one beachhead segment, then neighbouring niches (the bowling alley).",
+      "url": "https://www.strategy-business.com/article/16930",
+      "checked": "2026-10-27",
+      "informs": [
+        "phase:validation",
+        "phase:beachhead",
+        "noun:beachhead"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Beachhead keeps Moore's meaning: one mainstream segment won outright."
+      }
+    },
+    {
+      "id": "moore-1995-inside-the-tornado",
+      "title": "Inside the Tornado",
+      "authors": [
+        "Geoffrey A. Moore"
+      ],
+      "year": 1995,
+      "kind": "book",
+      "summary": "Companion to Crossing the Chasm: the tornado of mass-market adoption and Main Street after it.",
+      "url": "https://culttt.com/2012/04/23/inside-the-tornado-review",
+      "checked": "2026-10-27",
+      "informs": [
+        "phase:scale"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "Scale covers the tornado and Main Street under the common word."
+      }
+    },
+    {
+      "id": "andreessen-2007-only-thing-that-matters",
+      "title": "The only thing that matters (Pmarca Guide to Startups, part 4)",
+      "authors": [
+        "Marc Andreessen"
+      ],
+      "year": 2007,
+      "kind": "article",
+      "summary": "Product/market fit means being in a good market with a product that can satisfy that market; credits Andy Rachleff. The original blog was taken down and survives on an archive.",
+      "url": "https://pmarchive.com/guide_to_startups_part4.html",
+      "informs": [
+        "gate:product-market-fit"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The Validation gate is product-market fit, tested by retention."
+      }
+    },
+    {
+      "id": "zook-allen-2012-repeatability",
+      "title": "Repeatability: Build Enduring Businesses for a World of Constant Change",
+      "authors": [
+        "Chris Zook",
+        "James Allen"
+      ],
+      "year": 2012,
+      "kind": "book",
+      "summary": "Bain study of 200+ companies: enduring growth comes from a repeatable business model; complexity is a silent killer of profitable growth.",
+      "url": "https://www.bain.com/ja/migration/press-releases/2012/worlds-top-companies-succeed-nearly-five-times-more-often-with-great-repeatable-models/",
+      "checked": "2026-10-27",
+      "informs": [
+        "gate:repeatability"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The Beachhead gate is repeatability."
+      }
+    },
+    {
+      "id": "baghai-coley-white-1999-alchemy-of-growth",
+      "title": "The Alchemy of Growth",
+      "authors": [
+        "Mehrdad Baghai",
+        "Stephen Coley",
+        "David White"
+      ],
+      "year": 1999,
+      "kind": "book",
+      "summary": "McKinsey's three horizons: H1 extend the core, H2 build emerging businesses, H3 create options. The horizons run at the same time, as a portfolio.",
+      "url": "https://www.hachettebookgroup.com/titles/mehrdad-baghai/the-alchemy-of-growth/9780738203096",
+      "checked": "2026-10-27",
+      "informs": [
+        "phase:platform",
+        "rule:lens-three-horizons"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Used as a lens, not as phase names, because its horizons are concurrent rather than sequential."
+      }
+    },
+    {
+      "id": "google-2026-six-phase-model",
+      "title": "Expanded six-phase milestone framework (Discovery, Validation, Retention, Repeatability, Scale, Platformization)",
+      "authors": [
+        "Google (AI assistant conversation shared by the founder)"
+      ],
+      "year": 2026,
+      "kind": "conversation",
+      "summary": "A synthesized six-phase model separating retention (product-market fit) and repeatability from validation and scale. No published source.",
+      "informs": [
+        "gate:product-market-fit",
+        "gate:repeatability",
+        "phase:platform"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "Retention and repeatability became gates rather than phases; Platformization became Platform."
+      }
+    },
+    {
+      "id": "dixon-2010-thin-edge-of-the-wedge",
+      "title": "The thin edge of the wedge strategy",
+      "authors": [
+        "Chris Dixon"
+      ],
+      "year": 2010,
+      "kind": "article",
+      "summary": "Enter a market with a narrow product or segment that solves an acute problem, then expand from that foothold; related to the bowling-pin strategy.",
+      "url": "https://cdixon.org/2010/12/26/the-thin-edge-of-the-wedge-strategy",
+      "checked": "2026-10-27",
+      "informs": [
+        "noun:wedge"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Wedge is a portfolio role with this meaning, not a phase."
+      }
+    },
+    {
+      "id": "abell-1980-defining-the-business",
+      "title": "Defining the Business: The Starting Point of Strategic Planning",
+      "authors": [
+        "Derek F. Abell"
+      ],
+      "year": 1980,
+      "kind": "book",
+      "summary": "A business is defined on three dimensions: customer groups (who), customer functions (what need), and technologies (how).",
+      "url": "https://en.wikipedia.org/wiki/Derek_F._Abell",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:product.market",
+        "field:product.job",
+        "field:product.technology"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Market, job and technology on each product card."
+      }
+    },
+    {
+      "id": "naics-2022",
+      "title": "North American Industry Classification System 2022",
+      "authors": [
+        "Statistics Canada",
+        "US Census Bureau",
+        "INEGI"
+      ],
+      "year": 2022,
+      "kind": "standard",
+      "summary": "Production-oriented industry classification: 20 sectors, six-digit codes; establishments with similar production processes share an industry.",
+      "url": "https://www.statcan.gc.ca/en/subjects/standard/naics/2022/v1/introduction",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:venture.industry"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Industry codes use NAICS."
+      }
+    },
+    {
+      "id": "gics-msci",
+      "title": "Global Industry Classification Standard",
+      "authors": [
+        "MSCI",
+        "S&P Dow Jones Indices"
+      ],
+      "year": 1999,
+      "kind": "standard",
+      "summary": "Market-oriented industry classification used by investors.",
+      "url": "https://support.msci.com/documents/10199/5973a128-47f0-4317-b083-716a10207b50",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:venture.industry"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Kept as an alternative system; NAICS is the default."
+      }
+    },
+    {
+      "id": "irs-treas-reg-1-183-2",
+      "title": "Treasury Regulation 1.183-2: activity not engaged in for profit",
+      "authors": [
+        "US Internal Revenue Service"
+      ],
+      "year": 1972,
+      "kind": "law",
+      "summary": "Nine factors for whether an activity is a business or a hobby; an activity profitable in 3 of 5 years is presumed for profit.",
+      "url": "https://www.journalofaccountancy.com/issues/2013/oct/20138370.html",
+      "checked": "2026-10-27",
+      "informs": [
+        "noun:hobby",
+        "field:venture.ambition"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "hobby is the first value of ambition, in the IRS sense."
+      }
+    },
+    {
+      "id": "elgar-what-do-entrepreneurs-create",
+      "title": "What Do Entrepreneurs Create?",
+      "authors": [
+        "Edward Elgar Publishing (authors to confirm)"
+      ],
+      "year": 2020,
+      "kind": "book",
+      "summary": "Four venture types: survival, lifestyle, managed growth, aggressive growth; ventures rarely change type, and a portfolio should balance types.",
+      "url": "https://e-elgar.com/shop/usd/what-do-entrepreneurs-create-9781789900217.html",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:venture.ambition"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The remaining ambition values."
+      }
+    },
+    {
+      "id": "gassmann-2014-business-model-navigator",
+      "title": "The Business Model Navigator",
+      "authors": [
+        "Oliver Gassmann",
+        "Karolin Frankenberger",
+        "Michaela Csik"
+      ],
+      "year": 2014,
+      "kind": "book",
+      "summary": "55 recurring business model patterns from the University of St. Gallen; a business model answers who, what, how and how revenue is realized.",
+      "url": "https://schreibers.ch/detail/ISBN-9781292065816/Gassmann-Oliver/The-Business-Model-Navigator",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:product.business_model"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "business_model values are the Navigator's pattern names."
+      }
+    },
+    {
+      "id": "prahalad-hamel-1990-core-competence",
+      "title": "The Core Competence of the Corporation",
+      "authors": [
+        "C. K. Prahalad",
+        "Gary Hamel"
+      ],
+      "year": 1990,
+      "kind": "article",
+      "summary": "A core competence is collective learning that gives access to many markets, adds to perceived customer benefit and is hard to imitate; core products embody it.",
+      "informs": [
+        "field:venture.core.competence",
+        "noun:core-product"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The core product's competence field."
+      }
+    },
+    {
+      "id": "kotler-core-product",
+      "title": "Principles of Marketing: the three levels of product",
+      "authors": [
+        "Philip Kotler",
+        "Gary Armstrong"
+      ],
+      "year": 1980,
+      "kind": "book",
+      "summary": "A product has levels: the core customer benefit, the actual product, and the augmented product.",
+      "informs": [
+        "noun:core-product",
+        "field:venture.core.promise"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The core promise is the core benefit stated as what anyone can claim from the venture."
+      }
+    }
+  ]
+}

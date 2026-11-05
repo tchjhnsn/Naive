@@ -1,0 +1,27 @@
+name: test
+
+on:
+  # Every pull request runs the suite, whatever its base, so a pull request stacked on another one is tested too.
+  # A push to main runs it again.
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema
+      - run: npm ci
+      - run: node test.mjs
+

@@ -1,0 +1,12 @@
+{
+  "id": "30000000-0000-4000-8000-000000000001",
+  "name": "Reserve Checking",
+  "type": "checking",
+  "last_4": "0106",
+  "balance": {
+    "amount": 1046,
+    "currency": "USD"
+  },
+  "source": "rho-sandbox:account:30000000-0000-4000-8000-000000000001",
+  "synced_at": "2026-10-29T06:34:34.210Z"
+}

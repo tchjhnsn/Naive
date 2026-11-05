@@ -1,0 +1,52 @@
+{
+  "layer": "knowledge",
+  "purpose": "The memory layer: where every record is stored. The other layers each define the records they write here and the conventions for them; this layer defines only how a record is stored and found (route, schema, provenance), the decision log, the venture profile, design documents and the sources behind them. Storage is federated: records stay in the sources a venture already uses (its own folder by default, or a GitHub repository), reached through connectors with one contract, found through a catalog that copies no content (EE-036, EE-037).",
+  "skills": [
+    {
+      "id": "find-reference",
+      "path": "knowledge/skills/find-reference/SKILL.md",
+      "standalone": true
+    },
+    {
+      "id": "industry-awareness",
+      "path": "knowledge/skills/industry-awareness/SKILL.md"
+    }
+  ],
+  "records": [
+    "venture-profile",
+    "decision",
+    "design-document",
+    "nextjs-status",
+    "knowledge-sources",
+    "where-used",
+    "freshness-profiles",
+    "sdlc-catalog",
+    "freshness-log",
+    "judgment",
+    "systems-catalog",
+    "glossary",
+    "term-list"
+  ],
+  "reads": [
+    "venture",
+    "product",
+    "provenance",
+    "decision-record"
+  ],
+  "writes": [
+    "reference"
+  ],
+  "checks": [
+    "schema/check-sources.mjs",
+    "schema/check-where-used.mjs",
+    "schema/check-sdlc-catalog.ts"
+  ],
+  "gaps": [
+    "No check on the venture profile or design documents of its own; design-coverage (evidence) is the only one",
+    "Two connectors so far (filesystem and GitHub); a database, Notion, Slack or Salesforce each need their own module meeting the same contract",
+    "Checks and command routes (need-now, time-to-ready, validation score) still read the venture folder, so they do not yet see a record kept in another source",
+    "A merged pull request is not logged as an accept in provenance; the read after the merge is the only sign",
+    "Freshness (schema/freshness.mjs) checks children in the venture folder only; a child in another source is listed as needing the platform, and a webhook from a system of record that marks summaries stale (V-9) is the platform's"
+  ],
+  "name": "knowledge"
+}

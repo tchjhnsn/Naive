@@ -1,0 +1,114 @@
+{
+  "venture": {
+    "name": "SpaceX (with xAI)",
+    "phase": "scale",
+    "team": "Tens of thousands of people; xAI and X merged in February 2026.",
+    "current_state": "S-1 filed 2026-05-20 (ticker SPCX). Three segments: Space (launch), Connectivity (Starlink, about 61% of 2025 revenue), AI (xAI, about $3.2B revenue and about $6.4B operating loss in 2025). Starlink at 10.3M subscribers, ARPU falling. Starship delays top the risk factors.",
+    "sources": [
+      "SpaceX S-1, 2026-05-20, via press coverage"
+    ]
+  },
+  "core": {
+    "source": "SpaceX's stated mission (make life multiplanetary) and its S-1 segments; our wording.",
+    "promise": "Access to space, and what space makes possible, at a cost and cadence no one else reaches: launch for anyone, and connectivity anywhere on Earth.",
+    "promised_to": "Governments, satellite operators, and people and businesses anywhere on Earth.",
+    "must_not": "Loss of crew, payload or public safety; and, since the merger, harmful or unlawful content delivered under the company's name.",
+    "competence": "Reusable rockets and vertically integrated, high-cadence manufacturing of launch vehicles and satellites."
+  },
+  "products": {
+    "falcon": {
+      "name": "Falcon 9 / Heavy launch",
+      "faces": "governments and satellite operators",
+      "description": "Reusable launch; most of the world's mass to orbit."
+    },
+    "dragon": {
+      "name": "Dragon",
+      "faces": "NASA and private crews",
+      "description": "Crew and cargo to orbit."
+    },
+    "starship": {
+      "name": "Starship",
+      "faces": "NASA, Starlink, future customers",
+      "description": "Fully reusable super-heavy launch; still in test."
+    },
+    "starlink": {
+      "name": "Starlink",
+      "faces": "households, businesses, airlines, ships",
+      "description": "Satellite broadband in 160+ countries."
+    },
+    "starshield": {
+      "name": "Starshield and government Starlink",
+      "faces": "defence and intelligence agencies",
+      "description": "Government satellite networks and services."
+    },
+    "dtc": {
+      "name": "Starlink direct to cell",
+      "faces": "mobile carriers and their customers",
+      "description": "Phones connect straight to satellites."
+    },
+    "grok": {
+      "name": "Grok",
+      "faces": "consumers and developers",
+      "description": "xAI's assistant and API."
+    },
+    "x": {
+      "name": "X",
+      "faces": "the public and advertisers",
+      "description": "The social network, now in the AI segment."
+    },
+    "orbital": {
+      "name": "Orbital data centres",
+      "faces": "AI compute buyers",
+      "allowed_from": "platform",
+      "allowed_from_reason": "Needs Starship at cadence; described as a future plan.",
+      "description": "Compute in orbit, powered by sunlight."
+    }
+  },
+  "flows": [
+    {
+      "from": "falcon",
+      "to": "starlink",
+      "carries": "launch at cost"
+    },
+    {
+      "from": "starship",
+      "to": "starlink",
+      "carries": "next-gen launch"
+    },
+    {
+      "from": "starship",
+      "to": "orbital",
+      "carries": "mass to orbit"
+    },
+    {
+      "from": "starlink",
+      "to": "dtc",
+      "carries": "constellation"
+    },
+    {
+      "from": "starlink",
+      "to": "starshield",
+      "carries": "constellation"
+    },
+    {
+      "from": "falcon",
+      "to": "dragon",
+      "carries": "launch"
+    },
+    {
+      "from": "x",
+      "to": "grok",
+      "carries": "data and distribution"
+    },
+    {
+      "from": "grok",
+      "to": "x",
+      "carries": "features"
+    },
+    {
+      "from": "orbital",
+      "to": "grok",
+      "carries": "compute"
+    }
+  ]
+}

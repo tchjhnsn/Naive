@@ -1,0 +1,186 @@
+{
+  "register": "decision-rights",
+  "updated": "2026-10-28",
+  "governed_by": "ratified operating-model decisions",
+  "template": true,
+  "levels": {
+    "decide": "Role decides; the work itself is the record",
+    "decide-inform": "Role decides and records it (PR, register entry); founder may read, need not act",
+    "recommend-approve": "Role recommends; the named approver decides (DACI)",
+    "escalate": "Founder decides (RAPID for the few with vetoes)"
+  },
+  "note": "Template for every entity. An entity may tighten a class (move it up a level) in <entity>/_meta/registers/decision-rights.json; loosening needs a founder decision.",
+  "classes": [
+    {
+      "id": "accept-verified-work",
+      "description": "Accept work whose done-criteria pass conformance checks",
+      "owner": "builder",
+      "level": "decide"
+    },
+    {
+      "id": "implementation-detail",
+      "description": "Implementation choices inside a handoff",
+      "owner": "builder",
+      "level": "decide"
+    },
+    {
+      "id": "schema-change-within-adr",
+      "description": "Schema or data change inside an accepted ADR, via the documented procedure",
+      "owner": "builder",
+      "level": "decide-inform"
+    },
+    {
+      "id": "production-data-write",
+      "description": "Writes to the production database",
+      "owner": "builder",
+      "level": "decide-inform",
+      "condition": "Only through the Architect's documented branch procedure"
+    },
+    {
+      "id": "security-tightening",
+      "description": "Narrowing permissions or closing a hole",
+      "owner": "builder",
+      "level": "decide-inform"
+    },
+    {
+      "id": "security-loosening",
+      "description": "Widening permissions, new privileged paths",
+      "owner": "architect",
+      "level": "recommend-approve",
+      "condition": "Marked for Architect review"
+    },
+    {
+      "id": "new-structure",
+      "description": "New service, store, package boundary or format",
+      "owner": "architect",
+      "level": "decide-inform",
+      "condition": "Requires an ADR; a second data store needs its own ADR"
+    },
+    {
+      "id": "irreversible-data-change",
+      "description": "Deleting or rewriting records, dropping originals",
+      "owner": "architect",
+      "level": "recommend-approve",
+      "condition": "Founder if it touches legal records or originals"
+    },
+    {
+      "id": "new-adr-within-strategy",
+      "description": "An ADR consistent with ledger decisions",
+      "owner": "architect",
+      "level": "decide-inform"
+    },
+    {
+      "id": "contradicts-ledger",
+      "description": "Anything that would contradict an in-force ledger decision",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "new-dependency-free",
+      "description": "Adopting a free, open-licence dependency",
+      "owner": "architect",
+      "level": "decide-inform",
+      "condition": "Add to the dependency register"
+    },
+    {
+      "id": "spend-money",
+      "description": "Any paid service, plan change or purchase",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "legal-or-terms",
+      "description": "Accepting terms, licences with obligations, legal positions",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "ownership-or-control",
+      "description": "Who owns or controls the venture: admitting or removing a cofounder, issuing, granting or reclassifying shares or units, signing a SAFE, note or priced round, granting investor rights, forming a board or changing its powers, agreeing to sell or wind down. Founder decisions made with counsel (EE-022); agents prepare options and documents only",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "public-commitment",
+      "description": "Publishing, announcing, or sending anything outside on the company's behalf. Every publication passes the venture's publication policy: named channel and content, the channel's checks and preview, a person approves (EE-025)",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "production-ship",
+      "description": "Release to production users",
+      "owner": "founder",
+      "level": "recommend-approve",
+      "condition": "Founder or a named delegate"
+    },
+    {
+      "id": "strategy-or-constitution",
+      "description": "Strategy, product lineup, entity structure, methodology amendments",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "cross-entity",
+      "description": "A decision touching two ventures",
+      "owner": "chief-of-staff",
+      "level": "recommend-approve",
+      "condition": "The chief of staff of the workspace (umbrella) position recommends; the founder approves"
+    },
+    {
+      "id": "domain-fact",
+      "description": "What a source says; whether a record is official",
+      "owner": "domain-lead",
+      "level": "decide-inform"
+    },
+    {
+      "id": "experience-design",
+      "description": "Experience and interface design within decided product lines",
+      "owner": "product-design-lead",
+      "level": "decide-inform"
+    },
+    {
+      "id": "continue-or-stop",
+      "description": "Whether to start building a product, keep building it or stop, read against the telos exit criteria and the validation evidence (EE-040)",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "change-direction",
+      "description": "Changing the product, customer or business model when evidence shows the current direction is wrong; the telos steering says how (EE-040)",
+      "owner": "founder",
+      "level": "escalate"
+    },
+    {
+      "id": "set-priorities",
+      "description": "The order in which work is taken up across roles and handoffs (EE-040)",
+      "owner": "founder",
+      "level": "decide-inform"
+    },
+    {
+      "id": "defer-or-route",
+      "description": "Whether an idea is worked now or deferred, and to which role",
+      "owner": "chief-of-staff",
+      "level": "decide-inform"
+    },
+    {
+      "id": "spend-register-upkeep",
+      "description": "Record statements, tag charges by entity, flag anomalies",
+      "owner": "operations-finance-lead",
+      "level": "decide"
+    },
+    {
+      "id": "cancel-or-downgrade",
+      "description": "Cancel, downgrade or change the plan of a paid service",
+      "owner": "operations-finance-lead",
+      "level": "recommend-approve",
+      "condition": "Founder approves; Architect consulted if the service is in use"
+    },
+    {
+      "id": "move-payment-method",
+      "description": "Move an existing subscription to the business card or account",
+      "owner": "operations-finance-lead",
+      "level": "recommend-approve",
+      "condition": "Founder performs the change in the vendor account"
+    }
+  ]
+}

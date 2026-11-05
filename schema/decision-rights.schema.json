@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decision-rights.schema.json",
+  "title": "Decision rights",
+  "description": "Who may decide what (EE-017). The template lives at governance/venture-template/decision-rights.json; a venture may tighten a class (move it to a higher level or a more senior owner) in <venture>/governance/decision-rights.json, and loosening one needs an owner decision. Levels follow RAPID and DACI: decide, decide-inform, recommend-approve, escalate.",
+  "type": "object",
+  "required": ["register", "classes"],
+  "properties": {
+    "register": { "const": "decision-rights" },
+    "updated": { "type": "string" },
+    "governed_by": { "type": "string" },
+    "template": { "type": "boolean", "description": "True for the template; a venture's file omits it or sets false" },
+    "extends": { "type": "string", "description": "A venture file: path to the template it tightens" },
+    "levels": { "type": "object", "additionalProperties": { "type": "string" } },
+    "note": { "type": "string" },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "owner", "level"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "description": { "type": "string" },
+          "owner": { "type": "string", "description": "Role id from the roles register" },
+          "level": { "enum": ["decide", "decide-inform", "recommend-approve", "escalate"] },
+          "condition": { "type": "string" },
+          "decision": { "type": "string", "description": "A venture file: the decision that tightened or loosened it" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

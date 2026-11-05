@@ -1,0 +1,14 @@
+{
+  "venture": "relay",
+  "updated": "2026-11-01",
+  "principles": [
+    {
+      "id": "same-everywhere",
+      "statement": "Never ship a release that installs differently on two supported machines",
+      "applies_to": [
+        "cli"
+      ],
+      "source": "Ada, 2026-11-01"
+    }
+  ]
+}

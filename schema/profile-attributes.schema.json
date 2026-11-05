@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "profile-attributes.schema.json",
+  "title": "Founder profile attributes",
+  "description": "The library of attributes a founder profile can add, each with the types its entries may take, and the templates that start a profile from a set of them.",
+  "type": "object",
+  "required": ["version", "attributes", "templates"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "attributes": { "type": "array", "items": { "type": "object", "required": ["id", "label", "question"], "additionalProperties": false, "properties": {
+      "id": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "label": { "type": "string" }, "question": { "type": "string", "description": "How a mentor opens it" },
+      "types": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" } } } } },
+    "templates": { "type": "array", "items": { "type": "object", "required": ["id", "label", "attributes"], "additionalProperties": false, "properties": {
+      "id": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "label": { "type": "string" }, "attributes": { "type": "array", "items": { "type": "string" } } } } }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "claude-code",
+  "title": "Claude Code",
+  "kind": "harness",
+  "integration": "claude-code",
+  "reads": ["CLAUDE.md", ".claude/skills/*/SKILL.md"],
+  "files": [
+    { "path": "CLAUDE.md", "text": "@AGENTS.md\n" }
+  ],
+  "skills": ".claude/skills",
+  "sources": [
+    "https://docs.claude.com/en/docs/claude-code/memory",
+    "https://docs.claude.com/en/docs/claude-code/skills"
+  ],
+  "note": "Claude Code reads CLAUDE.md, which imports the venture's AGENTS.md with @AGENTS.md, and loads project skills from .claude/skills/<name>/SKILL.md. The adapter copies the skill of each package open now, so the agent has the installed version's skill."
+}

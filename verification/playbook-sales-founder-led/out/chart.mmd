@@ -1,0 +1,76 @@
+---
+title: "Founder-led sales: one customer through the pipeline"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: stop
+    lg1: paid
+    lg2: gone
+    lg3: talk
+    lg4: list
+    lg5: read
+  }
+  class lg0 orange
+  class lg1 teal
+  class lg2 tan
+  class lg3 purple
+  class lg4 yellow
+  class lg5 blue
+  s0: Not started
+  s1: You read where customer records live
+  s2: Stopped: the foundation records are missing
+  s3: You know who you sell to
+  s4: Checks failed
+  s5: You have read the price, or found none
+  s6: On the list
+  s7: A buying stage the package does not use
+  s8: On the list, conversation log open
+  s9: On the list, with notes and no log
+  s10: Aware: you have talked
+  s11: Gone
+  s12: Paying
+  s13: Trying: they use it and have not paid
+  s14: Checks passed
+  [*] --> s0
+  s0 --> s1: you read where customer records live
+  s1 --> s2: you read who you sell to
+  s1 --> s3: you read who you sell to
+  s2 --> s4: you run the checks, and they fail
+  s3 --> s5: you read the price, or find that there is none
+  s5 --> s4: you run the checks, and they fail
+  s5 --> s6: you name someone who matches the profile
+  s6 --> s4: you run the checks, and they fail
+  s6 --> s7: you write a buying stage the package does not use
+  s6 --> s8: you open the conversation log
+  s6 --> s9: you write notes before the conversation log
+  s7 --> s4: you run the checks, and they fail
+  s8 --> s4: you run the checks, and they fail
+  s8 --> s7: you write a buying stage the package does not use
+  s8 --> s10: you talk, and write what happened
+  s9 --> s4: you run the checks, and they fail
+  s10 --> s4: you run the checks, and they fail
+  s10 --> s11: you let them go
+  s10 --> s12: you mark them paying and leave out the amount or they pay an amount
+  s10 --> s13: they use it, and you leave out the next ask or they use it, and you write when you will ask them to pay
+  s11 --> s4: you run the checks, and they fail
+  s12 --> s11: you let them go
+  s12 --> s4: you run the checks, and they fail
+  s13 --> s11: you let them go
+  s13 --> s12: you mark them paying and leave out the amount or they pay an amount
+  s13 --> s4: you run the checks, and they fail
+  s12 --> s14: you run the checks, and they pass
+  class s0 blue
+  class s1 blue
+  class s2 orange
+  class s3 blue
+  class s4 orange
+  class s5 blue
+  class s6 yellow
+  class s7 orange
+  class s8 yellow
+  class s9 yellow
+  class s10 purple
+  class s11 tan
+  class s12 teal
+  class s13 purple
+  class s14 teal

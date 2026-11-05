@@ -1,0 +1,30 @@
+{
+  "id": "recipes",
+  "name": "Release recipes",
+  "description": "Written recipes for common release chores; they work alone and better with the CLI.",
+  "market": {
+    "customer": "b2c",
+    "segment": "maintainers of small open-source tools",
+    "geography": "global",
+    "vertical": false
+  },
+  "job": "Cut a release without forgetting a step",
+  "technology": "agent skill (SKILL.md)",
+  "software": false,
+  "offering": "content",
+  "scope": {
+    "level": "layer",
+    "layer": "operations"
+  },
+  "part_of": [
+    "cli"
+  ],
+  "business_model": [
+    "open-source"
+  ],
+  "allowed_from": "validation",
+  "flows_to": [
+    "cli"
+  ],
+  "status": "live"
+}

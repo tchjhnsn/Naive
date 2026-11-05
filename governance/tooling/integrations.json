@@ -1,0 +1,37 @@
+[
+  {
+    "id": "decision-ledger",
+    "name": "Decision ledger",
+    "layer": "governance",
+    "role": "G-NNN and D-NNN decisions",
+    "interfaces": [
+      "files"
+    ],
+    "status": "in-use",
+    "reason": "_meta/registers/decision-ledger.json"
+  },
+  {
+    "id": "github-governance",
+    "name": "GitHub branch protection and CODEOWNERS",
+    "layer": "governance",
+    "role": "who may merge",
+    "interfaces": [
+      "api",
+      "files"
+    ],
+    "status": "candidate",
+    "reason": "Torian merges by hand today"
+  },
+  {
+    "id": "slack",
+    "name": "Slack",
+    "layer": "governance",
+    "role": "approvals and escalations",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Connector available, not signed in"
+  }
+]

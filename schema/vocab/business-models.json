@@ -1,0 +1,298 @@
+{
+  "vocabulary": "business-models",
+  "note": "Controlled values for a product's business_model (EE-017). The 55 patterns of the St. Gallen Business Model Navigator (Gassmann, Frankenberger and Csik 2014), as slugs, plus named extras that the 55 lack, each with its source. check-ventures warns on any other value.",
+  "references": [
+    "gassmann-2014-business-model-navigator"
+  ],
+  "patterns": [
+    {
+      "id": "add-on",
+      "name": "Add-on",
+      "source": "st-gallen"
+    },
+    {
+      "id": "affiliation",
+      "name": "Affiliation",
+      "source": "st-gallen"
+    },
+    {
+      "id": "aikido",
+      "name": "Aikido",
+      "source": "st-gallen"
+    },
+    {
+      "id": "auction",
+      "name": "Auction",
+      "source": "st-gallen"
+    },
+    {
+      "id": "barter",
+      "name": "Barter",
+      "source": "st-gallen"
+    },
+    {
+      "id": "cash-machine",
+      "name": "Cash machine",
+      "source": "st-gallen"
+    },
+    {
+      "id": "cross-selling",
+      "name": "Cross-selling",
+      "source": "st-gallen"
+    },
+    {
+      "id": "crowdfunding",
+      "name": "Crowdfunding",
+      "source": "st-gallen"
+    },
+    {
+      "id": "crowdsourcing",
+      "name": "Crowdsourcing",
+      "source": "st-gallen"
+    },
+    {
+      "id": "customer-loyalty",
+      "name": "Customer loyalty",
+      "source": "st-gallen"
+    },
+    {
+      "id": "digitisation",
+      "name": "Digitisation",
+      "source": "st-gallen"
+    },
+    {
+      "id": "direct-selling",
+      "name": "Direct selling",
+      "source": "st-gallen"
+    },
+    {
+      "id": "e-commerce",
+      "name": "E-commerce",
+      "source": "st-gallen"
+    },
+    {
+      "id": "experience-selling",
+      "name": "Experience selling",
+      "source": "st-gallen"
+    },
+    {
+      "id": "flat-rate",
+      "name": "Flat rate",
+      "source": "st-gallen"
+    },
+    {
+      "id": "fractional-ownership",
+      "name": "Fractional ownership",
+      "source": "st-gallen"
+    },
+    {
+      "id": "franchising",
+      "name": "Franchising",
+      "source": "st-gallen"
+    },
+    {
+      "id": "freemium",
+      "name": "Freemium",
+      "source": "st-gallen"
+    },
+    {
+      "id": "from-push-to-pull",
+      "name": "From push to pull",
+      "source": "st-gallen"
+    },
+    {
+      "id": "guaranteed-availability",
+      "name": "Guaranteed availability",
+      "source": "st-gallen"
+    },
+    {
+      "id": "hidden-revenue",
+      "name": "Hidden revenue",
+      "source": "st-gallen"
+    },
+    {
+      "id": "ingredient-branding",
+      "name": "Ingredient branding",
+      "source": "st-gallen"
+    },
+    {
+      "id": "integrator",
+      "name": "Integrator",
+      "source": "st-gallen"
+    },
+    {
+      "id": "layer-player",
+      "name": "Layer player",
+      "source": "st-gallen"
+    },
+    {
+      "id": "leverage-customer-data",
+      "name": "Leverage customer data",
+      "source": "st-gallen"
+    },
+    {
+      "id": "license",
+      "name": "License",
+      "source": "st-gallen"
+    },
+    {
+      "id": "lock-in",
+      "name": "Lock-in",
+      "source": "st-gallen"
+    },
+    {
+      "id": "long-tail",
+      "name": "Long tail",
+      "source": "st-gallen"
+    },
+    {
+      "id": "make-more-of-it",
+      "name": "Make more of it",
+      "source": "st-gallen"
+    },
+    {
+      "id": "mass-customisation",
+      "name": "Mass customisation",
+      "source": "st-gallen"
+    },
+    {
+      "id": "no-frills",
+      "name": "No frills",
+      "source": "st-gallen"
+    },
+    {
+      "id": "open-business",
+      "name": "Open business",
+      "source": "st-gallen"
+    },
+    {
+      "id": "open-source",
+      "name": "Open source",
+      "source": "st-gallen"
+    },
+    {
+      "id": "orchestrator",
+      "name": "Orchestrator",
+      "source": "st-gallen"
+    },
+    {
+      "id": "pay-per-use",
+      "name": "Pay per use",
+      "source": "st-gallen"
+    },
+    {
+      "id": "pay-what-you-want",
+      "name": "Pay what you want",
+      "source": "st-gallen"
+    },
+    {
+      "id": "peer-to-peer",
+      "name": "Peer to peer",
+      "source": "st-gallen"
+    },
+    {
+      "id": "performance-based-contracting",
+      "name": "Performance-based contracting",
+      "source": "st-gallen"
+    },
+    {
+      "id": "razor-and-blade",
+      "name": "Razor and blade",
+      "source": "st-gallen"
+    },
+    {
+      "id": "rent-instead-of-buy",
+      "name": "Rent instead of buy",
+      "source": "st-gallen"
+    },
+    {
+      "id": "revenue-sharing",
+      "name": "Revenue sharing",
+      "source": "st-gallen"
+    },
+    {
+      "id": "reverse-engineering",
+      "name": "Reverse engineering",
+      "source": "st-gallen"
+    },
+    {
+      "id": "reverse-innovation",
+      "name": "Reverse innovation",
+      "source": "st-gallen"
+    },
+    {
+      "id": "robin-hood",
+      "name": "Robin Hood",
+      "source": "st-gallen"
+    },
+    {
+      "id": "self-service",
+      "name": "Self-service",
+      "source": "st-gallen"
+    },
+    {
+      "id": "shop-in-shop",
+      "name": "Shop in shop",
+      "source": "st-gallen"
+    },
+    {
+      "id": "solution-provider",
+      "name": "Solution provider",
+      "source": "st-gallen"
+    },
+    {
+      "id": "subscription",
+      "name": "Subscription",
+      "source": "st-gallen"
+    },
+    {
+      "id": "supermarket",
+      "name": "Supermarket",
+      "source": "st-gallen"
+    },
+    {
+      "id": "target-the-poor",
+      "name": "Target the poor",
+      "source": "st-gallen"
+    },
+    {
+      "id": "trash-to-cash",
+      "name": "Trash to cash",
+      "source": "st-gallen"
+    },
+    {
+      "id": "two-sided-market",
+      "name": "Two-sided market",
+      "source": "st-gallen"
+    },
+    {
+      "id": "ultimate-luxury",
+      "name": "Ultimate luxury",
+      "source": "st-gallen"
+    },
+    {
+      "id": "user-designed",
+      "name": "User designed",
+      "source": "st-gallen"
+    },
+    {
+      "id": "white-label",
+      "name": "White label",
+      "source": "st-gallen"
+    }
+  ],
+  "extras": [
+    {
+      "id": "open-core",
+      "name": "Open core",
+      "source": "Lampitt 2008, the open-core model: a free open-source core with paid proprietary additions",
+      "why": "The 55 have Open source and Freemium but not their combination, which is the common model for developer tools"
+    },
+    {
+      "id": "fee-for-service",
+      "name": "Fee for service",
+      "source": "professional-services usage: work billed per project, day or hour",
+      "why": "The 55 describe product and platform models; a studio or consultancy selling its time needs a plain name for that"
+    }
+  ]
+}

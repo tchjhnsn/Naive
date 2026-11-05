@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data-master.schema.json",
+  "title": "Data package master record",
+  "description": "One master record in a data package (customers, investors or money), at <package>/<id>.json (EE-070). The package is never complete. Its gates are coverage and freshness. Activity lives in append-only _streams/.",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "name": { "type": "string" },
+    "summary": { "type": "string" }
+  },
+  "additionalProperties": true
+}

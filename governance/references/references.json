@@ -1,0 +1,26 @@
+{
+  "layer": "governance",
+  "references": [
+    {
+      "id": "keller-2020-strategic-brand-management",
+      "title": "Strategic Brand Management: Building, Measuring, and Managing Brand Equity (5th edition)",
+      "authors": [
+        "Kevin Lane Keller",
+        "Vanitha Swaminathan"
+      ],
+      "year": 2020,
+      "kind": "book",
+      "summary": "Brand equity built through brand elements: names, URLs, logos, symbols, characters, spokespeople, slogans, jingles, packaging and signage, chosen for memorability, meaningfulness, likability, transferability, adaptability and protectability (chapter 4).",
+      "url": "https://www.pearson.com/en-us/subject-catalog/p/Keller-Strategic-Brand-Management-Building-Measuring-and-Managing-Brand-Equity-Subscription-5th-Edition/P200000005947/9780134892498",
+      "checked": "2026-10-28",
+      "informs": [
+        "field:venture.brand",
+        "field:venture.brand.tagline"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The brand record follows Keller's brand elements; Keller's 'slogan' is split into the enduring tagline (on the venture) and a campaign's slogan (on the campaign), as marketing practice does (EE-046)."
+      }
+    }
+  ]
+}

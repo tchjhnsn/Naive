@@ -1,0 +1,79 @@
+---
+title: "What happens when a person or an agent saves a record in Naive"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: checking
+    lg1: saving
+    lg2: saved as the record
+    lg3: draft waiting for a person
+    lg4: refused
+    lg5: research (designed)
+  }
+  class lg0 blue
+  class lg1 teal
+  class lg2 teal
+  class lg3 yellow
+  class lg4 orange
+  class lg5 tan
+  s0: Find where this record goes
+  s1: Research the new record type (designed, EE-100)
+  s2: Check you're allowed to write here
+  s3: Refused, nothing saved
+  s4: Check no decision you haven't made yet blocks this
+  s5: Check the feature isn't still locked in the beta
+  s6: Check it isn't an edit to a raw capture
+  s7: Check the record has the right shape
+  s8: Hold it if an open decision affects this record
+  s9: Save it
+  s10: Apply the venture's own rules
+  s11: Log who changed what, and why
+  s12: Check only a person settles a decision
+  s13: Decide whether it's the record or a draft for a person
+  s14: Tell the writer what changed and what's next
+  s15: Done, waiting for a person to accept the draft
+  s16: Done, saved as the record
+  [*] --> s0
+  s0 --> s1: no such record type yet
+  s0 --> s2: ok
+  s1 --> s0: a person admits its schema, generator and route
+  s1 --> s3: a person turns it down
+  s2 --> s3: not allowed to write here
+  s2 --> s4: ok
+  s4 --> s3: blocked until a person decides [an agent wrote it]
+  s4 --> s5: ok
+  s5 --> s3: still locked in the beta
+  s5 --> s6: ok
+  s6 --> s3: raw captures can't be edited
+  s6 --> s7: ok
+  s7 --> s3: wrong shape, with the fix
+  s7 --> s8: ok
+  s8 --> s9: saved as a draft [an agent wrote it]
+  s8 --> s10: ok
+  s9 --> s11: saved
+  s10 --> s9: saved as a draft
+  s10 --> s3: refused by the venture's rules
+  s10 --> s12: ok
+  s11 --> s14: logged
+  s12 --> s9: saved as a draft [an agent wrote it]
+  s12 --> s13: ok
+  s13 --> s9: ok or saved as a draft [an agent wrote to a protected record]
+  s14 --> s15: answered
+  s14 --> s16: answered
+  class s0 blue
+  class s1 tan
+  class s2 blue
+  class s3 orange
+  class s4 blue
+  class s5 blue
+  class s6 blue
+  class s7 blue
+  class s8 blue
+  class s9 teal
+  class s10 blue
+  class s11 teal
+  class s12 blue
+  class s13 blue
+  class s14 teal
+  class s15 yellow
+  class s16 teal

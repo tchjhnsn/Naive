@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workspace.schema.json",
+  "title": "Workspace",
+  "description": "A builder's workspace: one instance of the system. A naive-workspace.json (earlier workspace.json) at its top says which schema version it follows, where its vault is and where its repositories are (EE-002, EE-011, EE-020). A workspace always has a vault; it has a code folder of repositories once any venture builds software. One schema covers both file names; naive-workspace.json is the name create-venture writes. A teammate's own workspace can list ventures they work for or with; each venture keeps its own settings, and the workspace's settings govern what crosses between them.",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "ventures"
+  ],
+  "properties": {
+    "schema": {
+      "const": "everything-ecosystem"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "The version in schema/VERSION that this workspace follows"
+    },
+    "name": {
+      "type": "string",
+      "description": "The workspace's name, shown to the founder. A new workspace is named \"Naive workspace\"; the founder renames it with naive workspace rename"
+    },
+    "ventures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Folders to search for venture.json files, relative to the workspace. Grouping folders inside them are for people to browse and carry no meaning; each venture.json is the truth."
+    },
+    "code": {
+      "type": "string",
+      "description": "The folder holding the ventures' repositories (repository, short repo: a version-controlled store, normally Git, for code and the documents that ship with it). Needed once any venture builds software"
+    },
+    "vault": {
+      "type": "string",
+      "description": "The vault: the folder of documents (Markdown and JSON records) that holds the venture folders, their records and their decisions. Relative to the workspace; defaults to the workspace itself. Any notes app can open it; Obsidian calls such a folder a vault"
+    },
+    "settings": {
+      "type": "object",
+      "description": "The workspace's own configuration, set by the founder. Offline (a local folder) these are the whole of it.",
+      "properties": {
+        "cross_venture_reads": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether a session in one venture may read another venture in this workspace. Only published artifacts ever cross; records and _private/ never do. On unless the founder turns it off"
+        },
+        "route_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8,
+          "description": "How sure naive capture must be before it files a chunk in a venture's inbox by itself; below it the chunk waits in the workspace inbox for the founder"
+        }
+      },
+      "additionalProperties": false
+    },
+    "founder": {
+      "type": "string",
+      "description": "The founder record, relative to the workspace (normally founders/<handle>/founder.json, schema/founders.ts)"
+    },
+    "timeZone": {
+      "type": "string",
+      "description": "The workspace's IANA time zone (for example America/New_York): the clock's zone (schema/clock.mjs). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture"
+    },
+    "calendar": {
+      "type": "string",
+      "description": "The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (schema/calendar.mjs). Created with the workspace"
+    }
+  },
+  "additionalProperties": false
+}

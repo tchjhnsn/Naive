@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "nextjs-status.schema.json",
+  "title": "Next.js translation status",
+  "description": "Whether each concept of the Next.js translation ledger is built, and the docs page that explains it. Checked by schema/check-nextjs-status.mjs.",
+  "type": "object",
+  "required": ["about", "checked", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "about": { "type": "string" },
+    "checked": { "type": "string", "format": "date" },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "chapter", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Z]-[0-9]+$" },
+          "chapter": { "type": "string" },
+          "status": { "enum": ["built", "partial", "not built", "n/a"] },
+          "evidence": { "type": "array", "items": { "type": "string" }, "description": "Files in this repository that show the concept working" },
+          "evidence_elsewhere": { "type": "array", "items": { "type": "string" }, "description": "Files in everything-ecosystem (the Mentura platform, the docs site) that show the concept working; not checked here" },
+          "page": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

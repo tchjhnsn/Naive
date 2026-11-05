@@ -1,0 +1,10 @@
+{
+  "register": "delegation",
+  "updated": "2026-11-01",
+  "note": "Ada holds the founder role; no grants yet, so every class stays with the founder.",
+  "root": "founder",
+  "founder": [
+    "Ada"
+  ],
+  "grants": []
+}

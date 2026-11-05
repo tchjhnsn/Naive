@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketing-sitemap.schema.json",
+  "title": "Marketing sitemap",
+  "description": "The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by operations/marketing/site/plan.mjs. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated.",
+  "type": "object",
+  "required": [
+    "version",
+    "venture",
+    "facts",
+    "offerings",
+    "audience",
+    "pages",
+    "omitted",
+    "handoff"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "venture": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "planned_at": {
+      "type": "string"
+    },
+    "planned_by": {
+      "enum": [
+        "jev",
+        "conventions"
+      ]
+    },
+    "facts": {
+      "type": "object"
+    },
+    "offerings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "offering",
+          "offered_to"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "offering": {
+            "enum": [
+              "product",
+              "service",
+              "platform",
+              "content",
+              "marketplace"
+            ]
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "offered_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "serves": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "from": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "audience": {
+      "type": "object",
+      "required": [
+        "offered_to",
+        "partner_led",
+        "types"
+      ],
+      "properties": {
+        "offered_to": {
+          "type": "array"
+        },
+        "partner_led": {
+          "type": "boolean"
+        },
+        "types": {
+          "type": "array"
+        },
+        "weights": {
+          "type": "object"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "parent",
+          "label",
+          "type",
+          "level",
+          "sections"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "parent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere"
+            ]
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "item",
+                "component",
+                "need",
+                "for",
+                "why",
+                "source",
+                "variant"
+              ],
+              "properties": {
+                "item": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "component": {
+                  "type": "string"
+                },
+                "need": {
+                  "type": "number"
+                },
+                "required": {
+                  "type": "string"
+                },
+                "for": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "why": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "when": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "object"
+                },
+                "variant": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "omitted": {
+      "type": "array"
+    },
+    "handoff": {
+      "type": "object",
+      "required": [
+        "to"
+      ],
+      "properties": {
+        "to": {
+          "const": "engineering"
+        },
+        "note": {
+          "type": "string"
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

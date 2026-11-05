@@ -1,0 +1,89 @@
+{
+  "venture": {
+    "name": "Polity",
+    "phase": "validation",
+    "team": "One founder working with AI agents; no employees.",
+    "current_state": "Polity Social (the polity-app web app, with Polity Search on its home page) is in build and use. Polity OS has an observer-mode prototype that reads public records only. The other products are defined but not built.",
+    "standing_decisions": [
+      "D-038: no services sold to governments before Stage 2; before Stage 2, everything about government serves the public."
+    ]
+  },
+  "core": {
+    "source": "Vision, Mission, Promise working lock, 2026-07-27 (applied to VISION_SPEC as a Class 2 patch)",
+    "promise": "When you trust Polity, you can find the institutional geometry that governs you, rendered with primary-source evidence or an explicit incomplete grade.",
+    "promised_to": "Members of the public: the people governed by the institutions Polity indexes.",
+    "must_not": "Spin or unlabeled persuasion delivered under Polity's name.",
+    "competence": "Indexing institutional geometry (jurisdictions, institutions, offices, seats, occupants, instruments, events, primary records) and rendering it with retrieval, quotation, grading and citation, including honest incompleteness."
+  },
+  "products": {
+    "social": {
+      "name": "Polity Social",
+      "faces": "the public",
+      "description": "The civic social network and Polity's public home: Polity Search over the index, representatives and places by address, notebooks, news, quantitative views, and pages for organisations (absorbs Notebook, Quant, News and the website builder)."
+    },
+    "docket": {
+      "name": "Docket",
+      "faces": "the public",
+      "description": "A friend-group conversation docket: friends form a group, add topics and media sources, and vote on what to discuss. Format first (works on paper), could be a plugin for Telegram, Discord or Slack, and absorbs the classroom and education use. Debate is one mode; good conversation is the goal."
+    },
+    "polity-os": {
+      "name": "Polity OS",
+      "faces": "governments and organisations as tenants, citizens as members",
+      "allowed_from": "beachhead",
+      "allowed_from_reason": "D-038 makes it the Stage 2 product. Mapping Polity's Stage 2 to the Beachhead phase is a draft assumption.",
+      "description": "One national multi-tenant operating system for governing bodies: governments and organisations run their procedures, agendas, votes and records on it; citizens are members. Merges the Citizens and Government editions and Justice. Today only an observer that turns public records into advisory validity reports."
+    },
+    "data": {
+      "name": "Polity Data",
+      "faces": "institutions, developers and researchers (no direct public face)",
+      "description": "The cited, structured index of institutional records, offered headless: API, datasets and reports for institutions, media, researchers and developers. Most justice-record work lives here."
+    },
+    "nico": {
+      "name": "Nico",
+      "faces": "the public",
+      "description": "A personal knowledge system that models a person's own values and ideas (Idionaut is one mode). No stated link yet to civic records."
+    }
+  },
+  "flows": [
+    {
+      "from": "data",
+      "to": "social",
+      "carries": "cited records"
+    },
+    {
+      "from": "data",
+      "to": "docket",
+      "carries": "cited sources for topics"
+    },
+    {
+      "from": "data",
+      "to": "polity-os",
+      "carries": "jurisdiction and procedure records"
+    },
+    {
+      "from": "data",
+      "to": "nico",
+      "carries": "positions and votes"
+    },
+    {
+      "from": "social",
+      "to": "docket",
+      "carries": "users and topics"
+    },
+    {
+      "from": "social",
+      "to": "nico",
+      "carries": "users"
+    },
+    {
+      "from": "docket",
+      "to": "social",
+      "carries": "groups who arrive through friends"
+    },
+    {
+      "from": "polity-os",
+      "to": "data",
+      "carries": "primary records created by tenants"
+    }
+  ]
+}

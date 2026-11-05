@@ -1,0 +1,76 @@
+{
+  "name": "naive-framework",
+  "version": "0.6.0",
+  "description": "Naive, a venture development framework: conventions, routes, records, checks and an agent interface for building a venture.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tchjhnsn/naive.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "naive": "interface/cli/naive.mjs",
+    "mentura": "interface/cli/mentura.mjs"
+  },
+  "scripts": {
+    "test": "node test.mjs",
+    "lint": "eslint .",
+    "typecheck": "node schema/check-types.ts"
+  },
+  "files": [
+    "AGENTS.md",
+    "README.md",
+    "LICENSE",
+    ".claude-plugin/plugin.json",
+    "interface/",
+    "schema/",
+    "scripts/diagnose-transcripts.mjs",
+    "library/packages/",
+    "packages/",
+    "purpose/",
+    "knowledge/",
+    "operations/",
+    "governance/",
+    "evidence/",
+    "frameworks/",
+    "docs/reference/",
+    "docs/decisions/",
+    "docs/ontology.md",
+    "docs/ontology.json",
+    "!**/*test.mjs",
+    "!**/*-test.mjs",
+    "!**/test.mjs",
+    "!**/*.steps.mjs",
+    "!**/*.feature",
+    "!packages/create-venture/package.json",
+    "!schema/examples/docket-scenarios.json",
+    "!**/.env*",
+    "!**/*.pem",
+    "!**/*.key",
+    "!**/_private/",
+    "!**/_internal/",
+    "!schema/check-types.ts",
+    "!schema/check-types-test.ts",
+    "!schema/record-types.ts",
+    "!schema/record-types-test.ts",
+    "!**/.DS_Store"
+  ],
+  "keywords": [
+    "venture",
+    "framework",
+    "startup",
+    "agents",
+    "mcp"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "22.20.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.72.1"
+  }
+}

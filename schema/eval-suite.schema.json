@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "eval-suite.schema.json",
+  "title": "Eval suite",
+  "description": "A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing evidence/evals/*.json files.",
+  "type": "object",
+  "required": ["evals"],
+  "properties": {
+    "skill_name": { "type": "string" },
+    "subject": { "type": "string", "description": "Product or skill id the suite tests, when not a skill" },
+    "harness_version": { "type": "string", "description": "Version of the suite (legacy name)" },
+    "description": { "type": "string" },
+    "evals": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "prompt", "expected_output"],
+        "properties": {
+          "id": { "type": "integer" },
+          "eval_name": { "type": "string" },
+          "prompt": { "type": "string" },
+          "expected_output": { "type": "string" },
+          "files": { "type": "array", "items": { "type": "string" } },
+          "systems_invoked": { "type": "array", "items": { "type": "string" } },
+          "handoff_files_touched": { "type": "array", "items": { "type": "string" } },
+          "assertions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "check"],
+              "properties": {
+                "name": { "type": "string" },
+                "check": { "type": "string" },
+                "command": { "type": "string", "description": "When set, the assertion is programmatic: the command decides it" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

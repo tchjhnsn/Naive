@@ -1,0 +1,11 @@
+{
+  "venture": "relay",
+  "updated": "2026-11-01",
+  "id": "platform-teams",
+  "who": "Platform teams inside larger companies who package internal tools for other engineers",
+  "primary": false,
+  "customer": "b2b",
+  "jobs": [
+    "Hand other teams an internal tool that installs in one step"
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-product-market-fit.schema.json",
+  "title": "Validation: product-market fit",
+  "description": "The product-market fit sub-score (EE-026), at <venture>/purpose/validation/product-market-fit.json: whether a segment keeps using the product. Retention cohorts and the Sean Ellis survey are recorded as data; schema/check-validation.mjs reads them (does retention level off; what share would be very disappointed).",
+  "type": "object",
+  "required": [
+    "venture",
+    "product",
+    "segment",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "product": {
+      "type": "string"
+    },
+    "segment": {
+      "type": "string"
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "period",
+        "cohorts"
+      ],
+      "properties": {
+        "period": {
+          "enum": [
+            "day",
+            "week",
+            "month"
+          ]
+        },
+        "cohorts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "start",
+              "size",
+              "active"
+            ],
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date"
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "active": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "description": "Active users at the end of each period after the cohort started"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ellis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asked",
+        "very_disappointed"
+      ],
+      "description": "Sean Ellis survey: how would you feel if you could no longer use the product? Asked of active users",
+      "properties": {
+        "asked": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "very_disappointed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "collected": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "validation-evidence.schema.json"
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p",
+        "by",
+        "scored"
+      ],
+      "description": "The Jev probability for this sub-score; the evidence grade weighs it in the validation score",
+      "properties": {
+        "p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "by": {
+          "enum": [
+            "jev",
+            "owner"
+          ]
+        },
+        "scored": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

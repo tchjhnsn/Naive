@@ -1,0 +1,74 @@
+{
+  "venture": "tandem",
+  "updated": "2026-10-27",
+  "statement": "Running bookings, stock and payroll in separate tools eats five to ten hours a week that the owner should spend serving customers",
+  "segment": "Owners of two-to-ten-person service shops (salons, repair shops, studios) in the US",
+  "frequency": "Weekly, at payroll and stock counts; daily for bookings",
+  "cost": "Five to ten owner hours a week, plus subscriptions to three or more tools",
+  "workarounds": [
+    "A booking app, a spreadsheet for stock and a payroll service, reconciled by hand",
+    "Paper diaries in the smallest shops"
+  ],
+  "evidence": [
+    {
+      "id": "tool-spend",
+      "kind": "behavior",
+      "summary": "9 of 12 owners already pay for three or more separate tools for bookings, stock and payroll",
+      "source": {
+        "title": "Problem interviews, September 2026",
+        "path": "knowledge/research/problem-interviews-2026-09.md"
+      },
+      "audience": "target",
+      "sample": {
+        "n": 12,
+        "types": [
+          "salon",
+          "repair",
+          "studio"
+        ]
+      },
+      "collected": "2026-09-20"
+    },
+    {
+      "id": "admin-hours",
+      "kind": "stated",
+      "summary": "Owners described last week's admin in detail: a median of 6 hours reconciling the three tools",
+      "source": {
+        "title": "Problem interviews, September 2026",
+        "path": "knowledge/research/problem-interviews-2026-09.md"
+      },
+      "audience": "target",
+      "sample": {
+        "n": 12,
+        "types": [
+          "salon",
+          "repair",
+          "studio"
+        ]
+      },
+      "specificity": "specific",
+      "collected": "2026-09-20"
+    },
+    {
+      "id": "friends-praise",
+      "kind": "opinion",
+      "summary": "Six friends who run no shop said the idea sounds useful",
+      "source": {
+        "title": "Feedback from friends, August 2026",
+        "path": "knowledge/research/friends-feedback-2026-08.md"
+      },
+      "audience": "wrong",
+      "sample": {
+        "n": 6
+      },
+      "specificity": "general",
+      "collected": "2026-08-10"
+    }
+  ],
+  "probability": {
+    "p": 0.75,
+    "by": "owner",
+    "scored": "2026-10-27",
+    "note": "Example value; Jev scores it once the scorer runs"
+  }
+}

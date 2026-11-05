@@ -1,0 +1,17 @@
+{
+  "id": "statement-icp",
+  "question": "Who is the primary customer?",
+  "status": "decided",
+  "needed_in": "discovery",
+  "answer": "Maintainers of small command-line tools who answer their own support questions.",
+  "provenance": {
+    "drafted_by": {
+      "kind": "agent"
+    },
+    "approved_by": "Ada",
+    "approved_at": "2026-11-01T12:00:00Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  }
+}

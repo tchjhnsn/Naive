@@ -1,0 +1,38 @@
+{
+  "name": "partner",
+  "title": "Partner",
+  "kind": "handoff",
+  "purpose": "the partners a product is offered to",
+  "for": "the partners a product is offered to",
+  "from": [
+    "foundation",
+    "product",
+    "marketing"
+  ],
+  "base": {
+    "discovery": 0.05,
+    "validation": 0.1,
+    "beachhead": 0.2,
+    "scale": 0.3,
+    "platform": 0.5
+  },
+  "when": [
+    {
+      "if": "partner_led",
+      "at_least": 0.9
+    }
+  ],
+  "why": "Only when the product is offered to partners who serve customers of their own",
+  "unlocks": [
+    "partner kit",
+    "co-marketing"
+  ],
+  "gates": [
+    "every core package it draws on is complete"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}

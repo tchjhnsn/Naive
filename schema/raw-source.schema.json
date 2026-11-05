@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "raw-source.schema.json",
+  "title": "Raw source",
+  "description": "Where a founder-supplied source came from, at raw/sources/<id>/source.json (EE-070). text.md is the text. original.* stays out of git. Raw is immutable.",
+  "type": "object",
+  "required": ["id", "origin"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "origin": { "type": "string", "description": "Where this source came from: a url, a person, or a note such as founder-supplied" },
+    "title": { "type": "string" },
+    "fetched": { "type": "string", "format": "date" }
+  }
+}

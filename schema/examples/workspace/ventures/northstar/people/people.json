@@ -1,0 +1,27 @@
+{
+  "venture": "northstar",
+  "mode": "team",
+  "people": [
+    {
+      "id": "ana-ruiz",
+      "name": "Ana Ruiz",
+      "role": "general-partner",
+      "hats": [
+        "strategy",
+        "finance",
+        "external-relationships",
+        "risk-and-compliance",
+        "human-capital"
+      ],
+      "founder_file": "people/founders/ana-ruiz.json"
+    },
+    {
+      "id": "ben-okafor",
+      "name": "Ben Okafor",
+      "role": "general-partner",
+      "hats": [],
+      "founder_file": "people/founders/ben-okafor.json"
+    }
+  ],
+  "updated": "2026-10-29"
+}

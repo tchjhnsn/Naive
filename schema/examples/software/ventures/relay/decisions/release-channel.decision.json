@@ -1,0 +1,17 @@
+{
+  "id": "release-channel",
+  "question": "Where do releases go first?",
+  "status": "decided",
+  "needed_in": "discovery",
+  "answer": "To the package registry first, with a signed archive on the releases page for anyone who cannot use it.",
+  "provenance": {
+    "drafted_by": {
+      "kind": "agent"
+    },
+    "approved_by": "Ada",
+    "approved_at": "2026-11-01T12:00:00Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  }
+}

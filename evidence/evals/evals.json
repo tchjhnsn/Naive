@@ -1,0 +1,25 @@
+{
+  "skill_name": "everything-ecosystem",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a project called another project. It's an organizational structure visualizer — it maps how companies, ecosystems, and institutions are structured. Right now it has an Astro-based web app (org-viz-app) that visualizes Google/Alphabet's corporate structure as a tree. It uses Neo4j for graph data. I also think this tool could be used as an AI-readable source of truth for any company — not just visualizing structure but actually storing and verifying all the entity profiles, decisions, and relationships of an entire ecosystem on something like Git. It could parse conversation logs from Slack or Discord to extract ideas and decisions. I'm not sure if this is just an internal tool for my own ecosystem, or if it's a standalone open source project, or if it could actually be a full product with its own business. Help me figure out what this is.",
+      "expected_output": "The AI should run Discovery Mode and recognize the complexity here — another project has multiple potential classifications depending on strategic intent. It could be (a) an internal tool for the user's own ecosystem, (b) an open source tool, or (c) a full subsidiary with product, brand, and business. The AI should walk through the independence test, note that the product pillar is partially built (the viz app exists), the brand is unintentional, and the business is conceptual at best. It should surface the tension between internal tool and potential product, ask clarifying questions about the user's intent, and produce an entity profile that captures the current state and the potential trajectories. It should also identify related concepts like the communication-to-Git pipeline as potential child entities or features.",
+      "files": [
+        "/sessions/relaxed-kind-albattani/mnt/Documents/projects/<entity>/ENTITY_PROFILE.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to analyze Tesla's ecosystem. Map out all their major products and entities, classify each one, and show me how they relate to each other. Include things like the vehicles, energy products, Optimus, the Gigafactories, FSD/AI, and Dojo.",
+      "expected_output": "The AI should run Analysis Mode, creating an entity inventory of Tesla's major entities, classifying each (vehicles as products within company, Gigafactories as vertical integration/shared infrastructure, Optimus as a product, FSD as a product, Dojo as internal tool/infrastructure, Solar/Powerwall as products). It should map relationships including horizontal, vertical, and diagonal movements (especially Optimus → SpaceX diagonal). Should produce entity profiles and a relationship map.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I have an open source JavaScript library that I built. It started as just code on GitHub but now it has 2000 stars, a Discord community of 500 people, and companies are asking me about enterprise support. I'm trying to figure out if this is still just an open source tool or if it's becoming something bigger. What should I do with it?",
+      "expected_output": "The AI should recognize this as an entity in transition — it started as an open source tool (product only) but is developing brand (community, recognition) and business (enterprise demand) pillars. It should walk through the independence test, assess each pillar's current state, and help the user decide whether to keep it as an open source tool, develop it into a full company, or something in between. Should produce an entity profile reflecting the current transitional state.",
+      "files": []
+    }
+  ]
+}

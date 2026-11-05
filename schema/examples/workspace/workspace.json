@@ -1,0 +1,11 @@
+{
+  "schema": "everything-ecosystem",
+  "schema_version": "0.5.0",
+  "ventures": [
+    "ventures/"
+  ],
+  "code": "code/",
+  "name": "Naive workspace",
+  "timeZone": "America/New_York",
+  "calendar": "calendar/"
+}

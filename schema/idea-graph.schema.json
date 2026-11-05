@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "idea-graph.schema.json",
+  "title": "Idea graph",
+  "description": "The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by purpose/frameworks/idea-map/graph.mjs; it holds no decisions.",
+  "type": "object",
+  "required": ["version", "venture", "phase", "root", "judged_by", "nodes", "edges", "lanes", "next"],
+  "properties": {
+    "version": { "type": "string" },
+    "venture": { "type": "string" },
+    "phase": { "enum": ["discovery", "validation", "beachhead", "scale", "platform"] },
+    "created": { "type": "string" },
+    "source": { "type": "string", "description": "The idea map it was built from, with that file's hash" },
+    "root": { "type": "string", "description": "Hash over the hashes of the ideas nothing builds on: one value for the whole graph" },
+    "judged_by": { "enum": ["jev", "convention"], "description": "Who judged the dependencies: Jev's typed answers, or Naive's convention of which records build on which" },
+    "weights": { "type": "object", "additionalProperties": { "type": "number" } },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "hash", "text", "depth", "builds_on", "signal", "lane"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^i-\\d+$" },
+          "hash": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
+          "text": { "type": "string", "description": "The founder's words, unchanged" },
+          "section": { "type": "string" },
+          "pillar": { "type": ["string", "null"] },
+          "departments": { "type": "array", "items": { "type": "string" } },
+          "records": { "type": "array", "items": { "type": "string" } },
+          "exists": { "type": "boolean" },
+          "depth": { "type": "integer", "minimum": 0, "description": "Longest chain of ideas before it: its column, left to right" },
+          "builds_on": { "type": "array", "items": { "type": "string" } },
+          "signal": { "type": "number", "minimum": 0, "maximum": 1 },
+          "parts": { "type": "object", "additionalProperties": { "type": "number" } },
+          "lane": { "type": "string" }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "description": "Typed edges. An edge reads: the idea at to relates to the idea at from by relation. The arrow runs from the idea related to toward the idea whose relation it is, as builds_on always has. Only builds_on edges shape the DAG (hashes, depth, lanes); the others are carried as stated. Every relation an idea states is checked through the EE-095 term engine (term typed-link) before the graph is built",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "p", "relation"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "p": { "type": "number" },
+          "by": { "type": "string", "description": "jev, convention, or stated (a relation the idea records)" },
+          "relation": { "$ref": "founder-idea.schema.json#/$defs/relation" }
+        }
+      }
+    },
+    "dropped": { "type": "array", "description": "Dependencies left out because they would have closed a cycle" },
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "mode", "ideas"],
+        "properties": {
+          "id": { "type": "string" },
+          "mode": { "enum": ["sync", "async"], "description": "sync: its ideas build on each other and move in order; async: it moves on its own, beside the other lanes" },
+          "ideas": { "type": "array", "items": { "type": "string" } },
+          "department": { "type": ["string", "null"] },
+          "signal": { "type": "number" },
+          "why": { "type": "string" }
+        }
+      }
+    },
+    "next": { "type": "array", "items": { "type": "string" }, "description": "The highest-signal ideas that build on nothing: what to develop next" }
+  }
+}

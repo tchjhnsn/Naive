@@ -1,0 +1,27 @@
+{
+  "id": "cli",
+  "name": "Relay CLI",
+  "description": "The command-line tool the team ships, with an installer that behaves the same on every machine.",
+  "market": {
+    "customer": "b2b",
+    "segment": "small teams that publish developer tools",
+    "geography": "global",
+    "vertical": false
+  },
+  "job": "Install and update a command-line tool in one step",
+  "technology": "Node scripts",
+  "software": true,
+  "repo": "relay",
+  "offering": "product",
+  "scope": {
+    "level": "system"
+  },
+  "business_model": [
+    "open-core"
+  ],
+  "allowed_from": "validation",
+  "flows_to": [
+    "plugin"
+  ],
+  "status": "building"
+}

@@ -1,0 +1,48 @@
+{
+  "name": "fund",
+  "title": "Fund",
+  "kind": "core",
+  "purpose": "A fund's foundation: the thesis it invests on and the terms it raises under (EE-082). The VC fund venture type starts with it; a startup never needs it.",
+  "department": "finance",
+  "layer": "purpose",
+  "records": [
+    "fund-thesis",
+    "fund-terms"
+  ],
+  "required": [
+    "fund-thesis",
+    "fund-terms"
+  ],
+  "optional": [],
+  "refs": [],
+  "planned": [],
+  "base": {
+    "discovery": 0.0,
+    "validation": 0.0,
+    "beachhead": 0.0,
+    "scale": 0.0,
+    "platform": 0.0
+  },
+  "when": [
+    {
+      "if": "type:vc-fund",
+      "at_least": 0.9
+    }
+  ],
+  "why": "Only a fund or firm raises on a thesis and terms",
+  "unlocks": [
+    "raising from limited partners",
+    "screening deals against the thesis"
+  ],
+  "gates": [
+    "a person has confirmed the thesis and the terms"
+  ],
+  "schemas": [
+    "schema/fund-thesis.schema.json",
+    "schema/fund-terms.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": []
+}

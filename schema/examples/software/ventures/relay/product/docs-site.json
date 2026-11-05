@@ -1,0 +1,21 @@
+{
+  "id": "docs-site",
+  "name": "Docs site",
+  "description": "The public documentation for the CLI.",
+  "market": {
+    "customer": "b2b",
+    "segment": "small teams that publish developer tools",
+    "geography": "global",
+    "vertical": false
+  },
+  "job": "Learn to install and configure the CLI",
+  "technology": "static site",
+  "software": true,
+  "repo": "relay",
+  "offering": "content",
+  "business_model": [
+    "open-source"
+  ],
+  "allowed_from": "validation",
+  "status": "building"
+}

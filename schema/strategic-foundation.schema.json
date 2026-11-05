@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "strategic-foundation.schema.json",
+  "title": "Strategic foundation frame",
+  "description": "The framework's map of strategic foundation (EE-051): per question of the Five Ws and How plus whether, the record attributes that answer it.",
+  "type": "object",
+  "required": [
+    "version",
+    "questions"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "ask",
+          "statements"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ask": {
+            "type": "string"
+          },
+          "statements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "record",
+                "attribute"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "record": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "attribute": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "derived_from": {
+                  "type": "string",
+                  "description": "The id of another statement this one is derived from; it takes that statement's status and value"
+                },
+                "note": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

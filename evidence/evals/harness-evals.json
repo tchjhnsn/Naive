@@ -1,0 +1,140 @@
+{
+  "skill_name": "everything-ecosystem",
+  "harness_version": "1.0",
+  "description": "Testing suite for the Everything Ecosystem agent environment. Validates that the orchestrator routes correctly, system skills operate on the right files, handoff triggers fire, and end-to-end workflows complete with proper provenance.",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "session-calibration-capture",
+      "prompt": "I have a bunch of ideas about a new recipe app I've been thinking about. I just want to get them out of my head.",
+      "expected_output": "Orchestrator detects capture session intent. Routes to idea dump system. Ideas are captured with sequential numbering, idea statuses, and provenance metadata. No push toward classification or routing. Routing mode defaults to batch.",
+      "systems_invoked": ["orchestrator", "idea-dump"],
+      "handoff_files_touched": ["IDEA_DUMP.md"],
+      "assertions": [
+        {"name": "session-type-detected", "check": "Orchestrator identifies this as a capture session"},
+        {"name": "idea-dump-invoked", "check": "Idea dump system skill is read and followed"},
+        {"name": "ideas-numbered", "check": "Each idea gets a sequential number"},
+        {"name": "statuses-assigned", "check": "Each idea gets an idea status"},
+        {"name": "provenance-recorded", "check": "Session date and number recorded as provenance"},
+        {"name": "no-premature-routing", "check": "Ideas are not routed during capture; routing is batch"},
+        {"name": "no-classification-push", "check": "Framework does not push toward entity classification"}
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "entity-discovery-new-project",
+      "prompt": "I have a project called BrightPath — it's a mentoring platform that connects experienced professionals with early-career developers. It has a landing page, a matching algorithm, and a Stripe integration. I want to figure out what it is and where it fits.",
+      "expected_output": "Orchestrator detects focused session on entity classification. Routes to entity profiling system (discovery mode). A complete entity profile is produced with all 10 sections populated or given field statuses. Documentation audit identifies gaps. Classification is proposed with reasoning, then confirmed with user.",
+      "systems_invoked": ["orchestrator", "entity-profiling"],
+      "handoff_files_touched": ["ENTITY_PROFILE.md"],
+      "assertions": [
+        {"name": "discovery-mode-invoked", "check": "Entity profiling system is read; discovery mode process followed"},
+        {"name": "all-sections-present", "check": "Entity profile contains all 10 sections"},
+        {"name": "no-blanks", "check": "Every field has a value or a field status"},
+        {"name": "classification-proposed", "check": "Classification is proposed with reasoning before confirmation"},
+        {"name": "pillars-assessed", "check": "Product, brand, and business pillars each have lifecycle stage"},
+        {"name": "doc-audit-included", "check": "Documentation audit section identifies existing vs missing docs"},
+        {"name": "changelog-entry", "check": "Changelog records profile creation date and trigger"}
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "idea-graduation-to-spec",
+      "prompt": "Look at the active ideas in the idea dump. Items 147 through 154 are ready to be formalized into a specification document. Graduate them.",
+      "expected_output": "Orchestrator routes to idea dump system to identify the ideas, then to design/spec system to produce the spec document. Ideas are marked as implemented in the dump with provenance trails. Entity profile documentation audit is updated. Entity profile is the last file touched.",
+      "systems_invoked": ["orchestrator", "idea-dump", "entity-profiling"],
+      "handoff_files_touched": ["IDEA_DUMP.md", "spec document (new)", "ENTITY_PROFILE.md"],
+      "assertions": [
+        {"name": "ideas-identified", "check": "Correct ideas (147-154) are read from the dump"},
+        {"name": "spec-created", "check": "A specification document is created with the graduated ideas"},
+        {"name": "spec-implementation-ready", "check": "Spec is structured for handoff to implementation agents"},
+        {"name": "provenance-recorded", "check": "Each idea gets provenance trail showing graduation to spec"},
+        {"name": "ideas-cleared", "check": "Ideas marked as implemented, not left active"},
+        {"name": "audit-updated", "check": "Entity profile documentation audit reflects new spec document"},
+        {"name": "entity-profile-last", "check": "Entity profile is the last file modified in the workflow"}
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "diagnostic-ecosystem-health",
+      "prompt": "How is my ecosystem looking? What should I focus on this week?",
+      "expected_output": "Orchestrator routes to diagnostic system. Diagnostic reads all idea dumps, entity profiles, and session log. Surfaces implementation lag, inactivity signals, and clustering if present. Produces strategic recommendations linked to specific session types.",
+      "systems_invoked": ["orchestrator", "diagnostic"],
+      "handoff_files_touched": [],
+      "assertions": [
+        {"name": "diagnostic-invoked", "check": "Diagnostic system skill is read and followed"},
+        {"name": "dumps-analyzed", "check": "All active idea dumps are read and analyzed"},
+        {"name": "entity-profiles-checked", "check": "Entity profiles are read for lifecycle status"},
+        {"name": "lag-detected-if-present", "check": "Implementation lag is identified if ideas are aging"},
+        {"name": "recommendations-actionable", "check": "Recommendations suggest specific session types or actions"},
+        {"name": "skeptical-not-praising", "check": "Diagnostic is tuned toward finding problems, not confirming health"},
+        {"name": "no-structural-changes", "check": "Diagnostic does not create files or modify structure"}
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "routing-batch-session-end",
+      "prompt": "I've been dumping ideas all session. Show me what's queued for routing and let me decide where things go.",
+      "expected_output": "Orchestrator routes to routing system. Routing system reads the idea dump and entity hierarchy. Presents a visible queue of ideas with suggested targets. For each idea, proposes a destination dump. Waits for user confirmation before executing routes. Provenance chains recorded for each movement.",
+      "systems_invoked": ["orchestrator", "routing", "idea-dump"],
+      "handoff_files_touched": ["IDEA_DUMP.md (source)", "IDEA_DUMP.md (target)"],
+      "assertions": [
+        {"name": "routing-invoked", "check": "Routing system skill is read and followed"},
+        {"name": "queue-visible", "check": "Queued ideas are presented with suggested targets"},
+        {"name": "targets-justified", "check": "Each suggested target is based on entity hierarchy"},
+        {"name": "user-confirms-before-move", "check": "No ideas are moved without user confirmation"},
+        {"name": "provenance-on-move", "check": "Each routed idea gets provenance chain entries in both dumps"},
+        {"name": "metadata-updated", "check": "Dump metadata updated in both source and target dumps"},
+        {"name": "dump-to-dump-only", "check": "Ideas route to other dumps, never directly to implementation"}
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "return-session-recap",
+      "prompt": "Hey, I'm back. What were we working on?",
+      "expected_output": "Orchestrator detects return session. Routes to session management for 'Previously on...' recap. Session management reads the most recent session log entry and delivers the recap in the fun show-name format. Transitions to session calibration after recap.",
+      "systems_invoked": ["orchestrator", "session-management"],
+      "handoff_files_touched": ["SESSION_LOG.md"],
+      "assertions": [
+        {"name": "return-detected", "check": "Orchestrator identifies this as a return session"},
+        {"name": "session-log-read", "check": "Most recent session log entry is read"},
+        {"name": "recap-delivered", "check": "Recap is delivered in 'Previously on...' format"},
+        {"name": "show-name-used", "check": "A fun show name is used for the recap framing"},
+        {"name": "transition-to-calibration", "check": "After recap, orchestrator asks what to work on today"}
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "person-profile-creation",
+      "prompt": "I'd like to create my person profile. I'm the owner, CEO of the reference project. I'm a developer and systems thinker. I have several projects: Another project (open source, passion), another project (commercial, building), and a news app concept (early exploration).",
+      "expected_output": "Orchestrator routes to person profile system. Person profile created with all schema sections. Capacities listed with development levels. Projects listed with commitment type, emotional investment, time horizon, and intended outcome. Context section captures any offhand remarks.",
+      "systems_invoked": ["orchestrator", "person-profile"],
+      "handoff_files_touched": ["PERSON_PROFILE.md"],
+      "assertions": [
+        {"name": "person-profile-invoked", "check": "Person profile system skill is read and followed"},
+        {"name": "all-sections-present", "check": "Profile contains all schema sections (Identity through Context)"},
+        {"name": "capacities-listed", "check": "Developer and systems thinker captured as capacities"},
+        {"name": "projects-with-metadata", "check": "Each project has commitment, investment, horizon, outcome"},
+        {"name": "ceo-position-noted", "check": "CEO position is distinguished from person capacities"},
+        {"name": "changelog-entry", "check": "Changelog records profile creation"}
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "multi-modal-session-transitions",
+      "prompt": "Let me start by dumping some ideas about a new feature for another project... [ideas]... actually, let me look at the entity profile for another project and update the product pillar... and while we're at it, what does my idea dump backlog look like?",
+      "expected_output": "Orchestrator detects multi-modal session. Transitions between systems: idea dump (capture) → entity profiling (review/update) → diagnostic (backlog check). Each transition is tracked. At session end, session log captures sub-session transitions.",
+      "systems_invoked": ["orchestrator", "idea-dump", "entity-profiling", "diagnostic", "session-management"],
+      "handoff_files_touched": ["IDEA_DUMP.md", "ENTITY_PROFILE.md", "SESSION_LOG.md"],
+      "assertions": [
+        {"name": "multi-modal-detected", "check": "Orchestrator recognizes multi-modal session"},
+        {"name": "transitions-tracked", "check": "Each system transition is noted by the orchestrator"},
+        {"name": "idea-capture-correct", "check": "Ideas captured properly during capture phase"},
+        {"name": "entity-profile-updated", "check": "Entity profile updated during review phase"},
+        {"name": "diagnostic-runs", "check": "Diagnostic provides backlog analysis when requested"},
+        {"name": "session-log-captures-transitions", "check": "Session log entry notes the sub-session type shifts"},
+        {"name": "audit-trigger-fires", "check": "Entity profile audit updated after any document changes"}
+      ]
+    }
+  ]
+}

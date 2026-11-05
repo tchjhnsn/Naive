@@ -1,0 +1,69 @@
+{
+  "name": "marketing",
+  "title": "Marketing and sales",
+  "kind": "core",
+  "purpose": "Who the site and campaigns speak to, what goes where and why, the brand, the public variants and the pipeline.",
+  "department": "marketing-and-sales",
+  "required": [
+    "marketing-sitemap"
+  ],
+  "optional": [
+    "marketing-content",
+    "site-presence",
+    "marketing-brand",
+    "marketing-design-system",
+    "public-assets"
+  ],
+  "refs": [
+    "icp",
+    "product"
+  ],
+  "planned": [
+    "campaigns",
+    "sales pipeline"
+  ],
+  "base": {
+    "discovery": 0.35,
+    "validation": 0.7,
+    "beachhead": 0.9,
+    "scale": 0.9,
+    "platform": 0.9
+  },
+  "when": [
+    {
+      "if": "site",
+      "at_least": 0.75
+    },
+    {
+      "if": "publishes",
+      "at_least": 0.8
+    }
+  ],
+  "why": "Once there is something to show, or a site already speaks for the venture",
+  "unlocks": [
+    "site build",
+    "campaigns",
+    "outreach sequences"
+  ],
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [
+    "schema/marketing-sitemap.schema.json",
+    "schema/site-presence.schema.json",
+    "schema/marketing-brand.schema.json",
+    "schema/public-assets.schema.json",
+    "schema/marketing-design-system.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "schema/check-brand.mjs",
+    "schema/check-assets.mjs",
+    "schema/design-system.mjs"
+  ],
+  "skill": {
+    "id": "marketing-function",
+    "path": "library/packages/marketing/skill/SKILL.md"
+  },
+  "use_model": []
+}

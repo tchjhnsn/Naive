@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reference.schema.json",
+  "title": "References",
+  "description": "A layer's references (EE-014): the sources behind its opinionated defaults and the alternatives it considered. One file per layer at <layer>/references/references.json. A URL is recorded when one exists and re-checked; the find-reference skill fills gaps from title, authors and year.",
+  "type": "object",
+  "required": [
+    "layer",
+    "references"
+  ],
+  "properties": {
+    "layer": {
+      "enum": [
+        "purpose",
+        "knowledge",
+        "operations",
+        "evidence",
+        "governance",
+        "interface"
+      ]
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "authors",
+          "year",
+          "kind",
+          "summary",
+          "informs",
+          "stance"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "year": {
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "book",
+              "article",
+              "paper",
+              "standard",
+              "law",
+              "dataset",
+              "conversation"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "checked": {
+            "type": "string",
+            "format": "date",
+            "description": "When the url last resolved"
+          },
+          "informs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(noun|phase|gate|rule|field):[a-z0-9-_.]+$"
+            }
+          },
+          "stance": {
+            "type": "object",
+            "required": [
+              "is",
+              "why"
+            ],
+            "properties": {
+              "is": {
+                "enum": [
+                  "adopted",
+                  "adapted",
+                  "alternative",
+                  "rejected"
+                ]
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "dependentRequired": {
+          "checked": [
+            "url"
+          ]
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

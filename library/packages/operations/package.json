@@ -1,0 +1,74 @@
+{
+  "name": "operations",
+  "title": "Operations",
+  "kind": "core",
+  "purpose": "The departments, who hands what to whom, and whether the venture runs without the founder in every loop.",
+  "department": "service-delivery",
+  "departments": [
+    "service-delivery",
+    "customer-service",
+    "supply-chain",
+    "it",
+    "assets"
+  ],
+  "required": [
+    "department",
+    "handoff",
+    "validation-operations-readiness"
+  ],
+  "optional": [
+    "knowledge-sources",
+    "where-used"
+  ],
+  "refs": [
+    "team-plan",
+    "decision-rights"
+  ],
+  "planned": [],
+  "base": {
+    "discovery": 0.05,
+    "validation": 0.3,
+    "beachhead": 0.7,
+    "scale": 0.9,
+    "platform": 0.95
+  },
+  "when": [
+    {
+      "if": "people>=3",
+      "at_least": 0.7
+    },
+    {
+      "if": "offering:service",
+      "phase": "validation",
+      "at_least": 0.55
+    }
+  ],
+  "why": "Once more than a couple of people, or a service delivered by people, has to run",
+  "unlocks": [
+    "support agents",
+    "delivery workflows"
+  ],
+  "not_modeled": "Matters after Validation or under another governance model; kept for later, not computed (EE-069).",
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [
+    "schema/department.schema.json",
+    "schema/handoff.schema.json",
+    "schema/validation-operations-readiness.schema.json",
+    "schema/knowledge-sources.schema.json",
+    "schema/where-used.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "schema/check-validation.mjs",
+    "schema/check-sources.mjs",
+    "schema/check-where-used.mjs",
+    "schema/check-departments.mjs",
+    "schema/check-execution.mjs",
+    "schema/check-ready.mjs",
+    "schema/check-publication.mjs"
+  ],
+  "skill": null,
+  "use_model": []
+}

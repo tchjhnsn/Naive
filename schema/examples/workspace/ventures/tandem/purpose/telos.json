@@ -1,0 +1,78 @@
+{
+  "statement": "Every small service shop runs its admin from one phone, so its owners spend their time on customers",
+  "end_state": "Small service shops in the US no longer need a back office or a stack of separate tools for bookings, stock and payroll",
+  "horizon": 2034,
+  "measures": [
+    {
+      "id": "shops-active",
+      "statement": "Shops using Tandem every week",
+      "target": "50,000 shops",
+      "kind": "usage_or_adoption",
+      "primary": true
+    },
+    {
+      "id": "admin-hours-saved",
+      "statement": "Admin hours an owner saves each week",
+      "target": "5 hours",
+      "kind": "cost_or_time_saved"
+    },
+    {
+      "id": "recurring-revenue",
+      "statement": "Annual recurring revenue",
+      "target": "60M USD",
+      "kind": "revenue"
+    }
+  ],
+  "owner_outcome": {
+    "path": "acquisition",
+    "why": "Vertical software buyers consolidate small-business tools; the founders and seed investors expect a sale within ten years"
+  },
+  "phases": [
+    {
+      "phase": "validation",
+      "exit_criteria": [
+        {
+          "id": "retention",
+          "statement": "40 percent of shops that start are still active after three months",
+          "serves": [
+            "shops-active"
+          ],
+          "evidence": "weekly retention cohort report"
+        },
+        {
+          "id": "time-saved",
+          "statement": "Owners report saving at least two hours a week",
+          "serves": [
+            "admin-hours-saved"
+          ],
+          "evidence": "in-app survey, 100 owners"
+        }
+      ]
+    },
+    {
+      "phase": "beachhead",
+      "exit_criteria": [
+        {
+          "id": "one-segment",
+          "statement": "Hair and beauty shops in three states adopt without founder-led sales",
+          "serves": [
+            "shops-active",
+            "recurring-revenue"
+          ]
+        },
+        {
+          "id": "payback",
+          "statement": "Customer acquisition cost paid back within 12 months",
+          "serves": [
+            "recurring-revenue"
+          ]
+        }
+      ]
+    }
+  ],
+  "steering": {
+    "go_decision": "test-hypotheses-first",
+    "review": "per-experiment",
+    "change_of_direction": "pivot-on-evidence"
+  }
+}

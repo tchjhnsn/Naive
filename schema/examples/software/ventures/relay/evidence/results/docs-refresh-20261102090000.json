@@ -1,0 +1,27 @@
+{
+  "id": "docs-refresh-20261102090000",
+  "subject": {
+    "kind": "handoff",
+    "id": "docs-refresh",
+    "version": "example"
+  },
+  "ran_at": "2026-11-02T09:00:00Z",
+  "runner": "session_example_relay",
+  "results": [
+    {
+      "criterion": "docs-build",
+      "kind": "conformance",
+      "passed": false,
+      "command": "node schema/check-publication.mjs schema/examples/software",
+      "output": ""
+    },
+    {
+      "criterion": "pages-pass",
+      "kind": "self-proof",
+      "passed": false,
+      "command": "node schema/check-ventures.mjs schema/examples/software",
+      "output": "2 pages built, 9 refused"
+    }
+  ],
+  "passed": false
+}

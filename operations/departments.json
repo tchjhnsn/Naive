@@ -1,0 +1,162 @@
+{
+  "version": "0.1.0",
+  "note": "The departments a venture can import (EE-047). Each is one top-level category of APQC's cross-industry Process Classification Framework (version 7.x names), tagged with its place in Porter's value chain. A venture lists the ones it uses in venture.json `departments` and gets a folder for each only then (EE-048); each department's governance side (charter, policies, decision rights) sits under governance/departments/ and its operations side (work, assets, tools) under operations/departments/. The priors say how likely a venture needs the department in each phase, in need-now's format (EE-028); version 0.x, ours and unevaluated.",
+  "departments": [
+    {
+      "id": "strategy",
+      "label": "Strategy",
+      "apqc": { "id": "1.0", "name": "Develop Vision and Strategy" },
+      "value_chain": "support",
+      "porter": "firm infrastructure",
+      "governance": "Strategic decisions and the link to the telos",
+      "operations": "Planning cadence, market research",
+      "base": { "discovery": 0.2, "validation": 0.3, "beachhead": 0.5, "scale": 0.8, "platform": 0.9 },
+      "when": [{ "if": "people>=3", "at_least": 0.6 }],
+      "why": "Until a team plans together, the purpose layer holds the venture's strategy"
+    },
+    {
+      "id": "products",
+      "label": "Products and services",
+      "apqc": { "id": "2.0", "name": "Develop and Manage Products and Services" },
+      "value_chain": "primary",
+      "porter": "technology development",
+      "governance": "Product decision rights",
+      "operations": "Specs, roadmaps and the work of building (MAD, for software)",
+      "base": { "discovery": 0.6, "validation": 0.9, "beachhead": 1, "scale": 1, "platform": 1 },
+      "when": [{ "if": "products>=1", "at_least": 0.9 }],
+      "why": "The venture's offering; Porter files product development under technology development, a support activity, but for a venture whose product is its work it is primary"
+    },
+    {
+      "id": "marketing-and-sales",
+      "label": "Marketing and sales",
+      "apqc": { "id": "3.0", "name": "Market and Sell Products and Services" },
+      "value_chain": "primary",
+      "porter": "marketing and sales",
+      "governance": "Brand guidelines and the publication policy",
+      "operations": "The marketing website (EE-044), campaigns, marketing assets, the sales pipeline",
+      "base": { "discovery": 0.3, "validation": 0.7, "beachhead": 0.9, "scale": 1, "platform": 1 },
+      "when": [],
+      "why": "Validation needs an audience; the marketing website and outreach start here"
+    },
+    {
+      "id": "supply-chain",
+      "label": "Supply chain",
+      "apqc": { "id": "4.0", "name": "Manage Supply Chain for Physical Products" },
+      "value_chain": "primary",
+      "porter": "inbound logistics, operations and outbound logistics",
+      "governance": "Supplier approval",
+      "operations": "Sourcing, production, inventory and shipping",
+      "base": { "discovery": 0, "validation": 0.1, "beachhead": 0.2, "scale": 0.3, "platform": 0.3 },
+      "when": [],
+      "why": "Only for physical goods; the builder adds it when the venture makes or ships them"
+    },
+    {
+      "id": "service-delivery",
+      "label": "Service delivery",
+      "apqc": { "id": "5.0", "name": "Deliver Services" },
+      "value_chain": "primary",
+      "porter": "operations",
+      "governance": "Service standards",
+      "operations": "Delivery runbooks and engagements",
+      "base": { "discovery": 0, "validation": 0.2, "beachhead": 0.4, "scale": 0.5, "platform": 0.5 },
+      "when": [{ "if": "offering:service", "at_least": 0.7 }],
+      "why": "For ventures that sell a service"
+    },
+    {
+      "id": "customer-service",
+      "label": "Customer service",
+      "apqc": { "id": "6.0", "name": "Manage Customer Service" },
+      "value_chain": "primary",
+      "porter": "service",
+      "governance": "Support policies and refunds authority",
+      "operations": "Support channels, help content, customer feedback",
+      "base": { "discovery": 0, "validation": 0.2, "beachhead": 0.6, "scale": 0.9, "platform": 0.9 },
+      "when": [],
+      "why": "Once paying customers exist"
+    },
+    {
+      "id": "human-capital",
+      "label": "Human capital (HR)",
+      "apqc": { "id": "7.0", "name": "Develop and Manage Human Capital" },
+      "value_chain": "support",
+      "porter": "human resource management",
+      "governance": "HR policies, the handbook, hiring decision rights",
+      "operations": "Recruiting, onboarding, payroll runs",
+      "base": { "discovery": 0, "validation": 0, "beachhead": 0.2, "scale": 0.7, "platform": 0.9 },
+      "when": [{ "if": "people>=2", "at_least": 0.7 }],
+      "why": "With the first hire; agents alone are covered by the team plan"
+    },
+    {
+      "id": "it",
+      "label": "Information technology",
+      "apqc": { "id": "8.0", "name": "Manage Information Technology (IT)" },
+      "value_chain": "support",
+      "porter": "technology development",
+      "governance": "Tool approval (scored by Jev, EE-042)",
+      "operations": "Accounts, integrations, devices and access",
+      "base": { "discovery": 0, "validation": 0.1, "beachhead": 0.2, "scale": 0.5, "platform": 0.7 },
+      "when": [{ "if": "people>=5", "at_least": 0.6 }],
+      "why": "A solo founder's tools live in the integrations list; IT becomes its own department with a team"
+    },
+    {
+      "id": "finance",
+      "label": "Finance and accounting",
+      "apqc": { "id": "9.0", "name": "Manage Financial Resources" },
+      "value_chain": "support",
+      "porter": "firm infrastructure",
+      "governance": "Spending authority, controls and audit",
+      "operations": "Books, invoices, budgets and tax",
+      "base": { "discovery": 0.2, "validation": 0.5, "beachhead": 0.8, "scale": 1, "platform": 1 },
+      "when": [{ "if": "legal_form", "at_least": 0.7 }, { "if": "funding", "at_least": 0.8 }],
+      "why": "Once money comes in or goes out, or the venture has a legal entity"
+    },
+    {
+      "id": "assets",
+      "label": "Assets and facilities",
+      "apqc": { "id": "10.0", "name": "Acquire, Construct, and Manage Assets" },
+      "value_chain": "support",
+      "porter": "procurement",
+      "governance": "Purchase approval",
+      "operations": "Equipment, property and leases",
+      "base": { "discovery": 0, "validation": 0, "beachhead": 0.1, "scale": 0.3, "platform": 0.4 },
+      "when": [],
+      "why": "Only with physical assets or premises"
+    },
+    {
+      "id": "risk-and-compliance",
+      "label": "Legal, risk and compliance",
+      "apqc": { "id": "11.0", "name": "Manage Enterprise Risk, Compliance, Remediation, and Resiliency" },
+      "value_chain": "support",
+      "porter": "firm infrastructure",
+      "governance": "Policies, the risk register, contract approval",
+      "operations": "Filings, contract work, privacy requests",
+      "base": { "discovery": 0, "validation": 0.1, "beachhead": 0.3, "scale": 0.6, "platform": 0.8 },
+      "when": [{ "if": "legal_form", "at_least": 0.5 }],
+      "why": "With a legal entity, customer data or contracts"
+    },
+    {
+      "id": "external-relationships",
+      "label": "External relationships",
+      "apqc": { "id": "12.0", "name": "Manage External Relationships" },
+      "value_chain": "support",
+      "porter": "firm infrastructure",
+      "governance": "Who may speak for the venture",
+      "operations": "Investor relations, partners, press and government affairs",
+      "base": { "discovery": 0, "validation": 0.1, "beachhead": 0.3, "scale": 0.6, "platform": 0.8 },
+      "when": [{ "if": "funding", "at_least": 0.6 }],
+      "why": "Investors, partners or press"
+    },
+    {
+      "id": "capabilities",
+      "label": "Business capabilities",
+      "apqc": { "id": "13.0", "name": "Develop and Manage Business Capabilities" },
+      "value_chain": "support",
+      "porter": "firm infrastructure",
+      "governance": "Process ownership",
+      "operations": "Process improvement, knowledge management, quality",
+      "base": { "discovery": 0, "validation": 0, "beachhead": 0.1, "scale": 0.4, "platform": 0.7 },
+      "when": [],
+      "why": "When processes are repeated by enough people to be worth improving"
+    }
+  ]
+}

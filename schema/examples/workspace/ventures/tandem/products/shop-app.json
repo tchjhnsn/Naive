@@ -1,0 +1,22 @@
+{
+  "id": "shop-app",
+  "name": "Tandem shop app",
+  "description": "Bookings, stock and payroll for small service shops, on one phone",
+  "market": {
+    "customer": "b2b",
+    "relationship": "customer",
+    "segment": "two-to-ten-person service shops",
+    "geography": "US",
+    "vertical": false
+  },
+  "job": "Run the shop's admin without a back office",
+  "technology": "Mobile app with a hosted API",
+  "software": true,
+  "repo": "tandem-app",
+  "offering": "product",
+  "business_model": [
+    "subscription"
+  ],
+  "allowed_from": "validation",
+  "status": "building"
+}

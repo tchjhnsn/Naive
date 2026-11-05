@@ -1,0 +1,24 @@
+{
+  "signed": "2026-03-02",
+  "document": "governance/founder-agreement.md",
+  "founders": [
+    {
+      "holder": "ana",
+      "role": "CEO",
+      "commitment": "full-time",
+      "ip_assigned": true
+    },
+    {
+      "holder": "ben",
+      "role": "CTO",
+      "commitment": "full-time",
+      "ip_assigned": true
+    }
+  ],
+  "departure": {
+    "good_leaver": "Keeps vested shares; the company may buy unvested shares back at cost",
+    "bad_leaver": "Keeps vested shares; unvested shares return at cost",
+    "buyback": "unvested-at-cost"
+  },
+  "deadlock": "Founders talk it through with the independent director; if still split, the CEO decides product and the CTO decides engineering"
+}

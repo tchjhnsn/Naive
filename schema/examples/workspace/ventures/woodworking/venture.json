@@ -1,0 +1,21 @@
+{
+  "id": "woodworking",
+  "name": "Woodworking",
+  "parent": null,
+  "phase": "discovery",
+  "ambition": "hobby",
+  "form": {
+    "legal_form": "none"
+  },
+  "owner": "self",
+  "status": "active",
+  "profile": "profile.md",
+  "layers": {
+    "purpose": false,
+    "knowledge": {
+      "location": "knowledge/"
+    },
+    "operations": false,
+    "evidence": false
+  }
+}

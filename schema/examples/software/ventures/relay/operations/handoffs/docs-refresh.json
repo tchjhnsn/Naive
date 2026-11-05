@@ -1,0 +1,60 @@
+{
+  "id": "docs-refresh",
+  "title": "Refresh the public docs site",
+  "venture": "relay",
+  "products": [
+    "docs-site"
+  ],
+  "governed_by": [
+    "EE-017"
+  ],
+  "assignment": "none",
+  "role": "builder",
+  "brief": "docs-refresh.md",
+  "decision_classes": [
+    "implementation-detail",
+    "accept-verified-work"
+  ],
+  "publication": {
+    "channel": "docs-site",
+    "content": "documentation pages"
+  },
+  "done_criteria": [
+    {
+      "id": "docs-build",
+      "kind": "conformance",
+      "check": "node schema/check-publication.mjs schema/examples/software"
+    },
+    {
+      "id": "pages-pass",
+      "kind": "self-proof",
+      "check": "node schema/check-ventures.mjs schema/examples/software"
+    }
+  ],
+  "status": "escalated",
+  "claimed_by": "session_example_relay",
+  "session_id": "session_example_relay",
+  "attempts": 1,
+  "max_attempts": 3,
+  "run_cap": "2h",
+  "evidence": [
+    "../../evidence/results/docs-refresh-20261102090000.json"
+  ],
+  "escalations": [
+    {
+      "class": "security-loosening",
+      "to": "architect",
+      "question": "The page builder refuses files outside the docs folder. May it read the CLI's README too?",
+      "blocks": "Step 2: the install page",
+      "continued": "Step 1: the build runs",
+      "answer": "Yes, the README only; the founder agreed on 2026-11-02."
+    },
+    {
+      "class": "public-commitment",
+      "to": "founder",
+      "question": "Once the pages build, may the refreshed docs be published?",
+      "blocks": "Step 3: publishing",
+      "continued": "Nothing; step 3 starts only after step 2"
+    }
+  ]
+}

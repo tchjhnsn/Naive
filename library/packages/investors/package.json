@@ -1,0 +1,31 @@
+{
+  "name": "investors",
+  "title": "Investors",
+  "kind": "data",
+  "purpose": "Master data for investors: one [id].json each, plus append-only _streams/ activity. Never complete. Gated by coverage and freshness (EE-070).",
+  "required": [],
+  "optional": [],
+  "refs": [],
+  "gates": [
+    "coverage",
+    "freshness"
+  ],
+  "layer": "purpose",
+  "records": [
+    "investor"
+  ],
+  "schemas": [
+    "schema/data-master.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "schema/check-data-packages.mjs",
+    "schema/lint-investors.mjs"
+  ],
+  "skill": {
+    "id": "investors-function",
+    "path": "library/packages/investors/skill/SKILL.md"
+  },
+  "use_model": [],
+  "complete": false
+}

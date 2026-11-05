@@ -1,0 +1,52 @@
+{
+  "name": "relationships",
+  "title": "Relationships",
+  "kind": "core",
+  "purpose": "The named accounts, partners and investors the venture works with.",
+  "department": "external-relationships",
+  "required": [
+    "account"
+  ],
+  "optional": [],
+  "refs": [
+    "icp"
+  ],
+  "planned": [
+    "partner records",
+    "investor records"
+  ],
+  "base": {
+    "discovery": 0,
+    "validation": 0.1,
+    "beachhead": 0.3,
+    "scale": 0.6,
+    "platform": 0.8
+  },
+  "when": [
+    {
+      "if": "partner_led",
+      "at_least": 0.8
+    },
+    {
+      "if": "offering:service",
+      "at_least": 0.6
+    }
+  ],
+  "why": "From Scale, or sooner when partner-led or a service",
+  "unlocks": [
+    "partner and investor updates"
+  ],
+  "not_modeled": "Matters after Validation or under another governance model; kept for later, not computed (EE-069).",
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [
+    "schema/account.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "schema/check-ventures.mjs"
+  ],
+  "skill": null,
+  "use_model": []
+}

@@ -1,0 +1,146 @@
+{
+  "version": "0.1.0",
+  "note": "The tags an idea map uses (EE-059): Naive's own conventions, never free-form labels. Each idea in a founder's idea dump is tagged with the departments it bears on (operations/departments.json, APQC with Porter's value chain), the records it feeds (schema/data-model.json), and whether it describes something that already exists. Its pillar follows from its first department. Each idea keeps at most max.departments departments and max.records records, strongest first, at or above the threshold. Version 0.x, ours and unevaluated.",
+  "threshold": 0.8,
+  "pillars": {
+    "product": [
+      "products",
+      "it",
+      "service-delivery",
+      "supply-chain"
+    ],
+    "brand": [
+      "marketing-and-sales",
+      "customer-service",
+      "external-relationships"
+    ],
+    "business": [
+      "strategy",
+      "finance",
+      "human-capital",
+      "assets",
+      "risk-and-compliance",
+      "capabilities"
+    ]
+  },
+  "departments": {
+    "strategy": "the venture's direction, vision, positioning against competitors, or what to do first",
+    "products": "designing, building or improving a product, feature or service the venture offers",
+    "marketing-and-sales": "reaching, persuading or selling to customers: channels, content, campaigns, launches, sales",
+    "supply-chain": "sourcing, making or moving physical goods",
+    "service-delivery": "delivering a service to customers day to day",
+    "customer-service": "supporting, onboarding or keeping customers after they buy",
+    "human-capital": "people: cofounders, hiring, roles, culture, the founder's own development",
+    "it": "the technology, data, infrastructure, integrations or AI the venture runs on",
+    "finance": "money: pricing, revenue, costs, funding, investors",
+    "assets": "property, equipment or other assets the venture buys or owns",
+    "risk-and-compliance": "legal, regulatory, privacy, security or other risks",
+    "external-relationships": "partners, community, investors relations, the public or government",
+    "capabilities": "how the venture improves itself: processes, knowledge, quality, measurement"
+  },
+  "records": {
+    "validation-problem": {
+      "title": "The problem",
+      "route": "purpose/validation/problem",
+      "about": "a problem or pain that people have",
+      "decisions": [
+        "foundation-problem"
+      ]
+    },
+    "icp": {
+      "title": "Who it is for",
+      "route": "purpose/icp",
+      "about": "who the customer, user or audience is",
+      "decisions": [
+        "foundation-icp"
+      ]
+    },
+    "product": {
+      "title": "Products",
+      "route": "purpose/product",
+      "about": "a specific product, feature or offering",
+      "decisions": [
+        "foundation-products",
+        "product-exists",
+        "flagship",
+        "foundation-business-models",
+        "foundation-markets"
+      ]
+    },
+    "venture-core": {
+      "title": "The core promise",
+      "route": "venture.json core",
+      "about": "the venture's core promise, who it is promised to, or the competence that makes it deliverable",
+      "decisions": [
+        "core-product",
+        "foundation-mission",
+        "foundation-promised-to",
+        "foundation-competence"
+      ]
+    },
+    "telos": {
+      "title": "Vision",
+      "route": "purpose/telos",
+      "about": "the long-run vision, end state, ambition or exit",
+      "decisions": [
+        "foundation-vision",
+        "foundation-exit-criteria"
+      ]
+    },
+    "validation-solution": {
+      "title": "The solution",
+      "route": "purpose/validation/solution",
+      "about": "how a problem would be solved",
+      "decisions": []
+    },
+    "validation-go-to-market": {
+      "title": "Go to market",
+      "route": "purpose/validation/go-to-market",
+      "about": "how the venture would reach and win its first customers",
+      "decisions": [
+        "foundation-channels"
+      ]
+    },
+    "validation-pricing": {
+      "title": "Pricing",
+      "route": "purpose/validation/pricing",
+      "about": "a price, a business model or how the venture makes money",
+      "decisions": []
+    },
+    "validation-team": {
+      "title": "The team",
+      "route": "purpose/validation/team",
+      "about": "who would build or run the venture",
+      "decisions": [
+        "founding-team"
+      ]
+    },
+    "alignment": {
+      "title": "Alignment",
+      "route": "purpose/alignment",
+      "about": "principles, values, or what the venture must never do",
+      "decisions": [
+        "foundation-alignment"
+      ]
+    },
+    "brand": {
+      "title": "Brand",
+      "route": "venture.json brand",
+      "about": "the venture's name, tagline, story or look",
+      "decisions": [
+        "foundation-tagline"
+      ]
+    }
+  },
+  "exists": "the founder (or their team) has already built, launched or sold this product, prototype or pilot themselves; a competitor's product does not count",
+  "max": {
+    "departments": 2,
+    "records": 3
+  },
+  "guidelines": {
+    "dump": "The idea dump is the founder's, not a prompt: every idea stays verbatim. One line or bullet is one idea; a heading names a section; a long paragraph is split into sentences, never rewritten.",
+    "tags": "Tag an idea with what it is mainly about, not everything it touches: at most two departments and three records, each at or above the threshold. An idea about a competitor is not an existing product. An idea with no tag stays on the map, loose; it is never forced into a record.",
+    "graph": "An idea builds on another only when it needs that idea's answer first. Dependencies are kept acyclic, strongest first, and reduced to the direct ones. Ideas tied by dependencies form a lane that moves in order; an idea with no tie moves on its own.",
+    "routes": "Each tagged idea is routed to the records it feeds, the framework's destinations. A destination's stage comes from the framework's own state: routed (ideas, nothing drafted), drafted (an agent's draft awaits the founder), yours (a decision only a person can make), waiting (held by another decision), done. The next step is the framework's, never invented."
+  }
+}

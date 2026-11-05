@@ -1,0 +1,154 @@
+{
+  "framework": "0.3.0",
+  "note": "Naive's versions, the migrations that move a venture from one to the next, and each package's version and channel (EE-076, the Next.js translation's chapter 18). naive upgrade reads this file from the installed copy, so a venture always upgrades to the framework it runs on. A version's guide is bundled here, in docs/upgrades/, so agents read the guide for the version installed (I-29).",
+  "channels": {
+    "stable": "Packages Naive models and computes fit for. The default.",
+    "canary": "Stable packages plus experimental ones: packages Naive does not model yet (fit is not computed), adopted only when a person asks for one by name."
+  },
+  "versions": [
+    {
+      "version": "0.1.0",
+      "date": "2026-10-27",
+      "summary": "The layer layout: records under purpose/, knowledge/, operations/, governance/ and pillars/ (EE-030, EE-032). A venture with no pin in naive.config.json is on this version.",
+      "guide": null,
+      "migrations": []
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-10-29",
+      "summary": "The package folder layout: records move into foundation/, validation/, product/, marketing/, people/ and decisions/, with the old routes kept as aliases (EE-070).",
+      "guide": "docs/upgrades/0.2.0.md",
+      "migrations": [
+        "package-layout"
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-10-29",
+      "summary": "Packages are Naive's and kits are Mentura's (EE-071): naive.config.json pins the framework and each package, and routes inside records are package routes.",
+      "guide": "docs/upgrades/0.3.0.md",
+      "migrations": [
+        "kit-to-package"
+      ]
+    }
+  ],
+  "migrations": [
+    {
+      "id": "package-layout",
+      "module": "schema/migrations/package-layout.mjs",
+      "package": null,
+      "decision": "EE-070",
+      "aliases": "interface/route-aliases.json"
+    },
+    {
+      "id": "kit-to-package",
+      "module": "schema/migrations/kit-to-package.mjs",
+      "package": null,
+      "decision": "EE-071",
+      "aliases": "interface/route-aliases.json"
+    },
+    {
+      "id": "icp-profiles",
+      "module": "schema/migrations/icp-profiles.mjs",
+      "package": "foundation",
+      "from": "0.3.0",
+      "to": "0.4.0",
+      "decision": "Torian, 2026-10-29: one record per ideal customer profile"
+    },
+    {
+      "id": "telos-to-goals",
+      "module": "schema/migrations/telos-to-goals.mjs",
+      "package": "foundation",
+      "from": "0.4.0",
+      "to": "0.5.0",
+      "decision": "Torian, 2026-10-30: an opinionated schema with swappable frameworks for thinking; the telos and ambition tiers become frameworks over canonical goals and exit criteria",
+      "aliases": "interface/route-aliases.json"
+    }
+  ],
+  "packages": {
+    "foundation": {
+      "version": "0.5.0",
+      "channel": "stable"
+    },
+    "validation": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "product": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "marketing": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "finance": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "people": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "investor": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "partner": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "cofounder": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "engineering": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "customers": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "investors": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "money": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "raw": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "decisions": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "evidence": {
+      "version": "0.3.0",
+      "channel": "stable"
+    },
+    "legal": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: matters after Validation or under another governance model (EE-069)"
+    },
+    "operations": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: matters after Validation or under another governance model (EE-069)"
+    },
+    "relationships": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: matters after Validation or under another governance model (EE-069)"
+    },
+    "counsel": {
+      "version": "0.3.0",
+      "channel": "experimental",
+      "note": "Not modeled: co-owners, outside money or a regulated field (EE-069)"
+    }
+  }
+}

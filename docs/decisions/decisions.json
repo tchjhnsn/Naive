@@ -1,0 +1,1675 @@
+{
+  "log": "Everything Ecosystem schema",
+  "prefix": "EE",
+  "decisions": [
+    {
+      "id": "EE-001",
+      "date": "2026-10-26",
+      "decision": "The methodology has five layers that form a loop (Purpose, Knowledge, Operations, Execution, Evidence) and two that cut across them (Governance, Interface). Knowledge is SAD; Operations is MAD.",
+      "status": "in-force"
+    },
+    {
+      "id": "EE-002",
+      "date": "2026-10-27",
+      "decision": "The Everything Ecosystem is a schema, described as the AI-Native OS for Builders. An instance is one person's workspace, declared by a workspace.json naming the schema version it follows. The schema does not depend on any instance.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-003",
+      "date": "2026-10-27",
+      "decision": "A workspace is made of spheres. Each person has one personal sphere as the root, holding their values. Every other sphere (household, employer, venture, client, community, learning) has a parent; clients exist only inside the venture that serves them. Every sphere has the same layers at the depth it needs, records its purpose as weights over the root's values, and links one way: no sphere reads the root.",
+      "why": "Named after sphere sovereignty (each sphere governs itself; borders are kept). \"Domain\" was rejected because it already means a subject area in domain design and in MAD.",
+      "status": "superseded",
+      "related": [
+        "EE-002"
+      ]
+    },
+    {
+      "id": "EE-004",
+      "date": "2026-10-27",
+      "decision": "Venture is the one kind for anything a person undertakes. Hobby, venture and company are stages of it: a hobby is done for its own sake, a venture is an undertaking with risk not yet formed into a company, and a company is formalized with a legal form (llc, s-corp, c-corp, sole-prop, partnership, nonprofit). A venture changes stage without moving folders. Grouping folders such as ventures/companies/ are for browsing only; sphere.json is the truth.",
+      "status": "superseded",
+      "related": [
+        "EE-003"
+      ]
+    },
+    {
+      "id": "EE-005",
+      "date": "2026-10-25",
+      "decision": "Docs as code: the method, design docs, schemas, skills and templates live in this repo. An instance keeps its own notes, philosophy and decisions in its own spheres.",
+      "status": "in-force"
+    },
+    {
+      "id": "EE-006",
+      "date": "2026-10-26",
+      "decision": "A handoff includes a self-proof step (the agent exercises its change for real), allows 3 attempts and a 2-hour run cap before escalating, and ends with a one-line lesson when something failed for a reason that could recur.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-007",
+      "date": "2026-10-26",
+      "decision": "Each layer lists its tools in <layer>/tooling/integrations.json. Choosing tools is opt-in: when someone wants help, the agent asks situation questions from the layer's principles and examples, and scores with Jev plus a reasoning model; people who name their tools just have them recorded.",
+      "status": "in-force",
+      "related": [
+        "EE-001"
+      ]
+    },
+    {
+      "id": "EE-008",
+      "date": "2026-10-27",
+      "decision": "The sphere is the unit of an instance, and \"sphere\" is the name used in files and in conversation. Each sphere keeps a sphere.json (machine fields) beside a human-readable profile (narrative, pillars, changelog), named by sphere.json's profile field. Products and systems inside a venture are not spheres; product cards describe them.",
+      "why": "Sphere reads plainly to a person and avoids \"domain\", which already means a subject area in domain design and in MAD.",
+      "status": "superseded",
+      "related": [
+        "EE-003"
+      ]
+    },
+    {
+      "id": "EE-009",
+      "date": "2026-10-27",
+      "decision": "Personal life is out of scope. A sphere is a venture or a client inside a venture; there is no personal root, and household, employer, community and learning kinds are dropped, with values and purpose weights. Top-level spheres are ventures. Personal knowledge management will be a separate system, built on its own, that can later read from or share with an instance through links.",
+      "why": "Keeps the schema about what a builder builds. The personal system has different needs (values, axiology, life areas) and is better designed on its own, then joined.",
+      "status": "in-force",
+      "supersedes": [
+        "EE-003"
+      ],
+      "related": [
+        "EE-004",
+        "EE-008"
+      ]
+    },
+    {
+      "id": "EE-010",
+      "date": "2026-10-27",
+      "decision": "The company template (governance/company-template/) stays, as the venture template. Its three pillars (product, brand, business) are scaffolded into every venture at every stage, because even a venture that is not a legal entity has a product, a brand and a business side. Governance (roles and decision rights) still starts only at the company stage.",
+      "status": "in-force",
+      "related": [
+        "EE-004",
+        "EE-009"
+      ]
+    },
+    {
+      "id": "EE-011",
+      "date": "2026-10-27",
+      "decision": "The venture is the unit of an instance, replacing the sphere. A venture is anything a builder undertakes, from a hobby to a company, and ventures can hold ventures. Each keeps a venture.json beside its venture profile (the readable companion, replacing the entity profile). Products are cards in products/, holding their own market, job, technology, offering and business model; venture.json keeps only what is true of the whole venture (phase, ambition, form, industry, core product). Clients are records in clients/ inside the venture that serves them, no longer units. The company template is renamed the venture template.",
+      "why": "\"A venture is a venture\": the plain word needs no new noun. Product-level fields were checked against Product Anatomy, where markets, jobs and business models already vary by product and phase.",
+      "status": "in-force",
+      "supersedes": [
+        "EE-008"
+      ],
+      "related": [
+        "EE-009",
+        "EE-010"
+      ]
+    },
+    {
+      "id": "EE-012",
+      "date": "2026-10-27",
+      "decision": "Phase replaces stage. A venture's phases are Discovery, Validation, Beachhead, Scale and Platform, each with a gate for leaving it: problem-solution fit, product-market fit (retention holds), repeatability, market leadership with healthy margins, and others building on it. Formalization is form.legal_form; intent is ambition (hobby, survival, lifestyle, managed growth, aggressive growth). The core product is required once a venture leaves Discovery. Starting layers come from the phase; governance switches on when the venture is formalized.",
+      "why": "Stage and phase meant the same thing. Names follow Blank (Discovery, Validation) and Moore (Beachhead, Scale); retention and repeatability, from a six-phase model the founder shared, became gates so the Succession Matrix keeps its weights. Horizon became Platform because McKinsey's horizons are concurrent, not sequential.",
+      "status": "in-force",
+      "supersedes": [
+        "EE-004"
+      ],
+      "related": [
+        "EE-011",
+        "EE-014"
+      ]
+    },
+    {
+      "id": "EE-013",
+      "date": "2026-10-27",
+      "decision": "Nouns that meant two things are split. Layer means only the system's seven layers; MAD's four become tiers. A product's place in the portfolio is its portfolio role; a bare role is a person's or agent's job. Wedge keeps its business meaning, a portfolio role (the narrow product used to enter a market), and is not a phase. The proposed for-profit/nonprofit axis is dropped: legal form carries it, with benefit-corp added.",
+      "why": "Founder rejected renaming wedge to on-ramp: in business those are different things.",
+      "status": "in-force",
+      "related": [
+        "EE-012",
+        "EE-014"
+      ]
+    },
+    {
+      "id": "EE-014",
+      "date": "2026-10-27",
+      "decision": "The system is highly opinionated, with references at every layer. Standards first: a noun uses an established term with its standard meaning and is coined only when none exists. docs/ontology.json is canonical for nouns (docs/ontology.md is generated from it); schema/check-nouns.mjs fails when a retired noun reappears. Each layer records the sources behind its defaults, and the alternatives weighed, in <layer>/references/references.json with title, authors, year, summary, a URL when one exists and a stance; the find-reference skill fills and re-checks them. The genus of the whole (operating system or operating model) stays open until the first venture runs end to end; files say \"the system\".",
+      "why": "A loosely opinionated system is hard to build; references keep the defaults discoverable. URLs rot, so titles are always recorded too.",
+      "status": "in-force",
+      "related": [
+        "EE-002",
+        "EE-012"
+      ]
+    },
+    {
+      "id": "EE-015",
+      "date": "2026-10-27",
+      "decision": "Kits have a scope. A product card may name its scope (the whole system, one layer, or one tier of the operations layer) and the kits it is part of (part_of); a part can still be its own product. The Everything Ecosystem's own schema and method skills are one offering, the system kit; some skills, such as the five-step algorithm skill, are also products by themselves.",
+      "why": "Found by the first venture run: skills and schema tied as flagship, and the owner confirmed they are one offering while some skills stand alone and some kits serve one layer or tier.",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-013"
+      ]
+    },
+    {
+      "id": "EE-016",
+      "date": "2026-10-27",
+      "decision": "The interface layer holds interfaces only: tools through which a person, with agents, works across at least four of the six other layers in one session. Agent harnesses (Claude Code, Cursor, Codex) are the default kind and the operator console is a custom one. A tool that serves one or two layers is an integration of those layers (Obsidian under knowledge), checked by schema/check-integrations.mjs. Three AI levels, recorded as a product's ai field: AI feature (the product works without the model), AI harness (the product is the software around a model; a chatbot), agent harness (an AI harness where the model directs its own steps and tool use toward a goal). Every agent harness is an AI harness; a chatbot is not an agent harness.",
+      "why": "The owner wanted a clear interface layer that does not count every integration as an interface, and a clear line between apps that use AI and products that are harnesses. Harness takes its industry meaning (workspace decision G-039).",
+      "status": "in-force",
+      "related": [
+        "EE-014",
+        "EE-015"
+      ]
+    },
+    {
+      "id": "EE-017",
+      "date": "2026-10-27",
+      "decision": "Execution, evidence and governance get machine-checkable records, so a venture can run end to end. A handoff is JSON at <venture>/execution/handoffs/<id>.json (handoff.schema.json) beside its Markdown brief: role, decision classes, done-criteria (conformance, self-proof, review), status, attempts, run cap, PR, evidence, escalations and lesson. Evidence is the append-only result of one run at <venture>/evidence/results/<id>.json (evidence.schema.json); eval suites follow eval-suite.schema.json. Decision rights follow decision-rights.schema.json; a venture's file tightens the template and may loosen a class only by naming a decision. schema/run-handoff.mjs runs a handoff's criteria and writes evidence; schema/check-execution.mjs holds handoffs to their role's classes, EE-006's conformance and self-proof, attempts, and passing evidence before done. Layer locations are relative to the venture folder; venture members may be agents; business models use schema/vocab/business-models.json; a product may list several markets with one primary; the Product Anatomy runner needs a revenue score of 2 for a revenue engine and counts a standalone part of the flagship kit as a wedge.",
+      "why": "The first venture run (docs/design/FIRST_VENTURE_RUN_2026-10-27.md) stopped at Purpose: handoffs, evals and decision rights were prose or unchecked JSON, so the system could not run a venture end to end or settle its genus.",
+      "status": "in-force",
+      "related": [
+        "EE-006",
+        "EE-012",
+        "EE-015",
+        "EE-016"
+      ]
+    },
+    {
+      "id": "EE-018",
+      "date": "2026-10-27",
+      "decision": "The ecosystem has no single master schema; it has a data model. schema/data-model.json names every record type, the layer that owns it (or system, for records every layer shares), its schema, where its records live and what each references, with the check that resolves each reference. Containment runs workspace, venture, then the venture's layer records; the method's own records (catalog, ontology, decisions, evals) sit at method level outside any venture. The venture profile is one prose record inside a venture, not the master. Each layer has a kit manifest (<layer>/kit.json, kit.schema.json; the system kit at schema/kit.json) listing its skills, the record types it owns, and those of other kits it reads and writes. Layer relationships are derived from those reads and writes by schema/check-data-model.mjs, never drawn by hand. The check fails when a JSON file has no record type, a schema governs none, a record type has no owning kit or one of another layer, or a skill belongs to no kit or two. schema/validate.py takes its file-to-schema map from the data model.",
+      "why": "The owner asked how the layers relate, which skills and schemas (kits) belong to which layer, and whether a master schema, perhaps the profile, contains everything. Nothing recorded the answer, so placements had drifted (a methodology skill under knowledge, a harness hooks file under knowledge, execution and interface with no skills) without any check noticing.",
+      "status": "proposed",
+      "related": [
+        "EE-011",
+        "EE-015",
+        "EE-016",
+        "EE-017"
+      ]
+    },
+    {
+      "id": "EE-019",
+      "date": "2026-10-27",
+      "decision": "Execution checks a handoff before executing it: its definition of ready. schema/check-ready.mjs fails unless the brief has an Outcome and a Work section with no placeholders (TBD, TODO, template markers); every product, governing decision, input file and criterion script it names exists; it names the methodology assignment it runs under (an A-NNN, ratified) or says none; its role exists and owns every decision class it carries; no escalation is open; attempts remain; and it has conformance and self-proof criteria and reviewers other than the holder. A handoff starts as draft; check-ready --record writes ready_check and moves it to ready. check-execution refuses an in-progress handoff without ready_check. Handoffs gain assignment and inputs, which is how Operations (MAD's choice) reaches Execution.",
+      "why": "The owner: a handoff that reaches execution with something missing produces ambiguity, and its execution fails. Gaps must surface as questions to the author before work starts. Running the check on the three existing handoffs found one real defect: anatomy-json-output cited its methodology assignment as a governing decision.",
+      "status": "proposed",
+      "related": [
+        "EE-006",
+        "EE-017",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-020",
+      "date": "2026-10-27",
+      "decision": "Vault and repository are universal parts of a workspace. A workspace always has a vault, the folder of documents holding venture folders and records; it has a code folder of repositories (repo, short for repository: a version-controlled store, normally Git) once any venture builds software. venture.json gains repos; a product card gains software (true when the venture builds software for it) and repo. check-ventures fails when a software product's venture, or a parent, lists no repository. Ventures in other industries may have only a vault. Operations skills name the MAD tier they serve in their kit manifest; contract-first moves from knowledge to operations, software engineering tier, beside its catalog entry.",
+      "why": "The owner's workspace already splits vault and code (docs-as-code); the method should say so for every builder, and say when a repo is needed. Contract-first is a development methodology, not knowledge.",
+      "status": "proposed",
+      "related": [
+        "EE-011",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-021",
+      "date": "2026-10-27",
+      "decision": "The client record becomes the account record: accounts/<id>/account.json (account.schema.json), optional, for ventures that keep records per named party. Each account has a relationship: client, customer, user, member, partner or other. Who a product serves in general stays its market, which gains the same relationship (plus audience). 'client' is retired as a record name and kept as one relationship value.",
+      "why": "The owner: clients are not universal; many ventures have customers, users or an audience instead. The record came from a services example. Account is the CRM-standard name for any named party; customer would sit badly over users and audiences who do not pay.",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-014"
+      ]
+    },
+    {
+      "id": "EE-022",
+      "date": "2026-10-27",
+      "decision": "The governance layer owns ownership and control. A venture's governance folder may hold ownership.json (the cap table: share classes with votes, price, liquidation terms and investor rights; holders; grants with vesting; SAFEs and notes), board.json (at most one formal board and any advisory boards: seats, who appoints them, reserved matters), founder-agreement.json with prose beside it, and exit.json (exit paths and sale values to model). Payouts are computed by schema/payouts.mjs, never typed. schema/check-governance.mjs requires a cap table and a formal board with venture-capital funding, a cap table with angel funding, and a founder agreement listing exactly the founder holders once two or more share ownership; it checks grants, classes, vesting, S-corporation single class, seats against appointing holders' board-seat rights, and that payouts add up. Five skills: cofounder-structure, board-design (formal and advisory, advisors), equity-and-share-classes, financing-and-investor-rights, exit-planning. A new decision class, ownership-or-control, is founder-owned at escalate: agents prepare options and documents and never decide. MAD's governance tier keeps governing one project; it should read who decides and funding from these records rather than ask again (to settle with the tier's name).",
+      "why": "The owner: a founder needs tools for whether and how to have cofounders, boards and their powers, share types, advisors, investor rights and exits, and nothing in the system covered ownership and control. It is about the venture, not one system, so it belongs to the layer, not MAD's tier. Comparison: docs/design/GOVERNANCE_LAYER_VS_TIER_2026-10-27.md.",
+      "status": "proposed",
+      "related": [
+        "EE-017",
+        "EE-018",
+        "EE-021"
+      ]
+    },
+    {
+      "id": "EE-023",
+      "date": "2026-10-27",
+      "decision": "Start with the end. A venture's purpose layer holds purpose/telos.json (telos.schema.json): the end it exists to reach, its end state and horizon, measures with one primary, the owners' intended outcome (hold, acquisition, IPO and so on) and, per Succession Matrix phase, exit criteria that each serve a measure. schema/check-telos.mjs requires every criterion to trace to a measure, governance/exit.json to prefer the telos path and not rule it out, and warns when a venture past Discovery with more than a hobby ambition has none. Other layers read rather than ask: operations/skills/methodology-selection/derive-answers.mjs derives MAD's governance-tier answers (who decides, funding, agent autonomy, success measure) from the telos, ownership, board, form and decision rights, naming each source, and lists what it cannot derive. The payout script is renamed payouts.mjs and the noun liquidation waterfall is retired for preference stack, because waterfall is a delivery methodology in MAD.",
+      "why": "The owner: MAD should read the layers instead of asking again; that follows from a start-with-the-end principle, a telos record in purpose, and each phase can develop its exit from it. waterfall.mjs collided with the waterfall method in MAD's delivery tier.",
+      "status": "proposed",
+      "related": [
+        "EE-012",
+        "EE-022"
+      ]
+    },
+    {
+      "id": "EE-024",
+      "date": "2026-10-27",
+      "decision": "The genus of the Everything Ecosystem is proposed as a venture development framework, in the same genus as web development frameworks, instead of operating system or operating model (left open by EE-014). The likeness is structural: conventions over configuration (one opinionated default per choice, each with references), a fixed project structure (workspace, venture folders, layers, record types in schema/data-model.json), generators (init-venture), checks run like a test suite (node test.mjs), packages that plug in (kits, by layer and tier), and inversion of control (the framework's checks and runners call on the venture's records, as a web framework calls the application's code). An operating model describes how one organization runs; a framework is reused by many builders to build their own.",
+      "why": "The owner, after the first ventures ran end to end through handoffs, evidence, governance and telos: 'I would like to consider this as a venture development framework. It would put it in a close genus with web development frameworks.'",
+      "status": "proposed",
+      "related": [
+        "EE-014",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-025",
+      "date": "2026-10-27",
+      "decision": "Publishing is a governance matter. Each venture keeps a publication policy (governance/publication-policy.json) that lists its channels, the guidelines each follows (brand and editorial from the pillars, plus outside rules such as platform or advertising law), the checks and preview every publication passes, and who drafts and who approves by role or team. Every publication passes this gate: it runs as a handoff under public-commitment and names its channel and content; agents may draft, check and preview, and a person approves. A channel on a third-party platform (Substack, X, Facebook and others) names the platform and cites its rules; social, newsletter and blog channels say whether replies and comments are gated, delegated to named people, or not made. publish.json moves from operations to governance as the method site's channel configuration. Publisher rule R1 now refuses only files outside the repository (an absolute path, a path through .., or a link resolving outside the root); inside it, publish.json decides.",
+      "why": "The owner: 'anything being published should go through a sort of gate, especially when it's being published by an AI... It also gives us a gate to be able to test what gets published before it is actually published.' Where something is published decides which guidelines it must follow, and ventures assign publishing rights to different teams. R1 was a vault-era boundary that refused 80 of 82 allowlisted files after the method moved into its own repository; the owner approved the change.",
+      "status": "in-force",
+      "related": [
+        "EE-017",
+        "EE-022"
+      ]
+    },
+    {
+      "id": "EE-026",
+      "date": "2026-10-27",
+      "decision": "Validation is a probability built from cited evidence, not a declared phase. A validation kit in the purpose layer gives each sub-score (problem first; then solution, product-market fit, pricing, go-to-market, team, operations readiness per MAD tier) its own record type, template and references, all sharing one evidence item. schema/check-validation.mjs grades every item and record high, moderate, low or very low by adapting GRADE: the kind of signal sets the start (behavior high, commitment moderate, stated intent and desk research low, opinion very low), and the wrong audience, a small sample, general answers and age lower it; a claim with no evidence is very low. The grade weighs the sub-score's Jev probability in the validation score. A layer may hold more than one kit, under <layer>/kits/<kit>/.",
+      "why": "The owner: validation 'cannot be an arbitrary measure', must not be Boolean, must cite its evidence, and evidence from the wrong audience should count for less; 'a weak record would only state the problem; a strong record would also contain market research that proves the problem is there'.",
+      "status": "in-force",
+      "related": [
+        "EE-012",
+        "EE-023",
+        "EE-024"
+      ]
+    },
+    {
+      "id": "EE-027",
+      "date": "2026-10-27",
+      "decision": "Working name for the system: Mentura, from mentor and Ventura: a mentor that guides a venture into its future. Files keep 'Everything Ecosystem' until the name is checked (trademark, domains) and a rename is decided.",
+      "why": "The owner: 'We can go with the name Mentura for now.'",
+      "status": "superseded",
+      "related": [
+        "EE-024"
+      ]
+    },
+    {
+      "id": "EE-028",
+      "date": "2026-10-27",
+      "decision": "The framework says what a venture needs now, what comes soon and what to hold back. schema/need-now.json gives each venture record type a prior probability per phase, raised or lowered by facts about the venture (people, founders, agents, funding, legal form, products, go-to-market path, publishing); schema/need-now.mjs lists records to suggest now (0.5 or more), coming soon (the next phase reaches 0.5), held, and held back. Jev re-scores the priors per venture once the scorer runs.",
+      "why": "The owner: early on 'there's a lot that you shouldn't spend time thinking about'; Jev should determine 'the records that they need at a particular moment and the probability of when they're going to need them later', and low-probability records are not suggested until needed or asked for.",
+      "status": "in-force",
+      "related": [
+        "EE-026",
+        "EE-018"
+      ]
+    },
+    {
+      "id": "EE-029",
+      "date": "2026-10-27",
+      "decision": "The operations layer designs the team: operations/team-plan.json says which roles agents fill and which people fill, by phase, with the decision classes each holds and a named human loop for every agent task that the capability register marks can-with-review, cannot, not-allowed or unknown. Open person roles needed in the current phase are recruited now, from a brief; agents draft, search and screen, and a person makes contact and decides. The evidence layer keeps the capability register, dated and sourced, fed by new research and by our own evals; an unknown task keeps a person in the loop and becomes an eval.",
+      "why": "The owner: one-shotting a venture is possible 'because of agents who can act as team members'; the operations suite is also for 'developing the agents and teammates and delegating authority', deciding what agents and teammates you need, and recruiting real humans; and 'the literature on what can and cannot be done using agents is still very new', so we must keep reading new information or produce it ourselves.",
+      "status": "in-force",
+      "related": [
+        "EE-021",
+        "EE-022",
+        "EE-025"
+      ]
+    },
+    {
+      "id": "EE-030",
+      "date": "2026-10-27",
+      "decision": "The system has one route table, generated from schema/data-model.json and the kit manifests by interface/router.mjs, and three interfaces over it: a CLI (interface/cli/mentura.mjs), an MCP server (interface/mcp/server.mjs) and a local HTTP API (interface/api/server.mjs). A route is <layer>[/<kit>]/<record> with the actions read, write, check and template, or a command with run. Every write is validated against the record's schema; an agent's write to a record whose decision class escalates to a person (ownership, board, founder agreement, exit, telos, decision rights, publication policy) is held as a draft for a person to accept, and the MCP server and API always write as an agent. Adoption may be partial: a venture turns on only the layers it wants (init --layers), and a route needs only its own records. An install skill sets it up in Claude Code and Cursor.",
+      "why": "The owner: turn this into an MCP, set up APIs and a CLI, with a skill for installing it into a coding agent; builders do not have to use the entire system; consider a routing system like Next.js's. Generating routes from the kits keeps the three interfaces from drifting apart, and the draft gate carries EE-022, EE-023 and EE-025 (people decide escalate classes) into every interface.",
+      "status": "in-force",
+      "related": [
+        "EE-018",
+        "EE-022",
+        "EE-023",
+        "EE-024",
+        "EE-025",
+        "EE-026"
+      ]
+    },
+    {
+      "id": "EE-031",
+      "date": "2026-10-27",
+      "decision": "Provenance is built in two ways. Explicitly: every write through the router (CLI, MCP server, HTTP API) appends one line to the venture's provenance log, <venture>/provenance.jsonl, after W3C PROV: the entity (file) written, the activity (write, draft, accept, or baseline for a record adopted as it stood), the agent (person or AI agent, with id, model, session and harness where known, and the interface), what the content was derived from (paths, URLs, decision ids) and the decision or decision class it acted under, with a hash of the content. Each line carries the previous line's hash, so schema/check-provenance.mjs fails when a line is edited, removed or reordered, and warns when a logged file has changed outside the router. Implicitly: git history covers everything written outside the router. The log is a system record, on whatever layers a venture uses; record schemas carry no provenance fields. Existing provenance stays where it is: evidence items and references cite sources with checked dates, and notes carry source and ai-model.",
+      "why": "The owner asked to make sure provenance is built in, explicitly or implicitly, and chose the recommendation of a separate append-only log backed by git over a provenance block inside every record, which would add noise to every schema.",
+      "status": "in-force",
+      "related": [
+        "EE-025",
+        "EE-026",
+        "EE-029",
+        "EE-030"
+      ]
+    },
+    {
+      "id": "EE-032",
+      "date": "2026-10-27",
+      "decision": "Routes follow the Next.js App Router's conventions, with layers kept as route segments so a route is its record's folder path. Built: [id] item routes for collections (products, accounts, handoffs, evidence) beside their list routes; the venture as a catch-all segment, an id or a nested venture's folder path (studio/print); layout (the system, layer and kit context, skills, references, template, gate and need-now status an agent gets before acting); not-found (a missing record answers with its template, schema, skills and need-now status), loading (a waiting draft is reported on read) and error (a failed check or write answers with the kit's skills and template); views, Markdown pages for people (the page convention), and system/overview, a page of parallel slots where one failing slot does not stop the others; route groups by phase, (discovery) to (platform), which gather the routes need-now suggests in that phase without changing paths; robots, the routes a team-plan role may read and write, shown at system/robots; route aliases for renames (interface/route-aliases.json); and gates declared in the data model (decision_class on a record type), applied from the venture's decision rights instead of a list in code.",
+      "why": "The owner asked to study how Next.js uses routes and all their types, chose to keep layers as segments with groups for cross-cutting slices such as phases, and asked to build every route type we did not have.",
+      "status": "in-force",
+      "related": [
+        "EE-028",
+        "EE-029",
+        "EE-030",
+        "EE-031"
+      ]
+    },
+    {
+      "id": "EE-033",
+      "date": "2026-10-27",
+      "decision": "File formats are chosen by the first of these that holds: a program reads or writes it, so JSON with a schema; an append-only log, so JSONL; another tool expects the name (SKILL.md, AGENTS.md, CLAUDE.md, README.md, vault notes), so .md; prose for people that is published or needs a component or live data, so MDX; prose that stays private, so .md. MDX pages must compile (site/scripts/check-mdx.mjs, run by test.mjs and CI). See EE-080.",
+      "why": "The owner wants MDX preferred over Markdown and asked for a convention for when to use MDX versus JSON or other formats. Generated pages in MDX render the repository's data at build time instead of being copied, so they cannot go stale.",
+      "status": "in-force",
+      "related": [
+        "EE-005",
+        "EE-031",
+        "EE-034"
+      ]
+    },
+    {
+      "id": "EE-034",
+      "date": "2026-10-27",
+      "decision": "The developer docs are a Nextra 4 site (docs theme) on the latest Next.js, in site/ of this repository rather than a separate repo, so docs and code change in one pull request and the site renders routes, nouns, kits and decisions from the repository at build time. It reads method-level records only, never an instance venture. It stays unpublished (noindex, no deploy) until the owner accepts the developer-docs channel in the venture's publication policy, drafted for that decision. zod is pinned to 4.1.12 because later 4.x releases reject the theme's optional props. See EE-080.",
+      "why": "The owner chose Nextra's documentation starter for the developer docs, on the latest Next.js, and asked whether the site belongs in a separate repo; the starter kit itself pins Next.js 13 and the Pages Router, which Nextra 4 no longer supports.",
+      "status": "in-force",
+      "related": [
+        "EE-025",
+        "EE-032",
+        "EE-033"
+      ]
+    },
+    {
+      "id": "EE-035",
+      "date": "2026-10-27",
+      "decision": "Mentura replaces SAD as the builder's methodology, and SAD is one of its layers (knowledge). SAD also continues as its own project (the sad-methodology repository and site), developed independently. From here on Mentura's knowledge layer is its own version of SAD: it starts from SAD v3 and its amendments as they stand in knowledge/method/, changes only by Mentura's decisions, and neither inherits from nor syncs with the separate SAD project. A change worth sharing is ported by hand, in either direction.",
+      "why": "The owner said the system being built replaces the SAD methodology and that SAD is a layer within Mentura, and chose to keep the two as separate projects, with the SAD inside Mentura being its own version from here on.",
+      "status": "superseded",
+      "related": [
+        "EE-001",
+        "EE-027",
+        "EE-034"
+      ]
+    },
+    {
+      "id": "EE-036",
+      "date": "2026-10-28",
+      "decision": "SAD is removed from Mentura. The knowledge layer is the memory layer: where every record is stored and found (route, schema, provenance), holding the decision log, venture profile, design documents and references. Every other layer defines the records it writes to memory and their conventions; operations (MAD) is the one layer that is a method rather than record conventions. Storage is not fixed: files today, a database possible later. The SAD method documents, systems, references, artifacts, templates and seventeen SAD skills are deleted (git keeps them); the layer keeps two skills, find-reference and industry-awareness. SAD's surviving rules become checks and skills in the layers that need them. SAD continues as its own separate project.",
+      "why": "The owner judged that with routing, schemas and provenance in place SAD was no longer necessary: a database or a file system could be the knowledge layer, and the other layers' conventions are what get written to it. He asked to run the five-step algorithm on the knowledge layer and start nearly from scratch.",
+      "status": "in-force",
+      "related": [
+        "EE-001",
+        "EE-030",
+        "EE-031",
+        "EE-035"
+      ]
+    },
+    {
+      "id": "EE-037",
+      "date": "2026-10-28",
+      "decision": "The knowledge layer federates rather than copies. Records stay in the sources a venture already uses, and the venture decides which record type lives where in an optional knowledge/sources.json; without one, everything stays in the venture folder. Each source is reached through a connector with one contract (list, read, version, search, write where allowed), registered as an integration with a connector in knowledge/tooling/integrations.json. A version is the git blob SHA-1 of the content in every source, and a read says its source, version and, for GitHub, a permalink at the commit, so provenance can cite it. The router reads and writes every record through the connector for its source, so its call is asynchronous. A catalog indexes every item's address, version, route, title and words, and keeps no content. The first two connectors are the file system (folders and git repositories, writing in place) and GitHub (REST over fetch, writing by draft pull request, which a person accepts by merging). Every connector passes one eval suite (knowledge/connectors/eval.mjs), run offline against a fake of the GitHub API and live when a repository and token are given.",
+      "why": "The owner asked to think from first principles about a knowledge layer that may span repositories, wikis, Slack, Notion and Salesforce, held that ventures organise their own knowledge so Mentura should not be too opinionated, and asked to start with two connections plus evals that prove they work. He chose writes by pull request for GitHub (2026-10-28), matching the rule that a person merges.",
+      "status": "proposed",
+      "related": [
+        "EE-005",
+        "EE-030",
+        "EE-031",
+        "EE-036"
+      ]
+    },
+    {
+      "id": "EE-038",
+      "date": "2026-10-28",
+      "decision": "Operations in Mentura is business operations: the team plan and hiring, handing work to people and agents, and the tools each business function uses (marketing, sales, research; treg is a candidate integration). Every venture has it, with or without a repository. Execution folds into operations: a handoff is how operational work is assigned, so handoffs move to <venture>/operations/handoffs/ and the execution/handoff route aliases to operations/handoff. Mentura has six layers: purpose, knowledge, operations, evidence, governance, interface. MAD, the method for building software or hardware (its catalog, methodology selection, assignments, recommendations, answers and the method-site publisher), leaves Mentura to be its own product that reads Mentura's records when a venture has a repository; git keeps what was removed. MAD's governance and delivery questions (is it worth doing, who decides, how work is planned and handed over) are general business questions, to be re-homed in Mentura's governance and operations layers. Evidence stays: its results and evals are records.",
+      "why": "The owner asked whether everything except MAD and evidence is knowledge, and ran the five-step algorithm on it. A venture with no repository still needs operations for marketing, hiring and the like, and two of MAD's tiers are about the business rather than the build; so only the build side of operations is a separate product.",
+      "status": "proposed",
+      "related": [
+        "EE-013",
+        "EE-017",
+        "EE-019",
+        "EE-023",
+        "EE-036",
+        "EE-037"
+      ]
+    },
+    {
+      "id": "EE-039",
+      "date": "2026-10-28",
+      "decision": "Validation evidence comes from how audiences receive a product, irrespective of the repository: website and product analytics (Vercel, Cloudflare, Netlify, Google Analytics, PostHog, Amplitude, or whoever the venture deploys with or keeps its analytics in) and customer research (Listen Labs) are evidence-layer integrations and sources of truth for validation, beside revenue (Stripe). Business operations reads these, not code quality or build speed, which are MAD's. Jev (TypeSafe AI) routes each venture to the connectors that fit its use cases, and also scores validation sub-scores. All are candidates until a connector is built and evaluated against the contract (EE-037). Under EE-041 this is platform: the entries stay as candidate data in the integrations lists, and any connector to these services, and Jev's routing, lives in platform/.",
+      "why": "The owner, 2026-10-28: business operations doesn't need to know how good the code is or how fast it is built; it needs to know how different audiences are receiving it. Separating MAD from Mentura (EE-038) lets Mentura focus on sources of truth that are irrespective of the repo.",
+      "status": "proposed",
+      "related": [
+        "EE-026",
+        "EE-028",
+        "EE-037",
+        "EE-038"
+      ]
+    },
+    {
+      "id": "EE-040",
+      "date": "2026-10-28",
+      "decision": "MAD's governance and delivery questions that are about the business, not the build, are answered by Mentura records, and MAD reads them there (EE-038). Most already had a home: problem validated and evidence method (purpose/validation), customer reachable (validation-go-to-market), who decides (ownership, board), funding (venture form.funding), success measure and goal setting (telos measures and exit criteria), teams to align and agent share (team plan), agent autonomy and gates (decision rights, handoffs), unattended runs (handoff run caps), source of truth (knowledge/sources.json). The rest get homes: telos.steering (go decision, review cadence, change of direction), venture.regulation (regulatory exposure), and three decision classes in the template (continue-or-stop, change-direction, set-priorities). Questions about how software is built (requirements stability, sequencing, verification timing, cost of failure, flow, size and the like) stay MAD's. Map: docs/design/MAD_QUESTIONS_REHOMED_2026-10-28.md.",
+      "why": "EE-038 left MAD's business questions without a home in Mentura; the owner asked to re-home them (2026-10-28) so that every venture, with or without a repository, can answer them.",
+      "status": "proposed",
+      "related": [
+        "EE-022",
+        "EE-023",
+        "EE-026",
+        "EE-038"
+      ]
+    },
+    {
+      "id": "EE-041",
+      "date": "2026-10-28",
+      "decision": "Mentura has two sides, as Next.js and Vercel do. The framework is the conventions: anything that works offline, with no account and without naming a vendor (record schemas and the data model, kits, the router with its CLI, MCP server and local API, routes, provenance, checks, need-now priors, validation scoring, init-venture and templates, the connector contract and the filesystem connector, the docs). The platform hosts, connects and integrates: connectors that reach a vendor (GitHub first), the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console and a template gallery. Both stay in this repository (Torian's choice, 2026-10-28) with a hard boundary: platform code lives in platform/, nothing outside it imports from it, and a framework connector reaches no network and names no credentials; schema/check-boundary.mjs enforces this. The framework may load a platform connector by the module path the registry names, as Next.js loads a deployment adapter. Each layer's tooling/integrations.json stays framework while its entries are data only. The framework is the open core and the platform is what is sold. Which side carries the name Mentura is open.",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-042",
+      "date": "2026-10-28",
+      "decision": "The knowledge layer's source map becomes a source-of-truth matrix, after master data management (DAMA-DMBOK's reference and master data). Each rule is one cell: for a record type, an attribute ('*' for the whole record) and a context (phase, product, account, actor), it names the system of record and the owner, with optional survivorship rules when the same record also lives elsewhere. Rules are written for a fast (System 1) model such as Jev to read: flat, every field present, '*' for any. Resolution is deterministic and needs no model: the matching rule with the most narrowing fields wins, and two rules that can hold at once at the same specificity are an error (schema/check-sources.mjs, knowledge/connectors/resolve.mjs). The router resolves each read and write by its context. `records` stays as shorthand for rules that match anything. A where-used list (knowledge/where-used.json) names, for each fact kept once in its system of record, every place that repeats it, each live or frozen and delivered by an agent, a person or the platform; schema/check-where-used.mjs reports drift offline. This is registry-style MDM and is framework; delivering a change into vendors' systems (coexistence or centralized style), running survivorship across vendors and a managed store for a whole venture are platform (EE-041). An attribute mastered elsewhere is read from and written to its own system of record, kept at the record's path as a JSON object holding only that attribute, and left out of the record's own file, so it lives in one place (a gated agent write stays whole as a draft until a person accepts it); a vendor's connector maps that onto its system, which is the platform's. Renaming the layer to 'source of truth' is open.",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-043",
+      "date": "2026-10-28",
+      "decision": "Names (Torian): the platform is Mentura (EE-027), and the framework is Naive, the conventions side of EE-041. Naive replaces the earlier working name Memento, which collides with Memento Database. Files keep 'Everything Ecosystem' until a rename is decided; a trademark check on both names is pending.",
+      "status": "superseded"
+    },
+    {
+      "id": "EE-044",
+      "date": "2026-10-28",
+      "decision": "A marketing website is business operations (the marketing function), not engineering: it belongs to neither MAD nor a software engineering suite. Many tools build websites; Mentura is opinionated: the site's source lives in GitHub, it deploys from a host the venture chooses with Vercel the default, and it starts from a Vercel template (operations/tooling/integrations.json). These defaults are framework data; deploying through a host's API is platform (EE-041). Its pages are MDX, edited by agents, with skills that define how the site is designed; no CMS by default, since a CMS is an editor for people and Mentura is opinionated towards AI-native building, in business operations too (Torian, 2026-10-28). An MDX page may read facts from their system of record at build (a price component), so it never drifts (EE-042). Research on MDX for marketing pages is pending.",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-045",
+      "date": "2026-10-28",
+      "decision": "Mentura's ideal customer profile: solo entrepreneurs, low- to no-code founders and small teams in the early phases of business development (Discovery and Validation, not yet scaling), who build AI-native with agents as their editors and team members. Defaults are chosen for them first: agents over people as editors, files and skills over hosted tools, one opinionated choice per decision. A choice that only pays off at scale waits until need-now raises it (EE-028).",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-046",
+      "date": "2026-10-28",
+      "decision": "A venture's tagline is a brand record: the enduring short line a brand keeps across campaigns, such as Burger King's 'Have it your way'. It sits in venture.json under brand.tagline, owned by the brand pillar's verbal identity, and like any attribute it can have its system of record elsewhere through the source-of-truth matrix (EE-042). 'Tagline' is used rather than 'slogan' because in marketing practice a slogan often belongs to one campaign (Keller and Swaminathan's brand elements call both slogans; governance/references/references.json); a campaign's slogan belongs to the campaign, a Brand-pillar product. Mentura's tagline: 'A mentor for your journey' (Torian).",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-047",
+      "date": "2026-10-28",
+      "decision": "A venture is organized by department in two layers. The departments are the top-level categories of APQC's Process Classification Framework under short ids (operations/departments.json), each tagged with its place in Porter's value chain: primary (products, marketing and sales, supply chain, service delivery, customer service) or support (strategy, human capital, IT, finance, assets, legal risk and compliance, external relationships, business capabilities). A department's governance side (charter, policies, decision rights) sits in governance/departments/<id>/, and its work, assets and tools in operations/departments/<id>/. HR is a support activity, not governance: governance is who decides and oversees, and every department has a governance side (Torian asked, 2026-10-28). Each department folder holds a department.json tag, and the tag, not the folder, says what it is: grouping departments under primary/ and support/ folders is optional and for looking at only (Torian). Pillars stay: they group the work by part of the company, departments by function. Checked by schema/check-departments.mjs.",
+      "status": "superseded"
+    },
+    {
+      "id": "EE-048",
+      "date": "2026-10-28",
+      "decision": "A venture holds only what it uses, when it needs it (Torian). Schemas stay in the framework and are never copied into a venture; a venture imports what it uses by listing it in venture.json, the way package.json lists dependencies, and gets folders only for what it lists. Need-now (EE-028) says when a part becomes needed, and the agent suggests it then; `mentura add <department> --venture <id>` (schema/add-department.mjs) imports a department. Departments are the first part imported this way; layers already start off until needed (EE-012), and the same rule applies across the system. The list is data an agent edits rather than imports in code, which suits the ICP (EE-045); a typed config file can come later for developers. Torian's line 'What you need, when you need it' is proposed as Naive's tagline, Mentura keeping 'A mentor for your journey' (EE-046).",
+      "status": "proposed"
+    },
+    {
+      "id": "EE-050",
+      "date": "2026-10-28",
+      "decision": "The validation kit starts lean, with the problem only, and gives no single score and never a 'not viable' verdict. The problem splits into four assumptions (exists, segment, hurts, why-now); each evidence item names the one it bears on and is labelled demonstrated, inferred, assumed, unknown or contradicted. Only first-hand behavior or commitment from five or more people in the target segment, under 18 months old, demonstrates; anything reported (a vendor's customer count, desk research) infers; competitors with paying customers infer the problem and never count against it; contradicted needs evidence against from the segment at least as strong as the best for. The labels say which commitment the evidence supports, on a ladder after The Founders Bay's 'evidence strong enough for the commitment it unlocks': explore, prototype (exists and hurts inferred), charge (segment and hurts demonstrated) and raise, with the cheapest test for each blocking assumption. Before it runs, the assessment lists what is missing from the record and what running as is would mean, and asks the person to fill it in or run as is; the router, CLI, MCP server, API and skill all do this, and the caller passes as_is only after the person chose it (Torian). The behaviors are written first as Gherkin scenarios (purpose/kits/validation/features/problem-assessment.feature) and run as tests by schema/bdd.mjs. The problem record holds a root problem in statement and the forms it takes (forms[]), each assessed from its own evidence (evidence form), which also counts for the root; a form can be dropped. The problem record is gated like the telos (strategy-or-constitution): an agent's write is a draft the founder accepts. The single validation score (EE-026) is held.",
+      "why": "Torian, 2026-10-28, after running Mentura and Naive through the kit: the run showed more issues in the suite than in the venture; competitors in a market can indicate a real need; one encoded framework is too constraining and risks telling a founder a great idea is not viable. He asked to start very lean with the problem, guard against false negatives and false positives, use behavior-driven development to say what the suite must do, and have it ask before running when the schema is incomplete.",
+      "status": "proposed",
+      "related": [
+        "EE-026",
+        "EE-028",
+        "EE-045"
+      ]
+    },
+    {
+      "id": "EE-051",
+      "date": "2026-10-28",
+      "decision": "Guiding statements: the records a founder keeps in front of them every day, framed by the Five Ws and How plus whether (Stage-Gate's go/kill decision), with brand beside them. purpose/guiding-statements.json maps each question to attributes of existing records: why (problem, vision), what (mission as the core promise, products), who (the ICP, promised to), how (competence, business models), when (phase, exit criteria), where (markets, channels), whether (must-not; go/kill criteria, planned) and brand (tagline). A new ICP record (purpose/icp.json) holds who the venture serves, one primary profile, linked to the problem's forms. schema/guiding.mjs (route purpose/guiding) reports each statement as confirmed, agent, draft, missing or planned from the provenance log: a statement an agent wrote is not the founder's until a person writes, accepts or confirms it. Confirming and accepting are a danger zone: `mentura confirm <statement>` and `mentura accept` of a record holding a guiding statement show the change and need the person to type its name (--confirm <name> off a terminal); provenance gains a confirm activity. The ICP is gated like the telos. Always-visible presence, a daily review and recall practice, delegation unlocked by confirmed statements, and the whether forecast (environmental scanning, a calibrated probability per go/kill criterion) follow; monitoring is platform.",
+      "why": "Torian, 2026-10-28: some records must always be in front of the founder until they are muscle memory (problem, vision, mission, taglines, ICP, the current phase); they should be hard to write and change, like a danger zone, and completing them should unlock delegation. He chose the frame: what, who, why, how, when and whether, and wants whether to become a constantly monitoring forecast ('likeliness of rain').",
+      "status": "proposed",
+      "related": [
+        "EE-023",
+        "EE-031",
+        "EE-042",
+        "EE-045",
+        "EE-050"
+      ]
+    },
+    {
+      "id": "EE-052",
+      "date": "2026-10-28",
+      "decision": "The records EE-051 called guiding statements are the venture's strategic foundation; each one is a foundation statement. Files and routes follow: purpose/strategic-foundation.json, schema/foundation.mjs, route purpose/foundation. 'Guiding statement' is retired as a noun. The whether question is not settled: go/kill is too narrow, and the go/kill record built after EE-051 is held, not merged. The open question (Torian, 2026-10-28) is whether the whether review should answer persevere, pivot, pause or stop (Ries's pivot or persevere; Stage-Gate's go, kill, hold and recycle). He took up that question; he has not agreed to a four-answer review or to any design for it.",
+      "why": "Torian chose 'Strategic foundation' on a decision card (standards first, EE-014). On go/kill: 'a lot of times the answer may not be kill, it may be pivot', and many great founders persevered where a go/kill framework would have said kill.",
+      "status": "proposed",
+      "related": [
+        "EE-014",
+        "EE-051"
+      ]
+    },
+    {
+      "id": "EE-053",
+      "date": "2026-10-28",
+      "decision": "Alignment is its own record (purpose/alignment.json, schema/alignment.schema.json): the principles the venture's products and agents must keep, each with a source and the check that holds it. It is gated and a foundation statement under whether, replacing must-not in the frame; venture core.must_not stays as a one-line summary.",
+      "why": "Torian, 2026-10-28: must-not was describing how the framework and platform behave, which is alignment, and alignment could be much longer than one line. He chose a new alignment record on a decision card.",
+      "status": "proposed",
+      "related": [
+        "EE-051",
+        "EE-052"
+      ]
+    },
+    {
+      "id": "EE-054",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-052",
+        "EE-053",
+        "EE-028"
+      ],
+      "decision": "Decisions are a core file type. A decision lives in a *.decision.json file beside the record it decides (file-based routing); the EE/D ledger stays the append-only history. Each decision has a boundary: fail closed or fail open. The venture root and the strategic foundation fail closed; products fail open; any other decision inherits its parent's boundary and may override it. Under an open fail-closed parent, child decisions wait and agents only draft. When a parent changes, its children are marked stale and shown to the owner again. A workspace that is a product without a venture fails open. One decisions route renders every open decision as a matrix of layer by phase, with parent links.",
+      "why": "Torian, 2026-10-28: decisions across a venture's layers affect each other like a matrix, some have parent-child links that need fail-closed or fail-open behavior, and a venture (fail closed) is not a product (fail open). He chose every recommended option in the Decision Docket (file beside what it decides; boundaries inherited; children wait and agents draft; mark children stale and show them; product-only fails open)."
+    },
+    {
+      "id": "EE-055",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054"
+      ],
+      "decision": "Compliance scope: record and connect. Naive records which compliance frameworks apply to a venture and when; Mentura connects vendors such as Drata or Vanta. Neither audits nor monitors controls itself.",
+      "why": "Torian chose \"Record and connect\" in the Decision Docket, 2026-10-28. This settles the discovery exit criterion scope-decided for compliance."
+    },
+    {
+      "id": "EE-056",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054"
+      ],
+      "decision": "Forecasts (the whether statement's weather-like outlook) use both our own priors and optional integrations, such as letsfrank.ai. In a later phase we lean toward building our own forecasting agent.",
+      "why": "Torian, Decision Docket 2026-10-28: both, plus optional integrations or our own agent, leaning toward our own agent later \"because we would better be able to determine its behavior and features.\""
+    },
+    {
+      "id": "EE-057",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-028",
+        "EE-052"
+      ],
+      "decision": "Firmness depends on the phase. In Discovery, a confirmed foundation statement, core promises included, is still a working draft, reviewed at the Discovery exit gate and tested again at each later phase. Every decision names the phase it is needed in (needed_in); a decision needed in a later phase than the venture's is speculative and is held back, the way React renders a component only when it is needed.",
+      "why": "Torian, Decision Docket 2026-10-28: core promises should stay drafts until the venture has truly exited Discovery; a venture goes through its own hero's journey; decide for the current phase and only speculate on later ones; knowing when a decision must be made and when it can wait is the signal-to-noise ratio. He also asked for a set of per-phase guidelines and the study of earlier startups (not yet built)."
+    },
+    {
+      "id": "EE-058",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-057",
+        "EE-032"
+      ],
+      "decision": "Every decision record carries its provenance, its outcomes and the activities it unlocks. Provenance: who drafted the wording (an agent or a person), who approved it or changed it, when, and the venture's phase at that moment, plus the authority delegated to whoever decided. A decision whose wording an agent drafted counts as decided only once a person approves or changes it. Outcomes are what the decision is expected to achieve, each projected and later recorded as what actually happened; they are the evaluations a decision is tested against. Unlocks are the activities the decision opens that were closed before it, for which people or agents. Later, Mentura offers decision analytics from this record, as Vercel offers observability: how often kinds of decisions survive a given scale, how many and what kinds of decisions successful teams make over a period, who and which departments make impactful decisions, and their outcomes, projected against actual.",
+      "why": "Torian, 2026-10-28: an agent may draft the phrasing of a decision he made, which he approves or alters, so provenance should say who approved it, when, and in which phase; this matters most in multi-tenant ventures where founders delegate authority. Outcomes need provenance too, projected versus actual, and are something decisions can be tested against. From a talk he heard the same day, investor Gordon Doughtery asks what outcomes a founder expects from the money, not the activities (hiring, inventory), an example of how a role evaluates decisions. Activities stay useful as what a decision unlocks: some activities are closed to particular agents or people until a decision is made, a boundary for agent harnesses, and delegation lets founders hand decisions to agents and people while keeping outcomes high. Analytics and the research on outcome types are not built."
+    },
+    {
+      "id": "EE-059",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-058",
+        "EE-041",
+        "EE-047"
+      ],
+      "decision": "Discovery starts from the founder's idea dump, not a prompt. The dump is every idea the founder has about the venture, kept verbatim in purpose/ideas/dump.md. Naive splits it into ideas and a tagger (Jev through the platform when a TypeSafe key is set, else the founder's own agent with the same vocabulary) tags each idea with Naive's conventions only: the departments it is mainly about (EE-047), the records it feeds, and whether the founder's product already exists. The result is purpose/ideas/map.mdx, one <Idea> per idea with its text unchanged, drawn as a mind map (React Flow) so the founder sees the whole venture on one canvas, where their ideas cluster and what they never mention. Naive's own product questions come first and fail closed: does a product already exist, then the core product, then the flagship, each waiting on the one before, and agents may not write product cards until the first is answered. A decision about a foundation record waits on that record's open statement, not the whole foundation, and every open decision says how a person settles it. On the platform side, Firecrawl replaces Apify for market research, and LangSmith receives each harness run as a trace with Naive's evals as feedback.",
+      "why": "Torian, 2026-10-28 18:36Z: the demo is not a founder giving Naive a one-line idea; it is the idea dump, which is not a prompt but a raw dump of all the ideas related to the venture. Map each idea to Naive's conventions and the parts of the business; the mind map shows the founder's strengths and weaknesses and lets them see the entire vision on a single canvas. One of the key questions is whether a product exists already, asked with our product conventions, as a strategic foundation for products with a fail-closed method: a core product and flagship products. He named Jev to read the dump and assign tags, .mdx as the format and React Flow for the canvas, and chose Firecrawl over Apify."
+    },
+    {
+      "id": "EE-060",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-059",
+        "EE-054",
+        "EE-028"
+      ],
+      "decision": "Ideas move through a pipeline: idea dump, idea map, idea graph, roadmap. The dump and the map stay loose and carry no decisions. The idea graph is the first structured form, a Merkle DAG at purpose/ideas/graph.json: an idea builds on the ideas that must be worked out before it (judged by Jev per ordered pair, else by Naive's record order), and its hash covers its text and the hashes of what it builds on. Each idea gets a signal (version 0.x: what the phase needs of the records it feeds, what builds on it, how concrete it is, how much of the dump circles it). Ideas tied by dependencies form a lane that moves in order (synchronous); a lane tied to nothing moves on its own (asynchronous), beside the others. The graph is laid out left to right by dependency and top down by signal. Decisions carry the same distinction: fail-closed decisions are on the ordered path, fail-open ones can move on their own. Naive asks a team question in Discovery, failing open: solo, cofounders or looking. A founding team gets the founder-agreement kit beside validation at a lower priority (0.6 against the problem's 0.9), a founder looking for cofounders gets it early, and a solo founder is not handed it. Kits render as the venture needs them, as React renders components.",
+      "why": "Torian, 2026-10-28 19:15Z: an idea dump and a mind map are meant to be loose, with no decisions yet; convert the mind map into a very structured format (a Merkle DAG, then left to right and top down by highest-signal ideas), then into other documents such as roadmaps with timelines, as a pipeline. SAD was his first iteration of a pipeline from idea to shipping with an iterative loop. A venture has many ideas; some develop asynchronously and others need synchronous order, and telling them apart should be a key feature. Ask about teams: founding agreements may be on a founding team's mind in Discovery; they rank below validating the idea but can move asynchronously, and Naive will create kits for founding agreements that render as needed."
+    },
+    {
+      "id": "EE-061",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-060",
+        "EE-059",
+        "EE-057",
+        "EE-054"
+      ],
+      "decision": "After the idea graph, Naive routes each tagged idea to the records it feeds: the framework's destinations (purpose/frameworks/idea-map/conventions.json records, each with a title, a route and the decisions it settles). A destination's stage comes from the decision matrix and the records on disk: routed (ideas, nothing drafted: an agent drafts it), drafted (an agent's draft or wording awaits the founder), yours (a decision only a person can make), waiting (held), done. Each destination carries one next step from the framework, and moves in order or on its own. The decision docket uses the same stages, and every decision traces to the ideas it comes from (a new `ideas` field on decision records, or the i-NN ids it cites); agent proposals must cite ideas (eval decisions_traced). Both render as Kanban boards in plain columns at /kanban; React Flow stays for the map and the graph. Guidelines for parsing the dump, building the graph and routing live in conventions.json `guidelines` (sent to Jev as state.guidelines) and the idea-map README. Time-oriented features (roadmaps) are deferred past the hackathon.",
+      "why": "Torian, 2026-10-28 19:36Z: each step needs a payoff. The dump's is seeing the ideas on a mind map, the graph's is seeing structure applied to them, and the next must turn that structure into executable next steps by routing ideas to their destinations in the framework, visualised as Kanban boards, with the decision docket as a Kanban board too. Hold off on time-oriented features for the deadline."
+    },
+    {
+      "id": "EE-062",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-044",
+        "EE-045",
+        "EE-041",
+        "EE-025",
+        "EE-061"
+      ],
+      "decision": "For the demo there are no connections: a founder pastes a link to their website and Naive reads it. The platform reads the home page and the pages it links to (Firecrawl when keyed, plain fetch otherwise; platform/integrations/site.mjs). Jev judges which pages state which item. Naive scores site presence against a marketing matrix (operations/marketing/site/matrix.json, version 0.x, unevaluated): six audiences (customers, investors, candidates, contributors, partners, press) weighted by the venture's facts (raising, hiring, inviting contributors) and its ICPs; fifteen public items (publish true by default), each tied to the record it comes from; each item's need is its strongest weighted audience, and need sets the prominence it requires: on the home page, in the navigation, linked from the home page, or anywhere. Investor information counts only while the venture is raising. Score 0 to 100, per audience, with what to fix first. New records marketing-matrix (method) and site-presence (venture, schema/site-presence.schema.json); router command operations/marketing/site; board page /site with a paste-a-link form.",
+      "why": "Torian, 2026-10-28 19:46Z: no connections for the demo, but participants should be able to drop in a link to their marketing site or product, have it scraped for marketing-related records, and get a score for how present the public records are. Where information belongs depends on startup type, product and industry; route ICPs into a marketing matrix that decides which public materials are needed, what each ICP wants to know, how important each ICP is, and so how prominent information is in the sitemap. If investors are not an ICP, investor information is not prominent. Still to do: research best practices, skills, and kits for organizing marketing content."
+    },
+    {
+      "id": "EE-063",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-062",
+        "EE-045"
+      ],
+      "decision": "What customers look for on a site depends on who they are, and every rating shows why. The marketing matrix gains customer types (consumers, small-business owners, teams inside companies, enterprise buyers, developers, regulated professionals, creators, public sector), each with how much each item matters to it and the reason, a claim to test rather than a finding. The ICP comes from the founder's own sentence, the venture's ICP record, or failing both the home page (marked inferred). Jev places it into types (a type counts at 0.25 or more and within 0.6 of the strongest, since Jev answers 'mainly' conservatively), and the customer's need for an item is the strongest of its types'. Every item carries its evidence: each audience's weight, the item's importance to it and why. Site presence is shown as the site's sitemap (React Flow): the home page, the pages in its navigation, the pages linked elsewhere (the footer), and each page's own routes, each read route rated on the items that belong there, with ghost routes for pages the venture's priorities call for and the site lacks. Clicking a route shows what belongs there, what is missing and why.",
+      "why": "Torian, 2026-10-28 20:02Z: 'who is behind it' is not something customers of every product type care about; it depends on the customer. The rating must give evidence for who the ICP is, what they prefer, and why we believe they look for this information. Present site presence as the layout of the sitemap, with a rating for each route, shown visually as its structure."
+    },
+    {
+      "id": "EE-064",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-063",
+        "EE-062",
+        "EE-025",
+        "EE-021",
+        "EE-051"
+      ],
+      "decision": "Site presence runs in reverse: a marketing agent plans the public site from the venture's records (operations/marketing/site/plan.mjs, route operations/marketing/sitemap, record marketing-sitemap). The product decides the audience: a product's offered_to names the ICP profiles it is offered to (who buys or adopts it), and serves names those it reaches through them; an ICP profile may be reached_through another (a channel partner in B2B2C) and carries its buying-center roles (Webster and Wind 1972: user, influencer, decider, buyer, gatekeeper; initiator, Bonoma 1982). In a partner-led venture the partners are the site's customers. Services need no new product type: offering already includes service beside product, platform, content and marketplace, so the product card covers it and drives the ICPs and the site. Pages follow topics, not audiences (audience-based navigation tends to hurt usability, NN/g), except that an audience with content of its own (candidates, investors, contributors, press) gets its own page, and only while it is a priority; otherwise the plan says when it would appear. Each page lists its sections in order of need with the MDX component, the audiences and why, any condition, the internal record it draws on and the public variant to write. Records have variants: marketing content (operations/marketing/content/**/*.mdx, record marketing-content) is always a public variant of a named internal record, written by a marketing agent in its own words; the public gate (operations/marketing/check-public.mjs) requires variant_of, audience, publish and, when published, a person's approval (EE-025), and blocks any run of ten words copied from the internal record except public fields. This keeps internal content out of public pages and generic text off them.",
+      "why": "Torian, 2026-10-28 20:25Z: the site presence tool used in reverse is what marketing agents use to decide what is displayed where, how and when, based on who, by reading the venture's records. ICPs should be categorized by venture type and by who the product is offered to (a service company whose primary audience is partners with customers of their own markets to the partners). Consider services as a product type, so the product determines the ICPs and the marketing pages. Marketing records are variations of internal records: a gate that prevents internal content leaking into public publishing and reduces AI slop, since marketing agents produce unique .mdx files according to skills. Research basis: buying center roles (Webster and Wind 1972; Bonoma 1982), B2B2C, NN/g on audience-based navigation."
+    },
+    {
+      "id": "EE-065",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-044",
+        "EE-064",
+        "EE-038"
+      ],
+      "decision": "Amends EE-044 (Torian withdrew the part that made marketing responsible for web design). Marketing designs the elements a site uses: the sitemap, the content variants, the MDX components and their order, and the brand assets including the brand voice. Engineering implements the web design and builds the site. The marketing package is the handoff between the business side and the engineering side: the sitemap (marketing-sitemap), the public content variants (marketing-content) and the brand, handed to an engineering agent that builds from it and does not decide what goes where. Planning the sitemap and designing the site are separate agents. 'Team' here means record conventions: how files and folders are organized and routed; agents live in those folders and are triggered by commands.",
+      "why": "Torian, 2026-10-28 20:25Z: 'I want to redact that decision and say that the marketing team is designed for certain elements that are utilized within the web design. However, the engineering team should still be responsible for the actual implementation.' The sitemap is a marketing record handed to engineering; separate agents develop the sitemap and design the website; marketing records hold the brand assets including the voice; the marketing kit is a handoff between the business and engineering sides."
+    },
+    {
+      "id": "EE-066",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-026",
+        "EE-065"
+      ],
+      "decision": "Rename kit to package, one to one with Next.js and npm packages, and define a complete package as one ready to hand to an agent for its engineering or operational implementation. Held until after the AITX hackathon (submissions close 2026-10-29 22:00Z): the rename touches every layer's kit.json, the data model, the checks, the router and the docs, and is not worth the risk the night before submission.",
+      "why": "Torian, 2026-10-28 20:25Z: 'We could possibly change the name to package. That way it is a one-to-one comparison with Next.js. A complete package would be a package that is ready to be handed off to an agent for its engineering implementations or its operational implementations.' Ontology already glosses kit as a package (EE-026)."
+    },
+    {
+      "id": "EE-067",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-028",
+        "EE-061",
+        "EE-064",
+        "EE-065",
+        "EE-066"
+      ],
+      "decision": "The pipeline's end outcome is the venture package: every business document a venture needs now, grouped into packages by receiver (strategic foundation, validation, marketing, investor, cofounder and team, partner, ownership and governance, operations). Which packages fit depends on the phase and the venture's situation: priors per phase with conditions (the need-now form), and a question matrix per phase that a reasoning model (Jev, or the founder's agent) answers only where the records are silent, leaving the rest open for the founder. A package is ready to hand off when a person has confirmed every required record. Agents never come in a package; an agent that works a package is a package enhancement. The hackathon demo includes routing (each record shows where the founder's ideas for it stand and the step that moves it) and the harness agent's passes. Venture packages are the founder-facing deliverable and are distinct from kits (a layer's records, skills and checks); if EE-066 renames kits to packages, the two names must be reconciled first.",
+      "why": "Torian, 2026-10-28 20:43Z: 'In the end, I believe someone should be able to walk away with a full venture package for all of the business related documents for their venture. For the demo, we will include routing. However, for naive, agents will not come included in the packages. That is a package enhancement.' 20:45Z: 'we should definitely discuss what kits slash packages are necessary at each phase of a business's development... dependent on the type of venture. We could include the questions matrix for each phase that a reasoning model would interact with to determine what packages are the best fit.' Packages, priors and questions are ours and unevaluated (version 0.1.0)."
+    },
+    {
+      "id": "EE-068",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-062",
+        "EE-063"
+      ],
+      "decision": "Site presence reads the ICP from the site, never from a box the founder fills in: what the site says outright about who it is for (built for, trusted by, used by...) first, else what its opening implies, marked as inferred. The ICP the venture's records state is kept beside it, unscored, for a later clarity score that compares who the founder says the customers are with who the site seems to be for.",
+      "why": "Torian, 2026-10-28 20:43Z: 'we shouldn't have that section for the user to enter their ICPs. We should be able to find their ICPs on their site... a tool for users to evaluate their websites based off who they say their ICPs are versus what their ICPs seem to be... some sort of clarity rating or clarity score... or we can wait until later.' The clarity score waits."
+    },
+    {
+      "id": "EE-069",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-047",
+        "EE-060",
+        "EE-061",
+        "EE-067",
+        "EE-068"
+      ],
+      "decision": "The founder's pipeline is seven stages by what the founder does: capture, understand, route, decide, write, confirm, package. Understand is a gate: the founder confirms (and first corrects) Mentura's reading of their ideas before routing. Route shows the packages taking shape and what can move on its own. The venture package is the venture's business source of truth, not an export: the records in place, versioned (a new version when a package completes or the phase changes), growing as work lands in it. Packages split two ways: core packages by department, where each record has one home and other packages read it; handoff packages by receiver, snapshots of core packages. A package is complete when a person has confirmed its required records and every record it reads; completion opens MAD's automation tier for the work that depends on it, per package. Inside a package a record moves on its own once what it reads first is confirmed, and waits otherwise. Naive assumes one governance model: a solo founder or small founding team who decide, confirm and do everything, engineering included, in Discovery and Validation. Packages that matter only under other models or later phases (legal and governance, operations, relationships, the counsel handoff) are kept and marked not modeled. The sitemap is a marketing record, not a stage. Amends EE-067.",
+      "why": "Torian, 2026-10-28 21:07Z: 'A sitemap is an element of the marketing files. It is not a completion gate within the pipeline.' 21:18Z: the understand stage is where the founder confirms their ideas are captured correctly before routing; route needs visual progress feedback toward 100% of a package; 'A package is a gate between idea and automation, or operations'; the package is the source of truth for the business side, versioned, likely in git, built on over time. 21:23Z: gates per package; routing determines what moves asynchronously. 21:35Z: 'how packages are split is actually dependent on the governance model... start out with very small teams of solo founders in mind first... the framework in its current iteration is hyper specific to ventures that are still in those first two phases.' He agreed with the inventory doc https://claude.ai/artifact/Na3zCgYrxorBaDQMeHAmib (21:32Z)."
+    },
+    {
+      "id": "EE-070",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-032",
+        "EE-037",
+        "EE-041",
+        "EE-066",
+        "EE-069"
+      ],
+      "decision": "A venture's folders are its packages, the way Next.js documents a project structure (structure doc https://claude.ai/artifact/Jh4pQmq1ZtgeukjP2EwGs8). Top level: venture.json, raw/ (the founder's own words, one file per capture, and founder-supplied sources: blogs, articles, podcasts; immutable, LLM Wiki style), ideas/ (the map compiled from raw, citing raw ids; input, not package progress), one folder per core package (foundation, validation, product/[id], marketing, finance, people), data packages by subject (customers, investors, money: [id].json master data plus append-only _streams/ activity data, never complete, gated by coverage and freshness, pointers and summaries when a CRM, Ramp or Mercury is the system of record, sensitive streams out of git), decisions/ (one docket), evidence/ (graded, cited), _private and .generated folders. Routes follow folders, so the first segment is the package (validation/pricing). Layers become a property of record types, not venture folders. Venture packages are defined per phase; later phases are off by default and a founder may turn one on early. Transcripts: on the platform Mentura fetches official ones first and transcribes only when none exist; source.json records the origin. The pipeline is AI-powered software in TypeSafe's System 1 sense: code owns the workflow and Choice, Noul and Score answer atomic judgments (Write drafts with a stronger model, then System 1 checks). Decide offers Noul decision help behind an off switch (nothing computed when off); Score plus code ranks the docket and what is missing. 'Package' is the only word: 'kit' is retired, including inside the framework (supersedes the EE-066 naming question). Migration happens after the hackathon deadline through route aliases.",
+      "why": "Torian, 2026-10-28 21:54Z: package structures must be defined like Next.js project structures, because routes depend on them. 22:04Z: master and activity data need their own packages ('Yes, this is perfect', 22:07Z). 22:10Z: keep a raw version of ideas, building on the LLM Wiki raw folder, with references such as blogs, articles and podcasts; 22:12Z: fetch official transcripts when possible, a platform job. 22:19Z: packages are determined by phase, a founder may adopt a more mature one early; the pipeline should be TypeSafe AI-powered software on System 1. 22:27Z: Noul for decision help with a switch to turn it off; Score to rank decisions and missing packages (confirmed 22:33Z). 22:34Z: agreed to all remaining recommendations, 'we can just use the term packages... packages will sound more familiar to most people.'"
+    },
+    {
+      "id": "EE-071",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-024",
+        "EE-026",
+        "EE-041",
+        "EE-047",
+        "EE-066",
+        "EE-069",
+        "EE-070"
+      ],
+      "decision": "A venture is Naive's project, one to one with a Next.js project. A package belongs to Naive: the open definition of part of a venture (record schemas, templates, deterministic checks, and at most one minimal skill on how to write its records), offline and naming no vendor, listed in venture.json the way package.json lists dependencies, at packages/<name>/package.json. A kit belongs to Mentura: an enhanced package that adds automations, agent workflows, richer skills and connectors, at platform/kits/<name>/kit.json; each kit names the one package it extends and never replaces it, so every kit runs on a package that works without it. A venture's folders split by function (like Next.js splitting by feature); a layer is a cross-cutting property of a record type, not a venture folder, so decisions, evidence and raw become packages and layers stay only as a classification and as how the framework repository is organized. Departments become functions, the standard business-function term: each function has one accountable owner, and one person may own several (a solo founder owns them all); a department is a function with its own team, a later-phase idea. Decision rights and the team plan point to function owners. The versioned deliverable is a release (v<n> of the venture), with handoff releases for investors and partners, replacing 'venture package'. Withdraws EE-066 and amends EE-069 and EE-070's naming. The code rename waits until after the hackathon deadline.",
+      "why": "Torian, 2026-10-28 22:47Z: kits may be a loaded definition that means more than packages. 22:53Z: 'Kits are actually better versions of packages... a kit could actually contain automations and agent workflows and skills, whereas a package would mainly just contain the schema... the term venture for naive is synonymous with the term project for next... Kits can actually belong to Mentura, whereas packages can belong to Naive.' 22:58Z: agreed to the recommendations (layers out of the venture tree, minimal skill per package, release, layout) and said departments are a conceptual tool: for a solo founder or flat org they are functions, people wear multiple hats, and every one still needs an owner. 23:08Z: agreed to functions with owners."
+    },
+    {
+      "id": "EE-072",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-041",
+        "EE-054",
+        "EE-058",
+        "EE-070",
+        "EE-071"
+      ],
+      "decision": "Decision analytics start in the framework as data: schema/decision-analytics.mjs and the route governance/analytics count a venture's decisions by function (the core package holding what each decides; foundation statements and venture.json decisions belong to Foundation) and by type (the record type or statement decided, or the decision's own type field), open against decided, whose words (approved, changed, own), who decided, in which phase, on which day, and outcomes met, partly, missed or pending. Ranking the highest-impact decisions over time (a System 1 Score of impact combined in code with outcomes), projected against actual outcomes, and how long decisions survive are listed as next, not computed. Views are not the framework's: a page that renders Naive data is the platform's (Mentura), and inside another harness (Claude Code, Codex, Cursor) it is a visualization skill; so no analytics view is built, and the demo board's pages are platform work. Vocabulary from the Next.js translation (chapters 1 and 2): npx create-venture, with naive init for an existing folder; the framework CLI is naive and mentura is kept for platform commands; venture/ is the optional source folder; public/ holds assets a release ships as-is; naive.config.json; instrumentation; gate for checks that run before a write (Next.js proxy); release card for how a shared release previews; access for what each role and agent may read and write (Next.js robots); folders Naive does not know are allowed in a venture and never routed or released. Which library plays React's part under Naive stays open.",
+      "why": "Torian, 2026-10-28 23:08Z and 23:11Z: analytics for judging decision outcomes, the highest-impact decisions over time, and how many decisions of what types each function has made; build it if there is time, or foreshadow it. 23:18Z: 'let's take all of your recommendations for the vocabulary, except on the one that you said was open. And yes, let's build that decision analytics.' 23:21Z: 'let's actually not build any views right now, because all of the views we've been creating are technically for the platform. If they're not for the platform, then they would be skills, specifically visualization skills for certain elements of Naive whenever rendering it inside of another harness like Claude Code, Codex, or Cursor.'"
+    },
+    {
+      "id": "EE-073",
+      "date": "2026-10-28",
+      "status": "proposed",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-072"
+      ],
+      "decision": "Vocabulary and design additions from translating the Next.js Getting Started docs (chapters 3 to 18, docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md). Words: AGENTS.md is the file agents read in any folder of a venture and 'layout' is the concept (the router assembles the chain of AGENTS.md files from the root down plus what the package definition supplies); naive typegen; agent vitals (calls per task, context per call, time to a useful answer, time for a decision to be decided); context budget; \"use model\" for a package's declared model steps; private for a record or field that never reaches a model; uncertain for a judgment below its confidence threshold, routed to a person (a third outcome beside expected and uncaught errors); brand tokens; action for what a route supports; export for a release frozen as files; adapter for what runs Naive on a platform or harness (Mentura first). Design additions, built in this order after the deadline: the layout chain, use model, private and its check, uncertain, the gate's rules (fast, no model call, one per venture), the release as a static shell with live holes and freshness profiles, the judgment cache, header-first reads and agent vitals, naive typegen with a venture served over MCP, adapters, and agent-run upgrades with record migrations. Which library plays React's part stays open. Implementation is handed to Grokbot (handoff naive-packages-and-design-additions).",
+      "why": "Torian, 2026-10-28 23:30Z to 23:54Z: chose AGENTS.md over a new layout file ('agents.md is already a standard practice'), naive typegen, agent vitals and context budget, use model and private ('let's go with your recommendation and let's continue all the way through'), and at 23:54Z the remaining words ('let's go with your recommendation on naming'), then 'I'm going to have you make the pull request with instructions for Grokbot to implement it' (2026-10-29 00:01Z: 'Go.')."
+    },
+    {
+      "id": "EE-074",
+      "date": "2026-10-29",
+      "status": "proposed",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-072",
+        "EE-073"
+      ],
+      "decision": "Implement handoff naive-packages-and-design-additions. Venture packages live at packages/<name>/package.json with use_model. Layer manifests are <layer>/layer.json. A kit is Mentura only, at platform/kits/, and none are built. The instance venture uses the package folder layout, and old routes stay as aliases for one release. Data packages (customers, investors, money) and raw/ are scaffolded and checked. The layout action returns the AGENTS.md chain, nearest last, plus the package skill, template and gates. check-private refuses a private record or field named in a use_model step. A judgment below its threshold returns uncertain. The gate reads naive.config.json and package gates and does not call a model. naive typegen writes .naive/types/ and mentura typegen is the same command. Stage D, moving the board to platform/board, is not done. Items 6, 7, 8, 10 and 11 of the translation design additions (the release shell, the judgment cache, header-first reads and agent vitals, adapters, agent-run upgrades) are not started. Which library plays React part stays open.",
+      "why": "Torian, 2026-10-28, 7:17 PM CDT: go ahead and start now. Ignore that message that said wait until Thursday. That drops the not-before-2026-10-29 22:00Z wait. The same evening at 7:24 PM CDT he said to skip stage D entirely and not move the board. Implementation is the handoff naive-packages-and-design-additions, stacked on PR #23."
+    },
+    {
+      "id": "EE-075",
+      "date": "2026-10-29",
+      "status": "proposed",
+      "related": [
+        "EE-054",
+        "EE-057",
+        "EE-058",
+        "EE-070",
+        "EE-072"
+      ],
+      "decision": "The decision docket ranks across functions, not only within them (Torian, 2026-10-29): which function of the venture needs the founder's attention most at this moment, then its highest-priority decisions. schema/docket.mjs computes it in code: a decision's own weight (open, deadline, staleness, unlocks, foundation, a draft to approve, outcomes to test), its value (own weight plus the own weight of every decision it holds, transitively, so a fail-closed gate carries what waits behind it), a function's attention (its actionable decisions' values, highest first, each worth half the one before), and dominance (one decision worth more than every other function together). The harness settles the docket's next decision and records each step's docket in the trace; a replay settles the top decision again and again in a copy to show the leading function change through a day. Evidence that the ranking is right comes from invariant tests, an independent judge (Jev in LangSmith: was the chosen decision the best next step, was the leading function the right one) whose doubts go to the founder's review queue, and later recorded outcomes. Matching the founder's words stays a check but is no longer a gate: founders write with AI and let its words stand.",
+      "why": "The docket is the demo's emphasis and the product's non-obvious claim: that at every moment it names the right next step for the founder across the whole venture. Founders' words are important but obvious, and gating on them works against founders who write with AI."
+    },
+    {
+      "id": "EE-076",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-011",
+        "EE-030"
+      ],
+      "decision": "naive init creates new ventures only (Torian, 2026-10-29): like create-next-app it refuses a directory that exists and is not empty, so it never writes over a founder's files. Existing work comes into a new venture in one of two ways, both reading the source read-only and never writing to it (Torian, 02:40Z and 02:50Z). Port keeps files as they are: a one-to-one transfer that places each file at a route under Naive's routing conventions, pointing (knowledge/sources.json) where a file should stay put, with derived_from on every record; it is cheaper but will often fit less well. Built: naive port (schema/port-venture.mjs) writes a plan the founder can edit (port, point or leave per item), applies it only with --confirm port, never overwrites, refuses a plan whose source changed, and is tested in schema/port-test.mjs. Migrate rewrites: a language model reads the project, determines what is present, and rewrites its files and directories into the Naive convention, proposing the rewrite as a plan the founder settles as decisions, function by function; expected to succeed more often than port, and, like moving a web app between frameworks, expected to be hard. Built: naive migrate (schema/migrate-venture.mjs, from Torian's Mac build, 2026-10-29 03:27Z) asks an agent with no tools for records matching the route schemas, writes the plan to .release/migrate-plan.json, proposes one migrate-<function> decision per function, and on --apply writes decided records through the router with derived_from; tested with a stand-in agent in schema/migrate-test.mjs. Neither port nor migrate opens a file that looks like a secret. The existing mentura migrate (moving a venture between Naive layout versions, EE-070) takes another name so migrate means this; naive upgrade, after next upgrade and its codemods (Torian, 02:53Z); mentura migrate runs it for one release with a notice.",
+      "why": "Running init on an important existing venture could overwrite its profile, pillars and layer READMEs; the old guard only checked venture.json. A read-only source and a reviewed plan mean nothing of the founder's can be corrupted."
+    },
+    {
+      "id": "EE-080",
+      "date": "2026-10-28",
+      "decision": "The developer docs move from Nextra to Fumadocs in site/. This supersedes the Nextra sentence of EE-034. This venture's marketing pages live in the same app. They may read only the facts named in the Naive docs handoff (the problem statement and the segment), written by site/scripts/venture-facts.mjs to site/generated/venture-facts.json. site/scripts/data.mjs still reads no instance venture. This supersedes EE-034's \"never an instance venture\" for that one file only. test.mjs and the site CI job run npm run check:content instead of site/scripts/check-mdx.mjs. This supersedes that clause of EE-033. The zod 4.1.12 pin may be removed once Nextra is gone and the build passes. This supersedes the zod sentence of EE-034. These marketing pages are added to the existing docs app and do not start from a Vercel template. The template stays the default for a later standalone marketing site. This supersedes that clause of proposed EE-044.",
+      "why": "The handoff naive-docs-and-marketing-site carries this migration, and Torian accepts it by merging. Draft PR #19 uses EE-053 through EE-070 and is about to take EE-071. EE-049 stays unused. This entry is EE-080 so that pull request has room. A gap in the ledger is fine.",
+      "status": "proposed",
+      "related": [
+        "EE-033",
+        "EE-034",
+        "EE-044"
+      ]
+    },
+    {
+      "id": "EE-082",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-047",
+        "EE-048",
+        "EE-060",
+        "EE-070",
+        "EE-076"
+      ],
+      "decision": "A venture has a type (venture.json `type`, from schema/venture-types.json), and create-venture scaffolds nothing until the type and the founder's role are set. The founder describes the venture in a few words and Jev classifies it (one Noul per type, uncertain below 0.5), or picks from the list; without TYPESAFE_API_KEY the list is the only way. The type decides the starting packages, the first decisions, the layers it needs and the functions it imports (as departments, with folders). Roles a person can hold are in governance/venture-template/roles/venture-roles.json; investors are roles too (general partner, limited partner), so an investor creates a venture of type vc-fund, which starts with a thesis, terms, deals and a portfolio of nested ventures instead of product questions. people/ holds the venture's human capital: people/people.json (who is in it, in which role, and the functions, or hats, each owns; a solo founder owns every function) and one file per founder in people/founders/, linked to the founder agreement. schema/check-people.mjs checks that roles, hats and founder files agree.",
+      "why": "Torian, 2026-10-29: the app should not be scaffolded until a role is chosen and the type of venture is selected; an investor can be a role, and a VC fund needs a thesis and other templates than a software startup; a solo founder owns every function by default; people needs a top-level folder that is to human capital what venture.json is to the venture, with one file per founder linked to founding agreements. Defaults (one file per founder, the type list, investor split into general and limited partner, the folder name people/, the model only with a key) were chosen by the coordinator on Torian's go-ahead and stay open to change."
+    },
+    {
+      "id": "EE-083",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-037",
+        "EE-042",
+        "EE-070",
+        "EE-082"
+      ],
+      "decision": "Setup asks where each of the venture's functions keeps its truth, and records the answers as pointers in knowledge/sources.json under `functions` (the source-of-truth matrix, EE-042, not a second file), with `truth` naming where the venture's source of truth as a whole lives (local by default). schema/systems-catalog.json lists the systems offered per function (a local repo, GitHub, Vercel, Cloudflare, Stripe, Square, Shopify, Rho, Google Drive, DocuSign, a local folder). A system Naive reads through code is connected (Rho, through its MCP API: sandbox, live with RHO_API_TOKEN, or a saved fixture marked as one); the rest are pointed until a connector exists. A function with no system keeps the founder's words. naive dev serves a setup page at /setup (interface/dev/setup.mjs) that walks through people and hats, sources of truth, the strategic foundation and first decisions (each answer an approved decision; a foundation statement as a decision with `statement`), and a goal for discovery, and says when the structure is established and what comes next. A new venture's .gitignore keeps sensitive stream activity out of git.",
+      "why": "Torian, 2026-10-29: when scaffolding, ask the user to point Naive to the source of truth for each function (the repo, GitHub and Vercel for a software product; analytics from the host; Stripe, Square or Shopify for sales; Rho for financials in the demo; legal documents, with the connections to set them up if missing), let a function default or be answered in prose, and ship a local setup experience like the one Next.js gives, essentially the strategic foundation and a version of the decision docket, ending by setting a goal for the discovery phase. After setup a founder has the structure of the venture and a way of routing decisions; operating it is Mentura's, as deploying is Vercel's after Next.js."
+    },
+    {
+      "id": "EE-084",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-041",
+        "EE-082",
+        "EE-083"
+      ],
+      "decision": "Naive is a Claude Code plugin, and the plugin is the repository itself, so the naive-framework npm package is the plugin too: .claude-plugin/plugin.json at the root names the naive-create and naive-setup skills and an MCP server (interface/plugin-mcp.json) that runs the plugin's own copy of the framework, with no npx. naive mcp starts outside a venture (the current folder is the workspace), so the plugin works in any project, and naive types lists the venture types for an agent to offer. .claude-plugin/marketplace.json lists the plugin for a clone; the public marketplace is tchjhnsn/naive-plugins. interface/plugin-test.mjs checks the manifest follows package.json, the skills exist, the MCP server answers outside a venture, and Claude Code validates them.",
+      "why": "Torian, 2026-10-29: make the plugin accessible through the docs, so someone can add it from Claude's plugin library; the demo may run entirely from the plugin in Claude Code; most people do not read documentation, which is for agents and for understanding the code base."
+    },
+    {
+      "id": "EE-086",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-047",
+        "EE-070",
+        "EE-071",
+        "EE-082",
+        "EE-083",
+        "EE-085"
+      ],
+      "decision": "The venture project structure (docs/design/VENTURE_STRUCTURE_2026-10-29.md). At the top: venture.json, README.md (was profile.md), AGENTS.md, knowledge/ (the knowledge base), meta/ (sources.json, naive.config.json, provenance.jsonl, releases) and an optional repo/ for code. Packages sit flat in knowledge/. venture.json declares the business functions once (the org chart, flat by default with one function per package owned by the founder); packages and records inherit their function from it, a founder composes functions over several packages, (group)/ folders are an optional view, and hats derive from function ownership. A record's route is its path inside knowledge/, with groups and the extension dropped: no name table, no reserved route names. Skills teach where files go; code guarantees schema, the person-only gate, private data, provenance and outside systems. A function's publishable items are in public.json where it has any.",
+      "why": "Torian, 2026-10-29: the folder structure is a visual aid and an educational device for how a founder should think about the business; put the knowledge base in a knowledge folder, code in an optional repo folder like src, and add a meta folder; let people group and merge functions their own way, starting from a flat org chart declared in the venture file that everything inherits from; routes were overcomplicated, and agents can handle file conventions with skills. Answers marked default in the design note are Claude's recommendations until Torian changes them."
+    },
+    {
+      "id": "EE-085",
+      "date": "2026-10-29",
+      "status": "in-force",
+      "related": [
+        "EE-024",
+        "EE-038",
+        "EE-042",
+        "EE-083"
+      ],
+      "decision": "Naive's project scaffolding is a central data management structure: everything a venture knows sits in one structure under one set of conventions, with pointers to the systems of record that keep the rest. Naive is for solo founders and small founding teams. It is not a software engineering framework (MAD is, EE-038): it leans toward a monorepo for most software and otherwise asks only that the code be connected, with a pointer between the knowledge base and the code base, and it is opinionated about file conventions. README.md, AGENTS.md, the docs introduction and the ontology say so.",
+      "why": "Torian, 2026-10-29: with SaaS commoditized, much of what would sit in separate data silos can be centralized, which is ideal for a solo founder and still for a small team; central data gives AI-native work an edge, since agents move faster with better context and reasoning for their decisions. Lean Startup names Ries's build-measure-learn method rather than team size, so the docs say solo founders and small founding teams."
+    },
+    {
+      "id": "EE-087",
+      "date": "2026-10-30",
+      "status": "in-force",
+      "decision": "Naive is written in TypeScript. The move runs in four phases: tsc checks the JavaScript (allowJs, checkJs) folder by folder through schema/check-types.ts; record types are generated from schema/*.schema.json, never typed by hand; modules are renamed to .ts folder by folder, run by Node's type stripping (Node 22.18 or later for developing Naive); and the published packages ship compiled JavaScript with .d.ts files, so ventures need neither TypeScript nor a newer Node. typescript and @types/node are dev dependencies only. New code is TypeScript with erasable syntax only and no any. Rust is kept for later hot paths, called from TypeScript. Founders choose JavaScript or TypeScript for their own venture: create-venture defaults to TypeScript when tsc is already on the machine and Node is 22.18 or later, and to JavaScript otherwise (not built yet).",
+      "why": "Torian, 2026-10-30: for our own development it is better to write Naive in TypeScript, while giving venture founders the choice; many new founders have never coded and should not have to install anything, so the default follows what is already on their machine. Plan: https://claude.ai/artifact/Bv57vdrZVduwRjUTofpNo5"
+    },
+    {
+      "id": "EE-088",
+      "date": "2026-10-29",
+      "decision": "The developer docs in site/ move from Fumadocs back to Nextra 4 (docs theme, App Router, nextra-theme-docs) on Next.js. This supersedes the Fumadocs sentence of EE-080 and restores the docs-theme sentence of EE-034. Every existing docs and marketing URL stays. MDX, frontmatter, meta.json order, llms.txt, llms-full.txt, per-page Markdown, and Markdown on Accept stay. The site-wide shell (header, footer, and the docs chrome around Nextra) follows the Next.js site: Docs, Blog, Templates, Showcase, and the pages already on the site. Blog, Templates, and Showcase are their own routes; this decision only leaves them linked. The site stays unpublished (noindex) until the owner approves a channel (EE-025). The rest of EE-080 stays in force: marketing pages in this app, the one venture-facts file, check:content in test.mjs and the site CI job, and dropping the zod pin.",
+      "why": "Torian prefers Nextra for Naive's website. EE-080 moved the docs to Fumadocs; this puts them back on Nextra 4 without moving a published URL. He accepts this by merging. EE-087 is taken by the TypeScript decision in PR #105, so this takes the next free id, EE-088.",
+      "status": "proposed",
+      "related": [
+        "EE-025",
+        "EE-033",
+        "EE-034",
+        "EE-080"
+      ]
+    },
+    {
+      "id": "EE-089",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "The knowledge base and the code base are separate, joined only by a handshake at the glossary. The knowledge base defines terms (id, senses by scope, hash); code, schemas and docs cite term ids and never redefine a term. A changed term hash marks every citing file stale. Prose in one function's local meaning (term@scope) does not leak into another's. The router routes records inside a venture; it does not guard this boundary. Not built yet: no check yet marks a citing file stale when a term's hash changes (it is planned as schema/terms/stale.ts), the glossary is not yet a term in schema/terms, and the knowledge base still shares this repository's tree.",
+      "why": "Torian, 2026-11-01 (card): decisions were decaying before reaching the code, partly because knowledge and code shared one tree and two vocabularies used the same words (department, function, pipeline). Evidence: issues #141 and #143.",
+      "affects": [
+        {
+          "kind": "term",
+          "target": "glossary",
+          "expect": "defined"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/stale.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ],
+      "related": [
+        "EE-014",
+        "EE-095"
+      ]
+    },
+    {
+      "id": "EE-090",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Every venture has a top-level functions/ folder with one folder per function, named for the 13 functions of the catalog (strategy, products, marketing-and-sales, supply-chain, service-delivery, customer-service, human-capital, it, finance, assets, risk-and-compliance, external-relationships, capabilities); venture.json lists them. A function exists even when it is empty. Departments are not part of Naive's core: a department is how one venture groups functions, so it is an optional add-on module on top of the schema, and operations/departments.json leaves the core. This narrows EE-048: function folders always exist, even empty; every other part (departments included) still gets a folder only when the venture lists it. Not built yet: ventures have no functions/ folder, and operations/departments.json and the department schemas are still core.",
+      "why": "Torian, 2026-11-01 (card): a department is a sibling of a function, not a function; ventures group functions differently across org charts. Running the org vocabulary through the term engine (prototype outside this repository, lands with the glossary PR; issue #143) classed the 13 catalog entries as functions. This supersedes EE-047 and records the 2026-10-28 decision that departments are functions with their own team.",
+      "supersedes": [
+        "EE-047"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "functions/*/",
+          "root": "venture",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "operations/departments.json",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "**/departments/**",
+          "root": "venture",
+          "expect": "absent"
+        },
+        {
+          "kind": "record",
+          "target": "venture.departments",
+          "expect": "absent"
+        },
+        {
+          "kind": "term",
+          "target": "function",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "department",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-048",
+          "expect": "narrowed"
+        }
+      ],
+      "related": [
+        "EE-047",
+        "EE-048"
+      ]
+    },
+    {
+      "id": "EE-091",
+      "date": "2026-10-30",
+      "status": "in-force",
+      "decision": "A venture's foundation/ records move to identity/ (JSON). venture.json stays the manifest. Old foundation/ routes resolve through an alias during the upgrade. Not built yet: ventures still keep foundation/, and no alias exists.",
+      "why": "Torian, 2026-10-30 22:05Z (card in the phases thread). Recorded on 2026-11-01: it was decided but never written as a decision record, which is one of the causes in the decision-decay problem record.",
+      "affects": [
+        {
+          "kind": "path",
+          "target": "foundation/**",
+          "root": "venture",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "identity/**",
+          "root": "venture",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "identity",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-092",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "A venture is born from the founder's ideas, not created first. The blank venture template lives in the founder suite as a venture draft, filled as ideas arrive. It becomes a venture when it is a minimally viable venture: a founder, a stated identity (who it is for and its essential why), a root problem someone has, every function addressed (a position or an explicit null) and Discovery exit criteria. Then it enters Discovery. A legal entity comes later and is not required. Not built yet: the founder suite has no venture draft and create-venture does not check the minimally viable venture. founders/ lands in PR #135 (EE-094).",
+      "why": "Torian, 2026-11-01 (card): an idea or a succession of ideas produces a venture; the minimally viable venture is the venture's equivalent of a minimum viable product. The terms venture draft, minimally viable venture and legal venture were run through the term engine in a prototype outside this repository (4/4 predictions confirmed); they land with the glossary PR (issue #143).",
+      "related": [
+        "EE-082",
+        "EE-090",
+        "EE-091"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "founders/*/drafts/**",
+          "root": "workspace",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "venture-draft",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "minimally-viable-venture",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-093",
+      "date": "2026-11-01",
+      "status": "superseded",
+      "decision": "The ontology's \"interface\" (a tool a person works through across most layers) is renamed \"harness\". \"interface\" keeps its standard sense: the agreed boundary where two elements meet (C4, ISO/IEC/IEEE 42010). AI harness and agent harness are kinds of harness. The ontology's console and custom interface (now custom harness) rows and the operator console README use the new word. The sixth layer keeps its folder name, interface/; renaming it is not decided. Not built yet: harness and interface are not yet terms in schema/terms.",
+      "why": "Torian, 2026-11-01 (card). The term engine found the two senses disjoint (issue #143); the ontology marked its sense \"ours\", so standards first renames ours. Workspace decision G-039 already gave \"agent harness\" its industry meaning and returned G-029's first-party entity class to \"app\", so \"harness\" is free for this sense.",
+      "related": [
+        "EE-014",
+        "EE-089"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "interface",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "harness",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-094",
+      "date": "2026-10-31",
+      "status": "in-force",
+      "decision": "A founder exists before any venture, so a workspace keeps founders in a top-level founders/<handle>/ folder above ventures: founder.json (an opaque person id), ideas/, references/ (CSL-JSON), inspirations/, and _private/ for the real name, secrets and the founder puzzle, which never reach a route or a model. workspace.json names the founder at founders/<handle>/founder.json. A venture may have several founders; each links to it by role (founder, co-founder, general-partner) and may cite the idea it grew from. Built in schema/founders.ts (init, link, idea, reference, inspiration, check, show).",
+      "why": "Torian, 2026-10-31 (cards): founders folder above ventures, yes; one founder of record, no (several founders, contributions weighed from provenance later); disclosure tiers as a starting point. Ids EE-089 to EE-093 are taken by PR #142, so this takes EE-094.",
+      "related": [
+        "EE-011",
+        "EE-020"
+      ]
+    },
+    {
+      "id": "EE-095",
+      "date": "2026-10-31",
+      "status": "in-force",
+      "decision": "Every new or contested glossary term goes through one admission: its meaning is written as properties checked on facts (never on the label), frozen by hash, checked as a valid test, cross-run against every admitted term at its level, and recorded as proposed in schema/terms/admitted.json, with the Lean theorems it names present in lean/Naive. A definition dispute is settled by running this, not by asking. Lean lives in lean/ in this repository, built in CI by the lean job. Not built yet: admission does not check that a named theorem proves the current properties (only that it exists), and founder records are not yet checked against the founder term.",
+      "why": "Torian, 2026-10-31 21:07Z: every new term runs the full pipeline (definition tests, cross-run, verified in code, proved in Lean) without being asked; 21:13Z (card): Lean lives in lean/ in everything-ecosystem.",
+      "related": [
+        "EE-014",
+        "EE-094"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "schema/terms/engine.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/admit.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/admitted.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/terms/terms.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Concept.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Terms.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": ".github/workflows/lean.yml",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/ontology-gate.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-096",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "\"Harness\" takes its industry sense, the one Anthropic's S-1 uses: the software around a model that runs it, giving it context and tools and carrying out what it asks (the Agent SDK, Claude Managed Agents, Claude Code). AI harness and agent harness are kinds of harness. The tool a person works through across at least four of the six layers, which EE-093 called harness, is renamed \"workbench\"; custom harness becomes custom workbench. The ontology, the integration schema, interface/layer.json and the operator console README use the new words. The sixth layer keeps its folder name, interface/. Not built yet: harness and workbench are not yet terms in schema/terms.",
+      "why": "Torian, 2026-11-01 (card), after reading Anthropic's S-1 (filed 2026-10-26). The term engine found the S-1's harness and EE-093's harness overlap, not equal: the Agent SDK is a harness no person works through, and a coding agent used on one layer is an agent harness but not an EE-093 harness. Standards first (EE-014): the standard sense keeps the word. The code and docs already used harness in this sense (interface/harness, adapters, provenance). Workbench narrows the industry workbench (Eclipse; Fowler). Engine and Lean runs are a prototype outside this repository (s1-vocab.ts, S1.lean) that lands with the glossary PR (issue #143).",
+      "supersedes": [
+        "EE-093"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "harness",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "workbench",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "interface",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-097",
+      "date": "2026-11-01",
+      "status": "superseded",
+      "decision": "Names, using Anthropic as the template for the venture's structure. Moses David is the parent company, as Anthropic is to Claude. Mentura is the kind of AI the company builds, as Claude is Anthropic's and Jev is TypeSafe's. It is our own type of model, not a language model like Claude. Naive stays the framework and the records system: a knowledge graph of record whose records change mechanistically (a records mechanism: deterministic, rule-stated, traceable transitions on typed records, with nothing learned deciding). Mentura is no longer the name of the platform. Whether Naive is also the platform is open.",
+      "why": "Torian, 2026-11-01 06:26Z, in words. A parent company, a model type and a records framework are three different kinds of thing; using one name for two of them blurred what belongs where. Anthropic's records (studied 2026-11-01) give a tested shape: company, research, models, products and platform, safety.",
+      "related": [
+        "EE-041",
+        "EE-071",
+        "EE-089"
+      ],
+      "supersedes": [
+        "EE-027",
+        "EE-043"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "moses-david",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "mentura",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "naive",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "records-mechanism",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-043",
+          "expect": "superseded"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-027",
+          "expect": "superseded"
+        }
+      ]
+    },
+    {
+      "id": "EE-098",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Restates the names of EE-097 with Torian's corrections. Moses David is the parent company. Mentura is a model, in the position Claude holds at Anthropic; what kind of model it is stays open (the comparison with Jev was not a claim that Mentura is a typed decision model). Mentura has two products besides the model: the Mentura app (one app on web, desktop and mobile, as the Claude app is) and the Mentura console (a venture development platform, as the Claude Console is a developer platform, but for running a venture). The console is the platform, so the platform question of EE-097 is settled. Naive is the framework: where people customise their records, their modules and how their agents act on records; it acts the same whichever agents drive it. Precog is a capability of Mentura, not a product; parts of it are records in Naive and delivery in the app.",
+      "why": "Torian, 2026-11-01 07:14Z, in words, after the Anthropic product records were researched. Checked against records before recording: offering-vocab.ts (18/18) and placement.ts (T1-T3), both built in Lean (Placement.lean, 20 theorems).",
+      "related": [
+        "EE-041",
+        "EE-071",
+        "EE-089"
+      ],
+      "supersedes": [
+        "EE-097"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "mentura",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "mentura-app",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "mentura-console",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "naive",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "capability",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "console",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-097",
+          "expect": "superseded"
+        }
+      ]
+    },
+    {
+      "id": "EE-099",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Every record type in Naive's data model names a record generator: a script beside its schema that tells the agent what to ask, drafts one record that passes the schema, and hands it to the write chain without storing anything itself. Records computed from other records name the script that computes them. The data-model check fails a record type that names none. First built for three types: glossary, reference and bug; the other record types without one stay listed as open gaps until built.",
+      "why": "Torian, 2026-11-01 07:55Z ('every endpoint should have an engine next to it') and his pick on the decision card at 07:58Z (require it, pilot on 3 types). A scan of schema/data-model.json found 117 record types, none naming a generator, and 35 with no script anywhere that writes them (naive-design engine-scan.json). The glossary's engine means a part that returns a verdict, so the term is record generator (generator-vocab.ts, 18/18).",
+      "related": [
+        "EE-018",
+        "EE-073"
+      ],
+      "supersedes": [],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "record-generator",
+          "expect": "defined"
+        },
+        {
+          "kind": "record",
+          "target": "data-model.generator",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/glossary.mjs",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/reference.mjs",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/bug.mjs",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-100",
+      "date": "2026-11-01",
+      "status": "in-force",
+      "decision": "Routes are declarative chains that end in generative endpoints. A chain is declared as data, step by step, like the write chain. When a module, a package or an agent reaches an endpoint whose record type has no schema, route or record generator yet, the endpoint does not stop at 'no such record type': it opens a research item for that record type, and the research proposes the schema, the record generator (EE-099) and the route, with their requirements and constraints. A person admits them, and the new endpoint then exists. So an endpoint can produce new endpoints, and the record generators are what agents read to know how generation works.",
+      "why": "Torian, 2026-11-01 09:00Z, in words: 'The routes should have generative endpoints... declarative chains with generative endpoints... so that an endpoint can produce new endpoints. This was the point of the scripts.'",
+      "related": [
+        "EE-099",
+        "EE-018"
+      ],
+      "supersedes": [],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "generative-endpoint",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "declarative-chain",
+          "expect": "defined"
+        },
+        {
+          "kind": "path",
+          "target": "schema/generators/generate.mjs",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-108",
+      "date": "2026-11-03",
+      "status": "in-force",
+      "decision": "The repository's top level splits in two. The product is one part: the product code plus the library it ships. The library (frameworks, playbooks, and templates) belongs to the product. Code and the library may be separate subfolders inside the product, because they are checked differently. Naive-the-company's own records are the other part: purpose, governance, evidence, operations, knowledge, and instance kinds of content. This refines the records split Torian stated on 2026-11-02 in docs/reviews/2026-11-02-five-step-review.md. That statement was not an entry in this log. It put the company's own records in their own place and kept the library with the product, and it left where the records go undecided. This ruling states the top level as those two parts, with the library belonging to the product. It replaces the three-way candidate of product code, shipped library, and company records in docs/reviews/2026-11-03-architecture-inventory.md (PR #167, still open). That review is generated by scripts/architecture-inventory.ts. This decision does not edit that file or that branch. No folders move. Still open: where the layers sit inside each part, the exact folder names, and the mapping onto Basic Formal Ontology (ISO/IEC 21838-2).",
+      "why": "Torian, 2026-11-03. He wants one ontology of the everything-ecosystem architecture that drives every folder and file name, and he wants that ruling kept in this log. On 2026-11-02 he split the company's own records out of the product codebase and kept the library with the product. On 2026-11-03 he ruled that the library belongs to the product, so the repository's top level is the product and the company's records."
+    },
+    {
+      "id": "EE-109",
+      "date": "2026-11-03",
+      "status": "in-force",
+      "decision": "Components are written to records and passed from one record to the next by one typed decision step. Torian set this out as a ping pong picture. The paddles are records on blackboards. A record is the only thing a person or an agent uses to interact, and the only thing one agent uses to interact with another. Players never touch each other directly. The ball is that step. It takes a record plus a typed question and returns a typed answer with a probability. A null answer means the step is unsure, and the answer goes to a person for review. Levanto's Sage, at https://levanto.ai/, was his illustration of the ball. Sage is an example only, and it is not a chosen vendor. The Lead agent reads every user conversation and writes it to the correct record. The component then routes to the record or data store that owns it. Routing and record-type checks go through the EE-095 term engine in schema/terms and lean/Naive, and never around it. This keeps the medium and the Lead from EE-102. That entry is open pull request 156 and is not in this log yet. It coordinates agents through typed provenance records on a blackboard, and the Lead stays the only router. Still open: the decision step's implementation or vendor, the routing table, the null-review queue, and how this relates to the halted Palantir items.",
+      "why": "Torian, 2026-11-03. He said this is how he wants components written to and passed between records. It is also how he wants all user conversations to be read by the lead agent, then written to the correct record, then that component routes to the proper record or data store.",
+      "related": [
+        "EE-095",
+        "EE-102"
+      ]
+    },
+    {
+      "id": "EE-111",
+      "date": "2026-11-03",
+      "status": "in-force",
+      "decision": "Claude Code, running in the cloud through the Claude GitHub Action, does the heavy building in this repository. Torian and Grok Bot plan, design, and decide. They write each decision and a brief into the repo, then open a GitHub issue that links that decision and that brief and mentions @claude. Claude Code builds from that issue and opens a pull request. It runs pstack (plugin pstack@cursor-plugins from the cursor/plugins marketplace) with poteto-mode on every task, and with no other skill and no personal skill. Its config lives only in the repo. .claude/settings.json enables only that plugin from the cursor/plugins GitHub source. The settings schema cannot store an enforced version pin: enabledPlugins takes a boolean, a marketplace ref is a branch or tag, and cursor/plugins publishes no tag for pstack, so the committed file does not invent one. CLAUDE.md points at AGENTS.md. .claude/rules/pstack-models.md maps each role to a model, and Torian can change it. The same independent verifier and merge rule apply. The builder is not the verifier. A verifier posts PASS or PASS+NOTES on the current head, the checks are green, and the pull request has no hold label. An agent then merges, bottom-up. Nobody pushes to main. GitHub writes stay on a pull request (EE-037). This entry does not edit AGENTS.md, which still says Torian merges. Pull request 166 is the open edit that aligns that file. EE-084 remains the product plugin. This decision is who builds the repository.",
+      "why": "Torian (founder), 2026-11-03. He decided that Claude Code does the heavy building through the Claude GitHub Action, and that he and Grok Bot plan and design, write the decision and the brief, and hand the work over as a GitHub issue that mentions @claude. EE-111 is free. EE-108 and EE-109 are on main. EE-110 is open pull request 170. EE-101 through EE-107 are open pull requests.",
+      "related": [
+        "EE-016",
+        "EE-030",
+        "EE-037",
+        "EE-084",
+        "EE-095",
+        "EE-109",
+        "EE-110"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": ".github/workflows/claude.yml",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": ".claude/settings.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "CLAUDE.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": ".claude/rules/pstack-models.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-113",
+      "date": "2026-11-04",
+      "status": "proposed",
+      "decision": "Naive's ontology core has four parts, each built from one preserved source and each checked through the EE-095 term engine (schema/terms) and the Lean proofs (lean/Naive). The metamodel follows the EE-107 vocabulary objects and change line (preserved PRs 164 and 163), without their separate vocabulary check. The upper ontology follows the EE-103 broader relation (preserved PR 157), and gains a check that every noun reaches exactly one top category. The catalog of name@function scopes follows the admission rule and invariant in section 23 of the preserved venture meta-schema. The term labels scope, origin, grade and designation follow docs/design/TERM_LABELS_2026-11-02.md. docs/design/ONTOLOGY_CORE_2026-11-04.md names, for each part, the winning source, the rejected sources and why, the hook in schema/terms and the hook in lean/Naive, and traces each choice to a merged-ledger row. It picks no meaning for the word layer, which the term engine settles. Not built yet: plan units S2-PR5 to S2-PR8 build the four parts.",
+      "why": "Plan unit S2-PR1 in docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md asks for one version of each ontology part from the stage 1 preserved files. Torian closed stage 1 on 2026-11-04 at 18:52Z (pull request 203). He decided gate G4 at 18:58Z, so EE-095 gains affects entries in the same change. He withdrew gate G2 at 19:05Z and left the word layer to the term engine. EE-112 is held by the staged venture-standard decision (not yet pushed), so this is EE-113. EE-101 to EE-107 and EE-110 are taken by open pull requests.",
+      "related": [
+        "EE-013",
+        "EE-014",
+        "EE-089",
+        "EE-095",
+        "EE-103",
+        "EE-107",
+        "EE-108"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "docs/design/ONTOLOGY_CORE_2026-11-04.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/ontology-metamodel.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Upper.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "docs/ontology-catalog.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-114",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "A person's ideas live at people/<person-id>/ideas/<id>.json. A top-level people/<person-id>/ folder in the workspace replaces founders/<handle>/ (EE-094), named by the person's opaque id. The handle is a field on the person, not the folder name. Founder is a property the EE-095 term engine derives from facts (the founder term, properties F1 to F5, with its theorems in lean/Naive/Founder.lean), never a folder label. schema/founder-idea.schema.json describes the new path, and schema/data-model.json maps people/*/ideas/*.json to it. This narrows EE-094: what its folder holds (ideas, references, inspirations and _private) stays, under the new folder. Not built yet: ideas under founders/<handle>/ideas/ still validate during the move, and schema/founders.ts, the other founder schemas and workspace.json still use founders/<handle>/.",
+      "why": "Torian, 2026-11-05 04:42Z, binding ruling on gate G16 of the ontology program (docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md), which blocked S2-PR9 and S3-PR1. EE-113 is the last id on main, EE-112 is held by the staged venture-standard decision, and no open pull request holds EE-114.",
+      "related": [
+        "EE-094",
+        "EE-095",
+        "EE-113"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "schema/founder-idea.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/data-model.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/examples/workspace/people/*/ideas/*.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "people/*/ideas/",
+          "root": "workspace",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "founders/",
+          "root": "workspace",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founders.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/workspace-founder.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founder-reference.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founder-inspiration.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founder-private.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/workspace.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Founder.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "workspace-founder.handle",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "founder",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-094",
+          "expect": "narrowed"
+        }
+      ]
+    },
+    {
+      "id": "EE-115",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "A venture's functions are declared once in venture.json, which is their source of truth, and the top-level functions/ folder is generated from that declaration. Neither EE-086 nor EE-090 is dropped; each is narrowed. EE-086 holds for where functions are declared: venture.json lists them, and packages and records inherit their function from it. EE-090 holds for the folder: every venture has functions/ with one folder per declared function, but the folder is derived from venture.json and never edited by hand. Not built yet: no generator writes functions/ from venture.json, and ventures have no functions/ folder.",
+      "why": "Torian, 2026-11-05 14:31Z, ruling on gate G1 of the ontology program (docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md) on a decision card in the ontology program thread: he chose 'Both: declared, then mirrored'. G1 named the conflict between EE-090 (a top-level functions/ folder, N-158) and EE-086 (functions declared in venture.json, N-159), and it blocked the naive@function scope in S3-PR5. EE-114 is the last id on main, open pull requests 225 and 227 hold EE-116, and no branch holds EE-115.",
+      "related": [
+        "EE-048",
+        "EE-086",
+        "EE-090",
+        "EE-113"
+      ],
+      "affects": [
+        {
+          "kind": "record",
+          "target": "venture.functions",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "functions/*/",
+          "root": "venture",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "function",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-086",
+          "expect": "narrowed"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-090",
+          "expect": "narrowed"
+        }
+      ]
+    },
+    {
+      "id": "EE-116",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "Venture packages (EE-070, EE-071) live at library/packages/<name>/package.json, with the catalog at library/packages/catalog.json, so that packages/ holds code packages as the monorepo standard expects. The noun venture package and the route alias packages/<name> do not change; only the folder moves.",
+      "why": "Torian asked on 2026-11-05 to rebuild the codebase on the monorepo standard, where packages/ means code libraries that apps import. He chose \"Move venture packages to library/\" on the decision card at 10:18Z, over keeping packages/ and putting code in libs/. This resolves the open question O-apps-packages in the master architecture record.",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-108"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "library/packages/catalog.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/catalog.json",
+          "root": "repo",
+          "expect": "absent"
+        }
+      ]
+    },
+    {
+      "id": "EE-117",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "The word mentor names a human role: the mentor modes, Mentura's mentors and a services role are people. Naive's AI is a coach that works for that human mentor and never speaks for a human, so the rule that AI is never a mentor (C-100, merged-ledger row N-098) stands. This narrows EE-046: a tagline is still a brand record at venture.json brand.tagline, but Mentura's tagline 'A mentor for your journey' calls the product a mentor and is to be reworded. Not built yet: the tagline in the everything-ecosystem venture.json and the records that quote it are not reworded.",
+      "why": "Torian, 2026-11-05 14:31Z, ruling on gate G3 of the ontology program (docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md) on a decision card in the ontology program thread: he chose 'Mentor means a human'. G3 named the conflict between C-100 (N-098) and EE-046's tagline (N-195), and it blocked the naive@governance and naive@purpose scopes in S3-PR5. The mentor and coach terms in schema/terms already agree with the ruling, so neither changes. Open pull requests 225 and 227 hold EE-116, so this is EE-117.",
+      "related": [
+        "EE-046",
+        "EE-095",
+        "EE-113"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "mentor",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "coach",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-046",
+          "expect": "narrowed"
+        }
+      ]
+    }
+  ]
+}

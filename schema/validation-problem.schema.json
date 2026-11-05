@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-problem.schema.json",
+  "title": "Validation: problem",
+  "description": "The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; schema/check-validation.mjs grades it from its evidence.",
+  "type": "object",
+  "required": [
+    "venture",
+    "statement",
+    "segment",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "statement": {
+      "type": "string",
+      "description": "The problem in the words of the people who have it"
+    },
+    "segment": {
+      "type": "string",
+      "description": "Who has it, specifically enough to find them"
+    },
+    "frequency": {
+      "type": "string",
+      "description": "How often it happens to them"
+    },
+    "cost": {
+      "type": "string",
+      "description": "What it costs them now: money, time, risk"
+    },
+    "workarounds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "How they cope today; money or time already spent on a workaround is strong evidence"
+    },
+    "why_now": {
+      "type": "string",
+      "description": "What has changed that makes the problem solvable or urgent now (EE-050)"
+    },
+    "forms": {
+      "type": "array",
+      "description": "The forms the problem takes (EE-050): one root problem in statement, and each form a narrower problem with its own segment and evidence, assessed on its own so it can be validated or dropped without touching the root",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string",
+            "description": "Only when narrower than the root's"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "dropped"
+            ],
+            "default": "open"
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "validation-evidence.schema.json"
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p",
+        "by",
+        "scored"
+      ],
+      "description": "The Jev probability that the problem is real and worth solving for this segment; the evidence grade weighs it in the validation score",
+      "properties": {
+        "p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "by": {
+          "enum": [
+            "jev",
+            "owner"
+          ]
+        },
+        "scored": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
