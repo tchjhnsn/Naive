@@ -44,10 +44,10 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { call as routerCall, files as ventureFiles, glob, routes } from "../interface/router.mjs";
-import { agentFromEnv, entries as provEntries, record as prov } from "../interface/provenance.mjs";
+import { agentFromEnv, entries as provEntries, record as prov } from "../packages/core/provenance.mjs";
 import { decisions as decisionsOf, propose } from "./decisions.mjs";
 import { loadPackages } from "./load-packages.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

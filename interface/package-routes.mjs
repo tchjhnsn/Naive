@@ -19,7 +19,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../schema/venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -78,7 +78,7 @@ export const routeOfType = async (type) => {
 // The drafts waiting in a package's records (P-37): its pending state.
 async function pendingIn(dir, types, venture) {
   const { recordOf } = await import("../schema/decisions.mjs");
-  const { entries } = await import("./provenance.mjs");
+  const { entries } = await import("../packages/core/provenance.mjs");
   const d = join(ventureFile(dir, "_drafts"));
   if (!existsSync(d)) return [];
   const log = entries(dir);

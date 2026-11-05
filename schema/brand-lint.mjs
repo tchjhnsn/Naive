@@ -8,7 +8,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { DESIGN_SYSTEM } from "./design-system.mjs";
 import { contentFiles } from "./brand.mjs";
 

@@ -1,7 +1,7 @@
 ---- MODULE FinanceLint ----
 \* finance/lint, schema/lint-finance.mjs. One check of a venture.
 \* Each action is one change a person can make, then the checker reads the records through
-\* ventureFile (schema/venture-paths.mjs) and sets the findings and the exit code.
+\* ventureFile (packages/core/venture-paths.mjs) and sets the findings and the exit code.
 \* Scale and platform are in Phases with the others: a target is a number stored under the phase name,
 \* and the code does not treat any phase as a special case (metricFindings).
 

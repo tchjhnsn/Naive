@@ -15,7 +15,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { canonicalHome, migrated } from "./canonical.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;

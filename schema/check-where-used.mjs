@@ -10,7 +10,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { connect, sourceFor, sourcesOf } from "../knowledge/connectors/index.mjs";
 import { resolve } from "../interface/router.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-where-used.mjs <workspace or venture dir> [--json]"); process.exit(2); }

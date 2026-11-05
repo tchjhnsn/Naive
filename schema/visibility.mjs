@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { frontmatter } from "./publish-lint.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const LEVELS = ["public", "variant", "internal", "confidential"];
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));

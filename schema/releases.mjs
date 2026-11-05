@@ -38,12 +38,12 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSy
 import { tmpdir } from "node:os";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { call, glob, routes } from "../interface/router.mjs";
-import { agentFromEnv, entries as provEntries, record as prov } from "../interface/provenance.mjs";
+import { agentFromEnv, entries as provEntries, record as prov } from "../packages/core/provenance.mjs";
 import { attributeSources, connect } from "../knowledge/connectors/index.mjs";
 import { FRAME, confirmedIn } from "./foundation.mjs";
 import { HOME, packages } from "./packages.mjs";
 import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "./release-read.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

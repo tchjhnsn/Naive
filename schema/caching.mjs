@@ -37,8 +37,8 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { entries as provEntries } from "../interface/provenance.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { entries as provEntries } from "../packages/core/provenance.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -189,7 +189,7 @@ export function stateOf(dir) {
 }
 
 let code;
-const CODE_DIRS = ["schema", "interface", "knowledge", "purpose", "governance", "operations", "evidence", "library", "platform"];
+const CODE_DIRS = ["schema", "interface", "knowledge", "purpose", "governance", "operations", "evidence", "library", "packages", "platform"];
 /** The framework's code and definitions, hashed: a change to any of them starts record-level caches fresh (C-17). */
 export function codeVersion() {
   if (code) return code;

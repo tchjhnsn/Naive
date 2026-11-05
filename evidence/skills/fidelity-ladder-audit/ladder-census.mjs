@@ -15,7 +15,7 @@
 
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, extname, basename } from "node:path";
-import { ventureFile } from "../../../schema/venture-paths.mjs";
+import { ventureFile } from "../../../packages/core/venture-paths.mjs";
 
 // ---------------------------------------------------------------- lexicons
 

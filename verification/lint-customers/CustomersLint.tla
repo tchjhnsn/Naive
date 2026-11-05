@@ -2,7 +2,7 @@
 \* Customers lint (schema/lint-customers.mjs, route customers/lint).
 \* One customer and one promise that names one product key. Each action is one change to the
 \* records, then one lint run. The product variable is the product record read by that key on
-\* this run, through ventureFile (schema/venture-paths.mjs). A later change to the product is
+\* this run, through ventureFile (packages/core/venture-paths.mjs). A later change to the product is
 \* what the next run sees. The lint does not copy the product onto the customer.
 \*
 \* icp = "gone" covers a missing ICP file and an unreadable one: both leave no profile ids.

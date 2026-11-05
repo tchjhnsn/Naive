@@ -13,7 +13,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { blobSha, isText, matches, safePath } from "./contract.mjs";
-import { layoutOf, logicalFiles, ventureFile } from "../../schema/venture-paths.mjs";
+import { layoutOf, logicalFiles, ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const SKIP = new Set(["node_modules"]);
 

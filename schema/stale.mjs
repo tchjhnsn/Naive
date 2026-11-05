@@ -19,11 +19,11 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { entries } from "../interface/provenance.mjs";
+import { entries } from "../packages/core/provenance.mjs";
 import { resolve as resolveRoute } from "../interface/router.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
 import { LOCAL, sourcesOf } from "../knowledge/connectors/index.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const MARKS = ".naive/stale.json";
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

@@ -21,7 +21,7 @@ Coverage, confirmed at commit `f6ac8f3` (`cursor/lint-legal`):
 | ApplyModes | `schema/lint-legal.mjs` `modesOf` (`naive.config.json` key `legal_lint.rules.<id>.mode`) |
 | Judge | the two `add` calls in `lint` |
 | Exit | `process.exit` from `ok`, and `interface/router.mjs` when it runs `legal/lint` |
-| channel `ventureFile` | every read goes through `ventureFile` in `schema/venture-paths.mjs` |
+| channel `ventureFile` | every read goes through `ventureFile` in `packages/core/venture-paths.mjs` |
 
 `naive check` runs `schema/lint-legal.mjs` because `interface/cli/naive.mjs` lists `lint-legal`.
 

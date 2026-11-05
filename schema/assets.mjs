@@ -21,8 +21,8 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
-import { entries } from "../interface/provenance.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { entries } from "../packages/core/provenance.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const REGISTER = "public/assets.json";
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

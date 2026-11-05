@@ -65,8 +65,8 @@ import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:
 import { createServer } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
-import { logical } from "../../schema/venture-paths.mjs";
-import { ventureFile } from "../../schema/venture-paths.mjs";
+import { logical } from "../../packages/core/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../schema/workspace.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
@@ -123,7 +123,7 @@ async function dev(dir) {
   const pending = new Map();
   watch(dir, { recursive: true }, (_, raw) => {
     if (!raw || !raw.endsWith(".json") || raw.startsWith("node_modules") || raw.startsWith(".naive")) return;
-    // The record's logical path (schema/venture-paths.mjs): knowledge/foundation/icp.json is foundation/icp.json.
+    // The record's logical path (packages/core/venture-paths.mjs): knowledge/foundation/icp.json is foundation/icp.json.
     const physicalPath = raw, f = logical(dir, raw);
     if (f.startsWith("_private")) return;
     clearTimeout(pending.get(f));
@@ -228,7 +228,7 @@ else if (cmd === "build" || cmd === "start") {
     for (const n of notes) console.log(`${dry ? "would: " : ""}${n}`);
     for (const e of escalated) console.log(`decide: ${e}`);
     if (!dry && notes.length) {
-      const { agentFromEnv, record } = await import("../provenance.mjs");
+      const { agentFromEnv, record } = await import("../../packages/core/provenance.mjs");
       record(dir, { entity: "venture.json", activity: "write", agent: agentFromEnv("person", "cli"), note: "moved onto the structured layout (EE-086): k-base/ and meta/" });
     }
     process.exit(0);

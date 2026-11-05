@@ -4,7 +4,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 export const TELOS_FILES = ["foundation/telos.json", "purpose/telos.json"];

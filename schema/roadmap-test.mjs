@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.mjs";
 import { install } from "./roadmaps.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { advance, lifecycle, meet, playbookOf, playbooks } from "./lifecycle.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;

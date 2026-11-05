@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { context } from "./upgrades.mjs";
 import * as telosToGoals from "./migrations/telos-to-goals.mjs";
 import * as structured from "./migrations/structured-layout.mjs";
-import { physical } from "./venture-paths.mjs";
+import { physical } from "../packages/core/venture-paths.mjs";
 import { call } from "../interface/router.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;

@@ -16,7 +16,7 @@ import { DEFAULTS, configFor, installed, packagesOf } from "./naive-config.mjs";
 import { evaluate, matches, packageRules, patternRe, rulesFor } from "./gate.mjs";
 import { inbox, variantsDecision } from "./gate-drafts.mjs";
 import { decisions } from "./decisions.mjs";
-import { entries } from "../interface/provenance.mjs";
+import { entries } from "../packages/core/provenance.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;

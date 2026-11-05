@@ -8,8 +8,8 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../venture-paths.mjs";
-import { layoutOf } from "../venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { layoutOf } from "../../packages/core/venture-paths.mjs";
 
 export const id = "package-layout";
 export const describe = "Moves records from the layer folders (purpose/, pillars/, products/, knowledge/) into package folders (foundation/, validation/, product/, marketing/, people/, decisions/)";

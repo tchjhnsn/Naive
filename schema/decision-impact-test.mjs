@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, decisions, merge, propose } from "./decisions.mjs";
 import { impact } from "./impact.mjs";
-import { record } from "../interface/provenance.mjs";
+import { record } from "../packages/core/provenance.mjs";
 import { stale } from "./stale.mjs";
 
 let failed = 0;

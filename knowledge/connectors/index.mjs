@@ -17,7 +17,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { conformance } from "./contract.mjs";
 import { ANY, resolve as resolveRule } from "./resolve.mjs";
-import { ventureFile } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

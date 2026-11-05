@@ -15,7 +15,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { needNow } from "./need-now.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

@@ -15,10 +15,10 @@
 // A gate line is about the package body's sha256, not about its position, so any gate may be
 // the first line. Two identical lines for the same gate and the same body are an error.
 
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { contentHash, gateLineKey, gateSidecar, lineHash, LOG, packageForSidecar } from "../interface/provenance.mjs";
+import { contentHash, gateLineKey, gateSidecar, lineHash, LOG, packageForSidecar } from "../packages/core/provenance.mjs";
 
 const errors = [], warnings = [];
 let logs = 0, lines = 0;

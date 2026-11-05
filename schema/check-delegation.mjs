@@ -16,7 +16,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { grantBacked, liveGrant, readDelegation } from "./venture-paths.mjs";
+import { grantBacked, liveGrant, readDelegation } from "../packages/core/venture-paths.mjs";
 import { independent } from "./verify.mjs";
 
 const root = new URL("..", import.meta.url).pathname;

@@ -23,7 +23,7 @@ import { scan } from "../harness/site.mjs";
 import { MATRIX } from "../../operations/marketing/site/presence.mjs";
 import { plan } from "../../operations/marketing/site/plan.mjs";
 import { packages, write as writePackage, OUT as PACKAGE } from "../../schema/packages.mjs";
-import { ventureFile } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));

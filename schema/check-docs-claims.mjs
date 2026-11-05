@@ -39,7 +39,7 @@ if (argv[0] === "--scanned") {
 }
 // The README.md nearest a code file, searched up to its top-level folder (never the repo root README).
 // Anything under a playbooks/ folder is content, not code (Torian's decision for now).
-const CODE = /^(schema|interface|library\/packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
+const CODE = /^(schema|interface|library\/packages|packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
 const nearestReadme = (r) => {
   for (let d = r.split("/").slice(0, -1); d.length; d.pop()) if (existsSync(join(repo, ...d, "README.md"))) return [...d, "README.md"].join("/");
   return null;
@@ -66,7 +66,10 @@ const menturaCmds = literals(menturaSrc);
 const { routes, resolve } = await import(join(repo, "interface/router.mjs"));
 const table = routes();
 const routeTop = new Set(table.map((r) => r.route.split("/")[0]));
-const isRoute = (c) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r) => r.route === c.replace(/<[^>]+>/g, "[id]"));
+// packages/<name> is a route alias for a venture package (interface/package-routes.mjs), not a folder: the
+// packages live at library/packages/<name> (EE-116).
+const packageAlias = (c) => /^packages\/[a-z0-9-]+$/.test(c) && existsSync(join(repo, "library", c, "package.json"));
+const isRoute = (c) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r) => r.route === c.replace(/<[^>]+>/g, "[id]")) || packageAlias(c);
 
 // The flags a naive command reads: in naive.mjs's branch for it and in the scripts that branch runs.
 // Only flag definitions count: a literal --name, or a name passed to a flag reader. Any other string is not a flag.
@@ -90,7 +93,7 @@ function flagsOf(cmd) {
 }
 
 // --- The claims ---
-const REPO_DIRS = ["schema", "interface", "purpose", "library", "docs"];
+const REPO_DIRS = ["schema", "interface", "purpose", "library", "packages", "docs"];
 const VENTURE = /^(k-base|meta|codebase|artifacts|raw|inbox|founder|_drafts|_private|my-|\.release|\.naive|operations|evidence)\b/;
 const failures = [];
 let claims = 0;

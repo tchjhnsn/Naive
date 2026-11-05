@@ -42,7 +42,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
-import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "./provenance.mjs";
+import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "../packages/core/provenance.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
 import { decisionFile, holding, locked } from "../schema/decisions.mjs";
 import { configOf, hold } from "../schema/gate.mjs";
@@ -56,8 +56,8 @@ import { checkPlan, gateWrite, heldDraft } from "./gate-hooks.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../knowledge/connectors/index.mjs";
 // Caching (schema/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { actionScope, cacheRoutes, command as cachedCommand, forget, internal as cacheInternal, memo } from "../schema/caching.mjs";
-// Context hook: instrumentation of every call and judgment (interface/instrumentation.mjs, P-4, F-4).
-import { instrumented, judgment } from "./instrumentation.mjs";
+// Context hook: instrumentation of every call and judgment (packages/core/instrumentation.mjs, P-4, F-4).
+import { instrumented, judgment } from "../packages/core/instrumentation.mjs";
 // Hooks for writes, reads and boundaries (wf/writes): the wrapper around call, per-record containment and private folders.
 import { around } from "./writes.mjs";
 import { contain } from "./boundaries.mjs";
@@ -79,7 +79,7 @@ import { peopleLintCommands } from "../schema/lint-people.mjs";
 import { foundationLintCommands } from "../schema/lint-foundation.mjs";
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../schema/stale.mjs";
-import { ventureFile } from "../schema/venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { coreOf, statementsIn, withCore } from "../schema/venture-core.mjs";
 import { telosView } from "../frameworks/telos/adapter.mjs";
 import { migrated, scale } from "../schema/canonical.mjs";
@@ -389,7 +389,7 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
  * decision, note, agent } for the log.
  */
 // Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
-// Context hook: every call is timed and measured for agent vitals (interface/instrumentation.mjs).
+// Context hook: every call is timed and measured for agent vitals (packages/core/instrumentation.mjs).
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
 // Writes hook (interface/writes.mjs): adds what reads, layouts and writes answer.
 export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));

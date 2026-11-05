@@ -1,7 +1,7 @@
 // Moves a flat venture onto the structured layout (EE-086). Ported from PR #41 and brought up to the
 // k-base/ rename. Only the files move: every record keeps its logical path (foundation/problem.json stays
 // foundation/problem.json to the router, the provenance log and every citation), because
-// schema/venture-paths.mjs resolves it into k-base/ or meta/ once venture.json says the layout is structured.
+// packages/core/venture-paths.mjs resolves it into k-base/ or meta/ once venture.json says the layout is structured.
 //
 //   k-base/    every package folder and record file at the top; the old knowledge/ layer folder
 //              becomes k-base/knowledge/, so its logical paths are unchanged
@@ -14,7 +14,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { CODEBASE, KBASE, TOP as TOP_FILES, layoutOf } from "../venture-paths.mjs";
+import { CODEBASE, KBASE, TOP as TOP_FILES, layoutOf } from "../../packages/core/venture-paths.mjs";
 
 export const id = "structured-layout";
 export const describe = "Moves a flat venture onto the structured layout: the knowledge base into k-base/, provenance, config, sources and releases into meta/, and profile.md to README.md (EE-086)";

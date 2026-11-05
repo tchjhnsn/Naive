@@ -328,8 +328,8 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "interface/instrumentation.mjs",
-    "interface/provenance.mjs",
+    "packages/core/instrumentation.mjs",
+    "packages/core/provenance.mjs",
     "interface/vitals.mjs",
     "platform/integrations/langsmith.mjs",
     "interface/context-test.mjs"
@@ -863,7 +863,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs"
+    "packages/core/provenance.mjs"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -883,7 +883,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs"
+    "packages/core/provenance.mjs"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -938,7 +938,7 @@
    "status": "built",
    "evidence": [
     "interface/vitals.mjs",
-    "interface/instrumentation.mjs",
+    "packages/core/instrumentation.mjs",
     "interface/context-test.mjs"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -1017,7 +1017,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs"
+    "packages/core/provenance.mjs"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1269,7 +1269,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "interface/instrumentation.mjs",
+    "packages/core/instrumentation.mjs",
     "interface/router.mjs",
     "interface/context-test.mjs"
    ],
@@ -1387,7 +1387,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1421,7 +1421,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1432,7 +1432,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1443,7 +1443,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1454,7 +1454,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1465,7 +1465,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1488,7 +1488,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1499,7 +1499,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1512,7 +1512,7 @@
     "schema/triggers.mjs",
     "schema/trigger.schema.json",
     "schema/kit.schema.json",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "platform/kits/validation-kickoff/kit.json",
     "schema/upgrades-test.mjs",
     "platform/kits/test.mjs"
@@ -1526,7 +1526,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1542,7 +1542,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1553,7 +1553,7 @@
    "status": "built",
    "evidence": [
     "interface/router.mjs",
-    "interface/provenance.mjs",
+    "packages/core/provenance.mjs",
     "schema/decisions.mjs"
    ],
    "page": "get-started/decisions"

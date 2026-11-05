@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../interface/router.mjs";
-import { entries } from "../interface/provenance.mjs";
+import { entries } from "../packages/core/provenance.mjs";
 import { checkKit, wrap } from "../interface/kit-boundary.mjs";
 import { approve } from "./decisions.mjs";
 import {

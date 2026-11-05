@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { roles as ROLES, types as TYPES } from "./venture-type.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const ws = process.argv[2];
 if (!ws || !existsSync(ws)) { console.error("usage: node schema/check-people.mjs <workspace>"); process.exit(2); }

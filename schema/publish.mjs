@@ -25,11 +25,11 @@
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { artifacts } from "./check-artifacts.mjs";
 import { leaks } from "./check-leaks.mjs";
 import { check, frontmatter } from "./publish-lint.mjs";
-import { record } from "../interface/provenance.mjs";
+import { record } from "../packages/core/provenance.mjs";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const save = (f, x) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(x, null, 2) + "\n"); };

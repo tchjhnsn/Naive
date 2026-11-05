@@ -12,7 +12,7 @@
 import { execSync, spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const [dir, id] = process.argv.slice(2);
 if (!dir || !id) { console.error("usage: node schema/run-handoff.mjs <venture dir> <handoff id> [--runner <id>]"); process.exit(2); }

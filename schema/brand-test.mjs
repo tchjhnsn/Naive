@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { call } from "../interface/router.mjs";
-import { entries } from "../interface/provenance.mjs";
+import { entries } from "../packages/core/provenance.mjs";
 import { allowsCopy, checkAssets, factsOf, hostAllowed } from "./assets.mjs";
 import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "./brand.mjs";
 

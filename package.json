@@ -33,6 +33,7 @@
     "schema/",
     "scripts/diagnose-transcripts.mjs",
     "library/packages/",
+    "packages/",
     "purpose/",
     "knowledge/",
     "operations/",

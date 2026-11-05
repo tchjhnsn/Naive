@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { evaluate } from "../schema/gate.mjs";
 import { writeHeld } from "../schema/gate-drafts.mjs";
 import { checksFor, configFor } from "../schema/naive-config.mjs";
-import { ventureFile } from "../schema/venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 /**
  * The gate's verdict on a local write, or null when it passes. A person is never held, only

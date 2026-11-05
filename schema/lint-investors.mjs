@@ -6,7 +6,7 @@
 //
 // Rules are fail-open (warn) by default. naive.config.json investors_lint.rules.<id>.mode set to
 // "fail-closed" makes that rule's findings fail the run (exit 1). Every record is read through
-// ventureFile (schema/venture-paths.mjs). A missing file or a file that is not JSON is skipped.
+// ventureFile (packages/core/venture-paths.mjs). A missing file or a file that is not JSON is skipped.
 //
 // A raise decision is a decision whose id or question says raise, raising, fundraise or
 // fundraising. It has a use of funds when the answer, the note, an option or an outcome says
@@ -25,7 +25,7 @@
 // both flagged. Sending does not clear the flag.
 
 import { existsSync, readFileSync } from "node:fs";
-import { logicalFiles, ventureFile } from "./venture-paths.mjs";
+import { logicalFiles, ventureFile } from "../packages/core/venture-paths.mjs";
 
 const load = (dir, rel) => {
   try { return JSON.parse(readFileSync(ventureFile(dir, rel), "utf8")); } catch { return null; }

@@ -29,7 +29,7 @@ import { join, relative, resolve } from "node:path";
 import { check, CONTENT, frontmatter } from "./check-public.mjs";
 import { leaks } from "../../schema/check-leaks.mjs";
 import { visibilityOf } from "../../schema/visibility.mjs";
-import { ventureFile } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const repo = new URL("../../", import.meta.url).pathname;
 const sha = (s) => createHash("sha256").update(s).digest("hex");

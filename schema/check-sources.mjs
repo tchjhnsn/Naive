@@ -11,7 +11,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { LOCAL, MAP, registry } from "../knowledge/connectors/index.mjs";
 import { ANY, CONTEXT, specificity } from "../knowledge/connectors/resolve.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-sources.mjs <workspace or venture dir>"); process.exit(2); }

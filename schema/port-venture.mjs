@@ -23,8 +23,8 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { agentFromEnv, record } from "../interface/provenance.mjs";
-import { CODEBASE, ventureFile } from "./venture-paths.mjs";
+import { agentFromEnv, record } from "../packages/core/provenance.mjs";
+import { CODEBASE, ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const PLAN = ".release/port-plan.json";
 export const TRACE = ".release/port-trace.json";

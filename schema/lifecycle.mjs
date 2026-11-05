@@ -22,9 +22,9 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { agentFromEnv, record } from "../interface/provenance.mjs";
+import { agentFromEnv, record } from "../packages/core/provenance.mjs";
 import { phase as changePhase } from "./freshness.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");

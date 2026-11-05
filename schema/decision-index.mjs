@@ -26,10 +26,10 @@
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { entries as provenance } from "../interface/provenance.mjs";
+import { entries as provenance } from "../packages/core/provenance.mjs";
 import { decisionFile, decisions, ownScore, PHASES } from "./decisions.mjs";
 import { structural, ventureRecords } from "./impact.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const INDEX = ".naive/decision-index.json";
 export const HISTORY = ".naive/decision-index-history.jsonl";

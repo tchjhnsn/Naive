@@ -20,7 +20,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { recordGate } from "../interface/provenance.mjs";
+import { recordGate } from "../packages/core/provenance.mjs";
 import { dispositionOf, operatingRulesFor, OperatingRulesError } from "./operating-rules.ts";
 import { run, type Base, type Term } from "./terms/engine.ts";
 import { TERMS } from "./terms/terms.ts";

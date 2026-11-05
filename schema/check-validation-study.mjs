@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { manifest } from "./beta-gate.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const list = (d) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => ({ f, r: JSON.parse(readFileSync(join(d, f), "utf8")) })) : [];
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);

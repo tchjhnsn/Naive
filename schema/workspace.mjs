@@ -19,7 +19,7 @@
 import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { systemZone, validZone } from "./clock.mjs";
 import { initCalendar } from "./calendar.mjs";
 import { goals } from "./canonical.mjs";

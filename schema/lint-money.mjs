@@ -17,7 +17,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { logicalFiles, ventureFile } from "./venture-paths.mjs";
+import { logicalFiles, ventureFile } from "../packages/core/venture-paths.mjs";
 
 const read = (dir, rel) => {
   try { return JSON.parse(readFileSync(ventureFile(dir, rel), "utf8")); } catch { return null; }

@@ -40,9 +40,9 @@ import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, 
 import { GRAPH, build as buildGraph, request as graphRequest } from "../../purpose/frameworks/idea-map/graph.mjs";
 import { understood } from "../../purpose/frameworks/idea-map/route.mjs";
 import { createHash } from "node:crypto";
-import { agentFromEnv, record as prov } from "../provenance.mjs";
+import { agentFromEnv, record as prov } from "../../packages/core/provenance.mjs";
 import { evaluate } from "./evals.mjs";
-import { ventureFile } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const repo = new URL("../../", import.meta.url).pathname;
 const argv = process.argv.slice(2);

@@ -25,7 +25,7 @@ import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 import { GRAPH, ORDER } from "./graph.mjs";
 import { confirmedIn } from "../../../schema/foundation.mjs";
 import { loadPackages } from "../../../schema/load-packages.mjs";
-import { ventureFile } from "../../../schema/venture-paths.mjs";
+import { ventureFile } from "../../../packages/core/venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

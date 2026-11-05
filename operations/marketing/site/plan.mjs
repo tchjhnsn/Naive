@@ -19,7 +19,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { customerNeeds, factsOf, MATRIX, needs, typesOf, weights } from "./presence.mjs";
-import { ventureFile } from "../../../schema/venture-paths.mjs";
+import { ventureFile } from "../../../packages/core/venture-paths.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const SITEMAP = "operations/marketing/sitemap.json";

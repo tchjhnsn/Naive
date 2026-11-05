@@ -19,9 +19,9 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { decisionFile, propose, recordOf } from "./decisions.mjs";
 import { HOME } from "./packages.mjs";
-import { entries as provenance } from "../interface/provenance.mjs";
+import { entries as provenance } from "../packages/core/provenance.mjs";
 import { mark, notify } from "./stale.mjs";
-import { layoutOf, logicalFiles, ventureFile } from "./venture-paths.mjs";
+import { layoutOf, logicalFiles, ventureFile } from "../packages/core/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const MODEL = JSON.parse(readFileSync(join(repo, "schema/data-model.json"), "utf8"));

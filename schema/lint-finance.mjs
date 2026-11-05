@@ -17,7 +17,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { logical, ventureFile } from "./venture-paths.mjs";
+import { logical, ventureFile } from "../packages/core/venture-paths.mjs";
 
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const PRICING = ["validation/pricing.json", "purpose/validation/pricing.json"];

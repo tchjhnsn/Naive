@@ -3,7 +3,7 @@
 // fixed_in empty until a release fixes it. The draft goes to: mentura product/bugs/<id> write --venture <id> --input -
 import { existsSync, readdirSync } from "node:fs";
 import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
-import { ventureFile } from "../venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 export const record = "bug";
 export const describe = () => ({ record, ask: questions(schemaOf(record)).filter((q) => !["id", "venture", "status", "fixed_in"].includes(q.field)),

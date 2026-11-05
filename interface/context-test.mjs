@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Tests for context (interface/context.mjs), instrumentation (interface/instrumentation.mjs) and agent
+// Tests for context (interface/context.mjs), instrumentation (packages/core/instrumentation.mjs) and agent
 // vitals (interface/vitals.mjs): header first, layout once per session, sibling navigation, the
 // template, prefetch and its budget, the context budget, scoped instructions, streaming, events,
 // vitals and their check, and the trace a platform exporter ships. They run on a copy of the example
@@ -26,7 +26,7 @@ config({ instrumentation: { events: true } });
 
 const { call, judge } = await import("./router.mjs");
 const ctx = await import("./context.mjs");
-const { events, register } = await import("./instrumentation.mjs");
+const { events, register } = await import("../packages/core/instrumentation.mjs");
 const { vitals } = await import("./vitals.mjs");
 const { handle } = await import("./mcp/server.mjs");
 const { propose, approve } = await import("../schema/decisions.mjs");

@@ -13,7 +13,7 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { reviewIsIndependent } from "./verify.mjs";
 
 const [dir, id] = process.argv.slice(2);

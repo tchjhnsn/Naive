@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { address, isText, words } from "./contract.mjs";
 import { connectAll } from "./index.mjs";
-import { ventureFile } from "../../schema/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 export const FILE = "_catalog/catalog.json";
 const MAX_BYTES = 1_000_000;

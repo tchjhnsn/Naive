@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { closeSync, constants, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, statSync, unlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { stealDeadLock, takeStaleLock } from "../interface/provenance.mjs";
+import { stealDeadLock, takeStaleLock } from "../packages/core/provenance.mjs";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));

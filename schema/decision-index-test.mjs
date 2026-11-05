@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { decisions, propose } from "./decisions.mjs";
 import { phaseWeight, rankHistory, read, rebuild, update } from "./decision-index.mjs";
-import { record } from "../interface/provenance.mjs";
+import { record } from "../packages/core/provenance.mjs";
 import { call } from "../interface/router.mjs";
 
 let failed = 0;

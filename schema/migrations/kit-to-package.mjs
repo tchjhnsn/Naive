@@ -14,7 +14,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 export const id = "kit-to-package";
 export const describe = "Moves Naive packages out of naive.config.json kits into packages, and rewrites layer and kit routes inside records (decision unlocks, team-plan access, where-used parents) to package routes";

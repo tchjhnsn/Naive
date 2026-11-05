@@ -19,9 +19,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, routes } from "../interface/router.mjs";
-import { agentFromEnv, record as prov } from "../interface/provenance.mjs";
+import { agentFromEnv, record as prov } from "../packages/core/provenance.mjs";
 import { propose } from "./decisions.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const PLAN = ".release/migrate-plan.json";
 const MAX_FILE = 512 * 1024;

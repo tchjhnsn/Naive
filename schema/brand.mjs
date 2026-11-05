@@ -31,7 +31,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allowsCopy, factsOf, registerOf, REGISTER } from "./assets.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const BRAND = "marketing/brand.json";
 export const SITEMAPS = ["marketing/sitemap.json", "operations/marketing/sitemap.json"];

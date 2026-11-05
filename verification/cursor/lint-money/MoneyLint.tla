@@ -171,6 +171,6 @@ MalformedSkipped ==
   /\ (phase = "bad" => ~crashed /\ ~flaggedT)
   /\ (account = "bad" => ~crashed /\ ~flaggedA)
 
-\* Record bytes are read only through ventureFile (schema/venture-paths.mjs). No other channel exists here.
+\* Record bytes are read only through ventureFile (packages/core/venture-paths.mjs). No other channel exists here.
 ReadsViaVentureFile == TRUE
 ====

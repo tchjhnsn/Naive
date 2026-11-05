@@ -12,7 +12,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { grade, gradeRecord } from "./check-validation.mjs";
 import { label } from "./assess-problem.mjs";
-import { logicalFiles, ventureFile } from "./venture-paths.mjs";
+import { logicalFiles, ventureFile } from "../packages/core/venture-paths.mjs";
 
 const DAY = 86400000;
 const UNITS = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };

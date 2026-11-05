@@ -18,7 +18,7 @@ import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { humanText, transcriptFiles } from "../scripts/diagnose-transcripts.mjs";
 import { addDays, localDate, daysBetween, zoneOf } from "./clock.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { findWorkspace } from "./workspace.mjs";
 
 export const GAP_MINUTES = 10;

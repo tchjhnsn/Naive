@@ -9,6 +9,8 @@ description: "Index of the Everything Ecosystem schema: every record type an ins
 
 # Schema index
 
+Where a venture's logical files sit (`ventureFile`, `physical`) moved to [`packages/core/venture-paths.mjs`](../packages/core/venture-paths.mjs) in the monorepo rebuild; `schema/venture-paths.mjs` re-exports it for code outside this repository.
+
 The Everything Ecosystem is a schema, version in `VERSION`. An instance is a builder's workspace: a set of ventures, each with its product cards and, where it keeps them, account records (EE-011, EE-021). Personal life is out of scope (EE-009). This index lists every record type, so anyone can build an instance from this repo alone. Its machine form is `schema/data-model.json` (EE-018): every record type, its owning layer, schema, paths and references, checked by `schema/check-data-model.mjs`. There is no single master schema; the data model is the map of all of them. Nouns follow `docs/ontology.md` (EE-014).
 
 Status:

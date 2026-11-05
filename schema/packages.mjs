@@ -31,7 +31,7 @@ import { route } from "../purpose/frameworks/idea-map/route.mjs";
 import { loadPackages } from "./load-packages.mjs";
 // Upgrades hook (U-5): packages a venture adopted early in naive.config.json open now.
 import { adopted } from "./naive-config.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { scale } from "./canonical.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;

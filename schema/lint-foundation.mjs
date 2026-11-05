@@ -8,7 +8,7 @@
 // Every record is read through ventureFile. A missing or malformed record is skipped.
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const hasPhrase = (text, term) => {

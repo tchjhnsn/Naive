@@ -23,7 +23,7 @@ export const steps = [
   }],
   // venture.json has no write route, so an agent's write is logged straight to the provenance log.
   [/^an agent writes the venture record$/, (w) => {
-    const r = spawnSync("node", ["--input-type=module", "-e", `import { record, agentFromEnv } from ${JSON.stringify(join(repo, "interface/provenance.mjs"))}; record(${JSON.stringify(w.dir)}, { entity: "venture.json", route: "venture", activity: "write", agent: agentFromEnv("agent", "router") });`], { encoding: "utf8" });
+    const r = spawnSync("node", ["--input-type=module", "-e", `import { record, agentFromEnv } from ${JSON.stringify(join(repo, "packages/core/provenance.mjs"))}; record(${JSON.stringify(w.dir)}, { entity: "venture.json", route: "venture", activity: "write", agent: agentFromEnv("agent", "router") });`], { encoding: "utf8" });
     ok(r.status === 0, r.stderr);
   }],
   [/^the founder asks for the strategic foundation$/, (w) => { w.report = report(w); }],

@@ -61,7 +61,7 @@ process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 const shared = join(ws, "shared");
 const { call } = await import("../../interface/router.mjs");
-const { entries } = await import("../../interface/provenance.mjs");
+const { entries } = await import("../../packages/core/provenance.mjs");
 const kettle = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0], id: "kettle", name: "Kettle (in the shared folder)" };
 write(shared, { "products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" });
 const map = { sources: [{ id: "shared", connector: "filesystem", root: "../../shared" }], records: { product: "shared" } };

@@ -32,7 +32,7 @@ import { redact } from "../schema/redact.mjs";
 import { listFrameworks } from "../schema/user-frameworks.mjs";
 import { findWorkspace } from "../schema/workspace.mjs";
 import { localDate, zoneOf } from "../schema/clock.mjs";
-import { ventureFile } from "../schema/venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 /** @typedef {{ file: string, timestamp: string | null, sha256: string }} Citation */
 /** @typedef {{ kind: string, also: string[], quote: string, file: string | null, timestamp: string | null, source: Citation | null, by: "heuristic" | "model", asked?: number, sources?: Citation[], matches?: string | null, status?: "recorded" | "missed" }} Candidate */

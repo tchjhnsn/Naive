@@ -9,7 +9,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { telosExitCriteria } from "../frameworks/telos/adapter.mjs";
 import { ambitionOf } from "../frameworks/ambition-tier/adapter.mjs";
 

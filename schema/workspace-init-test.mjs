@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { addEvent, events, fromICS, toICS } from "./calendar.mjs";
 import { due, inDays, localDate, overdue, toInstant, zoneOf } from "./clock.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const naive = join(repo, "interface/cli/naive.mjs");

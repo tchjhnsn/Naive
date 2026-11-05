@@ -21,11 +21,11 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { agentFromEnv, record } from "../interface/provenance.mjs";
+import { agentFromEnv, record } from "../packages/core/provenance.mjs";
 import { routes, glob } from "../interface/router.mjs";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.mjs";
 import { packages as packageFit } from "./packages.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 export const STAGE = ".naive/upgrade";

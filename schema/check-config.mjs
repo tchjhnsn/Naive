@@ -22,8 +22,8 @@ import { CONFIG, configFor, installed, pinProblems, rawConfig } from "./naive-co
 import { evaluate, patternRe, rulesFor } from "./gate.mjs";
 import { teamPlan } from "./access.mjs";
 import { gateOf, repo, resolve, routes } from "../interface/router.mjs";
-import { agentFromEnv, record } from "../interface/provenance.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { agentFromEnv, record } from "../packages/core/provenance.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const FRAMEWORKS = ["idea-map"];
 

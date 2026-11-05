@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { independent, reviewIsIndependent } from "./verify.mjs";
 
 const dir = process.argv[2];

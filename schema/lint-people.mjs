@@ -9,7 +9,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { logical, ventureFile } from "./venture-paths.mjs";
+import { logical, ventureFile } from "../packages/core/venture-paths.mjs";
 import { roles as roleRegistry } from "./venture-type.mjs";
 
 const asArray = (x) => Array.isArray(x) ? x : [];
