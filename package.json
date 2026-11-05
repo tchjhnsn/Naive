@@ -55,6 +55,8 @@
     "docs/decisions/",
     "docs/ontology.md",
     "docs/ontology.json",
+    "docs/ontology-catalog.json",
+    "docs/upgrades/",
     "lean/Naive/",
     "lean/README.md",
     "!**/*test.mjs",
