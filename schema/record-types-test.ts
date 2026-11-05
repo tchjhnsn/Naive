@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, globSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { readDataModel, recordRelative } from "../packages/records/index.mjs";
 
 type Case = { type: string; accepts: unknown[]; rejects: unknown[] };
 type RecordType = { schema: string | null; form?: string; paths: string[] };
@@ -170,12 +171,13 @@ expect("--check fails on a hand edit", generate(stale, "--check").status === 1);
 
 // Which files a schema governs comes from schema/data-model.json; a file two record types match
 // belongs to the more specific glob, as in schema/validate.py.
-const model = JSON.parse(readFileSync(join(root, "schema/data-model.json"), "utf8")) as { records: RecordType[] };
+const model = readDataModel() as { records: RecordType[] };
 const pascal = (s: string) => s.split(/[^a-zA-Z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join("");
 const best = new Map<string, { weight: number; type: string; form: string }>();
 for (const { schema, form = "json", paths } of model.records) {
-  if (!schema?.startsWith("schema/") || !["json", "json-list", "json-lines"].includes(form)) continue;
-  const type = pascal(schema.slice("schema/".length).replace(/\.schema\.json$/, ""));
+  const inside = schema ? recordRelative(schema) : null;
+  if (inside === null || !["json", "json-list", "json-lines"].includes(form)) continue;
+  const type = pascal(inside.replace(/\.schema\.json$/, ""));
   for (const glob of paths) {
     const weight = glob.replaceAll("**/", "").replaceAll("*", "").length;
     for (const file of globSync(glob, { cwd: root })) {

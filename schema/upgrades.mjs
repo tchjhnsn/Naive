@@ -26,6 +26,7 @@ import { routes, glob } from "../packages/routes/routes.mjs";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.mjs";
 import { packages as packageFit } from "./packages.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { schemaNameOf } from "../packages/records/index.mjs";
 
 export const repo = new URL("..", import.meta.url).pathname;
 export const STAGE = ".naive/upgrade";
@@ -312,7 +313,7 @@ export function runChecks(vdir, { reg = registry() } = {}) {
   for (const r of routes().filter((x) => x.kind === "record" && x.schema && (x.form ?? "json") === "json")) {
     for (const f of files.filter((f) => r.files.some((g) => glob(g).test(f)))) {
       n++;
-      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", ventureFile(vdir, f)], { encoding: "utf8" });
+      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schemaNameOf(r.schema), "--file", ventureFile(vdir, f)], { encoding: "utf8" });
       if (v.status !== 0) bad.push(`${f} does not match ${r.schema}: ${(v.stdout + v.stderr).trim().split("\n")[0]}`);
     }
   }

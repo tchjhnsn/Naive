@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, checkCycles, checkVersions, cycles, graph } from "./dependency-rules.ts";
+import { check, checkCycles, checkLeaves, checkVersions, cycles, graph } from "./dependency-rules.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 let passed = 0;
@@ -60,6 +60,22 @@ test("acyclic: a known cycle that is gone must leave the list", () => {
   const found = checkCycles(cycles(graph(r.dir, r.paths)), { known_cycles: [["a", "b"]] });
   assert.equal(found.length, 1);
   assert.match(found[0].detail, /known cycle a b is gone/);
+});
+
+test("leaf: a leaf folder that imports another unit fails, naming the import", () => {
+  const r = repo({
+    "packages/records/index.mjs": `import { x } from "../core/x.mjs";\nimport "./part.mjs";\nimport "node:fs";`,
+    "packages/records/part.mjs": "export {};",
+    "packages/core/x.mjs": "export const x = 1;",
+  });
+  const found = checkLeaves(r.dir, { "packages/records": "imports nothing" }, r.paths).map((f) => f.detail);
+  assert.deepEqual(found, ["packages/records/index.mjs imports packages/core/x.mjs, but packages/records imports nothing outside itself (imports nothing)"]);
+});
+
+test("leaf: a leaf folder that imports only itself and Node passes; one with no code must leave the list", () => {
+  const r = repo({ "packages/records/index.mjs": `import "./part.mjs";\nimport { join } from "node:path";`, "packages/records/part.mjs": "export {};" });
+  assert.deepEqual(checkLeaves(r.dir, { "packages/records": "imports nothing" }, r.paths), []);
+  assert.match(checkLeaves(r.dir, { "packages/gone": "imports nothing" }, r.paths)[0].detail, /packages\/gone holds no code/);
 });
 
 test("one version: two workspaces asking for different versions fail", () => {

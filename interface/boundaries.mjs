@@ -17,8 +17,9 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, relative } from "node:path";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { ROOT, dataModelFile, readDataModel, readSchema, schemaFile, schemaNameOf } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -40,7 +41,7 @@ export function jsonProblem(file) {
   try { JSON.parse(text); return null; } catch (e) { return `does not parse: ${String(e.message).split("\n")[0]}${where(text, String(e.message))}`; }
 }
 
-const VENTURE_SCHEMA = () => load(join(repo, "schema/venture.schema.json"));
+const VENTURE_SCHEMA = () => readSchema("venture");
 
 /** A minimal venture.json for a folder, from the schema's required fields: what recover writes. */
 export function minimalVenture(dir) {
@@ -82,9 +83,10 @@ export function ventureHealth(dir) {
 
 // The framework files every route depends on. A broken one stops every route, so it is checked first.
 function frameworkFiles() {
-  const fixed = ["schema/data-model.json", "schema/need-now.json", "schema/venture.schema.json", "library/packages/catalog.json", "purpose/frameworks/product-anatomy/phases.json", "purpose/strategic-foundation.json", "operations/departments.json"];
+  const fromRoot = (f) => relative(ROOT, f);
+  const fixed = [fromRoot(dataModelFile()), "schema/need-now.json", fromRoot(schemaFile("venture")), "library/packages/catalog.json", "purpose/frameworks/product-anatomy/phases.json", "purpose/strategic-foundation.json", "operations/departments.json"];
   let layers = [];
-  try { layers = load(join(repo, "schema/data-model.json")).layers.map((l) => `${l}/layer.json`); } catch {}
+  try { layers = readDataModel().layers.map((l) => `${l}/layer.json`); } catch {}
   const pkgs = existsSync(join(repo, "library", "packages")) ? readdirSync(join(repo, "library", "packages")).map((n) => `library/packages/${n}/package.json`).filter((f) => existsSync(join(repo, f))) : [];
   return [...fixed, ...layers, "schema/layer.json", ...pkgs];
 }
@@ -119,7 +121,7 @@ export function contain(items, parse, idOf = (x) => x.path) {
 }
 
 function validateFile(file, schema) {
-  const p = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema.replace(/^schema\//, ""), "--file", file], { encoding: "utf8" });
+  const p = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schemaNameOf(schema), "--file", file], { encoding: "utf8" });
   return p.status === 0 ? null : (p.stdout + p.stderr).trim();
 }
 

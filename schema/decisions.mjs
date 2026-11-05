@@ -37,10 +37,11 @@ import { impact } from "./impact.mjs";
 import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
 import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../packages/core/venture-paths.mjs";
+import { readDataModel, schemaNameOf } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-const MODEL = load(join(repo, "schema/data-model.json"));
+const MODEL = readDataModel();
 export const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
 const FOUNDATION_RECORDS = new Set(FRAME.questions.flatMap((q) => q.statements).map((s) => s.record).filter(Boolean));
@@ -371,7 +372,8 @@ export function merge(dir, id, { by, role, via = "cli", note, today } = {}) {
   // do. A record that does not exist yet has no gaps, so a new record must pass whole. A validator that
   // cannot run proves nothing, so it refuses the merge.
   for (const [rel, rec] of recs) {
-    const schema = MODEL.records.find((r) => r.id === recordOf(rel))?.schema?.replace(/^schema\//, "");
+    const stored = MODEL.records.find((r) => r.id === recordOf(rel))?.schema;
+    const schema = stored && schemaNameOf(stored);
     if (!schema) continue;
     const f = ventureFile(dir, rel);
     const before = existsSync(f) ? schemaErrors(load(f), schema) : [];

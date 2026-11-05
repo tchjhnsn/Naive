@@ -17,11 +17,12 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { canonicalHome, migrated } from "./canonical.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 export const FRAME = load(join(repo, "purpose/strategic-foundation.json"));
-const MODEL = load(join(repo, "schema/data-model.json"));
+const MODEL = readDataModel();
 
 // "." is the whole record: a collection whose items are the statement, such as one file per ICP profile.
 const get = (o, path) => path === "." ? o : path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);

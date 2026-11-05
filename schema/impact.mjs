@@ -22,9 +22,9 @@ import { HOME } from "./packages.mjs";
 import { entries as provenance } from "../packages/core/provenance.mjs";
 import { mark, notify } from "./stale.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "../packages/core/venture-paths.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
-const MODEL = JSON.parse(readFileSync(join(repo, "schema/data-model.json"), "utf8"));
+const MODEL = readDataModel();
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const stamp = () => new Date().toISOString().replace(/\.\d+Z$/, "Z");
 

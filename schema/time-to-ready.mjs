@@ -17,6 +17,7 @@ import { join, dirname } from "node:path";
 import { needNow } from "./need-now.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const day = (d) => d ? d.slice(0, 10) : null;
@@ -36,8 +37,7 @@ const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: t
 const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
 
 export function timeToReady(dir) {
-  const repo = new URL("..", import.meta.url).pathname;
-  const model = load(join(repo, "schema/data-model.json"));
+  const model = readDataModel();
   const v = load(join(dir, "venture.json"));
   const start = day(v.opened) ?? firstSeen(join(dir, "venture.json"));
   const here = files(dir);

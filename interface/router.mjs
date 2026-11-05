@@ -76,6 +76,7 @@ import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { coreOf, statementsIn, withCore } from "../schema/venture-core.mjs";
 import { telosView } from "../frameworks/telos/adapter.mjs";
 import { migrated, scale } from "../schema/canonical.mjs";
+import { schemaNameOf } from "../packages/records/index.mjs";
 import {
   PHASES, allowed, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
 } from "../packages/routes/routes.mjs";
@@ -355,7 +356,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const scratch = mkdtempSync(join(tmpdir(), "mentura-write-"));
     const tmp = join(scratch, basename(file));
     writeFileSync(tmp, text);
-    const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", r.schema.replace(/^schema\//, ""), "--file", tmp], { encoding: "utf8" });
+    const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schemaNameOf(r.schema), "--file", tmp], { encoding: "utf8" });
     rmSync(scratch, { recursive: true, force: true });
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) };
     const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;

@@ -8,6 +8,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readSchema } from "../packages/records/index.mjs";
 
 type Mapping = { skos: string; owl: string; note?: string; fields?: Record<string, Mapping> };
 type Def = { properties?: Record<string, unknown>; allOf?: { if?: { properties?: { verb?: { const?: string } } }; then?: { properties?: { kind?: { enum?: string[] } } } }[]; enum?: string[] };
@@ -16,7 +17,7 @@ type Ran = { status: number | null; out: string };
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const tmp = mkdtempSync(join(tmpdir(), "ontology-metamodel-"));
-const metamodel = JSON.parse(readFileSync(join(root, "schema/ontology-metamodel.schema.json"), "utf8")) as Metamodel;
+const metamodel = readSchema("ontology-metamodel") as Metamodel;
 let failed = 0;
 const expect = (name: string, ok: boolean, detail = "") => {
   console.log(`${ok ? "ok  " : "FAIL"} ${name}${ok || !detail ? "" : `\n     ${detail.trim()}`}`);

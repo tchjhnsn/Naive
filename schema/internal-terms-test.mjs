@@ -7,11 +7,12 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { leaks } from "./check-leaks.mjs";
+import { readSchema } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
-const schema = JSON.parse(readFileSync(join(repo, "schema/internal-terms.schema.json"), "utf8"));
+const schema = readSchema("internal-terms");
 const item = schema.properties.patterns.items;
 
 // The schema's shape, checked without a validator: required keys, known keys, enums, compiling regexes.

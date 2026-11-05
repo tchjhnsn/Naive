@@ -4,7 +4,7 @@ Up: [repository](../../AGENTS.md)
 
 ## What this is
 
-The route table and the pure helpers that read it. Every route a venture has is generated here from `schema/data-model.json`, the layer and package manifests and `schema/need-now.json`, never written by hand (EE-030, EE-032). It moved here from `interface/router.mjs` in the monorepo rebuild so that `schema/` and `knowledge/` can read the route table without importing the router, which imports them. It imports only Node built-ins and [`packages/core`](../core/README.md).
+The route table and the pure helpers that read it. Every route a venture has is generated here from the data model (read through [`packages/records`](../records/README.md)), the layer and package manifests and `schema/need-now.json`, never written by hand (EE-030, EE-032). It moved here from `interface/router.mjs` in the monorepo rebuild so that `schema/` and `knowledge/` can read the route table without importing the router, which imports them. It imports only Node built-ins, [`packages/core`](../core/README.md) and [`packages/records`](../records/README.md).
 
 ## Where things are
 
@@ -23,7 +23,7 @@ The route table and the pure helpers that read it. Every route a venture has is 
 ## How it connects
 
 - Called by: [`interface/router.mjs`](../../interface/router.mjs), and in `schema/` the decision matrix, freshness, staleness, upgrades and the config, team, where-used and docs checks; [`knowledge/connectors/catalog.mjs`](../../knowledge/connectors/catalog.mjs); the site's data scripts.
-- Calls: [`packages/core/action-scope.mjs`](../core/action-scope.mjs) to build the table once per action, and [`packages/core/venture-paths.mjs`](../core/venture-paths.mjs).
+- Calls: [`packages/core/action-scope.mjs`](../core/action-scope.mjs) to build the table once per action, [`packages/core/venture-paths.mjs`](../core/venture-paths.mjs), and [`packages/records/index.mjs`](../records/index.mjs) for the data model.
 
 ## Not built
 

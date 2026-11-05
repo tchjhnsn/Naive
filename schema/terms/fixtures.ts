@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Base } from "./engine.ts";
 import type { Arrangement } from "./levels.ts";
+import { recordsIn } from "../../packages/records/index.mjs";
 
 export type Fixture<F extends Base> = { id: string; says: string; source: string; parts: string[]; facts: F; expects: Record<string, boolean> };
 
@@ -20,7 +21,7 @@ const stack = (parts: string[]): [string, string][] => parts.slice(1).map((p, i)
  *  reads (the rule schema/check-data-model.mjs uses for its layer relationships). */
 function manifests(repo: string): Fixture<Arrangement> {
   const read = (f: string) => JSON.parse(readFileSync(join(repo, f), "utf8"));
-  const model: { layers: string[]; records: { id: string; layer: string }[] } = read("schema/data-model.json");
+  const model: { layers: string[]; records: { id: string; layer: string }[] } = recordsIn(repo).readDataModel();
   const owner = new Map(model.records.map((r) => [r.id, r.layer]));
   const parts = [...model.layers, "system"];
   const kits: { layer: string; reads?: string[] }[] = [...model.layers.map((l) => read(`${l}/layer.json`)), read("schema/layer.json")];

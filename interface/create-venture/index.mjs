@@ -44,8 +44,10 @@ const fw = JSON.parse(readFileSync(join(framework, "package.json"), "utf8"));
 const { layers: PHASE_LAYERS } = JSON.parse(readFileSync(join(framework, "schema/scaffold/defaults.json"), "utf8"));
 const PHASES = Object.keys(PHASE_LAYERS);
 const LAYERS = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
-// The legal forms venture.json accepts, from its schema, so the question can only offer valid answers.
-const FORMS = JSON.parse(readFileSync(join(framework, "schema/venture.schema.json"), "utf8")).properties.form.properties.legal_form.enum;
+// The legal forms venture.json accepts, from its schema, so the question can only offer valid answers. The schema is
+// found through the framework's record types resolver, which knows where the record types sit in that version.
+const { readSchema } = await import(join(framework, "packages/records/index.mjs"));
+const FORMS = readSchema("venture").properties.form.properties.legal_form.enum;
 
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };

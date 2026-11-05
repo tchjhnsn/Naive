@@ -69,6 +69,8 @@ export const REGISTRY: Registry = {
   "schema/check-publications.mjs": plain("manifest entries match built outputs by sha256 and carry a person as approver"),
   "schema/check-ready.mjs": plain("a handoff's definition of ready: objective fields present"),
   "schema/check-reasons.mjs": plain("cited files still match the hash frozen at approval"),
+  "schema/check-record-paths-test.ts": plain("proves the record paths check catches what it must"),
+  "schema/check-record-paths.ts": plain("code reads schema files and the data model through packages/records; it matches path text"),
   "schema/check-roadmap.mjs": plain("roadmap steps form no cycle and name known frames and roles"),
   "schema/check-sdlc-catalog.ts": plain("catalog ids, decision classes and task references are unique and known"),
   "schema/check-sources.mjs": plain("the source map names known connectors and write modes"),

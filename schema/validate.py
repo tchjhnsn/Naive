@@ -38,14 +38,34 @@ except ImportError as error:
     sys.exit(2)
 
 root = Path(__file__).resolve().parent.parent
+
+# Where the record types sit, the same mapping as packages/records/index.mjs (FOLDER and PREFIXES there).
+# schema/check-record-paths.ts fails when the two disagree. Step 5a-2 moves the folder to packages/records
+# and adds its prefix here, keeping "schema/" for one release.
+RECORDS_FOLDER = "schema"
+RECORD_PREFIXES = ("schema/",)
+
+def record_relative(stored):
+    """A stored repository path with the record types' prefix taken off, or None when it names another folder."""
+    p = stored[2:] if stored.startswith("./") else stored
+    for prefix in RECORD_PREFIXES:
+        if p.startswith(prefix):
+            return p[len(prefix):]
+    return None
+
+def record_path(stored, base=root):
+    """A stored repository path (schema/venture.schema.json, as data-model.json names a schema) to the file."""
+    inside = record_relative(stored)
+    return base / stored if inside is None else base / RECORDS_FOLDER / inside
+
 # The data model names every record type, its schema and where its records live (EE-018).
 # Only JSON records with a schema under schema/ are validated here; the methodology catalog's
 # Markdown records are validated by ee.mjs.
-model = json.loads((root / "schema/data-model.json").read_text())
+model = json.loads((root / RECORDS_FOLDER / "data-model.json").read_text())
 RULES = [(r["id"], r["schema"], r.get("form", "json"), r["paths"]) for r in model["records"]
-         if r["schema"] and r["schema"].startswith("schema/") and r.get("form", "json") in ("json", "json-list", "json-lines")]
+         if r["schema"] and record_relative(r["schema"]) is not None and r.get("form", "json") in ("json", "json-list", "json-lines")]
 # Every schema is registered by its $id, so one may $ref another (or itself) by file name.
-schemas = {p.name: json.loads(p.read_text()) for p in (root / "schema").glob("*.schema.json")}
+schemas = {p.name: json.loads(p.read_text()) for p in (root / RECORDS_FOLDER).glob("*.schema.json")}
 registry = Registry().with_resources((s.get("$id", n), Resource.from_contents(s)) for n, s in schemas.items())
 failed = checked = 0
 if "--file" in sys.argv:
@@ -79,7 +99,7 @@ for name, schema, form, globs in RULES:
 validators = {}
 for f in sorted(best):
     _, schema, form = best[f]
-    v = validators.setdefault(schema, jsonschema.Draft202012Validator(schemas[Path(schema).name], registry=registry, format_checker=jsonschema.FormatChecker()))
+    v = validators.setdefault(schema, jsonschema.Draft202012Validator(schemas[record_path(schema).name], registry=registry, format_checker=jsonschema.FormatChecker()))
     try:
         text = Path(f).read_text()
         docs = [json.loads(l) for l in text.splitlines() if l.strip()] if form == "json-lines" else json.loads(text)

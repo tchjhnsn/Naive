@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile, spawnSync } from "node:child_process";
 import { RELATIONS, namesBetween } from "../../../schema/terms/relations.ts";
+import { readSchema } from "../../../packages/records/index.mjs";
 
 // Tests start in order and may await a child process, so the command runs overlap; results print in order.
 let failed = 0;
@@ -195,8 +196,8 @@ t("a cycle stated through broader and narrower is one cycle; a self link, a miss
 });
 
 t("the schemas, the term engine and Lean name the same relations", () => {
-  const idea = JSON.parse(readFileSync(repoFile("schema/founder-idea.schema.json"), "utf8"));
-  const graph = JSON.parse(readFileSync(repoFile("schema/idea-graph.schema.json"), "utf8"));
+  const idea = readSchema("founder-idea");
+  const graph = readSchema("idea-graph");
   ok(JSON.stringify(idea.$defs.relation.enum) === JSON.stringify(namesBetween("idea")), `relation enum ${idea.$defs.relation.enum}`);
   ok(JSON.stringify(idea.$defs.attachment.enum) === JSON.stringify(namesBetween("scope")), `attachment enum ${idea.$defs.attachment.enum}`);
   ok(graph.properties.edges.items.properties.relation.$ref === "founder-idea.schema.json#/$defs/relation", "graph edges share the relation list");

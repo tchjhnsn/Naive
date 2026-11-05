@@ -3,7 +3,7 @@
 //   node scripts/dependency-rules.ts            check, exit 1 on a broken rule
 //   node scripts/dependency-rules.ts --graph    print the import graph between units
 //
-// Two rules:
+// Three rules:
 //
 //   acyclic       Units import each other without cycles. A unit is a tracked top-level folder until the code
 //                 moves into workspace packages; then each package is a unit. Today's cycles are listed in
@@ -12,6 +12,9 @@
 //   one version   Every package.json of the workspace (the root and each workspace in its `workspaces`, where a
 //                 trailing `/*` names every folder under it with a package.json) asks for a shared dependency by the
 //                 same version, across dependencies, devDependencies, peerDependencies and optionalDependencies.
+//   leaf          A folder listed under `leaves` in scripts/dependency-rules.json imports nothing in the repository
+//                 outside itself. packages/records, the record types' resolver, is one: every unit reads the record
+//                 types through it, so it must sit below them all.
 //
 // An import is a relative specifier in `import ... from`, `export ... from`, `import "..."`, `import("...")` or
 // `require("...")` in a tracked .mjs, .js, .cjs, .ts or .tsx file, whose target exists. A specifier that names no file
@@ -22,9 +25,9 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, normalize, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export type Rules = { readonly known_cycles: readonly (readonly string[])[] };
+export type Rules = { readonly known_cycles: readonly (readonly string[])[]; readonly leaves?: Readonly<Record<string, string>> };
 export type Graph = ReadonlyMap<string, ReadonlyMap<string, number>>;
-export type Finding = { readonly rule: "acyclic" | "one-version"; readonly detail: string };
+export type Finding = { readonly rule: "acyclic" | "one-version" | "leaf"; readonly detail: string };
 
 const CODE = /\.(mjs|cjs|js|ts|tsx)$/;
 const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["'](\.{1,2}\/[^"']+)["']/g;
@@ -116,6 +119,25 @@ export function checkCycles(found: readonly (readonly string[])[], rules: Rules)
   return out;
 }
 
+/** Findings for the leaf rule: an import from a leaf folder to a file outside it, or a leaf that holds no code. */
+export function checkLeaves(root: string, leaves: Readonly<Record<string, string>>, files = tracked(root)): Finding[] {
+  const out: Finding[] = [];
+  for (const leaf of Object.keys(leaves).sort()) {
+    const inside = (p: string) => p === leaf || p.startsWith(`${leaf}/`);
+    const code = files.filter((f) => inside(f) && CODE.test(f) && existsSync(join(root, f)));
+    if (!code.length) out.push({ rule: "leaf", detail: `${leaf} holds no code; remove it from leaves in scripts/dependency-rules.json` });
+    for (const file of code) {
+      for (const m of readFileSync(join(root, file), "utf8").matchAll(SPECIFIER)) {
+        const target = normalize(join(dirname(file), m[1]));
+        if (inside(target)) continue;
+        if (!target.startsWith("..") && !existsSync(join(root, target))) continue; // names no file
+        out.push({ rule: "leaf", detail: `${file} imports ${target}, but ${leaf} imports nothing outside itself (${leaves[leaf]})` });
+      }
+    }
+  }
+  return out;
+}
+
 type Deps = Record<string, string>;
 type Manifest = {
   readonly workspaces?: readonly string[] | { readonly packages?: readonly string[] };
@@ -163,7 +185,7 @@ export function checkVersions(root: string): Finding[] {
 
 export function check(root: string): Finding[] {
   const rules = JSON.parse(readFileSync(join(root, "scripts/dependency-rules.json"), "utf8")) as Rules;
-  return [...checkCycles(cycles(graph(root)), rules), ...checkVersions(root)];
+  return [...checkCycles(cycles(graph(root)), rules), ...checkLeaves(root, rules.leaves ?? {}), ...checkVersions(root)];
 }
 
 if (process.argv[1] && relative(process.argv[1], fileURLToPath(import.meta.url)) === "") {
@@ -178,6 +200,6 @@ if (process.argv[1] && relative(process.argv[1], fileURLToPath(import.meta.url))
     const findings = check(root);
     for (const f of findings) console.log(`FAIL  ${f.rule}: ${f.detail}`);
     if (findings.length) process.exit(1);
-    console.log("pass  dependency rules: no new cycle between units, one version per shared dependency");
+    console.log("pass  dependency rules: no new cycle between units, leaf folders import nothing else, one version per shared dependency");
   }
 }

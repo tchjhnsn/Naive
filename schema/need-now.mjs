@@ -17,6 +17,7 @@ import { join } from "node:path";
 import { catalog } from "./departments.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { scale } from "./canonical.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -71,7 +72,7 @@ export function probability(spec, phase, f) {
 
 export function needNow(dir) {
   const N = load(join(root, "schema/need-now.json"));
-  const model = load(join(root, "schema/data-model.json"));
+  const model = readDataModel();
   const f = factsOf(dir);
   const v = load(join(dir, "venture.json"));
   const here = files(dir);

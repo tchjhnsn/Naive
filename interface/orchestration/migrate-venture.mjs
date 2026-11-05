@@ -17,11 +17,11 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
 import { call, routes } from "../router.mjs";
 import { agentFromEnv, record as prov } from "../../packages/core/provenance.mjs";
 import { propose } from "../../schema/decisions.mjs";
 import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { recordPath } from "../../packages/records/index.mjs";
 
 export const PLAN = ".release/migrate-plan.json";
 const MAX_FILE = 512 * 1024;
@@ -83,7 +83,7 @@ export function plan(from, dir, { agent = runAgent } = {}) {
     size += f.text.length; given.push(f);
   }
   const rs = writable();
-  const schemaOf = (r) => { try { return load(join(dirname(fileURLToPath(import.meta.url)), "..", "..", r.schema)); } catch { return null; } };
+  const schemaOf = (r) => { try { return load(recordPath(r.schema)); } catch { return null; } };
   const prompt = `You are moving an existing project into Naive, a venture development framework. Read the files below and rewrite what they contain as Naive records.
 
 Rules:

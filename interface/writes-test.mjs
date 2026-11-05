@@ -9,6 +9,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { dataModelFile, recordsIn } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 let failed = 0;
@@ -244,7 +245,7 @@ expect("E-8: the framework is sound in this repository", frameworkHealth() === n
 // A broken data model, in a copy of the framework so the repository is never touched.
 const copy = mkdtempSync(join(tmpdir(), "writes-framework-"));
 for (const d of ["schema", "interface", "knowledge", "purpose", "operations", "evidence", "governance", "library", "packages", "platform", "frameworks"]) if (existsSync(join(repo, d))) cpSync(join(repo, d), join(copy, d), { recursive: true });
-writeFileSync(join(copy, "schema/data-model.json"), readFileSync(join(repo, "schema/data-model.json"), "utf8").slice(0, 500));
+writeFileSync(recordsIn(copy).dataModelFile(), readFileSync(dataModelFile(), "utf8").slice(0, 500));
 const fw = spawnSync("node", [join(copy, "interface/cli/mentura.mjs"), "foundation/problem", "read", "--venture", "acme"], { encoding: "utf8", env });
 expect("E-8: a broken data model answers with recovery steps, not a stack trace", fw.status === 1 && /the framework is broken: schema\/data-model\.json/.test(fw.stderr) && /Recovery:/.test(fw.stderr) && /check-data-model/.test(fw.stderr), fw.stderr.slice(0, 400));
 rmSync(copy, { recursive: true, force: true });

@@ -12,13 +12,14 @@ import { join } from "node:path";
 import { LOCAL, MAP, registry } from "../knowledge/connectors/index.mjs";
 import { ANY, CONTEXT, specificity } from "../knowledge/connectors/resolve.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node schema/check-sources.mjs <workspace or venture dir>"); process.exit(2); }
 const root = new URL("..", import.meta.url).pathname;
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const model = JSON.parse(readFileSync(join(root, "schema/data-model.json"), "utf8"));
+const model = readDataModel();
 const ventureTypes = new Set(model.records.filter((r) => r.level === "venture").map((r) => r.id));
 const PINNED = new Set(["venture", "provenance", "knowledge-sources"]);
 const reg = registry();

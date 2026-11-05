@@ -47,6 +47,7 @@ import { call, draftOf, gateOf, glob, layout as routerLayout, resolve, routes, v
 import { entries as provEntries } from "../packages/core/provenance.mjs";
 import { tokens } from "../packages/core/instrumentation.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
 const here = dirname(new URL(import.meta.url).pathname);
 const repoRoot = join(here, "..");
@@ -237,7 +238,7 @@ export async function templateFor(r, dir, set = settings(dir)) {
 // ---------------------------------------------------------------------------------------------
 // Prefetch (N-3, N-4, N-12, L-12, C-16)
 
-const MODEL = () => load(join(repoRoot, "schema/data-model.json"));
+const MODEL = () => readDataModel();
 const AFTER = () => { try { return load(join(repoRoot, "library/packages/catalog.json")).records ?? {}; } catch { return {}; } };
 const valuesAt = (o, path) => path.split(".").reduce((xs, k) => xs.flatMap((x) => (Array.isArray(x) ? x : [x]).flatMap((y) => (y && typeof y === "object" && y[k] !== undefined ? [y[k]] : []))), [o]).flat();
 const ROUTEISH = /^[a-z][a-z0-9-]*(\/[a-z0-9.\-[\]]+)+$/;

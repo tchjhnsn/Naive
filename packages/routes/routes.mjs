@@ -15,6 +15,7 @@ import {
   BRAND_ROUTES, brandCommands, cacheRoutes, customersLintCommands, financeCommands, foundationLintCommands,
   investorsLintCommands, legalCommands, moneyCommands, peopleLintCommands, productCommands, validationCommands,
 } from "./commands.mjs";
+import { readDataModel } from "../records/index.mjs";
 
 export const repo = fileURLToPath(new URL("../..", import.meta.url));
 export const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -30,7 +31,7 @@ export const skillsOf = (k) => (k.skills?.length ? k.skills : k.skill ? [k.skill
 
 /** Layer manifests and any package that owns record types. `kit` is the name, kept so the board still groups routes. */
 export function kits() {
-  const model = load(join(repo, "schema/data-model.json"));
+  const model = readDataModel();
   const paths = [...model.layers.map((l) => `${l}/layer.json`), "schema/layer.json"];
   const pkgDir = join(repo, "library", "packages");
   if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`library/packages/${d}/package.json`);
@@ -47,7 +48,7 @@ const needNowPriors = () => load(join(repo, "schema/need-now.json"));
 // Caching hook (F-12): built once per action and shared.
 export function routes() { return memo("routes", buildRoutes); }
 function buildRoutes() {
-  const model = load(join(repo, "schema/data-model.json"));
+  const model = readDataModel();
   const ks = kits();
   const owner = new Map(ks.flatMap((k) => k.records.map((r) => [r, k])));
   const N = needNowPriors();

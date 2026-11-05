@@ -18,6 +18,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { grantBacked, liveGrant, readDelegation } from "../packages/core/venture-paths.mjs";
 import { independent } from "./verify.mjs";
+import { readSchema } from "../packages/records/index.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const template = join(root, "governance/venture-template");
@@ -63,7 +64,7 @@ if (delegators.length !== 1 || delegators[0] !== d.root) errors.push(`root ${d.r
 
 const oneWay = new Set(d.one_way_doors ?? []);
 const live = (g) => liveGrant(g, today);
-const SCOPE = new RegExp(load(join(root, "schema/delegation.schema.json")).properties.grants.items.properties.scope.pattern);
+const SCOPE = new RegExp(readSchema("delegation").properties.grants.items.properties.scope.pattern);
 const name = (g, i) => `grant/${g.id ?? i}`;
 
 d.grants.forEach((g, i) => {

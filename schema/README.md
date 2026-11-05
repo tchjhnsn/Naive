@@ -9,6 +9,8 @@ description: "Index of the Everything Ecosystem schema: every record type an ins
 
 # Schema index
 
+Code reads the schema files and `schema/data-model.json` through the record types' resolver, [`packages/records`](../packages/records/README.md), never by building the path from the folder name; `node schema/check-record-paths.ts` fails when it does, and `schema/validate.py` keeps the same mapping in Python (`RECORDS_FOLDER`, `RECORD_PREFIXES`). The files themselves stay here until step 5a-2 of the monorepo rebuild (design in pull request #243) moves them. A test that builds a copy of the repository points the resolver at it with `recordsIn(copy)`.
+
 Where a venture's logical files sit (`ventureFile`, `physical`) moved to [`packages/core/venture-paths.mjs`](../packages/core/venture-paths.mjs) in the monorepo rebuild; `schema/venture-paths.mjs` re-exports it for code outside this repository.
 
 The route table that modules here read (`routes`, `resolve`, `glob`, `files`, `gateOf`) is [`packages/routes/routes.mjs`](../packages/routes/routes.mjs); import it from there, not from `interface/router.mjs`. The command routes of the brand, the lint suites and the cache are data in [`packages/routes/commands.mjs`](../packages/routes/commands.mjs), and the per-action memo is [`packages/core/action-scope.mjs`](../packages/core/action-scope.mjs); `brand.mjs`, the `lint-*.mjs` modules and `caching.mjs` re-export them.

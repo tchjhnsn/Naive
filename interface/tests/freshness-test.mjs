@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { readDataModel } from "../../packages/records/index.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "freshness-test-"));
@@ -30,7 +31,7 @@ const card = { id: "booking", name: "Clinic booking", description: "Online booki
 
 // Profiles (V-2).
 const P = F.profiles(null);
-const ventureTypes = new Set(JSON.parse(readFileSync(join(repo, "schema/data-model.json"), "utf8")).records.filter((r) => r.level === "venture").map((r) => r.id));
+const ventureTypes = new Set(readDataModel().records.filter((r) => r.level === "venture").map((r) => r.id));
 expect("default profiles: every record type they name is a venture record type", Object.keys(P.records).every((t) => ventureTypes.has(t)), Object.keys(P.records).filter((t) => !ventureTypes.has(t)));
 expect("default profiles follow cacheLife: stale, revalidate and expire, in seconds or units", F.seconds("30d") === 2592000 && F.seconds(90) === 90 && F.seconds("2w") === 1209600 && P.profiles.feedback.revalidate === "30d" && P.profiles.research.revalidate === "90d");
 expect("default profiles add per_phase and live, which Next.js has no need for", P.profiles.assumption.per_phase === true && P.profiles.live.live === true);

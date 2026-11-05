@@ -26,10 +26,11 @@ import { GRAPH, ORDER } from "./graph.mjs";
 import { confirmedIn } from "../../../schema/foundation.mjs";
 import { loadPackages } from "../../../schema/load-packages.mjs";
 import { ventureFile } from "../../../packages/core/venture-paths.mjs";
+import { readDataModel } from "../../../packages/records/index.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const MODEL = load(join(here, "../../../schema/data-model.json")).records;
+const MODEL = readDataModel().records;
 
 // Each destination's home package (EE-069, EE-071), so routing shows the packages taking shape.
 const PKG = loadPackages(join(here, "../../.."));

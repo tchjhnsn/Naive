@@ -7,11 +7,12 @@ import { readFileSync, existsSync, mkdtempSync, writeFileSync, rmSync } from "no
 import { join, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
+import { readDataModel, recordPath } from "../../packages/records/index.mjs";
 
 export const repo = new URL("../..", import.meta.url).pathname;
-const model = () => JSON.parse(readFileSync(join(repo, "schema/data-model.json"), "utf8"));
+const model = () => readDataModel();
 export const recordType = (id) => { const r = model().records.find((x) => x.id === id); if (!r) throw new Error(`no record type ${id}`); return r; };
-export const schemaOf = (id) => JSON.parse(readFileSync(join(repo, recordType(id).schema), "utf8"));
+export const schemaOf = (id) => JSON.parse(readFileSync(recordPath(recordType(id).schema), "utf8"));
 export const slug = (s) => String(s).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
 
 // The questions for one object schema: every property, required first, with its allowed values and meaning.

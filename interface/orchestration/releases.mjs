@@ -44,6 +44,7 @@ import { FRAME, confirmedIn } from "../../schema/foundation.mjs";
 import { HOME, packages } from "../../schema/packages.mjs";
 import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "../../schema/release-read.mjs";
 import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { schemaNameOf } from "../../packages/records/index.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -238,7 +239,7 @@ export async function survey(dir, { cache } = {}) {
         const tmp = mkdtempSync(join(tmpdir(), "naive-release-check-"));
         try {
           writeFileSync(join(tmp, "record.json"), wholeText);
-          const p = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", ro.r.schema.replace(/^schema\//, ""), "--file", join(tmp, "record.json")], { encoding: "utf8" });
+          const p = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schemaNameOf(ro.r.schema), "--file", join(tmp, "record.json")], { encoding: "utf8" });
           return p.status === 0 ? null : (p.stdout + p.stderr).trim().split("\n").slice(-3).join(" ");
         } finally { rmSync(tmp, { recursive: true, force: true }); }
       });

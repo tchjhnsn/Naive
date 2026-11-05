@@ -16,14 +16,17 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { recordsIn } from "../packages/records/index.mjs";
 
 // EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
 const GAPS = new Set(existsSync(join(root, "schema/generators/gaps.json")) ? JSON.parse(readFileSync(join(root, "schema/generators/gaps.json"), "utf8")).gaps : []);
 const load = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
-const model = load("schema/data-model.json");
+// The record types of the copy being checked, so EE_ROOT reads that copy's schemas and data model.
+const records = recordsIn(root);
+const model = records.readDataModel();
 const errors = [];
 const warnings = [];
 
@@ -43,7 +46,7 @@ for (const r of model.records) {
   if (types.has(r.id)) errors.push(`data model: duplicate record type ${r.id}`);
   types.set(r.id, r);
   if (!layers.has(r.layer)) errors.push(`${r.id}: unknown layer ${r.layer}`);
-  if (r.schema && !existsSync(join(root, r.schema))) errors.push(`${r.id}: schema ${r.schema} not found`);
+  if (r.schema && !existsSync(records.recordPath(r.schema))) errors.push(`${r.id}: schema ${r.schema} not found`);
   // EE-099: a record generator beside each schema. gaps.json lists the types still without one; it only shrinks.
   if (r.generator && !existsSync(join(root, r.generator))) errors.push(`${r.id}: generator ${r.generator} not found`);
   if (!r.generator && !GAPS.has(r.id)) errors.push(`${r.id}: names no record generator (EE-099): add schema/generators/${r.id}.mjs and the generator field`);
@@ -63,11 +66,12 @@ const claimed = new Set([...types.values()].flatMap((r) => r.files));
 // An ignore path may be a glob (`*` within a folder, `**/` across folders), as record type paths are.
 const ignorePatterns = model.ignore.map((i) => glob(i.path));
 const isIgnored = (f) => ignorePatterns.some((re) => re.test(f));
-const schemas = new Set([...types.values()].map((r) => r.schema).filter(Boolean));
+// Schemas are compared by absolute file, so a stored path and a tracked path name the same file wherever the record types sit.
+const schemas = new Set([...types.values()].map((r) => r.schema).filter(Boolean).map((s) => records.recordPath(s)));
 // A schema that a named schema $refs (a shared part, such as the validation evidence item) counts as named.
-for (const s of [...schemas]) for (const m of readFileSync(join(root, s), "utf8").matchAll(/"\$ref":\s*"([a-z0-9-]+\.schema\.json)/g)) schemas.add(`schema/${m[1]}`);
+for (const s of [...schemas]) for (const m of readFileSync(s, "utf8").matchAll(/"\$ref":\s*"([a-z0-9-]+\.schema\.json)/g)) schemas.add(join(dirname(s), m[1]));
 for (const f of all.filter((f) => f.endsWith(".json"))) {
-  if (f.endsWith(".schema.json")) { if (!schemas.has(f)) errors.push(`${f}: a schema no record type names`); continue; }
+  if (f.endsWith(".schema.json")) { if (!schemas.has(join(root, f))) errors.push(`${f}: a schema no record type names`); continue; }
   if (!claimed.has(f) && !isIgnored(f)) errors.push(`${f}: no record type in schema/data-model.json covers this file`);
 }
 

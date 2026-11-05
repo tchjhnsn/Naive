@@ -30,12 +30,13 @@ import { loadPackages } from "./load-packages.mjs";
 import { adopted } from "./naive-config.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { scale } from "./canonical.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const PACKAGES = loadPackages(repo);
 export const OUT = "package";
-const MODEL = load(join(repo, "schema/data-model.json"));
+const MODEL = readDataModel();
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const r2 = (x) => Math.round(x * 100) / 100;
 const json = (dir, f) => existsSync(ventureFile(dir, f)) ? load(ventureFile(dir, f)) : null;

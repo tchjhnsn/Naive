@@ -1,4 +1,7 @@
 {
-  "says": "Import cycles between units that the dependency rules check accepts. The monorepo rebuild's router inversion (docs/design/MONOREPO_ROUTER_INVERSION_2026-11-05.md) removed the last one on 2026-11-05, so the list is empty and any cycle between units fails the check. Read by scripts/dependency-rules.ts.",
-  "known_cycles": []
+  "says": "Import cycles between units that the dependency rules check accepts. The monorepo rebuild's router inversion (docs/design/MONOREPO_ROUTER_INVERSION_2026-11-05.md) removed the last one on 2026-11-05, so the list is empty and any cycle between units fails the check. `leaves` names folders that import nothing in the repository outside themselves, each with its reason. Read by scripts/dependency-rules.ts.",
+  "known_cycles": [],
+  "leaves": {
+    "packages/records": "the record types and their resolver, read by every unit (monorepo rebuild step 5a, design in pull request #243)"
+  }
 }

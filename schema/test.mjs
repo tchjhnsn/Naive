@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { readDataModel, recordsIn } from "../packages/records/index.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "ee-schema-test-"));
@@ -185,7 +186,7 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.ev
 {
   const { needNow } = await import(join(root, "schema/need-now.mjs"));
   const N = JSON.parse(readFileSync(join(root, "schema/need-now.json"), "utf8"));
-  const model = JSON.parse(readFileSync(join(root, "schema/data-model.json"), "utf8"));
+  const model = readDataModel();
   const venture = new Set(model.records.filter((r) => r.level === "venture" && r.id !== "venture").map((r) => r.id));
   expect("need-now: every venture record type has a prior, and only those", [...venture].every((t) => N.records[t]) && Object.keys(N.records).every((t) => venture.has(t)));
   const t = needNow(tandem), row = (id) => t.rows.find((r) => r.type === id);
@@ -290,7 +291,7 @@ const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive:
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
 for (const [name, change, pattern] of /** @type {[string, (d: string) => void, RegExp][]} */ ([
   ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
-  ["a schema no record type names fails", (d) => writeFileSync(join(d, "schema/stray.schema.json"), "{}"), /a schema no record type names/],
+  ["a schema no record type names fails", (d) => writeFileSync(recordsIn(d).schemaFile("stray"), "{}"), /a schema no record type names/],
   ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
   ["a layer owning another layer's record fails", (d) => edit(join(d, "purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
   ["a layer reading an unknown record type fails", (d) => edit(join(d, "operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],

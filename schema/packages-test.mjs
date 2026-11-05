@@ -6,8 +6,9 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { packages, request, situation, write, PACKAGES, HOME } from "./packages.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
 
-const MODEL = JSON.parse(readFileSync(new URL("./data-model.json", import.meta.url), "utf8"));
+const MODEL = readDataModel();
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };

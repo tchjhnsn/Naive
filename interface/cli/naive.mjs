@@ -68,6 +68,7 @@ import { asRouted, findVenture } from "./find-venture.mjs";
 import { logical } from "../../packages/core/venture-paths.mjs";
 import { ventureFile } from "../../packages/core/venture-paths.mjs";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../schema/workspace.mjs";
+import { schemaNameOf } from "../../packages/records/index.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -132,7 +133,7 @@ async function dev(dir) {
       if (!existsSync(ventureFile(dir, physicalPath))) return;
       const schema = await schemaFor(f);
       if (!schema) return;
-      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schema.replace(/^schema\//, ""), "--file", ventureFile(dir, physicalPath)], { encoding: "utf8" });
+      const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", schemaNameOf(schema), "--file", ventureFile(dir, physicalPath)], { encoding: "utf8" });
       const out = (v.stdout + v.stderr).trim();
       if (v.status === 0) console.log(`  ✓ ${f}`);
       else if (/needs jsonschema/.test(out)) console.log(`  - ${f} changed (install python3's jsonschema package to check it as you save)`);

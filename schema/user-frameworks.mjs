@@ -18,6 +18,7 @@ import { check as checkFrameworks } from "./check-frameworks.mjs";
 import { findWorkspace } from "./workspace.mjs";
 import { leaks } from "./check-leaks.mjs";
 import { findSecrets } from "./redact.mjs";
+import { schemaFile } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -87,7 +88,7 @@ export function checkUserFrameworks(id, from = process.cwd()) {
   const errors = [];
   if (id && !frameworks.some((f) => f.id === id)) errors.push(`no framework ${id}`);
   if (!ws || !own.length) return { checked: [], errors };
-  const schema = join(repo, "schema/framework.schema.json");
+  const schema = schemaFile("framework");
   const py = `import json,sys\nfrom jsonschema import Draft202012Validator as V\ns=json.load(open(sys.argv[1]))\nfor p in sys.argv[2:]:\n  for e in V(s).iter_errors(json.load(open(p))): print(p+': '+e.message)`;
   const r = spawnSync("python3", ["-I", "-c", py, schema, ...own.map((f) => join(f.dir, "framework.json"))], { encoding: "utf8" });
   if (r.status === 0) errors.push(...r.stdout.split("\n").filter(Boolean).map((l) => l.replace(ws + "/", "")));

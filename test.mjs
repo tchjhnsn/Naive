@@ -140,6 +140,8 @@ const steps = [
   ["ontology catalog: one name@function scope per function, imports acyclic (term layer, L2), every term defined or imported; a cycle is printed and a missing term is an open item for its owning scope", "node", ["schema/terms/catalog-test.ts"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["schema/record-types-test.ts"]],
+  ["record paths: every schema and data-model path goes through packages/records, and schema/validate.py agrees with it", "node", ["schema/check-record-paths.ts"]],
+  ["record paths: the resolver resolves every schema, and the check breaks on copies that bypass it", "node", ["schema/check-record-paths-test.ts"]],
   ["knowledge connectors: contract evals", "node", ["knowledge/connectors/eval.mjs"]],
   ["knowledge connectors through the router: router, catalog, matrix and attribute evals", "node", ["interface/tests/connectors-router-test.mjs"]],
   ["platform connectors: GitHub contract, router and catalog evals", "node", ["platform/connectors/eval.mjs"]],
