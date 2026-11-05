@@ -1473,6 +1473,107 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-114",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "A person's ideas live at people/<person-id>/ideas/<id>.json. A top-level people/<person-id>/ folder in the workspace replaces founders/<handle>/ (EE-094), named by the person's opaque id. The handle is a field on the person, not the folder name. Founder is a property the EE-095 term engine derives from facts (the founder term, properties F1 to F5, with its theorems in lean/Naive/Founder.lean), never a folder label. schema/founder-idea.schema.json describes the new path, and schema/data-model.json maps people/*/ideas/*.json to it. This narrows EE-094: what its folder holds (ideas, references, inspirations and _private) stays, under the new folder. Not built yet: ideas under founders/<handle>/ideas/ still validate during the move, and schema/founders.ts, the other founder schemas and workspace.json still use founders/<handle>/.",
+      "why": "Torian, 2026-11-05 04:42Z, binding ruling on gate G16 of the ontology program (docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md), which blocked S2-PR9 and S3-PR1. EE-113 is the last id on main, EE-112 is held by the staged venture-standard decision, and no open pull request holds EE-114.",
+      "related": [
+        "EE-094",
+        "EE-095",
+        "EE-113"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "schema/founder-idea.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/data-model.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/examples/workspace/people/*/ideas/*.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "people/*/ideas/",
+          "root": "workspace",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "founders/",
+          "root": "workspace",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founders.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/workspace-founder.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founder-reference.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founder-inspiration.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/founder-private.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/workspace.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "lean/Naive/Founder.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "workspace-founder.handle",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "founder",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-094",
+          "expect": "narrowed"
+        }
+      ]
     }
   ]
 }

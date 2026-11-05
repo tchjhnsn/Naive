@@ -2,7 +2,8 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Encounter, Hierarchy, Membership, Relationship } from "./levels.ts";
+import type { Arrangement, Encounter, Hierarchy, LinkGraph, Membership, Relationship } from "./levels.ts";
+import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
 // never on the facts, so no check reads them. schema/terms/admit.ts --check enforces what the types cannot.
@@ -256,4 +257,54 @@ export const topCategory: Term<Hierarchy> = {
   lean: ["upper_no_cycle", "upper_rank_of_no_cycle", "upper_top_only_itself", "upper_reaches_top", "upper_top_unique", "upper_one_top", "upper_cat_of_u4", "upper_one_top_of_u4", "upper_one_top_of_checks", "upper_isA_top"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory];
+/** Whether a link names a target that exists. A scope the idea creates may be one the catalog does not list yet. */
+export const resolves = (f: LinkGraph, l: LinkGraph["links"][number]): boolean =>
+  (l.to >= 0 && l.to < (l.target === "idea" ? f.ideas : f.scopes)) || (l.target === "scope" && l.to === -1 && mayBeNew(l.type));
+
+/** For each order (relations no cycle may run through), the ideas that reach themselves through its links. A link
+ *  whose type is not its order is read backwards (a narrower b is b broader a). Self links and links that name no
+ *  idea are left to T2 and T3. */
+export const onCycle = (f: LinkGraph): Record<string, number[]> => {
+  const out: Record<string, number[]> = {};
+  for (const l of f.links) {
+    const order = Object.hasOwn(RELATIONS, l.type) ? RELATIONS[l.type as RelationName].order : null;
+    if (order && l.target === "idea") out[order] ??= [];
+  }
+  for (const order of Object.keys(out)) {
+    const next = Array.from({ length: f.ideas }, () => [] as number[]);
+    for (const l of f.links) {
+      if (l.target !== "idea" || !Object.hasOwn(RELATIONS, l.type) || RELATIONS[l.type as RelationName].order !== order) continue;
+      if (l.from === l.to || l.to < 0 || l.to >= f.ideas || l.from < 0 || l.from >= f.ideas) continue;
+      const [a, c] = l.type === order ? [l.from, l.to] : [l.to, l.from];
+      next[a].push(c);
+    }
+    out[order] = next.flatMap((_, v) => {
+      const seen = new Set<number>(), stack = [...next[v]];
+      while (stack.length) { const x = stack.pop()!; if (x === v) return [v]; if (!seen.has(x)) { seen.add(x); stack.push(...next[x]); } }
+      return [];
+    });
+  }
+  return out;
+};
+
+export const typedLink: Term<LinkGraph> = {
+  id: "typed-link", form: "compound", label: "Typed link", level: "link", kind: "role",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "A link from one record to another whose type names how they relate, drawn from a closed set of standard relations: between ideas, broader, narrower, related, part-of, derived-from, builds_on, supports and contradicts; from an idea to its scope, creates, amends, appends_to and derives_from (schema/terms/relations.ts, each mapped to SKOS, PROV-O, DCMI Terms, AIF and IBIS). Whether a link is well typed depends on the whole graph, since an ordering relation must not close a cycle, so the test runs on the whole: every type is in the closed set for its target, no idea links to itself, every target exists (a scope the idea creates may be new), and no cycle runs through broader (narrower read backwards), part-of or builds_on.",
+  props: [
+    { id: "T1", says: "every link's type is in the closed set for its target: an idea relation to an idea, a scope attachment to a scope", check: (f) => f.links.every((l) => known(l.type, l.target)), uses: [known, relationTable] },
+    { id: "T2", says: "no idea links to itself", check: (f) => f.links.every((l) => l.target !== "idea" || l.from !== l.to) },
+    { id: "T3", says: "every link names a target that exists, except a scope the idea creates", check: (f) => f.links.every((l) => resolves(f, l)), uses: [resolves, mayBeNew] },
+    { id: "T4", says: "no cycle runs through broader (narrower read backwards), part-of or builds_on", check: (f) => Object.values(onCycle(f)).every((vs) => vs.length === 0), uses: [onCycle, relationTable] },
+  ],
+  sources: [
+    "Trigg, A Network-Based Approach to Text Handling for the Online Scientific Community (1983): typed links",
+    "W3C SKOS Reference (2009): broader, narrower, related", "W3C PROV-O (2013): wasDerivedFrom", "DCMI Metadata Terms: isPartOf, source, requires, relation",
+    "Chesnevar et al., Towards an argument interchange format (2006): inference and conflict nodes",
+    "Kunz and Rittel, Issues as elements of information systems (1970); Conklin and Begeman, gIBIS (1988): supports, objects-to, specializes, generalizes",
+    "Preserved PR 157 (EE-103): the noun relations broader, narrower, related, part-of and derived-from",
+  ],
+  lean: ["idea_inverse_involutive", "idea_inverse_same_order", "idea_order_canonical"],
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink];

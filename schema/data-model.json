@@ -51,10 +51,12 @@
       "level": "workspace",
       "schema": "schema/founder-idea.schema.json",
       "paths": [
+        "instance/people/*/ideas/*.json",
+        "schema/examples/workspace/people/*/ideas/*.json",
         "instance/founders/*/ideas/*.json",
         "schema/examples/workspace/founders/*/ideas/*.json"
       ],
-      "note": "An idea owned by the founder, verbatim; a venture cites the idea it grew from"
+      "note": "An idea owned by a person, verbatim, at people/<person-id>/ideas/ (EE-114; founders/<handle>/ideas/ until the founders folder moves); a venture cites the idea it grew from"
     },
     {
       "id": "founder-reference",

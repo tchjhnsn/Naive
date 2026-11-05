@@ -909,10 +909,10 @@ export type FounderAgreement = {
   deadlock?: string;
 };
 
-/** One idea of the founder's (founders/<handle>/ideas/<id>.json), owned by the founder, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the founder's, verbatim; an agent never rewrites it. */
+/** One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node purpose/frameworks/idea-map/graph.mjs check <ideas folder>. */
 export type FounderIdea = {
   id: string;
-  /** The idea in the founder's own words */
+  /** The idea in its owner's own words */
   text: string;
   /**
    * @format date
@@ -922,12 +922,32 @@ export type FounderIdea = {
   source?: string;
   /** in-venture = a venture grew from it; dropped needs a note */
   status?: "open" | "in-venture" | "shelved" | "dropped";
+  /** How much the idea matters to its owner's work, on an ordinal scale. A model may propose it; a person settles it */
+  importance?: "high" | "medium" | "low";
   /** Venture folders that cite this idea */
   ventures?: string[];
   /** references/<id> that shaped it */
   references?: string[];
+  /** Typed relations to other ideas in the same ideas folder. schema/terms/relations.ts maps each name to SKOS, PROV-O, DCMI Terms, AIF and IBIS */
+  relations?: {
+    relation: FounderIdeaRelation;
+    /** The id of another idea in the same ideas folder */
+    to: string;
+  }[];
+  /** The one scope the idea attaches to, and how */
+  scope?: {
+    /** A name@function scope in docs/ontology-catalog.json, or shared. A scope the idea creates may not be listed yet */
+    scope: string;
+    via: FounderIdeaAttachment;
+  };
   note?: string;
 };
+
+/** How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds_on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in schema/terms/relations.ts, which purpose/frameworks/idea-map/test.mjs keeps equal to this list */
+export type FounderIdeaRelation = "broader" | "narrower" | "related" | "part-of" | "derived-from" | "builds_on" | "supports" | "contradicts";
+
+/** How the idea attaches to its scope. The scope attachments in schema/terms/relations.ts, which purpose/frameworks/idea-map/test.mjs keeps equal to this list */
+export type FounderIdeaAttachment = "creates" | "amends" | "appends_to" | "derives_from";
 
 /** A person who inspires the founder, and what about them invokes the founder's zeal (founders/<handle>/inspirations/<id>.json). A public figure may be named; a private person is an opaque id whose name sits in founders/<handle>/_private/. */
 export type FounderInspiration = {
@@ -1457,11 +1477,14 @@ export type IdeaGraph = {
     lane: string;
     [key: string]: unknown;
   }[];
+  /** Typed edges. An edge reads: the idea at to relates to the idea at from by relation. The arrow runs from the idea related to toward the idea whose relation it is, as builds_on always has. Only builds_on edges shape the DAG (hashes, depth, lanes); the others are carried as stated. Every relation an idea states is checked through the EE-095 term engine (term typed-link) before the graph is built */
   edges: {
     from: string;
     to: string;
     p: number;
+    /** jev, convention, or stated (a relation the idea records) */
     by?: string;
+    relation: FounderIdeaRelation;
     [key: string]: unknown;
   }[];
   /** Dependencies left out because they would have closed a cycle */

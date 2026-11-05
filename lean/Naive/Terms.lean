@@ -143,3 +143,40 @@ theorem counted_le_inCap (ts : List Labeled) : (ts.filter countsTowardCap).lengt
   | cons t ts ih =>
     obtain ⟨d, o⟩ := t
     cases d <;> cases o <;> simp [List.filter_cons, countsTowardCap, inCap] <;> omega
+
+/-! Typed links (S2-PR9): the relations an idea may state toward another idea, from schema/terms/relations.ts.
+    The term typed-link reads a link whose type is not its order backwards, so a narrower b counts as b broader a
+    when it looks for a cycle. These theorems show the table keeps that sound. That this table and the TypeScript
+    one name the same relations is checked by purpose/frameworks/idea-map/test.mjs. -/
+
+/-- [D] The relations between two ideas. -/
+inductive IdeaRelation | broader | narrower | related | partOf | derivedFrom | buildsOn | supports | contradicts
+  deriving DecidableEq, Repr
+
+/-- [D] The relation a link implies in the other direction, when it implies one. -/
+def IdeaRelation.inverse : IdeaRelation → Option IdeaRelation
+  | .broader => some .narrower
+  | .narrower => some .broader
+  | .related => some .related
+  | _ => none
+
+/-- [D] The order a relation belongs to, named by the relation read forward. No cycle may run through one order. -/
+def IdeaRelation.order : IdeaRelation → Option IdeaRelation
+  | .broader => some .broader
+  | .narrower => some .broader
+  | .partOf => some .partOf
+  | .buildsOn => some .buildsOn
+  | _ => none
+
+/-- Inverses come in pairs: reading a link backwards and back again gives the relation it started as. -/
+theorem idea_inverse_involutive (r s : IdeaRelation) (h : r.inverse = some s) : s.inverse = some r := by
+  cases r <;> simp [IdeaRelation.inverse] at h <;> subst h <;> rfl
+
+/-- A relation and its inverse belong to the same order, so a cycle stated through broader and narrower together
+    is still one cycle in one order. -/
+theorem idea_inverse_same_order (r s : IdeaRelation) (h : r.inverse = some s) : r.order = s.order := by
+  cases r <;> simp [IdeaRelation.inverse] at h <;> subst h <;> rfl
+
+/-- An order is named by a relation that belongs to it, so a link whose type equals its order reads forward. -/
+theorem idea_order_canonical (r k : IdeaRelation) (h : r.order = some k) : k.order = some k := by
+  cases r <;> simp [IdeaRelation.order] at h <;> subst h <;> rfl

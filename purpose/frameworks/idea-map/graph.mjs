@@ -14,14 +14,19 @@
 //   - layout: left to right by dependency depth, lanes and ideas top down by signal.
 //
 // Dependencies come from Jev (one typed question per ordered pair of ideas) when the platform hands
-// over its answers; otherwise from Naive's convention of which records build on which.
+// over its answers; otherwise from Naive's convention of which records build on which. Every edge is
+// typed: a dependency is relation builds_on. An idea may also state typed relations of its own
+// (relations: [{ relation, to }], as an idea record does), and those are checked through the EE-095
+// term engine (term typed-link, schema/terms/relations.ts) before anything is built. A rejected
+// relation stops the build.
 //
 //   node graph.mjs request <venture>                  the Jev request (pairs and concreteness)
 //   node graph.mjs build <venture> [<answers.json>]   writes purpose/ideas/graph.json
+//   node graph.mjs check <ideas folder>                checks the idea records' relations and scope
 //   node graph.mjs <venture> [--json]                  summary of the graph
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
@@ -31,6 +36,14 @@ const repo = join(here, "../../..");
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const GRAPH = "purpose/ideas/graph.json";
 const NEED = load(join(repo, "schema/need-now.json")).records;
+
+// The term engine is TypeScript. Node strips types from 22.18, and never under node_modules, so an installed
+// package cannot load it. Without it the graph still builds from judged dependencies, and any stated relation is
+// refused rather than let through unchecked.
+const NO_TYPESCRIPT = ["ERR_UNKNOWN_FILE_EXTENSION", "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING"];
+const terms = await Promise.all([import("../../../schema/terms/engine.ts"), import("../../../schema/terms/terms.ts"), import("../../../schema/terms/relations.ts")])
+  .then(([engine, defs, rel]) => ({ ...engine, ...defs, ...rel }))
+  .catch((e) => { if (NO_TYPESCRIPT.includes(e?.code)) return null; throw e; });
 
 // Naive's convention of which records build on which, used when no judge has answered. An idea that
 // feeds a later record builds on an idea that feeds an earlier one in the same department.
@@ -79,9 +92,47 @@ function acyclic(ids, edges) {
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 
+const relationsOf = (i) => (Array.isArray(i.relations) ? i.relations : []);
+// A graph written before edges were typed has no relation on its edges: every one of them was a dependency.
+const dependency = (e) => (e.relation ?? "builds_on") === "builds_on";
+
+/** The scopes an idea can attach to: every scope in docs/ontology-catalog.json, and shared. */
+export const catalogScopes = () => [...load(join(repo, "docs/ontology-catalog.json")).scopes.map((s) => s.scope), "shared"];
+
+/** Every relation and scope the ideas state, run through the term typed-link. Returns the problems, none when it passes.
+ * @param {{ id: string, relations?: { relation: string, to: string }[], scope?: { scope: string, via: string } }[]} ideas
+ * @param {string[]} [scopes] the scopes a link can name; by default catalogScopes() */
+export function checkRelations(ideas, scopes) {
+  const malformed = ideas.filter((i) => i.relations !== undefined && !Array.isArray(i.relations)).map((i) => `${i.id}: relations is not a list`);
+  if (malformed.length) return malformed;
+  const stated = ideas.flatMap((i, from) => [
+    ...relationsOf(i).map((r) => ({ type: String(r.relation), target: "idea", from, name: r.to })),
+    ...(i.scope ? [{ type: String(i.scope.via), target: "scope", from, name: i.scope.scope }] : []),
+  ]);
+  if (!stated.length) return [];
+  if (!terms) return [`${stated.length} stated relation(s) need the EE-095 term engine, which runs from a checkout on Node 22.18 or later`];
+  scopes ??= catalogScopes();
+  const at = { idea: new Map(ideas.map((i, k) => [i.id, k])), scope: new Map(scopes.map((s, k) => [s, k])) };
+  const links = stated.map(({ name, ...l }) => ({ ...l, to: at[l.target].get(name) ?? -1 }));
+  const facts = { confirmed: true, ideas: ideas.length, scopes: scopes.length, links };
+  const verdict = terms.run(terms.typedLink, facts);
+  if (verdict.pass) return [];
+  const failed = new Set(verdict.failed), problems = [];
+  links.forEach((l, k) => {
+    const who = `${ideas[l.from].id}: ${l.type} ${stated[k].name}`;
+    if (failed.has("T1") && !terms.known(l.type, l.target)) problems.push(`${who}: ${l.type} is not ${l.target === "idea" ? "a relation between ideas" : "a scope attachment"} (${terms.namesBetween(l.target).join(", ")})`);
+    else if (failed.has("T2") && l.target === "idea" && l.from === l.to) problems.push(`${who}: an idea does not relate to itself`);
+    else if (failed.has("T3") && !terms.resolves(facts, l)) problems.push(`${who}: ${l.target === "idea" ? "no idea has that id" : "not a scope in docs/ontology-catalog.json, and only creates may name a new one"}`);
+  });
+  if (failed.has("T4")) for (const [order, vs] of Object.entries(terms.onCycle(facts))) if (vs.length) problems.push(`${order} cycle through: ${vs.map((v) => ideas[v].id).join(", ")}`);
+  return problems.length ? problems : [`typed-link failed: ${verdict.failed.join(", ")}`];
+}
+
 /** The Merkle DAG with signal, lanes and layout.
  * @param {*[]} ideas @param {{ answers?: object | null, phase?: string, venture?: string, source?: string }} [opts] */
 export function build(ideas, { answers = null, phase = "discovery", venture, source } = {}) {
+  const rejected = checkRelations(ideas);
+  if (rejected.length) throw new Error(`rejected relations:\n  ${rejected.join("\n  ")}`);
   const ids = ideas.map((i) => i.id);
   let raw = [], concrete = {};
   if (answers) {
@@ -90,9 +141,12 @@ export function build(ideas, { answers = null, phase = "discovery", venture, sou
       else if (k.startsWith("concrete:")) concrete[k.slice(9)] = typeof a.score === "number" ? a.score / (CONCRETE.length - 1) : null;
     }
   } else raw = conventionEdges(ideas);
-  const { edges, dropped } = acyclic(ids, raw);
-  const parents = new Map(ids.map((i) => [i, edges.filter((e) => e.to === i).map((e) => e.from)]));
-  const children = new Map(ids.map((i) => [i, edges.filter((e) => e.from === i).map((e) => e.to)]));
+  // A stated relation reads "to relates to from", the way a dependency does: the arrow points at the idea that states it.
+  const stated = ideas.flatMap((i) => relationsOf(i).map((r) => ({ from: r.to, to: i.id, p: 1, by: "stated", relation: r.relation })));
+  const { edges: deps, dropped } = acyclic(ids, [...stated.filter(dependency), ...raw.map((e) => ({ ...e, relation: "builds_on" }))]);
+  const edges = [...deps, ...stated.filter((e) => !dependency(e))];
+  const parents = new Map(ids.map((i) => [i, deps.filter((e) => e.to === i).map((e) => e.from)]));
+  const children = new Map(ids.map((i) => [i, deps.filter((e) => e.from === i).map((e) => e.to)]));
 
   // Topological order, depth (longest path from a root) and Merkle hashes.
   const order = [], depth = {}, hash = {};
@@ -165,19 +219,26 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const venture = (d) => load(join(d, "venture.json"));
   const mapOf = (d) => parse(readFileSync(join(d, MAP), "utf8"));
   if (a === "request") console.log(JSON.stringify(request(mapOf(b).ideas, venture(b))));
-  else if (a === "build") {
+  else if (a === "check" && b) {
+    const records = readdirSync(b).filter((f) => f.endsWith(".json")).sort().map((f) => load(join(b, f)));
+    const problems = checkRelations(records);
+    for (const p of problems) console.log(`FAIL ${p}`);
+    const n = records.reduce((s, r) => s + (r.relations?.length ?? 0) + (r.scope ? 1 : 0), 0);
+    console.log(problems.length ? `${problems.length} problem(s)` : `${records.length} ideas, ${n} relations and scopes, typed-link passes`);
+    process.exit(problems.length ? 1 : 0);
+  } else if (a === "build") {
     const answers = c ? (load(c).answers ?? load(c)) : null;
     const g = build(mapOf(b).ideas, { answers, phase: venture(b).phase, venture: venture(b).id, source: `${MAP}@${sha(readFileSync(join(b, MAP), "utf8")).slice(0, 16)}` });
     writeFileSync(join(b, GRAPH), JSON.stringify(g, null, 2) + "\n");
-    console.log(`wrote ${GRAPH}: ${g.nodes.length} ideas, ${g.edges.length} dependencies, ${g.lanes.filter((l) => l.mode === "sync").length} sync lanes, ${g.lanes.filter((l) => l.mode === "async").length} async; root ${g.root}`);
+    console.log(`wrote ${GRAPH}: ${g.nodes.length} ideas, ${g.edges.filter(dependency).length} dependencies, ${g.edges.filter((e) => !dependency(e)).length} other relations, ${g.lanes.filter((l) => l.mode === "sync").length} sync lanes, ${g.lanes.filter((l) => l.mode === "async").length} async; root ${g.root}`);
   } else if (a && existsSync(join(a, "venture.json"))) {
     if (!existsSync(join(a, GRAPH))) { console.error(`${GRAPH} does not exist yet: build it from the idea map (node graph.mjs build <venture>)`); process.exit(1); }
     const g = load(join(a, GRAPH));
     if (process.argv.includes("--json")) console.log(JSON.stringify(g, null, 2));
     else {
-      console.log(`${g.nodes.length} ideas, ${g.edges.length} dependencies (${g.judged_by}), root ${g.root}`);
+      console.log(`${g.nodes.length} ideas, ${g.edges.filter(dependency).length} dependencies (${g.judged_by}), root ${g.root}`);
       for (const l of g.lanes) console.log(`${l.id} ${l.mode.padEnd(5)} ${String(l.signal).padEnd(4)} ${l.department ?? ""}: ${l.ideas.join(" -> ")}`);
       console.log(`Highest signal to develop next: ${g.next.join(", ")}`);
     }
-  } else { console.error("usage: node graph.mjs request <venture> | build <venture> [<answers.json>] | <venture> [--json]"); process.exit(2); }
+  } else { console.error("usage: node graph.mjs request <venture> | build <venture> [<answers.json>] | check <ideas folder> | <venture> [--json]"); process.exit(2); }
 }

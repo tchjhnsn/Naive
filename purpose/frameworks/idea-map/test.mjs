@@ -4,10 +4,11 @@
 import { split, render, parse, clean, fromAnswers, summary, request, CONVENTIONS } from "./ideamap.mjs";
 import { build, diff, GRAPH } from "./graph.mjs";
 import { route, stageOf, ideasOf } from "./route.mjs";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { RELATIONS, namesBetween } from "../../../schema/terms/relations.ts";
 
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
@@ -102,6 +103,67 @@ t("signal favours what the phase needs and what others build on", () => {
 t("without a judge, Naive's record order supplies the dependencies", () => {
   const g = build([{ ...ideas[0], departments: ["products"] }, ideas[1]]);
   ok(g.judged_by === "convention" && g.edges.length === 1 && g.edges[0].from === "i-01", JSON.stringify(g.edges));
+});
+
+// Typed relations (S2-PR9): an idea's stated relations become typed edges, checked through the term typed-link.
+const graphCli = new URL("./graph.mjs", import.meta.url).pathname;
+const repoFile = (f) => new URL(`../../../${f}`, import.meta.url).pathname;
+const ideasFolder = (records) => {
+  const d = mkdtempSync(join(tmpdir(), "ideas-"));
+  for (const r of records) writeFileSync(join(d, `${r.id}.json`), JSON.stringify(r));
+  return spawnSync("node", [graphCli, "check", d], { encoding: "utf8" });
+};
+
+t("a stated relation becomes a typed edge; dependencies are builds_on, and only they shape the hashes", () => {
+  const plain = build(ideas, { answers });
+  const typed = build(ideas.map((i) => i.id === "i-04" ? { ...i, relations: [{ relation: "contradicts", to: "i-02" }, { relation: "builds_on", to: "i-03" }] } : i), { answers });
+  ok(plain.edges.every((e) => e.relation === "builds_on"), JSON.stringify(plain.edges));
+  ok(typed.edges.some((e) => e.from === "i-02" && e.to === "i-04" && e.relation === "contradicts" && e.by === "stated"), JSON.stringify(typed.edges));
+  ok(JSON.stringify(typed.nodes.find((n) => n.id === "i-04").builds_on) === JSON.stringify(["i-03"]), "a stated builds_on joins the DAG");
+  const noBuild = build(ideas.map((i) => i.id === "i-04" ? { ...i, relations: [{ relation: "contradicts", to: "i-02" }] } : i), { answers });
+  ok(noBuild.root === plain.root && JSON.stringify(noBuild.nodes.map((n) => n.hash)) === JSON.stringify(plain.nodes.map((n) => n.hash)), "contradicts leaves every hash alone");
+});
+
+t("a relation outside the closed set is rejected through the term engine, by the check command and by the build", () => {
+  const r = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "rebuts", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05" }]);
+  ok(r.status === 1 && /a: rebuts b: rebuts is not a relation between ideas/.test(r.stdout), r.stdout + r.stderr);
+  let threw = "";
+  try { build([{ id: "i-01", text: "x", relations: [{ relation: "rebuts", to: "i-02" }] }, { id: "i-02", text: "y" }]); } catch (e) { threw = e.message; }
+  ok(/rejected relations/.test(threw) && /rebuts/.test(threw), threw);
+});
+
+t("the example ideas pass: a contradicts relation, a builds_on, and an amends scope", () => {
+  const r = spawnSync("node", [graphCli, "check", repoFile("schema/examples/workspace/people/p-0a0a0a0a/ideas")], { encoding: "utf8" });
+  ok(r.status === 0 && /typed-link passes/.test(r.stdout), r.stdout + r.stderr);
+});
+
+t("a cycle stated through broader and narrower is one cycle; a self link, a missing idea and an unlisted scope are named", () => {
+  const cyc = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "broader", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05", relations: [{ relation: "broader", to: "a" }] }]);
+  ok(cyc.status === 1 && /broader cycle through: a, b/.test(cyc.stdout), cyc.stdout);
+  const mixed = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "broader", to: "b" }, { relation: "narrower", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05" }]);
+  ok(mixed.status === 1 && /broader cycle through: a, b/.test(mixed.stdout), mixed.stdout);
+  const odd = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "related", to: "a" }, { relation: "supports", to: "gone" }], scope: { scope: "naive@astrology", via: "amends" } }]);
+  ok(odd.status === 1 && /relate to itself/.test(odd.stdout) && /supports gone: no idea has that id/.test(odd.stdout) && /naive@astrology: not a scope/.test(odd.stdout), odd.stdout);
+  const notList = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: { relation: "rebuts", to: "a" } }]);
+  ok(notList.status === 1 && /a: relations is not a list/.test(notList.stdout), notList.stdout);
+  const fresh = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", scope: { scope: "naive@astrology", via: "creates" } }]);
+  ok(fresh.status === 0, `creates may name a scope the catalog does not list yet: ${fresh.stdout}`);
+});
+
+t("the schemas, the term engine and Lean name the same relations", () => {
+  const idea = JSON.parse(readFileSync(repoFile("schema/founder-idea.schema.json"), "utf8"));
+  const graph = JSON.parse(readFileSync(repoFile("schema/idea-graph.schema.json"), "utf8"));
+  ok(JSON.stringify(idea.$defs.relation.enum) === JSON.stringify(namesBetween("idea")), `relation enum ${idea.$defs.relation.enum}`);
+  ok(JSON.stringify(idea.$defs.attachment.enum) === JSON.stringify(namesBetween("scope")), `attachment enum ${idea.$defs.attachment.enum}`);
+  ok(graph.properties.edges.items.properties.relation.$ref === "founder-idea.schema.json#/$defs/relation", "graph edges share the relation list");
+  const lean = readFileSync(repoFile("lean/Naive/Terms.lean"), "utf8");
+  const camel = (n) => n.replace(/[-_]([a-z])/g, (_, c) => c.toUpperCase());
+  const ctors = /inductive IdeaRelation((?:\s*\|\s*\w+)+)/.exec(lean)?.[1].split("|").map((x) => x.trim()).filter(Boolean);
+  ok(JSON.stringify(ctors) === JSON.stringify(namesBetween("idea").map(camel)), `Lean IdeaRelation ${ctors}`);
+  const arms = (fn) => Object.fromEntries([...(new RegExp(`def IdeaRelation\\.${fn}[^]*?\\n\\n`).exec(lean)?.[0] ?? "").matchAll(/\| \.(\w+) => some \.(\w+)/g)].map((m) => [m[1], m[2]]));
+  const table = (field) => Object.fromEntries(namesBetween("idea").filter((n) => RELATIONS[n][field]).map((n) => [camel(n), camel(RELATIONS[n][field])]));
+  ok(JSON.stringify(arms("inverse")) === JSON.stringify(table("inverse")), `inverse: Lean ${JSON.stringify(arms("inverse"))}`);
+  ok(JSON.stringify(arms("order")) === JSON.stringify(table("order")), `order: Lean ${JSON.stringify(arms("order"))}`);
 });
 
 // Routes (EE-061): the graph's ideas go to the framework's destinations, each with a stage and a step.

@@ -1,0 +1,10 @@
+{
+  "id": "plan-around-energy",
+  "text": "Plan the week around when you have the most energy, not just when you are free",
+  "captured": "2026-11-05",
+  "source": "a note",
+  "status": "open",
+  "importance": "high",
+  "relations": [{ "relation": "builds_on", "to": "learn-energy-from-past-weeks" }],
+  "scope": { "scope": "naive@products", "via": "appends_to" }
+}

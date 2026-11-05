@@ -3,6 +3,7 @@
 // which is named, not guessed.
 
 import { rng, type Base } from "./engine.ts";
+import { namesBetween, type Target } from "./relations.ts";
 
 /** One person's relationship to one venture. */
 export type Membership = Base & {
@@ -51,6 +52,15 @@ export type Hierarchy = Base & {
   nodes: number;
   tops: number[];                 // the nodes that are top categories
   broader: [number, number][];    // [a, b]: b is broader than a (a is a kind of b)
+};
+
+/** Records joined by typed links: ideas, and the scopes an idea can attach to. Whether a link is well typed depends
+ *  on the whole graph (an ordering relation must not close a cycle), so the facts describe the whole. Ideas and
+ *  scopes are numbered from 0; names stay out of the facts. A link's type is the relation it states, not a label. */
+export type LinkGraph = Base & {
+  ideas: number;
+  scopes: number;                 // the scopes a link can name: the catalog's, and shared
+  links: { type: string; target: Target; from: number; to: number }[];  // from an idea; to is -1 when the target names nothing
 };
 
 const N = 20000;
@@ -134,5 +144,41 @@ export function hierarchyCases(seed = 23): Hierarchy[] {
       for (let a = 0; a < nodes; a++) for (let c = 0; c < nodes; c++) if (a !== c && b(0.2)) broader.push([a, c]);
     }
     return { confirmed: b(0.9), label: ["top category", "category", "root", undefined][Math.floor(r() * 4)], nodes, tops, broader };
+  });
+}
+
+/** Half the cases are well typed: ordering relations run one way along a random order of the ideas, each idea
+ *  attaches to at most one scope, and every target exists unless the idea creates it. The other half draw types,
+ *  ends and targets at random, with names outside the closed set and names inherited from Object among them. */
+export function linkCases(seed = 29): LinkGraph[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const pick = <T>(xs: readonly T[]): T => xs[Math.floor(r() * xs.length)];
+  const between = namesBetween("idea"), attach = namesBetween("scope");
+  const unknown = ["rebuts", "isPartOf", "constructor", "toString", ""];
+  return Array.from({ length: N }, () => {
+    const ideas = 1 + Math.floor(r() * 7), scopes = Math.floor(r() * 4);
+    const links: LinkGraph["links"] = [];
+    if (b()) {
+      const order = Array.from({ length: ideas }, (_, i) => i);
+      for (let i = ideas - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+      for (let i = 1; i < ideas; i++) for (let j = 0; j < i; j++) if (b(0.3)) {
+        const type = pick(between);
+        links.push(type === "narrower" ? { type, target: "idea", from: order[j], to: order[i] } : { type, target: "idea", from: order[i], to: order[j] });
+      }
+      for (let i = 0; i < ideas; i++) if (b(0.4)) {
+        const type = pick(attach);
+        if (scopes > 0) links.push({ type, target: "scope", from: i, to: Math.floor(r() * scopes) });
+        else if (type === "creates") links.push({ type, target: "scope", from: i, to: -1 });
+      }
+    } else {
+      for (let k = Math.floor(r() * 6); k > 0; k--) {
+        const target: Target = b(0.75) ? "idea" : "scope";
+        const type = b(0.15) ? pick(unknown) : pick(b(0.8) ? (target === "idea" ? between : attach) : [...between, ...attach]);
+        const ends = Math.min(ideas, 3);
+        links.push({ type, target, from: Math.floor(r() * ends), to: b(0.1) ? -1 : Math.floor(r() * ((target === "idea" ? ends : scopes) + 1)) });
+      }
+    }
+    return { confirmed: b(0.9), label: ["typed link", "edge", "relation", undefined][Math.floor(r() * 4)], ideas, scopes, links };
   });
 }

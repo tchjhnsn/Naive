@@ -789,6 +789,61 @@
         "Ledger N-049 (2026-11-02): own top categories, each mapped to BFO; every noun traces to exactly one through broader",
         "docs/design/ONTOLOGY_CORE_2026-11-04.md, part 2"
       ]
+    },
+    {
+      "id": "typed-link",
+      "label": "Typed link",
+      "form": "compound",
+      "level": "link",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "A link from one record to another whose type names how they relate, drawn from a closed set of standard relations: between ideas, broader, narrower, related, part-of, derived-from, builds_on, supports and contradicts; from an idea to its scope, creates, amends, appends_to and derives_from (schema/terms/relations.ts, each mapped to SKOS, PROV-O, DCMI Terms, AIF and IBIS). Whether a link is well typed depends on the whole graph, since an ordering relation must not close a cycle, so the test runs on the whole: every type is in the closed set for its target, no idea links to itself, every target exists (a scope the idea creates may be new), and no cycle runs through broader (narrower read backwards), part-of or builds_on.",
+      "status": "proposed",
+      "hash": "413ed8b1e9f5c463",
+      "properties": [
+        {
+          "id": "T1",
+          "says": "every link's type is in the closed set for its target: an idea relation to an idea, a scope attachment to a scope"
+        },
+        {
+          "id": "T2",
+          "says": "no idea links to itself"
+        },
+        {
+          "id": "T3",
+          "says": "every link names a target that exists, except a scope the idea creates"
+        },
+        {
+          "id": "T4",
+          "says": "no cycle runs through broader (narrower read backwards), part-of or builds_on"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 11504,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "idea_inverse_involutive",
+        "idea_inverse_same_order",
+        "idea_order_canonical"
+      ],
+      "sources": [
+        "Trigg, A Network-Based Approach to Text Handling for the Online Scientific Community (1983): typed links",
+        "W3C SKOS Reference (2009): broader, narrower, related",
+        "W3C PROV-O (2013): wasDerivedFrom",
+        "DCMI Metadata Terms: isPartOf, source, requires, relation",
+        "Chesnevar et al., Towards an argument interchange format (2006): inference and conflict nodes",
+        "Kunz and Rittel, Issues as elements of information systems (1970); Conklin and Begeman, gIBIS (1988): supports, objects-to, specializes, generalizes",
+        "Preserved PR 157 (EE-103): the noun relations broader, narrower, related, part-of and derived-from"
+      ]
     }
   ],
   "fixtures": [

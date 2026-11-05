@@ -38,6 +38,49 @@ The rules travel with every Jev request as `state.guidelines` (`conventions.json
 - **It is a Merkle DAG.** An idea's hash covers its text and the hashes of what it builds on, so a change upstream changes every hash below it.
 - **Signal.** Each idea is weighted by what the phase needs of its records (0.35), how much builds on it (0.25), how concrete it is (0.25) and how much of the dump circles it (0.15).
 - **Lanes.** Ideas tied by dependencies form a lane that moves in order. An idea tied to nothing moves on its own.
+- **Typed edges.** Every edge carries a `relation`. A dependency is `builds_on`. An idea may also state relations of its own, as an idea record does (`relations: [{ relation, to }]`). An edge reads "the idea at `to` relates to the idea at `from`", so its arrow points at the idea that states the relation, the way a dependency always has. Only `builds_on` edges shape the hashes, depth and lanes. The other relations ride along as stated.
+
+### Typed relations
+
+Idea records (`schema/founder-idea.schema.json`, at `people/<person-id>/ideas/<id>.json`, EE-114) carry an importance, typed relations and one scope. The closed set lives in `schema/terms/relations.ts`, and each relation maps to the standard vocabularies:
+
+| Relation | Between | SKOS | PROV-O | DCMI Terms | AIF | IBIS |
+|---|---|---|---|---|---|---|
+| `broader` | ideas | `skos:broader` | | | | specializes |
+| `narrower` | ideas | `skos:narrower` | | | | generalizes |
+| `related` | ideas | `skos:related` | | `dcterms:relation` | | |
+| `part-of` | ideas | | | `dcterms:isPartOf` | | |
+| `derived-from` | ideas | | `prov:wasDerivedFrom` | `dcterms:source` | | |
+| `builds_on` | ideas | | | `dcterms:requires` | | |
+| `supports` | ideas | | | | RA-node (inference) | supports |
+| `contradicts` | ideas | | | | CA-node (conflict) | objects-to |
+| `creates` | idea to scope | | | | | |
+| `amends` | idea to scope | | | | | |
+| `appends_to` | idea to scope | | | | | |
+| `derives_from` | idea to scope | | `prov:wasDerivedFrom` | | | |
+
+`broader`, `narrower`, `related`, `part-of` and `derived-from` are the noun relations of preserved PR 157 (EE-103). An empty cell means the vocabulary has no counterpart.
+
+Every relation check runs through the EE-095 term engine, as the term typed-link (`schema/terms/terms.ts`). The term fails on any of four things:
+
+- a name outside the closed set, or one used for the wrong kind of target;
+- an idea that relates to itself;
+- a target that does not exist (a scope the idea `creates` may be one the catalog does not list yet);
+- a cycle through `broader` (with `narrower` read backwards), `part-of` or `builds_on`.
+
+`lean/Naive/Terms.lean` proves that reading `narrower` backwards keeps the cycle check sound. `test.mjs` keeps the schemas, the table and Lean naming the same relations.
+
+`node graph.mjs check <ideas folder>` checks a folder of idea records and exits 1 on any problem, naming each one. `build` refuses ideas whose stated relations fail.
+
+```mermaid
+flowchart LR
+  R["idea records: relations and scope"] --> F["facts: ideas, scopes and typed links, by number"]
+  T["schema/terms/relations.ts: the closed set"] --> TL["term typed-link"]
+  F --> TL
+  TL -->|"passes"| G["graph.json: typed edges, builds_on shapes the DAG"]
+  TL -->|"fails T1 to T4"| X["check exits 1 and names each problem; build throws"]
+  L["lean/Naive/Terms.lean"] -->|"inverse and order theorems"| TL
+```
 
 ## 3. Graph to routes
 
