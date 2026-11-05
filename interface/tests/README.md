@@ -31,4 +31,5 @@ Tests that run a module in `schema/` through the router: its route via `call`, t
 ## How it connects
 
 - Calls: [`interface/router.mjs`](../router.mjs), the MCP server and the HTTP API, and the `schema/` modules under test. A test that reads the data model or a schema reads it through [`packages/records`](../../packages/records/README.md), as `freshness-test.mjs` does.
+- `setup-test.mjs` and `delegation-test.mjs` run create-venture from [`packages/create-venture/`](../../packages/create-venture/index.mjs), where it moved from the interface folder in step 2 of the Naive layout (EE-118).
 - A test in `schema/` that does not import the router, the MCP server, the HTTP API or a module in [`interface/orchestration/`](../orchestration/README.md) stays next to its module, even when it starts the CLI as a child process.

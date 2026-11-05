@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tchjhnsn/everything-ecosystem.git",
-    "directory": "interface/create-venture"
+    "directory": "packages/create-venture"
   },
   "engines": {
     "node": ">=20"

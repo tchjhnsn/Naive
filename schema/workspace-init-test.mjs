@@ -144,7 +144,7 @@ await t("ics export round trip", async () => {
 await t("create-venture's own workspace gets the same clock and calendar", () => {
   const dir = join(base, "cv");
   mkdirSync(dir);
-  const r = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
   ok(r.status === 0, r.stderr + r.stdout);
   const w = load(join(dir, "naive-workspace.json"));
   ok(w.name === "Naive workspace" && w.timeZone && existsSync(join(dir, "calendar/calendars/default.json")), JSON.stringify(w));
@@ -156,7 +156,7 @@ await t("a workspace file that does not parse stops the command and stays as it 
   const dir = join(base, "corrupt");
   mkdirSync(dir);
   writeFileSync(join(dir, "naive-workspace.json"), bad);
-  const cv = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), "three", "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
+  const cv = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), "three", "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
   ok(cv.status === 1 && /naive-workspace\.json does not parse/.test(cv.stderr), cv.stderr + cv.stdout);
   ok(readFileSync(join(dir, "naive-workspace.json"), "utf8") === bad, "create-venture left the file untouched");
   ok(!existsSync(join(dir, "three")), "no venture folder is made");
@@ -176,7 +176,7 @@ await t("another tool's workspace.json is left alone", () => {
   mkdirSync(dir);
   const nx = JSON.stringify({ version: 2, projects: {} });
   writeFileSync(join(dir, "workspace.json"), nx);
-  const r = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), "app", "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), "app", "--yes", ...FLAGS], { cwd: dir, env, encoding: "utf8" });
   ok(r.status === 0, r.stderr + r.stdout);
   ok(readFileSync(join(dir, "workspace.json"), "utf8") === nx, "the other tool's file is untouched");
   ok(load(join(dir, "naive-workspace.json")).ventures.join() === "app", "ours is written beside it");
@@ -244,7 +244,7 @@ await t("from a packed npm install: naive workspace init makes the workspace and
   const r = spawnSync(bin, ["workspace", "init", "ws1", "--venture", "Kettle", ...FLAGS], { cwd: app, env, encoding: "utf8" });
   ok(r.status === 0, r.stderr + r.stdout);
   ok(load(join(app, "ws1/naive-workspace.json")).ventures.join() === "kettle" && existsSync(join(app, "ws1/kettle/venture.json")), "the venture is made and listed");
-  ok(!existsSync(join(app, "node_modules/naive-framework/interface/create-venture/test.mjs")), "tests stay out of the package");
+  ok(!existsSync(join(app, "node_modules/naive-framework/packages/create-venture/test.mjs")), "tests stay out of the package");
 });
 
 rmSync(base, { recursive: true, force: true });

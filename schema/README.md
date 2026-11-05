@@ -74,6 +74,8 @@ Status:
 
 Every README in this repo, this one included, and every playbook under `library/packages/*/playbooks/` is checked by `schema/check-docs-claims.mjs`: the paths, commands and routes it names must exist and its relative Markdown links, inline or reference-style, must resolve (HTML `href` and `src` are not checked). A pull request that changes code here, meaning any file that is not `.md` or `.mdx` and not under a `playbooks/` folder, owes this README an update, or a line in its body that starts with `No docs change: ` and gives a real reason (`.github/workflows/docs-required.yml`). New READMEs follow `docs/readme-template.md`.
 
+`workspace-init.mjs`, `workspace-init-test.mjs` and `frames-test.mjs` run create-venture from [`packages/create-venture/index.mjs`](../packages/create-venture/index.mjs). It moved there from the interface folder in step 2 of the Naive layout (EE-118). Not built yet: Naive as one package, the rest of that layout.
+
 ## Open reconciliations
 
 1. **Venture profile guidance.** The profile has no guidance of its own since the SAD documents were removed (EE-036); write a short template when a venture first needs one.

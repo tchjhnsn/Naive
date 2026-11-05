@@ -11,7 +11,7 @@
 //
 // The workspace is named "Naive workspace" unless --name says otherwise (rename it later with naive
 // workspace rename). <dir> defaults to a folder named after the workspace in the current directory.
-// The venture is made by create-venture (interface/create-venture/index.mjs), so both ways in match; a
+// The venture is made by create-venture (packages/create-venture/index.mjs), so both ways in match; a
 // port or migrate then plans the move or the rewrite into that venture (schema/port-venture.mjs,
 // interface/orchestration/migrate-venture.mjs). A port moves files only with --apply --confirm port. If the venture cannot be
 // made, its half-made folder is removed and the workspace kept; the same command run again finishes it.
@@ -76,7 +76,7 @@ console.log(`Created ${w.ws.name} at ${root}: clock in ${w.ws.timeZone}, calenda
 // 2. The venture, by create-venture, inside the workspace.
 const pass = [["type"], ["role"], ["layout"], ["founder", "name"]].flatMap(([k, as]) => (opt(k) !== undefined ? [`--${as ?? k}`, opt(k)] : []));
 const fresh = !existsSync(vdir);
-const cv = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), vdir, "--venture-name", ventureName, "--yes", ...pass,
+const cv = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), vdir, "--venture-name", ventureName, "--yes", ...pass,
   ...(flag("skip-install") ? ["--skip-install"] : []), ...(flag("no-git") ? ["--no-git"] : [])], { encoding: "utf8", cwd: root, env: { ...process.env, CREATE_VENTURE_PROMPTS: "" } });
 if (cv.status !== 0) {
   if (fresh) rmSync(vdir, { recursive: true, force: true });

@@ -48,7 +48,7 @@ const steps = [
   ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["interface/dev/test.mjs"]],
   ["naive workspace init and rename, the clock and the calendar (derived events, .ics)", "node", ["schema/workspace-init-test.mjs"]],
   ["the Claude Code plugin (manifest, skills, MCP server outside a venture, marketplaces)", "node", ["interface/plugin-test.mjs"]],
-  ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["interface/create-venture/test.mjs"]],
+  ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["packages/create-venture/test.mjs"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["interface/tests/setup-test.mjs"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["interface/writes-test.mjs"]],
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["interface/tests/brand-test.mjs"]],

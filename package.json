@@ -50,7 +50,7 @@
     "!**/test.mjs",
     "!**/*.steps.mjs",
     "!**/*.feature",
-    "!interface/create-venture/package.json",
+    "!packages/create-venture/package.json",
     "!platform/integrations/fixtures/",
     "!platform/research/",
     "!schema/examples/docket-scenarios.json",

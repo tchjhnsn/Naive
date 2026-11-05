@@ -16,7 +16,7 @@ const env = { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, ".config")
 // The generator calls a real model when TYPESAFE_API_KEY is set; these tests use the stand-in or the list.
 for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
 delete env.MENTURA_WORKSPACE;
-const create = (args, cwd = base) => spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), ...args], { cwd, env, encoding: "utf8" });
+const create = (args, cwd = base) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args], { cwd, env, encoding: "utf8" });
 const naive = (args, cwd) => spawnSync("node", [join(base, "kettle/node_modules/.bin/naive"), ...args], { cwd, env, encoding: "utf8" });
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 let failed = 0;
@@ -79,7 +79,7 @@ t("installed from the registry, the venture depends on the framework by version,
   // Pack both packages and install them as npm would, then create a venture without installing it.
   const packs = join(base, "packs"), proj = join(base, "registry");
   mkdirSync(packs); mkdirSync(proj);
-  for (const d of [repo, join(repo, "interface/create-venture")]) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: d, env, encoding: "utf8" }).status === 0, `npm pack in ${d}`);
+  for (const d of [repo, join(repo, "packages/create-venture")]) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: d, env, encoding: "utf8" }).status === 0, `npm pack in ${d}`);
   const tgz = (n) => join(packs, readdirSync(packs).find((f) => f.startsWith(`${n}-`)));
   writeFileSync(join(proj, "package.json"), "{}\n");
   const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture")], { cwd: proj, env, encoding: "utf8" });
@@ -122,7 +122,7 @@ t("the answers are kept for the next venture, and --reset-preferences forgets th
   ok(create(["--reset-preferences"]).status === 0 && !existsSync(join(home, ".config/naive/create-venture.json")));
 });
 
-const prompts = (args, lines, extra = {}) => spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), ...args, "--layout", "flat", "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
+const prompts = (args, lines, extra = {}) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args, "--layout", "flat", "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
 
 t("structured layout: the org chart in venture.json names each function's owner, and people/ stores no hats", () => {
   ok(create(["duo", "--type", "software-startup", "--name", "Ana Ruiz", "--team", "Ben Okafor", "--yes", "--skip-install", "--no-git"]).status === 0);

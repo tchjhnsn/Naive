@@ -80,7 +80,7 @@ if (http) {
 
 const base = mkdtempSync(join(tmpdir(), "templates-replay-"));
 const created = spawnSync("node", [
-  "interface/create-venture/index.mjs", join(base, "my-venture"),
+  "packages/create-venture/index.mjs", join(base, "my-venture"),
   "--type", "software-startup", "--yes", "--skip-install", "--no-git", "--name", "Replay Founder",
 ], { cwd: repo, encoding: "utf8", timeout: 30000 });
 if (created.status !== 0) fail("CommandRunnable", `create-venture --type software-startup --yes failed: ${(created.stderr || created.stdout).slice(0, 400)}`);

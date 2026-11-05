@@ -2251,7 +2251,7 @@
       "reason": "The framework's npm manifest: the naive and mentura commands (I-1, I-17); not a record"
     },
     {
-      "path": "interface/create-venture/package.json",
+      "path": "packages/create-venture/package.json",
       "reason": "The create-venture generator's npm manifest (I-1); not a record"
     },
     {

@@ -13,7 +13,7 @@ const base = mkdtempSync(join(tmpdir(), "frames-test-"));
 const dir = join(base, "acme");
 const env = { ...process.env, HOME: base };
 for (const k of ["MENTURA_WORKSPACE", "TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
-const made = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
+const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
 if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); process.exit(1); }
 for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY"]) delete process.env[k];
 process.env.NAIVE_JUDGE_CMD = `node ${join(repo, "schema/examples/frames/judge.mjs")}`;

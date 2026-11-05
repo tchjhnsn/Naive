@@ -170,7 +170,7 @@ expect("a co-founder merges a one-way door", mayMerge(rostered("co-founder"), do
 expect("a general partner merges a one-way door", mayMerge(rostered("general-partner"), door, { by: "Cole" }).ok);
 expect("a non-founding role does not", /one-way door/.test(mayMerge(rostered("operator"), door, { by: "Cole" }).error ?? ""));
 const fund = join(tmp, "fund");
-const made = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), fund, "--type", "vc-fund", "--name", "Gia Moss", "--yes", "--skip-install", "--no-git"], { encoding: "utf8", input: "", env: { ...process.env, HOME: tmp } });
+const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), fund, "--type", "vc-fund", "--name", "Gia Moss", "--yes", "--skip-install", "--no-git"], { encoding: "utf8", input: "", env: { ...process.env, HOME: tmp } });
 expect("a vc-fund from create-venture has someone who merges a one-way door", made.status === 0 && mayMerge(fund, door, { by: "Gia Moss" }).ok, made.stderr);
 
 // Setup acts as the founder a venture names, also when it names one only in delegation.json.
