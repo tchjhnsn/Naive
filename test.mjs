@@ -128,6 +128,7 @@ const steps = [
   ["Lean agreement: every theorem an admitted term cites is declared in lean/Naive, and every Lean concept has an admitted term", "node", ["schema/terms/lean-agreement-test.ts"]],
   ["Lean ontology concepts: a two-noun fixture regenerates both, --check catches an edited noun, name clashes stop the run", "node", ["schema/terms/gen-concepts-test.ts"]],
   ["upper ontology: every noun reaches exactly one top category through broader (term top-category); an orphan, a noun with two top categories and a cycle are named", "node", ["schema/terms/upper-test.ts"]],
+  ["ontology catalog: one name@function scope per function, imports acyclic (term layer, L2), every term defined or imported; a cycle is printed and a missing term is an open item for its owning scope", "node", ["schema/terms/catalog-test.ts"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["schema/record-types-test.ts"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],

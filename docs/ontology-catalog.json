@@ -1,0 +1,96 @@
+{
+  "note": "The catalog of ontologies (N-050, docs/design/ONTOLOGY_CORE_2026-11-04.md part 3). Seeded with one scope per function, the 13 in operations/departments.json (gate G5, Torian 2026-11-05). A scope's terms are the live nouns in docs/ontology.json whose function is its suffix; a shared noun (function null) and a top category are visible to every scope. Checked by node schema/terms/catalog-test.ts.",
+  "scopes": [
+    {
+      "scope": "naive@strategy",
+      "owner": "strategy",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@products",
+      "owner": "products",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@marketing-and-sales",
+      "owner": "marketing-and-sales",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@supply-chain",
+      "owner": "supply-chain",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@service-delivery",
+      "owner": "service-delivery",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@customer-service",
+      "owner": "customer-service",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@human-capital",
+      "owner": "human-capital",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@it",
+      "owner": "it",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@finance",
+      "owner": "finance",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@assets",
+      "owner": "assets",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@risk-and-compliance",
+      "owner": "risk-and-compliance",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@external-relationships",
+      "owner": "external-relationships",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    },
+    {
+      "scope": "naive@capabilities",
+      "owner": "capabilities",
+      "version": "0.1.0",
+      "status": "proposed",
+      "imports": []
+    }
+  ]
+}

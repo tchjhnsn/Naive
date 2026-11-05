@@ -885,6 +885,17 @@
       "note": "Canonical nouns; follows the metamodel schema/ontology-metamodel.schema.json, checked by schema/check-nouns.mjs, rendered to docs/ontology.md. Each noun names its function (or null) and whether it can type a handoff package"
     },
     {
+      "id": "ontology-catalog",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/ontology-catalog.schema.json",
+      "form": "json",
+      "paths": [
+        "docs/ontology-catalog.json"
+      ],
+      "note": "The catalog of ontologies (N-050): every name@function scope with its version, owner, status and imports, one per function. Acyclic imports and defined-or-imported terms are checked by schema/terms/catalog-test.ts"
+    },
+    {
       "id": "reference",
       "layer": "system",
       "level": "method",

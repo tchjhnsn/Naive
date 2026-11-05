@@ -2207,6 +2207,26 @@ export type NextjsStatus = {
   }[];
 };
 
+/** The catalog of ontologies (N-050): one file, docs/ontology-catalog.json, lists every name@function scope with its own version, owner, status and imports. Seeded with one scope per function (gate G5, Torian 2026-11-05). That each scope's suffix is a function id and its owner, that imports are acyclic and that every term a scope uses is defined in it or in a scope it imports is checked by node schema/terms/catalog-test.ts, not here. mappings names the SKOS and OWL term for each class and field, or none. */
+export type OntologyCatalog = OntologyCatalogCatalog;
+
+/** The catalog document, docs/ontology-catalog.json. */
+export type OntologyCatalogCatalog = {
+  note: string;
+  scopes: OntologyCatalogScope[];
+};
+
+/** One name@function scope. Its terms are the live nouns in docs/ontology.json whose function is the suffix. */
+export type OntologyCatalogScope = {
+  scope: string;
+  /** The function id that owns the scope; it must be the scope's suffix. */
+  owner: string;
+  version: string;
+  status: "proposed" | "in-force" | "retired";
+  /** The scopes whose terms this scope may use. */
+  imports: string[];
+};
+
 /** The metamodel (M2) of Naive's ontology (N-048, EE-113). docs/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (python3 schema/validate.py --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
 export type OntologyMetamodel = OntologyMetamodelOntology;
 
