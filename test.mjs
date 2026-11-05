@@ -89,6 +89,7 @@ const steps = [
   ["ledger import (one idea record per merged ledger row, verbatim, confidential rows from the full ledger, reruns converge)", "node", ["scripts/import-ledger-test.ts"]],
   ["golden rulings (the sample validates; no comment URL, an unknown field or another field's value is rejected; each ruling is named for its idea and field)", "node", ["scripts/golden-ruling-test.ts"]],
   ["reconcile runner (proposals gated through the schema, EE-095 and Lean; every Appendix E transition once; disputes and unruled labels queue for Torian; reruns change nothing)", "node", ["scripts/reconcile-ideas-test.ts"]],
+  ["agreement report (3 of 4 rulings matched gives 75 percent; zero rulings give no percentage; the committed report matches a fresh run; held or untaken proposals fail the check)", "node", ["scripts/agreement-report-test.ts"]],
   ["activity (active minutes, days in the venture's zone, streak)", "node", ["schema/activity-test.mjs"]],
   ["telos: instance", "node", ["schema/check-telos.mjs", "instance"]],
   ["telos: examples", "node", ["schema/check-telos.mjs", "schema/examples/workspace"]],
