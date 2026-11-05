@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Draws a release card (P-25, O-7). The card's data is assembled by code from the release's records
-// (schema/releases.mjs cardOf, written to <venture>/.release/card.json); drawing it is the interface's
+// (interface/orchestration/releases.mjs cardOf, written to <venture>/.release/card.json); drawing it is the interface's
 // job, so the picture lives here and never in the release. It is a 1200 by 630 SVG, the size link
 // previews use, with the venture's name, phase, headline numbers with their dates, and who confirmed them.
 //
@@ -38,6 +38,6 @@ export function svg(card) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   const f = dir && join(ventureFile(dir, ".release/card.json"));
-  if (!f || !existsSync(f)) { console.error("usage: node interface/release-card.mjs <venture dir> (after node schema/build-release.mjs)"); process.exit(2); }
+  if (!f || !existsSync(f)) { console.error("usage: node interface/release-card.mjs <venture dir> (after node interface/orchestration/build-release.mjs)"); process.exit(2); }
   process.stdout.write(svg(JSON.parse(readFileSync(f, "utf8"))));
 }

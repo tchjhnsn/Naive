@@ -216,7 +216,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
     expect("a person writes feedback", (await call({ venture: name, route: "validation/feedback/f-9", action: "write", input: fb, actor: "person", workspace: ws })).ok);
     const wi = await call({ venture: name, route: "validation/interviews/i-01", action: "write", input: iv, actor: "person", workspace: ws });
     expect("a person writes an interview", wi.ok, JSON.stringify(wi).slice(0, 300));
-    const build = () => spawnSync("node", [join(repo, "schema/build-release.mjs"), rd, "--now", "2026-10-30T00:00:00Z"], { encoding: "utf8", env });
+    const build = () => spawnSync("node", [join(repo, "interface/orchestration/build-release.mjs"), rd, "--now", "2026-10-30T00:00:00Z"], { encoding: "utf8", env });
     const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
     const leaks = (d) => walk(d).filter((f) => readFileSync(f, "utf8").includes("SECRET-"));
     const left = () => JSON.parse(readFileSync(join(rd, ".release/release.json"), "utf8")).left_out.map((x) => x.file);
@@ -227,7 +227,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
     const b2 = build();
     expect("they stay out after mentura baseline --as person", base.status === 0 && b2.status === 0 && !leaks(join(rd, ".release")).length && study.every((f) => left().includes(f)), base.stderr + b2.stderr);
     const out = join(ws, "release-export");
-    const ex = spawnSync("node", ["-e", `import(${JSON.stringify(join(repo, "schema/releases.mjs"))}).then((m) => m.exportRelease(${JSON.stringify(rd)}, ${JSON.stringify(out)}))`], { encoding: "utf8", env });
+    const ex = spawnSync("node", ["-e", `import(${JSON.stringify(join(repo, "interface/orchestration/releases.mjs"))}).then((m) => m.exportRelease(${JSON.stringify(rd)}, ${JSON.stringify(out)}))`], { encoding: "utf8", env });
     expect("the export holds neither", ex.status === 0 && !leaks(out).length, ex.stderr);
   }
 

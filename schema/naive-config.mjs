@@ -135,7 +135,7 @@ export function pinsBlocking(config, recordType) {
 //   packages   { <name>: { version, early?, channel? } }   the package versions it is pinned to; early
 //                                     marks a later phase's package adopted before its phase. A bare
 //                                     version string ("0.3.0") is read as { version }.
-//   triggers   [ ... ]                what starts the next step on an event (schema/triggers.mjs)
+//   triggers   [ ... ]                what starts the next step on an event (interface/orchestration/triggers.mjs)
 //   kits       [ <name> ]             Mentura kits whose automations this venture turns on
 //
 // Every other key is kept as it is. Nothing here calls a model or the network.

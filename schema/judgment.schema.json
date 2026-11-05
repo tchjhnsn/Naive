@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "judgment.schema.json",
   "title": "Judgment",
-  "description": "The output of one model step (\"use model\", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by schema/model-steps.mjs through the router.",
+  "description": "The output of one model step (\"use model\", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by interface/orchestration/model-steps.mjs through the router.",
   "type": "object",
   "required": ["id", "package", "step", "kind", "question", "reads", "outcome", "answer", "by"],
   "additionalProperties": false,

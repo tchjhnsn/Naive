@@ -32,24 +32,24 @@
 // and prints {model, answers} (the same protocol as Jev). With none, run refuses and payload shows what
 // would be asked. This module never names a vendor or a credential.
 //
-//   node schema/model-steps.mjs <venture dir> payload [--package <name>] [--kit <kit.json>] [--json]
-//   node schema/model-steps.mjs <venture dir> run [--package <name>] [--kit <kit.json>] [--answers <file>] [--speculate] [--stream] [--fresh] [--json]
-//   node schema/model-steps.mjs <venture dir> check [--package <name>] [--kit <kit.json>]
-//   node schema/model-steps.mjs <venture dir> waterfall [--json]
-//   node schema/model-steps.mjs <venture dir> provenance <file> [--checks] [--json]
-//   node schema/model-steps.mjs <venture dir> confirm <judgment id> --by <name>
+//   node interface/orchestration/model-steps.mjs <venture dir> payload [--package <name>] [--kit <kit.json>] [--json]
+//   node interface/orchestration/model-steps.mjs <venture dir> run [--package <name>] [--kit <kit.json>] [--answers <file>] [--speculate] [--stream] [--fresh] [--json]
+//   node interface/orchestration/model-steps.mjs <venture dir> check [--package <name>] [--kit <kit.json>]
+//   node interface/orchestration/model-steps.mjs <venture dir> waterfall [--json]
+//   node interface/orchestration/model-steps.mjs <venture dir> provenance <file> [--checks] [--json]
+//   node interface/orchestration/model-steps.mjs <venture dir> confirm <judgment id> --by <name>
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
-import { call as routerCall, files as ventureFiles, glob, routes } from "../interface/router.mjs";
-import { agentFromEnv, entries as provEntries, record as prov } from "../packages/core/provenance.mjs";
-import { decisions as decisionsOf, propose } from "./decisions.mjs";
-import { loadPackages } from "./load-packages.mjs";
-import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { call as routerCall, files as ventureFiles, glob, routes } from "../router.mjs";
+import { agentFromEnv, entries as provEntries, record as prov } from "../../packages/core/provenance.mjs";
+import { decisions as decisionsOf, propose } from "../../schema/decisions.mjs";
+import { loadPackages } from "../../schema/load-packages.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 
 export const KINDS = {
@@ -681,7 +681,7 @@ export async function waterfall(dir, { graph } = {}) {
   }
   let status = new Map();
   if (dir) {
-    const { packages } = await import("./packages.mjs");
+    const { packages } = await import("../../schema/packages.mjs");
     const p = packages(dir);
     status = new Map(p.core.flatMap((c) => c.records.map((r) => [r.record, r.status])));
   }
@@ -708,7 +708,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const pick = () => stepsOf({ packages: opt("package") ? [opt("package")] : undefined, kit: opt("kit") ? resolvePath(opt("kit")) : undefined });
   const kitCall = async () => {
     if (!opt("kit")) return routerCall;
-    const { wrap } = await import("../interface/kit-boundary.mjs");
+    const { wrap } = await import("../kit-boundary.mjs");
     return wrap(load(resolvePath(opt("kit"))));
   };
   try {

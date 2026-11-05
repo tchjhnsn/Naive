@@ -5,9 +5,9 @@
 // record is written through the router, so its schema, gates and provenance all apply. Port (files
 // kept as they are) is the other way in: schema/port-venture.mjs.
 //
-//   node schema/migrate-venture.mjs --from <project> --venture <new venture dir>
+//   node interface/orchestration/migrate-venture.mjs --from <project> --venture <new venture dir>
 //        the agent writes the plan to <venture>/.release/migrate-plan.json and proposes the decisions
-//   node schema/migrate-venture.mjs --venture <dir> --apply
+//   node interface/orchestration/migrate-venture.mjs --venture <dir> --apply
 //        writes what a person decided ("bring in", "point to them" or "leave them"); open decisions wait
 //
 // The project is only ever read, and the agent gets its text and no tools. Files that look like
@@ -18,10 +18,10 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { call, routes } from "../interface/router.mjs";
-import { agentFromEnv, record as prov } from "../packages/core/provenance.mjs";
-import { propose } from "./decisions.mjs";
-import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { call, routes } from "../router.mjs";
+import { agentFromEnv, record as prov } from "../../packages/core/provenance.mjs";
+import { propose } from "../../schema/decisions.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 export const PLAN = ".release/migrate-plan.json";
 const MAX_FILE = 512 * 1024;
@@ -83,7 +83,7 @@ export function plan(from, dir, { agent = runAgent } = {}) {
     size += f.text.length; given.push(f);
   }
   const rs = writable();
-  const schemaOf = (r) => { try { return load(join(dirname(fileURLToPath(import.meta.url)), "..", r.schema)); } catch { return null; } };
+  const schemaOf = (r) => { try { return load(join(dirname(fileURLToPath(import.meta.url)), "..", "..", r.schema)); } catch { return null; } };
   const prompt = `You are moving an existing project into Naive, a venture development framework. Read the files below and rewrite what they contain as Naive records.
 
 Rules:
@@ -174,7 +174,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const opt = (k) => { const i = args.indexOf(`--${k}`); return i < 0 ? undefined : args[i + 1]; };
   const dir = opt("venture");
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node schema/migrate-venture.mjs --from <project> --venture <dir> | --venture <dir> --apply"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node interface/orchestration/migrate-venture.mjs --from <project> --venture <dir> | --venture <dir> --apply"); process.exit(2); }
   try {
     if (args.includes("--apply")) {
       if (!existsSync(ventureFile(dir, PLAN))) { console.error(`no plan at ${ventureFile(dir, PLAN)}: run with --from first`); process.exit(1); }

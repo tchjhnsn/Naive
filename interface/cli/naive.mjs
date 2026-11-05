@@ -210,8 +210,8 @@ else if (cmd === "mcp") {
 }
 else if (cmd === "info") info(findVenture() ?? (opt("venture") && existsSync(join(resolve(opt("venture")), "venture.json")) ? resolve(opt("venture")) : null));
 else if (cmd === "build" || cmd === "start") {
-  // The release itself is written and served by schema/build-release.mjs and schema/start-release.mjs.
-  const script = `schema/${cmd}-release.mjs`;
+  // The release itself is written and served by interface/orchestration/build-release.mjs and schema/start-release.mjs.
+  const script = cmd === "build" ? "interface/orchestration/build-release.mjs" : "schema/start-release.mjs";
   if (!existsSync(join(repo, script))) { console.error(`naive ${cmd} runs ${script}, which this version of Naive does not have yet`); process.exit(1); }
   process.exit(run(script, [here(), ...rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture")]));
 } else if (cmd === "upgrade") {
@@ -254,7 +254,7 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("schema/lifecycle.mjs", [here(), ...(opt("meet") ? ["meet", opt("meet")] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
-  process.exit(run("schema/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
+  process.exit(run("interface/orchestration/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
 } else if (cmd === "publish") {
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   if (args[0] === "check") {
@@ -268,7 +268,7 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
-  process.exit(run(`schema/${cmd}-venture.mjs`, args));
+  process.exit(run(cmd === "migrate" ? "interface/orchestration/migrate-venture.mjs" : "schema/port-venture.mjs", args));
 } else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
   // The workspace (schema/workspace.mjs): the one above the venture this runs in, else above this folder.
   const venture = opt("venture") ? here() : findVenture();

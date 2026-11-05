@@ -4,25 +4,25 @@
 // (interface/skills/naive-setup) renders it in the model's harness, as a Claude artifact where there is one;
 // interface/dev/setup.mjs serves the same state to a browser.
 //
-//   node schema/setup.mjs <venture dir> state                     the state, as JSON
-//   node schema/setup.mjs <venture dir> artifact                  the state rendered into the skill's artifact template
-//   node schema/setup.mjs <venture dir> answer <decision id> <the founder's words> [--via mcp]
-//   node schema/setup.mjs <venture dir> point <function> <system> [address] [--via mcp]
-//   node schema/setup.mjs <venture dir> confirm [--yes]          confirm the answers the model relayed, as the founder
+//   node interface/orchestration/setup.mjs <venture dir> state                     the state, as JSON
+//   node interface/orchestration/setup.mjs <venture dir> artifact                  the state rendered into the skill's artifact template
+//   node interface/orchestration/setup.mjs <venture dir> answer <decision id> <the founder's words> [--via mcp]
+//   node interface/orchestration/setup.mjs <venture dir> point <function> <system> [address] [--via mcp]
+//   node interface/orchestration/setup.mjs <venture dir> confirm [--yes]          confirm the answers the model relayed, as the founder
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const TEMPLATE = "interface/skills/naive-setup/artifact.html";
 
 const GOAL = "discovery-goal";
 
 export async function state(dir) {
-  const { decisions } = await import("./decisions.mjs");
+  const { decisions } = await import("../../schema/decisions.mjs");
   const v = load(join(dir, "venture.json"));
   const people = existsSync(join(ventureFile(dir, "people/people.json"))) ? load(join(ventureFile(dir, "people/people.json"))) : null;
   const sources = existsSync(join(ventureFile(dir, "knowledge/sources.json"))) ? load(join(ventureFile(dir, "knowledge/sources.json"))) : { sources: [], records: {} };
@@ -54,7 +54,7 @@ const relayed = (d) => d.status !== "decided" && !!d.answer && d.provenance?.dra
 
 // One answer: a decision on file is approved; a foundation statement (or the goal) becomes a decision a person approves.
 export async function decide(dir, { id, answer, via = "api", where = "/setup" }) {
-  const { approve, decisions, founderName, propose } = await import("./decisions.mjs");
+  const { approve, decisions, founderName, propose } = await import("../../schema/decisions.mjs");
   if (!answer || !String(answer).trim()) return { ok: false, error: "write an answer first" };
   const by = founderName(dir);
   const d = decisions(dir).decisions.find((x) => x.id === id);
@@ -92,7 +92,7 @@ export async function point(dir, { fn, system, address, via = "api", actor = "pe
     if (r.status === 0) Object.assign(entry, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), address: address || (live ? "live" : "sandbox") });
   }
   f.systems = [...f.systems.filter((s) => s.system !== system), entry];
-  const { call } = await import("../interface/router.mjs");
+  const { call } = await import("../router.mjs");
   const r = await call({ workspace: dirname(dir), venture: basename(dir), route: "knowledge/knowledge-sources", action: "write", input: map, actor, ...(agentId ? { actor_id: agentId } : {}), via, provenance: { note: `${fn}: ${system}${address ? ` at ${address}` : ""} (${entry.status})` } });
   return r.ok ? { ok: true, result: entry } : r;
 }
@@ -100,7 +100,7 @@ export async function point(dir, { fn, system, address, via = "api", actor = "pe
 /** The model relays the founder's answer: proposed with the founder's words as its wording, by an agent,
  *  so it stays open until the founder confirms it (an agent never decides, EE-058). */
 export async function relay(dir, { id, answer, agentId, harness, model }) {
-  const { decisions, propose } = await import("./decisions.mjs");
+  const { decisions, propose } = await import("../../schema/decisions.mjs");
   if (!answer || !String(answer).trim()) return { ok: false, error: "pass the founder's answer, in their words" };
   const words = String(answer).trim();
   const note = `the founder's words, relayed from ${harness ?? "the model's harness"} during setup`;
@@ -119,8 +119,8 @@ export async function relay(dir, { id, answer, agentId, harness, model }) {
 /** The founder confirms the answers the model relayed, at the keyboard: each becomes a decision they made.
  *  @param {string} dir @param {{ by?: string }} [opts] */
 export async function confirm(dir, { by } = {}) {
-  by ??= (await import("./decisions.mjs")).founderName(dir);
-  const { approve } = await import("./decisions.mjs");
+  by ??= (await import("../../schema/decisions.mjs")).founderName(dir);
+  const { approve } = await import("../../schema/decisions.mjs");
   const out = [];
   for (const w of (await state(dir)).waiting) {
     const r = approve(dir, w.id, /** @type {Parameters<typeof approve>[2]} */ ({ by, via: "cli", note: `confirmed at setup: ${by}'s words, relayed by the model` }));
@@ -142,7 +142,7 @@ if (process.argv[1] && resolve(process.argv[1]) === new URL(import.meta.url).pat
   const flag = (n) => { const i = rest.indexOf(`--${n}`); if (i < 0) return undefined; const v = rest[i + 1]; rest.splice(i, 2); return v; };
   const via = flag("via") ?? "cli";
   if (!["cli", "mcp", "api"].includes(via)) { console.error(`--via is cli, mcp or api, not ${via}`); process.exit(2); }
-  if (!dirArg || !existsSync(join(dirArg, "venture.json"))) { console.error("usage: node schema/setup.mjs <venture dir> state|artifact|answer|point|confirm ..."); process.exit(2); }
+  if (!dirArg || !existsSync(join(dirArg, "venture.json"))) { console.error("usage: node interface/orchestration/setup.mjs <venture dir> state|artifact|answer|point|confirm ..."); process.exit(2); }
   const dir = resolve(dirArg);
   let r;
   if (cmd === "state") r = { ok: true, result: await state(dir) };

@@ -8,7 +8,7 @@
 //
 //   handle(req, res, dir) -> true when it answered a /setup request
 
-import { decide, point, state } from "../../schema/setup.mjs";
+import { decide, point, state } from "../orchestration/setup.mjs";
 
 const json = (res, code, body) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
 const body = (req) => new Promise((ok) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch { ok({}); } }); });

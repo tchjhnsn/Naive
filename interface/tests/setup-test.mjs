@@ -22,7 +22,7 @@ let failed = 0, n = 0;
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
 const t = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
 const tool = async (name, args) => { const r = await handle({ jsonrpc: "2.0", id: ++n, method: "tools/call", params: { name, arguments: args } }); const text = r.result.content[0].text; let result; try { result = JSON.parse(text); } catch { result = text; } return { ok: !r.result.isError, result }; };
-const setup = (...a) => spawnSync("node", [join(repo, "schema/setup.mjs"), dir, ...a], { env, encoding: "utf8" });
+const setup = (...a) => spawnSync("node", [join(repo, "interface/orchestration/setup.mjs"), dir, ...a], { env, encoding: "utf8" });
 const find = (id) => decisions(dir).decisions.find((d) => d.id === id);
 
 await handle({ jsonrpc: "2.0", id: 0, method: "initialize", params: { clientInfo: { name: "Claude", version: "test" } } });
@@ -64,7 +64,7 @@ await t("pointing a function through MCP writes knowledge/sources.json as the ag
 });
 
 await t("confirming needs the founder: without yes nothing is decided; with it, each relayed answer is theirs", async () => {
-  const no = spawnSync("node", [join(repo, "schema/setup.mjs"), dir, "confirm"], { env, encoding: "utf8", input: "no\n" });
+  const no = spawnSync("node", [join(repo, "interface/orchestration/setup.mjs"), dir, "confirm"], { env, encoding: "utf8", input: "no\n" });
   ok(no.status === 1 && find("product-exists").status === "open", no.stdout + no.stderr);
   const yes = setup("confirm", "--yes");
   ok(yes.status === 0, yes.stdout + yes.stderr);

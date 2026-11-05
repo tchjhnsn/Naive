@@ -1440,7 +1440,7 @@
         "instance/**/.release/release.json",
         "instance/**/.release/card.json"
       ],
-      "note": "A release (C-11, I-17): the venture's static shell, written by node schema/build-release.mjs. release.json is the manifest (confirmed records frozen in with their sha256, date and who confirmed them; named live holes; the route table as the release holds it; frozen command answers); card.json is the release card's data (P-25, O-7). The frozen copies under .release/records/ keep their own record types. Read without the router by node schema/start-release.mjs"
+      "note": "A release (C-11, I-17): the venture's static shell, written by node interface/orchestration/build-release.mjs. release.json is the manifest (confirmed records frozen in with their sha256, date and who confirmed them; named live holes; the route table as the release holds it; frozen command answers); card.json is the release card's data (P-25, O-7). The frozen copies under .release/records/ keep their own record types. Read without the router by node schema/start-release.mjs"
     },
     {
       "id": "team-plan",
@@ -1753,15 +1753,15 @@
         {
           "field": "package",
           "to": "(packages and kits)",
-          "checked_by": "schema/model-steps.mjs"
+          "checked_by": "interface/orchestration/model-steps.mjs"
         },
         {
           "field": "decision",
           "to": "decision-record",
-          "checked_by": "schema/model-steps.mjs"
+          "checked_by": "interface/orchestration/model-steps.mjs"
         }
       ],
-      "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (schema/model-steps.mjs)"
+      "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (interface/orchestration/model-steps.mjs)"
     },
     {
       "id": "venture-types",

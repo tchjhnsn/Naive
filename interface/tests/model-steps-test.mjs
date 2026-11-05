@@ -18,7 +18,7 @@ import { approve } from "../../schema/decisions.mjs";
 import {
   KINDS, Uncaught, answersModel, assertJson, checkRequest, checkStep, checkSteps, commandModel, confirm, expectDeterministic,
   keepComputed, outcomeOf, payload, provenanceOf, run, settle, stepsOf, typed, waterfall, waves,
-} from "../../schema/model-steps.mjs";
+} from "../orchestration/model-steps.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;

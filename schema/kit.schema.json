@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "kit.schema.json",
   "title": "Kit",
-  "description": "A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (schema/kits.mjs). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (schema/triggers.mjs).",
+  "description": "A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (schema/kits.mjs). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (interface/orchestration/triggers.mjs).",
   "type": "object",
   "required": ["name", "title", "purpose", "extends", "use_model", "status"],
   "additionalProperties": false,

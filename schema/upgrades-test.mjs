@@ -196,11 +196,11 @@ const crash = spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), "found
 expect("the write itself lands even when the trigger runner crashes", crash.status === 0, crash.stderr);
 expect("the crash is kept for the next run", existsSync(join(t, ".naive/trigger-errors.jsonl")) && /JSON/.test(readFileSync(join(t, ".naive/trigger-errors.jsonl"), "utf8")));
 writeFileSync(join(t, "naive.config.json"), JSON.stringify(tc2, null, 2));
-run("schema/triggers.mjs", [t, "--fire"]);
+run("interface/orchestration/triggers.mjs", [t, "--fire"]);
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
 expect("the next run raises the crash as a decision", rep.open.some((o) => o.trigger === "runner" && /JSON/.test(o.error)), JSON.stringify(rep.open));
 writeFileSync(join(t, ".naive/triggers.json"), "{ not json");
-run("schema/triggers.mjs", [t, "--fire"]);
+run("interface/orchestration/triggers.mjs", [t, "--fire"]);
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
 expect("an unreadable trigger state is kept aside and raised, not silently reset", rep.open.some((o) => /could not be read; it is kept at/.test(o.error)), JSON.stringify(rep.open));
 

@@ -12,21 +12,21 @@
 // skip this event, or turn the trigger off) and settled when the founder decides it. A crash of the
 // runner itself is kept by the provenance hook and raised on the next run. Nothing is lost.
 //
-//   node schema/triggers.mjs <venture dir> [--json]     the triggers, their recent runs and open failures
-//   node schema/triggers.mjs <venture dir> --fire        run what the new events start (the provenance hook does this)
+//   node interface/orchestration/triggers.mjs <venture dir> [--json]     the triggers, their recent runs and open failures
+//   node interface/orchestration/triggers.mjs <venture dir> --fire        run what the new events start (the provenance hook does this)
 //
 // Trigger runs act as agents (id trigger-<id>, via router), so their writes meet the same gates as any
 // agent's: a gated record is drafted for a person. A trigger never fires on its own writes.
 
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { entries } from "../packages/core/provenance.mjs";
-import { call, glob } from "../interface/router.mjs";
-import { decisions, propose } from "./decisions.mjs";
-import { kit } from "./kits.mjs";
-import { CONFIG, readConfig, writeConfig } from "./naive-config.mjs";
-import { packages } from "./packages.mjs";
-import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { entries } from "../../packages/core/provenance.mjs";
+import { call, glob } from "../router.mjs";
+import { decisions, propose } from "../../schema/decisions.mjs";
+import { kit } from "../../schema/kits.mjs";
+import { CONFIG, readConfig, writeConfig } from "../../schema/naive-config.mjs";
+import { packages } from "../../schema/packages.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 export const STATE = ".naive/triggers.json";
 export const ERRORS = ".naive/trigger-errors.jsonl";
@@ -88,7 +88,7 @@ function raise(dir, run) {
   const id = `trigger-${run.trigger}-failed-${run.trigger === "runner" ? Date.now().toString(36) : run.n}`.replace(/[^a-z0-9-]+/g, "-").slice(0, 80);
   const r = propose(dir, { id, question: `Trigger ${run.trigger} ${run.outcome === "uncaught" ? "crashed" : "failed"} on ${run.activity ?? "an event"} of ${run.entity ?? "the venture"}: ${String(run.error).split("\n")[0].slice(0, 300)}. Retry it, skip this event, or turn the trigger off?`,
     options: ["Retry", "Skip this event", "Turn the trigger off"], layer: "operations", boundary: "fail-open", needed_in: v.phase, decides: { path: CONFIG },
-    note: `Raised by schema/triggers.mjs (E-7). The run is kept in ${STATE} as run ${run.n}.` }, /** @type {Parameters<typeof propose>[2]} */ ({ agentId: "naive-triggers", via: "router" }));
+    note: `Raised by interface/orchestration/triggers.mjs (E-7). The run is kept in ${STATE} as run ${run.n}.` }, /** @type {Parameters<typeof propose>[2]} */ ({ agentId: "naive-triggers", via: "router" }));
   return r.ok ? id : null;
 }
 
@@ -151,7 +151,7 @@ export async function fire(dir, { rounds = 20 } = {}) {
   const made = [];
   try {
     if (state.unreadable) {
-      const run = { n: 1, trigger: "runner", from: "schema/triggers.mjs", at: now(), outcome: "failed", error: `${STATE} could not be read; it is kept at ${state.unreadable} and triggers start again from now` };
+      const run = { n: 1, trigger: "runner", from: "interface/orchestration/triggers.mjs", at: now(), outcome: "failed", error: `${STATE} could not be read; it is kept at ${state.unreadable} and triggers start again from now` };
       const d = raise(dir, run); run.status = d ? "raised" : "unraised"; if (d) run.decision = d;
       delete state.unreadable; state.runs.push(run); made.push(run); saveState(dir, state);
     }
@@ -197,7 +197,7 @@ export async function fire(dir, { rounds = 20 } = {}) {
         saveState(dir, state);
       }
       if (round === rounds - 1 && entries(dir).at(-1)?.hash !== state.cursor) {
-        const run = { n: state.runs.length + 1, trigger: "runner", from: "schema/triggers.mjs", at: now(), outcome: "failed", error: `triggers kept starting each other for ${rounds} rounds; the rest wait for the next event` };
+        const run = { n: state.runs.length + 1, trigger: "runner", from: "interface/orchestration/triggers.mjs", at: now(), outcome: "failed", error: `triggers kept starting each other for ${rounds} rounds; the rest wait for the next event` };
         const d = raise(dir, run); run.status = d ? "raised" : "unraised"; if (d) run.decision = d;
         state.runs.push(run); made.push(run); saveState(dir, state);
       }
@@ -219,7 +219,7 @@ export function report(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node schema/triggers.mjs <venture dir> [--fire] [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node interface/orchestration/triggers.mjs <venture dir> [--fire] [--json]"); process.exit(2); }
   const json = process.argv.includes("--json"), quiet = process.argv.includes("--quiet");
   if (process.argv.includes("--fire")) {
     const made = await fire(dir);

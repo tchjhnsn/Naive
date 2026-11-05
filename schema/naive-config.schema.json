@@ -326,7 +326,7 @@
     },
     "triggers": {
       "type": "array",
-      "description": "What starts the next step on an event (schema/triggers.mjs)"
+      "description": "What starts the next step on an event (interface/orchestration/triggers.mjs)"
     },
     "product_lint": {
       "type": "object",

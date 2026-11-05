@@ -16,7 +16,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { call as routerCall, glob, repo, routes } from "./router.mjs";
-// schema/model-steps.mjs is imported inside checkKit, not here, because it imports wrap from this module.
+// interface/orchestration/model-steps.mjs is imported inside checkKit, not here, because it imports wrap from this module.
 
 const ID = /^[a-z0-9][a-z0-9-]*$/;
 export const actorOf = (kit) => `kit-${kit.name}`;
@@ -25,7 +25,7 @@ const reachable = (b, route) => any(b.reads, route) || any(b.writes, route);
 
 /** Errors in a kit's declared boundary, its model steps included. */
 export async function checkKit(kit) {
-  const { checkSteps, inputOf } = await import("../schema/model-steps.mjs");
+  const { checkSteps, inputOf } = await import("./orchestration/model-steps.mjs");
   const e = [];
   if (!kit || typeof kit !== "object") return ["a kit.json is an object"];
   if (typeof kit.name !== "string" || !ID.test(kit.name)) e.push("a kit has a name of lowercase letters, digits and hyphens");

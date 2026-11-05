@@ -1618,7 +1618,7 @@ export type InternalTerms = {
   }[];
 };
 
-/** The output of one model step ("use model", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by schema/model-steps.mjs through the router. */
+/** The output of one model step ("use model", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by interface/orchestration/model-steps.mjs through the router. */
 export type Judgment = {
   /** <package>-<step>-<item>, or <package>-<step> for a step asked once */
   id: string;
@@ -1666,7 +1666,7 @@ export type Judgment = {
   asked_at?: string;
 };
 
-/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (schema/kits.mjs). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (schema/triggers.mjs). */
+/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (schema/kits.mjs). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (interface/orchestration/triggers.mjs). */
 export type Kit = {
   name: string;
   title: string;
@@ -2166,7 +2166,7 @@ export type NaiveConfig = {
       by?: string;
     }[];
   };
-  /** What starts the next step on an event (schema/triggers.mjs) */
+  /** What starts the next step on an event (interface/orchestration/triggers.mjs) */
   triggers?: unknown[];
   /** Per-rule mode for the product lint (schema/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed. */
   product_lint?: {
@@ -3519,7 +3519,7 @@ export type Telos = {
   };
 };
 
-/** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). schema/triggers.mjs runs them. */
+/** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). interface/orchestration/triggers.mjs runs them. */
 export type Trigger = {
   id: string;
   /** Which provenance entries start it; every field given must match */

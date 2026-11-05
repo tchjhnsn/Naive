@@ -25,7 +25,7 @@ The old paths `schema/venture-paths.mjs`, `interface/instrumentation.mjs` and `i
 ## How it connects
 
 - Called by: [`interface/router.mjs`](../../interface/router.mjs), the CLI, the checkers in [`schema/`](../../schema/README.md), the console bridge and the store kernel.
-- Calls: only Node built-ins, and `provenance.mjs` starts `schema/triggers.mjs` as a child process after a write.
+- Calls: only Node built-ins, and `provenance.mjs` starts `interface/orchestration/triggers.mjs` as a child process after a write.
 
 ## Not built
 

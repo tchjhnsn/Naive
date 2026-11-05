@@ -8,11 +8,11 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { approve, decisions, mayMerge, merge, propose, rollback } from "./decisions.mjs";
-import { decide } from "./setup.mjs";
-import { independent, reviewIsIndependent, verificationErrors } from "./verify.mjs";
+import { approve, decisions, mayMerge, merge, propose, rollback } from "../../schema/decisions.mjs";
+import { decide } from "../orchestration/setup.mjs";
+import { independent, reviewIsIndependent, verificationErrors } from "../../schema/verify.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 const template = join(repo, "governance/venture-template");
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };

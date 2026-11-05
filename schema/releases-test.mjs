@@ -20,7 +20,7 @@ delete env.MENTURA_MODEL; delete env.MENTURA_ACTOR; delete env.MENTURA_ACTOR_ID;
 writeFileSync(join(ws, "agent-called.mjs"), `import { writeFileSync } from "node:fs"; writeFileSync(${JSON.stringify(join(ws, "AGENT_CALLED"))}, "1"); console.log("{}");\n`);
 const run = (args, extra = {}, input) => spawnSync("node", args, { cwd: repo, env: { ...env, ...extra }, encoding: "utf8", input });
 const mentura = (...a) => run([join(repo, "interface/cli/mentura.mjs"), ...a]);
-const build = (dir, ...a) => run([join(repo, "schema/build-release.mjs"), dir, ...a]);
+const build = (dir, ...a) => run([join(repo, "interface/orchestration/build-release.mjs"), dir, ...a]);
 const start = (dir, ...a) => run([join(repo, "schema/start-release.mjs"), dir, ...a]);
 const get = (dir, path) => { const r = start(dir, "--get", path); let body = null; try { body = JSON.parse(r.stdout); } catch { body = r.stdout; } return { status: r.status, body }; };
 const writeJson = (f, o) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
@@ -32,7 +32,7 @@ expect("init a venture", mentura("init", dir, "--id", "kettle", "--layers", "pur
 
 // ---- I-17, C-10: a fresh venture builds; the same records give the same release, whatever "now" is ----
 let b = build(dir, "--now", "2026-10-29T00:00:00Z", "--port", "9");
-expect("I-17: node schema/build-release.mjs <venture dir> runs (and takes --port)", b.status === 0, b.stderr);
+expect("I-17: node interface/orchestration/build-release.mjs <venture dir> runs (and takes --port)", b.status === 0, b.stderr);
 const first = manifest(dir);
 expect("C-11: an empty venture's release is a shell of named holes (its four open framework decisions)", first.records.length === 0 && first.holes.filter((h) => h.kind === "decision").length === 4, JSON.stringify(first.holes.map((h) => h.name)));
 b = build(dir, "--now", "2026-12-01T00:00:00Z");
@@ -136,7 +136,7 @@ expect("C-17: the cache lives in .naive/, ignored by git, never in the release",
 expect("C-17: the release and cache key holds the framework version, the package definitions and the model", m.key.framework === readFileSync(join(repo, "schema/VERSION"), "utf8").trim() && /^[0-9a-f]{16}$/.test(m.key.packages) && m.key.model === null);
 const again = (b = build(dir, "--now", "2026-10-30T00:00:00Z"), manifest(dir));
 expect("C-17: a rebuild with nothing changed reuses the cache and gives the same release", again.release === m.release && again.cache.fresh === false && again.cache.misses === 0, JSON.stringify(again.cache));
-b = run([join(repo, "schema/build-release.mjs"), dir, "--now", "2026-10-30T00:00:00Z"], { MENTURA_MODEL: "claude-opus-5-5" });
+b = run([join(repo, "interface/orchestration/build-release.mjs"), dir, "--now", "2026-10-30T00:00:00Z"], { MENTURA_MODEL: "claude-opus-5-5" });
 const modelled = manifest(dir);
 expect("C-17: changing the model starts the cache fresh (and changes the release key)", b.status === 0 && modelled.cache.fresh === true && modelled.cache.previous_key?.model === null && modelled.key.model === "claude-opus-5-5" && modelled.release !== m.release, JSON.stringify(modelled.cache));
 build(dir, "--now", "2026-10-30T00:00:00Z");

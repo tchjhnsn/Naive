@@ -97,10 +97,10 @@ export async function handle(msg, notify = () => {}) {
           input: { session: a.session, task: a.task, prefetch: a.prefetch, header_only: a.header_only, ...(progress ? { onPart: ({ part, data }) => progress({ message: `${part}: ${JSON.stringify(data)}` }) } : {}) } }); break;
         case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, confidence: a.confidence, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
-        // Setup (EE-083): schema/setup.mjs holds the questions; answers are proposals the founder confirms.
-        case "mentura_setup": { const m = await import("../../schema/setup.mjs"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
-        case "mentura_setup_answer": r = await (await import("../../schema/setup.mjs")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
-        case "mentura_setup_point": r = await (await import("../../schema/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id }); break;
+        // Setup (EE-083): interface/orchestration/setup.mjs holds the questions; answers are proposals the founder confirms.
+        case "mentura_setup": { const m = await import("../orchestration/setup.mjs"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
+        case "mentura_setup_answer": r = await (await import("../orchestration/setup.mjs")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
+        case "mentura_setup_point": r = await (await import("../orchestration/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id }); break;
         case "mentura_frame": r = await (await import("../../schema/frames.mjs")).run(ventureDir(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client, model: a.model }); break;
         case "mentura_decisions": {
           r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });

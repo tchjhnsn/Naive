@@ -13,7 +13,7 @@
 //                                                   alias of naive migrate: an agent rewrites a project as Naive records (EE-076)
 //   mentura typegen                                 alias of naive typegen (EE-073)
 //   mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [--answers <file>] [--speculate] [--stream]
-//                                                   model steps (use model, EE-073): schema/model-steps.mjs
+//                                                   model steps (use model, EE-073): interface/orchestration/model-steps.mjs
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route;
@@ -156,7 +156,7 @@ if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
   const d = ["triggers", "stale", "notify", "adapt"].includes(cmd) ? (opt("venture") ? ventureDir(opt("venture"), workspace) : null) : null;
   if (cmd !== "adapters" && !d) { console.error(opt("venture") ? `no venture ${opt("venture")}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
   const pass = (...names) => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
-  const args = cmd === "triggers" ? ["schema/triggers.mjs", d, ...pass("fire", "json")]
+  const args = cmd === "triggers" ? ["interface/orchestration/triggers.mjs", d, ...pass("fire", "json")]
     : cmd === "stale" ? ["schema/stale.mjs", d, ...pass("json")]
     : cmd === "notify" ? ["schema/stale.mjs", d, "--notify", ...pass("source", "path", "version", "json")]
     : cmd === "adapt" ? ["interface/adapters.mjs", "adapt", action ?? "", d, ...pass("json")]
@@ -170,7 +170,7 @@ if (cmd === "migrate" && (opt("from") || flag("apply"))) {
   const v = opt("venture");
   const d = v && (existsSync(join(resolve(v), "venture.json")) ? resolve(v) : ventureDir(v, workspace));
   if (!d) usage();
-  const p = spawnSync("node", [join(repo, "schema/migrate-venture.mjs"), "--venture", d, ...(opt("from") ? ["--from", opt("from")] : ["--apply"])], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "interface/orchestration/migrate-venture.mjs"), "--venture", d, ...(opt("from") ? ["--from", opt("from")] : ["--apply"])], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -185,12 +185,12 @@ if (cmd === "upgrade" || cmd === "migrate") {
 }
 
 // Model steps hook (use model, EE-073): mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [...].
-// The logic is schema/model-steps.mjs; this passes the venture folder and the other arguments through.
+// The logic is interface/orchestration/model-steps.mjs; this passes the venture folder and the other arguments through.
 if (cmd === "steps") {
   const v = opt("venture"), d = v && ventureDir(v, workspace);
   if (!d || !action) usage();
   const pass = argv.slice(argv.indexOf("steps") + 1).filter((a, i, all) => !["--venture", "--workspace"].includes(a) && !["--venture", "--workspace"].includes(all[i - 1]));
-  const p = spawnSync("node", [join(repo, "schema/model-steps.mjs"), d, ...pass], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "interface/orchestration/model-steps.mjs"), d, ...pass], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 

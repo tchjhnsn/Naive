@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "trigger.schema.json",
   "title": "Trigger",
-  "description": "What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). schema/triggers.mjs runs them.",
+  "description": "What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). interface/orchestration/triggers.mjs runs them.",
   "type": "object",
   "required": ["id", "on", "run"],
   "additionalProperties": false,

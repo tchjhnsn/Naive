@@ -34,7 +34,7 @@ th { font: 600 .72rem/1.2 var(--mono); text-transform: uppercase; letter-spacing
 <div class="wrap" id="app"></div>
 <script id="naive-setup-state" type="application/json">__NAIVE_SETUP_STATE__</script>
 <script>
-// A view of the venture's setup state, filled in by `node schema/setup.mjs <venture dir> artifact`.
+// A view of the venture's setup state, filled in by `node interface/orchestration/setup.mjs <venture dir> artifact`.
 // It reads nothing from the network and writes nothing: the founder answers in the chat, the model writes
 // each answer through Naive, and renders this page again.
 const S = JSON.parse(document.getElementById("naive-setup-state").textContent);

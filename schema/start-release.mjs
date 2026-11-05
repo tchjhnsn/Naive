@@ -19,7 +19,7 @@ const opt = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 
 const values = new Set(["port", "get", "now"].flatMap((n) => (opt(n) !== undefined ? [opt(n)] : [])));
 const dir = args.find((a) => !a.startsWith("--") && !values.has(a));
 if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node schema/start-release.mjs <venture dir> [--port n] | --get <path>"); process.exit(2); }
-if (!readRelease(dir)) { console.error(`no release in ${dir}: run node schema/build-release.mjs ${dir} first`); process.exit(1); }
+if (!readRelease(dir)) { console.error(`no release in ${dir}: run node interface/orchestration/build-release.mjs ${dir} first`); process.exit(1); }
 
 if (opt("get") !== undefined) {
   const a = answer(dir, "GET", opt("get"), { draw: svg });

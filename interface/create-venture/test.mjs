@@ -231,11 +231,11 @@ t("naive upgrade --framework reinstalls the framework with the venture's package
 });
 
 t("naive build and start say plainly when the release scripts are missing, and otherwise run them", () => {
-  for (const c of ["build", "start"]) {
-    const has = existsSync(join(repo, `schema/${c}-release.mjs`));
+  for (const [c, script] of [["build", "interface/orchestration/build-release.mjs"], ["start", "schema/start-release.mjs"]]) {
+    const has = existsSync(join(repo, script));
     if (has) continue;
     const r = naive([c], v);
-    ok(r.status === 1 && r.stderr.includes(`schema/${c}-release.mjs`), r.stderr);
+    ok(r.status === 1 && r.stderr.includes(script), r.stderr);
   }
 });
 

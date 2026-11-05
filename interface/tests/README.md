@@ -19,6 +19,7 @@ Tests that run a module in `schema/` through the router: its route via `call`, t
 | `lint-*-test.mjs` | The function lint suites (customers, finance, foundation, investors, legal, product, validation) run through their routes. |
 | `decision-index-test.mjs`, `decision-reasons-test.mjs` | The live decision index and frozen decision reasons. |
 | [`validation-study-test.mjs`](./validation-study-test.mjs) | Interviews, feedback, bugs, telemetry, the beta gate. |
+| [`delegation-test.mjs`](./delegation-test.mjs) | Delegation grants and the builder-is-not-verifier rule. It moved here in step 3 because it imports [`interface/orchestration/setup.mjs`](../orchestration/setup.mjs). |
 | `canonical-core-test.mjs`, `design-additions-test.mjs`, `structure-checks-test.mjs`, `visibility-test.mjs` | The canonical core, design additions, structure checks and field visibility. |
 
 ## Run and test
@@ -29,4 +30,4 @@ Tests that run a module in `schema/` through the router: its route via `call`, t
 ## How it connects
 
 - Calls: [`interface/router.mjs`](../router.mjs), the MCP server and the HTTP API, and the `schema/` modules under test.
-- Tests in `schema/` that do not run a route stay next to their module.
+- A test in `schema/` that does not import the router, the MCP server, the HTTP API or a module in [`interface/orchestration/`](../orchestration/README.md) stays next to its module, even when it starts the CLI as a child process.
