@@ -28,4 +28,4 @@ The route table and the pure helpers that read it. Every route a venture has is 
 ## Not built
 
 - This folder is not an npm workspace package yet, like `packages/core`.
-- Two modules in `schema/` still import the interface: `schema/start-release.mjs` (the release card) and `schema/upgrades.mjs` (the adapters refresh). The import cycle between `schema/` and `interface/` remains until step 4 of the router inversion moves them. The modules that ran routes through the router's `call` moved to [`interface/orchestration/`](../../interface/orchestration/README.md), and the system/steps command route now names `interface/orchestration/model-steps.mjs`.
+- No module in `schema/` or `knowledge/` imports the interface any more, so neither is in the import cycle. One cycle remains, between `operations/`, `purpose/`, `schema/` and `scripts/`, and step 4b of the router inversion removes it. The modules that ran routes through the router's `call` moved to [`interface/orchestration/`](../../interface/orchestration/README.md), and the system/steps command route names `interface/orchestration/model-steps.mjs`.

@@ -128,7 +128,7 @@ expect("C-10: building called no model", !existsSync(join(ws, "AGENT_CALLED")));
 const card = JSON.parse(readFileSync(join(dir, ".release/card.json"), "utf8"));
 const price = card.headline.find((h) => h.label === "Price");
 expect("P-25, O-7: the release card holds name, phase, headline numbers with their dates, and who confirmed them", card.name === "kettle" && card.phase === "discovery" && card.release === m.release && price?.value === 49 && price.unit === "USD per month" && card.headline.every((h) => h.as_of) && card.confirmed_by.length > 0, JSON.stringify(card.headline));
-const svg = run([join(repo, "interface/release-card.mjs"), dir]);
+const svg = run([join(repo, "schema/release-card.mjs"), dir]);
 expect("O-7: the interface draws the card; the release holds no picture or styles", svg.status === 0 && svg.stdout.startsWith("<svg") && svg.stdout.includes("kettle") && svg.stdout.includes("49") && !tree(join(dir, ".release")).some((f) => /\.(svg|css|html|png)$/.test(f)), svg.stderr);
 
 // C-17: stores and keys.

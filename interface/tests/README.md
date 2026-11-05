@@ -19,6 +19,7 @@ Tests that run a module in `schema/` through the router: its route via `call`, t
 | `lint-*-test.mjs` | The function lint suites (customers, finance, foundation, investors, legal, product, validation) run through their routes. |
 | `decision-index-test.mjs`, `decision-reasons-test.mjs` | The live decision index and frozen decision reasons. |
 | [`validation-study-test.mjs`](./validation-study-test.mjs) | Interviews, feedback, bugs, telemetry, the beta gate. |
+| [`connectors-router-test.mjs`](./connectors-router-test.mjs) | The filesystem connector through the router: a mapped source, the catalog, the source-of-truth matrix and attributes. It moved here from [`knowledge/connectors/eval.mjs`](../../knowledge/connectors/eval.mjs) in step 4. |
 | [`delegation-test.mjs`](./delegation-test.mjs) | Delegation grants and the builder-is-not-verifier rule. It moved here in step 3 because it imports [`interface/orchestration/setup.mjs`](../orchestration/setup.mjs). |
 | `canonical-core-test.mjs`, `design-additions-test.mjs`, `structure-checks-test.mjs`, `visibility-test.mjs` | The canonical core, design additions, structure checks and field visibility. |
 

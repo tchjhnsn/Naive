@@ -545,7 +545,7 @@
    "status": "built",
    "evidence": [
     "interface/orchestration/releases.mjs",
-    "interface/release-card.mjs",
+    "schema/release-card.mjs",
     "schema/start-release.mjs",
     "schema/releases-test.mjs"
    ],
@@ -2220,11 +2220,11 @@
    "status": "built",
    "evidence": [
     "interface/orchestration/releases.mjs",
-    "interface/release-card.mjs",
+    "schema/release-card.mjs",
     "schema/releases-test.mjs"
    ],
    "page": "get-started/releases",
-   "note": "cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisions made, the price from validation-pricing, and live holes. Drawing is in interface/release-card.mjs, and the release itself holds no SVG, CSS or HTML."
+   "note": "cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisions made, the price from validation-pricing, and live holes. Drawing is in schema/release-card.mjs, and the release itself holds no SVG, CSS or HTML."
   },
   {
    "id": "H-1",
@@ -2279,7 +2279,7 @@
    "note": "Covered by O-7: cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisi",
    "evidence": [
     "interface/orchestration/releases.mjs",
-    "interface/release-card.mjs",
+    "schema/release-card.mjs",
     "schema/releases-test.mjs"
    ],
    "page": "get-started/releases"

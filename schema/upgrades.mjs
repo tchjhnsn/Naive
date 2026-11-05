@@ -373,7 +373,7 @@ export async function accept(dir, { confirm, by, reg = registry() } = {}) {
 }
 
 async function refreshAdapters(dir) {
-  try { const { refresh } = await import("../interface/adapters.mjs"); return refresh(dir); } catch (e) { return { error: e.message }; }
+  try { const { refresh } = await import("./adapters.mjs"); return refresh(dir); } catch (e) { return { error: e.message }; }
 }
 
 async function landed(dir, d, ch, by) {

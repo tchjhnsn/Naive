@@ -22,7 +22,7 @@ The knowledge layer is where every record is stored and found. It does not copy 
 | Matrix | `resolve.mjs` | The source-of-truth matrix (EE-042): `rules` in the source map name a system of record and owner per record type, attribute and context (phase, product, account, actor). The most specific rule wins; a tie is an error. `records` is shorthand for rules that match anything. An attribute rule (a price in another source) is read from and written to that source, so the record's own file holds no second copy. |
 | Where-used | `<venture>/knowledge/where-used.json` | For each fact kept once (a price, a product name), every place that repeats it, live or frozen. `schema/check-where-used.mjs` reports drift offline; delivering the change into vendors is the platform's. |
 | Catalog | `catalog.mjs` | One index over every source: address, version, route, title and words. No content. Routes `knowledge/catalog` and `knowledge/search`. |
-| Evals | `suite.mjs`, `eval.mjs` | `suite.mjs` is the contract suite every connector passes, framework or platform. `eval.mjs` runs it on the filesystem connector, then the router over a mapped folder and the catalog. The GitHub connector's evals are `platform/connectors/eval.mjs`. |
+| Evals | `suite.mjs`, `eval.mjs` | `suite.mjs` is the contract suite every connector passes, framework or platform. `eval.mjs` runs it on the filesystem connector. The evals that run routes (the router over a mapped folder, the catalog, the source-of-truth matrix and attributes) are [`interface/tests/connectors-router-test.mjs`](../../interface/tests/connectors-router-test.mjs), because they import the router. The GitHub connector's evals are `platform/connectors/eval.mjs`. |
 
 ## A source map
 
@@ -47,7 +47,8 @@ The `github` connector is a platform connector (`platform/connectors/github.mjs`
 ## Running the evals
 
 ```sh
-node knowledge/connectors/eval.mjs                                                       # framework
+node knowledge/connectors/eval.mjs                                                       # framework (contract)
+node interface/tests/connectors-router-test.mjs                                          # framework through the router
 node platform/connectors/eval.mjs                                                        # platform (GitHub, against a fake)
 MENTURA_EVAL_GITHUB_REPO=owner/name GITHUB_TOKEN=... node platform/connectors/eval.mjs   # also live
 MENTURA_EVAL_GITHUB_WRITE=1 ...                                                          # and open one real draft PR

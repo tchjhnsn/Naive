@@ -365,7 +365,7 @@ export function cardOf(dir, m) {
   headline.push({ label: "Live holes", value: m.holes.length, as_of: m.now, confirmed_by: [] });
   return { venture: m.venture, name: m.name, phase: m.phase, release: m.release, built_at: m.built_at, headline,
     confirmed_by: people(m.records), packages: m.packages.map((p) => ({ title: p.title, shell: p.shell, gaps: p.gaps.length })),
-    note: "Assembled by code from the release's records. Drawing it is the interface's job (interface/release-card.mjs)." };
+    note: "Assembled by code from the release's records. It is drawn by schema/release-card.mjs." };
 }
 
 function checks(dir) {

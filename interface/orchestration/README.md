@@ -26,5 +26,5 @@ The modules that compose routes. Each one runs records through the router's `cal
 
 ## How it connects
 
-- Called by: [`interface/cli/mentura.mjs`](../cli/mentura.mjs), [`interface/cli/naive.mjs`](../cli/naive.mjs), [`interface/mcp/server.mjs`](../mcp/server.mjs), [`interface/kit-boundary.mjs`](../kit-boundary.mjs) and [`interface/release-card.mjs`](../release-card.mjs). [`packages/core/provenance.mjs`](../../packages/core/provenance.mjs) starts `triggers.mjs` by its path after every write. [`schema/workspace-init.mjs`](../../schema/workspace-init.mjs) starts `migrate-venture.mjs` the same way.
+- Called by: [`interface/cli/mentura.mjs`](../cli/mentura.mjs), [`interface/cli/naive.mjs`](../cli/naive.mjs), [`interface/mcp/server.mjs`](../mcp/server.mjs), [`interface/dev/setup.mjs`](../dev/setup.mjs) and [`interface/kit-boundary.mjs`](../kit-boundary.mjs). [`packages/core/provenance.mjs`](../../packages/core/provenance.mjs) starts `triggers.mjs` by its path after every write. [`schema/workspace-init.mjs`](../../schema/workspace-init.mjs) starts `migrate-venture.mjs` the same way.
 - Calls: [`interface/router.mjs`](../router.mjs), and modules in `schema/`, `packages/` and `knowledge/`.
