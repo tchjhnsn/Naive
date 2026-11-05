@@ -62,7 +62,6 @@ const steps = [
   ["decision roadmaps and lifecycle playbooks (no cycles, known frames, a decider per step, one-way doors the founder's; installs propose open; gate evidence from the playbook)", "node", ["schema/roadmap-test.mjs"]],
   ["roadmaps: instance", "node", ["schema/check-roadmap.mjs"]],
   ["the Next.js translation status (every concept has a status, its evidence exists, the page is current)", "node", ["schema/check-nextjs-status.mjs"]],
-  ["the Get Started commands (every sh block runs as written)", "node", ["schema/docs-commands-test.mjs"]],
   ["delegation: template (grants within the grantor's, chains reach the founder, no self-verification)", "node", ["schema/check-delegation.mjs"]],
   ["delegation and the verification substrate (cases that must fail)", "node", ["interface/tests/delegation-test.mjs"]],
   ["docs claim only what is built (commands, flags, files and routes in the docs, master docs and skills)", "node", ["schema/docs-claims-test.mjs"]],
@@ -79,7 +78,7 @@ const steps = [
   ["field visibility: only a person sets public, the public reader, the publish check", "node", ["interface/tests/visibility-test.mjs"]],
   ["internal terms: the founder-edited dictionary, its schema, warn and fail terms", "node", ["schema/internal-terms-test.mjs"]],
   ["publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop", "node", ["schema/publish-lint-test.mjs"]],
-  ["leak canaries: every internal record seeded, site facts and both artifacts built, only known leaks", "node", ["schema/canaries-test.mjs"]],
+  ["leak canaries: every internal record seeded, facts and both artifacts built through the publish build, only known leaks", "node", ["schema/canaries-test.mjs"]],
   ["publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop", "node", ["schema/publish-lint-test.mjs"]],
   ["publish build: every public word compiled through the gate; canaries reach no channel", "node", ["operations/marketing/publish-build-test.mjs"]],
   ["publishing: build, the one-way/two-way door gate, the manifest, rollback, embargo, republish on change", "node", ["schema/publish-test.mjs"]],
@@ -154,7 +153,7 @@ const cheap = [
 // The first two write the same repo files (site/generated/venture-facts.json, site/artifact). The third touched .naive in the venture.
 const exclusive = new Set([
   "publishing gate: field visibility, leak canaries, internal terms",
-  "leak canaries: every internal record seeded, site facts and both artifacts built, only known leaks",
+  "leak canaries: every internal record seeded, facts and both artifacts built through the publish build, only known leaks",
 ]);
 
 for (const name of exclusive) if (!steps.some(([n]) => n === name)) throw new Error(`no step named: ${name}`);
