@@ -1574,6 +1574,76 @@
           "expect": "narrowed"
         }
       ]
+    },
+    {
+      "id": "EE-115",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "A venture's functions are declared once in venture.json, which is their source of truth, and the top-level functions/ folder is generated from that declaration. Neither EE-086 nor EE-090 is dropped; each is narrowed. EE-086 holds for where functions are declared: venture.json lists them, and packages and records inherit their function from it. EE-090 holds for the folder: every venture has functions/ with one folder per declared function, but the folder is derived from venture.json and never edited by hand. Not built yet: no generator writes functions/ from venture.json, and ventures have no functions/ folder.",
+      "why": "Torian, 2026-11-05 14:31Z, ruling on gate G1 of the ontology program (docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md) on a decision card in the ontology program thread: he chose 'Both: declared, then mirrored'. G1 named the conflict between EE-090 (a top-level functions/ folder, N-158) and EE-086 (functions declared in venture.json, N-159), and it blocked the naive@function scope in S3-PR5. EE-114 is the last id on main, open pull requests 225 and 227 hold EE-116, and no branch holds EE-115.",
+      "related": [
+        "EE-048",
+        "EE-086",
+        "EE-090",
+        "EE-113"
+      ],
+      "affects": [
+        {
+          "kind": "record",
+          "target": "venture.functions",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "functions/*/",
+          "root": "venture",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "function",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-086",
+          "expect": "narrowed"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-090",
+          "expect": "narrowed"
+        }
+      ]
+    },
+    {
+      "id": "EE-117",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "The word mentor names a human role: the mentor modes, Mentura's mentors and a services role are people. Naive's AI is a coach that works for that human mentor and never speaks for a human, so the rule that AI is never a mentor (C-100, merged-ledger row N-098) stands. This narrows EE-046: a tagline is still a brand record at venture.json brand.tagline, but Mentura's tagline 'A mentor for your journey' calls the product a mentor and is to be reworded. Not built yet: the tagline in the everything-ecosystem venture.json and the records that quote it are not reworded.",
+      "why": "Torian, 2026-11-05 14:31Z, ruling on gate G3 of the ontology program (docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md) on a decision card in the ontology program thread: he chose 'Mentor means a human'. G3 named the conflict between C-100 (N-098) and EE-046's tagline (N-195), and it blocked the naive@governance and naive@purpose scopes in S3-PR5. The mentor and coach terms in schema/terms already agree with the ruling, so neither changes. Open pull requests 225 and 227 hold EE-116, so this is EE-117.",
+      "related": [
+        "EE-046",
+        "EE-095",
+        "EE-113"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "mentor",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "coach",
+          "expect": "defined"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-046",
+          "expect": "narrowed"
+        }
+      ]
     }
   ]
 }
