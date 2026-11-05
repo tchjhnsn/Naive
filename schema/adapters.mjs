@@ -20,7 +20,7 @@ export function adapters() {
   const d = join(repo, "interface/adapters");
   const out = existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => ({ ...load(join(d, f)), path: `interface/adapters/${f}` })) : [];
   const platform = process.env.NAIVE_PLATFORM_ADAPTER;
-  if (platform && existsSync(platform)) out.unshift({ ...load(platform), path: platform });
+  if (platform && existsSync(platform)) out.unshift({ ...load(platform), path: platform, dir: dirname(platform) });
   return out;
 }
 export const byName = (name) => { const a = adapters().find((x) => x.name === name); if (!a) throw new Error(`no adapter ${name}: ${adapters().map((x) => x.name).join(", ")}`); return a; };

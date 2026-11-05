@@ -71,14 +71,16 @@ async function harnessSuite(a) {
   return results;
 }
 
-// A platform adapter runs the framework itself; it is verified by the test programs it names: a path in this
-// repository (a framework test) or an absolute path (the app's own test of the hooks it implements).
+// A platform adapter runs the framework itself; it is verified by the test programs it names: an absolute path,
+// a path relative to the adapter file's folder (the app's own test of the hooks it implements, run from that
+// folder), or a path in this repository (a framework test).
 function platformSuite(a) {
   if (!a.verify?.length) return [{ test: "names the framework tests it must pass", passed: false, detail: "verify is empty" }];
   return a.verify.map((p) => {
-    const file = isAbsolute(p) ? p : join(repo, p);
+    const app = !isAbsolute(p) && a.dir ? join(a.dir, p) : null;
+    const file = isAbsolute(p) ? p : app && existsSync(app) ? app : join(repo, p);
     if (!existsSync(file)) return { test: p, passed: false, detail: "not found" };
-    const r = spawnSync("node", [file], { cwd: repo, encoding: "utf8", timeout: 600000 });
+    const r = spawnSync("node", [file], { cwd: file === app ? a.dir : repo, encoding: "utf8", timeout: 600000 });
     const tail = (r.stdout + r.stderr).trim().split("\n").slice(-4).join(" / ");
     return { test: p, passed: r.status === 0, detail: tail };
   });
