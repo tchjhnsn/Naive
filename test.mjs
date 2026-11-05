@@ -125,6 +125,7 @@ const steps = [
   ["every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node schema/terms/admit.ts)", "node", ["schema/terms/admit.ts", "--check"]],
   ["no symbolic check bypasses EE-095: each check and gate is registered, and a symbolic one reaches the engine, admit or a Lean theorem", "node", ["schema/terms/bypass-guard-test.ts"]],
   ["Lean agreement: every theorem an admitted term cites is declared in lean/Naive, and every Lean concept has an admitted term", "node", ["schema/terms/lean-agreement-test.ts"]],
+  ["Lean ontology concepts: a two-noun fixture regenerates both, --check catches an edited noun, name clashes stop the run", "node", ["schema/terms/gen-concepts-test.ts"]],
   ["record types match the schemas (regenerate with node schema/record-types.ts)", "node", ["schema/record-types.ts", "--check"]],
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["schema/record-types-test.ts"]],
   ["knowledge connectors: contract, router and catalog evals", "node", ["knowledge/connectors/eval.mjs"]],
@@ -176,6 +177,7 @@ const cheap = [
   ["docs/ontology.md matches docs/ontology.json (regenerate with node schema/check-nouns.mjs --md)", "node", ["schema/check-nouns.mjs", "--md"], rendered("docs/ontology.md", "\n### System")],
   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node schema/check-data-model.mjs --md)", "node", ["schema/check-data-model.mjs", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
   ["docs/reference/ROUTES.md matches the kits (regenerate with node interface/router.mjs --md)", "node", ["interface/router.mjs", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
+  ["lean/Naive/Generated/Ontology.lean matches docs/ontology.json (regenerate with node schema/terms/gen-concepts.ts)", "node", ["schema/terms/gen-concepts.ts", "--check"]],
 ];
 
 // The first two write the same repo files (site/generated/venture-facts.json, site/artifact). The third touched .naive in the venture.

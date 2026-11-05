@@ -3,7 +3,7 @@
 //   node schema/terms/lean-agreement-test.ts               fixture cases, then the repository
 //   node schema/terms/lean-agreement-test.ts --root <dir>  one tree only, exit 1 on any disagreement
 //
-// Two rules, read from schema/terms/admitted.json and lean/Naive/*.lean.
+// Two rules, read from schema/terms/admitted.json and every .lean file under lean/Naive, subfolders included.
 //
 //   1. Every theorem an admitted term cites in its `lean` list is declared in lean/Naive. Declared means a line
 //      that starts with `theorem <name>` once Lean comments are removed, so a name in a docstring, a `--` line
@@ -15,6 +15,10 @@
 //      and is told apart by its type, not by a list: fact structures (`FounderFacts`), witnesses (`jobs`),
 //      property pairs (`confirmedProp`), relations (`PointsDown`) and functions (`relationOf`) are not of type
 //      `Concept`.
+//      One file is exempt: lean/Naive/Generated/Ontology.lean, which schema/terms/gen-concepts.ts writes with one
+//      concept per noun in docs/ontology.json. Those are ontology nouns (EE-014), not glossary terms (EE-095): each
+//      checks only the noun's recorded placement, and the file is pinned to the ontology by `gen-concepts.ts
+//      --check`, not written by hand. Any other file, in Generated/ or elsewhere, is held to the rule.
 //
 // What this does not prove: that a theorem proves what the term means, or that the Lean properties match the
 // TypeScript ones. The lean workflow builds the proofs; this only ties the names together.
@@ -23,6 +27,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { OUTPUT as GENERATED } from "./gen-concepts.ts";
 
 type Cited = { term: string; theorem: string };
 type LeanConcept = { name: string; file: string; term: string };
@@ -78,7 +83,7 @@ export function readLean(root: string): Lean {
   const theorems = new Set<string>();
   const concepts: LeanConcept[] = [];
   if (!existsSync(dir)) return { theorems, concepts };
-  for (const file of readdirSync(dir).filter((f) => f.endsWith(".lean")).sort()) {
+  for (const file of readdirSync(dir, { recursive: true, encoding: "utf8" }).filter((f) => f.endsWith(".lean")).sort()) {
     const src = stripLeanComments(readFileSync(join(dir, file), "utf8"));
     for (const m of src.matchAll(THEOREM)) theorems.add(m[1]);
     for (const m of src.matchAll(DEFINITION)) {
@@ -110,8 +115,8 @@ export function disagreements(root: string): string[] {
   const admitted = readAdmitted(root);
   return [
     ...admitted.cited.filter((c) => !lean.theorems.has(c.theorem))
-      .map((c) => `${c.term} cites Lean theorem ${c.theorem}, which ${LEAN_DIR}/*.lean does not declare`),
-    ...lean.concepts.filter((c) => !admitted.ids.has(c.term))
+      .map((c) => `${c.term} cites Lean theorem ${c.theorem}, which no .lean file under ${LEAN_DIR} declares`),
+    ...lean.concepts.filter((c) => c.file !== GENERATED && !admitted.ids.has(c.term))
       .map((c) => `Lean concept ${c.name} (${c.file}) has no admitted term ${c.term} in ${ADMITTED}`),
   ];
 }
@@ -173,6 +178,15 @@ function fixtureCases(): void {
     admit([{ id: "fixture-term", lean: ["fixture_holds"] }]);
     const orphan = run();
     expect("fixture: a Lean concept with no admitted term exits 1, named", orphan.status === 1 && orphan.out.includes("Lean concept gatedTerm") && !orphan.out.includes("Lean concept fixtureTerm"), orphan.out);
+
+    admit([{ id: "fixture-term", lean: ["fixture_holds"] }, { id: "gated-term", lean: [] }]);
+    put(GENERATED, "import Naive.Concept\n\nnamespace Ontology\n\ndef someNoun : Concept Facts := ⟨[]⟩\n\nend Ontology\n");
+    const nouns = run();
+    expect("fixture: a concept in the generated ontology file needs no admitted term", nouns.status === 0 && readLean(root).concepts.some((c) => c.name === "someNoun"), nouns.out);
+
+    put(`${LEAN_DIR}/Generated/Hand.lean`, "import Naive.Concept\n\ndef handTerm : Concept Facts := ⟨[]⟩\n");
+    const nested = run();
+    expect("fixture: a concept in any other file under lean/Naive, subfolders included, still needs one", nested.status === 1 && nested.out.includes("Lean concept handTerm") && !nested.out.includes("someNoun"), nested.out);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -182,7 +196,8 @@ function report(root: string): void {
   const found = disagreements(root);
   for (const d of found) console.log(`FAIL  ${d}`);
   const lean = readLean(root);
-  expect(`admitted terms and ${LEAN_DIR} agree (${lean.concepts.length} concepts, ${readAdmitted(root).cited.length} cited theorems)`, found.length === 0);
+  const nouns = lean.concepts.filter((c) => c.file === GENERATED).length;
+  expect(`admitted terms and ${LEAN_DIR} agree (${lean.concepts.length - nouns} concepts, ${nouns} generated ontology nouns exempt, ${readAdmitted(root).cited.length} cited theorems)`, found.length === 0);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
