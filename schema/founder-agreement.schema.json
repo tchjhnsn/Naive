@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "founder-agreement.schema.json",
+  "title": "Founder agreement",
+  "description": "The summary of what founders agreed with each other, at <venture>/governance/founder-agreement.json (EE-022), with the full text (or the signed document's location) in founder-agreement.md beside it. Equity and vesting live in ownership.json and are not repeated here. Required once two or more founders share ownership.",
+  "type": "object",
+  "required": [
+    "founders",
+    "signed",
+    "document"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "signed": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date",
+      "description": "null until every founder has signed"
+    },
+    "document": {
+      "type": "string",
+      "description": "Path to the prose agreement or the signed document"
+    },
+    "founders": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "holder",
+          "role",
+          "commitment",
+          "ip_assigned"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "holder": {
+            "type": "string",
+            "description": "Holder id in ownership.json"
+          },
+          "role": {
+            "type": "string"
+          },
+          "commitment": {
+            "enum": [
+              "full-time",
+              "part-time"
+            ]
+          },
+          "ip_assigned": {
+            "type": "boolean",
+            "description": "Has assigned to the venture the work and ideas they brought or make"
+          }
+        }
+      }
+    },
+    "departure": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "good_leaver": {
+          "type": "string"
+        },
+        "bad_leaver": {
+          "type": "string"
+        },
+        "buyback": {
+          "enum": [
+            "unvested-only",
+            "unvested-at-cost",
+            "none"
+          ]
+        }
+      }
+    },
+    "deadlock": {
+      "type": "string",
+      "description": "How founders break a tie"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+---
+title: "A founder runs the seed fundraising playbook"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: reading
+    lg1: drafting
+    lg2: failing
+    lg3: passing
+  }
+  class lg0 blue
+  class lg1 yellow
+  class lg2 orange
+  class lg3 teal
+  s0: Venture records only
+  s1: Story read from the venture
+  s2: Raise plan drafted, labels blank
+  s3: Raise plan filled in
+  s4: Raise plan check fails
+  s5: Investor check fails
+  s6: Investor records written
+  s7: Data room checklist written
+  s8: Data room check fails
+  s9: Checks pass
+  s10: Founder decided the plan
+  s11: Signed instrument on the cap table
+  [*] --> s0
+  s0 --> s1: you read the records the venture already has
+  s1 --> s2: you draft the raise plan with the labels empty
+  s2 --> s3: you fill in amount, months, and what the money buys
+  s2 --> s4: you run the raise plan check
+  s3 --> s5: you run the investor check
+  s3 --> s6: you write an investor record
+  s4 --> s3: you fill in amount, months, and what the money buys
+  s5 --> s6: you write an investor record
+  s6 --> s7: you write the data room checklist
+  s6 --> s8: you run the data room check
+  s7 --> s9: you run the checks
+  s8 --> s7: you write the data room checklist
+  s9 --> s10: you decide the plan
+  s10 --> s11: you record the signed instrument on the cap table
+  class s0 blue
+  class s1 blue
+  class s2 yellow
+  class s3 yellow
+  class s4 orange
+  class s5 orange
+  class s6 yellow
+  class s7 yellow
+  class s8 orange
+  class s9 teal
+  class s10 teal
+  class s11 teal

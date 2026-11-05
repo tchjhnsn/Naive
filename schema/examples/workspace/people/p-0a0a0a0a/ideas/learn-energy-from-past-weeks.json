@@ -1,0 +1,9 @@
+{
+  "id": "learn-energy-from-past-weeks",
+  "text": "Learn when someone has energy from how their past weeks went",
+  "captured": "2026-11-05",
+  "source": "a note",
+  "status": "open",
+  "importance": "medium",
+  "scope": { "scope": "naive@products", "via": "derives_from" }
+}

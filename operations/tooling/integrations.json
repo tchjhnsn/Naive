@@ -1,0 +1,158 @@
+[
+  {
+    "id": "linear",
+    "name": "Linear",
+    "layer": "operations",
+    "role": "issues, cycles and roadmaps",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Researched in operations/research; connector sign-in expired"
+  },
+  {
+    "id": "github-projects",
+    "name": "GitHub Projects",
+    "layer": "operations",
+    "role": "work tracking beside the code",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Researched in operations/research"
+  },
+  {
+    "id": "calendar",
+    "name": "Calendar",
+    "layer": "operations",
+    "role": "cadence and time blocks",
+    "interfaces": [
+      "api",
+      "mcp"
+    ],
+    "status": "candidate",
+    "reason": "Researched in operations/research"
+  },
+  {
+    "id": "claude-agent-sdk",
+    "name": "Claude Agent SDK",
+    "layer": "operations",
+    "role": "build and run Claude agents in code (Python, TypeScript)",
+    "interfaces": [
+      "sdk"
+    ],
+    "status": "candidate",
+    "reason": "Same harness as Claude Code"
+  },
+  {
+    "id": "cursor-agent-sdk",
+    "name": "Cursor Agent SDK",
+    "layer": "operations",
+    "role": "agents as code with evals, deployed on Cursor or own infra",
+    "interfaces": [
+      "sdk"
+    ],
+    "status": "candidate",
+    "reason": "https://cursor.com/docs/agent-sdk"
+  },
+  {
+    "id": "cursor-background-agents",
+    "name": "Cursor background agents and automations",
+    "layer": "operations",
+    "role": "run handoffs unattended (EE-006)",
+    "interfaces": [
+      "app"
+    ],
+    "status": "in-use",
+    "reason": ".cursor/ in the vault and repos"
+  },
+  {
+    "id": "github-actions",
+    "name": "GitHub Actions",
+    "layer": "operations",
+    "role": "CI and scheduled jobs",
+    "interfaces": [
+      "files",
+      "api"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "layer": "operations",
+    "role": "workflow automation",
+    "interfaces": [
+      "api",
+      "mcp"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists; sign-in expired"
+  },
+  {
+    "id": "treg",
+    "name": "treg",
+    "layer": "operations",
+    "role": "one credential for agent tools and data APIs used in business operations: SEO and rank tracking, social publishing, people and company enrichment, ad campaigns",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Open source (Apache 2.0), pay per call, 114 providers behind one token; no MCP server stated on its page, so it would come in through the token route (EE-038)",
+    "credentials": [
+      "TREG_TOKEN"
+    ],
+    "links": [
+      "https://treg.to"
+    ]
+  },
+  {
+    "id": "website-github",
+    "name": "GitHub (website source)",
+    "layer": "operations",
+    "role": "where a marketing website's source lives: the default, so the site has history, review by pull request and a deploy hook",
+    "interfaces": [
+      "files",
+      "api",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "Torian, 2026-10-28 (EE-044): a marketing website is business operations, not engineering; opinionated default: keep it in GitHub",
+    "links": [
+      "https://github.com"
+    ]
+  },
+  {
+    "id": "website-vercel",
+    "name": "Vercel (website hosting)",
+    "layer": "operations",
+    "role": "deploys the marketing website from its GitHub repository, with a preview per pull request; the default host, swappable for another the venture chooses",
+    "interfaces": [
+      "api",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "Torian, 2026-10-28 (EE-044); Mentura's own docs site already deploys this way (EE-034)",
+    "credentials": [
+      "VERCEL_TOKEN"
+    ],
+    "links": [
+      "https://vercel.com"
+    ]
+  },
+  {
+    "id": "website-vercel-templates",
+    "name": "Vercel templates",
+    "layer": "operations",
+    "role": "the starting point for a marketing website: pick a template, clone it into the venture's GitHub, deploy",
+    "interfaces": [
+      "app"
+    ],
+    "status": "candidate",
+    "reason": "Torian, 2026-10-28 (EE-044): start a site from a template rather than building one",
+    "links": [
+      "https://vercel.com/templates"
+    ]
+  }
+]

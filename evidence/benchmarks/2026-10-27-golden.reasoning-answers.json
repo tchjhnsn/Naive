@@ -1,0 +1,177 @@
+{
+  "scorer": "reasoning model (Claude), written before seeing Jev's run on this case",
+  "answers": {
+    "Agile-waterfall hybrid": {
+      "whole": 0.1,
+      "part": 0.15,
+      "fit0": 0.1,
+      "fit1": 0.2,
+      "fit2": 0.1,
+      "unfit0": 0.6,
+      "unfit1": 0.2,
+      "unfit2": 0.2
+    },
+    "Behaviour-driven development": {
+      "whole": 0.3,
+      "part": 0.6,
+      "fit0": 0.6,
+      "unfit0": 0.3,
+      "unfit1": 0.5
+    },
+    "Consumer-driven contracts": {
+      "whole": 0.15,
+      "part": 0.35,
+      "fit0": 0.3,
+      "unfit0": 0.4,
+      "unfit1": 0.2
+    },
+    "Contract-first / API-first": {
+      "whole": 0.45,
+      "part": 0.75,
+      "fit0": 0.8,
+      "fit1": 0.1,
+      "unfit0": 0.1
+    },
+    "Design by contract": {
+      "whole": 0.6,
+      "part": 0.85,
+      "fit0": 0.9,
+      "fit1": 0.7,
+      "unfit0": 0.3
+    },
+    "DevOps": {
+      "whole": 0.1,
+      "part": 0.25,
+      "fit0": 0.3,
+      "fit1": 0.4,
+      "fit2": 0.4,
+      "unfit0": 0.1,
+      "unfit1": 0.3,
+      "unfit2": 0.9
+    },
+    "Extreme Programming (XP)": {
+      "whole": 0.35,
+      "part": 0.5,
+      "fit0": 0.85,
+      "fit1": 0.2,
+      "fit2": 0.2,
+      "unfit0": 0.5,
+      "unfit1": 0.05,
+      "unfit2": 0.1
+    },
+    "Kanban": {
+      "whole": 0.1,
+      "part": 0.15,
+      "fit0": 0.2,
+      "fit1": 0.1,
+      "fit2": 0.1,
+      "unfit0": 0.5,
+      "unfit1": 0.6,
+      "unfit2": 0.4
+    },
+    "Lean software development": {
+      "whole": 0.1,
+      "part": 0.15,
+      "fit0": 0.2,
+      "fit1": 0.2,
+      "fit2": 0.4,
+      "unfit0": 0.6,
+      "unfit1": 0.4,
+      "unfit2": 0.3
+    },
+    "Model-driven development": {
+      "whole": 0.3,
+      "part": 0.5,
+      "fit0": 0.4,
+      "unfit0": 0.3
+    },
+    "Rapid application development (RAD)": {
+      "whole": 0.05,
+      "part": 0.1,
+      "fit0": 0.1,
+      "fit1": 0.1,
+      "fit2": 0.1,
+      "fit3": 0.5,
+      "unfit0": 0.6,
+      "unfit1": 0.9,
+      "unfit2": 0.6
+    },
+    "Scrum": {
+      "whole": 0.1,
+      "part": 0.15,
+      "fit0": 0.1,
+      "fit1": 0.3,
+      "fit2": 0.1,
+      "fit3": 0.1,
+      "unfit0": 0.2,
+      "unfit1": 0.4,
+      "unfit2": 0.1
+    },
+    "Small change": {
+      "whole": 0.05,
+      "part": 0.2,
+      "fit0": 0.1,
+      "unfit0": 0.9
+    },
+    "Spec-anchored (SAD)": {
+      "whole": 0.35,
+      "part": 0.55,
+      "fit0": 0.7,
+      "unfit0": 0.3
+    },
+    "Spec-first": {
+      "whole": 0.35,
+      "part": 0.6,
+      "fit0": 0.6,
+      "unfit0": 0.1,
+      "unfit1": 0.8
+    },
+    "Spike / prototype": {
+      "whole": 0.05,
+      "part": 0.15,
+      "fit0": 0.1,
+      "fit1": 0.2,
+      "unfit0": 0.5,
+      "unfit1": 0.3
+    },
+    "Spiral model": {
+      "whole": 0.15,
+      "part": 0.2,
+      "fit0": 0.2,
+      "fit1": 0.4,
+      "fit2": 0.3,
+      "unfit0": 0.6,
+      "unfit1": 0.3,
+      "unfit2": 0.1
+    },
+    "User-centred design (iterative, evaluation-led)": {
+      "whole": 0.05,
+      "part": 0.15,
+      "fit0": 0.1,
+      "fit1": 0.2,
+      "fit2": 0.1,
+      "unfit0": 0.6,
+      "unfit1": 0.3
+    },
+    "V-model": {
+      "whole": 0.45,
+      "part": 0.6,
+      "fit0": 0.8,
+      "fit1": 0.75,
+      "fit2": 0.6,
+      "unfit0": 0.15,
+      "unfit1": 0.2,
+      "unfit2": 0.1
+    },
+    "Waterfall": {
+      "whole": 0.2,
+      "part": 0.3,
+      "fit0": 0.7,
+      "fit1": 0.3,
+      "fit2": 0.4,
+      "unfit0": 0.15,
+      "unfit1": 0.2,
+      "unfit2": 0.5
+    }
+  }
+}

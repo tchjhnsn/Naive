@@ -1,0 +1,166 @@
+#!/usr/bin/env node
+// Reports a venture's strategic foundation (EE-051, EE-052): for each question of the Five Ws and How plus
+// whether (purpose/strategic-foundation.json), the record attributes that answer it, and whether
+// each is confirmed, drafted by an agent, waiting as a draft, or missing. This is what a founder
+// keeps in front of them; a platform renders it always visible. Behaviors:
+// purpose/kits/validation/features/strategic-foundation.feature.
+//
+//   node schema/foundation.mjs <venture dir> [--json]
+//
+// Status: confirmed (the last write was a person's, or a person accepted it), agent (an agent
+//   wrote it and no person has confirmed it), draft (a draft waits in _drafts/), missing, planned
+//   (no record type yet). A statement an agent drafted is not the founder's until confirmed.
+// Exit 1 when the frame names a record type the data model lacks, or an ICP names a problem form
+// the problem record lacks.
+
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { canonicalHome, migrated } from "./canonical.mjs";
+import { readDataModel } from "../packages/records/index.mjs";
+
+const repo = new URL("..", import.meta.url).pathname;
+const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+export const FRAME = load(join(repo, "purpose/strategic-foundation.json"));
+const MODEL = readDataModel();
+
+// "." is the whole record: a collection whose items are the statement, such as one file per ICP profile.
+const get = (o, path) => path === "." ? o : path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+const filled = (v) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && !v.length);
+
+/** Venture-relative files of a record type: one file, or every item of a collection. */
+export function filesOf(dir, type) {
+  const r = MODEL.records.find((x) => x.id === type);
+  const gs = (r?.paths ?? []).filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
+  const found = [];
+  for (const g of gs) {
+    if (!g.includes("*")) { if (existsSync(ventureFile(dir, g))) found.push(g); continue; }
+    const star = g.indexOf("*");
+    const folder = g.slice(0, star), rest = g.slice(star + 1);
+    if (rest.includes("*")) continue;
+    const d = ventureFile(dir, folder);
+    if (existsSync(d)) for (const f of readdirSync(d)) if (f.endsWith(rest)) found.push(folder + f);
+  }
+  // A collection item waiting as a draft counts too: _drafts/foundation__icp__<id>.json.draft.
+  for (const g of gs.filter((x) => x.includes("*") && !x.slice(x.indexOf("*") + 1).includes("*"))) {
+    const star = g.indexOf("*"), pre = g.slice(0, star).replace(/\//g, "__"), rest = `${g.slice(star + 1)}.draft`;
+    if (existsSync(ventureFile(dir, "_drafts"))) for (const f of readdirSync(ventureFile(dir, "_drafts"))) if (f.startsWith(pre) && f.endsWith(rest)) {
+      const item = g.slice(0, star) + f.slice(pre.length, -".draft".length);
+      if (!found.includes(item)) found.push(item);
+    }
+  }
+  if (found.length) return found;
+  const drafted = gs.filter((g) => !g.includes("*") && existsSync(ventureFile(dir, `_drafts/${g.replace(/\//g, "__")}.draft`)));
+  return drafted.length ? drafted : gs.slice(0, 1);
+}
+
+/** The files and attribute that hold a statement. A migrated venture has no telos record, so its statements
+ *  read the canonical records. */
+export function statementFiles(dir, s) {
+  if (s.record !== "telos" || !migrated(dir)) return { files: filesOf(dir, s.record), attribute: s.attribute };
+  return canonicalHome(dir, s.id);
+}
+
+const logOf = (dir, ...files) => {
+  const log = ventureFile(dir, "provenance.jsonl");
+  return existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => files.includes(e.entity)) : [];
+};
+
+/** Whether a writer of the given kind wrote this file's content, following a migration's move back to its source. */
+function wrote(dir, file, by, seen = new Set()) {
+  if (seen.has(file)) return false;
+  seen.add(file);
+  const es = logOf(dir, file);
+  return es.some((e) => by(e) && !["confirm", "move", "release", "accept"].includes(e.activity))
+    || es.filter((e) => e.activity === "move").flatMap((e) => e.derived_from ?? []).some((p) => wrote(dir, p, by, seen));
+}
+/** An agent wrote this file's content: what a card may say. A baseline only adopts a file. */
+export const agentWrote = (dir, file) => wrote(dir, file, (e) => e.agent?.kind === "agent" && e.activity !== "baseline");
+/** Anyone but a person wrote this file's content: what waits for a person to confirm. */
+export const unsignedWrite = (dir, file) => wrote(dir, file, (e) => e.agent?.kind !== "person");
+
+/** Whether a person confirmed one statement in a file: their write or accept of the file, or a
+ *  confirm of that statement, after the last write by anyone else. A write that lists statements
+ *  (foundation/core shares venture.json with other statements) confirms only those. */
+export function confirmedIn(dir, file, id, seen = new Set()) {
+  if (seen.has(file)) return false;
+  seen.add(file);
+  const es = logOf(dir, file, `_drafts/${file.replace(/\//g, "__")}.draft`);
+  const lastAgentWrite = es.findLastIndex((e) => e.entity === file && e.activity !== "confirm" && e.activity !== "move" && e.activity !== "release" && e.agent?.kind !== "person" && e.activity !== "accept");
+  const direct = es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm" && e.activity !== "move" && (!e.statements || e.statements.includes(id))) || (e.activity === "confirm" && e.statement === id)));
+  if (direct) return true;
+  return es.filter((e) => e.activity === "move" && e.entity === file).flatMap((e) => e.derived_from ?? []).some((p) => confirmedIn(dir, p, id, seen));
+}
+
+/** Each foundation statement of a venture, with its status and value. */
+export function foundation(dir) {
+  const report = FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => {
+    if (s.derived_from) return s;
+    if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
+    const { files, attribute } = statementFiles(dir, s);
+    // A retired product no longer answers for the venture.
+    const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), attribute) })).filter((x) => filled(x.v));
+    const drafts = files.filter((f) => existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
+    // A migrated venture's statement sits on a canonical record, which its record type does not name.
+    const home = s.record === "telos" && migrated(dir) ? drafts[0] ?? files[0] : null;
+    if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing", ...(home ? { path: home } : {}) };
+    // A record with no log entry existed before the log; a person's baseline or write confirms it.
+    const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
+    return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", confirmed, ...(home ? { path: home } : {}), agent_wrote: values.some(({ f }) => agentWrote(dir, f)), unsigned_write: values.some(({ f }) => unsignedWrite(dir, f)),
+      value: attribute === "." ? values.map(({ v }) => v) : values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
+  }) }));
+  // A derived statement takes its source's status and shows the primary ICP profile's short form.
+  const all = report.flatMap((q) => q.statements);
+  for (const q of report) q.statements = q.statements.map((s) => {
+    if (!s.derived_from) return s;
+    const src = all.find((x) => x.id === s.derived_from) ?? { status: "missing" };
+    const out = { id: s.id, record: s.record, attribute: s.attribute, derived_from: s.derived_from, status: src.status };
+    const primary = Array.isArray(src.value) ? (src.value.find((p) => p.primary) ?? src.value[0]) : null;
+    if (primary) out.value = primary.short ?? primary.who;
+    return out;
+  });
+  return report;
+}
+
+/** The venture's ICP profiles: one record each in foundation/icp/, else the profiles of the older single file. */
+export function icpProfiles(dir) {
+  const folder = ventureFile(dir, "foundation/icp");
+  if (existsSync(folder)) return readdirSync(folder).filter((f) => f.endsWith(".json")).sort().map((f) => ({ file: `foundation/icp/${f}`, ...load(join(folder, f)) }));
+  const old = ["foundation/icp.json", "purpose/icp.json"].find((f) => existsSync(ventureFile(dir, f)));
+  return old ? (load(ventureFile(dir, old)).profiles ?? []).map((p) => ({ file: old, ...p })) : [];
+}
+
+export function problems(dir) {
+  const out = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !MODEL.records.some((r) => r.id === s.record)).map((s) => `frame: ${s.id} names record type ${s.record}, which the data model lacks`);
+  const there = (...fs) => fs.map((f) => ventureFile(dir, f)).find((p) => existsSync(p));
+  const prob = there("foundation/problem.json", "purpose/validation/problem.json");
+  const profiles = icpProfiles(dir);
+  if (profiles.length) {
+    const forms = new Set(prob ? (load(prob).forms ?? []).map((f) => f.id) : []);
+    for (const p of profiles) for (const f of p.problem_forms ?? []) if (!forms.has(f)) out.push(`icp ${p.id}: problem form ${f} is not in the problem record`);
+    // Each profile is its own record, so its id is its file name and is unique.
+    for (const p of profiles) if (p.file.startsWith("foundation/icp/") && p.file !== `foundation/icp/${p.id}.json`) out.push(`${p.file}: its id is ${p.id}; the file must be foundation/icp/${p.id}.json`);
+    const primaries = profiles.filter((p) => p.primary).length;
+    if (profiles.length > 1 && primaries !== 1) out.push(`icp: ${primaries} primary profiles; exactly one is primary`);
+    // promised-to is derived from the ICP; a hand-written one that differs has drifted.
+    const p = profiles.find((x) => x.primary) ?? profiles[0];
+    const said = existsSync(join(dir, "venture.json")) ? load(join(dir, "venture.json")).core?.promised_to : undefined;
+    if (p && filled(said) && said !== (p.short ?? p.who)) out.push(`venture core.promised_to differs from the ICP's short form ("${p.short ?? p.who}"); it is derived from the ICP`);
+  }
+  return out;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const arg = process.argv[2];
+  if (!arg) { console.error("usage: node schema/foundation.mjs <venture or workspace dir> [--json]"); process.exit(2); }
+  const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
+  const dirs = walk(arg);
+  const errs = dirs.flatMap((d) => problems(d).map((p) => `${d}: ${p}`));
+  if (process.argv.includes("--json")) console.log(JSON.stringify(dirs.length === 1 ? foundation(dirs[0]) : Object.fromEntries(dirs.map((d) => [d, foundation(d)])), null, 2));
+  else for (const d of dirs) {
+    if (dirs.length > 1) console.log(`\n${d}`);
+    for (const q of foundation(d)) console.log(`${q.question.padEnd(8)} ${q.ask}\n${q.statements.map((s) => `         ${s.id.padEnd(16)} ${s.status}${s.value !== undefined ? `: ${JSON.stringify(s.value).slice(0, 90)}` : ""}`).join("\n")}`);
+  }
+  for (const e of errs) console.error(`FAIL  ${e}`);
+  process.exit(errs.length ? 1 : 0);
+}

@@ -1,0 +1,74 @@
+{
+  "version": "0.2.0",
+  "note": "Product Anatomy Matrix questions, version 0.x (unevaluated). Each is one typed judgment per product, asked against the venture's core product in `venture.core`. Weights live in phases.json, apart from the answers.",
+  "questions": {
+    "promise_delivery": {
+      "type": "score",
+      "instructions": "When the people the core promise is made to use this product, how directly do they get what `venture.core.promise` promises?",
+      "criteria": [
+        "They do not get it from this product at all",
+        "They get it only indirectly, through another product or an intermediary",
+        "They get part of it directly from this product",
+        "They get the whole promise directly from this product"
+      ]
+    },
+    "competence_draw": {
+      "type": "score",
+      "instructions": "How much does this product depend on the core competence described in `venture.core.competence`?",
+      "criteria": [
+        "It does not use the core competence",
+        "It uses the core competence's outputs now and then",
+        "It is built on the core competence and would not work without it",
+        "It is the core competence itself, offered as a product"
+      ]
+    },
+    "promise_breach": {
+      "type": "noul",
+      "instructions": "As described, could this product lead people to receive what `venture.core.must_not` rules out, under the venture's name?",
+      "criteria": {
+        "true": "Yes: the product's normal use could deliver what the promise rules out",
+        "false": "No: its normal use stays within the promise"
+      }
+    },
+    "job_intensity": {
+      "type": "score",
+      "instructions": "How strongly do this product's first users feel the problem it solves?",
+      "criteria": [
+        "A mild preference: they would not change their habits for it",
+        "A noticeable annoyance they would fix if it were easy",
+        "A real pain they already spend time or money working around",
+        "An urgent pain they would adopt an unfinished product to fix"
+      ]
+    },
+    "ready": {
+      "type": "score",
+      "instructions": "Given `venture.members` (people and agents, each with a role), `venture.phase` and this product's `status`, how close is this product to being usable by real users? Agents count as team for work they can do under the venture's decision rights.",
+      "criteria": [
+        "It is an idea; most of it would need building with people the venture does not have",
+        "Parts exist, but it needs major work or people the venture does not have",
+        "Most of it exists, or it could be built by the current team within a few months",
+        "Real users can use it now"
+      ]
+    },
+    "revenue": {
+      "type": "score",
+      "instructions": "How strong is this product's own path to revenue, without counting what it does for the other products?",
+      "criteria": [
+        "No credible revenue path",
+        "A weak or distant revenue path",
+        "A clear revenue path that others in its market already prove",
+        "Buyers who would pay now, with a clear price"
+      ]
+    },
+    "reversibility": {
+      "type": "score",
+      "instructions": "If the venture led with this product and it proved the wrong choice, how easily could it back off?",
+      "criteria": [
+        "Very hard: commitments to customers, contracts or regulators would be broken",
+        "Hard: it would cost significant money, trust or time",
+        "Moderate: some sunk work and some disappointed users",
+        "Easy: little would be lost"
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "never-move-meetings-unasked",
+  "text": "Never move someone's meetings without asking them first",
+  "captured": "2026-11-05",
+  "source": "a conversation",
+  "status": "open",
+  "importance": "high",
+  "relations": [{ "relation": "contradicts", "to": "plan-around-energy" }],
+  "scope": { "scope": "naive@risk-and-compliance", "via": "amends" }
+}

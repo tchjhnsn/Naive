@@ -1,0 +1,87 @@
+{
+  "scorer": "reasoning model (Claude), not Jev: no TYPESAFE_API_KEY in the session that wrote this. Desk research from public filings and press, 2026-11-01. Draft for Torian to correct; replace by running `score --send`.",
+  "scored": "2026-11-01T02:40:00Z",
+  "answers": {
+    "falcon": {
+      "promise_delivery": 3,
+      "competence_draw": 3,
+      "promise_breach": 0.05,
+      "job_intensity": 3,
+      "ready": 3,
+      "revenue": 3,
+      "reversibility": 0
+    },
+    "dragon": {
+      "promise_delivery": 3,
+      "competence_draw": 3,
+      "promise_breach": 0.1,
+      "job_intensity": 2,
+      "ready": 3,
+      "revenue": 2,
+      "reversibility": 0
+    },
+    "starship": {
+      "promise_delivery": 3,
+      "competence_draw": 3,
+      "promise_breach": 0.2,
+      "job_intensity": 3,
+      "ready": 1,
+      "revenue": 1,
+      "reversibility": 1
+    },
+    "starlink": {
+      "promise_delivery": 3,
+      "competence_draw": 2,
+      "promise_breach": 0.05,
+      "job_intensity": 3,
+      "ready": 3,
+      "revenue": 3,
+      "reversibility": 1
+    },
+    "starshield": {
+      "promise_delivery": 2,
+      "competence_draw": 2,
+      "promise_breach": 0.1,
+      "job_intensity": 3,
+      "ready": 2,
+      "revenue": 3,
+      "reversibility": 0
+    },
+    "dtc": {
+      "promise_delivery": 2,
+      "competence_draw": 2,
+      "promise_breach": 0.05,
+      "job_intensity": 2,
+      "ready": 2,
+      "revenue": 2,
+      "reversibility": 1
+    },
+    "grok": {
+      "promise_delivery": 0,
+      "competence_draw": 0,
+      "promise_breach": 0.5,
+      "job_intensity": 1,
+      "ready": 3,
+      "revenue": 1,
+      "reversibility": 2
+    },
+    "x": {
+      "promise_delivery": 0,
+      "competence_draw": 0,
+      "promise_breach": 0.6,
+      "job_intensity": 1,
+      "ready": 3,
+      "revenue": 1,
+      "reversibility": 2
+    },
+    "orbital": {
+      "promise_delivery": 2,
+      "competence_draw": 3,
+      "promise_breach": 0.1,
+      "job_intensity": 2,
+      "ready": 0,
+      "revenue": 1,
+      "reversibility": 1
+    }
+  }
+}

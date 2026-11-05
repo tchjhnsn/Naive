@@ -1,0 +1,22 @@
+{
+  "id": "statement-icp",
+  "question": "Write the icp statement",
+  "statement": "icp",
+  "decides": {
+    "record": "icp"
+  },
+  "layer": "purpose",
+  "needed_in": "discovery",
+  "status": "decided",
+  "provenance": {
+    "drafted_by": {
+      "kind": "agent"
+    },
+    "approved_by": "Maya Chen",
+    "approved_at": "2026-10-29T06:29:12Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  },
+  "answer": "Owner-operators of one to three independent cafes in one city, who order from three or more suppliers."
+}

@@ -1,0 +1,2298 @@
+{
+  "version": "0.5.0",
+  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. schema/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. schema/validate.py reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder).",
+  "layers": [
+    "purpose",
+    "knowledge",
+    "operations",
+    "evidence",
+    "governance",
+    "interface"
+  ],
+  "records": [
+    {
+      "id": "workspace",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/workspace.schema.json",
+      "paths": [
+        "instance/workspace.json",
+        "schema/examples/workspace/workspace.json"
+      ],
+      "contains": [
+        "venture"
+      ]
+    },
+    {
+      "id": "calendar",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar.schema.json",
+      "paths": [
+        "instance/calendar/calendars/*.json",
+        "schema/examples/workspace/calendar/calendars/*.json"
+      ],
+      "note": "A workspace calendar: owner, members, visibility. Created with the workspace (default.json, named Venture); schema/calendar.mjs (Torian, 2026-10-30)"
+    },
+    {
+      "id": "workspace-founder",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/workspace-founder.schema.json",
+      "paths": [
+        "instance/founders/*/founder.json",
+        "schema/examples/workspace/founders/*/founder.json"
+      ],
+      "note": "A founder as a person of the workspace, before any venture: opaque id, handle, ventures by role, profile only the founder confirms. schema/founders.ts (Torian, 2026-10-31)"
+    },
+    {
+      "id": "founder-idea",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-idea.schema.json",
+      "paths": [
+        "instance/people/*/ideas/*.json",
+        "schema/examples/workspace/people/*/ideas/*.json",
+        "instance/founders/*/ideas/*.json",
+        "schema/examples/workspace/founders/*/ideas/*.json"
+      ],
+      "note": "An idea owned by a person, verbatim, at people/<person-id>/ideas/ (EE-114; founders/<handle>/ideas/ until the founders folder moves); a venture cites the idea it grew from"
+    },
+    {
+      "id": "founder-reference",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-reference.schema.json",
+      "paths": [
+        "instance/founders/*/references/*.json",
+        "schema/examples/workspace/founders/*/references/*.json"
+      ],
+      "note": "A work that forms the founder (book, podcast, film, essay), CSL-JSON field names, stored once at founder scope and cited by id"
+    },
+    {
+      "id": "founder-inspiration",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-inspiration.schema.json",
+      "paths": [
+        "instance/founders/*/inspirations/*.json",
+        "schema/examples/workspace/founders/*/inspirations/*.json"
+      ],
+      "note": "A person who inspires the founder and what invokes their zeal; a private person is opaque"
+    },
+    {
+      "id": "founder-private",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/founder-private.schema.json",
+      "paths": [
+        "instance/founders/*/_private/**/*.json",
+        "schema/examples/workspace/founders/*/_private/**/*.json"
+      ],
+      "note": "The founder's real name, contact, puzzle and secrets, private: true, so they never reach a model or a release"
+    },
+    {
+      "id": "calendar-event",
+      "layer": "system",
+      "level": "workspace",
+      "schema": "schema/calendar-event.schema.json",
+      "paths": [
+        "instance/calendar/events/*.json",
+        "schema/examples/workspace/calendar/events/*.json"
+      ],
+      "refs": [
+        {
+          "field": "calendar",
+          "to": "calendar",
+          "checked_by": "schema/workspace-init-test.mjs"
+        }
+      ],
+      "note": "One JSCalendar-shaped event (RFC 8984) per file. Derived events (decisions with a due time, releases) are a view in schema/calendar.mjs, never stored; naive calendar export writes .ics"
+    },
+    {
+      "id": "venture",
+      "layer": "system",
+      "level": "venture",
+      "schema": "schema/venture.schema.json",
+      "paths": [
+        "instance/**/venture.json",
+        "schema/examples/**/venture.json"
+      ],
+      "contains": [
+        "venture",
+        "venture-profile",
+        "product",
+        "account",
+        "anatomy-answers",
+        "handoff",
+        "evidence",
+        "decision-rights",
+        "pillar",
+        "ownership",
+        "board",
+        "founder-agreement",
+        "exit",
+        "telos",
+        "provenance",
+        "knowledge-sources",
+        "people",
+        "founder",
+        "fund-thesis",
+        "fund-terms",
+        "deal",
+        "money-summary",
+        "goal",
+        "requirement",
+        "exit-criteria",
+        "constraints"
+      ],
+      "refs": [
+        {
+          "field": "parent",
+          "to": "venture",
+          "checked_by": "schema/check-ventures.mjs"
+        },
+        {
+          "field": "profile",
+          "to": "venture-profile",
+          "checked_by": null
+        },
+        {
+          "field": "governed_by",
+          "to": "decision",
+          "checked_by": null
+        }
+      ],
+      "note": "The root record of a venture. It names the profile but does not contain it"
+    },
+    {
+      "id": "venture-core",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/venture-core.schema.json",
+      "view_of": "venture",
+      "decision_class": "strategy-or-constitution",
+      "paths": [],
+      "note": "The founder's words in venture.json: mission (core.promise), competence (core.competence), tagline (brand.tagline) and the chosen lifecycle_playbook. A view of the venture record: a write touches only these fields, so id, name, parent, phase, owner and status stay out of reach. Only a person writes it, and each write confirms only the statements it names"
+    },
+    {
+      "id": "venture-profile",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": null,
+      "form": "prose",
+      "paths": [
+        "instance/**/profile.md"
+      ],
+      "note": "The venture's story and thesis in prose, beside venture.json"
+    },
+    {
+      "id": "product",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/product.schema.json",
+      "paths": [
+        "instance/**/product/*.json",
+        "schema/examples/**/product/*.json",
+        "instance/**/products/*.json",
+        "schema/examples/**/products/*.json"
+      ],
+      "refs": [
+        {
+          "field": "part_of",
+          "to": "product",
+          "checked_by": "schema/check-ventures.mjs"
+        },
+        {
+          "field": "flows_to",
+          "to": "product",
+          "checked_by": "schema/check-ventures.mjs"
+        },
+        {
+          "field": "business_model",
+          "to": "business-models",
+          "checked_by": "schema/check-ventures.mjs"
+        }
+      ]
+    },
+    {
+      "id": "account",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/account.schema.json",
+      "paths": [
+        "instance/**/accounts/*/account.json",
+        "schema/examples/**/accounts/*/account.json"
+      ],
+      "refs": [
+        {
+          "field": "products",
+          "to": "product",
+          "checked_by": "schema/check-ventures.mjs"
+        }
+      ],
+      "note": "A named party the venture keeps a record for: client, customer, user, member or partner (EE-021). Optional"
+    },
+    {
+      "id": "telos",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/telos.schema.json",
+      "paths": [
+        "instance/**/foundation/telos.json",
+        "schema/examples/**/foundation/telos.json",
+        "instance/**/purpose/telos.json",
+        "schema/examples/**/purpose/telos.json"
+      ],
+      "refs": [
+        {
+          "field": "phases.exit_criteria.serves",
+          "to": "telos",
+          "checked_by": "schema/check-telos.mjs"
+        },
+        {
+          "field": "owner_outcome.path",
+          "to": "exit",
+          "checked_by": "schema/check-telos.mjs"
+        },
+        {
+          "field": "phases.phase",
+          "to": "anatomy-framework",
+          "checked_by": "schema/validate.py"
+        }
+      ],
+      "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023). Since foundation 0.5.0 a framework for thinking (frameworks/telos): the telos-to-goals migration splits it into canonical goals and exit criteria and archives it; the route still reads, rendered from them",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "goal",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/goal.schema.json",
+      "paths": [
+        "instance/**/foundation/goals/*.json",
+        "schema/examples/**/foundation/goals/*.json"
+      ],
+      "note": "A canonical goal: statement, kind, horizon, measures with targets, owner. Framework-neutral: the telos, ambition tiers and other frameworks for thinking write goals through their maps_to (Torian, 2026-10-30)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "requirement",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/requirement.schema.json",
+      "paths": [
+        "instance/**/foundation/requirements/*.json",
+        "schema/examples/**/foundation/requirements/*.json"
+      ],
+      "refs": [
+        {
+          "field": "derives_from",
+          "to": "goal",
+          "checked_by": null
+        }
+      ],
+      "note": "A canonical requirement derived from goals or measures, by a phase, constraining functions, verified by a check, evidence or a person (the decision index's Requirements)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "exit-criteria",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/exit-criteria.schema.json",
+      "paths": [
+        "instance/**/foundation/exit-criteria/*.json",
+        "schema/examples/**/foundation/exit-criteria/*.json"
+      ],
+      "refs": [
+        {
+          "field": "criteria.serves",
+          "to": "goal",
+          "checked_by": null
+        },
+        {
+          "field": "phase",
+          "to": "anatomy-framework",
+          "checked_by": "schema/validate.py"
+        }
+      ],
+      "note": "A phase's canonical exit criteria, each serving a goal measure; the lifecycle gate reads these (schema/lifecycle.mjs)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "constraints",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/constraints.schema.json",
+      "paths": [
+        "instance/**/foundation/constraints.json",
+        "schema/examples/**/foundation/constraints.json"
+      ],
+      "note": "What the venture must not do, whatever framework states its goals",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "framework",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/framework.schema.json",
+      "paths": [
+        "frameworks/*/framework.json"
+      ],
+      "note": "A framework for thinking (telos, ambition tiers, OKRs): vocabulary, frames, a template and maps_to into canonical records; it never changes the schema (schema/check-frameworks.mjs)"
+    },
+    {
+      "id": "idea-dump",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "prose",
+      "paths": [
+        "instance/**/raw/dump.md",
+        "schema/examples/**/raw/dump.md",
+        "instance/**/purpose/ideas/dump.md",
+        "schema/examples/**/purpose/ideas/dump.md"
+      ],
+      "note": "The founder's raw idea dump: every idea about the venture, verbatim and unprompted. Never rewritten by an agent (EE-059)"
+    },
+    {
+      "id": "idea-map",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/ideas/map.mdx",
+        "schema/examples/**/ideas/map.mdx",
+        "instance/**/purpose/ideas/map.mdx",
+        "schema/examples/**/purpose/ideas/map.mdx"
+      ],
+      "note": "The idea dump mapped onto Naive's conventions: one <Idea> per idea, its text unchanged, tagged with departments, records and whether it exists (purpose/frameworks/idea-map); drawn as a mind map (EE-059)"
+    },
+    {
+      "id": "idea-graph",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/idea-graph.schema.json",
+      "paths": [
+        "instance/**/ideas/graph.json",
+        "schema/examples/**/ideas/graph.json",
+        "instance/**/purpose/ideas/graph.json",
+        "schema/examples/**/purpose/ideas/graph.json"
+      ],
+      "note": "The idea map as a Merkle DAG: each idea with the ideas it builds on, a hash over its text and theirs, its signal, and its lane (in order or on its own); laid out left to right by dependency and top down by signal (EE-060)"
+    },
+    {
+      "id": "validation-problem",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-problem.schema.json",
+      "paths": [
+        "instance/**/foundation/problem.json",
+        "schema/examples/**/foundation/problem.json",
+        "instance/**/purpose/validation/problem.json",
+        "schema/examples/**/purpose/validation/problem.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares schema/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts.",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "validation-interview",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-interview.schema.json",
+      "paths": [
+        "instance/**/validation/interviews/*.json",
+        "schema/examples/**/validation/interviews/*.json"
+      ],
+      "refs": [
+        {
+          "field": "icp",
+          "to": "icp",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "transcript.source",
+          "to": "raw-source",
+          "checked_by": "schema/check-validation-study.mjs"
+        },
+        {
+          "field": "follow_up.evidence",
+          "to": "evidence",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "One problem interview in the validation study: an anonymised person, consent, the transcript's raw source, bottlenecks, current solutions, the chosen problem, a prediction with Naive and without, and the follow-up that checks it. Names stay in _private."
+    },
+    {
+      "id": "validation-feedback",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-feedback.schema.json",
+      "paths": [
+        "instance/**/validation/feedback/*.json",
+        "schema/examples/**/validation/feedback/*.json"
+      ],
+      "refs": [
+        {
+          "field": "capability",
+          "to": "beta-capabilities",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ],
+      "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (schema/beta-gate.mjs)."
+    },
+    {
+      "id": "validation-solution",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-solution.schema.json",
+      "paths": [
+        "instance/**/validation/solution.json",
+        "schema/examples/**/validation/solution.json",
+        "instance/**/purpose/validation/solution.json",
+        "schema/examples/**/purpose/validation/solution.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: how it solves the problem and the evidence people choose it (EE-026)"
+    },
+    {
+      "id": "validation-product-market-fit",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-product-market-fit.schema.json",
+      "paths": [
+        "instance/**/validation/product-market-fit.json",
+        "schema/examples/**/validation/product-market-fit.json",
+        "instance/**/purpose/validation/product-market-fit.json",
+        "schema/examples/**/purpose/validation/product-market-fit.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: retention cohorts, Ellis survey and evidence that a segment keeps using it (EE-026)"
+    },
+    {
+      "id": "validation-pricing",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-pricing.schema.json",
+      "paths": [
+        "instance/**/validation/pricing.json",
+        "schema/examples/**/validation/pricing.json",
+        "instance/**/purpose/validation/pricing.json",
+        "schema/examples/**/purpose/validation/pricing.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: price model, points, buyer and evidence they pay (EE-026)"
+    },
+    {
+      "id": "validation-go-to-market",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-go-to-market.schema.json",
+      "paths": [
+        "instance/**/validation/go-to-market.json",
+        "schema/examples/**/validation/go-to-market.json",
+        "instance/**/purpose/validation/go-to-market.json",
+        "schema/examples/**/purpose/validation/go-to-market.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: path, motion, channels and evidence a channel works; the path sets the weights (EE-026)"
+    },
+    {
+      "id": "validation-team",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-team.schema.json",
+      "paths": [
+        "instance/**/people/team.json",
+        "schema/examples/**/people/team.json",
+        "instance/**/purpose/validation/team.json",
+        "schema/examples/**/purpose/validation/team.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: skills needed, held and the gaps; cofounder sought (EE-026)"
+    },
+    {
+      "id": "validation-operations-readiness",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/validation-operations-readiness.schema.json",
+      "paths": [
+        "instance/**/validation/operations-readiness.json",
+        "schema/examples/**/validation/operations-readiness.json",
+        "instance/**/purpose/validation/operations-readiness.json",
+        "schema/examples/**/purpose/validation/operations-readiness.json"
+      ],
+      "refs": [
+        {
+          "field": "evidence.source.path",
+          "to": "(venture files)",
+          "checked_by": "schema/check-validation.mjs"
+        }
+      ],
+      "note": "Validation sub-score: per MAD tier evidence; grades as the weakest tier (EE-026)"
+    },
+    {
+      "id": "validation-weights",
+      "layer": "purpose",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "purpose/kits/validation/weights.json"
+      ],
+      "note": "Validation score weights and floors by go-to-market path and venture kind (EE-026), version 0.x"
+    },
+    {
+      "id": "anatomy-framework",
+      "layer": "purpose",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/product-anatomy/phases.json",
+        "purpose/frameworks/product-anatomy/questions.json"
+      ],
+      "note": "Phases, gates and questions of Product Anatomy; self-describing, checked by its runner's tests"
+    },
+    {
+      "id": "playbook",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/playbook.schema.json",
+      "paths": [
+        "purpose/playbooks/*.json"
+      ],
+      "note": "A step-by-step guide a venture function runs in conversation with the founder; run by interface/skills/run-playbook (a template is one record's empty shape; a playbook is the order of the work)"
+    },
+    {
+      "id": "profile-attributes",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/profile-attributes.schema.json",
+      "paths": [
+        "purpose/frameworks/founder-profile/attributes.json"
+      ],
+      "note": "The library of founder-profile attributes (puzzles, passions, telos, ambitions, strengths, weaknesses ...) with their types, and the templates a profile starts from"
+    },
+    {
+      "id": "idea-map-conventions",
+      "layer": "purpose",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/idea-map/conventions.json"
+      ],
+      "note": "The tags an idea map may use: departments, records, pillars and the exists judgment, with the threshold (EE-059); checked by the idea-map runner"
+    },
+    {
+      "id": "anatomy-answers",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/product/anatomy/answers*.json",
+        "instance/**/product/anatomy.answers*.json",
+        "instance/**/purpose/anatomy.answers*.json",
+        "purpose/frameworks/product-anatomy/examples/*.json",
+        "purpose/frameworks/product-anatomy/examples/*/*.json"
+      ],
+      "refs": [
+        {
+          "field": "(keys)",
+          "to": "product",
+          "checked_by": "purpose/frameworks/product-anatomy/anatomy.mjs"
+        }
+      ],
+      "note": "Scores per product per question; the matrix is rendered from them"
+    },
+    {
+      "id": "anatomy-input",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/product/anatomy/*.json",
+        "instance/**/purpose/anatomy/*.json"
+      ],
+      "note": "Product Anatomy input for one product with parts (venture, core, products, flows), such as Naive or Mentura; read by purpose/frameworks/product-anatomy/anatomy.mjs"
+    },
+    {
+      "id": "decision",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/decision.schema.json",
+      "paths": [
+        "docs/decisions/decisions.json"
+      ],
+      "note": "A decision log. The schema's own is EE-NNN; a venture keeps its own log under its knowledge layer"
+    },
+    {
+      "id": "decision-record",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-record.schema.json",
+      "paths": [
+        "instance/**/decisions/*.decision.json",
+        "schema/examples/**/decisions/*.decision.json"
+      ],
+      "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node schema/decisions.mjs renders the matrix. The decision log keeps the history"
+    },
+    {
+      "id": "decision-impact",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-impact.schema.json",
+      "paths": [
+        "instance/**/decisions/*.impact.json",
+        "schema/examples/**/decisions/*.impact.json"
+      ],
+      "refs": [
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": null
+        }
+      ],
+      "note": "The impact map of a merged decision version: per function, the records that depend on what changed, which were marked stale, and the follow-up decisions proposed (schema/impact.mjs)"
+    },
+    {
+      "id": "nextjs-status",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/nextjs-status.schema.json",
+      "paths": [
+        "docs/design/naive-nextjs-status.json"
+      ],
+      "note": "Whether each concept of the Next.js translation ledger is built, with evidence and the docs page that explains it; checked by schema/check-nextjs-status.mjs, which writes the What's built page"
+    },
+    {
+      "id": "design-document",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "docs/design/*.md"
+      ],
+      "note": "Domain, product, experience, interface and systems design documents; which ones a venture needs is in the design-documents registry"
+    },
+    {
+      "id": "knowledge-sources",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/knowledge-sources.schema.json",
+      "paths": [
+        "instance/**/knowledge/sources.json",
+        "schema/examples/**/knowledge/sources.json"
+      ],
+      "refs": [
+        {
+          "field": "sources[].connector",
+          "to": "integration",
+          "checked_by": "schema/check-sources.mjs"
+        },
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/check-sources.mjs"
+        }
+      ],
+      "note": "Which source each record type lives in: the venture's own folder by default, or a connected source such as a GitHub repository (EE-037); its rules are the source-of-truth matrix: a system of record and owner per record type, attribute and context (EE-042)"
+    },
+    {
+      "id": "where-used",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/where-used.schema.json",
+      "paths": [
+        "instance/**/knowledge/where-used.json",
+        "schema/examples/**/knowledge/where-used.json"
+      ],
+      "refs": [
+        {
+          "field": "facts[].parent.route",
+          "to": "(record routes)",
+          "checked_by": "schema/check-where-used.mjs"
+        },
+        {
+          "field": "facts[].children[].source",
+          "to": "knowledge-sources",
+          "checked_by": "schema/check-where-used.mjs"
+        }
+      ],
+      "note": "For each fact kept once in its system of record, every place that repeats it; live children must show the parent's value (EE-042)"
+    },
+    {
+      "id": "freshness-profiles",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/freshness-profiles.schema.json",
+      "form": "json",
+      "paths": [
+        "knowledge/freshness.json"
+      ],
+      "refs": [
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "interface/tests/freshness-test.mjs"
+        }
+      ],
+      "note": "Default freshness profiles by record type (Revalidating V-2): stale, revalidate and expire after Next.js cacheLife, plus per_phase and live; a venture overrides them under freshness in naive.config.json"
+    },
+    {
+      "id": "sdlc-catalog",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/sdlc-catalog.schema.json",
+      "form": "json",
+      "paths": [
+        "knowledge/sdlc/catalog.json"
+      ],
+      "refs": [
+        {
+          "field": "groups[].processes[].activities[].tasks[].decision_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        },
+        {
+          "field": "groups[].processes[].owner_role",
+          "to": "role-template",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        },
+        {
+          "field": "groups[].processes[].function",
+          "to": "department-catalog",
+          "checked_by": "schema/check-sdlc-catalog.ts"
+        }
+      ],
+      "note": "What software work exists, after ISO/IEC/IEEE 12207 (R-26): processes, activities and tasks with the decisions each task needs, the phase it is first needed in, its owning role and the venture function it belongs to. No execution detail: MAD routes how, the agent router picks who. MAD's method-request names a task as <mad_module>/<activity>/<task>."
+    },
+    {
+      "id": "freshness-log",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/freshness-log.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/knowledge/freshness.jsonl",
+        "schema/examples/**/knowledge/freshness.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "target.value",
+          "to": "(venture file)",
+          "checked_by": "schema/freshness.mjs"
+        }
+      ],
+      "note": "On-demand revalidations (a tag, a path or a package marked stale), checks that a record is still right, and phase changes: one append-only line each (Revalidating V-1, V-5, V-7)"
+    },
+    {
+      "id": "department-catalog",
+      "layer": "operations",
+      "level": "method",
+      "schema": "schema/department-catalog.schema.json",
+      "paths": [
+        "operations/departments.json"
+      ],
+      "note": "The departments a venture can import: APQC categories tagged with Porter's value chain, with need-now priors (EE-047)"
+    },
+    {
+      "id": "operating-rules",
+      "layer": "operations",
+      "level": "method",
+      "schema": "schema/operating-rules.schema.json",
+      "paths": [
+        "operations/operating-rules.json"
+      ],
+      "refs": [
+        {
+          "field": "rejection.edit.role",
+          "to": "role-template",
+          "checked_by": "schema/operating-rules-test.ts"
+        }
+      ],
+      "note": "The default operating-rules module. A venture's operating-rules.json merges over it. The membership gate reads rejection.retry. Parent-only edits, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests. The Wilson z and tier thresholds, and the SPRT rates p0, p1, alpha and beta, are provisional, pending Lean proofs. The SPRT statistic is floored at 0"
+    },
+    {
+      "id": "department",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/department.schema.json",
+      "paths": [
+        "instance/**/departments/*/department.json",
+        "instance/**/departments/*/*/department.json",
+        "schema/examples/**/departments/*/department.json",
+        "schema/examples/**/departments/*/*/department.json"
+      ],
+      "refs": [
+        {
+          "field": "department",
+          "to": "department-catalog",
+          "checked_by": "schema/check-departments.mjs"
+        }
+      ],
+      "note": "The tag in each department folder, in the governance or operations layer; an optional primary/ or support/ grouping folder is for looking at only (EE-047)"
+    },
+    {
+      "id": "ontology",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/ontology-metamodel.schema.json",
+      "form": "json",
+      "paths": [
+        "docs/ontology.json"
+      ],
+      "note": "Canonical nouns; follows the metamodel schema/ontology-metamodel.schema.json, checked by schema/check-nouns.mjs, rendered to docs/ontology.md. Each noun names its function (or null) and whether it can type a handoff package"
+    },
+    {
+      "id": "ontology-catalog",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/ontology-catalog.schema.json",
+      "form": "json",
+      "paths": [
+        "docs/ontology-catalog.json"
+      ],
+      "note": "The catalog of ontologies (N-050): every name@function scope with its version, owner, status and imports, one per function. Acyclic imports and defined-or-imported terms are checked by schema/terms/catalog-test.ts"
+    },
+    {
+      "id": "golden-ruling",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/golden-ruling.schema.json",
+      "form": "json",
+      "paths": [
+        "docs/reviews/ontology-golden/*.json",
+        "schema/examples/ontology-golden/*.json"
+      ],
+      "note": "Torian's ruling on one field (status, importance, relation or scope) of one idea record, citing exactly one source, Torian's GitHub comment URL or the decision card he tapped (ontology program S3-PR2). Only Torian's rulings enter docs/reviews/ontology-golden/; scripts/golden-ruling-test.ts checks each is named <idea>.<field>.json and names an idea that exists"
+    },
+    {
+      "id": "reference",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/reference.schema.json",
+      "generator": "schema/generators/reference.mjs",
+      "paths": [
+        "*/references/references.json",
+        "*/kits/*/references/references.json"
+      ],
+      "note": "Each layer keeps the sources behind its defaults; filled by knowledge/skills/find-reference; a kit inside a layer keeps its own at <layer>/kits/<kit>/references/references.json"
+    },
+    {
+      "id": "integration",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/integration.schema.json",
+      "form": "json-list",
+      "paths": [
+        "*/tooling/integrations.json"
+      ],
+      "refs": [
+        {
+          "field": "reach",
+          "to": "(layers)",
+          "checked_by": "schema/check-integrations.mjs"
+        }
+      ],
+      "note": "Each layer's tools; interfaces must reach at least four layers"
+    },
+    {
+      "id": "business-models",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/vocab/business-models.json"
+      ],
+      "note": "Vocabulary: St. Gallen 55 plus named extras"
+    },
+    {
+      "id": "scaffold",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/scaffold/defaults.json"
+      ],
+      "note": "Starting layers by phase, read by init-venture"
+    },
+    {
+      "id": "data-model",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/data-model.schema.json",
+      "paths": [
+        "schema/data-model.json"
+      ],
+      "note": "This file"
+    },
+    {
+      "id": "kit-manifest",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/layer.schema.json",
+      "paths": [
+        "*/layer.json"
+      ],
+      "refs": [
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/check-data-model.mjs"
+        },
+        {
+          "field": "reads",
+          "to": "(record types)",
+          "checked_by": "schema/check-data-model.mjs"
+        },
+        {
+          "field": "writes",
+          "to": "(record types)",
+          "checked_by": "schema/check-data-model.mjs"
+        },
+        {
+          "field": "product",
+          "to": "product",
+          "checked_by": "schema/check-data-model.mjs"
+        }
+      ],
+      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are library/packages/<name>/package.json. A kit is Mentura's, at platform/kits/."
+    },
+    {
+      "id": "handoff",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/handoff.schema.json",
+      "paths": [
+        "instance/**/operations/handoffs/*.json"
+      ],
+      "refs": [
+        {
+          "field": "products",
+          "to": "product",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "governed_by",
+          "to": "decision",
+          "checked_by": "schema/check-ready.mjs"
+        },
+        {
+          "field": "role",
+          "to": "role",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "decision_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "evidence",
+          "to": "evidence",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "publication.channel",
+          "to": "publication-policy",
+          "checked_by": "schema/check-publication.mjs"
+        }
+      ],
+      "note": "Execution folded into operations (EE-038)."
+    },
+    {
+      "id": "activity",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity.schema.json",
+      "paths": [
+        "instance/**/operations/activity/*.json",
+        "schema/examples/**/operations/activity/*.json"
+      ],
+      "note": "Time spent in the venture on one day from transcript timestamps alone: sessions, active minutes, messages, estimated tokens in, in the venture's time zone; internal by default (naive activity, TRANSCRIPT_DIAGNOSIS_V2)"
+    },
+    {
+      "id": "activity-summary",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/activity-summary.schema.json",
+      "paths": [
+        "instance/**/operations/activity/_summary.json",
+        "schema/examples/**/operations/activity/_summary.json"
+      ],
+      "note": "Days since last touch and the streak, for the docket; a long silence is a gentle nudge (naive activity --write)"
+    },
+    {
+      "id": "evidence",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/evidence.schema.json",
+      "paths": [
+        "instance/**/evidence/results/*.json"
+      ],
+      "refs": [
+        {
+          "field": "subject",
+          "to": "handoff",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "suite",
+          "to": "eval-suite",
+          "checked_by": null
+        }
+      ],
+      "note": "Append-only results of running checks"
+    },
+    {
+      "id": "eval-suite",
+      "layer": "evidence",
+      "level": "method",
+      "schema": "schema/eval-suite.schema.json",
+      "paths": [
+        "evidence/evals/*.json"
+      ]
+    },
+    {
+      "id": "design-documents-registry",
+      "layer": "evidence",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "evidence/design-documents.registry.json"
+      ],
+      "refs": [
+        {
+          "field": "documents",
+          "to": "design-document",
+          "checked_by": "evidence/skills/design-coverage/check.mjs"
+        }
+      ],
+      "note": "Self-describing; which design documents a venture needs at which phase"
+    },
+    {
+      "id": "benchmark",
+      "layer": "evidence",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "evidence/benchmarks/*.json"
+      ],
+      "note": "Raw outputs kept as evidence for a benchmark write-up beside them"
+    },
+    {
+      "id": "decision-rights",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/decision-rights.schema.json",
+      "paths": [
+        "governance/venture-template/decision-rights.json",
+        "instance/**/governance/decision-rights.json"
+      ],
+      "refs": [
+        {
+          "field": "extends",
+          "to": "decision-rights",
+          "checked_by": "schema/check-execution.mjs"
+        },
+        {
+          "field": "classes.owner",
+          "to": "role",
+          "checked_by": "schema/check-execution.mjs"
+        }
+      ],
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "role",
+      "layer": "governance",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "governance/venture-template/roles/agent-roles.json"
+      ],
+      "note": "Roles and their tiers; shape used, no schema yet"
+    },
+    {
+      "id": "pillar",
+      "layer": "governance",
+      "level": "venture",
+      "schema": null,
+      "form": "prose",
+      "paths": [
+        "governance/venture-template/pillars/*.md",
+        "instance/**/pillars/*.md"
+      ],
+      "note": "The product, brand and business pillars: teams, roles and deliverables. The template holds the guides; a venture holds one-line stubs that link to them"
+    },
+    {
+      "id": "ownership",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/ownership.schema.json",
+      "paths": [
+        "instance/**/governance/ownership.json",
+        "schema/examples/**/governance/ownership.json"
+      ],
+      "refs": [
+        {
+          "field": "grants.holder",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        },
+        {
+          "field": "grants.class",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        }
+      ],
+      "note": "The cap table: share classes and their rights, holders, grants with vesting, option pool, SAFEs and notes (EE-022)",
+      "decision_class": "ownership-or-control"
+    },
+    {
+      "id": "board",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/board.schema.json",
+      "paths": [
+        "instance/**/governance/board.json",
+        "schema/examples/**/governance/board.json"
+      ],
+      "refs": [
+        {
+          "field": "seats.appointed_by",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        }
+      ],
+      "note": "Formal and advisory boards, their seats and reserved matters",
+      "decision_class": "ownership-or-control"
+    },
+    {
+      "id": "founder-agreement",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/founder-agreement.schema.json",
+      "paths": [
+        "instance/**/governance/founder-agreement.json",
+        "schema/examples/**/governance/founder-agreement.json"
+      ],
+      "refs": [
+        {
+          "field": "founders.holder",
+          "to": "ownership",
+          "checked_by": "schema/check-governance.mjs"
+        },
+        {
+          "field": "document",
+          "to": "(file)",
+          "checked_by": "schema/check-governance.mjs"
+        }
+      ],
+      "note": "What founders agreed: roles, commitment, IP, departure, deadlock; prose beside it",
+      "decision_class": "ownership-or-control"
+    },
+    {
+      "id": "exit",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/exit.schema.json",
+      "paths": [
+        "instance/**/governance/exit.json",
+        "schema/examples/**/governance/exit.json"
+      ],
+      "refs": [
+        {
+          "field": "scenarios",
+          "to": "ownership",
+          "checked_by": "schema/payouts.mjs"
+        },
+        {
+          "field": "paths",
+          "to": "telos",
+          "checked_by": "schema/check-telos.mjs"
+        }
+      ],
+      "note": "Exit paths kept open and sale values to model; payouts computed by payouts.mjs",
+      "decision_class": "ownership-or-control"
+    },
+    {
+      "id": "publication-policy",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/publication-policy.schema.json",
+      "paths": [
+        "instance/**/governance/publication-policy.json",
+        "schema/examples/**/governance/publication-policy.json"
+      ],
+      "refs": [
+        {
+          "field": "channels.rules.approvers",
+          "to": "role",
+          "checked_by": "schema/check-publication.mjs"
+        },
+        {
+          "field": "channels.guidelines",
+          "to": "publication-policy",
+          "checked_by": "schema/check-publication.mjs"
+        }
+      ],
+      "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "internal-terms",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/internal-terms.schema.json",
+      "paths": [
+        "schema/internal-terms.json",
+        "instance/**/governance/internal-terms.json",
+        "schema/examples/**/governance/internal-terms.json"
+      ],
+      "note": "Patterns that mark internal text (decision ids, attributions, record paths, codenames, phase jargon, draft markers); public output matches none of them (schema/check-leaks.mjs). Naive's defaults in schema/internal-terms.json, the founder's own in the venture's governance/internal-terms.json",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "publications",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/publications.schema.json",
+      "paths": [
+        "instance/**/governance/publications.json",
+        "schema/examples/**/governance/publications.json"
+      ],
+      "note": "Every place the venture has published: channel, artifact, url, the sha256 of the built output that is live, the person who approved it, when, earlier versions and any embargo. naive publish writes it; schema/check-publications.mjs checks it"
+    },
+    {
+      "id": "marketing-matrix",
+      "layer": "operations",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "operations/marketing/site/matrix.json"
+      ],
+      "note": "The marketing matrix: the audiences a public site speaks to, what each needs to learn and from which record, where it belongs, and how prominent it must be by need; weighted by whether the venture is raising, hiring or inviting contributors, and by its ICPs (EE-062). Version 0.x, unevaluated"
+    },
+    {
+      "id": "site-presence",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/site-presence.schema.json",
+      "paths": [
+        "instance/**/operations/marketing/site-presence.json",
+        "schema/examples/**/operations/marketing/site-presence.json"
+      ],
+      "note": "How present the venture's public records are on its marketing site, item by item, with a score weighed by who the site must speak to now (EE-062)"
+    },
+    {
+      "id": "marketing-sitemap",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/marketing-sitemap.schema.json",
+      "paths": [
+        "instance/**/marketing/sitemap.json",
+        "schema/examples/**/marketing/sitemap.json",
+        "instance/**/operations/marketing/sitemap.json",
+        "schema/examples/**/operations/marketing/sitemap.json"
+      ],
+      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on and the public variant to write; part of the marketing package handed to engineering (EE-064, EE-065)"
+    },
+    {
+      "id": "marketing-content",
+      "layer": "operations",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/marketing/content/**/*.mdx",
+        "schema/examples/**/marketing/content/**/*.mdx",
+        "instance/**/operations/marketing/content/**/*.mdx",
+        "schema/examples/**/operations/marketing/content/**/*.mdx"
+      ],
+      "note": "Public variants of internal records, written by marketing agents as their own MDX: each names the record it is a variant of, its audience, whether it is published and who approved it; checked by the public gate (EE-064)"
+    },
+    {
+      "id": "need-now",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/need-now.json"
+      ],
+      "refs": [
+        {
+          "field": "records",
+          "to": "(record types)",
+          "checked_by": "schema/test.mjs"
+        }
+      ],
+      "note": "Need-now priors per venture record type and phase, with conditions that raise or lower them (EE-028)"
+    },
+    {
+      "id": "venture-packages",
+      "layer": "system",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "schema/packages.json",
+        "library/packages/catalog.json",
+        "library/packages/*/package.json"
+      ],
+      "refs": [
+        {
+          "field": "core.*.required",
+          "to": "(record types)",
+          "checked_by": "schema/packages-test.mjs"
+        }
+      ],
+      "note": "Venture packages (EE-067, EE-069): the assumed governance model; core packages by department (each record's one home, what it reads, priors per phase with conditions, what completion unlocks); handoff packages by receiver; record-level dependencies; the question matrix"
+    },
+    {
+      "id": "frame",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/frame.schema.json",
+      "form": "json",
+      "paths": [
+        "library/packages/*/frames/*.frame.json"
+      ],
+      "refs": [
+        {
+          "field": "emits.*.id",
+          "to": "decision",
+          "checked_by": "schema/frames-test.mjs"
+        }
+      ],
+      "note": "The decision library: one recurring venture problem as a shape (goal, hidden decisions, premises and the attacks on them, a freshness spec, reasoning), never an answer. schema/frames.mjs matches it to the founder's words, judges its premises against the venture and proposes its decisions, open"
+    },
+    {
+      "id": "venture-package",
+      "layer": "system",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/.release/venture-package.json",
+        "instance/**/.release/layout.json",
+        "instance/**/package/venture-package.json"
+      ],
+      "note": "The venture package view (EE-067, EE-069): the open core packages and handoffs, each record confirmed, to review or to write, what moves now and what waits, with its versions; the records themselves stay in place"
+    },
+    {
+      "id": "release",
+      "layer": "system",
+      "level": "venture",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "instance/**/.release/release.json",
+        "instance/**/.release/card.json"
+      ],
+      "note": "A release (C-11, I-17): the venture's static shell, written by node interface/orchestration/build-release.mjs. release.json is the manifest (confirmed records frozen in with their sha256, date and who confirmed them; named live holes; the route table as the release holds it; frozen command answers); card.json is the release card's data (P-25, O-7). The frozen copies under .release/records/ keep their own record types. Read without the router by node schema/start-release.mjs"
+    },
+    {
+      "id": "team-plan",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/team-plan.schema.json",
+      "paths": [
+        "instance/**/people/team-plan.json",
+        "schema/examples/**/people/team-plan.json",
+        "instance/**/operations/team-plan.json",
+        "schema/examples/**/operations/team-plan.json"
+      ],
+      "refs": [
+        {
+          "field": "roles.tasks.capability",
+          "to": "agent-capability",
+          "checked_by": "schema/check-team.mjs"
+        },
+        {
+          "field": "roles.authority",
+          "to": "decision-rights",
+          "checked_by": "schema/check-team.mjs"
+        },
+        {
+          "field": "roles.id",
+          "to": "role",
+          "checked_by": "schema/check-team.mjs"
+        }
+      ],
+      "note": "Who the venture needs, agent or person, when, with what authority, and where a human stays in the loop; recruiting briefs for open person roles (EE-029)"
+    },
+    {
+      "id": "agent-capability",
+      "layer": "evidence",
+      "level": "method",
+      "schema": "schema/agent-capability.schema.json",
+      "paths": [
+        "evidence/capabilities/agent-capabilities.json"
+      ],
+      "refs": [
+        {
+          "field": "capabilities.basis.eval",
+          "to": "evidence",
+          "checked_by": "schema/check-team.mjs"
+        },
+        {
+          "field": "capabilities.basis.decision_class",
+          "to": "decision-rights",
+          "checked_by": "schema/check-team.mjs"
+        }
+      ],
+      "note": "What agents can, cannot, may not or are not known to do, with sources and dates (EE-029)"
+    },
+    {
+      "id": "provenance",
+      "layer": "system",
+      "level": "venture",
+      "schema": "schema/provenance-entry.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/provenance.jsonl",
+        "schema/examples/**/provenance.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "entity",
+          "to": "(venture file)",
+          "checked_by": "schema/check-provenance.mjs"
+        }
+      ],
+      "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031). A handoff package's membership gate writes <id>.provenance.jsonl beside the package; the line's sha256 is the package body's, so gates need not run in order, and the same gate on the same body is written once"
+    },
+    {
+      "id": "naive-config",
+      "layer": "system",
+      "level": "venture",
+      "schema": "schema/naive-config.schema.json",
+      "paths": [
+        "instance/**/naive.config.json",
+        "schema/examples/**/naive.config.json"
+      ],
+      "decision_class": "security-loosening",
+      "refs": [
+        {
+          "field": "gate.rules.routes",
+          "to": "(routes)",
+          "checked_by": "schema/check-config.mjs"
+        },
+        {
+          "field": "owners",
+          "to": "team-plan",
+          "checked_by": "schema/check-config.mjs"
+        },
+        {
+          "field": "packages",
+          "to": "venture-packages",
+          "checked_by": "schema/check-config.mjs"
+        }
+      ],
+      "note": "The venture's overrides to Naive's defaults (P-2, like next.config.js): the gate's static rules, function owners, check settings, thresholds, which System 1 questions run, pinned package versions and how strictly the acting role is checked. An agent's write of it is a draft, since it can loosen the gate"
+    },
+    {
+      "id": "route-aliases",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/route-aliases.schema.json",
+      "paths": [
+        "interface/route-aliases.json"
+      ],
+      "note": "Old routes kept as aliases of their new ones, so a rename does not break agents (EE-032)"
+    },
+    {
+      "id": "adapter",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/adapter.schema.json",
+      "paths": [
+        "interface/adapters/*.json",
+        "platform/adapter.json"
+      ],
+      "note": "What runs Naive on a platform or in an agent harness (Z-4): the entry files a harness adapter writes into a venture and where it loads skills, or the tests a platform adapter runs. Verified when it passes the framework's tests (interface/adapters.mjs verify)"
+    },
+    {
+      "id": "upgrade-registry",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/upgrade-registry.schema.json",
+      "paths": [
+        "schema/upgrades.json"
+      ],
+      "refs": [
+        {
+          "field": "versions[].guide",
+          "to": "(repository file)",
+          "checked_by": "schema/upgrades-test.mjs"
+        }
+      ],
+      "note": "Naive's versions with their guides, the migrations between them, and each package's version and channel (U-1 to U-6, EE-076). naive upgrade reads it from the installed copy"
+    },
+    {
+      "id": "kit",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/kit.schema.json",
+      "paths": [
+        "platform/kits/*/kit.json"
+      ],
+      "refs": [
+        {
+          "field": "extends.package",
+          "to": "venture-packages",
+          "checked_by": null
+        }
+      ],
+      "note": "A Mentura kit (EE-071): an enhanced package or command, with its automations (triggers that need a complete package, M-12) or its agent workflow (the agent-run upgrade, U-3). The framework reads it as data and never imports its code (schema/kits.mjs)"
+    },
+    {
+      "id": "icp",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/icp-profile.schema.json",
+      "paths": [
+        "instance/**/foundation/icp/*.json",
+        "schema/examples/**/foundation/icp/*.json"
+      ],
+      "refs": [
+        {
+          "field": "problem_forms",
+          "to": "validation-problem",
+          "checked_by": "schema/foundation.mjs"
+        }
+      ],
+      "note": "Who the venture serves: one record per ideal customer profile, each with its own id, exactly one primary (EE-051); a foundation statement, gated. The older single foundation/icp.json is split by the icp-profiles migration",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "alignment",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/alignment.schema.json",
+      "paths": [
+        "instance/**/foundation/alignment.json",
+        "schema/examples/**/foundation/alignment.json",
+        "instance/**/purpose/alignment.json",
+        "schema/examples/**/purpose/alignment.json"
+      ],
+      "note": "How the venture's products and agents must behave: principles with a source and a check (EE-053); a foundation statement, gated",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "strategic-foundation",
+      "layer": "purpose",
+      "level": "method",
+      "schema": "schema/strategic-foundation.schema.json",
+      "paths": [
+        "purpose/strategic-foundation.json"
+      ],
+      "refs": [
+        {
+          "field": "questions.statements.record",
+          "to": "(record types)",
+          "checked_by": "schema/foundation.mjs"
+        }
+      ],
+      "note": "The map of strategic foundation by the Five Ws and How plus whether (EE-051)"
+    },
+    {
+      "id": "customer",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/customers/*.json",
+        "schema/examples/**/customers/*.json"
+      ],
+      "note": "A customer master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "investor",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/investors/*.json",
+        "schema/examples/**/investors/*.json"
+      ],
+      "note": "An investor master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "money-account",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/data-master.schema.json",
+      "paths": [
+        "instance/**/money/*.json",
+        "schema/examples/**/money/*.json"
+      ],
+      "note": "A money master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "money-summary",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/money-summary.schema.json",
+      "paths": [
+        "instance/**/money/_summary.json",
+        "schema/examples/**/money/_summary.json"
+      ],
+      "note": "Cash, monthly flows and runway from the money source's last sync; versioned, and the only money record a model sees (EE-070)"
+    },
+    {
+      "id": "data-stream",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/stream.schema.json",
+      "paths": [
+        "instance/**/customers/_streams/*/stream.json",
+        "instance/**/investors/_streams/*/stream.json",
+        "instance/**/money/_streams/*/stream.json",
+        "schema/examples/**/customers/_streams/*/stream.json",
+        "schema/examples/**/investors/_streams/*/stream.json",
+        "schema/examples/**/money/_streams/*/stream.json"
+      ],
+      "note": "Declares one append-only stream and whether it is sensitive (EE-070)."
+    },
+    {
+      "id": "raw-source",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/raw-source.schema.json",
+      "paths": [
+        "instance/**/raw/sources/*/source.json",
+        "schema/examples/**/raw/sources/*/source.json"
+      ],
+      "note": "Where a founder-supplied source came from. Raw is immutable (EE-070)."
+    },
+    {
+      "id": "artifact",
+      "layer": "interface",
+      "level": "venture",
+      "schema": "schema/artifact.schema.json",
+      "paths": [
+        "instance/**/artifacts/*.json",
+        "schema/examples/**/artifacts/*.json"
+      ],
+      "note": "A view built from records for a reader (document, deck, dashboard, design, page, file, site), naming the records it read; artifacts are what get published, records never are. schema/check-artifacts.mjs flags one stale when a record it cites changes"
+    },
+    {
+      "id": "raw-text",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": null,
+      "form": "markdown",
+      "paths": [
+        "instance/**/raw/sources/*/text.md",
+        "schema/examples/**/raw/sources/*/text.md"
+      ],
+      "note": "The text of a raw source. original.* stays out of git (EE-070)."
+    },
+    {
+      "id": "judgment",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/judgment.schema.json",
+      "paths": [
+        "instance/**/knowledge/judgments/*.json",
+        "schema/examples/**/knowledge/judgments/*.json"
+      ],
+      "refs": [
+        {
+          "field": "package",
+          "to": "(packages and kits)",
+          "checked_by": "interface/orchestration/model-steps.mjs"
+        },
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": "interface/orchestration/model-steps.mjs"
+        }
+      ],
+      "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (interface/orchestration/model-steps.mjs)"
+    },
+    {
+      "id": "venture-types",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/venture-types.schema.json",
+      "paths": [
+        "schema/venture-types.json"
+      ],
+      "note": "The venture types create-venture scaffolds, and what each starts with (EE-082)"
+    },
+    {
+      "id": "venture-role",
+      "layer": "governance",
+      "level": "method",
+      "schema": "schema/venture-role.schema.json",
+      "paths": [
+        "governance/venture-template/roles/venture-roles.json"
+      ],
+      "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
+    },
+    {
+      "id": "role-template",
+      "layer": "governance",
+      "level": "method",
+      "schema": "schema/role-template.schema.json",
+      "paths": [
+        "governance/venture-template/roles/founder.json",
+        "governance/venture-template/roles/chief-of-staff.json",
+        "governance/venture-template/roles/product-design-lead.json",
+        "governance/venture-template/roles/architect.json",
+        "governance/venture-template/roles/builder.json",
+        "governance/venture-template/roles/marketing-lead.json",
+        "governance/venture-template/roles/finance-lead.json",
+        "governance/venture-template/roles/validation-lead.json",
+        "governance/venture-template/roles/people-lead.json",
+        "governance/venture-template/roles/counsel.json"
+      ],
+      "refs": [
+        {
+          "field": "verified_by",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grantable_classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "note": "One role a venture can install: function, grantable decision classes, default tier, lint suites, verifier (never itself) and skill"
+    },
+    {
+      "id": "delegation",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "schema/delegation.schema.json",
+      "paths": [
+        "governance/venture-template/delegation.json",
+        "instance/**/governance/delegation.json"
+      ],
+      "refs": [
+        {
+          "field": "grants.from",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.to",
+          "to": "role-template",
+          "checked_by": "schema/check-delegation.mjs"
+        },
+        {
+          "field": "grants.classes",
+          "to": "decision-rights",
+          "checked_by": "schema/check-delegation.mjs"
+        }
+      ],
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "people",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/people.schema.json",
+      "paths": [
+        "instance/**/people/people.json",
+        "schema/examples/**/people/people.json"
+      ],
+      "note": "The venture's people: role and hats per person; venture.json for human capital (EE-082)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "founder",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/founder.schema.json",
+      "paths": [
+        "instance/**/people/founders/*.json",
+        "schema/examples/**/people/founders/*.json"
+      ],
+      "note": "One file per founder, linked to the founder agreement (EE-082)"
+    },
+    {
+      "id": "fund-thesis",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/fund-thesis.schema.json",
+      "paths": [
+        "instance/**/fund/thesis.json",
+        "schema/examples/**/fund/thesis.json"
+      ],
+      "note": "A fund's thesis (EE-082)"
+    },
+    {
+      "id": "fund-terms",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/fund-terms.schema.json",
+      "paths": [
+        "instance/**/fund/terms.json",
+        "schema/examples/**/fund/terms.json"
+      ],
+      "note": "A fund's terms and closes (EE-082)"
+    },
+    {
+      "id": "deal",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "schema/deal.schema.json",
+      "paths": [
+        "instance/**/deals/*.json",
+        "schema/examples/**/deals/*.json"
+      ],
+      "note": "A company in a fund's pipeline (EE-082)"
+    },
+    {
+      "id": "systems-catalog",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "schema/systems-catalog.schema.json",
+      "paths": [
+        "schema/systems-catalog.json"
+      ],
+      "note": "The systems of record create-venture offers per function (EE-083)"
+    },
+    {
+      "id": "glossary",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "schema/glossary.schema.json",
+      "generator": "schema/generators/glossary.mjs",
+      "paths": [
+        "instance/**/glossary/*.json",
+        "schema/examples/**/glossary/*.json"
+      ],
+      "refs": [
+        {
+          "field": "terms[].export",
+          "to": "glossary",
+          "checked_by": "schema/check-brand.mjs"
+        }
+      ],
+      "note": "A package's own terms, at glossary/<package>.json (Y-2): local to the package unless exported, so an agent in another package sees only exported terms; glossary/terms shows what one package sees",
+      "decision_class": "public-commitment"
+    },
+    {
+      "id": "marketing-design-system",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/marketing-design-system.schema.json",
+      "paths": [
+        "instance/**/marketing/design-system.json",
+        "schema/examples/**/marketing/design-system.json"
+      ],
+      "refs": [
+        {
+          "field": "brand",
+          "to": "marketing-brand",
+          "checked_by": "schema/design-system.mjs"
+        },
+        {
+          "field": "audiences",
+          "to": "icp",
+          "checked_by": "schema/design-system.mjs"
+        },
+        {
+          "field": "choices[].from",
+          "to": "validation-problem",
+          "checked_by": "schema/design-system.mjs"
+        }
+      ],
+      "decision_class": "public-commitment",
+      "note": "The design system in the marketing package: the ethos read from the strategic foundation and every brand choice with why and the records it rests on (mission, ICP profiles, market, founders), inherited through marketing/design-system/inputs. The values stay in marketing/brand.json"
+    },
+    {
+      "id": "marketing-brand",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/marketing-brand.schema.json",
+      "paths": [
+        "instance/**/marketing/brand.json",
+        "schema/examples/**/marketing/brand.json"
+      ],
+      "refs": [
+        {
+          "field": "marks[].asset",
+          "to": "public-assets",
+          "checked_by": "schema/check-brand.mjs"
+        },
+        {
+          "field": "typefaces[].files",
+          "to": "public-assets",
+          "checked_by": "schema/check-brand.mjs"
+        }
+      ],
+      "decision_class": "public-commitment",
+      "note": "Brand tokens in the marketing package (Y-3): colors, licensed self-hosted typefaces (T-1), the font each role uses with scopes where nearer context wins (Y-5, T-2), voice rules (the global stylesheet for words), the logo and marks (P-24) and outside design systems by reference (Y-4). Read by every agent's layout; marketing/brand/tokens renders it for interfaces"
+    },
+    {
+      "id": "public-assets",
+      "layer": "operations",
+      "level": "venture",
+      "schema": "schema/public-assets.schema.json",
+      "paths": [
+        "instance/**/public/assets.json",
+        "schema/examples/**/public/assets.json"
+      ],
+      "refs": [
+        {
+          "field": "remote[].id",
+          "to": "raw-source",
+          "checked_by": "schema/check-assets.mjs"
+        }
+      ],
+      "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
+    },
+    {
+      "id": "bug",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/bug.schema.json",
+      "generator": "schema/generators/bug.mjs",
+      "paths": [
+        "instance/**/product/bugs/*.json",
+        "schema/examples/**/product/bugs/*.json"
+      ],
+      "note": "One defect: title, severity P0 to P3, status, the version it was found and fixed in, and how to reproduce it. Stable means no open P0 or P1 (naive bugs, schema/bugs.mjs).",
+      "refs": [
+        {
+          "field": "fixed_in",
+          "to": "(release)",
+          "checked_by": "schema/check-validation-study.mjs"
+        }
+      ]
+    },
+    {
+      "id": "telemetry-event",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "schema/telemetry.schema.json",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/.naive/telemetry.jsonl"
+      ],
+      "note": "Opt-in usage events shared by the plugin beta and Mentura: which capability ran, when, how long, how it ended; no record contents, no _private paths, the venture id hashed with a per-venture salt (schema/telemetry.mjs). Not routed: the router never routes .naive/, so events stay off MCP and the API."
+    },
+    {
+      "id": "beta-capabilities",
+      "layer": "interface",
+      "level": "method",
+      "schema": "schema/beta-capabilities.schema.json",
+      "paths": [
+        "beta/capabilities.json"
+      ],
+      "note": "The plugin beta's capabilities in unlock order, each with its checkpoint feedback form (schema/beta-gate.mjs)."
+    },
+    {
+      "id": "decision-roadmap",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/decision-roadmap.schema.json",
+      "form": "json",
+      "paths": [
+        "library/packages/*/roadmaps/*.json"
+      ],
+      "refs": [
+        {
+          "field": "steps.*.frame",
+          "to": "frame",
+          "checked_by": "schema/check-roadmap.mjs"
+        }
+      ],
+      "note": "A decision roadmap: an ordered set of frames, each step with its phase, dependencies, door and decider. schema/roadmaps.mjs installs it by proposing each step's decisions open; schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder"
+    },
+    {
+      "id": "lifecycle-playbook",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/lifecycle-playbook.schema.json",
+      "form": "json",
+      "paths": [
+        "purpose/frameworks/product-anatomy/playbooks/*.json"
+      ],
+      "refs": [],
+      "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
+    },
+    {
+      "id": "research-cell",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/research-cell.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/cells.jsonl"
+      ],
+      "note": "A research cell (confidential, Mentura): state(subject, time, aspect) for a venture, function and frame. Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-source",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/source.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/sources.jsonl"
+      ],
+      "note": "A source the research engine read, with credibility factors 1-4 (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-claim",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/claim.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/claims.jsonl"
+      ],
+      "note": "A claim for a research cell; confidence and verdict computed in code by platform/research/credibility.mjs (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-citation",
+      "layer": "system",
+      "level": "method",
+      "schema": "platform/research/schemas/citation.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/citations.jsonl"
+      ],
+      "note": "Ties a research claim to a source with a locator and an optional short quote (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "refs": [
+        {
+          "field": "claim_id",
+          "to": "research-claim",
+          "checked_by": null
+        },
+        {
+          "field": "source_id",
+          "to": "research-source",
+          "checked_by": null
+        }
+      ],
+      "confidential": true
+    },
+    {
+      "id": "term-list",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": null,
+      "form": "json",
+      "paths": [
+        "docs/design/term-harvest/*.json"
+      ],
+      "note": "Public seed list of terms for the term-harvest skill to run through the term engine (Grokbot handoff, 2026-11-01); public terms only, never a founder glossary"
+    }
+  ],
+  "ignore": [
+    {
+      "path": "docs/design/preserved/**/*.json",
+      "reason": "Copies preserved byte for byte by the ontology program's stage 1 and not reconciled; each has a .preserved.md sidecar naming its source, sha256 and ledger row. Records of off-main sources, not live records"
+    },
+    {
+      "path": "docs/design/term-harvest/claude-2026-11-03/TERM_LIST_2026-11-01.json",
+      "reason": "Preserved byte for byte from preserve/sources-2026-11-03 and not reconciled (ledger N-001); a record of Claude's 340-term list, not a live record. The live seed list is docs/design/term-harvest/TERM_LIST_2026-11-01.json"
+    },
+    {
+      "path": "schema/terms/admitted.json",
+      "reason": "Generated by node schema/terms/admit.ts: every term with its hash, validity, relations, predictions and Lean theorems; checked by --check, not a record"
+    },
+    {
+      "path": "lean/lake-manifest.json",
+      "reason": "Lake's package manifest for the Lean proofs (lean/); generated by lake, not a record"
+    },
+    {
+      "path": "interface/plugin-mcp.json",
+      "reason": "The MCP server the Claude Code plugin starts, from its own copy of the framework (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/plugin.json",
+      "reason": "The Claude Code plugin manifest: Naive's skills and MCP server for an agent (EE-084); not a record"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "reason": "The Claude Code marketplace for a clone of the repository (EE-084); not a record"
+    },
+    {
+      "path": ".claude/settings.json",
+      "reason": "Claude Code project settings for the builder (EE-111): the cursor/plugins marketplace and pstack only. Not a record"
+    },
+    {
+      "path": "scripts/dependency-rules.json",
+      "reason": "The monorepo's known import cycles, read by scripts/dependency-rules.ts; repository tooling, not a record"
+    },
+    {
+      "path": "site/package.json",
+      "reason": "The developer-docs site's npm manifest (EE-034); not a record"
+    },
+    {
+      "path": "console/package.json",
+      "reason": "The venture console's npm manifest (Mentura demo beta, 2026-10-30); not a record"
+    },
+    {
+      "path": "console/tsconfig.json",
+      "reason": "TypeScript settings for the venture console; not a record"
+    },
+    {
+      "path": "console/components.json",
+      "reason": "shadcn/ui settings for the venture console; not a record"
+    },
+    {
+      "path": "platform/integrations/fixtures/rho-sandbox.json",
+      "reason": "What Rho's sandbox (a fictional company) answered to one sync, replayed offline by platform/integrations/rho-test.mjs and the harness's --money; vendor data, not a record"
+    },
+    {
+      "path": "schema/examples/docket-scenarios.json",
+      "reason": "Venture states with a source-argued next step, the evidence set schema/docket-eval.mjs scores the docket against (EE-075); test data, not a record"
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "npm lockfile for the repository's dev dependencies (typescript and its Node types); generated by npm"
+    },
+    {
+      "path": "tsconfig.strict.json",
+      "reason": "Strict TypeScript config for .ts files (schema/check-types.ts); not a record"
+    },
+    {
+      "path": "tsconfig.json",
+      "reason": "TypeScript config for type-checking the repository (schema/check-types.ts); not a record"
+    },
+    {
+      "path": "site/tsconfig.json",
+      "reason": "TypeScript config for the Nextra site (EE-088); not a record"
+    },
+    {
+      "path": "site/brand/tokens.json",
+      "reason": "W3C design tokens for the site theme (EE-080); not a venture record"
+    },
+    {
+      "path": "site/content/docs/meta.json",
+      "reason": "Sidebar order for the docs collection (EE-088); not a record"
+    },
+    {
+      "path": "site/content/docs/get-started/meta.json",
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
+    },
+    {
+      "path": "site/content/docs/guides/meta.json",
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
+    },
+    {
+      "path": "site/content/docs/concepts/meta.json",
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
+    },
+    {
+      "path": "site/content/docs/reference/meta.json",
+      "reason": "Sidebar order for a docs section (EE-088); not a record"
+    },
+    {
+      "path": "site/content/marketing/meta.json",
+      "reason": "Sidebar order for marketing pages (EE-088); not a record"
+    },
+    {
+      "path": "package.json",
+      "reason": "The framework's npm manifest: the naive and mentura commands (I-1, I-17); not a record"
+    },
+    {
+      "path": "packages/create-venture/package.json",
+      "reason": "The create-venture generator's npm manifest (I-1); not a record"
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "The framework's npm lockfile for its dev tools (ESLint), installed by npm ci in CI; not a record"
+    },
+    {
+      "path": "schema/known-leaks.json",
+      "reason": "The dated list of public outputs that leak internal text today, read by schema/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
+    },
+    {
+      "path": "schema/internal-terms.json",
+      "reason": "The framework's default patterns for internal text, read by schema/check-leaks.mjs (the publishing gate); configuration, not a record"
+    },
+    {
+      "path": "schema/generators/gaps.json",
+      "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/pricing-admit.json",
+      "reason": "A handoff package the membership gate admits, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/unknown-term.json",
+      "reason": "A handoff package with a term that is not a noun, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/retired-term.json",
+      "reason": "A handoff package that uses a retired noun, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/missing-touches.json",
+      "reason": "A handoff package whose term is owned by a function it does not touch, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/pricing-no-finance.json",
+      "reason": "A pricing package that does not touch finance, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "schema/fixtures/ontology-gate/founder-properties.json",
+      "reason": "A handoff package whose founder facts fail a term-engine check, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    }
+  ]
+}

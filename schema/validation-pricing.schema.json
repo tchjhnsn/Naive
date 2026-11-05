@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-pricing.schema.json",
+  "title": "Validation: pricing",
+  "description": "The pricing sub-score (EE-026), at <venture>/purpose/validation/pricing.json: the price model and points, who pays, and cited evidence that the buyer pays it.",
+  "type": "object",
+  "required": [
+    "venture",
+    "product",
+    "model",
+    "buyer",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "product": {
+      "type": "string"
+    },
+    "model": {
+      "enum": [
+        "subscription",
+        "one-time",
+        "usage",
+        "freemium",
+        "transaction-fee",
+        "licence",
+        "donation",
+        "other"
+      ]
+    },
+    "buyer": {
+      "type": "string",
+      "description": "Who pays; may differ from the user"
+    },
+    "points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "amount",
+          "currency"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cost": {
+            "type": "number",
+            "minimum": 0,
+            "description": "What it costs to deliver this point, in the same currency as amount. finance/lint warns when amount is below this cost."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "period": {
+            "enum": [
+              "once",
+              "day",
+              "week",
+              "month",
+              "year",
+              "use"
+            ]
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "validation-evidence.schema.json"
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p",
+        "by",
+        "scored"
+      ],
+      "description": "The Jev probability for this sub-score; the evidence grade weighs it in the validation score",
+      "properties": {
+        "p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "by": {
+          "enum": [
+            "jev",
+            "owner"
+          ]
+        },
+        "scored": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

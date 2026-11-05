@@ -1,0 +1,133 @@
+{
+  "version": "0.1.0",
+  "note": "Strategic foundation (EE-051, EE-052): the records a founder keeps in front of them every day, framed by the Five Ws and How plus whether (persevere, pivot, pause or stop; the review is not settled). Each statement is an attribute of a record that already exists; schema/foundation.mjs reports each one for a venture as confirmed (a person wrote or accepted it), drafted by an agent, waiting as a draft, or missing. Changing one ripples through the venture, so its record is gated.",
+  "questions": [
+    {
+      "id": "why",
+      "ask": "Why do you do it?",
+      "statements": [
+        {
+          "id": "problem",
+          "record": "validation-problem",
+          "attribute": "statement"
+        },
+        {
+          "id": "vision",
+          "record": "telos",
+          "attribute": "end_state"
+        }
+      ]
+    },
+    {
+      "id": "what",
+      "ask": "What do you do?",
+      "statements": [
+        {
+          "id": "mission",
+          "record": "venture",
+          "attribute": "core.promise"
+        },
+        {
+          "id": "products",
+          "record": "product",
+          "attribute": "name"
+        }
+      ]
+    },
+    {
+      "id": "who",
+      "ask": "Who do you serve?",
+      "statements": [
+        {
+          "id": "icp",
+          "record": "icp",
+          "attribute": "."
+        },
+        {
+          "id": "promised-to",
+          "record": "venture",
+          "attribute": "core.promised_to",
+          "derived_from": "icp",
+          "note": "The ICP's short form: the primary profile's short, or its who. It takes the ICP's status and is never confirmed on its own, so the two cannot drift (Torian, 2026-10-28)"
+        }
+      ]
+    },
+    {
+      "id": "how",
+      "ask": "How do you do it?",
+      "statements": [
+        {
+          "id": "competence",
+          "record": "venture",
+          "attribute": "core.competence"
+        },
+        {
+          "id": "business-models",
+          "record": "product",
+          "attribute": "business_model"
+        }
+      ]
+    },
+    {
+      "id": "when",
+      "ask": "When do you do it?",
+      "statements": [
+        {
+          "id": "phase",
+          "record": "venture",
+          "attribute": "phase"
+        },
+        {
+          "id": "exit-criteria",
+          "record": "telos",
+          "attribute": "phases"
+        }
+      ]
+    },
+    {
+      "id": "where",
+      "ask": "Where do you do it?",
+      "statements": [
+        {
+          "id": "markets",
+          "record": "product",
+          "attribute": "market.geography"
+        },
+        {
+          "id": "channels",
+          "record": "validation-go-to-market",
+          "attribute": "channels"
+        }
+      ]
+    },
+    {
+      "id": "whether",
+      "ask": "Whether to do it, given what is true now?",
+      "statements": [
+        {
+          "id": "alignment",
+          "record": "alignment",
+          "attribute": "principles",
+          "note": "Replaces must-not (Torian, 2026-10-28): must-not described how the framework and platform behave, which is alignment, and alignment is longer than one line (EE-053). venture core.must_not stays as a one-line summary"
+        },
+        {
+          "id": "whether-review",
+          "record": null,
+          "attribute": null,
+          "note": "Not settled (Torian, 2026-10-28): go/kill is too narrow. Persevere, pivot, pause and stop stay draft frameworks, not the default. No design is agreed"
+        }
+      ]
+    },
+    {
+      "id": "brand",
+      "ask": "How are you known?",
+      "statements": [
+        {
+          "id": "tagline",
+          "record": "venture",
+          "attribute": "brand.tagline"
+        }
+      ]
+    }
+  ]
+}

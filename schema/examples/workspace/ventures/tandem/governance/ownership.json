@@ -1,0 +1,131 @@
+{
+  "updated": "2026-10-01",
+  "unit": "shares",
+  "currency": "USD",
+  "classes": [
+    {
+      "id": "common",
+      "kind": "common",
+      "votes_per_share": 1
+    },
+    {
+      "id": "series-seed",
+      "kind": "preferred",
+      "votes_per_share": 1,
+      "price_per_share": 1,
+      "liquidation": {
+        "multiple": 1,
+        "participating": false,
+        "seniority": 1
+      },
+      "rights": [
+        "board-seat",
+        "information",
+        "pro-rata",
+        "protective-provisions",
+        "anti-dilution-broad-based",
+        "drag-along",
+        "right-of-first-refusal",
+        "co-sale"
+      ]
+    }
+  ],
+  "holders": [
+    {
+      "id": "ana",
+      "name": "Ana Reyes",
+      "kind": "founder",
+      "role": "founder"
+    },
+    {
+      "id": "ben",
+      "name": "Ben Okafor",
+      "kind": "founder",
+      "role": "founder"
+    },
+    {
+      "id": "pool",
+      "name": "Option pool",
+      "kind": "pool"
+    },
+    {
+      "id": "dee",
+      "name": "Dee Park",
+      "kind": "advisor",
+      "agreement": "governance/agreements/dee-fast.md"
+    },
+    {
+      "id": "lark-ventures",
+      "name": "Lark Ventures",
+      "kind": "investor"
+    },
+    {
+      "id": "angel-one",
+      "name": "Sam Wu",
+      "kind": "investor"
+    }
+  ],
+  "grants": [
+    {
+      "holder": "ana",
+      "class": "common",
+      "amount": 4000000,
+      "granted": "2026-03-02",
+      "vesting": {
+        "start": "2026-03-02",
+        "months": 48,
+        "cliff_months": 12,
+        "acceleration": "double-trigger"
+      }
+    },
+    {
+      "holder": "ben",
+      "class": "common",
+      "amount": 4000000,
+      "granted": "2026-03-02",
+      "vesting": {
+        "start": "2026-03-02",
+        "months": 48,
+        "cliff_months": 12,
+        "acceleration": "double-trigger"
+      }
+    },
+    {
+      "holder": "pool",
+      "class": "common",
+      "amount": 1000000
+    },
+    {
+      "holder": "dee",
+      "class": "common",
+      "amount": 50000,
+      "granted": "2026-05-01",
+      "vesting": {
+        "start": "2026-05-01",
+        "months": 24,
+        "cliff_months": 3,
+        "acceleration": "single-trigger"
+      }
+    },
+    {
+      "holder": "lark-ventures",
+      "class": "series-seed",
+      "amount": 2000000,
+      "granted": "2026-09-15"
+    }
+  ],
+  "instruments": [
+    {
+      "id": "safe-wu",
+      "holder": "angel-one",
+      "kind": "safe-post-money",
+      "amount": 250000,
+      "signed": "2026-10-01",
+      "valuation_cap": 20000000,
+      "converts_to": "series-a",
+      "rights": [
+        "pro-rata"
+      ]
+    }
+  ]
+}

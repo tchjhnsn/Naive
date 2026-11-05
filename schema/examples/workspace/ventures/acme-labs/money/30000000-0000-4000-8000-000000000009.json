@@ -1,0 +1,12 @@
+{
+  "id": "30000000-0000-4000-8000-000000000009",
+  "name": "Credit Account",
+  "type": "credit",
+  "last_4": null,
+  "balance": {
+    "amount": 0,
+    "currency": "USD"
+  },
+  "source": "rho-sandbox:account:30000000-0000-4000-8000-000000000009",
+  "synced_at": "2026-10-29T06:34:34.210Z"
+}

@@ -1,0 +1,73 @@
+{
+  "venture": {
+    "name": "Thinking Machines Lab",
+    "phase": "validation",
+    "team": "About 100 people (2026); two co-founders returned to OpenAI in January 2026.",
+    "current_state": "Tinker (fine-tuning API) launched October 2025, GA December 2025; Inkling (975B open weights, Apache) and Inkling Small released July 2026. Self-reported revenue run rate above $100M (unaudited). One gigawatt of NVIDIA compute agreed March 2026. A public benefit corporation where the founder holds a weighted deciding vote.",
+    "sources": [
+      "Wikipedia, Thinking Machines Lab, read 2026-11-01",
+      "AI Magazine on Tinker run rate"
+    ]
+  },
+  "core": {
+    "source": "Our reading of its launch statements and products; no filing exists.",
+    "promise": "Researchers and builders can shape frontier-class models to their own needs: open weights, with the hard training infrastructure done for them.",
+    "promised_to": "Researchers, developers and companies that need customised models.",
+    "must_not": "Open models under its name that enable serious misuse, or customisation that quietly locks customers in.",
+    "competence": "Post-training and fine-tuning research (reinforcement learning, efficient adapters) and the infrastructure to run it for others."
+  },
+  "products": {
+    "tinker": {
+      "name": "Tinker",
+      "faces": "researchers and developers",
+      "description": "API for fine-tuning open models with your own training loop; the lab runs the clusters."
+    },
+    "inkling": {
+      "name": "Inkling",
+      "faces": "anyone (open weights)",
+      "description": "975B-parameter multimodal open-weights model, Apache licence."
+    },
+    "inkling-small": {
+      "name": "Inkling Small",
+      "faces": "anyone (open weights)",
+      "description": "276B-parameter open-weights model."
+    },
+    "research": {
+      "name": "Research publications",
+      "faces": "the research community",
+      "description": "Published research and blog posts."
+    },
+    "collab": {
+      "name": "Human-AI collaboration product",
+      "faces": "people at work",
+      "description": "The multimodal, collaborative AI product the lab has said it will build; not shipped."
+    }
+  },
+  "flows": [
+    {
+      "from": "inkling",
+      "to": "tinker",
+      "carries": "base model to customise"
+    },
+    {
+      "from": "inkling-small",
+      "to": "tinker",
+      "carries": "base model"
+    },
+    {
+      "from": "research",
+      "to": "tinker",
+      "carries": "methods"
+    },
+    {
+      "from": "research",
+      "to": "inkling",
+      "carries": "methods"
+    },
+    {
+      "from": "tinker",
+      "to": "collab",
+      "carries": "customisation layer"
+    }
+  ]
+}

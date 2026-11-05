@@ -1,0 +1,46 @@
+{
+  "sources": [],
+  "records": {},
+  "truth": "local",
+  "functions": {
+    "products": {
+      "systems": [
+        {
+          "system": "local-repo",
+          "address": "../acme-app",
+          "status": "pointed"
+        },
+        {
+          "system": "github",
+          "address": "acme-labs/app",
+          "status": "pointed"
+        },
+        {
+          "system": "vercel",
+          "address": "acme-labs/web",
+          "status": "pointed"
+        }
+      ]
+    },
+    "marketing-and-sales": {
+      "systems": [
+        {
+          "system": "vercel",
+          "address": "acme-labs/web",
+          "status": "pointed"
+        }
+      ]
+    },
+    "finance": {
+      "systems": [
+        {
+          "system": "rho",
+          "status": "connected",
+          "synced": "2026-10-29T06:28:55Z",
+          "fixture": true,
+          "address": "saved sandbox answer"
+        }
+      ]
+    }
+  }
+}

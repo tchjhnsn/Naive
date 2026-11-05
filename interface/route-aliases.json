@@ -1,0 +1,32 @@
+{
+  "aliases": [
+    {
+      "from": "execution/handoff",
+      "to": "operations/handoff",
+      "since": "2026-10-28",
+      "note": "Execution folded into operations (EE-038)"
+    },
+    { "from": "purpose/validation/problem", "to": "foundation/problem", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/icp", "to": "foundation/icp", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/telos", "to": "foundation/telos", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/alignment", "to": "foundation/alignment", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/validation/solution", "to": "validation/solution", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/validation/pricing", "to": "validation/pricing", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/validation/go-to-market", "to": "validation/go-to-market", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/validation/product-market-fit", "to": "validation/product-market-fit", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/validation/operations-readiness", "to": "validation/operations-readiness", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/validation/team", "to": "people/team", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "operations/team-plan", "to": "people/team-plan", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "operations/marketing-sitemap", "to": "marketing/sitemap", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "operations/marketing-content", "to": "marketing/content", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/idea-dump", "to": "raw/dump", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/idea-map", "to": "ideas/map", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/idea-graph", "to": "ideas/graph", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/product", "to": "product", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "evidence/evidence", "to": "evidence", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/anatomy-answers", "to": "product/anatomy-answers", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "purpose/anatomy-input", "to": "product/anatomy", "since": "2026-10-29", "note": "Package folder layout (EE-070)" },
+    { "from": "system/venture-package", "to": ".release/venture-package", "since": "2026-10-29", "note": "The deliverable is a release (EE-071)" },
+    { "from": "governance/decision-record", "to": "decisions", "since": "2026-10-29", "note": "Package folder layout (EE-070)" }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "layer": "purpose",
+  "references": [
+    {
+      "id": "grade-handbook",
+      "title": "GRADE Handbook",
+      "authors": [
+        "GRADE Working Group"
+      ],
+      "year": 2013,
+      "kind": "standard",
+      "summary": "Certainty of evidence rated high, moderate, low or very low. Randomized trials start high and observational studies low; certainty drops for risk of bias, inconsistency, indirectness, imprecision and publication bias, and rises for a large effect or a dose-response gradient.",
+      "url": "https://gdt.gradepro.org/app/handbook/handbook.html",
+      "checked": "2026-10-27",
+      "informs": [
+        "rule:evidence-grade",
+        "field:validation-evidence.kind",
+        "field:validation-evidence.audience",
+        "field:validation-evidence.sample"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The four levels and the start-then-downgrade method are kept; study design becomes the kind of signal (behavior starts high, stated intent low), indirectness becomes audience fit and imprecision becomes sample size."
+      }
+    },
+    {
+      "id": "fitzpatrick-2013-mom-test",
+      "title": "The Mom Test",
+      "authors": [
+        "Rob Fitzpatrick"
+      ],
+      "year": 2013,
+      "kind": "book",
+      "summary": "Ask about people's lives and past behavior, not about your idea; compliments, generalities and hypotheticals are not data, and commitment is the real signal.",
+      "url": "https://www.momtestbook.com/",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:validation-evidence.specificity",
+        "field:validation-evidence.kind",
+        "rule:evidence-grade"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Its ranking of signals (commitment over compliments, past facts over hypotheticals) sets the starting grades and the specificity downgrade; its method is the problem-interview template."
+      }
+    },
+    {
+      "id": "cb-insights-2026-startup-failure",
+      "title": "The top 9 reasons startups fail",
+      "authors": [
+        "CB Insights"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Analysis of startup post-mortems; poor product-market fit was cited in 43% of failures (causes overlap).",
+      "url": "https://www.cbinsights.com/research/report/startup-failure-reasons-top/",
+      "checked": "2026-10-27",
+      "informs": [
+        "rule:validation-fails-closed"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The most common cause of failure is building what the market does not need, so a validation claim with no evidence grades very low instead of passing."
+      }
+    },
+    {
+      "id": "vohra-2018-superhuman-pmf-engine",
+      "title": "How Superhuman Built an Engine to Find Product Market Fit",
+      "authors": [
+        "Rahul Vohra"
+      ],
+      "year": 2018,
+      "kind": "article",
+      "summary": "Applies Sean Ellis's leading indicator: ask active users how they would feel if they could no longer use the product; 40% or more answering 'very disappointed' marks product-market fit. Segment the answers and work on the users who almost said very disappointed.",
+      "url": "https://review.firstround.com/how-superhuman-built-an-engine-to-find-product-market-fit/",
+      "checked": "2026-10-27",
+      "informs": [
+        "field:validation-product-market-fit.ellis",
+        "rule:ellis-share"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The Ellis share is recorded as data and reported beside the grade; 40% is the usual bar."
+      }
+    },
+    {
+      "id": "van-westendorp-1976-price-sensitivity",
+      "title": "NSS Price Sensitivity Meter: a new approach to study consumer perception of prices",
+      "authors": [
+        "Peter H. van Westendorp"
+      ],
+      "year": 1976,
+      "kind": "paper",
+      "summary": "Four questions (too cheap, cheap, expensive, too expensive) give an acceptable price range from stated responses.",
+      "informs": [
+        "field:validation-pricing.points"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The pricing template uses its four questions; the answers are stated evidence and grade below real payments."
+      }
+    },
+    {
+      "id": "wasserman-2012-founders-dilemmas",
+      "title": "The Founder's Dilemmas",
+      "authors": [
+        "Noam Wasserman"
+      ],
+      "year": 2012,
+      "kind": "book",
+      "summary": "Evidence on founding teams: when to add cofounders, the costs of founding with friends and family, splitting roles and equity.",
+      "informs": [
+        "field:validation-team.cofounder_sought",
+        "field:validation-team.needed"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The team template asks which skills the coming phases need and which a cofounder should bring, before choosing people."
+      }
+    }
+  ]
+}

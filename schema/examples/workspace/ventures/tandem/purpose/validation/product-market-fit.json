@@ -1,0 +1,66 @@
+{
+  "venture": "tandem",
+  "updated": "2026-10-27",
+  "product": "shop-app",
+  "segment": "Two-to-ten-person service shops",
+  "retention": {
+    "period": "week",
+    "cohorts": [
+      {
+        "start": "2026-07-06",
+        "size": 11,
+        "active": [
+          11,
+          10,
+          9,
+          9,
+          9,
+          9,
+          9
+        ]
+      }
+    ]
+  },
+  "ellis": {
+    "asked": 34,
+    "very_disappointed": 16,
+    "collected": "2026-10-15"
+  },
+  "evidence": [
+    {
+      "id": "pilot-retention",
+      "kind": "behavior",
+      "summary": "9 of 11 shops still active weekly after seven weeks; the curve is flat from week three",
+      "source": {
+        "title": "Pilot, July to October 2026",
+        "path": "knowledge/research/pilot-2026-10.md"
+      },
+      "audience": "target",
+      "sample": {
+        "n": 11
+      },
+      "collected": "2026-10-20"
+    },
+    {
+      "id": "ellis-survey",
+      "kind": "stated",
+      "summary": "16 of 34 active users (47%) would be very disappointed without the app",
+      "source": {
+        "title": "Pilot, July to October 2026",
+        "path": "knowledge/research/pilot-2026-10.md"
+      },
+      "audience": "target",
+      "sample": {
+        "n": 34
+      },
+      "specificity": "specific",
+      "collected": "2026-10-15"
+    }
+  ],
+  "probability": {
+    "p": 0.6,
+    "by": "owner",
+    "scored": "2026-10-27",
+    "note": "Example value"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "brand-care",
+  "name": "Brand Care",
+  "description": "Monthly updates to menus, seasonal signage and social posts in the restaurant's brand.",
+  "market": {
+    "customer": "b2b",
+    "segment": "independent restaurants",
+    "geography": "US-TX",
+    "vertical": true
+  },
+  "job": "Keep the brand current without hiring a designer",
+  "technology": "design service",
+  "offering": "service",
+  "business_model": [
+    "subscription"
+  ],
+  "allowed_from": "beachhead",
+  "status": "building"
+}

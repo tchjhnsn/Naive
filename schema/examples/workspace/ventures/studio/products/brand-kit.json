@@ -1,0 +1,23 @@
+{
+  "id": "brand-kit",
+  "name": "Brand Kit",
+  "description": "Logo, menu, signage and site templates built in one week for a restaurant about to open.",
+  "market": {
+    "customer": "b2b",
+    "segment": "restaurants about to open",
+    "geography": "US-TX",
+    "vertical": true
+  },
+  "job": "Open with a menu, sign and site that match",
+  "technology": "design service plus templates",
+  "offering": "service",
+  "business_model": [
+    "fee-for-service",
+    "add-on"
+  ],
+  "allowed_from": "validation",
+  "flows_to": [
+    "brand-care"
+  ],
+  "status": "live"
+}

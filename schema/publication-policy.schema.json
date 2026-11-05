@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "publication-policy.schema.json",
+  "title": "Publication policy",
+  "description": "Where a venture publishes and who may publish what there, at <venture>/governance/publication-policy.json (EE-025). Every publication passes the gate: it runs as a handoff under the public-commitment decision class, names its channel, passes the channel's checks and preview, and is approved by a person. Agents may draft and check; they never approve.",
+  "type": "object",
+  "required": [
+    "venture",
+    "channels"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "note": {
+      "type": "string"
+    },
+    "teams": {
+      "type": "array",
+      "description": "Groups that draft or approve, such as a marketing team or a governance team. Members are role ids from the role registry.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "members"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pillar": {
+            "enum": [
+              "product",
+              "brand",
+              "business"
+            ]
+          },
+          "members": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "guidelines": {
+      "type": "array",
+      "description": "The rules a publication must follow: the venture's own (brand guidelines, editorial guidelines) and outside ones (a platform's rules, advertising or disclosure law).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "kind"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "brand",
+              "editorial",
+              "legal",
+              "platform",
+              "disclosure",
+              "security",
+              "other"
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "description": "Pillar or role that keeps it"
+          },
+          "path": {
+            "type": "string",
+            "description": "Relative to the venture folder"
+          },
+          "url": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "string",
+            "format": "date",
+            "description": "When an outside guideline's URL was last checked"
+          }
+        }
+      }
+    },
+    "channels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "destination",
+          "rules",
+          "checks",
+          "preview"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "website",
+              "docs-site",
+              "blog",
+              "social",
+              "newsletter",
+              "email",
+              "app-store",
+              "press",
+              "investor-update",
+              "regulatory-filing",
+              "open-source-repository",
+              "other"
+            ]
+          },
+          "destination": {
+            "type": "string",
+            "description": "Where it lands: a URL, an account, a repository or a recipient list"
+          },
+          "audience": {
+            "type": "string"
+          },
+          "guidelines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Guideline ids that apply here"
+          },
+          "rules": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Who may publish what on this channel",
+            "items": {
+              "type": "object",
+              "required": [
+                "content",
+                "approvers"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "description": "The kind of content, e.g. methodology pages, release notes, a funding announcement"
+                },
+                "from_layers": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "purpose",
+                      "knowledge",
+                      "operations",
+                      "evidence",
+                      "governance",
+                      "interface"
+                    ]
+                  },
+                  "description": "The layers whose records it may publish"
+                },
+                "drafters": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Role or team ids; agents may draft"
+                },
+                "approvers": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Role or team ids; at least one is a person, and no agent approves"
+                }
+              }
+            }
+          },
+          "checks": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "check"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "check": {
+                  "type": "string",
+                  "description": "A command run from the repository root; for a review, what the reviewer checks"
+                },
+                "kind": {
+                  "enum": [
+                    "conformance",
+                    "review"
+                  ]
+                }
+              }
+            }
+          },
+          "preview": {
+            "type": "string",
+            "description": "How to see exactly what would go out before it does, e.g. a dry run"
+          },
+          "config": {
+            "type": "string",
+            "description": "The channel's tool configuration, relative to the venture folder (e.g. the publisher's allowlist)"
+          },
+          "platform": {
+            "enum": [
+              "substack",
+              "medium",
+              "x",
+              "facebook",
+              "instagram",
+              "threads",
+              "linkedin",
+              "youtube",
+              "tiktok",
+              "reddit",
+              "bluesky",
+              "mastodon",
+              "discord",
+              "app-store",
+              "google-play",
+              "github",
+              "other"
+            ],
+            "description": "The third-party platform the channel runs on, if any. A channel on a platform cites that platform's rules (a guideline of kind platform)"
+          },
+          "replies": {
+            "type": "object",
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false,
+            "description": "Required on social, newsletter and blog channels: replies, comments and direct messages speak for the venture in public. gated means each reply passes the gate like any publication; delegated means named people may reply within the guidelines without a handoff each time; none means the venture does not reply there",
+            "properties": {
+              "mode": {
+                "enum": [
+                  "gated",
+                  "delegated",
+                  "none"
+                ]
+              },
+              "delegates": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Role or team ids, when delegated; each must include a person"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "finance",
+  "title": "Finance",
+  "kind": "core",
+  "purpose": "How the venture makes and spends money: business models, pricing, budget and runway.",
+  "department": "finance",
+  "required": [
+    "business-models"
+  ],
+  "optional": [],
+  "refs": [
+    "validation-pricing",
+    "product"
+  ],
+  "planned": [
+    "budget and runway",
+    "revenue",
+    "financial model"
+  ],
+  "base": {
+    "discovery": 0.2,
+    "validation": 0.5,
+    "beachhead": 0.8,
+    "scale": 1,
+    "platform": 1
+  },
+  "when": [
+    {
+      "if": "raising",
+      "at_least": 0.8
+    }
+  ],
+  "why": "From Validation, or sooner when raising",
+  "unlocks": [
+    "pricing tests",
+    "invoicing",
+    "bookkeeping",
+    "financial models"
+  ],
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [
+    "schema/lint-finance.mjs"
+  ],
+  "skill": {
+    "id": "finance-function",
+    "path": "library/packages/finance/skill/SKILL.md"
+  },
+  "use_model": []
+}

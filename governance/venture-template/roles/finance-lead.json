@@ -1,0 +1,17 @@
+{
+  "id": "finance-lead",
+  "name": "Finance lead",
+  "function": "finance",
+  "description": "Keeps the spend register, runway and pricing records.",
+  "grantable_classes": [
+    "spend-register-upkeep",
+    "cancel-or-downgrade"
+  ],
+  "default_tier": "workhorse",
+  "lint_suites": [
+    "finance/lint",
+    "money/lint"
+  ],
+  "verified_by": "founder",
+  "skill": "library/packages/finance/skill/SKILL.md"
+}

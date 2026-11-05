@@ -1,0 +1,28 @@
+{
+  "name": "decisions",
+  "title": "Decisions",
+  "kind": "folder",
+  "purpose": "The docket: one file per decision, linked to what it changed (EE-070).",
+  "required": [],
+  "optional": [],
+  "refs": [],
+  "gates": [
+    "present"
+  ],
+  "schemas": [],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "use_cache": [
+    {
+      "route": "governance/decisions",
+      "level": "record",
+      "life": "minutes",
+      "vary": [
+        "hour",
+        "env:DECISIONS_NOW"
+      ]
+    }
+  ]
+}

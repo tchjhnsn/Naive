@@ -1,0 +1,22 @@
+{
+  "venture": "northstar",
+  "statement": "Seed checks into software that cuts industrial emissions, led by founders who have run plants.",
+  "rounds": [
+    "pre-seed",
+    "seed"
+  ],
+  "sectors": [
+    "industrial decarbonization",
+    "climate software"
+  ],
+  "geographies": [
+    "North America"
+  ],
+  "check_size": {
+    "min": 250000,
+    "max": 1000000,
+    "currency": "USD"
+  },
+  "ownership_target": 0.08,
+  "edge": "Both partners ran manufacturing plants, so founders from industry come to us first."
+}

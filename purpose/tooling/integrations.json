@@ -1,0 +1,48 @@
+[
+  {
+    "id": "obsidian",
+    "name": "Obsidian",
+    "layer": "purpose",
+    "role": "vision, philosophy and BASED goals as notes",
+    "interfaces": [
+      "files",
+      "app"
+    ],
+    "status": "in-use",
+    "reason": "The vault is an Obsidian vault"
+  },
+  {
+    "id": "claude-docs",
+    "name": "Claude Docs",
+    "layer": "purpose",
+    "role": "shared drafts of vision and strategy",
+    "interfaces": [
+      "mcp"
+    ],
+    "status": "in-use",
+    "reason": "Used for the Polity vision draft on 2026-10-26"
+  },
+  {
+    "id": "notion",
+    "name": "Notion",
+    "layer": "purpose",
+    "role": "goals and vision pages",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists; not yet chosen for this layer"
+  },
+  {
+    "id": "framer",
+    "name": "Framer",
+    "layer": "purpose",
+    "role": "public site design for the brand pillar",
+    "interfaces": [
+      "mcp"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists"
+  }
+]

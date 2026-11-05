@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-capability.schema.json",
+  "title": "Agent capability register",
+  "description": "What agents can and cannot do, task by task, with sources and dates (EE-029), at evidence/capabilities/agent-capabilities.json. Team plans cite these entries: a task an agent cannot do, may not do, or is not known to do needs a named human loop. Kept current by reading new research and by our own evals.",
+  "type": "object",
+  "required": [
+    "updated",
+    "capabilities"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "note": {
+      "type": "string"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "task",
+          "status",
+          "basis",
+          "checked"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "task": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string",
+            "description": "The layer or MAD tier the task belongs to"
+          },
+          "status": {
+            "enum": [
+              "can",
+              "can-with-review",
+              "cannot",
+              "not-allowed",
+              "unknown"
+            ],
+            "description": "can: no human loop needed; can-with-review: an agent does it and a person or a check reviews it; cannot: beyond agents today; not-allowed: agents may be able, but decision rights or law reserve it to a person; unknown: no evidence yet, so a human loop by default and an eval to find out"
+          },
+          "basis": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "minProperties": 1,
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "checked": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "eval": {
+                  "type": "string",
+                  "description": "A result file of our own eval, relative to the repository"
+                },
+                "decision_class": {
+                  "type": "string",
+                  "description": "For not-allowed: the decision class that reserves it"
+                }
+              }
+            }
+          },
+          "checked": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

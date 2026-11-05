@@ -1,0 +1,26 @@
+name: docs required
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+jobs:
+  docs-required:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Code changes come with docs (the README next to the code first), or say why not
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          code=$(echo "$changed" | node schema/check-docs-claims.mjs --code)
+          docs=$(echo "$changed" | node schema/check-docs-claims.mjs --scanned)
+          owed=$(echo "$changed" | node schema/check-docs-claims.mjs --readmes)
+          if [ -z "$code" ] || { [ -n "$docs" ] && [ -z "$owed" ]; }; then echo "ok"; exit 0; fi
+          if printf '%s' "$BODY" | grep -qE '^[[:space:]]*No docs change: *[^[:space:]<]'; then echo "ok: the PR says why no docs change"; exit 0; fi
+          if [ -n "$owed" ]; then echo "This PR changes code next to these READMEs but not the READMEs:"; echo "$owed"
+          else echo "This PR changes code but no docs:"; echo "$code"; fi
+          echo "Update the README next to the code if there is one (and any of site/content/docs/*.mdx, docs/master/*.md or a SKILL.md that describe it), or start a line of the PR body with No docs change: and the real reason, for example: No docs change: renamed a local variable."
+          exit 1

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-go-to-market.schema.json",
+  "title": "Validation: go-to-market",
+  "description": "The go-to-market sub-score (EE-026), at <venture>/purpose/validation/go-to-market.json: the path (build first, market first, cofounder first), the motion and the channels, with cited evidence that a channel reaches the segment at a known cost. The path sets the validation weights.",
+  "type": "object",
+  "required": [
+    "venture",
+    "path",
+    "channels",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "path": {
+      "enum": [
+        "build-first",
+        "market-first",
+        "cofounder-first"
+      ],
+      "description": "build-first: ship, then sell; market-first: market the core product before the flagship ships (waitlists, pre-orders); cofounder-first: form the team before the product"
+    },
+    "motion": {
+      "enum": [
+        "product-led",
+        "sales-led",
+        "marketing-led",
+        "community-led",
+        "partner-led"
+      ]
+    },
+    "channels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "description": "e.g. search, social, outbound, referral, marketplace, partner, events"
+          },
+          "cost_per_customer": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "conversion": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "validation-evidence.schema.json"
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p",
+        "by",
+        "scored"
+      ],
+      "description": "The Jev probability for this sub-score; the evidence grade weighs it in the validation score",
+      "properties": {
+        "p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "by": {
+          "enum": [
+            "jev",
+            "owner"
+          ]
+        },
+        "scored": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

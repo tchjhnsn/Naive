@@ -1,0 +1,63 @@
+name: test
+
+on:
+  # `branches` is the pull request base. A pull request into main still runs these jobs, and so does a push to main.
+  pull_request:
+    # A PR retargeted onto main needs a push, or a close and reopen, before its suite runs.
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema
+      - run: npm ci
+      - run: node test.mjs
+
+  site:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # One lockfile at the root: the site is an npm workspace, so install from the root.
+      - run: npm ci
+        working-directory: .
+      - run: npm run check:content
+      - run: node scripts/gate-pages-test.ts
+      - run: npm run build
+
+  console:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: console
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # One lockfile at the root: the console is an npm workspace, so install from the root.
+      - run: npm ci
+        working-directory: .
+      - run: npm run typecheck
+      - run: npm run build
+      - run: node lib/serve-test.ts

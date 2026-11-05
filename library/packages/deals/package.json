@@ -1,0 +1,27 @@
+{
+  "name": "deals",
+  "title": "Deals",
+  "kind": "data",
+  "purpose": "A fund's pipeline: one [id].json per company, from sourced to invested or passed (EE-082). An investment becomes a nested venture under portfolio/. Never complete.",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "fund-thesis"
+  ],
+  "gates": [
+    "coverage",
+    "freshness"
+  ],
+  "layer": "purpose",
+  "records": [
+    "deal"
+  ],
+  "schemas": [
+    "schema/deal.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "public-assets.schema.json",
+  "title": "Public assets",
+  "description": "The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by schema/check-assets.mjs. Version 0.x, unevaluated.",
+  "type": "object",
+  "required": ["version", "assets"],
+  "additionalProperties": false,
+  "$defs": {
+    "alt": {
+      "type": "object",
+      "required": ["text", "by"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "by": { "enum": ["agent", "person"], "description": "Who wrote it. An agent's alt text stays pending until a person confirms it in provenance" }
+      }
+    },
+    "facts": {
+      "type": "object",
+      "required": ["type", "bytes", "sha256"],
+      "additionalProperties": false,
+      "description": "Read from the bytes by code (schema/assets.mjs), never written by hand",
+      "properties": {
+        "type": { "type": "string" },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "sizes": { "type": "array", "items": { "type": "string" } },
+        "bytes": { "type": "integer" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "filled_at": { "type": "string" }
+      }
+    }
+  },
+  "properties": {
+    "version": { "type": "string" },
+    "remote_hosts": { "type": "array", "items": { "type": "string" }, "description": "Hosts an agent may fetch images from (exact, or *.example.com); the platform fetcher refuses any other" },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "source", "license"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "pattern": "^public/(?!.*\\.\\./).+" },
+          "source": { "type": "string", "description": "Where it came from: who made it, or a URL" },
+          "license": { "type": "string", "description": "An SPDX id (CC-BY-4.0, OFL-1.1), owned (made by or for the venture), licensed (bought), or the restriction (all-rights-reserved)" },
+          "credit": { "type": "string", "description": "Who to credit; a missing credit fails the check" },
+          "alt": { "$ref": "#/$defs/alt" },
+          "decorative": { "type": "boolean", "description": "An image that says nothing, so it needs no alt text" },
+          "origin_url": { "type": "string", "description": "The remote work this is a copy of" },
+          "design_system": { "type": "string", "description": "The design system (brand design_systems id) this came from" },
+          "facts": { "$ref": "#/$defs/facts" }
+        }
+      }
+    },
+    "remote": {
+      "type": "array",
+      "description": "Remote images the venture links to rather than ships",
+      "items": {
+        "type": "object",
+        "required": ["id", "url", "license"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The raw source holding the note: raw/sources/<id>/" },
+          "url": { "type": "string" },
+          "license": { "type": "string" },
+          "credit": { "type": "string" },
+          "alt": { "$ref": "#/$defs/alt" },
+          "fetched": { "$ref": "#/$defs/facts", "description": "Facts from a fetch by the platform; the original stays private in raw/sources/<id>/original.*" },
+          "copy": { "type": "string", "pattern": "^public/", "description": "Where a full copy was kept, only when the license allows it" }
+        }
+      }
+    }
+  }
+}

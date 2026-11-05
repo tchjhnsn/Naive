@@ -1,0 +1,119 @@
+{
+  "name": "validation",
+  "title": "Validation",
+  "kind": "core",
+  "purpose": "Whether the problem is real, whether this solves it, whether people pay and keep using it, with the evidence graded.",
+  "department": "strategy",
+  "required": [
+    "validation-solution",
+    "validation-pricing",
+    "validation-go-to-market"
+  ],
+  "optional": [
+    "validation-product-market-fit",
+    "evidence",
+    "validation-interview",
+    "validation-feedback"
+  ],
+  "refs": [
+    "validation-problem",
+    "icp"
+  ],
+  "planned": [
+    "customer feedback"
+  ],
+  "base": {
+    "discovery": 0.6,
+    "validation": 0.95,
+    "beachhead": 0.6,
+    "scale": 0.3,
+    "platform": 0.2
+  },
+  "when": [
+    {
+      "if": "ambition:hobby",
+      "at_most": 0.4
+    }
+  ],
+  "why": "The work of Discovery and Validation; it fades once retention holds",
+  "unlocks": [
+    "interview scheduling",
+    "surveys",
+    "research runs"
+  ],
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "gate_rules": [
+    { "id": "validation-low-confidence", "routes": ["validation/**", "foundation/problem", "people/team"], "actors": ["agent"], "when": { "confidence_below": "confidence" }, "then": "owner", "note": "A validation record an agent is not confident in goes to its function owner" }
+  ],
+  "schemas": [
+    "schema/validation-problem.schema.json",
+    "schema/validation-solution.schema.json",
+    "schema/validation-product-market-fit.schema.json",
+    "schema/validation-pricing.schema.json",
+    "schema/validation-go-to-market.schema.json",
+    "schema/validation-team.schema.json",
+    "schema/validation-operations-readiness.schema.json",
+    "schema/evidence.schema.json",
+    "schema/validation-interview.schema.json",
+    "schema/validation-feedback.schema.json"
+  ],
+  "templates": [
+    "purpose/kits/validation/templates/go-to-market.md",
+    "purpose/kits/validation/templates/operations-readiness.md",
+    "purpose/kits/validation/templates/pricing.md",
+    "purpose/kits/validation/templates/problem-interview.md",
+    "purpose/kits/validation/templates/problem.md",
+    "purpose/kits/validation/templates/product-market-fit.md",
+    "purpose/kits/validation/templates/solution.md",
+    "purpose/kits/validation/templates/team.md"
+  ],
+  "checks": [
+    "schema/check-validation.mjs",
+    "schema/assess-problem.mjs",
+    "schema/bdd.mjs",
+    "schema/lint-validation.mjs"
+  ],
+  "skill": {
+    "id": "problem-validation",
+    "path": "purpose/kits/validation/skills/problem-validation/SKILL.md"
+  },
+  "use_model": [],
+  "use_cache": [
+    {
+      "route": "purpose/validation/assess",
+      "level": "record",
+      "life": "hours",
+      "vary": [
+        "day"
+      ]
+    }
+  ],
+  "layer": "purpose",
+  "records": [
+    "validation-problem",
+    "validation-solution",
+    "validation-product-market-fit",
+    "validation-pricing",
+    "validation-go-to-market",
+    "validation-team",
+    "validation-operations-readiness",
+    "validation-weights",
+    "validation-interview",
+    "validation-feedback"
+  ],
+  "reads": [
+    "venture",
+    "product"
+  ],
+  "writes": [],
+  "template_dir": "purpose/kits/validation/templates",
+  "references": "purpose/kits/validation/references/references.json",
+  "gaps": [
+    "Jev does not score the probability yet; the example uses an owner value",
+    "Validation weights and floors are ours and unevaluated (version 0.x)",
+    "The single validation score (validation-score skill, purpose/validation/score) is held, not removed: EE-050 replaces it for the problem; the other sub-scores are not yet assessed the new way"
+  ],
+  "absorbed": "purpose/kits/validation/kit.json (EE-071). The held validation-score skill stays on the purpose layer."
+}

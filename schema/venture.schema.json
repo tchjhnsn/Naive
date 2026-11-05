@@ -1,0 +1,474 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "venture.schema.json",
+  "title": "Venture",
+  "description": "One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, the parties it keeps records for are accounts in accounts/ (optional, EE-021), and ventures can hold ventures. Cross-venture rules are checked by schema/check-ventures.mjs. Nouns follow docs/ontology.md (EE-014).",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "parent",
+    "phase",
+    "owner",
+    "status",
+    "layers"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "venture",
+        "product"
+      ],
+      "default": "venture",
+      "description": "venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054)."
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The venture type, an id from schema/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082)"
+    },
+    "layout": {
+      "enum": [
+        "flat",
+        "structured"
+      ],
+      "default": "flat",
+      "description": "Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top."
+    },
+    "functions": {
+      "type": "object",
+      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from operations/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "owner"
+        ],
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "A role or a person's name; no personal details"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "parent": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The id of the venture that holds this one; null at the top of a workspace."
+    },
+    "phase": {
+      "enum": [
+        "discovery",
+        "validation",
+        "beachhead",
+        "scale",
+        "platform"
+      ],
+      "description": "How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: purpose/frameworks/product-anatomy/phases.json."
+    },
+    "timeZone": {
+      "type": "string",
+      "description": "The venture's IANA time zone, when it differs from its workspace's (schema/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's"
+    },
+    "lifecycle_playbook": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The lifecycle playbook the venture follows (purpose/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default."
+    },
+    "ambition": {
+      "enum": [
+        "hobby",
+        "survival",
+        "lifestyle",
+        "managed-growth",
+        "aggressive-growth"
+      ],
+      "description": "Why the venture exists and how far through the phases it means to go. hobby follows the IRS sense: not engaged in for profit."
+    },
+    "form": {
+      "type": "object",
+      "description": "Whether and how the venture is formalized.",
+      "properties": {
+        "legal_form": {
+          "enum": [
+            "none",
+            "sole-prop",
+            "partnership",
+            "llc",
+            "s-corp",
+            "c-corp",
+            "benefit-corp",
+            "nonprofit"
+          ]
+        },
+        "funding": {
+          "enum": [
+            "bootstrapped",
+            "grant",
+            "angel",
+            "venture-capital",
+            "debt",
+            "mixed"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "industry": {
+      "type": "object",
+      "description": "What the venture produces, by its current flagship. Re-checked at each phase gate.",
+      "required": [
+        "system",
+        "code"
+      ],
+      "properties": {
+        "system": {
+          "enum": [
+            "naics"
+          ],
+          "description": "NAICS (North American Industry Classification System), production-oriented"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^\\d{2,6}$"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "core": {
+      "type": "object",
+      "description": "The core product (Product Anatomy): what anyone can claim from this venture. Required once the venture leaves discovery. The mission (promise) can be decided and land on its own; promised_to, must_not and competence follow as they are decided, and the foundation report names any still missing.",
+      "required": [
+        "promise"
+      ],
+      "properties": {
+        "promise": {
+          "type": "string"
+        },
+        "promised_to": {
+          "type": "string"
+        },
+        "must_not": {
+          "type": "string",
+          "description": "What it must never deliver under its name"
+        },
+        "competence": {
+          "type": "string",
+          "description": "The core competence that makes the promise deliverable (Prahalad and Hamel)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "departments": {
+      "type": "array",
+      "description": "The departments this venture imports, by id from operations/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048).",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "uniqueItems": true
+    },
+    "packages": {
+      "type": "array",
+      "description": "The Naive packages this venture uses, by name from library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by schema/structure.mjs.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "uniqueItems": true
+    },
+    "kits": {
+      "type": "array",
+      "description": "The Mentura kits this venture uses (EE-071). Each names the one package it extends, which the venture must use; the kit itself lives on the platform.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "extends"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "extends": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "brand": {
+      "type": "object",
+      "description": "The venture's verbal brand elements, owned by the brand pillar. Visual identity (tokens, logos) is a separate record.",
+      "properties": {
+        "tagline": {
+          "type": "string",
+          "description": "The brand's enduring short line, kept across campaigns (Burger King's 'Have it your way'). A campaign's slogan is not this; it belongs to the campaign."
+        }
+      },
+      "additionalProperties": false
+    },
+    "owner": {
+      "enum": [
+        "self",
+        "shared",
+        "other"
+      ]
+    },
+    "members": {
+      "type": "array",
+      "description": "The others who work in the venture, by role, people and agents alike: a string role (co-founder, partner, investor) or an object naming the kind. No personal details. Any member switches on governance, since agents need decision rights too.",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "required": [
+              "role",
+              "kind"
+            ],
+            "properties": {
+              "role": {
+                "type": "string",
+                "description": "A role id from the roles register (builder, architect) or a plain role"
+              },
+              "kind": {
+                "enum": [
+                  "person",
+                  "agent"
+                ]
+              },
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "For agents: the interfaces or runtimes it runs in (integration ids)"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "governed_by": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "paused",
+        "closed",
+        "archived"
+      ]
+    },
+    "opened": {
+      "type": "string",
+      "format": "date"
+    },
+    "closed": {
+      "type": "string",
+      "format": "date"
+    },
+    "profile": {
+      "type": "string",
+      "description": "Path to the venture profile (Markdown): narrative, pillars and changelog."
+    },
+    "layers": {
+      "type": "object",
+      "description": "Every venture has the same six layers (execution folded into operations, EE-038), at the depth it needs. A layer not used yet is false.",
+      "required": [
+        "purpose",
+        "knowledge",
+        "operations",
+        "evidence"
+      ],
+      "properties": {
+        "purpose": {
+          "$ref": "#/$defs/layer"
+        },
+        "knowledge": {
+          "$ref": "#/$defs/layer"
+        },
+        "operations": {
+          "$ref": "#/$defs/layer"
+        },
+        "evidence": {
+          "$ref": "#/$defs/layer"
+        },
+        "governance": {
+          "$ref": "#/$defs/layer"
+        },
+        "interface": {
+          "$ref": "#/$defs/layer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "links": {
+      "type": "array",
+      "description": "What crosses from this venture into another, one way.",
+      "items": {
+        "type": "object",
+        "required": [
+          "to",
+          "access",
+          "carries"
+        ],
+        "properties": {
+          "to": {
+            "type": "string"
+          },
+          "access": {
+            "enum": [
+              "reads",
+              "shares-with"
+            ]
+          },
+          "carries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "border": {
+            "enum": [
+              "closed",
+              "filtered",
+              "open"
+            ],
+            "default": "filtered"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "repos": {
+      "type": "array",
+      "description": "The venture's repositories (repo is short for repository): version-controlled stores, normally Git, holding code and the documents that ship with it (docs-as-code). The venture folder itself lives in the vault. A venture that builds software needs at least one; ventures in other industries may need none (EE-020)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9.-]+$"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "location": {
+            "type": "string",
+            "description": "Path relative to the workspace's code folder"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Product ids whose code it holds"
+          }
+        }
+      }
+    },
+    "regulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How much laws, regulators or formal standards constrain what the venture may do (EE-040; MAD's governance tier reads it as regulatory_exposure). The obligations themselves are founder decisions made with counsel.",
+      "properties": {
+        "exposure": {
+          "enum": [
+            "light",
+            "some",
+            "heavy"
+          ],
+          "description": "light: ordinary terms of service and licences. some: obligations such as personal data, accessibility rules or industry codes. heavy: health, finance, safety-critical or government work, where an auditor or regulator must be satisfied."
+        },
+        "regimes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The laws, regulators or standards that apply, such as GDPR, HIPAA or SOC 2"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "layer": {
+      "oneOf": [
+        {
+          "const": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "location"
+          ],
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "Folder path, relative to the folder that holds venture.json"
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "not": {
+              "const": "discovery"
+            }
+          }
+        },
+        "required": [
+          "phase"
+        ]
+      },
+      "then": {
+        "required": [
+          "core"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

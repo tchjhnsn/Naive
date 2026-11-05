@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "money-summary.schema.json",
+  "title": "Money summary",
+  "description": "The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway as of the last sync from the system of record (Rho), the one money record that is versioned and the only one an agent or a trace sees. source says whether it came from Rho's sandbox, a saved fixture, or the founder's live account.",
+  "type": "object",
+  "required": [
+    "source",
+    "synced_at",
+    "as_of",
+    "cash"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "rho-sandbox, rho-live, or a fixture's name"
+    },
+    "business": {
+      "type": "string"
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "as_of": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window": {
+      "type": "object",
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "to": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "cash": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Minor units (cents for USD), as the source returns them"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "monthly_inflow": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Minor units (cents for USD), as the source returns them"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "monthly_outflow": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Minor units (cents for USD), as the source returns them"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "monthly_net": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Minor units (cents for USD), as the source returns them"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "runway_months": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "accounts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "transactions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

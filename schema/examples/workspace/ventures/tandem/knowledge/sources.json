@@ -1,0 +1,8 @@
+{
+  "sources": [],
+  "records": {},
+  "rules": [
+    { "record": "product", "attribute": "*", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "venture", "owner": "founder", "note": "Product cards live in the venture folder; the founder owns them" }
+  ],
+  "note": "Example source-of-truth matrix (EE-042). A venture that keeps a record type elsewhere adds that source to `sources` and points a rule at it."
+}

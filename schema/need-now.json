@@ -1,0 +1,954 @@
+{
+  "version": "0.1.0",
+  "note": "Need-now priors (EE-028): for each venture record type, the probability a venture needs it in each phase, raised or lowered by facts about the venture. Version 0.x: ours and unevaluated; Jev re-scores them per venture once the scorer runs. A record suggested at 0.5 or more in the current phase; mentioned as coming soon when the next phase reaches 0.5; otherwise held back unless the builder asks.",
+  "suggest": 0.5,
+  "records": {
+    "venture-profile": {
+      "base": {
+        "discovery": 0.9,
+        "validation": 0.9,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "A few sentences on what the venture is; cheap and always useful"
+    },
+    "product": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.95,
+        "beachhead": 0.95,
+        "scale": 0.95,
+        "platform": 0.95
+      },
+      "why": "A product card once there is something to offer; in Discovery only if a product idea exists"
+    },
+    "account": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "offering:service",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Named customers, clients or members; needed once specific accounts matter"
+    },
+    "telos": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.2
+        }
+      ],
+      "why": "Start with the end once past Discovery (check-telos warns from then)"
+    },
+    "validation-problem": {
+      "base": {
+        "discovery": 0.9,
+        "validation": 0.9,
+        "beachhead": 0.5,
+        "scale": 0.2,
+        "platform": 0.1
+      },
+      "why": "The first thing to show with evidence"
+    },
+    "validation-solution": {
+      "base": {
+        "discovery": 0.4,
+        "validation": 0.9,
+        "beachhead": 0.5,
+        "scale": 0.2,
+        "platform": 0.1
+      },
+      "why": "Once a solution is being tested"
+    },
+    "validation-product-market-fit": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.9,
+        "beachhead": 0.6,
+        "scale": 0.3,
+        "platform": 0.2
+      },
+      "when": [
+        {
+          "if": "path:cofounder-first",
+          "at_most": 0.3,
+          "phase": "validation"
+        }
+      ],
+      "why": "The Validation gate itself"
+    },
+    "validation-pricing": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.8,
+        "beachhead": 0.8,
+        "scale": 0.5,
+        "platform": 0.3
+      },
+      "when": [
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.2
+        }
+      ],
+      "why": "Once someone is asked to pay"
+    },
+    "validation-go-to-market": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.6,
+        "platform": 0.4
+      },
+      "when": [
+        {
+          "if": "path:market-first",
+          "at_least": 0.9
+        }
+      ],
+      "why": "Choose the path early; channels matter from Validation"
+    },
+    "validation-team": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.8,
+        "scale": 0.6,
+        "platform": 0.4
+      },
+      "when": [
+        {
+          "if": "path:cofounder-first",
+          "at_least": 0.9
+        }
+      ],
+      "why": "Skills needed versus held; first for a cofounder-first venture"
+    },
+    "validation-operations-readiness": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.4,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "people>=3",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Matters once others work in the venture"
+    },
+    "anatomy-answers": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "products>=2",
+          "at_least": 0.7
+        }
+      ],
+      "why": "Product roles only matter with more than one product"
+    },
+    "handoff": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Work handed to agents or people"
+    },
+    "evidence": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Results of checks on handed-off work"
+    },
+    "decision-rights": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.95,
+        "platform": 0.95
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        },
+        {
+          "if": "people>=2",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Who may decide what, once anyone but the owner acts"
+    },
+    "pillar": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.9
+      },
+      "why": "Product, brand and business pillar notes as the venture grows"
+    },
+    "ownership": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.3,
+        "scale": 0.5,
+        "platform": 0.6
+      },
+      "when": [
+        {
+          "if": "people>=2",
+          "at_least": 0.9
+        },
+        {
+          "if": "funding:venture-capital",
+          "at_least": 1
+        },
+        {
+          "if": "funding:angel",
+          "at_least": 1
+        },
+        {
+          "if": "legal_form:llc",
+          "at_least": 0.6
+        },
+        {
+          "if": "legal_form:c-corp",
+          "at_least": 0.8
+        }
+      ],
+      "why": "The cap table, once anyone else owns or will own a share"
+    },
+    "founder-agreement": {
+      "base": {
+        "discovery": 0,
+        "validation": 0,
+        "beachhead": 0,
+        "scale": 0,
+        "platform": 0
+      },
+      "when": [
+        {
+          "if": "founders>=2",
+          "at_least": 1
+        },
+        {
+          "if": "team:cofounders",
+          "at_least": 1
+        },
+        {
+          "if": "team:cofounders",
+          "phase": "discovery",
+          "at_most": 0.6
+        },
+        {
+          "if": "founders>=2",
+          "phase": "discovery",
+          "at_most": 0.6
+        },
+        {
+          "if": "team:looking",
+          "at_least": 0.5
+        }
+      ],
+      "why": "Required once two or more founders share ownership. In Discovery a founding team works on it beside validation, at a lower priority than proving the problem, and a founder looking for cofounders gets the kit early (EE-060)"
+    },
+    "board": {
+      "base": {
+        "discovery": 0,
+        "validation": 0,
+        "beachhead": 0.1,
+        "scale": 0.4,
+        "platform": 0.6
+      },
+      "when": [
+        {
+          "if": "funding:venture-capital",
+          "at_least": 1
+        },
+        {
+          "if": "legal_form:c-corp",
+          "at_least": 0.4
+        }
+      ],
+      "why": "A formal board comes with a priced round; an advisory board is optional"
+    },
+    "exit": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.05,
+        "beachhead": 0.2,
+        "scale": 0.5,
+        "platform": 0.6
+      },
+      "when": [
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.7
+        },
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.05
+        }
+      ],
+      "why": "Exit paths matter once investors expect one, or the owners plan one"
+    },
+    "publication-policy": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.95,
+        "platform": 0.95
+      },
+      "when": [
+        {
+          "if": "publishes",
+          "at_least": 1
+        }
+      ],
+      "why": "Required before anything is published (EE-025)"
+    },
+    "internal-terms": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "publishes",
+          "at_least": 0.9
+        }
+      ],
+      "why": "The venture's own internal terms (unannounced codenames, jargon) are needed before anything is published, so the leak check knows them"
+    },
+    "team-plan": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.6
+        },
+        {
+          "if": "people>=2",
+          "at_least": 0.7
+        },
+        {
+          "if": "path:cofounder-first",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Who the venture needs and where a human stays in the loop, once agents or others work in it"
+    },
+    "provenance": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.6,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Written by the interfaces on every write, so it costs nothing; run mentura baseline once to adopt records written before it (EE-031)"
+    },
+    "naive-config": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.4,
+        "platform": 0.4
+      },
+      "why": "Every default holds without it; write one only to change a default: a route that fails closed, a check that only warns, a pinned package"
+    },
+    "knowledge-sources": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.3,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "Only once some records live outside the venture folder (a team repository, a CRM, a wiki); until then the folder is the whole knowledge layer"
+    },
+    "where-used": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.15,
+        "beachhead": 0.4,
+        "scale": 0.7,
+        "platform": 0.8
+      },
+      "why": "Once one fact (a price, a product name, a plan's limits) is repeated in several places, such as a site, newsletters and a payment provider; before launch there is rarely more than one copy"
+    },
+    "freshness-log": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.7,
+        "platform": 0.8
+      },
+      "why": "Written by mentura revalidate, verify and phase; costs nothing until a fact changes outside the venture, a record is checked without changing it, or the venture changes phase or pivots"
+    },
+    "department": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 1,
+        "platform": 1
+      },
+      "when": [],
+      "why": "Departments are imported one at a time; each has its own priors in operations/departments.json, listed below"
+    },
+    "icp": {
+      "base": {
+        "discovery": 0.8,
+        "validation": 0.9,
+        "beachhead": 0.9,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "Who you serve is a foundation statement: say it early and keep it in front of you (EE-051)"
+    },
+    "goal": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.85,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Goals are the canonical end and measures every framework writes to; state them early"
+    },
+    "exit-criteria": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.85,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "The lifecycle gate reads them: say what must be true to leave this phase"
+    },
+    "requirement": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Requirements derive from goals once there is something to build against"
+    },
+    "constraints": {
+      "base": {
+        "discovery": 0.4,
+        "validation": 0.6,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "What the venture must not do holds whatever framework it thinks in"
+    },
+    "venture-core": {
+      "base": {
+        "discovery": 0,
+        "validation": 0,
+        "beachhead": 0,
+        "scale": 0,
+        "platform": 0
+      },
+      "why": "The mission, core competence and tagline are foundation statements; say them in your own words"
+    },
+    "alignment": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "How your products and agents must behave is a foundation statement; say it before you delegate to agents (EE-053)"
+    },
+    "anatomy-input": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "products>=2",
+          "at_least": 0.7
+        }
+      ],
+      "why": "Only when one product has parts that need their own roles, as Naive and Mentura do; follows the anatomy answers prior"
+    },
+    "decision-impact": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "Written when a decided version is merged; worth reading once records in several functions depend on one another"
+    },
+    "decision-record": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "The decisions still owed, with what each depends on; useful once a venture has more than a handful of open questions (EE-054)"
+    },
+    "idea-dump": {
+      "base": {
+        "discovery": 0.9,
+        "validation": 0.6,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Everything the founder already thinks about the venture, before any framework asks; the cheapest way to start Discovery (EE-059)"
+    },
+    "idea-map": {
+      "base": {
+        "discovery": 0.8,
+        "validation": 0.6,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Shows where the founder's ideas cluster and what the dump never mentions, on one canvas (EE-059)"
+    },
+    "idea-graph": {
+      "base": {
+        "discovery": 0.8,
+        "validation": 0.6,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Which ideas to develop next, which must move in order and which can move on their own (EE-060)"
+    },
+    "site-presence": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.6,
+        "beachhead": 0.8,
+        "scale": 0.7,
+        "platform": 0.6
+      },
+      "why": "Whether the public site says what the audiences the venture courts now need to learn, once it has a site (EE-062)"
+    },
+    "marketing-sitemap": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.7,
+        "platform": 0.6
+      },
+      "why": "Which information the public site shows where, for whom and why, before engineering builds it (EE-064)"
+    },
+    "marketing-content": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.8,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "Public variants of the venture's records, gated before they are published (EE-064)"
+    },
+    "venture-package": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.8,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "What the founder walks away with; written at the end of each pipeline run, cheap to refresh"
+    },
+    "release": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.7,
+        "platform": 0.7
+      },
+      "why": "A release to hand someone (an investor, a partner, a hire): the confirmed records frozen in, with named live holes (C-11, I-17). Built with node interface/orchestration/build-release.mjs when someone outside needs it"
+    },
+    "customer": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named customer exists. Never a completion gate (EE-070)."
+    },
+    "investor": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named investor exists. Never a completion gate (EE-070)."
+    },
+    "money-account": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Master data once a named account of money exists. Never a completion gate (EE-070)."
+    },
+    "data-stream": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.2,
+        "beachhead": 0.2,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "An activity stream beside a master record. Held until that record exists (EE-070)."
+    },
+    "raw-source": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "A founder-supplied source. Held until the founder brings one in (EE-070)."
+    },
+    "raw-text": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "The text of a raw source, beside source.json (EE-070)."
+    },
+    "judgment": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.05,
+        "beachhead": 0.05,
+        "scale": 0.05,
+        "platform": 0.05
+      },
+      "why": "Never written by hand: a judgment is what a package's model step answers when mentura steps run asks it, so there is nothing to suggest"
+    },
+    "people": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.7,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Who is in the venture and which functions each owns; create-venture writes it"
+    },
+    "founder": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.6,
+        "beachhead": 0.7,
+        "scale": 0.7,
+        "platform": 0.7
+      },
+      "when": [
+        {
+          "if": "team:cofounders",
+          "at_least": 0.8
+        }
+      ],
+      "why": "One file per founder, written by create-venture; links to the founder agreement"
+    },
+    "fund-thesis": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "at_least": 0.9
+        }
+      ],
+      "why": "A fund's foundation: what it invests in and why it wins"
+    },
+    "fund-terms": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "at_least": 0.9
+        }
+      ],
+      "why": "What the fund raises under; LPs ask for it first"
+    },
+    "deal": {
+      "base": {
+        "discovery": 0.0,
+        "validation": 0.0,
+        "beachhead": 0.0,
+        "scale": 0.0,
+        "platform": 0.0
+      },
+      "when": [
+        {
+          "if": "type:vc-fund",
+          "phase": "validation",
+          "at_least": 0.7
+        },
+        {
+          "if": "type:vc-fund",
+          "phase": "beachhead",
+          "at_least": 0.9
+        },
+        {
+          "if": "type:vc-fund",
+          "phase": "scale",
+          "at_least": 0.9
+        }
+      ],
+      "why": "A fund's pipeline, once it is investing"
+    },
+    "money-summary": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "funding:venture-capital",
+          "at_least": 0.6
+        }
+      ],
+      "why": "Written by the money source's sync; cash and runway once money moves"
+    },
+    "marketing-brand": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "One brand every agent and interface reads (colors, licensed typefaces, voice rules, marks), once the venture shows itself in public"
+    },
+    "marketing-design-system": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "One brand every agent and interface reads (colors, licensed typefaces, voice rules, marks), once the venture shows itself in public"
+    },
+    "public-assets": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "The source, license and credit of every file the venture ships as it is, before anything with rights attached is published"
+    },
+    "glossary": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.5,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "A package's own terms, once two packages start using one word in different senses"
+    },
+    "delegation": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "agents>=1",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Who has handed which classes to whom, once an agent or another person decides"
+    },
+    "artifact": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "A view built from records for a reader; needed once something goes out to people, which grows with each phase"
+    },
+    "activity": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Derived from transcripts by naive activity --write; worth having once the founder wants to see time spent and the streak, never required"
+    },
+    "activity-summary": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.2,
+        "platform": 0.2
+      },
+      "why": "Days since last touch and the streak feed the docket; derived, never required"
+    },
+    "publications": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "What is live and who approved it; needed from the first publication on"
+    },
+    "validation-interview": {
+      "base": {
+        "discovery": 0.7,
+        "validation": 0.9,
+        "beachhead": 0.4,
+        "scale": 0.2,
+        "platform": 0.1
+      },
+      "why": "Problem interviews are the evidence Discovery and Validation stand on; they fade once retention holds"
+    },
+    "validation-feedback": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.6,
+        "beachhead": 0.6,
+        "scale": 0.4,
+        "platform": 0.3
+      },
+      "why": "Testers' checkpoint feedback, once someone is using what was built"
+    },
+    "bug": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.5,
+        "beachhead": 0.8,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Bugs matter once people use the product; stable means no open P0 or P1"
+    },
+    "telemetry-event": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Opt-in usage events; only for ventures in the plugin beta or on Mentura, and only when someone turns them on"
+    }
+  }
+}

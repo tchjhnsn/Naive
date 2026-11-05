@@ -1,0 +1,127 @@
+[
+  {
+    "id": "filesystem",
+    "name": "File system and git",
+    "layer": "knowledge",
+    "role": "the default source: a venture's own folder, or any folder or git repository on the machine",
+    "interfaces": [
+      "files",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "Every venture starts with its records in its own folder (EE-037)",
+    "connector": {
+      "module": "knowledge/connectors/filesystem.mjs",
+      "writes": [
+        "direct",
+        "none"
+      ],
+      "options": [
+        "root"
+      ],
+      "eval": "node knowledge/connectors/eval.mjs"
+    }
+  },
+  {
+    "id": "obsidian",
+    "name": "Obsidian",
+    "layer": "knowledge",
+    "role": "the personal and company vaults; a vault is a folder, so the filesystem connector reaches it",
+    "interfaces": [
+      "files",
+      "app"
+    ],
+    "status": "in-use",
+    "reason": "Every vault is an Obsidian vault"
+  },
+  {
+    "id": "github",
+    "name": "GitHub",
+    "layer": "knowledge",
+    "role": "records and docs as code in a repository: read from a branch, written by draft pull request",
+    "interfaces": [
+      "files",
+      "mcp",
+      "api",
+      "cli"
+    ],
+    "status": "in-use",
+    "reason": "Docs as code (EE-005); the second connector (EE-037)",
+    "credentials": [
+      "GITHUB_TOKEN"
+    ],
+    "connector": {
+      "module": "platform/connectors/github.mjs",
+      "writes": [
+        "pull-request",
+        "none"
+      ],
+      "options": [
+        "repo",
+        "ref",
+        "root",
+        "token",
+        "api",
+        "search"
+      ],
+      "eval": "node platform/connectors/eval.mjs (live: MENTURA_EVAL_GITHUB_REPO=owner/name)"
+    }
+  },
+  {
+    "id": "notion",
+    "name": "Notion",
+    "layer": "knowledge",
+    "role": "team-facing knowledge base",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Connector exists"
+  },
+  {
+    "id": "claude-docs",
+    "name": "Claude Docs",
+    "layer": "knowledge",
+    "role": "collaborative documents with comments",
+    "interfaces": [
+      "mcp"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "google-drive",
+    "name": "Google Drive",
+    "layer": "knowledge",
+    "role": "documents shared with outside parties",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate"
+  },
+  {
+    "id": "claude-artifacts",
+    "name": "Claude artifacts",
+    "layer": "knowledge",
+    "role": "published pages and dashboards over the records",
+    "interfaces": [
+      "app"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "jev",
+    "name": "Jev (TypeSafe AI)",
+    "layer": "knowledge",
+    "role": "routes a venture to the connectors that fit its use cases: given what the venture keeps and where, it ranks the registry's connectors and integrations, and `mentura connect` asks it first",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): Mentura uses Jev to route users to the proper or best connectors",
+    "credentials": [
+      "TYPESAFE_API_KEY"
+    ]
+  }
+]

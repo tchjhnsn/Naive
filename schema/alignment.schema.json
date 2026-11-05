@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "alignment.schema.json",
+  "title": "Alignment",
+  "description": "How the venture's products and agents must behave (EE-053): a list of principles, each with its source and the check that holds it, at <venture>/purpose/alignment.json. A foundation statement, gated: an agent's change is a draft the founder accepts.",
+  "type": "object",
+  "required": [
+    "venture",
+    "principles"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "principles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "source"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "statement": {
+            "type": "string",
+            "description": "What must always or never happen, in the founder's words"
+          },
+          "applies_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Product ids, or agents or team, that the principle binds"
+          },
+          "source": {
+            "type": "string",
+            "description": "Who or what it comes from: the founder's words with a date, a decision id or a reference"
+          },
+          "check": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The test or script that holds it, or null when nothing checks it yet"
+          }
+        }
+      }
+    }
+  }
+}

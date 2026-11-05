@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "founder-private.schema.json",
+  "title": "Founder private record",
+  "description": "Anything under founders/<handle>/_private/: the real name and contact (person.json), the founder puzzle, the founder's secrets. Always private: true, so it never reaches a model or a release, and shared into a venture or with a person only by an act of the founder's own.",
+  "type": "object",
+  "required": ["private"],
+  "properties": {
+    "private": { "const": true },
+    "id": { "type": "string", "description": "The founder's person id, for person.json" },
+    "name": { "type": "string" },
+    "note": { "type": "string" }
+  }
+}

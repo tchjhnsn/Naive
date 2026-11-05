@@ -1,0 +1,501 @@
+{
+  "created": "2026-10-27T06:01:18.707Z",
+  "model": "jev-1.13.0",
+  "scoring": "v2",
+  "repeat": 3,
+  "domain": "software",
+  "unresearched": false,
+  "catalog_version": "a379a183f51b",
+  "system_file": "skills/methodology-selection/fixtures/valid/register/_systems/example-system.md",
+  "entity": "example-entity",
+  "system": "Example due-date calculator",
+  "inputs": {
+    "system": "Example due-date calculator",
+    "description": "Computes due dates for a fictional lending service. Each clock is defined by a rule: an anchor event, a direction (before or after), an amount and unit (business days, days, hours, months), a boundary phrasing, a counting rule and a versioned holiday calendar. Examples: a reminder at least 3 business days before an item is due; an escalation within 10 business days of a missed return. The calculator computes and reminds; it never takes an act. Every computed date must carry the rule and calendar version that produced it. Seven acceptance cases are hand-worked (month-end, leap day, daylight saving, retroactive holiday designation). The forbidden states F1 to F7 must never occur.",
+    "decision_question_answers": "M1 Source of truth. Which artifact should win when artifacts disagree, what form can it take (prose, structured data, executable tests, a formal contract or model, or running code), and who or what changes it?\n  Answer: split: clock records for what each deadline is; acceptance cases for how counting works (assumed)\nM2 Knowability. Can correct behaviour be stated before building, or only discovered by building?\n  Answer: knowable from the rules; exceptions flagged undetermined (tested)\nM3 Requirements stability. How often will intent change, and is the change driven by learning or by outside rules?\n  Answer: stable rules; change comes from outside (new holiday calendars, new locations) (assumed)\nM4 Cost of being wrong and reversibility. What happens if it is built wrong, and how hard is it to undo?\n  Answer: high; a wrong date can trigger a wrongful penalty; reversible in the record, not in the world (tested)\nM5 Verifiability. How will we know it is correct: test, proof, inspection, measurement, use?\n  Answer: high; every date can be hand-worked and compared (tested)\nM6 Accountability. Must intent be provable later to a regulator, auditor, client or public?\n  Answer: high; a reviewer must see the rule and calendar version behind any date (tested)\nM7 Builder. Who or what does the building, and what inputs can that builder reliably use?\n  Answer: AI agents, gated by tests (assumed)\nM8 Lifespan. How long will this system live and be maintained?\n  Answer: long; core of the service (assumed)\nM9 Neighbours. What does it meet, which methodologies do those neighbours use, and what boundary contract is needed?\n  Answer: rules, calendar and notification subsystems; boundary contract is the calculator's output record (tested)\nM10 Switch conditions. What would make us change methodology?\n  Answer: a clock that cannot be expressed as data drops to spec-anchored prose plus a flagged human decision (assumed)\nM11 Evidence. Have we used this methodology on a similar system, and what happened?\n  Answer: one case: hand-worked checks against real data caught a wrong rule (tested)"
+  },
+  "ranked": [
+    {
+      "id": "v-model",
+      "name": "V-model",
+      "candidate": true,
+      "whole": 0.72,
+      "part": 0.87,
+      "score": 0.72,
+      "fits_met": [
+        {
+          "c": "High-stakes systems where failure is costly or unsafe (high cost of being wrong, strong accountability to a regulator or auditor)",
+          "p": 0.95
+        },
+        {
+          "c": "Requirements are stable enough to write a test specification for each level before building (unit, integration, system, acceptance)",
+          "p": 0.84
+        },
+        {
+          "c": "A verification phase can be planned in parallel with each design stage, so every specification has a test that checks it",
+          "p": 0.76
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.73,
+        0.73,
+        0.72
+      ],
+      "spread": 0.01,
+      "band": 1
+    },
+    {
+      "id": "spec-anchored",
+      "name": "Spec-anchored (SAD)",
+      "candidate": false,
+      "whole": 0.5,
+      "part": 0.82,
+      "score": 0.6,
+      "fits_met": [
+        {
+          "c": "Behaviour must stay coherent across many sessions and readers",
+          "p": 0.92
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.61,
+        0.6,
+        0.6
+      ],
+      "spread": 0.01,
+      "band": 2
+    },
+    {
+      "id": "design-by-contract",
+      "name": "Design by contract",
+      "candidate": false,
+      "whole": 0.56,
+      "part": 0.87,
+      "score": 0.57,
+      "fits_met": [
+        {
+          "c": "Core invariants that must never break",
+          "p": 0.95
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.57,
+        0.56,
+        0.56
+      ],
+      "spread": 0.01,
+      "band": 2
+    },
+    {
+      "id": "bdd",
+      "name": "Behaviour-driven development",
+      "candidate": false,
+      "whole": 0.5,
+      "part": 0.87,
+      "score": 0.52,
+      "fits_met": [
+        {
+          "c": "Locking a handful of primary use cases with a stakeholder",
+          "p": 0.61
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.52,
+        0.52,
+        0.52
+      ],
+      "spread": 0,
+      "band": 2
+    },
+    {
+      "id": "extreme-programming",
+      "name": "Extreme Programming (XP)",
+      "candidate": true,
+      "whole": 0.34,
+      "part": 0.74,
+      "score": 0.37,
+      "fits_met": [
+        {
+          "c": "High reliability is needed and behaviour can be stated as automated tests (high verifiability)",
+          "p": 0.95
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.39,
+        0.37,
+        0.37
+      ],
+      "spread": 0.02,
+      "band": 3
+    },
+    {
+      "id": "small-change",
+      "name": "Small change",
+      "candidate": false,
+      "whole": 0.41,
+      "part": 0.86,
+      "score": 0.37,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.36,
+        0.38,
+        0.38
+      ],
+      "spread": 0.02,
+      "band": 3
+    },
+    {
+      "id": "contract-first",
+      "name": "Contract-first / API-first",
+      "candidate": false,
+      "whole": 0.27,
+      "part": 0.82,
+      "score": 0.36,
+      "fits_met": [
+        {
+          "c": "Any boundary between two systems or two agents",
+          "p": 0.64
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.36,
+        0.36,
+        0.36
+      ],
+      "spread": 0,
+      "band": 3
+    },
+    {
+      "id": "waterfall",
+      "name": "Waterfall",
+      "candidate": true,
+      "whole": 0.29,
+      "part": 0.67,
+      "score": 0.33,
+      "fits_met": [
+        {
+          "c": "Requirements are fixed and well understood before building starts (high knowability, low expected change)",
+          "p": 0.71
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.34,
+        0.33,
+        0.33
+      ],
+      "spread": 0.01,
+      "band": 3
+    },
+    {
+      "id": "model-driven",
+      "name": "Model-driven development",
+      "candidate": false,
+      "whole": 0.37,
+      "part": 0.72,
+      "score": 0.29,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.29,
+        0.28,
+        0.28
+      ],
+      "spread": 0.01,
+      "band": 3
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "candidate": true,
+      "whole": 0.2,
+      "part": 0.66,
+      "score": 0.28,
+      "fits_met": [
+        {
+          "c": "Frequent, small, reversible releases are wanted and supported by automated build, test and deploy (CI/CD)",
+          "p": 0.6
+        },
+        {
+          "c": "Production behaviour can be monitored so that failures and slowdowns show up quickly",
+          "p": 0.63
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.29,
+        0.29,
+        0.28
+      ],
+      "spread": 0.01,
+      "band": 3
+    },
+    {
+      "id": "consumer-driven-contracts",
+      "name": "Consumer-driven contracts",
+      "candidate": false,
+      "whole": 0.16,
+      "part": 0.54,
+      "score": 0.24,
+      "fits_met": [
+        {
+          "c": "Several internal consumers whose needs diverge",
+          "p": 0.53
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.24,
+        0.23,
+        0.24
+      ],
+      "spread": 0.01,
+      "band": 4
+    },
+    {
+      "id": "scrum",
+      "name": "Scrum",
+      "candidate": true,
+      "whole": 0.22,
+      "part": 0.48,
+      "score": 0.22,
+      "fits_met": [
+        {
+          "c": "Work can be cut into fixed-length sprints that each produce something a user can see or use",
+          "p": 0.62
+        },
+        {
+          "c": "The team can fill the roles: a product owner who decides priority, a Scrum Master who guards the process, and developers who build",
+          "p": 0.59
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.22,
+        0.22,
+        0.22
+      ],
+      "spread": 0,
+      "band": 4
+    },
+    {
+      "id": "agile-waterfall-hybrid",
+      "name": "Agile-waterfall hybrid",
+      "candidate": true,
+      "whole": 0.23,
+      "part": 0.43,
+      "score": 0.21,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.21,
+        0.21,
+        0.21
+      ],
+      "spread": 0,
+      "band": 4
+    },
+    {
+      "id": "spiral",
+      "name": "Spiral model",
+      "candidate": true,
+      "whole": 0.17,
+      "part": 0.33,
+      "score": 0.2,
+      "fits_met": [
+        {
+          "c": "Large, complex or high-risk systems where the main uncertainties (technical, cost, schedule) can be named and reduced step by step",
+          "p": 0.77
+        },
+        {
+          "c": "Each cycle can end with a review that decides whether to continue, change course or stop (high cost of being wrong, spending staged)",
+          "p": 0.58
+        },
+        {
+          "c": "Prototypes or experiments can retire a risk before the next commitment is made",
+          "p": 0.67
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.2,
+        0.2,
+        0.19
+      ],
+      "spread": 0.01,
+      "band": 4
+    },
+    {
+      "id": "kanban",
+      "name": "Kanban",
+      "candidate": true,
+      "whole": 0.15,
+      "part": 0.44,
+      "score": 0.16,
+      "fits_met": [],
+      "unfit_met": [],
+      "runs": [
+        0.16,
+        0.15,
+        0.16
+      ],
+      "spread": 0.01,
+      "band": 4
+    },
+    {
+      "id": "spike-prototype",
+      "name": "Spike / prototype",
+      "candidate": false,
+      "whole": 0.09,
+      "part": 0.32,
+      "score": 0.13,
+      "fits_met": [
+        {
+          "c": "Killing bad ideas cheaply",
+          "p": 0.63
+        }
+      ],
+      "unfit_met": [],
+      "runs": [
+        0.13,
+        0.13,
+        0.13
+      ],
+      "spread": 0,
+      "band": 5
+    },
+    {
+      "id": "user-centred-design",
+      "name": "User-centred design (iterative, evaluation-led)",
+      "candidate": true,
+      "whole": 0.11,
+      "part": 0.32,
+      "score": 0.12,
+      "fits_met": [
+        {
+          "c": "Experience documents exist (users, jobs, journeys, objects, states) to design against",
+          "p": 0.61
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "No human uses the system directly (a library, a protocol, a batch job)",
+          "p": 0.57
+        }
+      ],
+      "runs": [
+        0.13,
+        0.11,
+        0.11
+      ],
+      "spread": 0.02,
+      "band": 5
+    },
+    {
+      "id": "lean-software-development",
+      "name": "Lean software development",
+      "candidate": true,
+      "whole": 0.18,
+      "part": 0.4,
+      "score": 0.07,
+      "fits_met": [],
+      "unfit_met": [
+        {
+          "c": "A fixed, well-understood specification must be delivered exactly, so there is little waste to remove",
+          "p": 0.77
+        }
+      ],
+      "runs": [
+        0.08,
+        0.08,
+        0.07
+      ],
+      "spread": 0.01,
+      "band": 5
+    },
+    {
+      "id": "spec-first",
+      "name": "Spec-first",
+      "candidate": false,
+      "whole": 0.19,
+      "part": 0.47,
+      "score": 0.06,
+      "fits_met": [
+        {
+          "c": "A slice with known acceptance criteria, done in one agent session",
+          "p": 0.52
+        }
+      ],
+      "unfit_met": [
+        {
+          "c": "Intent that must stay true for months",
+          "p": 0.88
+        }
+      ],
+      "runs": [
+        0.06,
+        0.06,
+        0.06
+      ],
+      "spread": 0,
+      "band": 5
+    },
+    {
+      "id": "rapid-application-development",
+      "name": "Rapid application development (RAD)",
+      "candidate": true,
+      "whole": 0.1,
+      "part": 0.27,
+      "score": 0.02,
+      "fits_met": [],
+      "unfit_met": [
+        {
+          "c": "The system is large, safety-critical or needs heavy documentation and formal verification (high cost of being wrong)",
+          "p": 0.88
+        },
+        {
+          "c": "A prototype could be mistaken for the finished system and carry weak structure into a long-lived product (long lifespan)",
+          "p": 0.62
+        }
+      ],
+      "runs": [
+        0.03,
+        0.02,
+        0.02
+      ],
+      "spread": 0.01,
+      "band": 6
+    }
+  ],
+  "research_triggers": [
+    {
+      "question": "M1",
+      "answer": "split: clock records for what each deadline is; acceptance cases for how counting works"
+    },
+    {
+      "question": "M3",
+      "answer": "stable rules; change comes from outside (new holiday calendars, new locations)"
+    },
+    {
+      "question": "M7",
+      "answer": "AI agents, gated by tests"
+    },
+    {
+      "question": "M8",
+      "answer": "long; core of the service"
+    },
+    {
+      "question": "M10",
+      "answer": "a clock that cannot be expressed as data drops to spec-anchored prose plus a flagged human decision"
+    }
+  ],
+  "usd": 0.0034,
+  "note": "A recommendation only. The founder ratifies (I2)."
+}

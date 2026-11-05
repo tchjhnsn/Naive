@@ -1,0 +1,15 @@
+{
+  "id": "people-lead",
+  "name": "People lead",
+  "function": "people",
+  "description": "Owns the team plan, roles and recruiting.",
+  "grantable_classes": [
+    "defer-or-route"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [
+    "people/lint"
+  ],
+  "verified_by": "founder",
+  "skill": "library/packages/people/skill/SKILL.md"
+}

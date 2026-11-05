@@ -1,0 +1,27 @@
+{
+  "id": "flagship",
+  "parent": "core-product",
+  "question": "Which product is the flagship now: the one that best delivers the core promise?",
+  "decides": {
+    "record": "product",
+    "path": "products/"
+  },
+  "unlocks": [
+    {
+      "activity": "Plan how to validate the flagship",
+      "routes": [
+        "purpose/validation/solution"
+      ]
+    }
+  ],
+  "layer": "purpose",
+  "boundary": "fail-closed",
+  "needed_in": "discovery",
+  "status": "open",
+  "provenance": {
+    "drafted_by": {
+      "kind": "framework",
+      "id": "naive"
+    }
+  }
+}

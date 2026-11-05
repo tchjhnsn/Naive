@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="pele pele-state" viewBox="0 0 1132 898" width="1132" height="898" style="max-width:100%;height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_tw:var(--pele-title-weight,bold);--_fm:var(--pele-font-mono,monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="state"><style>.pele {
+  --pele-bg: #ffffff;
+  --pele-fg: #1c1c1c;
+  --pele-muted: #656565;
+  --pele-line: #808080;
+  --pele-surface: #fcfcfc;
+  --pele-surface-alt: #f1f1f1;
+  --pele-border: #c9c9c9;
+}
+.pele .blue rect { fill: #c3e0ff; }
+.pele .orange rect { fill: #f0d3bf; }
+.pele .purple rect { fill: #e3d5ff; }
+.pele .yellow rect { fill: #f0dcbf; }
+.pele .teal rect { fill: #bfe3df; }
+.pele .tan rect { fill: #e5d9ce; }
+.pele .pink rect { fill: #ffcbe6; }
+.pele .breaks rect {
+  fill: #ffecee !important;
+  stroke: #e72e3b !important;
+  stroke-width: 2.5px !important;
+}
+.pele .breaks text {
+  fill: #cd2834 !important;
+}
+.pele .mayBreak rect {
+  fill: #fff3e6 !important;
+  stroke: #e8730c !important;
+  stroke-width: 2.5px !important;
+}
+.pele .mayBreak text {
+  fill: #b85a06 !important;
+}
+.pele .bugPath rect {
+  stroke: #1680f3 !important;
+  stroke-width: 2.5px !important;
+}
+.pele .repeats rect {
+  stroke: #9b35d6 !important;
+  stroke-width: 2.5px !important;
+  stroke-dasharray: 6 3;
+}
+@media (prefers-color-scheme: dark) {
+  .pele {
+    --pele-bg: #1f1f1f;
+    --pele-fg: #f5f5f5;
+    --pele-muted: #acacac;
+    --pele-line: #939393;
+    --pele-surface: #121212;
+    --pele-surface-alt: #2c2c2c;
+    --pele-border: #4e4e4e;
+  }
+  .pele .blue rect { fill: #1b3857; }
+  .pele .orange rect { fill: #573117; }
+  .pele .purple rect { fill: #3c2e57; }
+  .pele .yellow rect { fill: #573d17; }
+  .pele .teal rect { fill: #174641; }
+  .pele .tan rect { fill: #3d3127; }
+  .pele .pink rect { fill: #57233e; }
+  .pele .breaks rect {
+    fill: #2e2021 !important;
+    stroke: #cf2b35 !important;
+  }
+  .pele .breaks text {
+    fill: #ff6463 !important;
+  }
+  .pele .mayBreak rect {
+    fill: #2e2619 !important;
+    stroke: #d0700f !important;
+  }
+  .pele .mayBreak text {
+    fill: #ffa257 !important;
+  }
+  .pele .bugPath rect {
+    stroke: #116dd2 !important;
+  }
+  .pele .repeats rect {
+    stroke: #9a3fcf !important;
+  }
+}
+</style><text class="pele-title" font-weight="var(--_tw)" text-anchor="middle" xml:space="preserve"><tspan x="566" y="25.6">From a file in the repository to a template card</tspan></text><g transform="translate(0,36)"><g class="pele-clusters"><g class="pele-cluster pele-state-composite" data-id="legend"><rect x="691.38" y="8" width="380.51" height="112" rx="10" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)"/><path d="M691.38,44H1071.89" fill="none" stroke="var(--_b)"/><text class="pele-cluster-label" x="881.64" y="31.6" text-anchor="middle">Legend</text></g></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-transition" data-id="edge0"><path d="M644.38,120L644.38,157"/><path class="pele-marker" d="M644.38,164L641.02,156L647.74,156Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge1"><path d="M644.38,208L644.38,285"/><path class="pele-marker" d="M644.38,292L641.02,284L647.74,284Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge2"><path d="M644.38,354L644.38,416"/><path class="pele-marker" d="M644.38,423L641.02,415L647.74,415Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge3"><path d="M584.78,467L584.78,480C584.78,484.75 99.6,494.25 99.6,499L99.6,613C99.6,648.5 201.25,648.5 201.25,684L201.25,690"/><path class="pele-marker" d="M201.25,697L197.89,689L204.61,689Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge4"><path d="M671.98,467L671.98,480C671.98,489.5 784.15,489.5 784.15,499L784.15,690"/><path class="pele-marker" d="M784.15,697L780.79,689L787.51,689Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge5"><path d="M616.78,467L616.78,476.63C616.78,480.26 448.29,485.36 448.29,489L448.29,529C448.29,534.63 501.42,534.63 501.42,540.25L501.42,544"/><path class="pele-marker" d="M501.42,551L498.06,543L504.78,543Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge6"><path d="M291.79,697L291.79,499C291.79,494.25 600.78,484.75 600.78,480L600.78,474"/><path class="pele-marker" d="M600.78,467L604.14,475L597.42,475Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge7"><path d="M859.37,697L859.37,684C859.37,648.5 946.78,648.5 946.78,613L946.78,499C946.78,493.42 687.98,485.58 687.98,480L687.98,474"/><path class="pele-marker" d="M687.98,467L691.34,475L684.62,475Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge8"><path d="M812.21,741L812.21,803"/><path class="pele-marker" d="M812.21,810L808.85,802L815.57,802Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge9"><path d="M591.25,551L591.25,541.38C591.25,535.19 644.38,535.19 644.38,529L644.38,474"/><path class="pele-marker" d="M644.38,467L647.74,475L641.02,475Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge10"><path d="M486.03,613L486.03,671.5C486.03,675.82 307.79,681.05 307.79,685.38L307.79,690"/><path class="pele-marker" d="M307.79,697L304.43,689L311.15,689Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge11"><path d="M591.25,613C591.25,622.25 655.66,622.25 655.66,631.5L655.66,671.5C655.66,678.44 765.05,678.44 765.05,685.38L765.05,690"/><path class="pele-marker" d="M765.05,697L761.69,689L768.41,689Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-transition" data-id="edge12"><path d="M890.98,810L890.98,797C890.98,769 1039.38,769 1039.38,741L1039.38,499C1039.38,494.25 703.98,484.75 703.98,480L703.98,474"/><path class="pele-marker" d="M703.98,467L707.34,475L700.62,475Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="edge1"><rect x="550.12" y="228.5" width="188.53" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="644.38" y="242.4">the build reads a file from the</tspan><tspan x="644.38" y="260.4">repository</tspan></text></g><g class="pele-edge-label" data-id="edge2"><rect x="543.11" y="374.5" width="202.54" height="21" rx="3" fill="var(--_bg)"/><text x="644.38" y="389.9" text-anchor="middle">the page lists a card for that file</text></g><g class="pele-edge-label" data-id="edge3"><rect x="10" y="564" width="179.19" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="99.6" y="577.9">you set a filter that matches</tspan><tspan x="99.6" y="595.9">nothing</tspan></text></g><g class="pele-edge-label" data-id="edge4"><rect x="724.12" y="571.5" width="120.07" height="21" rx="3" fill="var(--_bg)"/><text x="784.15" y="586.9" text-anchor="middle">you open the card</text></g><g class="pele-edge-label" data-id="edge5"><rect x="354.79" y="491" width="186.99" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="448.29" y="504.9">you set a filter that keeps the</tspan><tspan x="448.29" y="522.9">card</tspan></text></g><g class="pele-edge-label" data-id="edge6"><rect x="209.19" y="571.5" width="165.19" height="21" rx="3" fill="var(--_bg)"/><text x="291.79" y="586.9" text-anchor="middle">you go back to the full list</text></g><g class="pele-edge-label" data-id="edge7"><rect x="864.19" y="571.5" width="165.19" height="21" rx="3" fill="var(--_bg)"/><text x="946.78" y="586.9" text-anchor="middle">you go back to the full list</text></g><g class="pele-edge-label" data-id="edge8"><rect x="758.02" y="761.5" width="108.38" height="21" rx="3" fill="var(--_bg)"/><text x="812.21" y="776.9" text-anchor="middle">you choose Use</text></g><g class="pele-edge-label" data-id="edge9"><rect x="561.78" y="498.5" width="165.19" height="21" rx="3" fill="var(--_bg)"/><text x="644.38" y="513.9" text-anchor="middle">you go back to the full list</text></g><g class="pele-edge-label" data-id="edge10"><rect x="396.43" y="633.5" width="179.19" height="36" rx="3" fill="var(--_bg)"/><text text-anchor="middle" xml:space="preserve"><tspan x="486.03" y="647.4">you set a filter that matches</tspan><tspan x="486.03" y="665.4">nothing</tspan></text></g><g class="pele-edge-label" data-id="edge11"><rect x="595.63" y="641" width="120.07" height="21" rx="3" fill="var(--_bg)"/><text x="655.66" y="656.4" text-anchor="middle">you open the card</text></g><g class="pele-edge-label" data-id="edge12"><rect x="956.78" y="708.5" width="165.19" height="21" rx="3" fill="var(--_bg)"/><text x="1039.38" y="723.9" text-anchor="middle">you go back to the full list</text></g></g><g class="pele-nodes"><g class="pele-node pele-state blue" data-id="s0" transform="translate(644.38,186)"><rect x="-77.36" y="-22" width="154.72" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Nothing listed yet</text></g><g class="pele-node pele-state blue" data-id="s1" transform="translate(644.38,323)"><rect x="-112.48" y="-31" width="224.96" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">A record was read from the</tspan><tspan x="0" y="16.1">repository</tspan></text></g><g class="pele-node pele-state teal" data-id="s2" transform="translate(644.38,445)"><rect x="-95.6" y="-22" width="191.2" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Cards are on the page</text></g><g class="pele-node pele-state teal" data-id="s3" transform="translate(252.84,719)"><rect x="-103.59" y="-22" width="207.18" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">The filters match nothing</text></g><g class="pele-node pele-state purple" data-id="s4" transform="translate(812.21,719)"><rect x="-99.16" y="-22" width="198.32" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">The detail page is open</text></g><g class="pele-node pele-state teal" data-id="s5" transform="translate(546.34,582)"><rect x="-96.91" y="-31" width="193.82" height="62" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">The filters match some</tspan><tspan x="0" y="16.1">cards</tspan></text></g><g class="pele-node pele-state purple" data-id="s6" transform="translate(827.39,832)"><rect x="-115.59" y="-22" width="231.18" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">The use command is shown</text></g><g class="pele-node pele-state-start" data-id="root_start" transform="translate(644.38,113)"><circle r="7" fill="var(--_l)"/></g><g class="pele-node pele-state blue" data-id="lg0" transform="translate(750.95,82)"><rect x="-43.57" y="-22" width="87.14" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">building</text></g><g class="pele-node pele-state teal" data-id="lg1" transform="translate(882.52,82)"><rect x="-48.01" y="-22" width="96.02" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">browsing</text></g><g class="pele-node pele-state purple" data-id="lg2" transform="translate(1013.21,82)"><rect x="-42.68" y="-22" width="85.36" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">reading</text></g></g></g></svg>

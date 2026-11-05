@@ -1,0 +1,108 @@
+{
+  "venture": {
+    "name": "OpenAI",
+    "phase": "scale",
+    "team": "A for-profit company under a nonprofit foundation; several thousand people.",
+    "current_state": "ChatGPT passed 900M weekly active users (March 2026). Revenue run rate reported above $25B by March 2026, enterprise over 40% of revenue. Atlas browser retired August 2026 and Sora shut down; Codex and the ChatGPT Work agent folded into one ChatGPT desktop app. Ads in Free and Go tiers since early 2026. First device promised for late 2026. No S-1: figures are press reports, not filings.",
+    "sources": [
+      "press reports 2026; no filing"
+    ]
+  },
+  "core": {
+    "source": "OpenAI's mission statement plus its product behaviour; our wording.",
+    "promise": "Anyone can get a capable AI that helps with nearly anything, free at the point of use, and builders get the same models through an API.",
+    "promised_to": "Everyone: consumers first, then businesses and developers.",
+    "must_not": "Unsafe AGI, and answers bent by commercial interest (OpenAI says ads will not influence responses).",
+    "competence": "Frontier model research at very large compute scale, joined to the largest consumer AI habit (ChatGPT)."
+  },
+  "products": {
+    "models": {
+      "name": "GPT models",
+      "faces": "developers via the API",
+      "description": "The GPT-5.x and reasoning model family."
+    },
+    "chatgpt": {
+      "name": "ChatGPT (Free, Go, Plus, Pro)",
+      "faces": "consumers",
+      "description": "The consumer assistant, now one desktop app with browsing and agents."
+    },
+    "business": {
+      "name": "ChatGPT Business and Enterprise (incl. Work agent)",
+      "faces": "companies",
+      "description": "Seats, admin, connectors and the Work agent."
+    },
+    "api": {
+      "name": "API platform",
+      "faces": "developers",
+      "description": "Models, Responses and agents APIs."
+    },
+    "codex": {
+      "name": "Codex",
+      "faces": "developers",
+      "description": "The coding agent, folded into the ChatGPT desktop app in July 2026."
+    },
+    "ads": {
+      "name": "Ads in ChatGPT",
+      "faces": "advertisers",
+      "description": "Labelled ads in Free and Go tiers."
+    },
+    "device": {
+      "name": "Consumer device",
+      "faces": "consumers",
+      "allowed_from": "beachhead",
+      "description": "First hardware device, promised for late 2026."
+    },
+    "stargate": {
+      "name": "Stargate compute",
+      "faces": "internal; partners",
+      "description": "Data-centre build-out with partners; the compute substrate."
+    }
+  },
+  "flows": [
+    {
+      "from": "stargate",
+      "to": "models",
+      "carries": "compute"
+    },
+    {
+      "from": "models",
+      "to": "chatgpt",
+      "carries": "intelligence"
+    },
+    {
+      "from": "models",
+      "to": "api",
+      "carries": "intelligence"
+    },
+    {
+      "from": "models",
+      "to": "codex",
+      "carries": "intelligence"
+    },
+    {
+      "from": "models",
+      "to": "device",
+      "carries": "intelligence"
+    },
+    {
+      "from": "chatgpt",
+      "to": "business",
+      "carries": "users who bring it to work"
+    },
+    {
+      "from": "chatgpt",
+      "to": "ads",
+      "carries": "free-tier attention"
+    },
+    {
+      "from": "chatgpt",
+      "to": "device",
+      "carries": "users"
+    },
+    {
+      "from": "chatgpt",
+      "to": "models",
+      "carries": "usage data"
+    }
+  ]
+}

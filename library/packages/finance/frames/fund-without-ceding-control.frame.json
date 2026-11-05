@@ -1,0 +1,177 @@
+{
+  "id": "fund-without-ceding-control",
+  "title": "Fund growth without ceding control",
+  "functions": [
+    "finance",
+    "governance"
+  ],
+  "triggers": [
+    "I need investors to scale but I don't want to give up control",
+    "I want to raise money without losing control of my company",
+    "I need funding but I don't want to give away equity",
+    "I don't want investors telling me what to do"
+  ],
+  "goal": "{goal}",
+  "premises": [
+    {
+      "id": "needs-outside-money",
+      "claim": "Reaching the venture's goal needs outside money now, beyond what revenue, customers or partners can fund within the current runway.",
+      "attack": "test-the-goal",
+      "reads": [
+        "goal",
+        "phase",
+        "revenue",
+        "runway"
+      ]
+    },
+    {
+      "id": "money-means-ownership",
+      "claim": "For this venture, taking outside money means selling ownership.",
+      "attack": "split-the-dimension",
+      "reads": [
+        "phase",
+        "revenue",
+        "jurisdiction"
+      ]
+    },
+    {
+      "id": "ownership-means-control",
+      "claim": "For this venture, giving up ownership means giving up control.",
+      "attack": "split-the-dimension",
+      "reads": [
+        "cap_table",
+        "control_rights"
+      ]
+    },
+    {
+      "id": "control-is-one-thing",
+      "claim": "The control the founder wants to keep is one thing, not several separate rights.",
+      "attack": "name-the-control",
+      "reads": [
+        "control_rights"
+      ]
+    }
+  ],
+  "attacks": [
+    "test-the-goal",
+    "split-the-dimension",
+    "name-the-control",
+    "false-dichotomy",
+    "sequence-not-choose"
+  ],
+  "dichotomy": "Take outside money and lose control, or keep control and grow more slowly.",
+  "reframe": "With the goal \"{goal}\", which ways of funding it keep the specific control rights the founder will not give up, in the {phase} phase?",
+  "composes": [
+    "which-control-matters",
+    "fund-growth-how"
+  ],
+  "props": [
+    "phase",
+    "goal",
+    "revenue",
+    "runway",
+    "cap_table",
+    "control_rights",
+    "jurisdiction"
+  ],
+  "freshness": {
+    "look_for": [
+      "funding structures that separate money from ownership",
+      "structures that separate ownership from votes, board seats or vetoes"
+    ],
+    "filter_by": [
+      "jurisdiction",
+      "phase",
+      "revenue"
+    ],
+    "max_age_days": 180,
+    "cite": true
+  },
+  "reasoning": [
+    "Restate the goal and the decisions hidden in the founder's sentence before proposing anything.",
+    "Test each premise as a yes/no proposition against the venture's facts; say unknown when the facts do not settle it.",
+    "Say whether the trade is false, a real trade-off, or a sequence.",
+    "Draw funding options only from a dated, cited lookup, never from memory.",
+    "Return decisions with open options. Do not pick one."
+  ],
+  "emits": [
+    {
+      "id": "which-control-matters",
+      "question": "Which control rights will the founder not give up?",
+      "options": [
+        "the product's direction",
+        "votes on major decisions",
+        "board seats",
+        "vetoes over a sale or new money",
+        "day-to-day authority to run the venture",
+        "the mission"
+      ],
+      "layer": "governance",
+      "needed_in": "discovery"
+    },
+    {
+      "id": "fund-growth-how",
+      "question": "Which way of funding the goal keeps the control rights the founder will not give up?",
+      "options_from": "lookup",
+      "layer": "governance",
+      "needed_in": "validation"
+    }
+  ],
+  "cases": [
+    {
+      "id": "solo-saas-pre-revenue",
+      "facts": {
+        "phase": "discovery",
+        "goal": "ten paying clinics by June",
+        "revenue": "none",
+        "runway": "4 months of the founder's savings",
+        "cap_table": "the founder owns 100%",
+        "control_rights": "the product's direction",
+        "jurisdiction": "Texas, USA"
+      },
+      "expect": {
+        "needs-outside-money": "unknown",
+        "money-means-ownership": "unknown",
+        "ownership-means-control": "no",
+        "control-is-one-thing": "yes",
+        "dichotomy": "sequence"
+      }
+    },
+    {
+      "id": "services-firm-profitable",
+      "facts": {
+        "phase": "beachhead",
+        "goal": "open a second office",
+        "revenue": "profitable, 30% margins",
+        "runway": "18 months from cash flow",
+        "cap_table": "two founders, 50/50",
+        "control_rights": "day-to-day authority and the timing of a sale",
+        "jurisdiction": "Ontario, Canada"
+      },
+      "expect": {
+        "needs-outside-money": "no",
+        "money-means-ownership": "unknown",
+        "ownership-means-control": "no",
+        "control-is-one-thing": "no",
+        "dichotomy": "false"
+      }
+    },
+    {
+      "id": "hardware-pre-revenue-board",
+      "facts": {
+        "phase": "validation",
+        "goal": "ship 500 units of a medical device through regulatory approval by 2028",
+        "revenue": "none",
+        "runway": "2 months",
+        "cap_table": "the founder owns 100%",
+        "control_rights": "a majority of the board and votes on every major decision",
+        "jurisdiction": "Delaware, USA"
+      },
+      "expect": {
+        "needs-outside-money": "yes",
+        "control-is-one-thing": "no",
+        "dichotomy": "trade-off"
+      }
+    }
+  ]
+}

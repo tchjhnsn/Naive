@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "note": "Validation score weights and floors (EE-026), version 0.x: ours and unevaluated, like the Succession Matrix weights. Weights 0 to 5. The go-to-market record's path and the venture's kind (from its products) adjust the base. A floor is the least p times evidence weight a sub-score must reach, or the venture is held below the threshold whatever its average.",
+  "base": { "problem": 3, "solution": 2, "product-market-fit": 3, "pricing": 2, "go-to-market": 2, "team": 2, "operations-readiness": 1 },
+  "by_path": {
+    "build-first": {},
+    "market-first": { "go-to-market": 1, "product-market-fit": -1 },
+    "cofounder-first": { "team": 2, "product-market-fit": -2, "pricing": -1 }
+  },
+  "by_kind": {
+    "software": {},
+    "physical": { "operations-readiness": 1, "pricing": 1 },
+    "service": { "team": 1 },
+    "content": { "go-to-market": 1 }
+  },
+  "floors": { "problem": 0.3, "product-market-fit": 0.2 },
+  "floors_by_path": {
+    "market-first": { "product-market-fit": 0, "go-to-market": 0.2 },
+    "cofounder-first": { "product-market-fit": 0, "team": 0.2 }
+  },
+  "threshold": 0.6
+}

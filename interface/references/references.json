@@ -1,0 +1,28 @@
+{
+  "layer": "interface",
+  "references": [
+    {
+      "id": "anthropic-2024-building-effective-agents",
+      "title": "Building effective agents",
+      "authors": [
+        "Erik Schluntz",
+        "Barry Zhang"
+      ],
+      "year": 2024,
+      "kind": "article",
+      "summary": "Agentic systems split into workflows, where LLMs and tools are orchestrated through predefined code paths, and agents, where LLMs dynamically direct their own processes and tool usage, keeping control over how they accomplish a task.",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "checked": "2026-10-27",
+      "informs": [
+        "noun:agent-harness",
+        "noun:ai-harness",
+        "noun:ai-feature",
+        "field:product.ai"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Its line between a workflow and an agent is the line between an AI harness and an agent harness: in an agent harness the model directs its own steps and tool use."
+      }
+    }
+  ]
+}

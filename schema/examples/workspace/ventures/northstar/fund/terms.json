@@ -1,0 +1,22 @@
+{
+  "venture": "northstar",
+  "target_size": {
+    "amount": 25000000,
+    "currency": "USD"
+  },
+  "vintage": 2026,
+  "structure": "limited-partnership",
+  "management_fee": 0.02,
+  "carry": 0.2,
+  "term_years": 10,
+  "gp_commit": 0.02,
+  "closes": [
+    {
+      "date": "2026-09-30",
+      "committed": {
+        "amount": 11000000,
+        "currency": "USD"
+      }
+    }
+  ]
+}

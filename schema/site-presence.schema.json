@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "site-presence.schema.json",
+  "title": "Site presence",
+  "description": "How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by operations/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated.",
+  "type": "object",
+  "required": [
+    "version",
+    "site",
+    "judged_by",
+    "facts",
+    "score",
+    "audiences",
+    "pages",
+    "items",
+    "fix_first",
+    "icp",
+    "sitemap"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "site": {
+      "type": "string"
+    },
+    "venture": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "read_via": {
+      "enum": [
+        "firecrawl",
+        "fetch"
+      ]
+    },
+    "read_at": {
+      "type": "string"
+    },
+    "judged_by": {
+      "enum": [
+        "jev",
+        "keywords"
+      ]
+    },
+    "facts": {
+      "type": "object"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "audiences": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "weight"
+        ],
+        "properties": {
+          "weight": {
+            "type": "number"
+          },
+          "score": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "type",
+          "level"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere"
+            ]
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "record",
+          "need",
+          "required",
+          "score",
+          "note"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "record": {
+            "type": "string"
+          },
+          "need": {
+            "type": "number"
+          },
+          "required": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere"
+            ]
+          },
+          "for": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "at": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere",
+              null
+            ]
+          },
+          "score": {
+            "enum": [
+              0,
+              0.5,
+              1
+            ]
+          },
+          "found": {
+            "type": "array"
+          },
+          "note": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Who needs the item and why: each audience's weight, the item's importance to it, and the reason (for customers, from the customer types)",
+            "items": {
+              "type": "object",
+              "required": [
+                "audience",
+                "need",
+                "why",
+                "source"
+              ],
+              "properties": {
+                "audience": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "importance": {
+                  "type": "number"
+                },
+                "need": {
+                  "type": "number"
+                },
+                "why": {
+                  "type": "string"
+                },
+                "source": {
+                  "enum": [
+                    "customer types",
+                    "matrix"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "fix_first": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "icp": {
+      "type": "object",
+      "required": [
+        "text",
+        "source",
+        "cite",
+        "types"
+      ],
+      "description": "Who the site is for and where that comes from: the founder's words, the venture's ICP record, or inferred from the home page; and the customer types Jev placed it in",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "founder",
+            "record",
+            "inferred"
+          ]
+        },
+        "cite": {
+          "type": "string"
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "p": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "sitemap": {
+      "type": "array",
+      "description": "The site's routes as a tree from the home page, each rated on the items that belong there; ghost routes are pages the venture's priorities call for that the site lacks",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "parent",
+          "label",
+          "type",
+          "level",
+          "read",
+          "rating",
+          "expected",
+          "found",
+          "missing"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "parent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "home",
+              "nav",
+              "linked",
+              "anywhere"
+            ]
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "rating": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "expected": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "found": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ghost": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
