@@ -898,6 +898,18 @@
       "note": "The catalog of ontologies (N-050): every name@function scope with its version, owner, status and imports, one per function. Acyclic imports and defined-or-imported terms are checked by schema/terms/catalog-test.ts"
     },
     {
+      "id": "golden-ruling",
+      "layer": "system",
+      "level": "method",
+      "schema": "schema/golden-ruling.schema.json",
+      "form": "json",
+      "paths": [
+        "docs/reviews/ontology-golden/*.json",
+        "schema/examples/ontology-golden/*.json"
+      ],
+      "note": "Torian's ruling on one field (status, importance, relation or scope) of one idea record, with the comment URL that carries it (ontology program S3-PR2). Only Torian's rulings enter docs/reviews/ontology-golden/; scripts/golden-ruling-test.ts checks each is named <idea>.<field>.json and names an idea that exists"
+    },
+    {
       "id": "reference",
       "layer": "system",
       "level": "method",

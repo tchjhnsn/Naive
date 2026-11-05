@@ -1,0 +1,7 @@
+{
+  "idea": "n-001",
+  "field": "scope",
+  "value": { "scope": "naive@capabilities", "via": "appends_to" },
+  "comment": "https://github.com/tchjhnsn/everything-ecosystem/issues/1#issuecomment-1",
+  "ruled": "2026-11-05"
+}

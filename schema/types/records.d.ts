@@ -1309,6 +1309,52 @@ export type Goal = {
   decision?: string;
 };
 
+/** Torian's ruling on one field of one idea record (docs/reviews/ontology-golden/<idea>.<field>.json). Only Torian's rulings are golden records; a model, an agent or a checker never writes one. The value has the shape the idea record's field takes in schema/founder-idea.schema.json, so a gated label and a ruling compare as equal values. The comment is the issue or pull request comment where Torian gave the ruling. */
+export type GoldenRuling = {
+  /** The id of an idea in instance/people/p-54697df9/ideas/ */
+  idea: string;
+  /** The idea field ruled on. relation rules on the idea's whole relations list */
+  field: "status" | "importance" | "relation" | "scope";
+  /** Torian's value, in the shape of that field of the idea record */
+  value: unknown;
+  /** The URL of the GitHub comment that carries the ruling */
+  comment: string;
+  /**
+   * The day Torian gave the ruling
+   * @format date
+   */
+  ruled: string;
+} & ({
+  field?: "status";
+  value?: GoldenRulingStatus;
+} | {
+  field?: "importance";
+  value?: GoldenRulingImportance;
+} | {
+  field?: "relation";
+  value?: GoldenRulingRelations;
+} | {
+  field?: "scope";
+  value?: GoldenRulingScope;
+});
+
+/** The idea status values; scripts/golden-ruling-test.ts keeps them equal to founder-idea.schema.json */
+export type GoldenRulingStatus = "open" | "in-venture" | "shelved" | "dropped";
+
+/** The idea importance values; scripts/golden-ruling-test.ts keeps them equal to founder-idea.schema.json */
+export type GoldenRulingImportance = "high" | "medium" | "low";
+
+/** Every typed relation the idea has; an empty list rules that it has none */
+export type GoldenRulingRelations = {
+  relation: FounderIdeaRelation;
+  to: string;
+}[];
+
+export type GoldenRulingScope = {
+  scope: string;
+  via: FounderIdeaAttachment;
+};
+
 /** One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. schema/check-ready.mjs checks it is ready before work starts; schema/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (schema/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17). */
 export type Handoff = {
   id: string;
