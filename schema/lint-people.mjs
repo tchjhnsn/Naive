@@ -111,9 +111,7 @@ function decisionHasPerson(d, names, checkRoster) {
   });
 }
 
-export const peopleLintCommands = (cmd) => [
-  cmd("people/lint", "schema/lint-people.mjs", "People alignment lint: a role with no function it owns, a hire before the team plan names the role, and a decision owned by no person. Fail-open unless naive.config.json people_lint.rules.<id>.mode is fail-closed", { args: [] }),
-];
+export { peopleLintCommands } from "../packages/routes/commands.mjs";
 
 export function lint(dir) {
   const reg = registry();

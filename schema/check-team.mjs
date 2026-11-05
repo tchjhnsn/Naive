@@ -29,7 +29,7 @@ const registry = new Map(load(join(repo, "governance/venture-template/roles/agen
 const template = load(join(repo, "governance/venture-template/decision-rights.json"));
 const caps = load(join(repo, "evidence/capabilities/agent-capabilities.json"));
 const errors = [], warnings = [], recruitNow = [];
-const { routes, glob: routeGlob } = await import("../interface/router.mjs");
+const { routes, glob: routeGlob } = await import("../packages/routes/routes.mjs");
 const routeList = routes().map((r) => r.route.replace("[id]", "x"));
 
 const capIds = caps.capabilities.map((c) => c.id);

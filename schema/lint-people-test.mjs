@@ -6,7 +6,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { lint } from "./lint-people.mjs";
-import { routes } from "../interface/router.mjs";
+import { routes } from "../packages/routes/routes.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const cli = join(root, "schema/lint-people.mjs");

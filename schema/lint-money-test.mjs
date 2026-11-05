@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
-import { routes } from "../interface/router.mjs";
+import { routes } from "../packages/routes/routes.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const cli = join(repo, "schema/lint-money.mjs");

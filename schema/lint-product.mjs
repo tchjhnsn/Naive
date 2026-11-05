@@ -110,10 +110,7 @@ export function lint(dir) {
   return { ok: !failed, rules, findings };
 }
 
-/** The command route this module adds, built with the router's own cmd(). */
-export const productCommands = (cmd) => [
-  cmd("product/lint", "schema/lint-product.mjs", "Product alignment lint: a product offered to no ICP, a feature that serves no job of those ICPs, or a business model with no pricing record. Fail-open unless naive.config.json product_lint.rules.<id>.mode is fail-closed", { args: [] }),
-];
+export { productCommands } from "../packages/routes/commands.mjs";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];

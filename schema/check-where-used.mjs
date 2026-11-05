@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { connect, sourceFor, sourcesOf } from "../knowledge/connectors/index.mjs";
-import { resolve } from "../interface/router.mjs";
+import { resolve } from "../packages/routes/routes.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 const dir = process.argv[2];

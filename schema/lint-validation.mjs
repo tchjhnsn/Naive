@@ -213,10 +213,7 @@ export function lint(dir, { now = new Date() } = {}) {
   return { ok: !failed, rules, findings };
 }
 
-/** The command route this module adds, built with the router's own cmd(). */
-export const validationCommands = (cmd) => [
-  cmd("validation/lint", "schema/lint-validation.mjs", "Validation alignment lint: a claim with no evidence, evidence past its shelf life, an assumption graded only by an agent, and a decision made in Validation on Discovery-grade evidence; fail-open unless naive.config.json validation_lint.rules.<id>.mode is fail-closed", { args: [] }),
-];
+export { validationCommands } from "../packages/routes/commands.mjs";
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);

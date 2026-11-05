@@ -5,7 +5,7 @@
 //   naive <cmd> / mentura <cmd>   the command is dispatched by interface/cli/naive.mjs or mentura.mjs
 //   --flag after a naive command  the command (or the script it runs) reads that flag
 //   schema/..., interface/..., purpose/..., library/packages/..., docs/...   the repository path exists
-//   foundation/problem            a record route in the route table (interface/router.mjs routes())
+//   foundation/problem            a record route in the route table (packages/routes/routes.mjs routes())
 //   [text](../other/README.md)    a relative Markdown link, inline or reference-style, resolves to a file or folder
 //                                 next to the doc (HTML href and src are not checked)
 //
@@ -63,7 +63,7 @@ const literals = (src) => new Set([...src.matchAll(/cmd === "([a-z-]+)"/g)].map(
   .concat([...src.matchAll(/\[((?:"[a-z-]+",?\s*)+)\]\.includes\(cmd\)/g)].flatMap((m) => [...m[1].matchAll(/"([a-z-]+)"/g)].map((x) => x[1]))));
 const naiveCmds = literals(naiveSrc);
 const menturaCmds = literals(menturaSrc);
-const { routes, resolve } = await import(join(repo, "interface/router.mjs"));
+const { routes, resolve } = await import(join(repo, "packages/routes/routes.mjs"));
 const table = routes();
 const routeTop = new Set(table.map((r) => r.route.split("/")[0]));
 // packages/<name> is a route alias for a venture package (interface/package-routes.mjs), not a folder: the
@@ -139,7 +139,7 @@ function checkInline(f, n, c) {
   if (VENTURE.test(c) || /[<\s.@:]/.test(c)) return;
   if (/^[a-z][a-z0-9-]*(\/[a-z0-9-]+|\/\[id\])+$/.test(c) && routeTop.has(top)) {
     claims++;
-    if (!isRoute(c)) fail(f, n, c, "not a route in the route table (interface/router.mjs)");
+    if (!isRoute(c)) fail(f, n, c, "not a route in the route table (packages/routes/routes.mjs)");
   }
 }
 

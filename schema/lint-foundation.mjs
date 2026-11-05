@@ -141,9 +141,7 @@ export function lint(dir) {
   return { ok: !failed, rules, findings };
 }
 
-export const foundationLintCommands = (cmd) => [
-  cmd("foundation/lint", "schema/lint-foundation.mjs", "Foundation lint: a mission that names no ICP, an ICP with no jobs, an alignment principle with no check, and a problem form no ICP has. Fail-open unless naive.config.json foundation_lint.rules.<id>.mode is fail-closed", { args: [] }),
-];
+export { foundationLintCommands } from "../packages/routes/commands.mjs";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];

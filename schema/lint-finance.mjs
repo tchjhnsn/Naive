@@ -167,9 +167,7 @@ export function lint(dir) {
   return { ok: !failed, phase, rules, findings };
 }
 
-export const financeCommands = (cmd) => [
-  cmd("finance/lint", "schema/lint-finance.mjs", "Finance lint: a spend decision with no runway impact, a price below cost, and a metric with no target for the current phase. Fail-open unless naive.config.json finance_lint.rules.<id>.mode is fail-closed", { args: [] }),
-];
+export { financeCommands } from "../packages/routes/commands.mjs";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];

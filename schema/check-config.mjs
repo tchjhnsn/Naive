@@ -21,7 +21,7 @@ import { join, resolve as resolvePath } from "node:path";
 import { CONFIG, configFor, installed, pinProblems, rawConfig } from "./naive-config.mjs";
 import { evaluate, patternRe, rulesFor } from "./gate.mjs";
 import { teamPlan } from "./access.mjs";
-import { gateOf, repo, resolve, routes } from "../interface/router.mjs";
+import { gateOf, repo, resolve, routes } from "../packages/routes/routes.mjs";
 import { agentFromEnv, record } from "../packages/core/provenance.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 

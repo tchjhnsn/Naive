@@ -20,7 +20,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { entries } from "../packages/core/provenance.mjs";
-import { resolve as resolveRoute } from "../interface/router.mjs";
+import { resolve as resolveRoute } from "../packages/routes/routes.mjs";
 import { address } from "../knowledge/connectors/contract.mjs";
 import { LOCAL, sourcesOf } from "../knowledge/connectors/index.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";

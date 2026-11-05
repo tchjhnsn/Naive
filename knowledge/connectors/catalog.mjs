@@ -35,7 +35,7 @@ function title(path, content) {
 let table = null;
 async function routeOf(path) {
   if (!table) {
-    const { routes, glob } = await import("../../interface/router.mjs");
+    const { routes, glob } = await import("../../packages/routes/routes.mjs");
     table = routes().filter((r) => r.kind === "record" && r.collection !== "list").map((r) => ({ r, res: r.files.map((g) => glob(g)) }));
   }
   for (const { r, res } of table) {

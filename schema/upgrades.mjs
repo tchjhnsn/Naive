@@ -22,7 +22,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameS
 import { dirname, isAbsolute, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { agentFromEnv, record } from "../packages/core/provenance.mjs";
-import { routes, glob } from "../interface/router.mjs";
+import { routes, glob } from "../packages/routes/routes.mjs";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.mjs";
 import { packages as packageFit } from "./packages.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";

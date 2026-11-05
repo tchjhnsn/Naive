@@ -39,23 +39,12 @@ const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const brandOf = (dir) => dir && existsSync(ventureFile(dir, BRAND)) ? load(ventureFile(dir, BRAND)) : null;
 
 // ---------------------------------------------------------------------------------------------
-// Router hooks. interface/router.mjs spreads these into its tables; this module never imports the router.
+// Router hooks. The route table (packages/routes/routes.mjs) lists these command routes from packages/routes/commands.mjs, re-exported here; this module never imports the router.
 
 /** Where the new record types route (package folder layout, EE-070). */
-export const BRAND_ROUTES = { "marketing-brand": "marketing/brand", "marketing-design-system": "marketing/design-system", "public-assets": "public/assets", glossary: "glossary" };
+export { BRAND_ROUTES } from "../packages/routes/commands.mjs";
 
-/** The command routes this module adds, built with the router's own cmd(). */
-export const brandCommands = (cmd) => [
-  cmd("marketing/brand/tokens", "schema/brand.mjs", "The venture's brand tokens (Y-3): colors and typefaces as W3C design tokens, the CSS custom properties and @font-face rules an interface loads, each scope as its own selector, and the head links for the venture's marks (P-24)", { args: ["tokens"] }),
-  cmd("marketing/brand/resolve", "schema/brand.mjs", "The brand at one route (Y-5, T-2): the venture brand with every scope that covers the route applied, nearer last, and which scope set each value; input value is the route", { value_flag: "--for" }),
-  cmd("marketing/design-system/inputs", "schema/design-system.mjs", "What the design system inherits from other functions, by key: the mission, the problem and segment, each ICP profile, the alignment principles, each product's market and each founder. A design choice's from names these keys", { args: ["inputs"] }),
-  cmd("marketing/design-system/check", "schema/design-system.mjs", "Every design choice rests on inputs that still exist: a retired ICP or a new mission names the brand choices to revisit", { args: ["check"] }),
-  cmd("marketing/brand-lint", "schema/brand-lint.mjs", "Brand alignment lint: decision records and marketing content against the design system (avoid words, jargon, unknown audiences, unsourced choices); fail-open unless naive.config.json brand_lint.rules.<id>.mode is fail-closed", { args: [] }),
-  cmd("marketing/voice", "schema/brand.mjs", "Marketing content held to the voice rules, the global stylesheet for words (Y-3): each phrase to avoid, where it is and what to use instead; and terms another package keeps local (Y-2)", { args: ["voice"] }),
-  cmd("glossary/terms", "schema/brand.mjs", "The terms one package sees (Y-2): its own glossary and the terms other packages export; their local terms stay with them. Input value is the package", { value_flag: "--package" }),
-  cmd("marketing/sitemap/xml", "schema/brand.mjs", "sitemap.xml rendered from the marketing sitemap record (P-26), for a release; input value is the site's base URL", { value_flag: "--base" }),
-  cmd("public/assets/facts", "schema/assets.mjs", "What code reads from each file in public/ (J-4): type from the bytes, width and height, icon sizes, bytes and sha256. Agents copy these, never guess them", { args: ["facts"] }),
-];
+export { brandCommands } from "../packages/routes/commands.mjs";
 
 /** What a layout adds for an agent: the brand and voice at this route, and the terms its package sees. */
 export function brandLayout(dir, route) {

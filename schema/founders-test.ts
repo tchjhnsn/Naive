@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { routes } from "../interface/router.mjs";
+import { routes } from "../packages/routes/routes.mjs";
 import { addIdea, addInspiration, addReference, check, cslName, init, link, show } from "./founders.ts";
 
 const repo = new URL("..", import.meta.url).pathname;

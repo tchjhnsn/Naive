@@ -29,7 +29,7 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
 import { actingAgent, agentFromEnv, record as prov } from "../packages/core/provenance.mjs";
-import { glob as routeFileGlob, routes } from "../interface/router.mjs";
+import { glob as routeFileGlob, routes } from "../packages/routes/routes.mjs";
 // Caching hook (F-12): the decision list is computed once per router action (schema/caching.mjs).
 import { memo } from "./caching.mjs";
 import { roles as ventureRoles } from "./venture-type.mjs";

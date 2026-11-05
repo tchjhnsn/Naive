@@ -161,7 +161,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   process.exit(r.ok ? 0 : 1);
 }
 
-/** Command route legal/lint. interface/router.mjs spreads this into the route table. */
-export const legalCommands = (cmd) => [
-  cmd("legal/lint", "schema/lint-legal.mjs", "Legal lint, not legal advice: a public claim with no source, and an agreement with no counterparty record. Fail-open unless naive.config.json legal_lint.rules.<id>.mode is fail-closed", { args: [] }),
-];
+export { legalCommands } from "../packages/routes/commands.mjs";

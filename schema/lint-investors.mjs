@@ -133,9 +133,7 @@ function hasFigure(n) {
 
 const figureName = (n) => (typeof n.name === "string" && n.name.trim() ? n.name.trim() : typeof n.label === "string" && n.label.trim() ? n.label.trim() : "a number");
 
-export const investorsLintCommands = (cmd) => [
-  cmd("investors/lint", "schema/lint-investors.mjs", "Investors lint: a raise decision with no use of funds, terms that conflict with an alignment principle, and an investor update with unconfirmed numbers; fail-open unless naive.config.json investors_lint.rules.<id>.mode is fail-closed", { args: [] }),
-];
+export { investorsLintCommands } from "../packages/routes/commands.mjs";
 
 export function lint(dir) {
   const cfg = load(dir, "naive.config.json");

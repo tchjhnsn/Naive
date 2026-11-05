@@ -32,7 +32,6 @@
 //   node schema/caching.mjs clear <venture dir> [--level record|judgment]
 //   node schema/caching.mjs judge <venture dir> --request <file|-> [--life <profile>] [--private --as <person>]
 
-import { AsyncLocalStorage } from "node:async_hooks";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -51,47 +50,8 @@ export const keyOf = (parts) => sha(JSON.stringify(canon(parts)));
 // ---------------------------------------------------------------------------------------------
 // Per-action memoization (F-2, F-12, O-5)
 
-const als = new AsyncLocalStorage();
-
-/** Runs fn as one action. Inside an action already, fn joins it, so nested router calls share. */
-export function actionScope(fn) {
-  if (als.getStore()) return fn();
-  return als.run({ memo: new Map(), computed: {}, shared: {} }, fn);
-}
-export const inAction = () => !!als.getStore();
-
-/**
- * The value of fn, computed once per action and shared by every caller in it. Outside an action
- * fn runs every time. A throw or a rejected promise is not kept. dir scopes the value to a venture,
- * so forget(dir) drops it.
- * @param {string} key
- * @param {() => *} fn
- * @param {{ dir?: string }} [opts]
- */
-export function memo(key, fn, { dir } = {}) {
-  const s = als.getStore();
-  if (!s) return fn();
-  const k = `${dir ?? ""}\u0000${key}`;
-  if (s.memo.has(k)) { s.shared[key] = (s.shared[key] ?? 0) + 1; return s.memo.get(k); }
-  const v = fn();
-  s.memo.set(k, v);
-  s.computed[key] = (s.computed[key] ?? 0) + 1;
-  if (v && typeof v.then === "function") v.then(null, () => s.memo.delete(k));
-  return v;
-}
-
-/** Drops everything memoized for one venture in this action (after a write). */
-export function forget(dir) {
-  const s = als.getStore();
-  if (!s) return;
-  for (const k of [...s.memo.keys()]) if (k.startsWith(`${dir}\u0000`)) s.memo.delete(k);
-}
-
-/** What this action computed and how often each value was shared instead of computed again. */
-export function actionStats() {
-  const s = als.getStore();
-  return s ? { computed: { ...s.computed }, shared: { ...s.shared } } : null;
-}
+export { actionScope, actionStats, forget, inAction, memo } from "../packages/core/action-scope.mjs";
+import { memo } from "../packages/core/action-scope.mjs";
 
 // ---------------------------------------------------------------------------------------------
 // Lifetimes (C-4): Next.js cacheLife profiles, in seconds. Fresh while younger than revalidate;
@@ -420,14 +380,8 @@ export function clear(dir, { level } = {}) {
 // ---------------------------------------------------------------------------------------------
 // The router's routes (system/cache, system/judge, system/answer) and their handlers
 
-/** The command routes this module adds to the route table. cmd is the router's command constructor. */
-export function cacheRoutes(cmd) {
-  return [
-    cmd("system/cache", null, "The venture's cache (C-1, C-17): entries by level, what is private to you, what has expired, and which routes are cached for how long; input value list, prune or clear", { internal: "cache" }),
-    cmd("system/judge", null, "Ask System 1 a typed request ({ state, model, questions }) through the judgment cache (S-8, C-5): reused answers are not asked again; the rest go to NAIVE_JUDGE_CMD in one request", { internal: "judge" }),
-    cmd("system/answer", null, "One answer from several routes (C-8): each part says whether it is a confirmed record, an agent's record, a draft, a cached result or judgment, or fresh computation; input routes (a list, or value a,b) and judge (a request)", { internal: "answer" }),
-  ];
-}
+// The cache's command routes are data in packages/routes/commands.mjs.
+export { cacheRoutes } from "../packages/routes/commands.mjs";
 
 // Whether a record is confirmed: the last provenance entry for its file was a person's (a write, an
 // accept or a confirm), or an agent wrote it and nobody has confirmed it since.

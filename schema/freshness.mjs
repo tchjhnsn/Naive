@@ -36,7 +36,7 @@ import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readF
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve as resolvePath } from "node:path";
 import { agentFromEnv, entries as provEntries, record as prov } from "../packages/core/provenance.mjs";
-import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "../interface/router.mjs";
+import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "../packages/routes/routes.mjs";
 import { connect, LOCAL, sourcesOf } from "../knowledge/connectors/index.mjs";
 import { decisions as decisionMatrix, PHASES } from "./decisions.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";

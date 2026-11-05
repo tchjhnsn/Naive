@@ -101,10 +101,7 @@ export function lint(dir) {
   return { ok: !failed, rules, findings };
 }
 
-/** Router hook. interface/router.mjs spreads this into its command table. */
-export const moneyCommands = (cmd) => [
-  cmd("money/lint", "schema/lint-money.mjs", "Money lint: a transfer decision with no named approver, and an account with no owner. Fail-open unless naive.config.json money_lint.rules.<id>.mode is fail-closed. Reads records through ventureFile and does not move money.", { args: [] }),
-];
+export { moneyCommands } from "../packages/routes/commands.mjs";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
