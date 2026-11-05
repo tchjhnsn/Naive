@@ -16,8 +16,8 @@
 // until `git worktree repair` runs from the new one), symbolic links that point into the folder, and
 // processes working inside it, which refuse the apply unless --even-if-busy. A port never overwrites,
 // never copies (a move across disks is refused, not copied), and refuses an item whose folder changed
-// identity since the plan. Every run writes a trace to .release/port-trace.json, in the shape
-// platform/integrations/langsmith.mjs uploads.
+// identity since the plan. Every run writes a trace to .release/port-trace.json, in the shape an exporter
+// (NAIVE_TRACE_CMD, the app's) ships.
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -189,17 +189,18 @@ export function apply(dir, p, { agent = agentFromEnv("person", "cli"), evenIfBus
   return done;
 }
 
-// One run as a trace for platform/integrations/langsmith.mjs: the run, and a child per item.
+// One run as a trace for an exporter: the run, and a child per item.
 function trace(dir, name, inputs, start, items, error) {
   const end = new Date().toISOString();
   const t = { name, run_type: "chain", start, end, inputs, outputs: { items: items.map(({ from, to, action, done }) => ({ from, to, action, done })) }, ...(error ? { error } : {}),
     tags: ["naive", "port"], children: items.map((i) => ({ name: `${i.action} ${basename(i.from)}`, run_type: "tool", start, end, inputs: { from: i.from, to: i.to },
       outputs: { action: i.action, reason: i.reason, files: i.files, bytes: i.bytes, warnings: i.warnings, done: i.done } })) };
   try { mkdirSync(dirname(ventureFile(dir, TRACE)), { recursive: true }); writeFileSync(ventureFile(dir, TRACE), JSON.stringify(t, null, 2) + "\n"); } catch { return; }
-  // The harness's way (interface/harness/run.mjs): with a key set, the platform exporter ships the trace.
-  if (process.env.LANGSMITH_API_KEY) {
-    const p = spawnSync("node", [join(dirname(new URL(import.meta.url).pathname), "../platform/integrations/langsmith.mjs"), ventureFile(dir, TRACE), "--project", process.env.LANGSMITH_PROJECT ?? "naive-port"], { encoding: "utf8" });
-    console.log(p.status === 0 ? `LangSmith: ${p.stdout.trim()}` : `LangSmith upload failed: ${(p.stderr || p.stdout).trim()}`);
+  // The harness's way (interface/harness/run.mjs): with NAIVE_TRACE_CMD set, the app's exporter ships the trace.
+  const exporter = process.env.NAIVE_TRACE_CMD?.trim().split(/\s+/);
+  if (exporter?.[0]) {
+    const p = spawnSync(exporter[0], [...exporter.slice(1), ventureFile(dir, TRACE)], { encoding: "utf8" });
+    console.log(p.status === 0 ? `Trace: ${p.stdout.trim()}` : `Trace upload failed: ${(p.stderr || p.stdout).trim()}`);
   }
 }
 

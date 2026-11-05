@@ -14,11 +14,13 @@ export const STATE = ".naive/adapters.json";
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 
-/** Every adapter: the harness adapters in interface/adapters/, and the platform's if this copy has one. */
+/** Every adapter: the harness adapters in interface/adapters/, and the platform's when the app that hosts
+ *  Naive names its adapter file in NAIVE_PLATFORM_ADAPTER. */
 export function adapters() {
   const d = join(repo, "interface/adapters");
   const out = existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => ({ ...load(join(d, f)), path: `interface/adapters/${f}` })) : [];
-  if (existsSync(join(repo, "platform/adapter.json"))) out.unshift({ ...load(join(repo, "platform/adapter.json")), path: "platform/adapter.json" });
+  const platform = process.env.NAIVE_PLATFORM_ADAPTER;
+  if (platform && existsSync(platform)) out.unshift({ ...load(platform), path: platform });
   return out;
 }
 export const byName = (name) => { const a = adapters().find((x) => x.name === name); if (!a) throw new Error(`no adapter ${name}: ${adapters().map((x) => x.name).join(", ")}`); return a; };

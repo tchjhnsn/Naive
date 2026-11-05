@@ -1,20 +1,23 @@
 #!/usr/bin/env node
-// Site presence, end to end (EE-062): read a venture's website, have Jev judge which pages say what,
+// Site presence, end to end (EE-062): read a venture's website, have a judge say which pages say what,
 // and score how present the venture's public records are, weighed by who the site must speak to now.
-// The reading and the judging are platform scripts, spawned by path (EE-041); the scoring is Naive's.
-// Without a Jev key the scoring falls back to the matrix's keywords and says so.
+// The reading and the judging are the app's commands, never named here (EE-041); the scoring is Naive's:
+//
+//   NAIVE_SITE_CMD    reads a site, run as <cmd> <url> --pages <n>, and prints { site, via, pages }
+//   NAIVE_JUDGE_CMD   a judge that answers the Jev protocol
+//
+// Without a judge the scoring falls back to the matrix's keywords and says so.
 //
 //   node interface/harness/site.mjs <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--pages 10] [--json]
 
 import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { judgeCommand } from "../../schema/caching.mjs";
 import { factsOf, icpOf, request, score, PRESENCE } from "../../operations/marketing/site/presence.mjs";
 
-const repo = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const run = (script, args, input) => new Promise((resolve) => {
-  const p = spawn("node", [join(repo, script), ...args], { stdio: ["pipe", "pipe", "pipe"] });
+const run = (cmd, args, input) => new Promise((resolve) => {
+  const p = spawn(cmd[0], [...cmd.slice(1), ...args], { stdio: ["pipe", "pipe", "pipe"] });
   let out = "", err = "";
   p.stdout.on("data", (d) => (out += d)); p.stderr.on("data", (d) => (err += d));
   p.on("close", (code) => resolve({ code, out, err }));
@@ -27,17 +30,20 @@ const run = (script, args, input) => new Promise((resolve) => {
  */
 export async function scan(url, { venture = null, flags = {}, pages = 10, log = () => {} } = {}) {
   const t0 = Date.now();
-  const r = await run("platform/integrations/site.mjs", [url, "--pages", String(pages)]);
+  const reader = judgeCommand(process.env.NAIVE_SITE_CMD);
+  if (!reader) throw new Error("no site reader: set NAIVE_SITE_CMD to the app's command that reads a site");
+  const r = await run(reader, [url, "--pages", String(pages)]);
   if (r.code !== 0) throw new Error(`could not read ${url}: ${r.err.trim() || `exit ${r.code}`}`);
   const site = JSON.parse(r.out);
   log(`read ${site.pages.filter((p) => !p.error).length} pages of ${site.site} via ${site.via} in ${Date.now() - t0} ms`);
   const icp = icpOf(venture, site);
   let answers = null;
-  if (process.env.TYPESAFE_API_KEY || process.env.TYPESAFEAI_API_KEY) {
-    const j = await run("platform/integrations/jev.mjs", [], JSON.stringify(request(site, icp)));
+  const judge = judgeCommand(process.env.NAIVE_JUDGE_CMD);
+  if (judge) {
+    const j = await run(judge, [], JSON.stringify(request(site, icp)));
     if (j.code === 0) { const a = JSON.parse(j.out); answers = a.answers; log(`Jev answered ${Object.keys(answers).length} typed questions in ${a.ms} ms`); }
     else log(`Jev failed (${j.err.trim().slice(0, 200)}); judging by keywords instead`);
-  } else log("no Jev key: judging by keywords, which is rougher");
+  } else log("no judge (NAIVE_JUDGE_CMD): judging by keywords, which is rougher");
   const facts = factsOf(venture, flags);
   const result = score(site, { answers, facts, icp, venture: venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id : null });
   if (venture) { mkdirSync(join(venture, dirname(PRESENCE)), { recursive: true }); writeFileSync(join(venture, PRESENCE), JSON.stringify(result, null, 2) + "\n"); }

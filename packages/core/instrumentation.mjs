@@ -3,7 +3,7 @@
 // confirm, decision) emits an event. Listeners registered in-process get every event. When a venture
 // turns instrumentation on, events are also appended to <venture>/.naive/events.jsonl, which agent
 // vitals read (interface/vitals.mjs, N-6). Provenance stays the record of what changed; events are
-// what it cost. A platform exporter (platform/integrations/langsmith.mjs) can ship a trace made from
+// what it cost. An exporter in the app that hosts Naive (such as a LangSmith one) can ship a trace made from
 // the events; the framework names no vendor.
 //
 // Turn it on in the venture's naive.config.json, like adding instrumentation.ts to a Next.js app:

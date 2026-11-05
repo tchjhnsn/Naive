@@ -8,7 +8,7 @@
 //        migration; the package layout move before it is the first layout one.
 //   U-3  a staged upgrade runs on a copy under .naive/upgrade/, then the checks run on the copy; it lands
 //        only when they pass and a person types the confirmation. The agent that works the copy is a
-//        Mentura kit (platform/kits/agent-upgrade); this module is the part that decides.
+//        Mentura kit (agent-upgrade, in the app); this module is the part that decides.
 //   U-5  channels: stable, or canary for experimental packages; a later phase's package can be adopted
 //        early, by name.
 //   U-6  each framework version has a guide bundled in docs/upgrades/, printed from the installed copy.

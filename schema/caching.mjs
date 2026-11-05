@@ -23,8 +23,8 @@
 // what was memoized for that venture.
 //
 // The store is <venture>/.naive/cache/ (C-17), which git ignores and the router never routes.
-// No model and no network here: a judgment is asked by NAIVE_JUDGE_CMD (for example
-// node platform/integrations/jev.mjs), which reads a request on stdin and prints its answers.
+// No model and no network here: a judgment is asked by NAIVE_JUDGE_CMD (a command the app that hosts
+// Naive names, such as its Jev client), which reads a request on stdin and prints its answers.
 //
 //   node schema/caching.mjs stats <venture dir> [--json]
 //   node schema/caching.mjs list <venture dir> [--level record|judgment]
@@ -279,7 +279,8 @@ export async function command({ dir, route, script, args = [], input, actor, act
 // ---------------------------------------------------------------------------------------------
 // Judgment level (S-8, C-5)
 
-function judgeCommand(cmd) {
+/** A command from an environment variable or an option: a string split on spaces, a JSON array, or an array. */
+export function judgeCommand(cmd) {
   if (!cmd) return null;
   if (Array.isArray(cmd)) return cmd;
   const t = String(cmd).trim();
@@ -287,9 +288,8 @@ function judgeCommand(cmd) {
 }
 
 /**
- * Answers a typed request ({ state, model, questions }, the shape platform/integrations/jev.mjs
- * reads) with every answer it can reuse, and asks the judge only the rest, in one request. Each
- * question is its own entry, keyed by the request's state, the question, the model and the package
+ * Answers a typed request ({ state, model, questions }, the shape a Jev client reads) with every
+ * answer it can reuse, and asks the judge only the rest, in one request. Each question is its own entry, keyed by the request's state, the question, the model and the package
  * versions. Returns { model, answers, cache: { reused, asked, unanswered } }.
  * @param {string} dir
  * @param {{ state?: unknown, model?: string, questions: Record<string, unknown>, packages?: string[] }} request
@@ -312,7 +312,7 @@ export async function judge(dir, request, { cmd = process.env.NAIVE_JUDGE_CMD, l
   const unanswered = [];
   if (ask.length) {
     const argv = judgeCommand(cmd);
-    if (!argv) throw new Error(`${ask.length} question(s) are not cached and there is no judge: set NAIVE_JUDGE_CMD (for example node platform/integrations/jev.mjs)`);
+    if (!argv) throw new Error(`${ask.length} question(s) are not cached and there is no judge: set NAIVE_JUDGE_CMD to a command that answers the Jev protocol`);
     const sub = { ...request, questions: Object.fromEntries(ask.map((k) => [k, request.questions[k]])) };
     const p = spawnSync(argv[0], argv.slice(1), { input: JSON.stringify(sub), encoding: "utf8", maxBuffer: 1 << 26 });
     if (p.error) throw new Error(`could not run the judge (${argv[0]}): ${p.error.message}`);

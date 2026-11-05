@@ -41,7 +41,7 @@ export function triggersOf(dir) {
   const out = (cfg.triggers ?? []).map((t) => ({ ...t, from: "naive.config.json" }));
   for (const name of cfg.kits ?? []) {
     const k = kit(name);
-    if (!k) { problems.push(`kit ${name} is listed in ${CONFIG} kits but is not installed (platform/kits/${name}/kit.json)`); continue; }
+    if (!k) { problems.push(`kit ${name} is listed in ${CONFIG} kits but is not installed (no ${name}/kit.json in the folder NAIVE_KITS names)`); continue; }
     for (const a of k.automations ?? []) {
       if (!a.needs) { problems.push(`kit ${name}: automation ${a.id} names no package it needs, so it never runs (a kit's automation runs only once its package is complete)`); continue; }
       out.push({ ...a, id: `${name}-${a.id}`, from: `kit ${name}` });

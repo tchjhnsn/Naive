@@ -9,7 +9,7 @@
 //   - the where-used list (knowledge/where-used.json, V-4): every child of a fact whose parent route is
 //     the changed record repeats it.
 //
-// Receiving the notification over the network is the platform's (platform/webhooks/server.mjs); this is
+// Receiving the notification over the network is the app's (Mentura's webhooks); this is
 // the framework part, offline: notify() marks, staleOf() answers for one file (the router adds it to a
 // read), and a summary is fresh again once it is written after the mark. Marks live in
 // <venture>/.naive/stale.json, never in the records.
