@@ -185,7 +185,7 @@ function venturesUnder(dir) {
   walkDir(dir);
   return out;
 }
-for (const dir of [...venturesUnder(join(root, "instance")), ...venturesUnder(join(root, "schema/examples/workspace"))]) {
+for (const dir of [...venturesUnder(join(root, "schema/examples/software")), ...venturesUnder(join(root, "schema/examples/workspace"))]) {
   const r = json(dir);
   expect(`no false findings in ${dir.slice(root.length)}`, r.status === 0 && r.body?.ok === true && ids(r).length === 0);
 }

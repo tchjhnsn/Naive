@@ -13,6 +13,8 @@ The route table and the pure helpers that read it. Every route a venture has is 
 | [`routes.mjs`](./routes.mjs) | `routes()`, `resolve()`, `glob()`, `files()`, `kits()`, `groups()`, `ventureDir()`, `ventures()`, `gateOf()`, `allowed()`, `repo` and `PHASES`. |
 | [`commands.mjs`](./commands.mjs) | The command routes the function modules add (brand, the lint suites, the cache), as data. Each module in `schema/` re-exports its own list. |
 
+`defaultWorkspace()` is `MENTURA_WORKSPACE`, else the current directory. The framework never defaults to a folder of its own. A record type's venture-relative paths come from `venturePaths` in [`packages/records`](../records/README.md).
+
 `interface/router.mjs` re-exports everything in `routes.mjs`, so code that imports the route table from the router keeps working. New code below `interface/` imports `packages/routes/routes.mjs`.
 
 ## Run and test

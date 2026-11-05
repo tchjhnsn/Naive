@@ -37,7 +37,7 @@ import { impact } from "./impact.mjs";
 import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
 import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../packages/core/venture-paths.mjs";
-import { readDataModel, schemaNameOf } from "../packages/records/index.mjs";
+import { readDataModel, schemaNameOf, venturePaths } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -48,7 +48,7 @@ const FOUNDATION_RECORDS = new Set(FRAME.questions.flatMap((q) => q.statements).
 
 /** The record type a venture-relative file belongs to. */
 export function recordOf(file) {
-  return MODEL.records.find((r) => r.level === "venture" && r.paths.some((p) => p.startsWith("instance/**/") && glob(p.slice("instance/**/".length)).test(file)))?.id ?? null;
+  return MODEL.records.find((r) => r.level === "venture" && venturePaths(r).some((p) => glob(p).test(file)))?.id ?? null;
 }
 
 // Every *.decision.json in a venture, outside drafts, hidden folders and nested ventures.

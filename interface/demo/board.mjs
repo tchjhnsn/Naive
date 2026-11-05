@@ -4,7 +4,7 @@
 // idea graph (EE-060), at /kanban the ideas routed into the framework and the docket as boards (EE-061), at /site
 // site presence and the sitemap planner (EE-062 to EE-064), and at /package the venture package (EE-067). Local
 // only: it binds to 127.0.0.1 and reads the workspace in
-// MENTURA_WORKSPACE (the default is this repository's instance/). No dependencies: the map's React
+// MENTURA_WORKSPACE (the default is the current directory). No dependencies: the map's React
 // Flow is fetched once from unpkg and cached in ~/.cache/naive-board.
 //
 //   node interface/demo/board.mjs [--venture <id>] [--port 4331]

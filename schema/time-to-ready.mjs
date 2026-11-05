@@ -17,7 +17,7 @@ import { join, dirname } from "node:path";
 import { needNow } from "./need-now.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
-import { readDataModel } from "../packages/records/index.mjs";
+import { readDataModel, venturePaths } from "../packages/records/index.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const day = (d) => d ? d.slice(0, 10) : null;
@@ -42,7 +42,7 @@ export function timeToReady(dir) {
   const start = day(v.opened) ?? firstSeen(join(dir, "venture.json"));
   const here = files(dir);
   const where = (type) => {
-    const rels = (model.records.find((r) => r.id === type)?.paths ?? []).filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
+    const rels = venturePaths(model.records.find((r) => r.id === type));
     return here.filter((x) => rels.some((g) => glob(g).test(x)));
   };
   const seen = (type) => { const fs = where(type); return fs.length ? fs.map((f) => firstSeen(ventureFile(dir, f))).sort()[0] : null; };

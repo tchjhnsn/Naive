@@ -1,0 +1,15 @@
+{
+  "register": "decision-rights",
+  "updated": "2026-11-01",
+  "note": "Relay tightens the template in one place: agents open draft PRs and the founder merges, so accepting verified work is a recommendation.",
+  "classes": [
+    {
+      "id": "accept-verified-work",
+      "owner": "builder",
+      "level": "recommend-approve",
+      "description": "Accept work whose done-criteria pass conformance checks",
+      "condition": "The builder opens a draft PR with the evidence; the founder approves by merging",
+      "decision": "Team rule: the founder merges"
+    }
+  ]
+}

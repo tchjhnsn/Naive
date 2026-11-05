@@ -15,9 +15,10 @@ const dir = join(base, "acme");
 let failed = 0;
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
 /** @type {NodeJS.ProcessEnv} */
-const env = { ...process.env, HOME: base };
+// finance=rho syncs through the app's command (packages/core/sync.mjs); the test names a stand-in.
+const env = { ...process.env, HOME: base, NAIVE_SYNC_RHO: `node ${join(repo, "schema/examples/money-sync/sync.ts")}` };
 delete env.MENTURA_WORKSPACE;
-const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
+const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
 if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); process.exit(1); }
 
 const server = createServer(async (req, res) => { if (!(await handle(req, res, dir))) { res.writeHead(404); res.end(); } }).listen(0, "127.0.0.1");

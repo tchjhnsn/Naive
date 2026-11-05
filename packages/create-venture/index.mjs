@@ -7,7 +7,7 @@
 //
 //   npx create-venture [dir] [--yes] [--type <type> | --describe "<a few words>"] [--role <role>]
 //                      [--name "<your name>"] [--team "<name>, <name>"] [--phase <phase>]
-//                      [--source <function>=<system>[:<address>],... ...] [--rho-fixture]
+//                      [--source <function>=<system>[:<address>],... ...]
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
@@ -17,8 +17,8 @@
 // and the provenance log says unverified; --account names the account that door checked.
 // --source says where a function keeps its truth (schema/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
-// --source finance=rho. Rho is synced at setup: its sandbox, the founder's own with RHO_API_TOKEN, or a
-// saved answer with --rho-fixture (offline; recorded as a fixture).
+// --source finance=rho. A system whose sync command the app names (NAIVE_SYNC_<SYSTEM>, packages/core/sync.mjs)
+// is synced at setup and recorded as connected; any other system is recorded as pointed.
 //
 // --yes takes the recommended defaults: a software startup, you as its solo founder wearing every hat,
 // the discovery phase, the type's packages, checks on, and AGENTS.md. --describe classifies only when
@@ -265,20 +265,19 @@ if (answers.dump) {
   record(dir, { entity: "raw/dump.md", route: "raw/dump", activity: "write", agent: agentFromEnv(founderKind, door, { account }), note: `the founder's idea dump, verbatim${door === "cli" ? `, from ${resolve(answers.dump)}` : ""}` });
 }
 
-// knowledge/sources.json: each function's systems of record, as pointers (EE-083). Rho is read by code, so it is synced now.
-const rhoScript = join(framework, "platform/integrations/rho.mjs");
-let rhoNote = null;
+// knowledge/sources.json: each function's systems of record, as pointers (EE-083). A system whose sync command
+// the app names (packages/core/sync.mjs) is synced now; an older framework without that module syncs nothing.
+const syncModule = join(framework, "packages/core/sync.mjs");
+const { sync } = existsSync(syncModule) ? await import(syncModule) : { sync: () => ({ ran: false }) };
+const syncNotes = [];
 for (const f of Object.values(functions)) for (const s of f.systems) {
   s.status = "pointed";
-  if (s.system !== "rho") continue;
-  if (!existsSync(rhoScript)) { rhoNote = "Rho: recorded as pointed; this copy of Naive has no Rho integration"; continue; }
-  const fixture = flag("rho-fixture") ? join(framework, "platform/integrations/fixtures/rho-sandbox.json") : null;
-  const live = !fixture && process.env.RHO_API_TOKEN;
-  const r = spawnSync("node", [rhoScript, "sync", "--venture", dir, ...(fixture ? ["--fixture", fixture] : live ? ["--live"] : [])], { encoding: "utf8", env: process.env });
-  if (r.status === 0) {
-    Object.assign(s, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(fixture ? { fixture: true } : {}), address: s.address ?? (fixture ? "saved sandbox answer" : live ? "live" : "sandbox") });
-    rhoNote = `Rho: synced ${fixture ? "from a saved sandbox answer (a fixture, not a live account)" : live ? "from your Rho account" : "from Rho's sandbox (a fictional company)"} into money/`;
-  } else rhoNote = `Rho: could not sync (${(r.stderr || r.stdout).trim().split("\n").at(-1)}); recorded as pointed`;
+  const r = sync(s.system, dir);
+  if (!r.ran) continue;
+  if (r.ok) {
+    Object.assign(s, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(r.fixture ? { fixture: true } : {}), ...(s.address || r.address ? { address: s.address ?? r.address } : {}) });
+    syncNotes.push(`${s.system}: synced${r.said ? ` ${r.said}` : ""}`);
+  } else syncNotes.push(`${s.system}: could not sync (${r.error}); recorded as pointed`);
 }
 if (Object.keys(functions).length) {
   const map = vf(dir, "knowledge/sources.json");
@@ -344,7 +343,7 @@ const legal = functions.legal?.systems.length ? null : "Legal documents: none co
 console.log(`
 ${bold("Success!")} Created ${basename(dir)} at ${dir}
 Workspace: ${workspace ? `${workspace.name} at ${workspace.root} (${WORKSPACE_FILE}), clock in ${workspace.timeZone}, calendar in calendar/` : "none (--no-workspace)"}
-Git: ${git}${rhoNote ? `\n${rhoNote}` : ""}${legal ? `\n${legal}` : ""}
+Git: ${git}${syncNotes.length ? `\n${syncNotes.join("\n")}` : ""}${legal ? `\n${legal}` : ""}
 
 Inside that directory, you can run:
 

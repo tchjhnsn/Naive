@@ -77,6 +77,10 @@ Every README in this repo, this one included, and every playbook under `library/
 
 `workspace-init.mjs`, `workspace-init-test.mjs` and `frames-test.mjs` run create-venture from [`packages/create-venture/index.mjs`](../packages/create-venture/index.mjs). It moved there from the interface folder in step 2 of the Naive layout (EE-118). Not built yet: Naive as one package, the rest of that layout.
 
+## Example ventures
+
+The tests and the example checks run on example workspaces this repository owns, never on a builder's own records. `schema/examples/workspace` holds several ventures (acme-labs, northstar, studio, tandem, woodworking). `schema/examples/software` holds one software venture, relay, with product cards, handoffs and their evidence, decision rights, delegation that names its founder, a team plan, a publication policy and internal terms: `schema/test.mjs` breaks copies of it for `check-ventures.mjs`, `check-execution.mjs`, `check-ready.mjs` and `check-team.mjs`, and the lint, publish and internal-terms tests read it. Its records are invented. `schema/examples/money-sync/sync.ts` is a stand-in sync command for a money source (`NAIVE_SYNC_RHO`, see `packages/core/sync.mjs`): it replays acme-labs's money package into a venture, for the create-venture, setup and frames tests.
+
 ## Open reconciliations
 
 1. **Venture profile guidance.** The profile has no guidance of its own since the SAD documents were removed (EE-036); write a short template when a venture first needs one.

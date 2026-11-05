@@ -16,8 +16,9 @@ const edit = (file, f) => { const d = JSON.parse(readFileSync(file, "utf8")); f(
 let failed = 0, n = 0;
 const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
 
-// A broken copy of the EE venture, checked by the given script. `pattern` must appear in the errors.
-const venture = join(root, "instance/ventures/everything-ecosystem");
+// A broken copy of the example software venture (relay), checked by the given script. `pattern` must appear in the errors.
+const workspace = join(root, "schema/examples/software");
+const venture = join(workspace, "ventures/relay");
 function broken(name, script, change, pattern) {
   const dir = join(tmp, `v${++n}`);
   cpSync(venture, dir, { recursive: true });
@@ -27,29 +28,29 @@ function broken(name, script, change, pattern) {
 }
 const handoff = (dir, id) => join(dir, "operations/handoffs", `${id}.json`);
 
-expect("check-ventures passes on the instance", run("check-ventures.mjs", [join(root, "instance")]).status === 0);
+expect("check-ventures passes on the software example", run("check-ventures.mjs", [workspace]).status === 0);
 expect("check-ventures passes on the examples", run("check-ventures.mjs", [join(root, "schema/examples/workspace")]).status === 0);
-broken("a flows_to to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/mad.json"), (p) => { p.flows_to = ["nope"]; }), /flows_to unknown product nope/);
-broken("a part_of to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/five-step-algorithm.json"), (p) => { p.part_of = ["nope"]; }), /part_of unknown product nope/);
+broken("a flows_to to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/plugin.json"), (p) => { p.flows_to = ["nope"]; }), /flows_to unknown product nope/);
+broken("a part_of to an unknown product fails", "check-ventures.mjs", (d) => edit(join(d, "product/recipes.json"), (p) => { p.part_of = ["nope"]; }), /part_of unknown product nope/);
 broken("a missing layer folder fails", "check-ventures.mjs", (d) => rmSync(join(d, "operations"), { recursive: true }), /operations layer location/);
-broken("a tier scope outside operations fails", "check-ventures.mjs", (d) => edit(join(d, "products/kit.json"), (p) => { p.scope = { level: "tier", layer: "knowledge", tier: "delivery" }; }), /tier-scoped/);
+broken("a tier scope outside operations fails", "check-ventures.mjs", (d) => edit(join(d, "products/cli.json"), (p) => { p.scope = { level: "tier", layer: "knowledge", tier: "delivery" }; }), /tier-scoped/);
 broken("software with no repository fails", "check-ventures.mjs", (d) => edit(join(d, "venture.json"), (v) => { delete v.repos; }), /builds software, so the venture \(or a parent\) needs a repository/);
-broken("several markets with no primary fail", "check-ventures.mjs", (d) => edit(join(d, "product/mad.json"), (p) => { p.market = [p.market, p.market]; }), /exactly one primary/);
+broken("several markets with no primary fail", "check-ventures.mjs", (d) => edit(join(d, "product/plugin.json"), (p) => { p.market = [p.market, p.market]; }), /exactly one primary/);
 
-expect("check-execution passes on the EE venture", run("check-execution.mjs", [venture]).status === 0);
-broken("a class the role does not own fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-json-output"), (h) => { h.decision_classes.push("new-structure"); }), /belongs to architect/);
-broken("no self-proof criterion fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.done_criteria = h.done_criteria.filter((c) => c.kind !== "self-proof"); }), /no self-proof/);
-broken("done without evidence fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.evidence = []; }), /no passing evidence/);
-broken("done without a PR fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { delete h.pr; }), /done without a PR/);
+expect("check-execution passes on the software example", run("check-execution.mjs", [venture]).status === 0);
+broken("a class the role does not own fails", "check-execution.mjs", (d) => edit(handoff(d, "json-output"), (h) => { h.decision_classes.push("new-structure"); }), /belongs to architect/);
+broken("no self-proof criterion fails", "check-execution.mjs", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.done_criteria = h.done_criteria.filter((c) => c.kind !== "self-proof"); }), /no self-proof/);
+broken("done without evidence fails", "check-execution.mjs", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.evidence = []; }), /no passing evidence/);
+broken("done without a PR fails", "check-execution.mjs", (d) => edit(handoff(d, "flag-fixes"), (h) => { delete h.pr; }), /done without a PR/);
 broken("a review passed by the wrong role fails", "check-execution.mjs", (d) => {
-  for (const f of ["anatomy-json-output"]) edit(handoff(d, f), (h) => { h.evidence = h.evidence.slice(-1); });
-  const e = JSON.parse(readFileSync(handoff(d, "anatomy-json-output"), "utf8")).evidence[0];
+  for (const f of ["json-output"]) edit(handoff(d, f), (h) => { h.evidence = h.evidence.slice(-1); });
+  const e = JSON.parse(readFileSync(handoff(d, "json-output"), "utf8")).evidence[0];
   edit(join(d, "operations/handoffs", e), (x) => { x.results.forEach((r) => { if (r.kind === "review") r.by = "builder"; }); });
 }, /must be passed by architect/);
-broken("escalated with no open question fails", "check-execution.mjs", (d) => edit(handoff(d, "methodology-site-refresh"), (h) => { h.escalations.forEach((e) => { e.answer = "yes"; }); }), /escalated with no open question/);
-broken("attempts used up while in progress fail", "check-execution.mjs", (d) => edit(handoff(d, "methodology-site-refresh"), (h) => { h.status = "in-progress"; h.attempts = 3; }), /attempts used up/);
+broken("escalated with no open question fails", "check-execution.mjs", (d) => edit(handoff(d, "docs-refresh"), (h) => { h.escalations.forEach((e) => { e.answer = "yes"; }); }), /escalated with no open question/);
+broken("attempts used up while in progress fail", "check-execution.mjs", (d) => edit(handoff(d, "docs-refresh"), (h) => { h.status = "in-progress"; h.attempts = 3; }), /attempts used up/);
 broken("evidence whose passed flag lies fails", "check-execution.mjs", (d) => {
-  const e = JSON.parse(readFileSync(handoff(d, "methodology-site-refresh"), "utf8")).evidence[0];
+  const e = JSON.parse(readFileSync(handoff(d, "docs-refresh"), "utf8")).evidence[0];
   edit(join(d, "operations/handoffs", e), (x) => { x.passed = true; });
 }, /results disagree/);
 broken("loosening a class without a decision fails", "check-execution.mjs", (d) => edit(join(d, "governance/decision-rights.json"), (r) => { r.classes = [{ id: "public-commitment", owner: "founder", level: "decide" }]; }), /loosens escalate to decide/);
@@ -58,19 +59,19 @@ broken("loosening a class without a decision fails", "check-execution.mjs", (d) 
 function draft(name, change, pattern) {
   const dir = join(tmp, `r${++n}`);
   cpSync(venture, dir, { recursive: true });
-  edit(handoff(dir, "anatomy-runner-fixes"), (h) => { Object.assign(h, { status: "draft", attempts: 0, evidence: [] }); delete h.pr; delete h.claimed_by; delete h.lesson; });
+  edit(handoff(dir, "flag-fixes"), (h) => { Object.assign(h, { status: "draft", attempts: 0, evidence: [] }); delete h.pr; delete h.claimed_by; delete h.lesson; });
   change(dir);
-  const r = run("check-ready.mjs", [dir, "anatomy-runner-fixes"]);
+  const r = run("check-ready.mjs", [dir, "flag-fixes"]);
   expect(name, pattern ? r.status !== 0 && pattern.test(r.stdout) : r.status === 0);
 }
-const briefOf = (d) => join(d, "operations/handoffs/anatomy-runner-fixes.md");
+const briefOf = (d) => join(d, "operations/handoffs/flag-fixes.md");
 draft("check-ready passes on a complete draft", () => {});
 draft("a brief with no Outcome is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8").replace(/## Outcome/, "## Background")), /FAIL {2}brief has its Outcome section/);
 draft("a brief with a TBD is not ready", (d) => writeFileSync(briefOf(d), readFileSync(briefOf(d), "utf8") + "\nStep 4: TBD\n"), /FAIL {2}brief has no placeholders left: TBD/);
-draft("an unknown product is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.products = ["nope"]; }), /FAIL {2}every product it serves exists: nope/);
-draft("an unknown decision is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.governed_by = ["EE-999"]; }), /FAIL {2}every governing decision exists.*EE-999/);
-draft("a criterion calling a missing script is not ready", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.done_criteria[0].check = "node purpose/nope.mjs"; }), /FAIL {2}every script a criterion runs exists/);
-broken("in progress without a readiness check fails", "check-execution.mjs", (d) => edit(handoff(d, "anatomy-runner-fixes"), (h) => { h.status = "in-progress"; h.attempts = 1; }), /without a recorded readiness check/);
+draft("an unknown product is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.products = ["nope"]; }), /FAIL {2}every product it serves exists: nope/);
+draft("an unknown decision is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.governed_by = ["EE-999"]; }), /FAIL {2}every governing decision exists.*EE-999/);
+draft("a criterion calling a missing script is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.done_criteria[0].check = "node purpose/nope.mjs"; }), /FAIL {2}every script a criterion runs exists/);
+broken("in progress without a readiness check fails", "check-execution.mjs", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.status = "in-progress"; h.attempts = 1; }), /without a recorded readiness check/);
 
 // check-governance and payouts, on broken copies of the venture-backed example.
 const tandem = join(root, "schema/examples/workspace/ventures/tandem");
@@ -213,16 +214,15 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p) => { p.ev
 }
 
 // check-team: agents as teammates, with human loops where they are needed (EE-029).
-const eeVenture = join(root, "instance/ventures/everything-ecosystem");
 function teamBroken(name, change, pattern) {
   const dir = join(tmp, `team${++n}`);
-  cpSync(eeVenture, dir, { recursive: true });
+  cpSync(venture, dir, { recursive: true });
   change(dir);
   const r = run("check-team.mjs", [dir]);
   expect(name, r.status !== 0 && pattern.test(r.stderr));
 }
 const planOf = (d) => join(d, "people/team-plan.json");
-expect("check-team passes on the instance", run("check-team.mjs", [join(root, "instance")]).status === 0);
+expect("check-team passes on the software example", run("check-team.mjs", [workspace]).status === 0);
 teamBroken("an agent holding an escalate class fails", (d) => edit(planOf(d), (p) => { p.roles[1].authority.push("spend-money"); }), /holds spend-money, which decision rights give to founder|an escalate class/);
 teamBroken("an agent doing an unknown task with no human loop fails", (d) => edit(planOf(d), (p) => { delete p.roles[3].tasks[0].human_loop; }), /names a human loop/);
 teamBroken("a human loop that is not a person role fails", (d) => edit(planOf(d), (p) => { p.roles[3].tasks[0].human_loop = "builder"; }), /is not a person role/);
@@ -311,9 +311,9 @@ for (const [name, change, pattern] of /** @type {[string, (d: string) => void, R
 {
   const d = copy("priv");
   edit(join(d, "library/packages/customers/package.json"), (p) => { p.use_model = [{ step: "summarize", inputs: ["ada.note"] }]; });
-  mkdirSync(join(d, "instance/ventures/everything-ecosystem/customers"), { recursive: true });
-  writeFileSync(join(d, "instance/ventures/everything-ecosystem/customers/ada.json"), JSON.stringify({ id: "ada", private_fields: ["note"] }));
-  const r = run("check-private.mjs", [join(d, "instance")], { EE_ROOT: d });
+  mkdirSync(join(d, "workspace/ventures/demo/customers"), { recursive: true });
+  writeFileSync(join(d, "workspace/ventures/demo/customers/ada.json"), JSON.stringify({ id: "ada", private_fields: ["note"] }));
+  const r = run("check-private.mjs", [join(d, "workspace")], { EE_ROOT: d });
   expect("check-private catches a private field named in use_model", r.status !== 0 && /ada\.note is private/.test(r.stderr));
 }
 

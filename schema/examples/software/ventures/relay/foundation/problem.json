@@ -1,0 +1,34 @@
+{
+  "venture": "relay",
+  "updated": "2026-11-01",
+  "statement": "Small teams that publish a command-line tool lose users at install: the tool installs one way on one machine and another way on the next, and the first run fails.",
+  "segment": "Small teams of one to five people who publish developer tools",
+  "cost": "Users who give up before the first run, and support time spent on install problems",
+  "workarounds": [
+    "A long install section in the README",
+    "A container image users must learn to run"
+  ],
+  "why_now": "More small teams publish tools now that agents help them write the code, so more of them meet the install problem.",
+  "evidence": [
+    {
+      "id": "install-issues",
+      "kind": "desk-research",
+      "summary": "In an invented sample of issue trackers, install problems are the most common first issue a new user opens.",
+      "supports": true,
+      "source": {
+        "title": "Example sample, invented for this fixture",
+        "url": "https://example.com/relay/install-issues",
+        "checked": "2026-11-01"
+      },
+      "audience": "target",
+      "collected": "2026-11-01",
+      "assumption": "exists"
+    }
+  ],
+  "forms": [
+    {
+      "id": "first-run",
+      "statement": "A new user installs the tool and the first run fails with an error they cannot read."
+    }
+  ]
+}

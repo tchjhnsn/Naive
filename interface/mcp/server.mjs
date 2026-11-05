@@ -6,7 +6,7 @@
 // draft for a person to accept. Nothing an agent sends through this server can approve itself.
 //
 //   claude mcp add mentura -- node <repo>/interface/mcp/server.mjs
-//   MENTURA_WORKSPACE=<dir> sets the workspace; the default is this repository's instance/.
+//   MENTURA_WORKSPACE=<dir> sets the workspace; the default is the current directory.
 
 import { createInterface } from "node:readline";
 import { call, routes, routesMd, ventureDir, ventures } from "../router.mjs";

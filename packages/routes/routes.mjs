@@ -15,11 +15,12 @@ import {
   BRAND_ROUTES, brandCommands, cacheRoutes, customersLintCommands, financeCommands, foundationLintCommands,
   investorsLintCommands, legalCommands, moneyCommands, peopleLintCommands, productCommands, validationCommands,
 } from "./commands.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { readDataModel, venturePaths } from "../records/index.mjs";
 
 export const repo = fileURLToPath(new URL("../..", import.meta.url));
 export const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-export const defaultWorkspace = () => process.env.MENTURA_WORKSPACE ?? join(repo, "instance");
+// The workspace is MENTURA_WORKSPACE, else the current directory: a framework never defaults to a folder of its own.
+export const defaultWorkspace = () => process.env.MENTURA_WORKSPACE ?? process.cwd();
 export const PHASES = load(join(repo, "purpose/frameworks/product-anatomy/phases.json")).phases;
 
 export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
@@ -57,7 +58,7 @@ function buildRoutes() {
     const k = owner.get(r.id);
     const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("library/packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
     const short = sub && r.id.startsWith(`${sub}-`) ? r.id.slice(sub.length + 1) : r.id;
-    const filesOf = r.paths.filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
+    const filesOf = venturePaths(r);
     if (filesOf.length && filesOf.every((f) => f.startsWith(".naive/"))) continue; // .naive/ is local and never routed.
     // The template is the package's template dir, or <manifest folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
     const tdir = k?.template_dir ?? (k && !k.path.startsWith("library/packages/") ? join(dirname(k.path), "templates") : null);

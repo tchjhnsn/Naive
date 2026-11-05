@@ -30,7 +30,7 @@ import { loadPackages } from "./load-packages.mjs";
 import { adopted } from "./naive-config.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { scale } from "./canonical.mjs";
-import { readDataModel } from "../packages/records/index.mjs";
+import { readDataModel, venturePaths } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -93,7 +93,7 @@ export function request(dir) {
 /** A record's state in this venture: confirmed by a person, written by an agent, waiting as a draft, or missing. */
 function stateOf(dir, type) {
   const files = filesOf(dir, type).filter((f) => existsSync(ventureFile(dir, f)) && !(f.endsWith(".json") && ["retired", "archived"].includes(json(dir, f)?.status)));
-  const drafts = (filesOf(dir, type).length ? filesOf(dir, type) : [MODEL.records.find((r) => r.id === type)?.paths?.find((p) => p.startsWith("instance/**/"))?.slice(12)].filter(Boolean))
+  const drafts = (filesOf(dir, type).length ? filesOf(dir, type) : [venturePaths(MODEL.records.find((r) => r.id === type))[0]].filter(Boolean))
     .filter((f) => !f.includes("*") && existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
   if (!files.length) return { status: drafts.length ? "draft" : "missing", files: [], drafts };
   const confirmed = files.every((f) => confirmedIn(dir, f, null));

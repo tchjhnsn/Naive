@@ -111,7 +111,7 @@ const rawId = (url) => {
 
 /**
  * A remote image as a link with a note in raw/ (J-3): raw/sources/<id>/source.json says where it is,
- * text.md is the note, and the register lists it under remote. Nothing is fetched here. The platform
+ * text.md is the note, and the register lists it under remote. Nothing is fetched here. An app's
  * fetcher passes `fetched` (facts of the private original) and `copy` when it kept a public copy.
  * @param {{ venture: string, workspace?: string, url: string, license?: string, credit?: string, id?: string, alt?: string, note?: string, fetched?: { type?: string, width?: number, height?: number, bytes?: number, sha256?: string }, copy?: string, actor?: string }} opts
  */
@@ -135,7 +135,7 @@ export async function addRemote({ venture, workspace, url, license, credit, id, 
   return w.ok ? { ok: true, result: { remote: url, raw: `raw/sources/${rid}/`, copy: copy ?? null } } : w;
 }
 
-/** The hosts an agent may fetch from, a setting the platform fetcher enforces (J-3). */
+/** The hosts an agent may fetch from, a setting an app's fetcher enforces (J-3). */
 export async function setHosts({ venture, workspace, hosts, actor = "agent" }) {
   const dir = ventureDir(venture, workspace);
   if (!dir) return { ok: false, error: `no venture ${venture}` };

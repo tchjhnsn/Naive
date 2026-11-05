@@ -1,0 +1,71 @@
+{
+  "venture": "relay",
+  "updated": "2026-11-01",
+  "note": "One person (the founder) and two agent roles. The founder holds every escalate class.",
+  "roles": [
+    {
+      "id": "founder",
+      "occupant": "person",
+      "needed_by": "discovery",
+      "status": "filled",
+      "why": "Owner; decides strategy, money and public commitments",
+      "tasks": [
+        {
+          "capability": "sign-or-commit-the-venture"
+        }
+      ]
+    },
+    {
+      "id": "architect",
+      "occupant": "agent",
+      "needed_by": "discovery",
+      "status": "filled",
+      "why": "Designs the CLI's structure",
+      "authority": [
+        "new-structure",
+        "new-adr-within-strategy",
+        "new-dependency-free"
+      ],
+      "tasks": [
+        {
+          "capability": "draft-records-from-sources",
+          "human_loop": "founder"
+        }
+      ]
+    },
+    {
+      "id": "builder",
+      "occupant": "agent",
+      "needed_by": "discovery",
+      "status": "filled",
+      "why": "Implements ready handoffs to their done criteria",
+      "authority": [
+        "implementation-detail",
+        "schema-change-within-adr"
+      ],
+      "tasks": [
+        {
+          "capability": "implement-ready-handoff",
+          "human_loop": "founder"
+        }
+      ]
+    },
+    {
+      "id": "business-lead",
+      "occupant": "agent",
+      "needed_by": "validation",
+      "status": "planned",
+      "why": "Problem and pricing evidence",
+      "tasks": [
+        {
+          "capability": "customer-interviews",
+          "human_loop": "founder"
+        },
+        {
+          "capability": "sales-conversations",
+          "human_loop": "founder"
+        }
+      ]
+    }
+  ]
+}

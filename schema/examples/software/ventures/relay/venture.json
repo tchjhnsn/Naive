@@ -1,0 +1,60 @@
+{
+  "id": "relay",
+  "name": "Relay",
+  "parent": null,
+  "phase": "discovery",
+  "industry": {
+    "system": "naics",
+    "code": "513210",
+    "label": "Software Publishers"
+  },
+  "core": {
+    "promise": "We help small teams ship a command-line tool their users can install in one step.",
+    "promised_to": "Small teams who publish developer tools",
+    "must_not": "A release that installs differently on two machines",
+    "competence": "Packaging command-line tools so they install and update the same way everywhere"
+  },
+  "owner": "self",
+  "status": "active",
+  "profile": "profile.md",
+  "layers": {
+    "purpose": false,
+    "knowledge": false,
+    "operations": {
+      "location": "operations/"
+    },
+    "evidence": {
+      "location": "evidence/"
+    },
+    "governance": {
+      "location": "governance/"
+    }
+  },
+  "repos": [
+    {
+      "id": "relay",
+      "url": "https://example.com/relay.git",
+      "products": [
+        "cli",
+        "recipes",
+        "docs-site"
+      ]
+    }
+  ],
+  "members": [
+    {
+      "role": "architect",
+      "kind": "agent",
+      "tools": [
+        "claude-code"
+      ]
+    },
+    {
+      "role": "builder",
+      "kind": "agent",
+      "tools": [
+        "claude-code"
+      ]
+    }
+  ]
+}

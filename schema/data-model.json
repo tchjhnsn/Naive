@@ -17,7 +17,8 @@
       "schema": "schema/workspace.schema.json",
       "paths": [
         "instance/workspace.json",
-        "schema/examples/workspace/workspace.json"
+        "schema/examples/workspace/workspace.json",
+        "schema/examples/software/workspace.json"
       ],
       "contains": [
         "venture"
@@ -1009,7 +1010,8 @@
       "level": "venture",
       "schema": "schema/handoff.schema.json",
       "paths": [
-        "instance/**/operations/handoffs/*.json"
+        "instance/**/operations/handoffs/*.json",
+        "schema/examples/**/operations/handoffs/*.json"
       ],
       "refs": [
         {
@@ -1073,7 +1075,8 @@
       "level": "venture",
       "schema": "schema/evidence.schema.json",
       "paths": [
-        "instance/**/evidence/results/*.json"
+        "instance/**/evidence/results/*.json",
+        "schema/examples/**/evidence/results/*.json"
       ],
       "refs": [
         {
@@ -1134,7 +1137,8 @@
       "schema": "schema/decision-rights.schema.json",
       "paths": [
         "governance/venture-template/decision-rights.json",
-        "instance/**/governance/decision-rights.json"
+        "instance/**/governance/decision-rights.json",
+        "schema/examples/**/governance/decision-rights.json"
       ],
       "refs": [
         {
@@ -1821,7 +1825,8 @@
       "schema": "schema/delegation.schema.json",
       "paths": [
         "governance/venture-template/delegation.json",
-        "instance/**/governance/delegation.json"
+        "instance/**/governance/delegation.json",
+        "schema/examples/**/governance/delegation.json"
       ],
       "refs": [
         {

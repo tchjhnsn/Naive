@@ -13,6 +13,7 @@ The first code package of the monorepo rebuild. It holds the modules every layer
 | [`venture-paths.mjs`](./venture-paths.mjs) | Where each logical file of a venture sits in its layout (`ventureFile`, `physical`). Imports nothing in the repository. |
 | [`instrumentation.mjs`](./instrumentation.mjs) | Timing and measuring of each call and judgment, for agent vitals. Imports `venture-paths.mjs`. |
 | [`provenance.mjs`](./provenance.mjs) | The venture's append-only provenance log, `provenance.jsonl`, with its hash chain (EE-031). Imports the two above. |
+| [`sync.mjs`](./sync.mjs) | Syncing a system of record into a venture (EE-083): `sync(system, dir)` runs the command the app names in `NAIVE_SYNC_<SYSTEM>` (such as `NAIVE_SYNC_RHO`) with `--venture <dir>`, and `syncCommand` and `syncVariable` say which. Naive ships no sync command, so a system with none stays pointed. create-venture and setup use it. Imports nothing in the repository. |
 | [`action-scope.mjs`](./action-scope.mjs) | One action's scope: `actionScope`, `memo`, `forget`, `inAction` and `actionStats`, values computed once per router call and shared. Imports nothing in the repository. `schema/caching.mjs` re-exports it. |
 
 The old paths `schema/venture-paths.mjs`, `interface/instrumentation.mjs` and `interface/provenance.mjs` re-export these modules, for code outside this repository that imports them by path, such as an installed create-venture.

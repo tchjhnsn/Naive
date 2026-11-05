@@ -17,7 +17,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { canonicalHome, migrated } from "./canonical.mjs";
-import { readDataModel } from "../packages/records/index.mjs";
+import { readDataModel, venturePaths } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -31,7 +31,7 @@ const filled = (v) => v !== undefined && v !== null && v !== "" && !(Array.isArr
 /** Venture-relative files of a record type: one file, or every item of a collection. */
 export function filesOf(dir, type) {
   const r = MODEL.records.find((x) => x.id === type);
-  const gs = (r?.paths ?? []).filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
+  const gs = venturePaths(r);
   const found = [];
   for (const g of gs) {
     if (!g.includes("*")) { if (existsSync(ventureFile(dir, g))) found.push(g); continue; }
