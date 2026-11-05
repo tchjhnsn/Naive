@@ -17,7 +17,7 @@ import { join } from "node:path";
 import { catalog } from "./departments.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { scale } from "./canonical.mjs";
-import { readDataModel } from "../packages/records/index.mjs";
+import { readDataModel, venturePaths } from "../packages/records/index.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -80,7 +80,7 @@ export function needNow(dir) {
   const next = PHASES[PHASES.indexOf(phase) + 1];
   const rows = Object.entries(N.records).map(([type, spec]) => {
     const rec = model.records.find((r) => r.id === type);
-    const rels = (rec?.paths ?? []).filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
+    const rels = venturePaths(rec);
     const held = rels.some((g) => here.some((x) => glob(g).test(x)));
     const now = probability(spec, phase, f), soon = next ? probability(spec, next, f) : now;
     const off = rec?.layer && v.layers?.[rec.layer] === false;

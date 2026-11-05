@@ -7,7 +7,7 @@
   "required": ["idea", "field", "value", "ruled"],
   "additionalProperties": false,
   "properties": {
-    "idea": { "type": "string", "pattern": "^[a-z0-9-]+$(?![\\s\\S])", "description": "The id of an idea in instance/people/p-54697df9/ideas/" },
+    "idea": { "type": "string", "pattern": "^[a-z0-9-]+$(?![\\s\\S])", "description": "The id of an idea in the workspace founder's ideas folder (people/<id>/ideas/)" },
     "field": { "enum": ["status", "importance", "relation", "scope"], "description": "The idea field ruled on. relation rules on the idea's whole relations list" },
     "value": { "description": "Torian's value, in the shape of that field of the idea record" },
     "comment": {

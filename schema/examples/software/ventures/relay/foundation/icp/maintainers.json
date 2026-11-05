@@ -1,0 +1,16 @@
+{
+  "venture": "relay",
+  "updated": "2026-11-01",
+  "id": "maintainers",
+  "who": "Maintainers of small command-line tools who answer their own support questions",
+  "primary": true,
+  "customer": "b2b",
+  "jobs": [
+    "Ship a release that installs the same way everywhere",
+    "Spend less time answering install questions"
+  ],
+  "traits": [
+    "Publishes releases by hand",
+    "Has users on several operating systems"
+  ]
+}

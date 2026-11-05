@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "money-summary.schema.json",
   "title": "Money summary",
-  "description": "The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway as of the last sync from the system of record (Rho), the one money record that is versioned and the only one an agent or a trace sees. source says whether it came from Rho's sandbox, a saved fixture, or the founder's live account.",
+  "description": "The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway as of the last sync from the system of record (a bank such as Rho), the one money record that is versioned and the only one an agent or a trace sees. source says whether it came from a sandbox, a saved fixture, or the founder's live account.",
   "type": "object",
   "required": [
     "source",

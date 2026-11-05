@@ -32,7 +32,7 @@ function problems(doc) {
   return out;
 }
 
-for (const f of ["schema/internal-terms.json", "instance/ventures/everything-ecosystem/governance/internal-terms.json"]) {
+for (const f of ["schema/internal-terms.json", "schema/examples/software/ventures/relay/governance/internal-terms.json"]) {
   const bad = problems(JSON.parse(readFileSync(join(repo, f), "utf8")));
   expect(`${f} matches schema/internal-terms.schema.json`, bad.length === 0, bad);
 }

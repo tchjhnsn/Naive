@@ -239,9 +239,9 @@ function venture(layout = "flat") {
 }
 
 {
-  const instance = join(repo, "instance/ventures/everything-ecosystem");
-  const r = run(instance);
-  expect("the instance venture lints without crashing", r.status === 0 && r.body?.ok === true, r.stderr || r.stdout);
+  const relay = join(repo, "schema/examples/software/ventures/relay");
+  const r = run(relay);
+  expect("the software example lints without crashing", r.status === 0 && r.body?.ok === true, r.stderr || r.stdout);
 }
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");

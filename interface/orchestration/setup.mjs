@@ -10,9 +10,9 @@
 //   node interface/orchestration/setup.mjs <venture dir> point <function> <system> [address] [--via mcp]
 //   node interface/orchestration/setup.mjs <venture dir> confirm [--yes]          confirm the answers the model relayed, as the founder
 
-import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
+import { sync, syncCommand } from "../../packages/core/sync.mjs";
 import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
@@ -45,7 +45,8 @@ export async function state(dir) {
     later: docket.filter((d) => d.render !== "now" && d.status !== "decided").length,
     goal: goal ? { status: goal.status, answer: goal.answer ?? null, relayed: relayed(goal) } : null,
     steps, done: Object.values(steps).every(Boolean), counts: { settled, of: now.length },
-    rho: existsSync(join(repo, "platform/integrations/rho.mjs")),
+    // The systems the app named a sync command for (packages/core/sync.mjs): pointing at one syncs it.
+    syncs: Object.keys(catalog.systems).filter((s) => syncCommand(s)),
   };
 }
 
@@ -86,11 +87,8 @@ export async function point(dir, { fn, system, address, via = "api", actor = "pe
   const map = existsSync(file) ? load(file) : { sources: [], records: {}, truth: "local" };
   const f = (map.functions ??= {})[fn] ??= { systems: [] };
   const entry = { system, ...(address ? { address } : {}), status: "pointed" };
-  if (system === "rho" && existsSync(join(repo, "platform/integrations/rho.mjs"))) {
-    const live = Boolean(process.env.RHO_API_TOKEN);
-    const r = spawnSync("node", [join(repo, "platform/integrations/rho.mjs"), "sync", "--venture", dir, ...(live ? ["--live"] : [])], { encoding: "utf8", env: process.env });
-    if (r.status === 0) Object.assign(entry, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), address: address || (live ? "live" : "sandbox") });
-  }
+  const synced = sync(system, dir);
+  if (synced.ran && synced.ok) Object.assign(entry, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(synced.fixture ? { fixture: true } : {}), ...(address || synced.address ? { address: address || synced.address } : {}) });
   f.systems = [...f.systems.filter((s) => s.system !== system), entry];
   const { call } = await import("../router.mjs");
   const r = await call({ workspace: dirname(dir), venture: basename(dir), route: "knowledge/knowledge-sources", action: "write", input: map, actor, ...(agentId ? { actor_id: agentId } : {}), via, provenance: { note: `${fn}: ${system}${address ? ` at ${address}` : ""} (${entry.status})` } });

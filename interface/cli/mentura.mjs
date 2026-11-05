@@ -61,7 +61,8 @@
 //   mentura batch --venture <id> --input <calls.json> [--stream]
 //                                                   run a list of {route, action, input} calls, reporting each as it finishes
 //
-// The workspace is MENTURA_WORKSPACE, else --workspace <dir>, else this repository's instance/.
+// The workspace is --workspace <dir>, else the venture or workspace you are in, else MENTURA_WORKSPACE,
+// else the current directory.
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
 // record written by an agent lands in <venture>/_drafts/ for a person to accept.
 

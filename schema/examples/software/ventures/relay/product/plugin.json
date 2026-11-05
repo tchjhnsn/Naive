@@ -1,0 +1,24 @@
+{
+  "id": "plugin",
+  "name": "Editor plugin",
+  "description": "An editor plugin that runs the CLI from inside the editor.",
+  "market": {
+    "customer": "b2c",
+    "segment": "developers who live in their editor",
+    "geography": "global",
+    "vertical": false
+  },
+  "job": "Run the CLI without leaving the editor",
+  "technology": "editor extension",
+  "software": true,
+  "offering": "product",
+  "business_model": [
+    "open-core",
+    "subscription"
+  ],
+  "allowed_from": "validation",
+  "flows_to": [
+    "cli"
+  ],
+  "status": "idea"
+}

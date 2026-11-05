@@ -1311,7 +1311,7 @@ export type Goal = {
 
 /** Torian's ruling on one field of one idea record (docs/reviews/ontology-golden/<idea>.<field>.json). Only Torian's rulings are golden records; a model, an agent or a checker never writes one. The value has the shape the idea record's field takes in schema/founder-idea.schema.json, so a gated label and a ruling compare as equal values. A ruling cites exactly one source of Torian's words: comment, the issue or pull request comment where he gave it, or card, the decision card he tapped in the project thread. */
 export type GoldenRuling = {
-  /** The id of an idea in instance/people/p-54697df9/ideas/ */
+  /** The id of an idea in the workspace founder's ideas folder (people/<id>/ideas/) */
   idea: string;
   /** The idea field ruled on. relation rules on the idea's whole relations list */
   field: "status" | "importance" | "relation" | "scope";
@@ -2013,7 +2013,7 @@ export type MarketingSitemap = {
   [key: string]: unknown;
 };
 
-/** The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway as of the last sync from the system of record (Rho), the one money record that is versioned and the only one an agent or a trace sees. source says whether it came from Rho's sandbox, a saved fixture, or the founder's live account. */
+/** The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway as of the last sync from the system of record (a bank such as Rho), the one money record that is versioned and the only one an agent or a trace sees. source says whether it came from a sandbox, a saved fixture, or the founder's live account. */
 export type MoneySummary = {
   /** rho-sandbox, rho-live, or a fixture's name */
   source: string;
@@ -2964,7 +2964,7 @@ export type ProvenanceEntry = {
 /** The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by schema/check-assets.mjs. Version 0.x, unevaluated. */
 export type PublicAssets = {
   version: string;
-  /** Hosts an agent may fetch images from (exact, or *.example.com); the platform fetcher refuses any other */
+  /** Hosts an agent may fetch images from (exact, or *.example.com); a fetcher refuses any other */
   remote_hosts?: string[];
   assets: {
     path: string;

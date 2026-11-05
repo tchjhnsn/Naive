@@ -1,0 +1,49 @@
+{
+  "venture": "relay",
+  "updated": "2026-11-01",
+  "note": "One channel: the public docs site. The founder approves every publication; agents draft and run the checks.",
+  "guidelines": [
+    {
+      "id": "cc-by-4",
+      "title": "Creative Commons Attribution 4.0 for the docs' text",
+      "kind": "legal",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "checked": "2026-11-01"
+    }
+  ],
+  "channels": [
+    {
+      "id": "docs-site",
+      "name": "Docs site",
+      "kind": "docs-site",
+      "destination": "the docs folder in the relay repository",
+      "audience": "teams installing the CLI",
+      "guidelines": [
+        "cc-by-4"
+      ],
+      "rules": [
+        {
+          "content": "documentation pages",
+          "from_layers": [
+            "operations"
+          ],
+          "drafters": [
+            "builder",
+            "architect"
+          ],
+          "approvers": [
+            "founder"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "owner-read",
+          "check": "The founder reads the built pages before they are pushed",
+          "kind": "review"
+        }
+      ],
+      "preview": "Build the docs folder and open it locally"
+    }
+  ]
+}

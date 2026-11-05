@@ -53,7 +53,8 @@ export function refusals(dir, { content = join(repo, "site/content/marketing"), 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
   const opt = (n) => argv.includes(`--${n}`) ? argv[argv.indexOf(`--${n}`) + 1] : undefined;
-  const dir = argv[0] && !argv[0].startsWith("--") ? resolve(argv[0]) : join(repo, "instance/ventures/everything-ecosystem");
+  if (!argv[0] || argv[0].startsWith("--")) { console.error("usage: node schema/check-visibility.mjs <venture dir> [--content <dir>] [--facts <file>] [--json]"); process.exit(2); }
+  const dir = resolve(argv[0]);
   const r = refusals(dir, { ...(opt("content") ? { content: resolve(opt("content")) } : {}), ...(opt("facts") ? { facts: resolve(opt("facts")) } : {}) });
   if (argv.includes("--json")) console.log(JSON.stringify(r, null, 2));
   else {

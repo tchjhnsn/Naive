@@ -34,7 +34,7 @@
   },
   "properties": {
     "version": { "type": "string" },
-    "remote_hosts": { "type": "array", "items": { "type": "string" }, "description": "Hosts an agent may fetch images from (exact, or *.example.com); the platform fetcher refuses any other" },
+    "remote_hosts": { "type": "array", "items": { "type": "string" }, "description": "Hosts an agent may fetch images from (exact, or *.example.com); a fetcher refuses any other" },
     "assets": {
       "type": "array",
       "items": {

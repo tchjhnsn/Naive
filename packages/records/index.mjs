@@ -13,6 +13,7 @@
 //                         ("platform/research/schemas/claim.schema.json") resolves from the repository root
 //   listSchemas()         every schema file name in RECORDS, sorted
 //   schemaNameOf(stored)  a stored path to the name schema/validate.py --schema takes
+//   venturePaths(record)  a venture-level record type's paths relative to a venture folder (VENTURE_PREFIX)
 //   recordsIn(root)       the same functions for another copy of the repository, such as a test's temp copy
 //                         (the EE_ROOT pattern of schema/check-data-model.mjs)
 
@@ -27,6 +28,18 @@ export const FOLDER = "schema";
 export const PREFIXES = Object.freeze(["schema/"]);
 export const SUFFIX = ".schema.json";
 export const DATA_MODEL = "data-model.json";
+
+// The prefix a venture-level record's stored paths carry in data-model.json: "instance/**/products/*.json"
+// means products/*.json inside any venture folder. The prefix is the name the data model has always used for a
+// workspace; it names no folder Naive reads, and code asks venturePaths for the venture-relative paths instead
+// of slicing the prefix itself.
+export const VENTURE_PREFIX = "instance/**/";
+
+/** A record type's paths relative to a venture folder, in the order data-model.json lists them.
+ *  @param {{ paths?: string[] } | null | undefined} record @returns {string[]} */
+export function venturePaths(record) {
+  return (record?.paths ?? []).filter((p) => p.startsWith(VENTURE_PREFIX)).map((p) => p.slice(VENTURE_PREFIX.length));
+}
 
 /** The repository root this module sits in: packages/records/ is two folders below it. */
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url));

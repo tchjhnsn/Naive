@@ -1,0 +1,15 @@
+{
+  "note": "Relay's own internal terms, on top of Naive's. The founder edits this list.",
+  "updated": "2026-11-01",
+  "owner": "Ada",
+  "patterns": [
+    {
+      "id": "codename-kestrel",
+      "kind": "codename",
+      "regex": "\\bKestrel\\b",
+      "why": "the next release's codename, internal until announced",
+      "severity": "warn",
+      "until": "Ada announces the release"
+    }
+  ]
+}

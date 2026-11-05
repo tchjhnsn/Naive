@@ -1,0 +1,17 @@
+{
+  "id": "statement-problem",
+  "question": "Write the problem statement",
+  "status": "decided",
+  "needed_in": "discovery",
+  "answer": "Small teams that publish a command-line tool lose users when the tool installs differently on each machine.",
+  "provenance": {
+    "drafted_by": {
+      "kind": "agent"
+    },
+    "approved_by": "Ada",
+    "approved_at": "2026-11-01T12:00:00Z",
+    "phase": "discovery",
+    "wording": "own",
+    "via": "api"
+  }
+}

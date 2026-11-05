@@ -1,0 +1,48 @@
+{
+  "id": "json-output",
+  "title": "Relay CLI: JSON output",
+  "venture": "relay",
+  "products": [
+    "cli"
+  ],
+  "governed_by": [
+    "EE-017"
+  ],
+  "assignment": "none",
+  "role": "builder",
+  "brief": "json-output.md",
+  "decision_classes": [
+    "implementation-detail",
+    "accept-verified-work"
+  ],
+  "done_criteria": [
+    {
+      "id": "ventures-hold",
+      "kind": "conformance",
+      "check": "node schema/check-ventures.mjs schema/examples/software"
+    },
+    {
+      "id": "execution-holds",
+      "kind": "self-proof",
+      "check": "node schema/check-execution.mjs schema/examples/software/ventures/relay"
+    },
+    {
+      "id": "shape-fit",
+      "kind": "review",
+      "reviewer": "architect",
+      "check": "Is the JSON shape in the README the one agents and tests should rely on?"
+    }
+  ],
+  "status": "done",
+  "claimed_by": "session_example_relay",
+  "session_id": "session_example_relay",
+  "attempts": 1,
+  "max_attempts": 3,
+  "run_cap": "2h",
+  "evidence": [
+    "../../evidence/results/json-output-20261101100000.json",
+    "../../evidence/results/json-output-20261101110000.json"
+  ],
+  "pr": "https://example.com/relay/pull/2",
+  "lesson": "A JSON output names ids, not display text."
+}

@@ -237,7 +237,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
   const shut = await call({ venture: "acme", route: "investors/lint", action: "run", workspace: ws, via: "cli" });
   expect("the route fails when a fail-closed rule has a finding", shut.ok === false && /update-unconfirmed-numbers/.test(shut.error ?? ""), shut.error ?? shut);
 
-  for (const rel of ["instance/ventures/everything-ecosystem", "schema/examples/workspace/ventures/northstar", "schema/examples/workspace/ventures/acme-labs", "schema/examples/workspace/ventures/tandem"]) {
+  for (const rel of ["schema/examples/software/ventures/relay", "schema/examples/workspace/ventures/northstar", "schema/examples/workspace/ventures/acme-labs", "schema/examples/workspace/ventures/tandem"]) {
     const v = join(repo, rel);
     const cli = run(v, ["--json"]);
     let body = null;

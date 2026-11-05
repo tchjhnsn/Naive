@@ -221,9 +221,9 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
   const tandem = join(repo, "schema/examples/workspace/ventures/tandem");
   const r = run(tandem);
   expect("the tandem example stays silent", r.status === 0 && json(r)?.findings.length === 0, r.stdout);
-  const instance = join(repo, "instance/ventures/everything-ecosystem");
-  const i = run(instance);
-  expect("the instance venture stays silent", i.status === 0 && json(i)?.findings.length === 0, i.stdout + i.stderr);
+  const relay = join(repo, "schema/examples/software/ventures/relay");
+  const i = run(relay);
+  expect("the software example stays silent", i.status === 0 && json(i)?.findings.length === 0, i.stdout + i.stderr);
 }
 
 // The route is legal/lint, and it runs this script.

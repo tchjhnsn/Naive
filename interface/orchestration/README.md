@@ -11,7 +11,7 @@ The modules that compose routes. Each one runs records through the router's `cal
 | Path | Holds |
 |---|---|
 | [`triggers.mjs`](./triggers.mjs) | Triggers that run after each write (M-12, E-7). A failed run is raised as a decision. `mentura triggers` shows them. |
-| [`setup.mjs`](./setup.mjs) | Setup in the model's harness (EE-083). It holds the questions, and each answer is a proposal the founder confirms. `naive setup` and the MCP setup tools use it. |
+| [`setup.mjs`](./setup.mjs) | Setup in the model's harness (EE-083). It holds the questions, and each answer is a proposal the founder confirms. `naive setup` and the MCP setup tools use it. Pointing a function at a system runs the system's sync command when the app names one ([`packages/core/sync.mjs`](../../packages/core/sync.mjs)), and the state lists those systems under `syncs`. |
 | [`migrate-venture.mjs`](./migrate-venture.mjs) | `naive migrate` (EE-076). An agent rewrites a project as records, and each record is written through the router once a person decides. |
 | [`releases.mjs`](./releases.mjs) | The release rules (I-17, C-13): confirmed records frozen in, live holes named, the release card. |
 | [`build-release.mjs`](./build-release.mjs) | `naive build`, the command line over `releases.mjs`. |

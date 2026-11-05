@@ -7,7 +7,7 @@
 //   J-2  every file in public/ has a register entry naming its source and license
 //   J-3  a remote image is a link with a note in raw/sources/<id>/; a full copy in public/ needs a
 //        license that allows copying. remote_hosts is the list of hosts an agent may fetch from
-//        (the platform fetcher, platform/integrations/remote-image.mjs, enforces it)
+//        (an app's fetcher enforces it and records what it fetched through interface/brand.mjs addRemote)
 //   J-4  facts (type, width, height, bytes, sha256) are read from the file by code, never guessed:
 //        the check fails when recorded facts differ from the file. Alt text an agent wrote carries
 //        agent provenance until a person confirms it (a confirm entry in provenance.jsonl, bound

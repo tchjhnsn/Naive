@@ -3,16 +3,16 @@
 // ventures in a temp folder: brand tokens read by layouts and rendered for interfaces, nearer context
 // winning, voice rules over content, package glossaries, licensed self-hosted typefaces, marks,
 // design systems by reference, the public/ register with facts read by code and alt text confirmed
-// by a person, remote images as links with a note in raw/ (fetched from a local server by the
-// platform fetcher), and sitemap.xml from the marketing sitemap. Never writes into the repo.
+// by a person, remote images as links with a note in raw/ (recorded through addAsset and addRemote, the
+// calls an app's fetcher makes), and sitemap.xml from the marketing sitemap. Never writes into the repo.
 
-import { spawn, spawnSync } from "node:child_process";
-import { createServer } from "node:http";
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { call } from "../router.mjs";
+import { addAsset, addRemote } from "../brand.mjs";
 import { entries } from "../../packages/core/provenance.mjs";
 import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../schema/assets.mjs";
 import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "../../schema/brand.mjs";
@@ -295,49 +295,31 @@ const brand = {
   rmSync(join(dir, "public/clinic.jpg"));
   expect("J-3: removed, the check passes", checkAssets(dir).ok, checkAssets(dir).errors);
 }
-// J-3: the platform fetcher, against a local server.
+// J-3: what a fetcher records. Fetching is not Naive's (an app's fetcher runs outside it); a fetcher hands its
+// result to Naive's addAsset and addRemote, which this test calls directly, as a fetcher would.
 {
   const photo = png(640, 360);
-  const server = createServer((req, res) => {
-    if (req.url === "/a.png") { res.writeHead(200, { "content-type": "image/png", "content-length": photo.length }); res.end(photo); }
-    else if (req.url === "/hop") { res.writeHead(302, { location: "http://localhost:" + /** @type {import("node:net").AddressInfo} */ (server.address()).port + "/a.png" }); res.end(); }
-    else if (req.url === "/page") { res.writeHead(200, { "content-type": "text/html" }); res.end("<html></html>"); }
-    else { res.writeHead(404); res.end(); }
-  });
-  await /** @type {Promise<void>} */ (new Promise((ok) => server.listen(0, "127.0.0.1", ok)));
-  const host = `127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}`;
-  const base = `http://${host}`;
-  // The fetcher runs as its own process (asynchronously, so this process keeps serving).
-  const run = (args) => new Promise((ok) => {
-    const p = spawn("node", [join(repo, "platform/integrations/remote-image.mjs"), ...args], { env });
-    let out = "", err = "";
-    p.stdout.on("data", (d) => (out += d)); p.stderr.on("data", (d) => (err += d));
-    p.on("close", (status) => ok({ status, stdout: out, stderr: err }));
-  });
-  let f = await run([`${base}/a.png`, "--venture", "acme", "--license", "CC-BY-4.0", "--credit", "Ana Photo"]);
-  expect("J-3: a host not in remote_hosts is refused", f.status === 1 && /not in remote_hosts/.test(f.stderr), f.stderr);
+  const host = "images.example.net";
+  const base = `https://${host}`;
   r = mentura("assets", "hosts", host, "--venture", "acme", "--as", "person");
   expect("J-3: remote_hosts is set as a setting in the register", r.status === 0 && reg().remote_hosts[0] === host, r.stderr);
-  f = await run([`${base}/hop`, "--venture", "acme", "--license", "CC-BY-4.0", "--credit", "Ana Photo"]);
-  expect("J-3: a redirect to another host is checked again and refused", f.status === 1 && /localhost:\d+ is not in remote_hosts/.test(f.stderr), f.stderr);
-  f = await run([`${base}/page`, "--venture", "acme", "--license", "CC-BY-4.0", "--credit", "Ana Photo"]);
-  expect("J-3: something that is not an image is refused", f.status === 1 && /not an image/.test(f.stderr), f.stderr);
-  f = await run([`${base}/a.png`, "--venture", "acme", "--license", "all-rights-reserved", "--credit", "Ana Photo", "--copy", "public/photo.png"]);
-  expect("J-3: a copy is refused when the license does not allow one", f.status === 1 && /does not allow a full copy/.test(f.stderr) && !existsSync(join(dir, "public/photo.png")), f.stderr);
-  f = await run([`${base}/a.png`, "--venture", "acme", "--license", "all-rights-reserved", "--credit", "Ana Photo", "--id", "hero-photo", "--json"]);
-  const out = f.status === 0 ? JSON.parse(f.stdout) : {};
-  expect("J-3: fetched, the original is kept private in raw/ and only linked", f.status === 0 && existsSync(join(dir, "raw/sources/hero-photo/original.png")) && !existsSync(join(dir, "public/photo.png")), f.stderr);
-  expect("J-4: the fetched image's facts are read by code", out.facts?.width === 640 && out.facts?.height === 360 && reg().remote.find((q) => q.id === "hero-photo").fetched.sha256 === factsOf(photo).sha256);
-  const ignored = spawnSync("git", ["check-ignore", "-q", "--no-index", "instance/x/raw/sources/hero-photo/original.png"], { cwd: repo });
+  const ignored = spawnSync("git", ["check-ignore", "-q", "--no-index", "ventures/x/raw/sources/hero-photo/original.png"], { cwd: repo });
   expect("J-3: raw originals are ignored by git", ignored.status === 0);
-  f = await run([`${base}/a.png`, "--venture", "acme", "--license", "CC-BY-4.0", "--credit", "Ana Photo", "--id", "cc-photo", "--copy", "public/photo.png", "--alt", "Clinic front desk"]);
-  expect("J-3: a license that allows a copy keeps one in public/, registered with its origin", f.status === 0 && existsSync(join(dir, "public/photo.png")) && reg().assets.find((q) => q.path === "public/photo.png")?.origin_url === `${base}/a.png` && reg().remote.find((q) => q.id === "cc-photo").copy === "public/photo.png", f.stderr);
+  const facts = factsOf(photo);
+  const fetched = { type: facts.type, width: facts.width, height: facts.height, bytes: facts.bytes, sha256: facts.sha256, filled_at: "2026-11-05T00:00:00.000Z" };
+  put("public/photo.png", photo);
+  const a = await addAsset(/** @type {Parameters<typeof addAsset>[0]} */ ({ venture: "acme", workspace: W, path: "public/photo.png", source: `${base}/a.png`, license: "CC-BY-4.0", credit: "Ana Photo", alt: "Clinic front desk", origin_url: `${base}/a.png` }));
+  const rem = await addRemote({ venture: "acme", workspace: W, url: `${base}/a.png`, license: "CC-BY-4.0", credit: "Ana Photo", id: "cc-photo", alt: "Clinic front desk", fetched, copy: "public/photo.png" });
+  expect("J-3: a license that allows a copy keeps one in public/, registered with its origin", a.ok && rem.ok && reg().assets.find((q) => q.path === "public/photo.png")?.origin_url === `${base}/a.png` && reg().remote.find((q) => q.id === "cc-photo").copy === "public/photo.png", a.error ?? rem.error);
+  expect("J-4: the fetched image's facts are kept in the register", reg().remote.find((q) => q.id === "cc-photo").fetched.sha256 === factsOf(photo).sha256);
   const c = checkAssets(dir);
   expect("J-3: the register checks out with fetched and copied images", c.ok, c.errors);
   const y = reg(); y.remote_hosts = []; await R("public/assets", "write", y);
-  expect("J-3: a fetched image from a host no longer allowed fails the check", has(checkAssets(dir).errors, /fetched from 127\.0\.0\.1:\d+, which is not in remote_hosts/));
+  expect("J-3: a fetched image from a host no longer allowed fails the check", has(checkAssets(dir).errors, /fetched from images\.example\.net, which is not in remote_hosts/));
   y.remote_hosts = [host]; await R("public/assets", "write", y);
-  server.close();
+  const z = reg(); z.remote = z.remote.map((q) => q.id === "cc-photo" ? { ...q, license: "all-rights-reserved" } : q); await R("public/assets", "write", z);
+  expect("J-3: a copy under a license that does not allow one fails the check", has(checkAssets(dir).errors, /copied to public\/photo\.png under license all-rights-reserved/));
+  z.remote = z.remote.map((q) => q.id === "cc-photo" ? { ...q, license: "CC-BY-4.0" } : q); await R("public/assets", "write", z);
 }
 
 // ---- P-26: the sitemap is a marketing record; sitemap.xml comes from it.
@@ -379,8 +361,8 @@ const brand = {
   expect("the assets check passes on the finished venture", checkAssets(dir).ok, checkAssets(dir).errors);
   const p = spawnSync("node", [join(repo, "schema/check-provenance.mjs"), dir], { encoding: "utf8" });
   expect("every write and confirmation kept the provenance chain", p.status === 0, p.stdout + p.stderr);
-  for (const f of ["marketing/brand.json", "public/assets.json", "glossary/finance.json", "raw/sources/hero-photo/source.json", "marketing/sitemap.json"]) {
-    const map = { "marketing/brand.json": "marketing-brand.schema.json", "public/assets.json": "public-assets.schema.json", "glossary/finance.json": "glossary.schema.json", "raw/sources/hero-photo/source.json": "raw-source.schema.json", "marketing/sitemap.json": "marketing-sitemap.schema.json" };
+  for (const f of ["marketing/brand.json", "public/assets.json", "glossary/finance.json", "raw/sources/cc-photo/source.json", "marketing/sitemap.json"]) {
+    const map = { "marketing/brand.json": "marketing-brand.schema.json", "public/assets.json": "public-assets.schema.json", "glossary/finance.json": "glossary.schema.json", "raw/sources/cc-photo/source.json": "raw-source.schema.json", "marketing/sitemap.json": "marketing-sitemap.schema.json" };
     const v = spawnSync("python3", [join(repo, "schema/validate.py"), "--schema", map[f], "--file", join(dir, f)], { encoding: "utf8" });
     expect(`${f} validates against its schema`, v.status === 0, v.stdout + v.stderr);
   }

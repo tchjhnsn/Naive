@@ -16,7 +16,7 @@ const env = { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, ".config")
 // The generator calls a real model when TYPESAFE_API_KEY is set; these tests use the stand-in or the list.
 for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
 delete env.MENTURA_WORKSPACE;
-const create = (args, cwd = base) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args], { cwd, env, encoding: "utf8" });
+const create = (args, cwd = base, extra = {}) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args], { cwd, env: { ...env, ...extra }, encoding: "utf8" });
 const naive = (args, cwd) => spawnSync("node", [join(base, "kettle/node_modules/.bin/naive"), ...args], { cwd, env, encoding: "utf8" });
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 let failed = 0;
@@ -186,14 +186,14 @@ t("without a model key, describing it falls back to the list; an unclear descrip
   ok(u.status === 0 && JSON.parse(u.stdout).uncertain === true, u.stdout);
 });
 
-t("--source points functions at systems; Rho syncs from its saved answer and is marked a fixture; bad pointers are refused", () => {
-  const r = create(["shop", "--type", "ecommerce", "--name", "Lee Park", "--source", "marketing-and-sales=shopify:shop.myshopify.com", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install"]);
-  ok(r.status === 0 && /Rho: synced from a saved sandbox answer \(a fixture/.test(r.stdout) && /Legal documents: none connected yet/.test(r.stdout), r.stdout + r.stderr);
+t("--source points functions at systems; a system with a sync command syncs and is marked a fixture; bad pointers are refused", () => {
+  // finance=rho syncs through the app's command (packages/core/sync.mjs); the test names a stand-in.
+  const r = create(["shop", "--type", "ecommerce", "--name", "Lee Park", "--source", "marketing-and-sales=shopify:shop.myshopify.com", "--source", "finance=rho", "--yes", "--skip-install"], base, { NAIVE_SYNC_RHO: `node ${join(repo, "schema/examples/money-sync/sync.ts")}` });
+  ok(r.status === 0 && /rho: synced from a saved answer \(a fixture/.test(r.stdout) && /Legal documents: none connected yet/.test(r.stdout), r.stdout + r.stderr);
   const fns = load(ventureFile(join(base, "shop"), "knowledge/sources.json")).functions;
   ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(ventureFile(join(base, "shop"), "money/_summary.json")), JSON.stringify(fns));
   ok(fns["marketing-and-sales"].systems[0].status === "pointed");
-  // The transactions Rho synced are sensitive: git must ignore them. (Where Rho writes account records,
-  // money/accounts/ against the data model's money/<id>.json, is the Rho integration's open question.)
+  // The transactions the sync wrote are sensitive: git must ignore them.
   const packs = spawnSync("node", [join(repo, "schema/check-data-packages.mjs"), join(base, "shop")], { encoding: "utf8" });
   ok(!/sensitive stream/.test(packs.stdout + packs.stderr), `the synced transactions stay out of git: ${packs.stdout}${packs.stderr}`);
   const bad = create(["shop2", "--type", "ecommerce", "--source", "finance=vercel", "--yes", "--skip-install", "--no-git"]);
