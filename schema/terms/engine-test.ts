@@ -1,12 +1,13 @@
 // Tests the term engine: it rejects bad tests (label-reading, vacuous, unconfirmed passing), relations are
 // total, freezing notices a change (to a check or a helper it lists), layer and area decide hand-built
-// arrangements, and the admitted terms check against a fresh run.
+// arrangements, labels hold the cap, the adopted quote and one referent per proper name, and the admitted terms
+// check against a fresh run.
 //
 //   node schema/terms/engine-test.ts
 
 import { freeze, relation, rng, run, validTest, type Term } from "./engine.ts";
 import { arrangementCases, encounterCases, membershipCases, relationshipCases, type Arrangement, type Relationship } from "./levels.ts";
-import { area, coach, friend, layer } from "./terms.ts";
+import { area, capShare, coach, friend, labelProblems, layer, TERMS, type Labels } from "./terms.ts";
 import { admitAll } from "./admit.ts";
 
 let failed = 0;
@@ -47,6 +48,35 @@ for (const [name, gen] of [["membership", membershipCases], ["relationship", rel
   const c = gen(); const distinct = new Set(c.map((x) => JSON.stringify(x))).size;
   expect(`${name} cases are mostly distinct (not repeats of a short cycle)`, distinct > c.length / 2, `${distinct} of ${c.length}`);
 }
+const term = (id: string, labels: unknown) => ({ id, label: id, labels });
+const plain = (kind: string) => ({ designation: "term", scope: "shared", origin: { kind }, grade: "none" });
+const named = (designation: string, referent: unknown) => ({ designation, scope: "shared", origin: { kind: "adapted" }, grade: "none", referent, instanceOf: "venture" });
+const glossary = (coined: number, rest: number, extra: unknown[] = []) => [
+  ...Array.from({ length: coined }, (_, i) => term(`c${i}`, plain(i % 2 ? "borrowed" : "operationally-coined"))),
+  ...Array.from({ length: rest }, (_, i) => term(`a${i}`, plain("adapted"))),
+  ...extra.map((l, i) => term(`n${i}`, l)),
+];
+const capProblem = (ts: { id: string; label: string; labels: unknown }[]) => labelProblems(ts, new Set()).find((p) => p.startsWith("the 10 percent cap"));
+const share = capShare(TERMS.map((t) => t.labels));
+console.log(`      cap share of the admitted terms: ${share.counted} of ${share.of} (${((100 * share.counted) / share.of).toFixed(1)}%)`);
+expect("the admitted terms are under the 10 percent cap", 10 * share.counted <= share.of);
+expect("1 coined or borrowed term in 10 is at the cap and passes", capProblem(glossary(1, 9)) === undefined);
+const over = capProblem(glossary(2, 17));
+console.log(`      ${over ?? "no cap problem"}`);
+expect("2 in 19 is over the cap, and the problem prints the share", over?.includes("2 of 19 terms (10.5%)") === true, String(over));
+const names = Array.from({ length: 30 }, (_, i) => named(i % 2 ? "appellation" : "proper-name", `r${i}`));
+expect("proper names and appellations neither count toward the cap nor dilute it", capProblem(glossary(2, 17, names))?.includes("2 of 19 terms") === true && capProblem(glossary(1, 9, names.map((n) => ({ ...n, origin: { kind: "operationally-coined" } })))) === undefined);
+const adoptedAs = (origin: unknown) => labelProblems([term("t", { ...plain("adopted"), origin })], new Set());
+expect("adopted with no quote fails (N-054)", adoptedAs({ kind: "adopted" }).some((p) => /adopted needs the source's definition quoted/.test(p)));
+expect("adopted with an empty quote fails", adoptedAs({ kind: "adopted", quote: "  " }).some((p) => /adopted needs/.test(p)));
+expect("adopted with a quote passes", adoptedAs({ kind: "adopted", quote: "<the source's definition>" }).length === 0);
+const twoReferents = labelProblems([term("ee-a", named("proper-name", "the framework")), { ...term("ee-b", named("proper-name", "the repository")), label: "ee-a" }], new Set());
+expect("a proper name with two referents fails (N-052)", twoReferents.some((p) => /name "ee-a" has 2 referents/.test(p)), twoReferents.join("; "));
+expect("a proper name given a list of two referents fails", labelProblems([term("pa", named("proper-name", ["a", "b"]))], new Set()).some((p) => /has 2 referents; it needs exactly one/.test(p)));
+expect("one proper name on two terms with the same referent passes", labelProblems([term("x", named("appellation", "r")), { ...term("y", named("appellation", "r")), label: "x" }], new Set()).length === 0);
+expect("symbol is reserved", labelProblems([term("s", { ...plain("adapted"), designation: "symbol" })], new Set()).some((p) => /symbol is reserved/.test(p)));
+const scoped: Labels = { designation: "term", scope: "naive@finance", origin: { kind: "adapted" }, grade: "standard" };
+expect("a scope must be in the catalog", labelProblems([term("f", scoped)], new Set()).some((p) => /naive@finance is not shared and not in/.test(p)) && labelProblems([term("f", scoped)], new Set(["naive@finance"])).length === 0);
 const { problems } = admitAll();
 expect("every admitted term passes admission", problems.length === 0, problems.join("; "));
 

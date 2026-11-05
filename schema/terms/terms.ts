@@ -4,10 +4,69 @@
 import type { Term } from "./engine.ts";
 import type { Arrangement, Encounter, Hierarchy, Membership, Relationship } from "./levels.ts";
 
+// The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
+// never on the facts, so no check reads them. schema/terms/admit.ts --check enforces what the types cannot.
+
+export const GRADES = ["standard", "regulatory", "codified", "convention", "seminal", "none"] as const;
+/** Source authority: standard with its siblings regulatory and codified, convention with its sibling seminal, or none. */
+export type Grade = (typeof GRADES)[number];
+const UNQUOTED = ["adapted", "narrowed", "broadened", "borrowed", "operationally-coined"] as const;
+/** From the mapping to the source. Adopted only when the source's definition is quoted, otherwise adapted (N-054). */
+export type Origin = { kind: "adopted"; quote: string } | { kind: (typeof UNQUOTED)[number] };
+/** A name@function scope listed in docs/ontology-catalog.json, or shared: function null, visible to every scope. */
+export type Scope = `naive@${string}` | "shared";
+type Common = { scope: Scope; origin: Origin; grade: Grade };
+/** Designation per ISO 1087:2019. Symbol is reserved and cannot be built. A proper name or an appellation has
+ *  exactly one referent, linked by instanceOf, and stays out of the 10 percent cap (N-052, N-053, N-055). */
+export type Labels =
+  | (Common & { designation: "term" })
+  | (Common & { designation: "proper-name" | "appellation"; referent: string; instanceOf: string });
+
+/** Labels of a shared term whose source is not quoted, so its origin cannot be adopted. */
+const sharedTerm = (origin: (typeof UNQUOTED)[number], grade: Grade): Labels => ({ designation: "term", scope: "shared", origin: { kind: origin }, grade });
+
+const COUNTED: readonly string[] = ["operationally-coined", "borrowed"];
+
+/** The cap is taken over designation term only: proper names and appellations are neither counted nor counted against. */
+export function capShare(labels: readonly Labels[]): { counted: number; of: number } {
+  const inCap = labels.filter((l) => l.designation === "term");
+  return { counted: inCap.filter((l) => COUNTED.includes(l.origin.kind)).length, of: inCap.length };
+}
+
+/** What the types cannot hold, checked on every term at admission. A term written without type checking reaches
+ *  here as it is, so each label is read as untrusted. `scopes` are the scopes in docs/ontology-catalog.json. */
+export function labelProblems(terms: readonly { id: string; label: string; labels?: unknown }[], scopes: ReadonlySet<string>): string[] {
+  const out: string[] = [];
+  const wellFormed: Labels[] = [];
+  const referents = new Map<string, Set<string>>();
+  const filled = (x: unknown): x is string => typeof x === "string" && x.trim() !== "";
+  for (const { id, label, labels } of terms) {
+    const l = (labels ?? {}) as Record<string, unknown>;
+    const origin = (l.origin ?? {}) as Record<string, unknown>;
+    const before = out.length;
+    if (l.scope !== "shared" && !scopes.has(String(l.scope))) out.push(`${id}: scope ${String(l.scope)} is not shared and not in docs/ontology-catalog.json`);
+    if (!(GRADES as readonly unknown[]).includes(l.grade)) out.push(`${id}: grade ${String(l.grade)} is not one of ${GRADES.join(", ")}`);
+    if (origin.kind === "adopted" && !filled(origin.quote)) out.push(`${id}: origin adopted needs the source's definition quoted (N-054); without a quote it is adapted`);
+    else if (origin.kind !== "adopted" && !(UNQUOTED as readonly unknown[]).includes(origin.kind)) out.push(`${id}: origin ${String(origin.kind)} is not adopted or one of ${UNQUOTED.join(", ")}`);
+    if (l.designation === "proper-name" || l.designation === "appellation") {
+      const r = l.referent;
+      if (!filled(r)) out.push(`${id}: ${l.designation} "${label}" has ${Array.isArray(r) ? r.length : 0} referents; it needs exactly one (N-052)`);
+      else referents.set(label, (referents.get(label) ?? new Set()).add(r));
+      if (!filled(l.instanceOf)) out.push(`${id}: ${l.designation} "${label}" names no instanceOf (N-052)`);
+    } else if (l.designation !== "term") out.push(`${id}: designation ${String(l.designation)} is not term, proper-name or appellation (symbol is reserved)`);
+    if (out.length === before) wellFormed.push(l as Labels);
+  }
+  for (const [name, rs] of referents) if (rs.size > 1) out.push(`name "${name}" has ${rs.size} referents (${[...rs].join(", ")}); it needs exactly one (N-052)`);
+  const { counted, of } = capShare(wellFormed);
+  if (10 * counted > of) out.push(`the 10 percent cap: ${counted} of ${of} terms (${((100 * counted) / of).toFixed(1)}%) are operationally coined or borrowed; proper names and appellations are left out (N-055)`);
+  return out;
+}
+
 const evidenced = (f: Membership) => f.contributions.some((c) => c.evidenced);
 
 export const founder: Term<Membership> = {
   id: "founder", form: "word", label: "Founder", level: "membership", kind: "role",
+  labels: sharedTerm("adapted", "convention"),
   meaning: "A person who brought a founding contribution to a venture at its founding, has a stake in it, and shows up in its record. A venture may have several.",
   props: [
     { id: "F1", says: "a person, or an entity whose owners trace to people", check: (f) => f.human },
@@ -22,6 +81,7 @@ export const founder: Term<Membership> = {
 
 export const coFounder: Term<Membership> = {
   ...founder, id: "co-founder", form: "word", label: "Co-founder",
+  labels: sharedTerm("adapted", "convention"),
   meaning: "A founder of a venture that has at least one other founder.",
   props: [...founder.props, { id: "CF1", says: "another founder on the same venture", check: (f) => f.otherFounders >= 1 }],
   lean: ["coFounder_isA_founder"],
@@ -30,6 +90,7 @@ export const coFounder: Term<Membership> = {
 
 export const earlyEmployee: Term<Membership> = {
   id: "early-employee", form: "compound", label: "Early employee", level: "membership", kind: "role",
+  labels: sharedTerm("adapted", "none"),
   meaning: "Someone with a stake and work in the venture who brought no idea, secret, ethos, mission or capital to its founding.",
   props: [
     { id: "F1", says: "a person", check: (f) => f.human },
@@ -43,6 +104,7 @@ export const earlyEmployee: Term<Membership> = {
 
 export const mentor: Term<Relationship> = {
   id: "mentor", form: "word", label: "Mentor", level: "relationship", kind: "role",
+  labels: sharedTerm("adapted", "seminal"),
   meaning: "Someone who has walked the path the other is on, helps the whole person over a long horizon under sacred trust, spends their own standing for them, and aims at their release.",
   props: [
     { id: "M1", says: "lived experience of the other's path, drawn on", check: (f) => f.livedPath },
@@ -58,6 +120,7 @@ export const mentor: Term<Relationship> = {
 
 export const coach: Term<Relationship> = {
   id: "coach", form: "word", label: "Coach", level: "relationship", kind: "role",
+  labels: sharedTerm("adapted", "codified"),
   meaning: "Someone who, under an explicit agreement, helps the client reach the client's own goal mostly by asking, with an accountability loop and sacred trust.",
   props: [
     { id: "C1", says: "explicit agreement: goal, success, duration", check: (f) => f.agreement && f.goalSetBy !== "helper" },
@@ -73,6 +136,7 @@ export const coach: Term<Relationship> = {
 
 export const friend: Term<Relationship> = {
   id: "friend", form: "word", label: "Friend", level: "relationship", kind: "role",
+  labels: sharedTerm("adapted", "seminal"),
   meaning: "Two people who each wish the other well for the other's own sake, know it, and share life over time, as peers. Kind (utility, pleasure, character) is a facet, not a test.",
   props: [
     { id: "FR1", says: "goodwill for the other's sake, beyond exchange", check: (f) => f.goodwill },
@@ -87,6 +151,7 @@ export const friend: Term<Relationship> = {
 
 export const unearnedCandour: Term<Encounter> = {
   id: "unearned-candour", form: "compound", label: "Unearned candour", level: "encounter", kind: "act",
+  labels: sharedTerm("operationally-coined", "none"),
   meaning: "Advice or judgement offered as candour about another person's path, when the speaker lacks standing, context or consent. An act in one encounter, not a role.",
   props: [
     { id: "U1", says: "framed as candour", check: (f) => f.framedAsCandour },
@@ -103,6 +168,7 @@ export const unearnedCandour: Term<Encounter> = {
 
 export const thresholdGuardian: Term<Encounter> = {
   id: "threshold-guardian", form: "compound", label: "Threshold guardian", level: "encounter", kind: "role",
+  labels: sharedTerm("adapted", "convention"),
   meaning: "Whoever or whatever stands where someone crosses into a new world and tests whether they are ready. A role relative to one crossing; need not be a person.",
   props: [
     { id: "G1", says: "at a crossing into a new world", check: (f) => f.atCrossing },
@@ -116,6 +182,7 @@ export const thresholdGuardian: Term<Encounter> = {
 
 export const phaseGate: Term<Encounter> = {
   ...thresholdGuardian, id: "phase-gate", form: "compound", label: "Phase gate",
+  labels: sharedTerm("adapted", "none"),
   meaning: "The exit of a venture phase: it tests readiness through exit criteria, is passed by meeting them, and is not a person.",
   props: [...thresholdGuardian.props,
     { id: "PG1", says: "the crossing is a phase exit", check: (f) => f.phaseExit },
@@ -134,6 +201,7 @@ const reach = (f: Arrangement): boolean[][] => {
 
 export const layer: Term<Arrangement> = {
   id: "layer", form: "word", label: "Layer", level: "arrangement", kind: "role",
+  labels: sharedTerm("adapted", "standard"),
   meaning: "A part of an ordered arrangement in which each part depends only on the parts beneath it, the standard technical sense (the OSI model, a layered software architecture). Whether a part is a layer depends on the whole arrangement, so the test runs on the whole: its dependencies hold no cycle and put every part in one stack, and beneath means depended on. The ontology's three layers pass. Naive's groupings fail, both the seven EE-001 decided (a loop) and the seven manifests as built (their reads form cycles), so for them \"layer\" is the system's name for its parts, not this term.",
   props: [
     { id: "L1", says: "an arrangement of at least two parts", check: (f) => f.parts >= 2 },
@@ -147,6 +215,7 @@ export const layer: Term<Arrangement> = {
 
 export const area: Term<Arrangement> = {
   id: "area", form: "word", label: "Area", level: "arrangement", kind: "role",
+  labels: sharedTerm("adapted", "seminal"),
   meaning: "A part of an arrangement drawn around one concern, with nothing required of the order among the parts: dependencies may run any way, loops included. The contrast to layer, and the word C-086 proposed for Naive's groupings. A layer need not be an area, and an area need not be a layer.",
   props: [
     { id: "A1", says: "an arrangement of at least two parts", check: (f) => f.parts >= 2 },
@@ -175,6 +244,7 @@ export const hasBroader = (f: Hierarchy): boolean[] => Array.from({ length: f.no
 
 export const topCategory: Term<Hierarchy> = {
   id: "top-category", form: "compound", label: "Top category", level: "hierarchy", kind: "role",
+  labels: sharedTerm("adapted", "standard"),
   meaning: "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. Then every category reaches exactly one top category, which lean/Naive/Upper.lean proves. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
   props: [
     { id: "U1", says: "no category is broader than itself, directly or through others (no cycle)", check: (f) => below(f).every((row, a) => !row[a]), uses: [below] },

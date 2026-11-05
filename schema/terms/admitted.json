@@ -7,6 +7,14 @@
       "form": "word",
       "level": "membership",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "convention"
+      },
       "meaning": "A person who brought a founding contribution to a venture at its founding, has a stake in it, and shows up in its record. A venture may have several.",
       "status": "proposed",
       "hash": "000ed7683b350769",
@@ -55,6 +63,14 @@
       "form": "word",
       "level": "membership",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "convention"
+      },
       "meaning": "A founder of a venture that has at least one other founder.",
       "status": "proposed",
       "hash": "acf89370621b314f",
@@ -113,6 +129,14 @@
       "form": "compound",
       "level": "membership",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
       "meaning": "Someone with a stake and work in the venture who brought no idea, secret, ethos, mission or capital to its founding.",
       "status": "proposed",
       "hash": "f4dd6b814368bb99",
@@ -160,6 +184,14 @@
       "form": "word",
       "level": "relationship",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
       "meaning": "Someone who has walked the path the other is on, helps the whole person over a long horizon under sacred trust, spends their own standing for them, and aims at their release.",
       "status": "proposed",
       "hash": "70d8b8681b9b94fb",
@@ -217,6 +249,14 @@
       "form": "word",
       "level": "relationship",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "codified"
+      },
       "meaning": "Someone who, under an explicit agreement, helps the client reach the client's own goal mostly by asking, with an accountability loop and sacred trust.",
       "status": "proposed",
       "hash": "92beb64f597df960",
@@ -280,6 +320,14 @@
       "form": "word",
       "level": "relationship",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
       "meaning": "Two people who each wish the other well for the other's own sake, know it, and share life over time, as peers. Kind (utility, pleasure, character) is a facet, not a test.",
       "status": "proposed",
       "hash": "7471c342262a4e9a",
@@ -337,6 +385,14 @@
       "form": "compound",
       "level": "encounter",
       "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "operationally-coined"
+        },
+        "grade": "none"
+      },
       "meaning": "Advice or judgement offered as candour about another person's path, when the speaker lacks standing, context or consent. An act in one encounter, not a role.",
       "status": "proposed",
       "hash": "45b91eba0abb161a",
@@ -389,6 +445,14 @@
       "form": "compound",
       "level": "encounter",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "convention"
+      },
       "meaning": "Whoever or whatever stands where someone crosses into a new world and tests whether they are ready. A role relative to one crossing; need not be a person.",
       "status": "proposed",
       "hash": "9a7956c30f1acb6c",
@@ -433,6 +497,14 @@
       "form": "compound",
       "level": "encounter",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
       "meaning": "The exit of a venture phase: it tests readiness through exit criteria, is passed by meeting them, and is not a person.",
       "status": "proposed",
       "hash": "1df762ee795c5883",
@@ -495,6 +567,14 @@
       "form": "word",
       "level": "arrangement",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "standard"
+      },
       "meaning": "A part of an ordered arrangement in which each part depends only on the parts beneath it, the standard technical sense (the OSI model, a layered software architecture). Whether a part is a layer depends on the whole arrangement, so the test runs on the whole: its dependencies hold no cycle and put every part in one stack, and beneath means depended on. The ontology's three layers pass. Naive's groupings fail, both the seven EE-001 decided (a loop) and the seven manifests as built (their reads form cycles), so for them \"layer\" is the system's name for its parts, not this term.",
       "status": "proposed",
       "hash": "8471b26bcb1b07d5",
@@ -579,6 +659,14 @@
       "form": "word",
       "level": "arrangement",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
       "meaning": "A part of an arrangement drawn around one concern, with nothing required of the order among the parts: dependencies may run any way, loops included. The contrast to layer, and the word C-086 proposed for Naive's groupings. A layer need not be an area, and an area need not be a layer.",
       "status": "proposed",
       "hash": "407b7334034790a7",
@@ -649,6 +737,14 @@
       "form": "compound",
       "level": "hierarchy",
       "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "standard"
+      },
       "meaning": "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. Then every category reaches exactly one top category, which lean/Naive/Upper.lean proves. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
       "status": "proposed",
       "hash": "24f679e53efbc73f",

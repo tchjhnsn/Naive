@@ -78,3 +78,68 @@ theorem admitAll_nodup (ids : List String) : (ids.foldl admit []).Nodup := by
   induction ids with
   | nil => intro v h; exact h
   | cons x xs ih => intro v h; exact ih _ (admit_preserves_nodup v x h)
+
+/-! Term labels (N-051 to N-055, S2-PR8): the designation and origin a term carries, mirroring the `Labels` union in
+    schema/terms/terms.ts. Scope and grade constrain nothing here, so they are left out. -/
+
+/-- [D] Designation per ISO 1087:2019. Symbol is reserved, so it has no constructor. -/
+inductive Designation | term | properName | appellation
+  deriving DecidableEq, Repr
+
+/-- [D] Origin. Adopted carries the source's definition, quoted and not empty (N-054). -/
+inductive Origin
+  | adopted (quote : String) (quoted : quote ≠ "")
+  | adapted | narrowed | broadened | borrowed | operationallyCoined
+
+/-- [D] The quote an origin carries, if any. -/
+def Origin.quote? : Origin → Option String
+  | .adopted q _ => some q
+  | _ => none
+
+/-- An origin that carries a quote carries a non-empty one: no adopted origin can be built without a quote. -/
+theorem origin_quote_nonempty (o : Origin) (q : String) (h : o.quote? = some q) : q ≠ "" := by
+  cases o with
+  | adopted q' hq => simp [Origin.quote?] at h; exact h ▸ hq
+  | _ => simp [Origin.quote?] at h
+
+/-- [D] The labels the cap reads. -/
+structure Labeled where
+  designation : Designation
+  origin : Origin
+
+/-- [D] Counts toward the 10 percent cap: a term (not a proper name or appellation) that is operationally coined
+    or borrowed (N-055; mirrors capShare in terms.ts). -/
+def countsTowardCap : Labeled → Bool
+  | ⟨.term, .operationallyCoined⟩ | ⟨.term, .borrowed⟩ => true
+  | _ => false
+
+/-- [D] Inside the cap: designation term. The share is counted over these. -/
+def inCap (t : Labeled) : Bool := t.designation == .term
+
+/-- [D] The cap holds when at most a tenth of the terms inside it count toward it (`10 * counted ≤ of`). -/
+def underCap (ts : List Labeled) : Bool := 10 * (ts.filter countsTowardCap).length ≤ (ts.filter inCap).length
+
+/-- A proper name never counts toward the cap, whatever its origin (N-052, N-055). -/
+theorem properName_not_counted (o : Origin) : countsTowardCap ⟨.properName, o⟩ = false := by
+  cases o <;> rfl
+
+/-- An appellation never counts toward the cap, whatever its origin (N-053). -/
+theorem appellation_not_counted (o : Origin) : countsTowardCap ⟨.appellation, o⟩ = false := by
+  cases o <;> rfl
+
+/-- Adding a proper name or an appellation never changes the cap's verdict: it is neither counted nor counted
+    against, so naming more products and ventures cannot make room for coined terms. -/
+theorem name_leaves_cap (t : Labeled) (ts : List Labeled) (h : t.designation ≠ .term) :
+    underCap (t :: ts) = underCap ts := by
+  obtain ⟨d, o⟩ := t
+  have hc : countsTowardCap ⟨d, o⟩ = false := by cases d <;> cases o <;> simp_all [countsTowardCap]
+  have hi : inCap ⟨d, o⟩ = false := by cases d <;> simp_all [inCap]
+  simp [underCap, hc, hi]
+
+/-- Only a term inside the cap can count toward it, so the counted share never exceeds the whole. -/
+theorem counted_le_inCap (ts : List Labeled) : (ts.filter countsTowardCap).length ≤ (ts.filter inCap).length := by
+  induction ts with
+  | nil => simp
+  | cons t ts ih =>
+    obtain ⟨d, o⟩ := t
+    cases d <;> cases o <;> simp [List.filter_cons, countsTowardCap, inCap] <;> omega

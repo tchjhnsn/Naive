@@ -8,6 +8,7 @@
 //   -> cross-run against every admitted term at its level -> Lean theorems named and built (lean/) -> record as proposed.
 
 import { createHash } from "node:crypto";
+import type { Labels } from "./terms.ts";
 
 export type Base = { confirmed: boolean; label?: string };
 /** `uses` lists the helpers a check calls, so freezing hashes their source too (R1). */
@@ -22,6 +23,9 @@ export type Term<F extends Base> = {
    *  machines only; prose always uses the label. */
   form: "word" | "compound" | "phrase" | "idiom";
   meaning: string;
+  /** Scope, origin, grade and designation (schema/terms/terms.ts). On the term, not the facts, and not frozen:
+   *  relabelling a term does not change what its test is. */
+  labels: Labels;
   props: Prop<F>[];
   /** How the properties combine; default: every property holds. P7 (confirmed) is always required on top. */
   rule?: (held: Record<string, boolean>) => boolean;

@@ -4,8 +4,9 @@
 //   node schema/terms/admit.ts --check   exit 1 if a term fails, or admitted.json differs from a fresh run
 //
 // For each term: freeze (hash) -> valid test? -> cross-run against every term at its level -> name its Lean
-// theorems (each must exist in lean/; the lean CI job proves them) -> record as proposed, with each prediction
-// marked confirmed or refuted. A refuted prediction is a finding, not a failure: the definition says what it says.
+// theorems (each must exist in lean/; the lean CI job proves them) -> check its labels -> record as proposed, with
+// each prediction marked confirmed or refuted. A refuted prediction is a finding, not a failure: the definition says
+// what it says. Labels are also checked across all terms: one referent per name, and the 10 percent cap.
 // A level may also have fixtures (schema/terms/fixtures.ts): real cases each term is run on, recorded with the
 // properties that failed and whether the fixture's expectation held.
 
@@ -14,7 +15,7 @@ import { join } from "node:path";
 import { freeze, passSet, relation, run, validTest, type Base, type Relation, type Term } from "./engine.ts";
 import { arrangementFixtures, type Fixture } from "./fixtures.ts";
 import { arrangementCases, encounterCases, hierarchyCases, membershipCases, relationshipCases } from "./levels.ts";
-import { TERMS } from "./terms.ts";
+import { labelProblems, TERMS } from "./terms.ts";
 
 const here = new URL(".", import.meta.url).pathname;
 const repo = join(here, "../..");
@@ -22,6 +23,12 @@ const out = join(here, "admitted.json");
 
 const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases() };
 const FIXTURES: Record<string, Fixture<Base>[]> = { arrangement: arrangementFixtures(repo) };
+
+/** The catalog's scopes. A catalog that cannot be read throws, so admission fails closed. */
+function catalogScopes(): Set<string> {
+  const catalog = JSON.parse(readFileSync(join(repo, "docs/ontology-catalog.json"), "utf8")) as { scopes: { scope: string }[] };
+  return new Set(catalog.scopes.map((s) => s.scope));
+}
 
 function leanSource(): string {
   const d = join(repo, "lean/Naive");
@@ -34,6 +41,7 @@ export function admitAll(): { record: unknown; problems: string[] } {
   const terms = TERMS as Term<Base>[];
   const ids = terms.map((t) => t.id);
   if (new Set(ids).size !== ids.length) problems.push("two terms share an id (admission keeps ids unique)");
+  problems.push(...labelProblems(terms, catalogScopes()));
   const sets = new Map(terms.map((t) => [t.id, passSet(t, CASES[t.level] ?? [])]));
   const entries = terms.map((t) => {
     const cases = CASES[t.level];
@@ -55,7 +63,7 @@ export function admitAll(): { record: unknown; problems: string[] } {
       return { fixture: fx.id, pass, failed, ...(expected === undefined ? {} : { expected, confirmed: expected === pass }) };
     });
     return {
-      id: t.id, label: t.label, form: t.form, level: t.level, kind: t.kind, meaning: t.meaning, status: "proposed",
+      id: t.id, label: t.label, form: t.form, level: t.level, kind: t.kind, labels: t.labels, meaning: t.meaning, status: "proposed",
       hash: freeze(t),
       properties: t.props.map((p) => ({ id: p.id, says: p.says, ...(p.permission ? { permission: true } : {}) })),
       rule: t.ruleSays ?? "every property, and P7 (confirmed facts)",
