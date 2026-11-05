@@ -56,8 +56,12 @@ export function stripLeanComments(src: string): string {
   return out;
 }
 
-const THEOREM = /^theorem\s+([A-Za-z_][\w'.]*)/gm;
-const DEFINITION = /^(?:noncomputable\s+)?(?:private\s+|protected\s+)?(?:def|abbrev)\s+([A-Za-z_][\w'.]*)/gm;
+// A name is plain (founder) or in Lean's «» quotes («sorry», which gen-concepts.ts writes for every noun), and may be
+// dotted. The quotes are not part of the name: «capTable» and capTable are one name.
+const NAME = String.raw`((?:«[^»\n]+»|[A-Za-z_][\w']*)(?:\.(?:«[^»\n]+»|[A-Za-z_][\w']*))*)`;
+const THEOREM = new RegExp(String.raw`^theorem\s+${NAME}`, "gm");
+const DEFINITION = new RegExp(String.raw`^(?:noncomputable\s+)?(?:private\s+|protected\s+)?(?:def|abbrev)\s+${NAME}`, "gm");
+const unquote = (name: string): string => name.replaceAll(/[«»]/g, "");
 const OPEN = "([{⟨⦃";
 const CLOSE = ")]}⟩⦄";
 
@@ -85,12 +89,13 @@ export function readLean(root: string): Lean {
   if (!existsSync(dir)) return { theorems, concepts };
   for (const file of readdirSync(dir, { recursive: true, encoding: "utf8" }).filter((f) => f.endsWith(".lean")).sort()) {
     const src = stripLeanComments(readFileSync(join(dir, file), "utf8"));
-    for (const m of src.matchAll(THEOREM)) theorems.add(m[1]);
+    for (const m of src.matchAll(THEOREM)) theorems.add(unquote(m[1]));
     for (const m of src.matchAll(DEFINITION)) {
       const start = (m.index ?? 0) + m[0].length;
       const next = src.slice(start).search(/\n\S/);
       const header = src.slice(start, next < 0 ? undefined : start + next + 1);
-      if (/^Concept\b/.test(declaredType(header))) concepts.push({ name: m[1], file: `${LEAN_DIR}/${file}`, term: kebab(m[1]) });
+      const name = unquote(m[1]);
+      if (/^Concept\b/.test(declaredType(header))) concepts.push({ name, file: `${LEAN_DIR}/${file}`, term: kebab(name) });
     }
   }
   return { theorems, concepts };
@@ -180,13 +185,14 @@ function fixtureCases(): void {
     expect("fixture: a Lean concept with no admitted term exits 1, named", orphan.status === 1 && orphan.out.includes("Lean concept gatedTerm") && !orphan.out.includes("Lean concept fixtureTerm"), orphan.out);
 
     admit([{ id: "fixture-term", lean: ["fixture_holds"] }, { id: "gated-term", lean: [] }]);
-    put(GENERATED, "import Naive.Concept\n\nnamespace Ontology\n\ndef someNoun : Concept Facts := ⟨[]⟩\n\nend Ontology\n");
+    put(GENERATED, "import Naive.Concept\n\nnamespace Ontology\n\ndef «someNoun» : Concept Facts := ⟨[]⟩\n\nend Ontology\n");
     const nouns = run();
     expect("fixture: a concept in the generated ontology file needs no admitted term", nouns.status === 0 && readLean(root).concepts.some((c) => c.name === "someNoun"), nouns.out);
 
-    put(`${LEAN_DIR}/Generated/Hand.lean`, "import Naive.Concept\n\ndef handTerm : Concept Facts := ⟨[]⟩\n");
+    put(`${LEAN_DIR}/Generated/Hand.lean`, "import Naive.Concept\n\ndef handTerm : Concept Facts := ⟨[]⟩\n\ndef «quotedTerm» : Concept Facts := ⟨[]⟩\n");
     const nested = run();
     expect("fixture: a concept in any other file under lean/Naive, subfolders included, still needs one", nested.status === 1 && nested.out.includes("Lean concept handTerm") && !nested.out.includes("someNoun"), nested.out);
+    expect("fixture: a concept named in «» quotes still needs one, under its unquoted name", nested.out.includes("Lean concept quotedTerm (") && nested.out.includes("admitted term quoted-term"), nested.out);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
