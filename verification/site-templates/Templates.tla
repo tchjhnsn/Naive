@@ -3,7 +3,7 @@
 \* and opened. The actions follow site/lib/templates/catalog.mjs (what is listed),
 \* site/lib/templates/filter.mjs (which cards a filter keeps), and
 \* site/app/(site)/templates/[slug]/page.tsx (the detail page for each slug).
-\* A playbook added later at packages/<function>/playbooks/ is read by the same Discover step.
+\* A playbook added later at library/packages/<function>/playbooks/ is read by the same Discover step.
 
 VARIABLES
     screen,   \* start, read, cards, filtered, empty, detail, use

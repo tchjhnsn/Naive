@@ -1,5 +1,5 @@
 ---- MODULE JtbdPlaybook ----
-\* The jobs playbook (packages/foundation/playbooks/jtbd.md).
+\* The jobs playbook (library/packages/foundation/playbooks/jtbd.md).
 \* The founder's records move as the template steps run, for one profile.
 \* Each action is one step. Its comment names the Naive route it reads or writes.
 \* Probe is FALSE for the playbook as written. TRUE adds steps the playbook does

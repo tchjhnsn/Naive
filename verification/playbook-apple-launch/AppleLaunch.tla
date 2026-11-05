@@ -1,5 +1,5 @@
 ---- MODULE AppleLaunch ----
-\* The apple-launch playbook (packages/marketing/playbooks/apple-launch.md).
+\* The apple-launch playbook (library/packages/marketing/playbooks/apple-launch.md).
 \* States are the founder's records as the template steps run.
 \* Each action is one step. The comment names the route and the action the router offers
 \* (node interface/router.mjs). marketing/content has no write action: the narrative and the

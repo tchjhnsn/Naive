@@ -1,5 +1,5 @@
 ---- MODULE YCFundraise ----
-\* The seed-fundraising playbook (packages/investors/playbooks/y-combinator-fundraise.md).
+\* The seed-fundraising playbook (library/packages/investors/playbooks/y-combinator-fundraise.md).
 \* One founder moves records along the template. Each action is one template step.
 \* Its comment names the Naive routes that step reads or writes.
 \*

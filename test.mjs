@@ -14,6 +14,8 @@ import { availableParallelism } from "node:os";
 import { join } from "node:path";
 
 const root = new URL(".", import.meta.url).pathname;
+/** The site's packages are installed: nextra, hoisted to the root node_modules by the workspace, or local to site/. */
+const siteInstalled = ["node_modules/nextra", "site/node_modules/nextra"].some((p) => existsSync(join(root, p)));
 const ventures = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => !e.isDirectory() ? []
   : existsSync(join(dir, e.name, "venture.json")) ? [join(dir, e.name), ...ventures(join(dir, e.name))] : ventures(join(dir, e.name)));
 
@@ -167,9 +169,10 @@ const steps = [
   ["validation study records: instance", "node", ["schema/check-validation-study.mjs", "instance"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
   ["PR review agent (content findings from fixture markdown, screenshot mode, preview noindex)", "node", ["scripts/pr-review/pr-review-test.mjs"]],
-  // The site's pages compile as MDX; needs the site's packages (cd site && npm ci), which CI's site job installs.
-  ...(existsSync(join(root, "site/node_modules")) ? [["site page gate: internal wording, drafts, blog approval, showcase fixtures", "node", ["site/scripts/gate-pages-test.ts"]]] : []),
-  ...(existsSync(join(root, "site/node_modules")) ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
+  // The site's pages compile as MDX; needs the site's packages, which the root `npm ci` installs into the root
+  // node_modules now that the site is a workspace. CI's site job also runs both.
+  ...(siteInstalled ? [["site page gate: internal wording, drafts, blog approval, showcase fixtures", "node", ["site/scripts/gate-pages-test.ts"]]] : []),
+  ...(siteInstalled ? [["site content contract", "npm", ["--prefix", "site", "run", "check:content"]]] : []),
 ];
 
 // Generated files: the committed copy must equal a fresh render.

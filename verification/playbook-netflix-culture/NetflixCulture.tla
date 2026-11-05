@@ -1,5 +1,5 @@
 ---- MODULE NetflixCulture ----
-\* The netflix-culture playbook (packages/people/playbooks/netflix-culture.md).
+\* The netflix-culture playbook (library/packages/people/playbooks/netflix-culture.md).
 \* Each action is one template step. The comment names the Naive route and the
 \* action the router exposes (node interface/router.mjs). TLC checks the rules
 \* in the config. The chart is view.mjs.

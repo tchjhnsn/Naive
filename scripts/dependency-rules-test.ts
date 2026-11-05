@@ -78,4 +78,28 @@ test("one version: a dependency only one package asks for passes", () => {
   assert.deepEqual(checkVersions(r.dir), []);
 });
 
+test("a specifier that names no file is not an edge, and require() is", () => {
+  const r = repo({
+    "a/x.ts": `// see import "../b/gone.ts"\nconst s = 'import("../c/nope.ts")';`,
+    "a/y.cjs": `const z = require("../b/z.cjs");`,
+    "b/z.cjs": "module.exports = 1;",
+  });
+  assert.deepEqual([...graph(r.dir, r.paths)].map(([f, e]) => [f, [...e]]), [["a", [["b", 1]]]]);
+});
+
+test("acyclic: a known cycle that grew says so", () => {
+  const r = repo({ "a/x.ts": `import "../b/y.ts";`, "b/y.ts": `import "../c/z.ts";`, "c/z.ts": `import "../a/x.ts";` });
+  const found = checkCycles(cycles(graph(r.dir, r.paths)), { known_cycles: [["a", "b"]] }).map((f) => f.detail);
+  assert.ok(found.some((d) => /known cycle a b grew/.test(d)), JSON.stringify(found));
+});
+
+test("one version: peer dependencies count, and a workspaces glob names each package under it", () => {
+  const r = repo({
+    "package.json": JSON.stringify({ workspaces: { packages: ["packages/*"] }, dependencies: { react: "19.3.1" } }),
+    "packages/ui/package.json": JSON.stringify({ peerDependencies: { react: "^19" } }),
+    "packages/notes.md": "not a package",
+  });
+  assert.deepEqual(checkVersions(r.dir).map((f) => f.detail), ["react: 19.3.1 in (root); ^19 in packages/ui"]);
+});
+
 console.log(`${passed} tests passed`);

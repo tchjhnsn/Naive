@@ -1,5 +1,5 @@
 ---- MODULE AmazonSixPager ----
-\* The amazon-6-pager playbook (packages/decisions/playbooks/amazon-6-pager.md).
+\* The amazon-6-pager playbook (library/packages/decisions/playbooks/amazon-6-pager.md).
 \* Two decision memos share one venture.
 \* "gap" is drafted and left incomplete, so the checks can fail.
 \* "full" is drafted, filled from records the venture already holds, given a finding

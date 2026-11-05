@@ -1,6 +1,6 @@
 ---- MODULE FounderLedSales ----
 \* One customer moving through the buying stages in
-\* packages/customers/playbooks/sales-founder-led.md.
+\* library/packages/customers/playbooks/sales-founder-led.md.
 \* Each action is one template step, or a write the customers/[id] route accepts
 \* when that step is skipped. The comment names the routes.
 \* RealRoutes was taken from `node interface/router.mjs` on this branch.

@@ -1,5 +1,5 @@
 ---- MODULE StripeDocs ----
-\* The stripe-docs playbook (packages/product/playbooks/stripe-docs.md).
+\* The stripe-docs playbook (library/packages/product/playbooks/stripe-docs.md).
 \* Each action is one template step. The comment names the Naive route.
 \* RealRoutes is the set replay.mjs checks against `node interface/router.mjs`.
 \* A step that only discovers a missing record (StopNoReader) records the route

@@ -9,22 +9,25 @@
 //                 moves into workspace packages; then each package is a unit. Today's cycles are listed in
 //                 scripts/dependency-rules.json as known, so the check passes now and fails on any new cycle, on a
 //                 known cycle that grew, and on a known cycle that is gone but still listed (so the list only shrinks).
-//   one version   Every package.json of the workspace (the root and each workspace in its `workspaces`) asks for a
-//                 shared dependency by the same version.
+//   one version   Every package.json of the workspace (the root and each workspace in its `workspaces`, where a
+//                 trailing `/*` names every folder under it with a package.json) asks for a shared dependency by the
+//                 same version, across dependencies, devDependencies, peerDependencies and optionalDependencies.
 //
-// An import is a relative specifier in `import ... from`, `export ... from`, `import "..."` or `import("...")` in a
-// tracked .mjs, .js, .cjs, .ts or .tsx file. Bare specifiers (npm packages) are not edges between units.
+// An import is a relative specifier in `import ... from`, `export ... from`, `import "..."`, `import("...")` or
+// `require("...")` in a tracked .mjs, .js, .cjs, .ts or .tsx file, whose target exists. A specifier that names no file
+// (an example inside a string or a comment) is not an edge. Bare specifiers (npm packages) are not edges between units.
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, normalize, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
 export type Rules = { readonly known_cycles: readonly (readonly string[])[] };
 export type Graph = ReadonlyMap<string, ReadonlyMap<string, number>>;
 export type Finding = { readonly rule: "acyclic" | "one-version"; readonly detail: string };
 
 const CODE = /\.(mjs|cjs|js|ts|tsx)$/;
-const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)["'](\.{1,2}\/[^"']+)["']/g;
+const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["'](\.{1,2}\/[^"']+)["']/g;
 
 function tracked(root: string): string[] {
   const out = spawnSync("git", ["ls-files"], { cwd: root, encoding: "utf8" });
@@ -49,6 +52,7 @@ export function graph(root: string, files = tracked(root)): Graph {
     for (const m of readFileSync(full, "utf8").matchAll(SPECIFIER)) {
       const target = normalize(join(dirname(file), m[1]));
       if (target.startsWith("..")) continue; // outside the repository
+      if (!existsSync(join(root, target))) continue; // names no file: an example in a string or a comment
       const to = unitOf(target);
       if (to === from) continue;
       const edges = g.get(from) ?? new Map<string, number>();
@@ -103,22 +107,46 @@ export function checkCycles(found: readonly (readonly string[])[], rules: Rules)
     if (!rules.known_cycles.some((k) => c.every((u) => k.includes(u)))) out.push({ rule: "acyclic", detail: `new cycle: ${key(c)}` });
   }
   for (const k of rules.known_cycles) {
-    if (!found.some((c) => key(c) === key(k))) out.push({ rule: "acyclic", detail: `known cycle ${key(k)} is gone or smaller; update scripts/dependency-rules.json to what --graph shows` });
+    if (found.some((c) => key(c) === key(k))) continue;
+    const grown = found.some((c) => k.every((u) => c.includes(u)));
+    out.push({ rule: "acyclic", detail: grown
+      ? `known cycle ${key(k)} grew; remove the import that joined it (the list may only shrink)`
+      : `known cycle ${key(k)} is gone or smaller; update scripts/dependency-rules.json to what --graph shows` });
   }
   return out;
 }
 
-type Manifest = { readonly workspaces?: readonly string[]; readonly dependencies?: Record<string, string>; readonly devDependencies?: Record<string, string>; readonly peerDependencies?: Record<string, string> };
+type Deps = Record<string, string>;
+type Manifest = {
+  readonly workspaces?: readonly string[] | { readonly packages?: readonly string[] };
+  readonly dependencies?: Deps;
+  readonly devDependencies?: Deps;
+  readonly peerDependencies?: Deps;
+  readonly optionalDependencies?: Deps;
+};
+
+/** The workspace folders a root manifest names, with a trailing `/*` glob expanded to the folders that hold a package.json. */
+export function workspaceDirs(root: string, top: Manifest): string[] {
+  const listed = Array.isArray(top.workspaces) ? top.workspaces : ((top.workspaces as { packages?: readonly string[] } | undefined)?.packages ?? []);
+  return listed.flatMap((w) => {
+    if (!w.endsWith("/*")) return [w];
+    const parent = w.slice(0, -2);
+    if (!existsSync(join(root, parent))) return [];
+    return readdirSync(join(root, parent), { withFileTypes: true })
+      .filter((e) => e.isDirectory() && existsSync(join(root, parent, e.name, "package.json")))
+      .map((e) => `${parent}/${e.name}`);
+  });
+}
 
 /** Findings for the one-version rule over the root package.json and each workspace it names. */
 export function checkVersions(root: string): Finding[] {
   const read = (dir: string): Manifest => JSON.parse(readFileSync(join(root, dir, "package.json"), "utf8")) as Manifest;
   const top = read(".");
-  const dirs = [".", ...(top.workspaces ?? [])];
+  const dirs = [".", ...workspaceDirs(root, top)];
   const asked = new Map<string, Map<string, string[]>>();
   for (const dir of dirs) {
     const m = read(dir);
-    for (const deps of [m.dependencies, m.devDependencies]) {
+    for (const deps of [m.dependencies, m.devDependencies, m.peerDependencies, m.optionalDependencies]) {
       for (const [name, version] of Object.entries(deps ?? {})) {
         const byVersion = asked.get(name) ?? new Map<string, string[]>();
         byVersion.set(version, [...(byVersion.get(version) ?? []), dir === "." ? "(root)" : dir]);
@@ -138,8 +166,8 @@ export function check(root: string): Finding[] {
   return [...checkCycles(cycles(graph(root)), rules), ...checkVersions(root)];
 }
 
-if (process.argv[1] && relative(process.argv[1], new URL(import.meta.url).pathname) === "") {
-  const root = new URL("..", import.meta.url).pathname;
+if (process.argv[1] && relative(process.argv[1], fileURLToPath(import.meta.url)) === "") {
+  const root = fileURLToPath(new URL("..", import.meta.url));
   if (process.argv.includes("--graph")) {
     const g = graph(root);
     for (const [from, edges] of [...g].sort((a, b) => a[0].localeCompare(b[0]))) {
