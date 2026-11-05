@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Encounter, Membership, Relationship } from "./levels.ts";
+import type { Arrangement, Encounter, Hierarchy, Membership, Relationship } from "./levels.ts";
 
 const evidenced = (f: Membership) => f.contributions.some((c) => c.evidenced);
 
@@ -156,4 +156,34 @@ export const area: Term<Arrangement> = {
   predicts: { layer: "overlap" },
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area];
+/** below[a][b]: b is broader than a, directly or through other nodes (Warshall's transitive closure). */
+export const below = (f: Hierarchy): boolean[][] => {
+  const r = Array.from({ length: f.nodes }, () => new Array<boolean>(f.nodes).fill(false));
+  for (const [a, b] of f.broader) r[a][b] = true;
+  for (let k = 0; k < f.nodes; k++) for (let i = 0; i < f.nodes; i++) if (r[i][k]) for (let j = 0; j < f.nodes; j++) if (r[k][j]) r[i][j] = true;
+  return r;
+};
+
+/** For each node, the top categories it reaches through zero or more broader links. */
+export const topsReached = (f: Hierarchy): number[][] => {
+  const r = below(f);
+  return r.map((row, a) => f.tops.filter((t) => t === a || row[t]));
+};
+
+/** For each node, whether it is a top category or has something broader. */
+export const hasBroader = (f: Hierarchy): boolean[] => Array.from({ length: f.nodes }, (_, a) => f.tops.includes(a) || f.broader.some(([x]) => x === a));
+
+export const topCategory: Term<Hierarchy> = {
+  id: "top-category", form: "compound", label: "Top category", level: "hierarchy", kind: "role",
+  meaning: "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. Then every category reaches exactly one top category, which lean/Naive/Upper.lean proves. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
+  props: [
+    { id: "U1", says: "no category is broader than itself, directly or through others (no cycle)", check: (f) => below(f).every((row, a) => !row[a]), uses: [below] },
+    { id: "U2", says: "a top category has nothing broader", check: (f) => f.broader.every(([a]) => !f.tops.includes(a)) },
+    { id: "U3", says: "every category that is not a top category has something broader (no orphan)", check: (f) => hasBroader(f).every(Boolean), uses: [hasBroader] },
+    { id: "U4", says: "no category reaches two top categories", check: (f) => topsReached(f).every((ts) => ts.length <= 1), uses: [topsReached, below] },
+  ],
+  sources: ["ISO/IEC 21838-2:2021, Basic Formal Ontology", "W3C SKOS Reference (2009): skos:broader, skos:hasTopConcept", "Ledger N-049 (2026-11-02): own top categories, each mapped to BFO; every noun traces to exactly one through broader", "docs/design/ONTOLOGY_CORE_2026-11-04.md, part 2"],
+  lean: ["upper_no_cycle", "upper_top_only_itself", "upper_reaches_top", "upper_top_unique", "upper_one_top", "upper_isA_top"],
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory];

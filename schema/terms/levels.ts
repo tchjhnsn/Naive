@@ -44,6 +44,15 @@ export type Arrangement = Base & {
   byConcern: boolean;             // each part was drawn around one concern: one subject or one job
 };
 
+/** Categories joined by broader links: the top categories and the nouns under them. Whether a category is a top
+ *  category depends on the whole hierarchy, so the facts describe the whole. Nodes are numbered 0 to nodes - 1;
+ *  names stay out of the facts. */
+export type Hierarchy = Base & {
+  nodes: number;
+  tops: number[];                 // the nodes that are top categories
+  broader: [number, number][];    // [a, b]: b is broader than a (a is a kind of b)
+};
+
 const N = 20000;
 export function membershipCases(seed = 11): Membership[] {
   const r = rng(seed);
@@ -98,5 +107,32 @@ export function arrangementCases(seed = 19): Arrangement[] {
       for (let a = 0; a < parts; a++) for (let c = 0; c < parts; c++) if (a !== c && b(0.25)) dependsOn.push([a, c]);
     }
     return { confirmed: b(0.9), label: ["layer", "area", "tier", undefined][Math.floor(r() * 4)], parts, dependsOn, byConcern: b(0.6) };
+  });
+}
+
+/** Half the cases are forests: one to three top categories, and every other node takes a broader node placed
+ *  before it, now and then a second one, now and then none. The other half draw tops and links at random and
+ *  often hold a cycle, an orphan or a node under two top categories. */
+export function hierarchyCases(seed = 23): Hierarchy[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => {
+    const nodes = 1 + Math.floor(r() * 8);
+    const broader: [number, number][] = [];
+    const order = Array.from({ length: nodes }, (_, i) => i);
+    let tops: number[];
+    if (b()) {
+      for (let i = nodes - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+      const k = 1 + Math.floor(r() * Math.min(3, nodes));
+      tops = order.slice(0, k);
+      for (let i = k; i < nodes; i++) {
+        if (b(0.95)) broader.push([order[i], order[Math.floor(r() * i)]]);
+        if (b(0.1)) broader.push([order[i], order[Math.floor(r() * i)]]);
+      }
+    } else {
+      tops = order.filter(() => b(0.3));
+      for (let a = 0; a < nodes; a++) for (let c = 0; c < nodes; c++) if (a !== c && b(0.2)) broader.push([a, c]);
+    }
+    return { confirmed: b(0.9), label: ["top category", "category", "root", undefined][Math.floor(r() * 4)], nodes, tops, broader };
   });
 }

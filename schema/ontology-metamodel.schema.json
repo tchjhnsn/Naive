@@ -11,6 +11,7 @@
         "version": { "skos": "none", "owl": "owl:versionInfo" },
         "note": { "skos": "skos:note", "owl": "none" },
         "check": { "skos": "none", "owl": "none", "note": "the paths the retired-noun scan reads" },
+        "top_categories": { "skos": "skos:hasTopConcept", "owl": "none", "note": "the upper ontology (N-049)" },
         "nouns": { "skos": "skos:inScheme", "owl": "none", "note": "each noun is in this scheme" }
       }
     },
@@ -32,7 +33,18 @@
         "properties": { "skos": "none", "owl": "none", "note": "property ids of that term" },
         "replaced_by": { "skos": "none", "owl": "none", "note": "dcterms:isReplacedBy is the nearest standard" },
         "retired_pattern": { "skos": "none", "owl": "none" },
-        "shape": { "skos": "none", "owl": "none", "note": "sh:NodeShape in SHACL, as EE-107 item 7 describes" }
+        "shape": { "skos": "none", "owl": "none", "note": "sh:NodeShape in SHACL, as EE-107 item 7 describes" },
+        "broader": { "skos": "skos:broader", "owl": "none", "note": "rdfs:subClassOf in OWL documents" }
+      }
+    },
+    "top_category": {
+      "skos": "skos:Concept",
+      "owl": "owl:Class",
+      "note": "skos:topConceptOf the ontology",
+      "fields": {
+        "name": { "skos": "skos:prefLabel", "owl": "none", "note": "rdfs:label in OWL documents" },
+        "meaning": { "skos": "skos:definition", "owl": "none" },
+        "bfo": { "skos": "skos:broadMatch", "owl": "none", "note": "rdfs:subClassOf the named BFO class in OWL documents" }
       }
     },
     "verb": { "skos": "none", "owl": "none", "note": "a change verb classifies a change to the vocabulary, which SKOS and OWL do not model" },
@@ -45,7 +57,7 @@
     "ontology": {
       "description": "The ontology document, docs/ontology.json.",
       "type": "object",
-      "required": ["version", "note", "check", "nouns"],
+      "required": ["version", "note", "check", "top_categories", "nouns"],
       "additionalProperties": false,
       "properties": {
         "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
@@ -56,7 +68,27 @@
           "minItems": 1,
           "items": { "type": "string", "minLength": 1 }
         },
+        "top_categories": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/top_category" } },
         "nouns": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/noun" } }
+      }
+    },
+    "top_category": {
+      "description": "A top category of the upper ontology (N-049, EE-113), mapped to the class of BFO (ISO/IEC 21838-2) it falls under. That every noun reaches exactly one top category through broader is checked through the EE-095 term engine (term top-category, node schema/terms/upper-test.ts), not here.",
+      "type": "object",
+      "required": ["name", "meaning", "bfo"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[^@]+$" },
+        "meaning": { "type": "string", "minLength": 1 },
+        "bfo": {
+          "type": "object",
+          "required": ["class", "iri"],
+          "additionalProperties": false,
+          "properties": {
+            "class": { "description": "The BFO class's label.", "type": "string", "minLength": 1 },
+            "iri": { "type": "string", "pattern": "^http://purl\\.obolibrary\\.org/obo/BFO_[0-9]{7}$" }
+          }
+        }
       }
     },
     "noun": {
@@ -87,7 +119,8 @@
         "properties": { "description": "Property ids of the term that a handoff of this type must satisfy.", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
         "replaced_by": { "description": "What replaced a retired noun.", "type": "string", "minLength": 1 },
         "retired_pattern": { "description": "A regular expression for the retired noun, which schema/check-nouns.mjs fails on.", "type": "string", "minLength": 1 },
-        "shape": { "description": "A JSON Schema of what a record claiming this noun must contain (EE-107 item 7).", "type": "object" }
+        "shape": { "description": "A JSON Schema of what a record claiming this noun must contain (EE-107 item 7).", "type": "object" },
+        "broader": { "description": "What the noun is a kind of: other nouns or top categories (N-049).", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
       },
       "dependentRequired": { "retired_pattern": ["replaced_by"] },
       "if": { "required": ["replaced_by"] },

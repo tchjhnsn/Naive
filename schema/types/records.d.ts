@@ -2216,7 +2216,19 @@ export type OntologyMetamodelOntology = {
   note: string;
   /** Files and folders schema/check-nouns.mjs scans for retired nouns. */
   check: string[];
+  top_categories: OntologyMetamodelTopCategory[];
   nouns: OntologyMetamodelNoun[];
+};
+
+/** A top category of the upper ontology (N-049, EE-113), mapped to the class of BFO (ISO/IEC 21838-2) it falls under. That every noun reaches exactly one top category through broader is checked through the EE-095 term engine (term top-category, node schema/terms/upper-test.ts), not here. */
+export type OntologyMetamodelTopCategory = {
+  name: string;
+  meaning: string;
+  bfo: {
+    /** The BFO class's label. */
+    class: string;
+    iri: string;
+  };
 };
 
 /** A noun, the vocabulary object of class noun (EE-107 item 7). schema/ontology-gate.ts checks what needs other files: functions are departments, capabilities are owned, a term is admitted. */
@@ -2249,6 +2261,8 @@ export type OntologyMetamodelNoun = {
   shape?: {
     [key: string]: unknown;
   };
+  /** What the noun is a kind of: other nouns or top categories (N-049). */
+  broader?: string[];
 };
 
 /** One of exactly three change verbs (EE-107 item 1). */

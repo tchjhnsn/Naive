@@ -642,6 +642,53 @@
         "Parnas, On the criteria to be used in decomposing systems into modules (1972)",
         "Ledger C-086 (2026-10-31): Naive's groupings proposed as areas"
       ]
+    },
+    {
+      "id": "top-category",
+      "label": "Top category",
+      "form": "compound",
+      "level": "hierarchy",
+      "kind": "role",
+      "meaning": "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. Then every category reaches exactly one top category, which lean/Naive/Upper.lean proves. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
+      "status": "proposed",
+      "hash": "24f679e53efbc73f",
+      "properties": [
+        {
+          "id": "U1",
+          "says": "no category is broader than itself, directly or through others (no cycle)"
+        },
+        {
+          "id": "U2",
+          "says": "a top category has nothing broader"
+        },
+        {
+          "id": "U3",
+          "says": "every category that is not a top category has something broader (no orphan)"
+        },
+        {
+          "id": "U4",
+          "says": "no category reaches two top categories"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 8009,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "upper_no_cycle",
+        "upper_top_only_itself",
+        "upper_reaches_top",
+        "upper_top_unique",
+        "upper_one_top",
+        "upper_isA_top"
+      ],
+      "sources": [
+        "ISO/IEC 21838-2:2021, Basic Formal Ontology",
+        "W3C SKOS Reference (2009): skos:broader, skos:hasTopConcept",
+        "Ledger N-049 (2026-11-02): own top categories, each mapped to BFO; every noun traces to exactly one through broader",
+        "docs/design/ONTOLOGY_CORE_2026-11-04.md, part 2"
+      ]
     }
   ],
   "fixtures": [

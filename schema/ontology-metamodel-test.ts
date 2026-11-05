@@ -35,11 +35,14 @@ const validate = (value: unknown, def?: string) => new Promise<Ran>((resolve) =>
 });
 const line = (value: unknown) => validate(value, "change_line");
 
-const ontology = JSON.parse(readFileSync(join(root, "docs/ontology.json"), "utf8")) as { nouns: Record<string, unknown>[] };
+const ontology = JSON.parse(readFileSync(join(root, "docs/ontology.json"), "utf8")) as { nouns: Record<string, unknown>[]; top_categories: Record<string, unknown>[] };
+const withTop = (top: Record<string, unknown>) => ({ ...ontology, top_categories: [top, ...ontology.top_categories.slice(1)] });
 const rename = { verb: "amend", kind: "rename", noun: "customer@finance", tier: "costly" };
-const [docs, extraNounKey, good, derive, merge, unknownKey, wrongKind, deriveNoSource, sourceOnAmend, noTier, badTier, unknownDef] = await Promise.all([
+const [docs, extraNounKey, noBfo, notBfo, good, derive, merge, unknownKey, wrongKind, deriveNoSource, sourceOnAmend, noTier, badTier, unknownDef] = await Promise.all([
   validate(ontology),
   validate({ ...ontology, nouns: [{ ...ontology.nouns[0], synonym: "x" }, ...ontology.nouns.slice(1)] }),
+  validate(withTop({ name: "x", meaning: "x" })),
+  validate(withTop({ name: "x", meaning: "x", bfo: { class: "thing", iri: "http://www.w3.org/2002/07/owl#Thing" } })),
   line(rename),
   line({ verb: "create", kind: "derive", noun: "client account", source: "account", tier: "low" }),
   line({ verb: "delete", kind: "merge", noun: "client", successor: "account", tier: "one_way_door" }),
@@ -54,6 +57,8 @@ const [docs, extraNounKey, good, derive, merge, unknownKey, wrongKind, deriveNoS
 
 expect("docs/ontology.json validates against the metamodel", docs.status === 0 && docs.out.trim() === "valid", docs.out);
 expect("a noun with an unknown key is rejected, the key named", extraNounKey.status === 1 && extraNounKey.out.includes("'synonym' was unexpected"), extraNounKey.out);
+expect("a top category without a BFO mapping is rejected", noBfo.status === 1 && noBfo.out.includes("'bfo' is a required property"), noBfo.out);
+expect("a top category mapped outside BFO is rejected", notBfo.status === 1 && notBfo.out.includes("does not match"), notBfo.out);
 expect("a valid change line (amend, rename) is accepted", good.status === 0, good.out);
 expect("create, derive with its source is accepted", derive.status === 0, derive.out);
 expect("delete, merge with its successor is accepted", merge.status === 0, merge.out);
@@ -70,8 +75,8 @@ const classes = Object.keys(metamodel.$defs).sort();
 expect("every metamodel class has one mappings entry, and every entry is a class", JSON.stringify(Object.keys(metamodel.mappings).sort()) === JSON.stringify(classes));
 const unnamed = Object.entries(metamodel.mappings).flatMap(([c, m]) => [...(term(m) ? [] : [c]), ...Object.entries(m.fields ?? {}).filter(([, f]) => !term(f)).map(([f]) => `${c}.${f}`)]);
 expect("every class and field names a SKOS term, an OWL term or none", unnamed.length === 0, unnamed.join(", "));
-const fieldGaps = ["ontology", "noun"].filter((c) => JSON.stringify(Object.keys(metamodel.mappings[c]?.fields ?? {}).sort()) !== JSON.stringify(Object.keys(metamodel.$defs[c]?.properties ?? {}).sort()));
-expect("the ontology and noun fields are mapped one to one", fieldGaps.length === 0, fieldGaps.join(", "));
+const fieldGaps = ["ontology", "noun", "top_category"].filter((c) => JSON.stringify(Object.keys(metamodel.mappings[c]?.fields ?? {}).sort()) !== JSON.stringify(Object.keys(metamodel.$defs[c]?.properties ?? {}).sort()));
+expect("the ontology, noun and top category fields are mapped one to one", fieldGaps.length === 0, fieldGaps.join(", "));
 
 // operations/operating-rules.json declares the same verbs, kinds and tiers; the two must not drift.
 const rules = JSON.parse(readFileSync(join(root, "operations/operating-rules.json"), "utf8")) as { design: { diff: { verbs: Record<string, { kinds: string[] }> } }; questions: { impact: { tiers: string[] } } };

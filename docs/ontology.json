@@ -1,6 +1,6 @@
 {
-  "version": "0.6.0",
-  "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json.",
+  "version": "0.7.0",
+  "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json. Each noun names what it is a kind of in broader (SKOS broader): another noun, or one of the top_categories, each of which is mapped to a class of BFO (ISO/IEC 21838-2). Every noun reaches exactly one top category (N-049); node schema/terms/upper-test.ts checks it.",
   "check": [
     "schema/",
     "docs/ontology.md",
@@ -10,6 +10,48 @@
     "README.md",
     "site/content/"
   ],
+  "top_categories": [
+    {
+      "name": "information artifact",
+      "meaning": "Information that stays one thing however many copies exist: a record, document, specification, schema, address, score or piece of software. Two copies of one file are one artifact, so a record is linked by id and content hash, not by path. IAO's information content entity is the established subclass in BFO",
+      "bfo": {
+        "class": "generically dependent continuant",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000031"
+      }
+    },
+    {
+      "name": "party",
+      "meaning": "A person, group, organization or venture: something that persists through time, keeps its identity, and bears functions and roles",
+      "bfo": {
+        "class": "independent continuant",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000004"
+      }
+    },
+    {
+      "name": "capacity",
+      "meaning": "Something a party has whether or not it is exercising it at the moment, realized in what the party does: a business function, a role, a right",
+      "bfo": {
+        "class": "realizable entity",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000017"
+      }
+    },
+    {
+      "name": "process",
+      "meaning": "Something that happens over time, to or in a venture, with a beginning and an end: an act, an event, a change",
+      "bfo": {
+        "class": "process",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000015"
+      }
+    },
+    {
+      "name": "characteristic",
+      "meaning": "A trait of a venture, product or record that one value from a fixed list names, such as its phase, ambition or legal form",
+      "bfo": {
+        "class": "quality",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000019"
+      }
+    }
+  ],
   "nouns": [
     {
       "noun": "Everything Ecosystem",
@@ -18,7 +60,10 @@
       "standard": "ours",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "venture development framework"
+      ]
     },
     {
       "noun": "the system",
@@ -27,7 +72,10 @@
       "standard": "EOS (Wickman) for 'operating system'",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "venture development framework"
+      ]
     },
     {
       "noun": "venture development framework",
@@ -36,7 +84,10 @@
       "standard": "software framework (Johnson and Foote 1988; Rails' convention over configuration) applied to venture development (venture building, venture studios)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "central data management structure",
@@ -45,7 +96,10 @@
       "standard": "master data management, centralized style (DAMA-DMBOK)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "method",
@@ -54,7 +108,10 @@
       "standard": "common usage",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "schema",
@@ -63,7 +120,10 @@
       "standard": "JSON Schema",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "tooling",
@@ -72,7 +132,10 @@
       "standard": "common usage",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "workspace",
@@ -81,7 +144,10 @@
       "standard": "common software usage",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "layer",
@@ -90,7 +156,10 @@
       "standard": "ours",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "venture",
@@ -99,7 +168,10 @@
       "standard": "common business usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "party"
+      ]
     },
     {
       "noun": "phase",
@@ -113,7 +185,10 @@
         "moore-1995-inside-the-tornado"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "gate",
@@ -126,7 +201,10 @@
         "zook-allen-2012-repeatability"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "ambition",
@@ -139,7 +217,10 @@
         "elgar-what-do-entrepreneurs-create"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "legal form",
@@ -148,7 +229,10 @@
       "standard": "US entity types",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "funding",
@@ -157,7 +241,10 @@
       "standard": "common usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "industry",
@@ -170,7 +257,10 @@
         "gics-msci"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "core product",
@@ -183,7 +273,10 @@
         "prahalad-hamel-1990-core-competence"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "client",
@@ -194,7 +287,10 @@
       "replaced_by": "account (relationship: client)",
       "retired_pattern": "clients/|client\\.json|client\\.schema",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "account",
@@ -203,7 +299,10 @@
       "standard": "CRM usage (Salesforce, HubSpot: account)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "party"
+      ]
     },
     {
       "noun": "relationship",
@@ -212,7 +311,10 @@
       "standard": "common business usage; client as a customer of professional services",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "link",
@@ -221,7 +323,10 @@
       "standard": "Clark's work/family border theory",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "venture profile",
@@ -230,7 +335,10 @@
       "standard": "ours",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "function",
@@ -239,7 +347,10 @@
       "standard": "business function (common usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "pillar",
@@ -248,7 +359,10 @@
       "standard": "ours",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "venture template",
@@ -257,7 +371,10 @@
       "standard": "ours",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "product",
@@ -266,7 +383,10 @@
       "standard": "common usage",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "market",
@@ -278,7 +398,10 @@
         "abell-1980-defining-the-business"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "party"
+      ]
     },
     {
       "noun": "job",
@@ -290,7 +413,10 @@
         "abell-1980-defining-the-business"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "technology",
@@ -302,7 +428,10 @@
         "abell-1980-defining-the-business"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "offering",
@@ -311,7 +440,10 @@
       "standard": "common usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "business model",
@@ -323,7 +455,10 @@
         "gassmann-2014-business-model-navigator"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "portfolio role",
@@ -332,7 +467,10 @@
       "standard": "portfolio strategy",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "wedge",
@@ -344,7 +482,10 @@
         "dixon-2010-thin-edge-of-the-wedge"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "portfolio role"
+      ]
     },
     {
       "noun": "Product Anatomy",
@@ -353,7 +494,10 @@
       "standard": "ours",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "method"
+      ]
     },
     {
       "noun": "Succession Matrix",
@@ -362,7 +506,10 @@
       "standard": "ours",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "method"
+      ]
     },
     {
       "noun": "decision",
@@ -371,7 +518,10 @@
       "standard": "ADR practice",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "reference",
@@ -380,7 +530,10 @@
       "standard": "citation practice",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "tier",
@@ -389,7 +542,10 @@
       "standard": "architecture tiers",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "handoff",
@@ -398,7 +554,10 @@
       "standard": "common operations usage",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "done-criterion",
@@ -407,7 +566,10 @@
       "standard": "definition of done (Scrum)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "eval",
@@ -416,7 +578,10 @@
       "standard": "AI evals",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "evidence",
@@ -425,7 +590,10 @@
       "standard": "common audit usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "role",
@@ -434,7 +602,10 @@
       "standard": "decision rights (RACI, RAPID)",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "team plan",
@@ -443,7 +614,10 @@
       "standard": "workforce planning (common HR usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "human loop",
@@ -452,7 +626,10 @@
       "standard": "human-in-the-loop (common AI usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "role"
+      ]
     },
     {
       "noun": "capability register",
@@ -461,7 +638,10 @@
       "standard": "ours",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "decision right",
@@ -470,7 +650,10 @@
       "standard": "decision rights (RAPID, DACI)",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "console",
@@ -479,7 +662,10 @@
       "standard": "common software usage",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "custom workbench"
+      ]
     },
     {
       "noun": "workbench",
@@ -488,7 +674,10 @@
       "standard": "workbench (Eclipse Platform Workbench; Fowler, language workbench), narrowed",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "harness",
@@ -497,7 +686,10 @@
       "standard": "harness (industry usage; Anthropic S-1, 2026); workspace rule G-039",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "agent harness",
@@ -509,7 +701,10 @@
         "anthropic-2024-building-effective-agents"
       ],
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "AI harness"
+      ]
     },
     {
       "noun": "AI harness",
@@ -521,7 +716,10 @@
       ],
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "harness"
+      ]
     },
     {
       "noun": "AI feature",
@@ -533,7 +731,10 @@
       ],
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "custom workbench",
@@ -542,7 +743,10 @@
       "standard": "common software usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "workbench"
+      ]
     },
     {
       "noun": "integration",
@@ -551,7 +755,10 @@
       "standard": "systems integration",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "kit",
@@ -560,7 +767,10 @@
       "standard": "product bundling (Adams and Yellen 1976), kept for the platform",
       "status": "kept",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "sphere",
@@ -571,7 +781,10 @@
       "replaced_by": "venture",
       "retired_pattern": "\\bspheres?\\b",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "party"
+      ]
     },
     {
       "noun": "stage",
@@ -582,7 +795,10 @@
       "replaced_by": "phase, legal form and ambition",
       "retired_pattern": "\"stage\"\\s*:",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "kind",
@@ -593,7 +809,10 @@
       "replaced_by": "venture, with accounts as records",
       "retired_pattern": "\"kind\"\\s*:\\s*\"(venture|client)\"",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "Wedge (phase)",
@@ -604,7 +823,10 @@
       "replaced_by": "validation (wedge stays a portfolio role)",
       "retired_pattern": "\"id\"\\s*:\\s*\"wedge\"",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "Core Engine",
@@ -615,7 +837,10 @@
       "replaced_by": "scale",
       "retired_pattern": "Core Engine|core-engine",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "Horizon (phase)",
@@ -626,7 +851,10 @@
       "replaced_by": "platform (Three Horizons stays a lens)",
       "retired_pattern": "\"id\"\\s*:\\s*\"horizon\"",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "entity profile",
@@ -637,7 +865,10 @@
       "replaced_by": "venture profile",
       "retired_pattern": "entity profile",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "company template",
@@ -648,7 +879,10 @@
       "replaced_by": "venture template",
       "retired_pattern": "company[- ]template",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "orientation",
@@ -659,7 +893,10 @@
       "replaced_by": "legal form",
       "retired_pattern": "\"orientation\"\\s*:",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
     },
     {
       "noun": "data model",
@@ -668,7 +905,10 @@
       "standard": "data model (ANSI/SPARC; entity-relationship modelling, Chen 1976)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "record type",
@@ -677,7 +917,10 @@
       "standard": "record type (database usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "layer manifest",
@@ -686,7 +929,10 @@
       "standard": "package manifest (common software usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "vault",
@@ -695,7 +941,10 @@
       "standard": "Obsidian's name for a folder of notes; generically a knowledge base",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "repository (repo)",
@@ -704,7 +953,10 @@
       "standard": "version control (Git: repository)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "cap table",
@@ -713,7 +965,10 @@
       "standard": "capitalization table (common startup and finance usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "share class",
@@ -722,7 +977,10 @@
       "standard": "corporate law (classes of stock)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "vesting",
@@ -731,7 +989,10 @@
       "standard": "common startup usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "process"
+      ]
     },
     {
       "noun": "founder agreement",
@@ -740,7 +1001,10 @@
       "standard": "common startup usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "board",
@@ -749,7 +1013,10 @@
       "standard": "corporate law; Feld and Ramsinghani, Startup Boards",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "party"
+      ]
     },
     {
       "noun": "reserved matter",
@@ -758,7 +1025,10 @@
       "standard": "corporate governance usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "decision"
+      ]
     },
     {
       "noun": "investor right",
@@ -767,7 +1037,10 @@
       "standard": "NVCA model legal documents",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
     },
     {
       "noun": "liquidation waterfall",
@@ -778,7 +1051,10 @@
       "replaced_by": "preference stack",
       "retired_pattern": "liquidation waterfall|waterfall\\.mjs",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "exit",
@@ -787,7 +1063,10 @@
       "standard": "venture finance usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "process"
+      ]
     },
     {
       "noun": "preference stack",
@@ -796,7 +1075,10 @@
       "standard": "venture finance usage (pref stack; Feld and Mendelson, Venture Deals)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "publication policy",
@@ -805,7 +1087,10 @@
       "standard": "content governance; communications or disclosure policy (corporate usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "channel",
@@ -814,7 +1099,10 @@
       "standard": "marketing channel (Kotler, Marketing Management)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "publication",
@@ -823,7 +1111,10 @@
       "standard": "common usage",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "process"
+      ]
     },
     {
       "noun": "brand guidelines",
@@ -832,7 +1123,10 @@
       "standard": "brand guidelines or brand book (common marketing usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "editorial guidelines",
@@ -841,7 +1135,10 @@
       "standard": "editorial guidelines and style guide (publishing usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "telos",
@@ -850,7 +1147,10 @@
       "standard": "Aristotle (final cause); Covey, begin with the end in mind",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "exit criterion",
@@ -859,7 +1159,10 @@
       "standard": "Stage-Gate exit criteria (Cooper)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "gate"
+      ]
     },
     {
       "noun": "template",
@@ -868,7 +1171,10 @@
       "standard": "common usage (document template)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "validation score",
@@ -880,7 +1186,10 @@
       ],
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "evidence grade",
@@ -893,7 +1202,10 @@
       ],
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "need-now score",
@@ -902,7 +1214,10 @@
       "standard": "ours; just-in-time (lean manufacturing) and YAGNI (extreme programming) in spirit",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "derived answer",
@@ -911,7 +1226,10 @@
       "standard": "ours",
       "status": "retired",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "route",
@@ -920,7 +1238,10 @@
       "standard": "routing in web frameworks (Next.js App Router, Rails routes)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "draft",
@@ -929,7 +1250,10 @@
       "standard": "common usage (draft for approval)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "provenance",
@@ -938,7 +1262,10 @@
       "standard": "W3C PROV (PROV-DM: entity, activity, agent)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "provenance log",
@@ -947,7 +1274,10 @@
       "standard": "W3C PROV; hash-chained append-only log (common audit usage)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "layout",
@@ -956,7 +1286,10 @@
       "standard": "Next.js App Router (layout)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "view",
@@ -965,7 +1298,10 @@
       "standard": "Next.js App Router (page); MVC view",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "route group",
@@ -974,7 +1310,10 @@
       "standard": "Next.js App Router (route groups)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "slot",
@@ -983,7 +1322,10 @@
       "standard": "Next.js App Router (parallel routes, @slot)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "route alias",
@@ -992,7 +1334,10 @@
       "standard": "common API usage (deprecation, redirects)",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "route"
+      ]
     },
     {
       "noun": "strategic foundation",
@@ -1001,7 +1346,10 @@
       "standard": "strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How",
       "status": "new",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "guiding statement",
@@ -1010,7 +1358,10 @@
       "standard": "ours",
       "status": "retired",
       "function": null,
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     },
     {
       "noun": "strategy",
@@ -1020,6 +1371,9 @@
       "status": "proposed",
       "function": "strategy",
       "handoff_type": false,
+      "broader": [
+        "function"
+      ],
       "capabilities": [
         "founder appointment"
       ]
@@ -1032,6 +1386,9 @@
       "status": "proposed",
       "function": "products",
       "handoff_type": false,
+      "broader": [
+        "function"
+      ],
       "capabilities": [
         "product decision"
       ]
@@ -1044,6 +1401,9 @@
       "status": "proposed",
       "function": "marketing-and-sales",
       "handoff_type": false,
+      "broader": [
+        "function"
+      ],
       "capabilities": [
         "pricing decision",
         "customer@marketing-and-sales"
@@ -1057,6 +1417,9 @@
       "status": "proposed",
       "function": "finance",
       "handoff_type": false,
+      "broader": [
+        "function"
+      ],
       "capabilities": [
         "customer@finance"
       ]
@@ -1068,7 +1431,10 @@
       "standard": "Schema.org Customer",
       "status": "proposed",
       "function": "marketing-and-sales",
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "relationship"
+      ]
     },
     {
       "noun": "customer@finance",
@@ -1077,7 +1443,10 @@
       "standard": "FIBO (Financial Industry Business Ontology), Customer",
       "status": "proposed",
       "function": "finance",
-      "handoff_type": false
+      "handoff_type": false,
+      "broader": [
+        "relationship"
+      ]
     },
     {
       "noun": "pricing decision",
@@ -1087,6 +1456,9 @@
       "status": "proposed",
       "function": "marketing-and-sales",
       "handoff_type": true,
+      "broader": [
+        "decision"
+      ],
       "required_touches": [
         "finance"
       ]
@@ -1098,7 +1470,10 @@
       "standard": "APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services",
       "status": "proposed",
       "function": "products",
-      "handoff_type": true
+      "handoff_type": true,
+      "broader": [
+        "decision"
+      ]
     },
     {
       "noun": "founder appointment",
@@ -1108,6 +1483,9 @@
       "status": "proposed",
       "function": "strategy",
       "handoff_type": true,
+      "broader": [
+        "information artifact"
+      ],
       "term": "founder",
       "properties": [
         "F1",

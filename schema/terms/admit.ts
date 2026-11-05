@@ -13,14 +13,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { freeze, passSet, relation, run, validTest, type Base, type Relation, type Term } from "./engine.ts";
 import { arrangementFixtures, type Fixture } from "./fixtures.ts";
-import { arrangementCases, encounterCases, membershipCases, relationshipCases } from "./levels.ts";
+import { arrangementCases, encounterCases, hierarchyCases, membershipCases, relationshipCases } from "./levels.ts";
 import { TERMS } from "./terms.ts";
 
 const here = new URL(".", import.meta.url).pathname;
 const repo = join(here, "../..");
 const out = join(here, "admitted.json");
 
-const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases() };
+const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases() };
 const FIXTURES: Record<string, Fixture<Base>[]> = { arrangement: arrangementFixtures(repo) };
 
 function leanSource(): string {
