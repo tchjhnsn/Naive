@@ -3,7 +3,9 @@
 `PublicWords.tla` models (for `operations/marketing/publish-build.mjs`) one record field on its way to a public channel: its visibility sidecar, its MDX
 public variant, and what a build puts in the output. `CODE = "branch"` (`PublicWords.cfg`) is this branch;
 `CODE = "main"` (`PublicWords-main.cfg`) is origin/main at 566bb99. `replay.mjs` replays each rule against
-the real code, on a fixture venture and on `instance/ventures/everything-ecosystem`.
+the real code, on a fixture venture and on Naive's example software venture (`schema/examples/software/ventures/relay`), with the stand-in channel builders in `operations/marketing/fixtures/`.
+
+When this branch was verified, the replay also ran main's site one-pager and the repository's own venture. Naive now has its own repository (EE-118), and that site code and venture stay in everything-ecosystem, so the replay here builds the stand-in channels instead. The table below is the record of that verification as run then.
 
 ## Regenerate
 
