@@ -46,7 +46,7 @@ export const REGISTRY: Registry = {
   "schema/beta-gate.mjs": plain("unlocks beta capabilities in order from feedback records; it decides access, not a term"),
   "schema/check-artifacts.mjs": plain("artifacts name records that exist, and a changed source hash marks one stale"),
   "schema/check-assets.mjs": plain("each public asset has a source, a license, a credit and alt text"),
-  "schema/check-boundary.mjs": plain("import paths: nothing outside platform/ imports from it"),
+  "schema/check-boundary.mjs": plain("path text: no code names a module of an app that uses Naive, and registered connectors work offline"),
   "schema/check-brand.mjs": plain("brand records: colors, licensed typefaces, marks and voice rules against fixed lists"),
   "schema/check-config.mjs": plain("naive.config.json: shape, route patterns that match the route table, and pins"),
   "schema/check-data-model.mjs": plain("every JSON file maps to a declared record type by path; record types are schema types, not glossary terms"),
@@ -88,7 +88,6 @@ export const REGISTRY: Registry = {
   "schema/gate.mjs": plain("the write gate: route rules, pins and role access decide what happens to a write, not a term"),
   "schema/ontology-gate-test.ts": plain("tests the membership gate, which is registered as symbolic"),
   "schema/ontology-gate.ts": symbolic,
-  "scripts/reconcile-ideas.ts": symbolic,
 };
 
 const ENGINE = "schema/terms/engine.ts";
