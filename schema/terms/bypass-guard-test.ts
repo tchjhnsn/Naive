@@ -85,6 +85,7 @@ export const REGISTRY: Registry = {
   "schema/gate.mjs": plain("the write gate: route rules, pins and role access decide what happens to a write, not a term"),
   "schema/ontology-gate-test.ts": plain("tests the membership gate, which is registered as symbolic"),
   "schema/ontology-gate.ts": symbolic,
+  "scripts/reconcile-ideas.ts": symbolic,
 };
 
 const ENGINE = "schema/terms/engine.ts";
