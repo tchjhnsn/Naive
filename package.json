@@ -11,6 +11,20 @@
   "engines": {
     "node": ">=20"
   },
+  "exports": {
+    "./package.json": "./package.json",
+    "./schema/*": "./schema/*",
+    "./interface/*": "./interface/*",
+    "./packages/*": "./packages/*",
+    "./knowledge/*": "./knowledge/*",
+    "./operations/*": "./operations/*",
+    "./purpose/*": "./purpose/*",
+    "./governance/*": "./governance/*",
+    "./evidence/*": "./evidence/*",
+    "./frameworks/*": "./frameworks/*",
+    "./library/*": "./library/*",
+    "./docs/*": "./docs/*"
+  },
   "bin": {
     "naive": "interface/cli/naive.mjs",
     "mentura": "interface/cli/mentura.mjs"
