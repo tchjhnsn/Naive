@@ -24,7 +24,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 ## Build and test
 
-- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` (TypeScript is the one dev dependency, with its Node types), and python3 with `jsonschema` for `schema/validate.py`.
+- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` at the root (the repository is one npm workspace with one root `package-lock.json`; `console/` and `site/` are workspaces, so one install covers them, and a shared dependency has one version), and python3 with `jsonschema` for `schema/validate.py`.
 - `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
 - `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node schema/record-types-test.ts`).
 - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
