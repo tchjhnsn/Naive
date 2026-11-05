@@ -45,7 +45,7 @@ writeFileSync(join(dir, "section", "index.mdx"), "");
 expect("a README link does not fall back to .mdx", "[a](./onlymdx)\n", false, /the link points at nothing/);
 expect("an .mdx doc falls back to .mdx and index.mdx", "[a](./onlymdx) [b](./section)\n", true, null, ".mdx");
 const scanned = spawnSync("node", ["schema/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\nschema/README.md\nREADME.md\nlibrary/packages/finance/playbooks/bessemer-saas-metrics.md\nlibrary/packages/finance/playbooks/x/deep.md\nverification/lint-finance/README.md\n" }).stdout.trim().split("\n");
-const scannedOk = scanned.join() === "docs/master/naive-docs.md,site/content/docs/index.mdx,knowledge/skills/x/SKILL.md,schema/README.md,README.md,library/packages/finance/playbooks/bessemer-saas-metrics.md,verification/lint-finance/README.md";
+const scannedOk = scanned.join() === "docs/master/naive-docs.md,knowledge/skills/x/SKILL.md,schema/README.md,README.md,library/packages/finance/playbooks/bessemer-saas-metrics.md,verification/lint-finance/README.md";
 if (!scannedOk) failed++;
 console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
 const tree = join(dir, "tree");

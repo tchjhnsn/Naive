@@ -12,7 +12,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     // `.lake` is Lake's build cache (Mathlib under lean/). It is not Naive's code.
-    ignores: ["**/node_modules/**", "**/.next/**", "**/.source/**", "site/out/**", "**/_catalog/**", "**/.naive/**", "**/.lake/**", "**/next-env.d.ts", "site/public/_pagefind/**"],
+    ignores: ["**/node_modules/**", "**/.next/**", "**/.source/**", "**/_catalog/**", "**/.naive/**", "**/.lake/**", "**/next-env.d.ts"],
   },
   {
     files: ["**/*.{mjs,js,cjs,jsx}"],
@@ -41,7 +41,7 @@ export default tseslint.config(
   },
   {
     rules: {
-      // TODO(2026-10-29): 35 unused variables and imports across interface/, schema/ and site/. Back to "error" once
+      // TODO(2026-10-29): 35 unused variables and imports across interface/ and schema/. Back to "error" once
       // they are removed; they are warnings so parallel branches touching those files do not conflict.
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" }],
       // Empty catch blocks are the house idiom for "best effort" reads; other empty blocks still fail.
