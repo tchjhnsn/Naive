@@ -5,15 +5,15 @@
 //   node schema/terms/catalog-test.ts               fixture cases, then the repository
 //   node schema/terms/catalog-test.ts --root <dir>  one tree only, exit 1 on any problem
 //
-// Fails closed: a file that cannot be read or parsed is a failure, never a pass. Each scope's suffix must be a
-// function id and its owner, every function must have a scope, and every import must name a scope in the
-// catalog. Imports must not cycle. That verdict is the admitted term layer's property L2 (no cycle) run through
-// the EE-095 engine on the scopes as an arrangement, the property lean/Naive/Layer.lean's cycle_no_downward_order
-// is about. The catalog need not be one stack, so only L2 is read. Every term a scope's nouns use, through
-// broader and capabilities, must be defined in that scope or in one it imports directly, and a noun's term must
-// be admitted in schema/terms/admitted.json. A missing term is never coined: it is printed as an open item for
-// its owning scope, the scope that defines it, else the scope its name@function suffix names, else the scope
-// that uses it.
+// Fails closed: a file that cannot be read or parsed, or lacks a field the check reads, is a failure, never a pass.
+// Each scope's suffix must be a function id and its owner, every function must have a scope, and every import must
+// name a scope in the catalog. Imports must not cycle. That verdict is the admitted term layer's property L2 (no
+// cycle) run through the EE-095 engine on the scopes as an arrangement, the property lean/Naive/Layer.lean's
+// cycle_no_downward_order is about. The catalog need not be one stack, so only L2 is read. Every term a scope's
+// nouns use, through broader and capabilities, must be defined in that scope or in one it imports directly, and a
+// noun's term must be admitted in schema/terms/admitted.json. A missing term is never coined: it is printed as an
+// open item for its owning scope, the scope that defines it, else the scope its name@function suffix names, else
+// the scope that uses it.
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -110,28 +110,66 @@ export function checkCatalog({ catalog, ontology, admitted, functions }: Inputs)
   return problems;
 }
 
-function load(root: string): Inputs {
-  const read = <T>(path: string): T => JSON.parse(readFileSync(join(root, path), "utf8")) as T;
-  const catalog = read<OntologyCatalog>(CATALOG);
-  if (!Array.isArray(catalog.scopes)) throw new Error(`${CATALOG}: no scopes`);
-  const departments = read<{ departments: { id: string }[] }>(DEPARTMENTS).departments.map((d) => d.id);
-  return { catalog, ontology: read<OntologyMetamodel>(ONTOLOGY), admitted: read<Admitted>(ADMITTED), functions: departments };
+const text = { ok: (v: unknown): boolean => typeof v === "string", is: "a string" };
+type Check = typeof text;
+const texts: Check = { ok: (v) => Array.isArray(v) && v.every((x) => typeof x === "string"), is: "a list of strings" };
+const nullable = (c: Check): Check => ({ ok: (v) => v === null || c.ok(v), is: `${c.is} or null` });
+const optional = (c: Check): Check => ({ ok: (v) => v === undefined || c.ok(v), is: c.is });
+
+/** For each input file, the lists the check reads and the fields each entry must carry. */
+const SHAPES: Record<string, Record<string, Record<string, Check>>> = {
+  [CATALOG]: { scopes: { scope: text, owner: text, version: text, status: text, imports: texts } },
+  [ONTOLOGY]: { top_categories: { name: text }, nouns: { noun: text, status: text, function: nullable(text), broader: optional(texts), capabilities: optional(texts), term: optional(text) } },
+  [ADMITTED]: { terms: { id: text } },
+  [DEPARTMENTS]: { departments: { id: text } },
+};
+
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/** Parses one input file and checks the shape in SHAPES. Anything else throws an Error naming the file. */
+function read<T>(root: string, path: string): T {
+  let doc: unknown;
+  try {
+    doc = JSON.parse(readFileSync(join(root, path), "utf8"));
+  } catch (e) {
+    throw new Error(`${path}: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  if (!isObject(doc)) throw new Error(`${path}: not a JSON object`);
+  for (const [key, fields] of Object.entries(SHAPES[path])) {
+    const entries = doc[key];
+    if (!Array.isArray(entries)) throw new Error(`${path}: ${key} must be a list`);
+    entries.forEach((entry: unknown, i) => {
+      if (!isObject(entry)) throw new Error(`${path}: ${key}[${i}] must be an object`);
+      for (const [field, c] of Object.entries(fields)) if (!c.ok(entry[field])) throw new Error(`${path}: ${key}[${i}].${field} must be ${c.is}`);
+    });
+  }
+  return doc as T;
 }
 
-function report(root: string): boolean {
+function load(root: string): Inputs {
+  return {
+    catalog: read<OntologyCatalog>(root, CATALOG),
+    ontology: read<OntologyMetamodel>(root, ONTOLOGY),
+    admitted: read<Admitted>(root, ADMITTED),
+    functions: read<{ departments: { id: string }[] }>(root, DEPARTMENTS).departments.map((d) => d.id),
+  };
+}
+
+/** The lines to print for one tree. Every input is parsed in load, so checkCatalog gets only checked data. */
+function report(root: string): { ok: boolean; lines: string[] } {
   let inputs: Inputs;
   try {
     inputs = load(root);
   } catch (e) {
-    console.log(`FAIL  the catalog cannot be checked: ${e instanceof Error ? e.message : String(e)}`);
-    return false;
+    return { ok: false, lines: [`FAIL  the catalog cannot be checked: ${(e as Error).message}`] };
   }
   const problems = checkCatalog(inputs);
-  for (const p of problems) console.log(`FAIL  ${p}`);
   const owned = inputs.ontology.nouns.filter((n) => n.function && n.status !== "retired").length;
-  console.log(`${problems.length ? "FAIL" : "pass"}  ${inputs.catalog.scopes.length} scopes: imports acyclic, every term defined or imported (${owned} nouns owned by a scope)`);
-  return problems.length === 0;
+  const summary = `${problems.length ? "FAIL" : "pass"}  ${inputs.catalog.scopes.length} scopes: imports acyclic, every term defined or imported (${owned} nouns owned by a scope)`;
+  return { ok: problems.length === 0, lines: [...problems.map((p) => `FAIL  ${p}`), summary] };
 }
+
+const print = ({ ok, lines }: { ok: boolean; lines: string[] }): boolean => { for (const l of lines) console.log(l); return ok; };
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
@@ -181,18 +219,58 @@ function fixtureCases(): void {
   expect("an unknown import, a wrong owner, a suffix that is no function and a function with no scope are named",
     ["naive@a: imports naive@z, which is not in the catalog", "naive@b: owner a is not its function b", "naive@q: q is not a function id", "function b has no scope in the catalog", "function c has no scope in the catalog"].every((p) => structure.includes(p)) && structure.length === 5, structure.join("; "));
 
+  const base = inputs(all, nouns);
+  const files: Record<string, unknown> = { [CATALOG]: base.catalog, [ONTOLOGY]: base.ontology, [ADMITTED]: base.admitted, [DEPARTMENTS]: { departments: base.functions.map((id) => ({ id })) } };
   const root = mkdtempSync(join(tmpdir(), "catalog-"));
   try {
     const put = (path: string, text: string): void => { mkdirSync(dirname(join(root, path)), { recursive: true }); writeFileSync(join(root, path), text); };
-    for (const path of [ONTOLOGY, ADMITTED, DEPARTMENTS]) put(path, readFileSync(join(repo, path), "utf8"));
-    const fns = (JSON.parse(readFileSync(join(repo, DEPARTMENTS), "utf8")) as { departments: { id: string }[] }).departments.map((d) => d.id);
-    const [first, second] = fns.map((fn) => scope(fn).scope);
-    put(CATALOG, JSON.stringify({ note: "x", scopes: fns.map((fn, i) => scope(fn, i === 0 ? [second] : i === 1 ? [first] : [])) }));
+    const tree = (path?: string, text?: string | null): { ok: boolean; lines: string[] } => {
+      for (const [p, doc] of Object.entries(files)) put(p, JSON.stringify(doc));
+      if (path && text === null) rmSync(join(root, path));
+      else if (path && typeof text === "string") put(path, text);
+      return report(root);
+    };
+    const cannot = (path: string, text: string | null, field = ""): string => {
+      let r: { ok: boolean; lines: string[] };
+      try {
+        r = tree(path, text);
+      } catch (e) {
+        return `${path}: threw ${(e as Error).message}`;
+      }
+      const ok = !r.ok && r.lines.length === 1 && r.lines[0].startsWith(`FAIL  the catalog cannot be checked: ${path}: ${field}`);
+      return ok ? "" : `${path}: ${r.lines.join(" | ")}`;
+    };
+    const each = (text: string | null): string => [CATALOG, ONTOLOGY, ADMITTED, DEPARTMENTS].map((path) => cannot(path, text)).filter(Boolean).join("; ");
+
+    const whole = tree();
+    expect("a scratch tree built from the fixtures passes", whole.ok, whole.lines.join(" | "));
+    const missing = each(null);
+    expect("a missing catalog, ontology, admitted terms or departments file prints FAIL, not a stack trace", !missing, missing);
+    const unparsed = each("{");
+    expect("an input file that is not JSON prints FAIL", !unparsed, unparsed);
+    const nonObject = each("null");
+    expect("an input file that is not a JSON object prints FAIL naming it", !nonObject, nonObject);
+    const lists: [string, string][] = [[CATALOG, "scopes"], [ONTOLOGY, "top_categories"], [ONTOLOGY, "nouns"], [ADMITTED, "terms"], [DEPARTMENTS, "departments"]];
+    const shapeless = lists.map(([path, key]) => {
+      const rest = { ...(files[path] as Record<string, unknown>) };
+      delete rest[key];
+      return cannot(path, JSON.stringify(rest), `${key} must be a list`);
+    }).filter(Boolean).join("; ");
+    expect("an input file missing any list the check reads prints FAIL", !shapeless, shapeless);
+    const noImports: Partial<OntologyCatalog["scopes"][number]> = scope("a", ["naive@b"]);
+    delete noImports.imports;
+    const unimported = cannot(CATALOG, JSON.stringify({ note: "x", scopes: [noImports, scope("b"), scope("c")] }), "scopes[0].imports must be a list of strings");
+    expect("a scope with no imports prints FAIL", !unimported, unimported);
+    const mistyped = cannot(CATALOG, JSON.stringify({ note: "x", scopes: [scope("a", ["naive@b"]), { ...scope("b"), owner: 2 }, scope("c")] }), "scopes[1].owner must be a string");
+    expect("a scope field of the wrong type prints FAIL", !mistyped, mistyped);
+
+    files[CATALOG] = { note: "x", scopes: [scope("a", ["naive@b"]), scope("b", ["naive@a"]), scope("c")] };
+    tree();
     const looped = spawnSync(process.execPath, [self, "--root", root], { encoding: "utf8" });
-    expect("a scratch import cycle in a copy exits 1 and prints the cycle", looped.status === 1 && looped.stdout.includes(`import cycle: ${first} -> ${second} -> ${first}`), `${looped.status} ${looped.stdout}${looped.stderr}`);
+    expect("a scratch import cycle in a copy exits 1 and prints the cycle", looped.status === 1 && looped.stdout.includes("import cycle: naive@a -> naive@b -> naive@a"), `${looped.status} ${looped.stdout}${looped.stderr}`);
     rmSync(join(root, CATALOG));
-    const missing = spawnSync(process.execPath, [self, "--root", root], { encoding: "utf8" });
-    expect("a copy with no catalog file exits 1, not 0", missing.status === 1 && missing.stdout.includes("the catalog cannot be checked"), `${missing.status} ${missing.stdout}${missing.stderr}`);
+    const gone = spawnSync(process.execPath, [self, "--root", root], { encoding: "utf8" });
+    expect("a copy with no catalog file exits 1 and prints FAIL, with nothing on stderr", gone.status === 1 && gone.stdout.includes("the catalog cannot be checked") && !gone.stderr, `${gone.status} ${gone.stdout}${gone.stderr}`);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -200,9 +278,9 @@ function fixtureCases(): void {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const at = process.argv.indexOf("--root");
-  if (at > 0) process.exit(report(process.argv[at + 1]) ? 0 : 1);
+  if (at > 0) process.exit(print(report(process.argv[at + 1])) ? 0 : 1);
   fixtureCases();
-  if (!report(repo)) failed++;
+  if (!print(report(repo))) failed++;
   console.log(failed ? `${failed} failed` : "ontology catalog: all pass");
   process.exit(failed ? 1 : 0);
 }
