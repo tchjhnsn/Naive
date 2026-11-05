@@ -44,6 +44,17 @@ It replaces the earlier description "AI-Native OS for Builders": an operating sy
 
 The system has two sides, the way Next.js and Vercel do (EE-041): the framework is **Naive** and the platform is **Mentura** (EE-043). The framework is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Both live in this repository. The platform is in `platform/`, and framework code never imports from it (`node schema/check-boundary.mjs`). See `platform/README.md`.
 
+## The Claude Code plugin
+
+This repository, and so the naive-framework npm package, is Naive's Claude Code plugin (EE-084): `.claude-plugin/plugin.json` brings the `naive-create` and `naive-setup` skills and the MCP server. Add it from the public marketplace:
+
+```text
+/plugin marketplace add tchjhnsn/naive-plugins
+/plugin install naive@naive
+```
+
+From a clone, add it by path instead: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here. `node interface/plugin-test.mjs` tests the plugin.
+
 ## Vault and repo
 
 Docs as code (EE-005): this repo holds the method, its design docs, schemas, skills and templates. Each instance keeps its own notes and decisions in its own ventures. The schema's decisions are in `docs/decisions/decisions.json`, and `schema/README.md` indexes every record type.
