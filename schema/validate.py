@@ -18,6 +18,11 @@ def tool_crash(kind, value, tb):
 
 sys.excepthook = tool_crash
 
+# --schema and --def only apply to one file, so without --file they would fall through to the full run.
+if ("--schema" in sys.argv or "--def" in sys.argv) and "--file" not in sys.argv:
+    sys.stderr.write("usage: python3 schema/validate.py --schema <name>.schema.json [--def <name>] --file <path>\n")
+    sys.exit(2)
+
 # NAIVE_VALIDATE_NO_JSONSCHEMA=1 simulates a missing dependency. NAIVE_VALIDATE_CRASH=1 raises,
 # so the test runs this hook instead of a special exit.
 if os.environ.get("NAIVE_VALIDATE_NO_JSONSCHEMA") == "1":

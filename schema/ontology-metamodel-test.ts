@@ -23,16 +23,18 @@ const expect = (name: string, ok: boolean, detail = "") => {
   if (!ok) failed++;
 };
 
-const validate = (value: unknown, def?: string) => new Promise<Ran>((resolve) => {
-  const file = join(tmp, `${Math.random().toString(36).slice(2)}.json`);
-  writeFileSync(file, JSON.stringify(value));
-  const args = ["-I", join(root, "schema/validate.py"), "--schema", "ontology-metamodel.schema.json", ...(def ? ["--def", def] : []), "--file", file];
-  const child = spawn("python3", args, { cwd: root });
+const run = (args: string[]) => new Promise<Ran>((resolve) => {
+  const child = spawn("python3", ["-I", join(root, "schema/validate.py"), ...args], { cwd: root });
   let out = "";
   child.stdout.on("data", (d: Buffer) => { out += d.toString(); });
   child.stderr.on("data", (d: Buffer) => { out += d.toString(); });
   child.on("close", (status) => resolve({ status, out }));
 });
+const validate = (value: unknown, def?: string) => {
+  const file = join(tmp, `${Math.random().toString(36).slice(2)}.json`);
+  writeFileSync(file, JSON.stringify(value));
+  return run(["--schema", "ontology-metamodel.schema.json", ...(def ? ["--def", def] : []), "--file", file]);
+};
 const line = (value: unknown) => validate(value, "change_line");
 
 const ontology = JSON.parse(readFileSync(join(root, "docs/ontology.json"), "utf8")) as { nouns: Record<string, unknown>[]; top_categories: Record<string, unknown>[] };
@@ -70,6 +72,44 @@ expect("a change line without a tier is rejected", noTier.status === 1 && noTier
 expect("a tier outside low, costly, one_way_door is rejected", badTier.status === 1, badTier.out);
 expect("an unknown --def exits 2, a checker that cannot run", unknownDef.status === 2, unknownDef.out);
 
+const withNoun = (patch: Record<string, unknown>) => ({ ...ontology, nouns: [{ ...ontology.nouns[0], ...patch }, ...ontology.nouns.slice(1)] });
+const rules = JSON.parse(readFileSync(join(root, "operations/operating-rules.json"), "utf8")) as { design: { diff: { verbs: Record<string, { kinds: string[]; derive_names?: string; merge_names?: string }> } }; questions: { impact: { tiers: string[] } } };
+const deriveField = rules.design.diff.verbs.create?.derive_names ?? "";
+const mergeField = rules.design.diff.verbs.delete?.merge_names ?? "";
+const merge2 = { verb: "delete", kind: "merge", noun: "client", tier: "low" };
+const derive2 = { verb: "create", kind: "derive", noun: "client account", tier: "low" };
+const [mergeNoSuccessor, successorOnRemove, replacedNotRetired, patternNoReplaced, spaceNoun, paddedNoun, spaceLine, badSource, spaceSource, badSuccessor, spaceSuccessor, deriveNamed, mergeNamed, defNoFile, schemaNoFile] = await Promise.all([
+  line(merge2),
+  line({ ...merge2, kind: "remove", successor: "account" }),
+  validate(withNoun({ replaced_by: "Naive" })),
+  validate(withNoun({ status: "retired", retired_pattern: "\\bEverything Ecosystem\\b" })),
+  validate(withNoun({ noun: " " })),
+  validate(withNoun({ noun: "Everything Ecosystem " })),
+  line({ ...rename, noun: " " }),
+  line({ ...derive2, source: "y@Bad" }),
+  line({ ...derive2, source: " " }),
+  line({ ...merge2, successor: "y@Bad" }),
+  line({ ...merge2, successor: "\t" }),
+  line({ ...derive2, [deriveField]: "account" }),
+  line({ ...merge2, [mergeField]: "account" }),
+  run(["--schema", "ontology-metamodel.schema.json", "--def", "change_line"]),
+  run(["--schema", "ontology-metamodel.schema.json"]),
+]);
+
+expect("merge without a successor is rejected", mergeNoSuccessor.status === 1 && mergeNoSuccessor.out.includes("'successor' is a required property"), mergeNoSuccessor.out);
+expect("a successor on a line that is not merge is rejected", successorOnRemove.status === 1, successorOnRemove.out);
+expect("a noun with replaced_by that is not retired is rejected", replacedNotRetired.status === 1 && replacedNotRetired.out.includes("'retired' was expected"), replacedNotRetired.out);
+expect("a noun with retired_pattern and no replaced_by is rejected", patternNoReplaced.status === 1 && patternNoReplaced.out.includes("'replaced_by' is a dependency of 'retired_pattern'"), patternNoReplaced.out);
+expect("a noun named by a single space is rejected", spaceNoun.status === 1 && spaceNoun.out.includes("does not match"), spaceNoun.out);
+expect("a noun name with trailing whitespace is rejected", paddedNoun.status === 1 && paddedNoun.out.includes("does not match"), paddedNoun.out);
+expect("a change line whose noun is a single space is rejected", spaceLine.status === 1 && spaceLine.out.includes("does not match"), spaceLine.out);
+expect("a source that is not a noun name (y@Bad, a space) is rejected", badSource.status === 1 && spaceSource.status === 1 && badSource.out.includes("does not match") && spaceSource.out.includes("does not match"), badSource.out + spaceSource.out);
+expect("a successor that is not a noun name (y@Bad, a tab) is rejected", badSuccessor.status === 1 && spaceSuccessor.status === 1 && badSuccessor.out.includes("does not match") && spaceSuccessor.out.includes("does not match"), badSuccessor.out + spaceSuccessor.out);
+expect("derive accepts the field design.diff.verbs.create.derive_names names", deriveNamed.status === 0, deriveNamed.out);
+expect("merge accepts the field design.diff.verbs.delete.merge_names names", mergeNamed.status === 0, mergeNamed.out);
+expect("--def without --file exits 2 with a usage line", defNoFile.status === 2 && defNoFile.out.includes("usage:"), defNoFile.out);
+expect("--schema without --file exits 2 with a usage line", schemaNoFile.status === 2 && schemaNoFile.out.includes("usage:"), schemaNoFile.out);
+
 const term = (m: Mapping) => (m.skos === "none" || m.skos.startsWith("skos:")) && (m.owl === "none" || m.owl.startsWith("owl:"));
 const classes = Object.keys(metamodel.$defs).sort();
 expect("every metamodel class has one mappings entry, and every entry is a class", JSON.stringify(Object.keys(metamodel.mappings).sort()) === JSON.stringify(classes));
@@ -79,7 +119,6 @@ const fieldGaps = ["ontology", "noun", "top_category"].filter((c) => JSON.string
 expect("the ontology, noun and top category fields are mapped one to one", fieldGaps.length === 0, fieldGaps.join(", "));
 
 // operations/operating-rules.json declares the same verbs, kinds and tiers; the two must not drift.
-const rules = JSON.parse(readFileSync(join(root, "operations/operating-rules.json"), "utf8")) as { design: { diff: { verbs: Record<string, { kinds: string[] }> } }; questions: { impact: { tiers: string[] } } };
 const pairs = Object.fromEntries((metamodel.$defs.change_line?.allOf ?? []).flatMap((b) => {
   const verb = b.if?.properties?.verb?.const;
   const kinds = b.then?.properties?.kind?.enum;

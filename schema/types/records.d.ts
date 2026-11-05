@@ -2253,7 +2253,7 @@ export type OntologyMetamodelTopCategory = {
 
 /** A noun, the vocabulary object of class noun (EE-107 item 7). schema/ontology-gate.ts checks what needs other files: functions are departments, capabilities are owned, a term is admitted. */
 export type OntologyMetamodelNoun = {
-  /** The name. A scoped sense is name@function. */
+  /** The name, with no leading or trailing whitespace. A scoped sense is name@function. */
   noun: string;
   level: string;
   meaning: string;
