@@ -110,6 +110,20 @@ expect("merge accepts the field design.diff.verbs.delete.merge_names names", mer
 expect("--def without --file exits 2 with a usage line", defNoFile.status === 2 && defNoFile.out.includes("usage:"), defNoFile.out);
 expect("--schema without --file exits 2 with a usage line", schemaNoFile.status === 2 && schemaNoFile.out.includes("usage:"), schemaNoFile.out);
 
+// Python's $ also matches before a final newline, so each name is checked with one.
+const [newlineNoun, newlineLineNoun, newlineScopedNoun, newlineSource, newlineSuccessor] = await Promise.all([
+  validate(withNoun({ noun: "Everything Ecosystem\n" })),
+  line({ ...rename, noun: "client\n" }),
+  line({ ...rename, noun: "client@sales\n" }),
+  line({ ...derive2, source: "client@sales\n" }),
+  line({ ...merge2, successor: "account\n" }),
+]);
+const rejected = (r: Ran) => r.status === 1 && r.out.includes("does not match");
+expect("a noun name with a trailing newline is rejected", rejected(newlineNoun), newlineNoun.out);
+expect("a change line noun with a trailing newline (client, client@sales) is rejected", rejected(newlineLineNoun) && rejected(newlineScopedNoun), newlineLineNoun.out + newlineScopedNoun.out);
+expect("a source with a trailing newline is rejected", rejected(newlineSource), newlineSource.out);
+expect("a successor with a trailing newline is rejected", rejected(newlineSuccessor), newlineSuccessor.out);
+
 const term = (m: Mapping) => (m.skos === "none" || m.skos.startsWith("skos:")) && (m.owl === "none" || m.owl.startsWith("owl:"));
 const classes = Object.keys(metamodel.$defs).sort();
 expect("every metamodel class has one mappings entry, and every entry is a class", JSON.stringify(Object.keys(metamodel.mappings).sort()) === JSON.stringify(classes));

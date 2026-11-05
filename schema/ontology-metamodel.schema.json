@@ -100,7 +100,7 @@
         "noun": {
           "description": "The name, with no leading or trailing whitespace. A scoped sense is name@function.",
           "type": "string",
-          "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$"
+          "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$(?![\\s\\S])"
         },
         "level": { "type": "string", "minLength": 1 },
         "meaning": { "type": "string", "minLength": 1 },
@@ -146,10 +146,10 @@
       "properties": {
         "verb": { "$ref": "#/$defs/verb" },
         "kind": { "$ref": "#/$defs/kind" },
-        "noun": { "type": "string", "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$" },
+        "noun": { "type": "string", "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$(?![\\s\\S])" },
         "tier": { "$ref": "#/$defs/tier" },
-        "source": { "description": "For derive, the noun the new one came from.", "type": "string", "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$" },
-        "successor": { "description": "For merge, the noun that remains.", "type": "string", "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$" }
+        "source": { "description": "For derive, the noun the new one came from.", "type": "string", "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$(?![\\s\\S])" },
+        "successor": { "description": "For merge, the noun that remains.", "type": "string", "pattern": "^[^@\\s]([^@]*[^@\\s])?(@[a-z0-9]+(-[a-z0-9]+)*)?$(?![\\s\\S])" }
       },
       "allOf": [
         { "if": { "properties": { "verb": { "const": "create" } }, "required": ["verb"] }, "then": { "properties": { "kind": { "enum": ["originate", "derive"] } } } },
