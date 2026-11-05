@@ -2207,6 +2207,71 @@ export type NextjsStatus = {
   }[];
 };
 
+/** The metamodel (M2) of Naive's ontology (N-048, EE-113). docs/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (python3 schema/validate.py --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
+export type OntologyMetamodel = OntologyMetamodelOntology;
+
+/** The ontology document, docs/ontology.json. */
+export type OntologyMetamodelOntology = {
+  version: string;
+  note: string;
+  /** Files and folders schema/check-nouns.mjs scans for retired nouns. */
+  check: string[];
+  nouns: OntologyMetamodelNoun[];
+};
+
+/** A noun, the vocabulary object of class noun (EE-107 item 7). schema/ontology-gate.ts checks what needs other files: functions are departments, capabilities are owned, a term is admitted. */
+export type OntologyMetamodelNoun = {
+  /** The name. A scoped sense is name@function. */
+  noun: string;
+  level: string;
+  meaning: string;
+  /** The established usage the noun follows, ours when coined, or none. */
+  standard: string;
+  status: "new" | "kept" | "proposed" | "retired";
+  /** The owning department id, or null when the word is shared. */
+  function: string | null;
+  /** True when the noun can type a handoff package. */
+  handoff_type: boolean;
+  references?: string[];
+  /** For a function noun, the nouns it owns. */
+  capabilities?: string[];
+  /** Department ids a handoff of this type must touch. */
+  required_touches?: string[];
+  /** The admitted EE-095 term this noun names. */
+  term?: string;
+  /** Property ids of the term that a handoff of this type must satisfy. */
+  properties?: string[];
+  /** What replaced a retired noun. */
+  replaced_by?: string;
+  /** A regular expression for the retired noun, which schema/check-nouns.mjs fails on. */
+  retired_pattern?: string;
+  /** A JSON Schema of what a record claiming this noun must contain (EE-107 item 7). */
+  shape?: {
+    [key: string]: unknown;
+  };
+};
+
+/** One of exactly three change verbs (EE-107 item 1). */
+export type OntologyMetamodelVerb = "create" | "amend" | "delete";
+
+/** A change kind. create: originate, derive. amend: append, rename, deprecate, revise. delete: remove, merge (EE-107 item 1). */
+export type OntologyMetamodelKind = "originate" | "derive" | "append" | "rename" | "deprecate" | "revise" | "remove" | "merge";
+
+/** The maximum of four scores, severity, reversibility, time to detect and blast radius (EE-107 item 2). */
+export type OntologyMetamodelTier = "low" | "costly" | "one_way_door";
+
+/** One proposed change: one verb, one kind of that verb, one noun and a tier. derive names its source and merge names its successor. A compound change is split into separate lines. */
+export type OntologyMetamodelChangeLine = {
+  verb: OntologyMetamodelVerb;
+  kind: OntologyMetamodelKind;
+  noun: string;
+  tier: OntologyMetamodelTier;
+  /** For derive, the noun the new one came from. */
+  source?: string;
+  /** For merge, the noun that remains. */
+  successor?: string;
+};
+
 /** Naive's operating rules as a module. The default module is operations/operating-rules.json. schema/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry, except the one_way_door skip, which is declared and not enforced. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests and are not enforced yet. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. */
 export type OperatingRules = {
   $schema?: string;

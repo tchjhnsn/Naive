@@ -37,8 +37,8 @@ const KEYWORDS = new Set([
   // rendered
   "$ref", "$defs", "description", "format", "type", "properties", "required", "additionalProperties",
   "propertyNames", "items", "enum", "const", "oneOf", "anyOf", "allOf",
-  // annotations, with no effect on what is valid
-  "$schema", "$id", "title", "default",
+  // annotations, with no effect on what is valid (mappings is the ontology metamodel's SKOS and OWL table)
+  "$schema", "$id", "title", "default", "mappings",
   // checks TypeScript cannot express
   "pattern", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "minLength", "minItems", "maxItems", "uniqueItems",
   "minProperties", "maxProperties", "not", "if", "then", "else", "dependentRequired",

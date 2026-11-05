@@ -2,6 +2,7 @@
 
     python3 schema/validate.py
     python3 schema/validate.py --schema <name>.schema.json --file <path>   one file (used by the interfaces before a write)
+    python3 schema/validate.py --schema <name>.schema.json --def <name> --file <path>   one file against one $defs entry
 
 Needs the jsonschema package (pip install jsonschema). Which files each schema governs comes from schema/data-model.json;
 schema/check-data-model.mjs makes sure no JSON file is left without a record type.
@@ -48,7 +49,16 @@ if "--file" in sys.argv:
     except ValueError as error:
         print(f"(root): {error}")
         sys.exit(1)
-    v = jsonschema.Draft202012Validator(schemas[sys.argv[sys.argv.index("--schema") + 1]], registry=registry, format_checker=jsonschema.FormatChecker())
+    name = sys.argv[sys.argv.index("--schema") + 1]
+    schema = schemas[name]
+    # --def checks against one $defs entry, such as the metamodel's change_line, through a $ref so its own refs resolve.
+    if "--def" in sys.argv:
+        entry = sys.argv[sys.argv.index("--def") + 1]
+        if entry not in schema.get("$defs", {}):
+            sys.stderr.write(f"{name} has no $defs entry {entry}\n")
+            sys.exit(2)
+        schema = {"$ref": f"{schema.get('$id', name)}#/$defs/{entry}"}
+    v = jsonschema.Draft202012Validator(schema, registry=registry, format_checker=jsonschema.FormatChecker())
     errs = [f"{'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}" for e in v.iter_errors(one)]
     print("\n".join(errs) if errs else "valid")
     sys.exit(1 if errs else 0)

@@ -24,6 +24,7 @@ const steps = [
   ["ventures: examples", "node", ["schema/check-ventures.mjs", "schema/examples/workspace"]],
   ["nouns", "node", ["schema/check-nouns.mjs"]],
   ["ontology membership gate", "node", ["schema/ontology-gate-test.ts"]],
+  ["ontology metamodel: docs/ontology.json validates, change lines with an unknown key or a wrong kind are rejected, SKOS and OWL mappings", "node", ["schema/ontology-metamodel-test.ts"]],
   ["operating rules: default module, invalid module, venture override", "node", ["schema/operating-rules-test.ts"]],
   ["integrations and interfaces", "node", ["schema/check-integrations.mjs"]],
   ["data model and kits", "node", ["schema/check-data-model.mjs"]],

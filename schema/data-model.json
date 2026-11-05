@@ -877,12 +877,12 @@
       "id": "ontology",
       "layer": "system",
       "level": "method",
-      "schema": null,
+      "schema": "schema/ontology-metamodel.schema.json",
       "form": "json",
       "paths": [
         "docs/ontology.json"
       ],
-      "note": "Canonical nouns; checked by schema/check-nouns.mjs, rendered to docs/ontology.md. Each noun names its function (or null) and whether it can type a handoff package"
+      "note": "Canonical nouns; follows the metamodel schema/ontology-metamodel.schema.json, checked by schema/check-nouns.mjs, rendered to docs/ontology.md. Each noun names its function (or null) and whether it can type a handoff package"
     },
     {
       "id": "reference",
