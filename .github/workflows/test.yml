@@ -1,10 +1,9 @@
 name: test
 
 on:
-  # `branches` is the pull request base. A pull request into main still runs these jobs, and so does a push to main.
+  # Every pull request runs the suite, whatever its base, so a pull request stacked on another one is tested too.
+  # A push to main runs it again.
   pull_request:
-    # A PR retargeted onto main needs a push, or a close and reopen, before its suite runs.
-    branches: [main]
   push:
     branches: [main]
 
