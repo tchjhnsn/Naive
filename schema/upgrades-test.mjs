@@ -107,19 +107,19 @@ const early0 = naive(["upgrade", b, "--adopt", "finance"]);
 expect("adopting a package needs the venture on the installed framework first", early0.status === 1 && /upgrade it to/.test(early0.stderr));
 naive(["upgrade", b]);
 const fin = naive(["upgrade", b, "--adopt", "finance"]);
-const pk = JSON.parse(run("schema/packages.mjs", [b, "--json"]).stdout);
+const pk = JSON.parse(run("interface/orchestration/venture-package.mjs", [b, "--json"]).stdout);
 expect("a later phase's package adopted early opens now in the venture package", fin.status === 0 && pk.core.find((p) => p.id === "finance")?.in === "now" && pk.core.find((p) => p.id === "finance").early === true && json(join(b, "naive.config.json")).packages.finance.early === true, fin.stdout + fin.stderr);
 expect("a package that already fits the phase needs no adoption", /already fits this phase/.test(naive(["upgrade", b, "--adopt", "foundation"]).stdout));
 const legal = naive(["upgrade", b, "--adopt", "legal"]);
 expect("an experimental package needs the canary channel", legal.status === 1 && /experimental/.test(legal.stderr) && /--canary/.test(legal.stderr));
 naive(["upgrade", b, "--canary"]);
 const legal2 = naive(["upgrade", b, "--adopt", "legal"]);
-const pk2 = JSON.parse(run("schema/packages.mjs", [b, "--json"]).stdout);
+const pk2 = JSON.parse(run("interface/orchestration/venture-package.mjs", [b, "--json"]).stdout);
 expect("on canary an experimental package Naive does not model can be adopted, and opens", legal2.status === 0 && pk2.core.some((p) => p.id === "legal" && p.in === "now") && !pk2.not_modeled.some((p) => p.id === "legal"));
 expect("the stable channel is refused while an experimental package is adopted", naive(["upgrade", b, "--stable"]).status === 1);
 naive(["upgrade", b, "--drop", "legal"]);
 const stable = naive(["upgrade", b, "--stable"]);
-expect("after dropping it, the venture goes back to stable and the package is held again", stable.status === 0 && !JSON.parse(run("schema/packages.mjs", [b, "--json"]).stdout).core.some((p) => p.id === "legal"));
+expect("after dropping it, the venture goes back to stable and the package is held again", stable.status === 0 && !JSON.parse(run("interface/orchestration/venture-package.mjs", [b, "--json"]).stdout).core.some((p) => p.id === "legal"));
 
 // U-3, the framework part: a staged upgrade lands only when its checks pass and a person confirms.
 const s = make("staged");

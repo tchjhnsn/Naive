@@ -98,8 +98,8 @@ async function pendingIn(dir, types, venture) {
 /** A package's own route read (L-6, P-37): its records and their state, what moves now, what waits, what is pending. */
 export async function packageState(dir, name, venture) {
   const def = packageDef(name);
-  const { packages } = await import("../schema/packages.mjs");
-  const all = packages(dir);
+  const { venturePackage } = await import("./orchestration/venture-package.mjs");
+  const all = venturePackage(dir);
   const p = [...all.core, ...all.handoff].find((x) => x.id === name);
   if (p?.kind === "core") {
     const records = await Promise.all(p.records.map(async (r) => ({ record: r.record, title: r.title, role: r.role, route: await routeOfType(r.record), status: r.status, moves: r.moves, ...(r.waits_on ? { waits_on: r.waits_on } : {}), files: r.files })));

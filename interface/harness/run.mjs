@@ -291,19 +291,19 @@ The founder settled: ${settled.join(", ")}. mentura_decisions shows what that un
 //    what waits. The sitemap is a marketing record: it is planned only once the marketing package is open.
 let pkgArgs = [];
 if (jev) {
-  const rq = spawnSync("node", [join(repo, "schema/packages.mjs"), "request", dir], { encoding: "utf8" });
+  const rq = spawnSync("node", [join(repo, "interface/orchestration/venture-package.mjs"), "request", dir], { encoding: "utf8" });
   const q = rq.status === 0 ? JSON.parse(rq.stdout) : null;
   if (q && Object.keys(q.questions).length) {
     const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(q), encoding: "utf8" });
     if (p.status === 0) { writeFileSync(join(ws, "package-answers.json"), p.stdout); pkgArgs = ["--answers", join(ws, "package-answers.json")]; console.log(`   Jev answered ${Object.keys(q.questions).length} of the question matrix's questions`); }
   }
 }
-let pk = spawnSync("node", [join(repo, "schema/packages.mjs"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
+let pk = spawnSync("node", [join(repo, "interface/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
 if (pk.status === 0 && JSON.parse(pk.stdout).core.some((x) => x.id === "marketing" && x.in === "now")) {
   const sp = spawnSync("node", [join(repo, "operations/marketing/site/plan.mjs"), dir, "--write"], { encoding: "utf8" });
   if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records: the marketing package is open" });
 }
-pk = spawnSync("node", [join(repo, "schema/packages.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
+pk = spawnSync("node", [join(repo, "interface/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
 if (pk.status === 0) {
   const r = JSON.parse(pk.stdout);
   const open = r.core.filter((x) => x.in === "now");

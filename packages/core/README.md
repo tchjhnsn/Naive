@@ -30,4 +30,4 @@ The old paths `schema/venture-paths.mjs`, `interface/instrumentation.mjs` and `i
 ## Not built
 
 - This folder is not an npm workspace package yet. It becomes one, with a scoped name, once the workspaces pull request lands and the scope is chosen (open in the rebuild plan).
-- The route table moved to [`packages/routes`](../routes/README.md). The modules that ran routes through the router's `call` moved to [`interface/orchestration/`](../../interface/orchestration/README.md), so `schema/` no longer imports `interface/`. One import cycle remains, between `purpose/` and `schema/` (step 4c of the router inversion).
+- The route table moved to [`packages/routes`](../routes/README.md). The modules that ran routes through the router's `call` moved to [`interface/orchestration/`](../../interface/orchestration/README.md), so `schema/` no longer imports `interface/`. No import cycle between units remains (`node scripts/dependency-rules.ts`).

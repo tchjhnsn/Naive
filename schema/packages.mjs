@@ -11,13 +11,11 @@
 // on its own once everything it reads first is confirmed, and waits otherwise (records.after): that is
 // what Route shows. Agents never come in a package: an agent working a package is an enhancement.
 //
-// Each record also carries its route: where the founder's ideas for it stand and the one step that
-// moves it (purpose/ideas/routes, EE-061).
+// A record carries its route (where the founder's ideas for it stand and the one step that moves it,
+// purpose/ideas/routes, EE-061) when the idea map's routing is passed in. The command line, which
+// passes it, is interface/orchestration/venture-package.mjs (route system/package).
 //
-//   node schema/packages.mjs <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json]
-//   node schema/packages.mjs request <venture>       the Jev request for the questions the records leave open
-//
-// --write renders a readable view of the venture package into <venture>/package/: venture-package.json
+// write() renders a readable view of the venture package into <venture>/package/: venture-package.json
 // (the manifest, with its versions), README.md (the index) and one Markdown document per open package.
 // The records themselves stay where they are; the view is regenerated. The documents are internal:
 // anything public goes through its public variant (EE-064).
@@ -26,7 +24,6 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join } from "node:path";
 import { factsOf as needFacts, probability } from "./need-now.mjs";
 import { confirmedIn, filesOf, icpProfiles } from "./foundation.mjs";
-import { route } from "../purpose/frameworks/idea-map/route.mjs";
 
 import { loadPackages } from "./load-packages.mjs";
 // Upgrades hook (U-5): packages a venture adopted early in naive.config.json open now.
@@ -110,15 +107,22 @@ const STATUS = { confirmed: 1, agent: 0.5, draft: 0.5, missing: 0 };
 /** Which core package each record lives in. */
 export const HOME = Object.fromEntries(Object.entries(PACKAGES.core).flatMap(([id, p]) => [...p.required, ...p.optional].map((r) => [r, id])));
 
-export function packages(dir, { flags = {}, answers = null } = {}) {
+/**
+ * The venture package. `routes` is the idea map's routing for the venture (route() in
+ * purpose/frameworks/idea-map/route.mjs), passed in by interface/orchestration/venture-package.mjs:
+ * with it, each record gets the idea map's title and where the founder's ideas for it stand. This
+ * module does not import the idea map, because the idea map reads schema/ itself (router inversion,
+ * step 4c).
+ * @param {string} dir
+ * @param {{ flags?: Record<string, boolean>, answers?: * , routes?: * }} [opts]
+ */
+export function packages(dir, { flags = {}, answers = null, routes = null } = {}) {
   const v = load(join(dir, "venture.json"));
   const { phase, facts, questions } = situation(dir, { flags, answers });
   const next = PHASES[PHASES.indexOf(phase) + 1];
   // Upgrades hook (U-5): a package adopted early opens now, even an experimental one Naive does not model.
   const early = adopted(dir);
   const adopt = (id, f) => (early.has(id) && f.in !== "now" ? { ...f, in: "now", early: true, why: `${f.why}; adopted early in naive.config.json` } : f);
-  let routes = null;
-  try { routes = route(dir); } catch { routes = null; }
   const dest = new Map((routes?.destinations ?? []).map((d) => [d.id, d]));
   const titleOf = (type) => dest.get(type)?.title ?? TITLES[type] ?? type.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
   const states = new Map();
@@ -235,23 +239,3 @@ export function write(dir, r) {
   return out;
 }
 const titleOf0 = (t) => TITLES[t] ?? t.replace(/-/g, " ");
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const args = process.argv.slice(2);
-  const opt = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : null; };
-  const has = (n) => args.includes(`--${n}`);
-  if (args[0] === "request") { console.log(JSON.stringify(request(args[1]))); process.exit(0); }
-  const dir = args[0];
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node schema/packages.mjs <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json] | request <venture>"); process.exit(2); }
-  const answers = opt("answers") ? load(opt("answers")).answers : null;
-  const r = packages(dir, { flags: Object.fromEntries(["raising", "hiring"].filter(has).map((k) => [k, true])), answers });
-  if (has("write")) console.error(`wrote ${write(dir, r)}`);
-  if (has("json")) console.log(JSON.stringify(r, null, 2));
-  else {
-    console.log(`${r.name} (${r.phase}): ${Math.round(r.progress * 100)}% across the open core packages; complete: ${r.complete.join(", ") || "none yet"}`);
-    for (const p of r.core) console.log(`core    ${p.in.padEnd(5)} ${p.title.padEnd(22)} fit ${String(p.fit).padEnd(5)} ${p.in === "now" ? `${p.state.padEnd(9)} ${Math.round(p.progress * 100)}%  moving: ${p.moving.join(", ") || "none"}` : p.why}`);
-    for (const p of r.handoff) console.log(`handoff ${p.in.padEnd(5)} ${p.title.padEnd(22)} fit ${String(p.fit).padEnd(5)} ${p.in === "now" ? `waits on ${p.waits_on.join(", ") || "nothing"}` : p.why}`);
-    const open = r.situation.questions.filter((q) => q.value == null);
-    if (open.length) console.log(`Open: ${open.map((q) => q.ask).join(" ")}`);
-  }
-}

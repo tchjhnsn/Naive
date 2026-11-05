@@ -27,10 +27,10 @@ import { filterRead, hierarchy, metadataFor, resolvedBy, withParams } from "./re
 /** The state a write can change, taken before and after it. */
 export async function snapshot(dir) {
   const safe = async (f) => { try { return await f(); } catch { return null; } };
-  const { packages } = await import("../schema/packages.mjs");
+  const { venturePackage } = await import("./orchestration/venture-package.mjs");
   const { needNow } = await import("../schema/need-now.mjs");
   const { decisions } = await import("../schema/decisions.mjs");
-  return { packages: await safe(() => packages(dir)), need: await safe(() => needNow(dir)), decisions: await safe(() => decisions(dir)) };
+  return { packages: await safe(() => venturePackage(dir)), need: await safe(() => needNow(dir)), decisions: await safe(() => decisions(dir)) };
 }
 
 const pkgMap = (s) => new Map([...(s?.packages?.core ?? []), ...(s?.packages?.handoff ?? [])].map((p) => [p.id, p]));

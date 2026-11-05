@@ -1,6 +1,4 @@
 {
-  "says": "Import cycles between units that existed when the dependency rules check landed (2026-11-05). The list may only shrink: the monorepo rebuild removes them by moving the router, provenance and venture paths into one core package. Read by scripts/dependency-rules.ts.",
-  "known_cycles": [
-    ["purpose", "schema"]
-  ]
+  "says": "Import cycles between units that the dependency rules check accepts. The monorepo rebuild's router inversion (docs/design/MONOREPO_ROUTER_INVERSION_2026-11-05.md) removed the last one on 2026-11-05, so the list is empty and any cycle between units fails the check. Read by scripts/dependency-rules.ts.",
+  "known_cycles": []
 }

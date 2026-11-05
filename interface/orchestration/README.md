@@ -15,6 +15,7 @@ The modules that compose routes. Each one runs records through the router's `cal
 | [`migrate-venture.mjs`](./migrate-venture.mjs) | `naive migrate` (EE-076). An agent rewrites a project as records, and each record is written through the router once a person decides. |
 | [`releases.mjs`](./releases.mjs) | The release rules (I-17, C-13): confirmed records frozen in, live holes named, the release card. |
 | [`build-release.mjs`](./build-release.mjs) | `naive build`, the command line over `releases.mjs`. |
+| [`venture-package.mjs`](./venture-package.mjs) | The venture package with the idea map's routing (EE-067, EE-061): `venturePackage(dir)` passes `route()` from the idea map into `packages()` in `schema/packages.mjs`, and it holds the command line for the `system/package` route. |
 | [`model-steps.mjs`](./model-steps.mjs) | Model steps (use model, EE-073): the payload code computes, the judgments a model still owes, and how code accepts, overrules or routes each answer. The route is `system/steps`. |
 
 ## Run and test
@@ -22,6 +23,7 @@ The modules that compose routes. Each one runs records through the router's `cal
 - `node interface/orchestration/triggers.mjs <venture dir> --fire` runs the triggers once.
 - `node interface/orchestration/build-release.mjs <venture dir> [--dry-run] [--json]` builds a release.
 - `node interface/orchestration/migrate-venture.mjs --from <project> --venture <dir>` writes a migration plan.
+- `node interface/orchestration/venture-package.mjs <venture> [--write] [--json]` prints or writes the venture package.
 - These tests cover them: [`interface/tests/setup-test.mjs`](../tests/setup-test.mjs), [`interface/tests/model-steps-test.mjs`](../tests/model-steps-test.mjs), [`interface/tests/delegation-test.mjs`](../tests/delegation-test.mjs), [`schema/releases-test.mjs`](../../schema/releases-test.mjs), [`schema/upgrades-test.mjs`](../../schema/upgrades-test.mjs) (triggers) and [`schema/migrate-test.mjs`](../../schema/migrate-test.mjs). The tests in `schema/` start these modules as child processes and do not import them. `node test.mjs` runs all of them.
 
 ## How it connects

@@ -22,7 +22,8 @@ import { route } from "../../purpose/frameworks/idea-map/route.mjs";
 import { scan } from "../harness/site.mjs";
 import { MATRIX } from "../../operations/marketing/site/presence.mjs";
 import { plan } from "../../operations/marketing/site/plan.mjs";
-import { packages, write as writePackage, OUT as PACKAGE } from "../../schema/packages.mjs";
+import { write as writePackage, OUT as PACKAGE } from "../../schema/packages.mjs";
+import { venturePackage } from "../orchestration/venture-package.mjs";
 import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
@@ -499,7 +500,7 @@ async function vendor(path) {
 
 // The venture package (EE-067), with the pipeline that led to it: each step's state, from the dump on.
 function packageOf(dir, writeIt = false) {
-  const r = packages(dir);
+  const r = venturePackage(dir);
   if (writeIt) writePackage(dir, r);
   const has = (f) => existsSync(ventureFile(dir, f));
   let rt = null; try { rt = route(dir); } catch {}
