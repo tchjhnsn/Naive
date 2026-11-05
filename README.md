@@ -1,4 +1,6 @@
-# Everything Ecosystem
+# Naive
+
+This is Naive's own repository (EE-118), split out of tchjhnsn/everything-ecosystem with its history on 2026-11-05. The text below still uses the ecosystem's older names in places; it is rewritten in step 10 of the layout plan.
 
 **An AI-native venture development framework for builders.** One methodology for developing what a builder builds, from a hobby to a company, with AI agents, in four layers that form a loop, plus two that cut across them. It is a schema: a builder's workspace is an instance of it (EE-002). Private for now (G-035); which parts become public is decided later.
 
