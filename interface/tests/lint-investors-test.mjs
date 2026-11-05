@@ -8,12 +8,12 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, routes } from "../interface/router.mjs";
-import { ventureFile } from "../packages/core/venture-paths.mjs";
-import { lint } from "./lint-investors.mjs";
+import { call, routes } from "../router.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { lint } from "../../schema/lint-investors.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
-const script = new URL("./lint-investors.mjs", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
+const script = new URL("../../schema/lint-investors.mjs", import.meta.url).pathname;
 let failed = 0;
 /** @type {(name: string, ok: unknown, detail?: unknown) => void} */
 const expect = (name, ok, detail = "") => {

@@ -7,10 +7,10 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../interface/router.mjs";
-import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { call } from "../router.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`); if (!ok) failed++; };
 

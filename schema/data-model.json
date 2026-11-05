@@ -776,7 +776,7 @@
         {
           "field": "records",
           "to": "(record types)",
-          "checked_by": "schema/freshness-test.mjs"
+          "checked_by": "interface/tests/freshness-test.mjs"
         }
       ],
       "note": "Default freshness profiles by record type (Revalidating V-2): stale, revalidate and expire after Next.js cacheLife, plus per_phase and live; a venture overrides them under freshness in naive.config.json"

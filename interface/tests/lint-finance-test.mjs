@@ -3,15 +3,15 @@
 // phase changes the metric rule, finance_lint.rules.<id>.mode decides the exit code, and missing
 // or malformed records (including a missing price or cost) do not throw. Reads go through ventureFile.
 //
-//   node schema/lint-finance-test.mjs
+//   node interface/tests/lint-finance-test.mjs
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { call } from "../interface/router.mjs";
+import { call } from "../router.mjs";
 
-const root = new URL("..", import.meta.url).pathname;
+const root = new URL("../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "lint-finance-"));
 const script = join(root, "schema/lint-finance.mjs");
 let failed = 0;

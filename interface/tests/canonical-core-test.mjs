@@ -5,15 +5,15 @@
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { context } from "./upgrades.mjs";
-import * as mig from "./migrations/telos-to-goals.mjs";
-import { lifecycle, meet } from "./lifecycle.mjs";
-import { exitCriteria, scale } from "./canonical.mjs";
-import { check } from "./check-frameworks.mjs";
-import { telosView } from "../frameworks/telos/adapter.mjs";
-import { call } from "../interface/router.mjs";
+import { context } from "../../schema/upgrades.mjs";
+import * as mig from "../../schema/migrations/telos-to-goals.mjs";
+import { lifecycle, meet } from "../../schema/lifecycle.mjs";
+import { exitCriteria, scale } from "../../schema/canonical.mjs";
+import { check } from "../../schema/check-frameworks.mjs";
+import { telosView } from "../../frameworks/telos/adapter.mjs";
+import { call } from "../router.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "canonical-"));
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };

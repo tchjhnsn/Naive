@@ -2,9 +2,9 @@
 // Layout, private and typegen are tested beside the router and check-private.
 
 import { readFileSync } from "node:fs";
-import { provenanceOf } from "./use-model.mjs";
-import { hold, packageGates } from "./gate.mjs";
-import { judge } from "../interface/router.mjs";
+import { provenanceOf } from "../../schema/use-model.mjs";
+import { hold, packageGates } from "../../schema/gate.mjs";
+import { judge } from "../router.mjs";
 
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
@@ -21,7 +21,7 @@ t("the gate holds a fail-closed write as a draft and makes no model or network c
   ok(hold({ fail_closed: ["foundation"] }, "foundation/problem", "agent")?.hold === "draft");
   ok(hold({ fail_closed: ["foundation"] }, "foundation/problem", "person") === null);
   ok(hold({ fail_closed: ["foundation"] }, "validation/solution", "agent") === null);
-  const src = readFileSync(new URL("./gate.mjs", import.meta.url), "utf8");
+  const src = readFileSync(new URL("../../schema/gate.mjs", import.meta.url), "utf8");
   ok(!/\bfetch\s*\(|\bhttps?:\/\/|child_process|node:http|node:https/.test(src), "gate.mjs calls out");
   ok(packageGates().some((g) => g.package === "foundation"));
 });

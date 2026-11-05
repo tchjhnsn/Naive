@@ -305,7 +305,7 @@
     "schema/check-config.mjs",
     "purpose/frameworks/idea-map/ideamap.mjs",
     "schema/data-model.json",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "naive.config.json is now a record type (naive-config, system layer, route system/naive-config, decision class security-loosening, so an agent's write becomes a draft). Defaults are merged with the venture's overrides: gate, owners, checks, thresholds, questions, packages and acting. Thresholds and System 1 questions take effect in the idea-map request and answers commands. A config file that is not valid JSON fails closed for agents."
@@ -366,7 +366,7 @@
     "schema/naive-config.mjs",
     "interface/gate-hooks.mjs",
     "interface/router.mjs",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "checks.off skips a route's check and reports it as off:true. checks.warn runs a check but its failure does not fail the router's check action. check-config refuses a check path that does not exist."
@@ -534,7 +534,7 @@
    "evidence": [
     "schema/brand.mjs",
     "schema/marketing-brand.schema.json",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "brand.marks lists the logo, icon, apple-icon and favicon, each a registered file in public/. The check enforces that an apple-icon is a 180x180 PNG, an icon is square, a favicon is an ICO, and every mark is registered. mentura brand head and the tokens route give the head links with sizes and types, as Next.js does for icon files."
@@ -560,7 +560,7 @@
     "schema/brand.mjs",
     "operations/marketing/site/plan.mjs",
     "interface/router.mjs",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "The sitemap is the marketing-sitemap record, which the planner writes from the venture's records. marketing/sitemap/xml (and mentura brand sitemap --out) renders sitemaps.org XML from that record, not from the framework's routes, for a release."
@@ -1037,7 +1037,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs",
+    "interface/tests/model-steps-test.mjs",
     "library/packages/customers/package.json"
    ],
    "page": "get-started/agents-and-people",
@@ -1059,7 +1059,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "Code assembles each question's state from the named field paths only (item.<path>, <route>#<path>, <record id>.<path>); the test asserts the state holds only item.notes and never the customer's name."
@@ -1070,7 +1070,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "One request per package per wave holding every item's question; packages are sent in parallel (test checks the calls overlap)."
@@ -1082,7 +1082,7 @@
    "evidence": [
     "schema/model-steps.mjs",
     "interface/router.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "payload(): computed values, a placeholder per pending judgment with waits_on, and the state each receives; no model call, no write. Exposed as the command route system/steps (run) and mentura steps payload."
@@ -1093,7 +1093,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "run() emits computed first, then each judgment as its batch arrives, then done; --stream prints them as JSON lines."
@@ -1105,7 +1105,7 @@
    "evidence": [
     "schema/caching.mjs",
     "interface/router.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "New route system/judge (and node schema/caching.mjs judge) reuses stored answers and sends only uncached questions to NAIVE_JUDGE_CMD (for example node platform/integrations/jev.mjs) in one request. Tested with a stand-in judge that logs what it is asked. ideamap and anatomy do not call it yet; they still build Jev requests for the founder to pipe."
@@ -1117,7 +1117,7 @@
    "evidence": [
     "schema/model-steps.mjs",
     "schema/judgment.schema.json",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "Model steps are declared in use_model; outputs are judgment records written as the agent (actor model-step, model name in provenance). provenanceOf() reports a judgment, and any agent record derived from it, as the agent's until a person confirms (mentura steps confirm) or its checks pass (--checks). It is a reporter: packages.mjs's confirmed status does not consult it yet."
@@ -1128,7 +1128,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "Steps write only judgment records, never the records they read; the test checks the person's customer file is byte-identical and still the person's after a run."
@@ -1139,7 +1139,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "Inputs must be field paths (a whole item, record or package is refused); every input must be pointed at by the question; per-step context budget (default 2000 chars) refuses oversized state."
@@ -1150,7 +1150,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "assertJson refuses non-JSON state; questions point at state[\"<key>\"].<path>; checkRequest fails (uncaught) if a pointed-at path is not in the state."
@@ -1162,7 +1162,7 @@
    "evidence": [
     "schema/model-steps.mjs",
     "library/packages/customers/package.json",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "keep: the model writes {{name}}, code fills the computed value and verifies it came through; a draft that changes it is uncertain and goes to the founder."
@@ -1195,7 +1195,7 @@
    "evidence": [
     "interface/kit-boundary.mjs",
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "kit.json boundary {reads, writes, use_model}; checkKit validates it (steps inside reads, judgments declared in writes); wrap() refuses calls outside it and forces the kit's agent id; mentura steps run --kit runs a kit's steps through the wrapped call. No kit exists under platform/kits yet, so it is exercised with temp kit.json files."
@@ -1215,7 +1215,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "Drafts are model-only: deterministic false in the request and payload, no threshold or code check allowed, expectDeterministic() throws on a draft."
@@ -1249,7 +1249,7 @@
    "evidence": [
     "schema/caching.mjs",
     "interface/router.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "AsyncLocalStorage action scope. One top-level router call is one action, and nested calls join it. store.read is memoized per file. A write calls forget(dir), so a later read in the same action is fresh."
@@ -1285,7 +1285,7 @@
     "interface/acting.mjs",
     "interface/router.mjs",
     "interface/mcp/server.mjs",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "Access is now checked at each record on read: a list read returns only the items the role may read, and a role allowed only some items can still read the list. mentura_read in MCP now carries agent_id, so MCP lists are filtered the same way. Read results cite source, address and version only, never a credential. Connector credentials were already kept out of the framework (check-boundary). The page that explains it is the-gate (status json currently points at routes-and-records)."
@@ -1332,7 +1332,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "waterfall(): record types in waves from library/packages/catalog.json after links with waits_on and status (mentura steps waterfall); steps follow their own after links; a cycle in either is uncaught. Page is agents-and-people, not routes-and-records."
@@ -1343,7 +1343,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "Independent steps and packages are asked at once (Promise.allSettled); a failed request for one package is reported and the others are written; a low-confidence answer goes to the founder without failing the batch."
@@ -1356,7 +1356,7 @@
     "schema/caching.mjs",
     "interface/router.mjs",
     "schema/decisions.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "Computed once per action and shared: routes(), decisions() when no explicit now is passed, the venture state hash, and each command's spawn output. The foundation report is shared as the purpose/foundation command output; foundation.mjs itself was not edited."
@@ -1367,7 +1367,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "--speculate asks when-steps while code computes and discards the answers whose condition is false; the test measures it faster than the sequential run and checks the discard."
@@ -1577,7 +1577,7 @@
     "interface/acting.mjs",
     "interface/router.mjs",
     "schema/access.mjs",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "router call() now goes through actingCall. Every call checks the actor kind (person or agent) and refuses an agent acting in a role a person holds. acting.unknown_roles: refuse in the config makes the router refuse role ids the team plan does not list. Every answer carries acting {kind, role}. Inside one process (an MCP or API server, keyed by venture and via), a change of identity, or of that role's team-plan entry, makes the next answer carry acting_changed with the new identity's read and write reach. Each CLI command is its own process, so it re-checks who is acting on every call but has nothing to compare against."
@@ -1589,7 +1589,7 @@
    "evidence": [
     "schema/caching.mjs",
     "interface/router.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "Derived records (declared command routes) and judgments are stored in <venture>/.naive/cache/ and reused. Failed runs are never stored. system/cache lists, prunes and clears the store."
@@ -1600,7 +1600,7 @@
    "status": "built",
    "evidence": [
     "schema/caching.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "On by default (DEFAULTS.enabled). naive.config.json {cache:{enabled:false}} or NAIVE_CACHE=off turns it off. init-venture does not write a cache block: the default lives in code, so init stays untouched."
@@ -1614,7 +1614,7 @@
     "library/packages/foundation/package.json",
     "library/packages/decisions/package.json",
     "library/packages/validation/package.json",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "use_cache in package definitions (record level), plus a framework list for system/need-now, time-to-ready and package, plus naive.config.json cache.routes per venture. Judgment level is system/judge. No package declares a judgment-level use_cache yet, because no package calls a model (use_model is empty everywhere)."
@@ -1625,7 +1625,7 @@
    "status": "built",
    "evidence": [
     "schema/caching.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "cacheLife profiles (seconds..max, default) or {revalidate, expire}. A cache with no life is refused. Fresh, stale (served only when allowStale is passed in code), revalidate and expired are tested with an injected now. There is no background revalidation."
@@ -1636,7 +1636,7 @@
    "status": "built",
    "evidence": [
     "schema/caching.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "Canonical-JSON sha256 keys. Judgment key: state, question, model, Naive version and package-definition hashes. Record key: venture file-tree hash, framework code hash, args, vary values. Tests show a changed state, model or package set is asked again."
@@ -1657,7 +1657,7 @@
    "status": "built",
    "evidence": [
     "schema/caching.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "Private requests and routes that vary on actor are stored under private/<hash of person>/. Another person misses and gets their own. An unnamed actor is never stored. A listing shows only shared entries and your own."
@@ -1669,7 +1669,7 @@
    "evidence": [
     "schema/caching.mjs",
     "interface/router.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "New route system/answer labels each part (confirmed, agent, unlogged, missing, cached, fresh, plus a judgment part) and counts the mix."
@@ -1808,7 +1808,7 @@
     "schema/freshness.mjs",
     "knowledge/freshness.json",
     "interface/cli/freshness.mjs",
-    "schema/freshness-test.mjs"
+    "interface/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
    "note": "Both strategies apply to records. By time: freshness profiles, with stale, expired and per-phase states. On demand: a record goes stale when a record it was derived from (provenance derived_from) is written later, when a where-used child drifts from its parent, when a decision above it changes (from decisions.mjs), or when it is marked by tag, path or package. Report: node schema/freshness.mjs, mentura freshness, route system/freshness."
@@ -1821,7 +1821,7 @@
     "knowledge/freshness.json",
     "schema/freshness-profiles.schema.json",
     "schema/freshness.mjs",
-    "schema/freshness-test.mjs"
+    "interface/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
    "note": "Profiles follow cacheLife (stale, revalidate, expire) and add per_phase and live. The defaults are feedback 30d/90d, research 90d/365d, assumption (per phase), foundation (per phase), live, max and none. A venture overrides them under freshness in naive.config.json, by record type or by route prefix, and an undefined profile or a bad duration is refused. mentura phase <phase> --as person records the phase change (it refuses agents and adds an empty core skeleton when leaving Discovery, as init does), so per-phase records go stale. A phase changed by hand in venture.json counts from the file's mtime, with a warning. 'Now' is an input: --now <iso|+100d> or NAIVE_NOW."
@@ -1832,7 +1832,7 @@
    "status": "built",
    "evidence": [
     "schema/freshness.mjs",
-    "schema/freshness-test.mjs"
+    "interface/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
    "note": "Records with the live profile (customer, investor, money-account, data-stream) are holes. freeze() / mentura freshness --freeze <dir> copies every other record into a static shell with shell.json (sha256 per record, plus each hole with the route that reads it). It refuses expired records by name, and refuses a target folder inside the venture's routed folders. A read of a live record carries freshness.hole. The full C-11 release (naive build) is not built on main; the caching group can call freshness().shell or freeze() from it."
@@ -1854,7 +1854,7 @@
    "evidence": [
     "schema/freshness.mjs",
     "interface/router.mjs",
-    "schema/freshness-test.mjs"
+    "interface/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
    "note": "mentura revalidate tag:<route> (or route system/revalidate) marks the record stale and, transitively, everything that depends on it (derived_from and where-used edges). Stale records stay readable: the router adds a freshness flag (state, reasons, fix) to item and list reads on every interface. A rewrite or mentura verify makes a record fresh again. Where-used children that are not records are listed as stale copies, with who delivers the change. Pushing the change to outside tools is left to the platform: children in non-filesystem sources are listed as unchecked."
@@ -1876,7 +1876,7 @@
    "evidence": [
     "schema/freshness.mjs",
     "interface/cli/freshness.mjs",
-    "schema/freshness-test.mjs"
+    "interface/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
    "note": "path:<folder> marks every record under a folder or route prefix. package:<name> marks every record type a package owns. mentura revalidate --pivot is package:validation with pivot: true, so every assumption is tested again. Dependents of the marked records follow."
@@ -1888,7 +1888,7 @@
    "evidence": [
     "schema/freshness.mjs",
     "interface/cli/freshness.mjs",
-    "schema/freshness-test.mjs"
+    "interface/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
    "note": "A plain target that is a folder is refused (exit 1 on the CLI and in the route). The refusal lists the exact tag:<route> for each record under it and shows the path: form. Exact reasons (tag, changed, drift, decision, depends) sort before path, package, phase and age reasons. The summary counts stale_by_dependency separately from stale_by_folder_only. A tag with no recorded dependents says to pass --derived-from on writes."
@@ -1913,7 +1913,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "outcomeOf() classifies router results and errors as answer, expected (invalid write, missing record, gate holds, refused, failed request), uncaught (cycles, bad requests; CLI prints uncaught: and exits 1) or uncertain; uncertain judgments become open fail-open decisions (judge-<id>) and the founder's answer is written back as theirs on the next run. The errors page (get-started/errors) is not mine and still describes only expected and uncaught; the uncertain kind is explained on agents-and-people."
@@ -2002,7 +2002,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "schema/model-steps-test.mjs"
+    "interface/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
    "note": "typed() rejects malformed answers (they become uncertain, answer null); low or missing confidence is uncertain; check.equals lets code overrule a judgment (outcome overruled, both values recorded)."
@@ -2021,7 +2021,7 @@
     "schema/glossary.schema.json",
     "schema/check-brand.mjs",
     "interface/router.mjs",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "Package glossaries live at glossary/<package>.json (record type glossary, knowledge layer). A term stays local unless export is true. glossary/terms shows what one package sees, and a route's layout carries its package's terms. The check fails when two packages export one term with different meanings, and warns when public content uses another package's local term. The file sits in glossary/ rather than in each package folder, so it cannot collide with the <pkg>/*.json collections (investors, money, customers)."
@@ -2035,7 +2035,7 @@
     "schema/marketing-brand.schema.json",
     "interface/router.mjs",
     "interface/brand.mjs",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "Brand tokens are in marketing/brand.json (marketing-brand, decision class experience-design). Every layout (CLI, MCP, API) carries the tone, voice rules, fonts and colors. marketing/brand/tokens gives any interface W3C design tokens, CSS custom properties and head links. marketing/voice and the brand check hold marketing content to the voice rules. One gap: the demo HTML board (interface/demo/board.mjs) does not apply a venture's brand CSS yet. Views get the brand only through the tokens route."
@@ -2047,7 +2047,7 @@
    "evidence": [
     "schema/brand.mjs",
     "schema/marketing-brand.schema.json",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "design_systems entries in the brand are references: an http(s) link, a version and a license. The check fails an entry that is not a link. It also fails a public/ file tagged design_system whose license does not allow a copy."
@@ -2080,7 +2080,7 @@
     "schema/public-assets.schema.json",
     "schema/check-assets.mjs",
     "interface/brand.mjs",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "The public/assets.json register (public-assets) holds a source, license and credit for every file in public/. The check fails an unregistered file, a listed file that is missing, and an unknown license. mentura assets add registers files through the router, so each write is checked against the schema and logged in provenance."
@@ -2093,7 +2093,7 @@
     "interface/brand.mjs",
     "platform/integrations/remote-image.mjs",
     "schema/assets.mjs",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "mentura assets remote records a remote image as a link with a note in raw/sources/<id>/ (source.json plus text.md, immutable). A full copy in public/ fails the check unless its license allows a copy. The platform fetcher allows only hosts in remote_hosts, checks again after every redirect, refuses anything that is not an image, keeps the original private in raw/sources/<id>/original.* (gitignored), and copies only with --copy under a license that allows it. The test runs it against a local HTTP server. The allowlist is a field in public/assets.json (mentura assets hosts), not in knowledge/sources.json: a source there needs a store-contract connector, and that seemed the wrong shape."
@@ -2106,7 +2106,7 @@
     "schema/assets.mjs",
     "interface/brand.mjs",
     "schema/check-assets.mjs",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "Code reads facts from the bytes: type, width, height, ICO sizes, bytes and sha256, for PNG, GIF, JPEG, WebP, ICO, SVG, woff/woff2/ttf/otf and PDF. The check fails facts that differ from the file, so a guessed value fails. mentura assets fill and the public/assets/facts route supply them. Agent alt text stays pending until a person confirms it. The confirmation is a provenance confirm entry bound to a hash of the path and the exact text, so editing the text makes it pending again, and alt.by=person without that entry fails. A missing credit fails, and so does an image with no alt text unless it is marked decorative."
@@ -2123,7 +2123,7 @@
    "evidence": [
     "schema/brand.mjs",
     "schema/marketing-brand.schema.json",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "Typefaces are brand tokens with a license. A self-hosted face's files must be in public/, registered under the same license and be real font files, and the tokens CSS emits a local @font-face for them. A remote typeface fails the check (the reader's browser would make an outside request), and so does a typeface with no license."
@@ -2134,7 +2134,7 @@
    "status": "built",
    "evidence": [
     "schema/brand.mjs",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "Typefaces are defined once. brand.fonts assigns them to roles everywhere, and scopes[].fonts assigns them under one route prefix only. Resolution follows the Y-5 rule (deeper scope over shallower over venture), with set_by saying which scope set each value. The CSS gives each scope a [data-naive-scope] selector."
@@ -2197,7 +2197,7 @@
    "evidence": [
     "interface/router.mjs",
     "schema/caching.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "The need-now run in layout() and the system/need-now command share one memo key. The overview runs need-now once where it needs it three times (tested)."
@@ -2210,7 +2210,7 @@
    "evidence": [
     "schema/brand.mjs",
     "schema/marketing-brand.schema.json",
-    "schema/brand-test.mjs"
+    "interface/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets"
   },
@@ -2256,7 +2256,7 @@
     "interface/router.mjs",
     "schema/caching.mjs",
     "interface/api/server.mjs",
-    "schema/caching-test.mjs"
+    "interface/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
    "note": "Only run (and view over run) uses the cache, and only for declared routes, which is the opt-in. A write never reads or stores it. Input {cache:'no-store'} opts out of one read. Tested through the HTTP API (POST run hits; PUT write has no cache field, and the next run misses). The API server was not edited."
@@ -2326,7 +2326,7 @@
     "schema/gate-drafts.mjs",
     "interface/gate-hooks.mjs",
     "interface/cli/mentura.mjs",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "A rule with then:owner holds an agent's write as a draft sent to the function owner. The owner comes from naive.config.json owners (by function or package), then the decision-class owner, then the founder. Each held draft gets a sidecar, and node schema/gate-drafts.mjs --owner lists what waits for an owner. With variants:true, a second agent draft that differs from the first is kept beside it (.draft.b) under one open decision record (decisions/<record>.variants.decision.json). mentura accept --pick b --by <name> accepts that draft, decides the decision and removes the other drafts."
@@ -2351,7 +2351,7 @@
     "schema/access.mjs",
     "schema/naive-config.mjs",
     "interface/gate-hooks.mjs",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "The gate's modules make no process, network or model calls (the test checks their source). 2000 decisions run in well under a second with fetch disabled. Confidence rules read a score the write already carries: CLI --confidence, the MCP confidence field or the x-mentura-confidence header. A write with no score is never held for confidence. The gate checks write access itself, and the router checks access again at the record on every read and write."
@@ -2364,7 +2364,7 @@
     "schema/gate.mjs",
     "library/packages/money/package.json",
     "library/packages/validation/package.json",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "Each venture has one gate. It runs fail_closed rules, then the config's rules, then gate_rules imported from library/packages/<name>/package.json. money ships money-to-finance and validation ships validation-low-confidence. naive.config.json gate.packages can leave out one package's rules or all of them. The free-text package 'gates' (completion gates) are left as they were."
@@ -2376,7 +2376,7 @@
    "evidence": [
     "schema/gate.mjs",
     "schema/check-config.mjs",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "Rule routes use the router's path patterns: [id] and * match one segment, ** matches any depth, and a trailing /** also matches the route above it. A pattern can match the concrete route or its table route. check-config fails any pattern that matches no route in the table."
@@ -2478,7 +2478,7 @@
     "schema/naive-config.mjs",
     "schema/gate.mjs",
     "schema/check-config.mjs",
-    "schema/gate-test.mjs"
+    "interface/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
    "note": "naive.config.json packages pins a version per package. A package with no version field takes the catalog's version (0.3.0), because no package.json has its own version yet. check-config fails a pin that does not match what is installed. While a pin mismatches, every write (person or agent) to that package's records is refused. check-config --pin moves the pins to the installed versions and logs this in provenance."

@@ -30,7 +30,7 @@ If `git diff <sync> -- schema/lint-legal.mjs interface/router.mjs interface/cli/
 ## Run it
 
 1. Run `/statechart` on `verification/lint-legal/LegalLint.tla` with `LegalLint.cfg` and `view.mjs`.
-2. Replay on the real CLI: `node schema/lint-legal-test.mjs`.
+2. Replay on the real CLI: `node interface/tests/lint-legal-test.mjs`.
 
 ## Real bug or model error?
 

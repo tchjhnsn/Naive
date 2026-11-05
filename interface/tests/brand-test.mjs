@@ -12,12 +12,12 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
-import { call } from "../interface/router.mjs";
-import { entries } from "../packages/core/provenance.mjs";
-import { allowsCopy, checkAssets, factsOf, hostAllowed } from "./assets.mjs";
-import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "./brand.mjs";
+import { call } from "../router.mjs";
+import { entries } from "../../packages/core/provenance.mjs";
+import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../schema/assets.mjs";
+import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "../../schema/brand.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 /** @param {string} name @param {unknown} ok @param {unknown} [detail] */
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`); if (!ok) failed++; };
@@ -362,7 +362,7 @@ const brand = {
 // ---- The same routes over MCP, as an agent reaches them.
 {
   process.env.MENTURA_WORKSPACE = W;
-  const { handle } = await import("../interface/mcp/server.mjs");
+  const { handle } = await import("../mcp/server.mjs");
   const mcp = async (name, args) => (await handle({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: args } })).result;
   const t = await mcp("mentura_run", { venture: "acme", route: "marketing/brand/tokens" });
   expect("Y-3 over MCP: an agent reads the brand tokens", !t.isError && /--color-accent: #1d4e89/.test(JSON.parse(t.content[0].text).css), t.content?.[0]?.text?.slice(0, 200));

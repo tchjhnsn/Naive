@@ -10,12 +10,12 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { actionScope, actionStats, cached, clear, command, configOf, declarationFor, entries, judge, keyOf, LIFE, lifeOf, lookup, memo, prune, stats, versionsOf } from "./caching.mjs";
-import { call } from "../interface/router.mjs";
-import { decisions, holding } from "./decisions.mjs";
-import { route as http } from "../interface/api/server.mjs";
+import { actionScope, actionStats, cached, clear, command, configOf, declarationFor, entries, judge, keyOf, LIFE, lifeOf, lookup, memo, prune, stats, versionsOf } from "../../schema/caching.mjs";
+import { call } from "../router.mjs";
+import { decisions, holding } from "../../schema/decisions.mjs";
+import { route as http } from "../api/server.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const throws = (f, re) => { try { f(); return false; } catch (e) { return re.test(e.message); } };

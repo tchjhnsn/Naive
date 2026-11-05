@@ -81,7 +81,7 @@ export const REGISTRY: Registry = {
   "schema/check-visibility.mjs": plain("each public fact came through the visibility gate"),
   "schema/check-where-used.mjs": plain("each live child shows its parent's value"),
   "schema/gate-drafts.mjs": plain("stores held writes and their variants"),
-  "schema/gate-test.mjs": plain("tests the write gate"),
+  "interface/tests/gate-test.mjs": plain("tests the write gate"),
   "schema/gate.mjs": plain("the write gate: route rules, pins and role access decide what happens to a write, not a term"),
   "schema/ontology-gate-test.ts": plain("tests the membership gate, which is registered as symbolic"),
   "schema/ontology-gate.ts": symbolic,

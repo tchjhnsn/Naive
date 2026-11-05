@@ -6,12 +6,12 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hash, variantOf, visibilityOf } from "./visibility.mjs";
-import { refusals } from "./check-visibility.mjs";
-import { context } from "./upgrades.mjs";
-import * as telosToGoals from "./migrations/telos-to-goals.mjs";
+import { hash, variantOf, visibilityOf } from "../../schema/visibility.mjs";
+import { refusals } from "../../schema/check-visibility.mjs";
+import { context } from "../../schema/upgrades.mjs";
+import * as telosToGoals from "../../schema/migrations/telos-to-goals.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "visibility-"));
@@ -82,7 +82,7 @@ try {
 
   const INTERNAL_KEYS = ["metadata", "hierarchy", "pending_draft", "stale"];
   const internalKeys = (a) => INTERNAL_KEYS.filter((k) => k in a);
-  const direct = await import("../interface/router.mjs");
+  const direct = await import("../router.mjs");
   const read = (route, input, actor = "public") => direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws });
   for (const [route, input] of [["foundation/problem", undefined], ["foundation/problem", { hierarchy: true }], ["evidence", undefined], ["customers/nope", { hierarchy: true }]]) {
     const a = await read(route, input);

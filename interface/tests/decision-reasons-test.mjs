@@ -6,11 +6,11 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../interface/router.mjs";
-import { approve, decisions, propose } from "./decisions.mjs";
-import { changedReasons, reasonsFromArgs, shaOf } from "./reasons.mjs";
+import { call } from "../router.mjs";
+import { approve, decisions, propose } from "../../schema/decisions.mjs";
+import { changedReasons, reasonsFromArgs, shaOf } from "../../schema/reasons.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "reasons-"));

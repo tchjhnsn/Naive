@@ -2,7 +2,7 @@
 
 A TLA+ model of `schema/lint-investors.mjs` (route `investors/lint`). An investor update moves from draft to sent. The lint flags the update when a number is not confirmed. TLC found no path that reaches sent with an unconfirmed number and no finding.
 
-The model is the behavior of one `lint()` run after each change. It is not a second copy of the matcher. What counts as a raise, a conflict, or a confirmed number is the code, replayed by `schema/lint-investors-test.mjs`.
+The model is the behavior of one `lint()` run after each change. It is not a second copy of the matcher. What counts as a raise, a conflict, or a confirmed number is the code, replayed by `interface/tests/lint-investors-test.mjs`.
 
 Confirmed against `schema/lint-investors.mjs` at `ef26b886faf13a2a5c78e908c19dd5e589496e0c`. Move that commit forward only after checking that each action in `InvestorLint.tla` still matches `lint()`.
 
@@ -33,7 +33,7 @@ One violation is loaded at a time, and only one rule is fail-closed at a time. T
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
-| TypeOK | PASS | The CLI returns JSON for every fixture in `schema/lint-investors-test.mjs`, including malformed files. |
+| TypeOK | PASS | The CLI returns JSON for every fixture in `interface/tests/lint-investors-test.mjs`, including malformed files. |
 | RulesMatchRecords: each rule fires on its fixture and stays silent on a clean venture | PASS | "each rule fires on the fixture" and "a clean venture stays silent". A sent update with `confirmed: true` stays silent. Quoting a principle, a broad-based right, and "How will the venture be funded?" stay silent. |
 | ExitFollowsMode: exit 1 if and only if a fail-closed rule has findings | PASS | Closing each of the three rules on the failing fixture exits 1. A clean venture with those rules fail-closed exits 0. Closing the terms rule when only the raise rule fired exits 0. A mode other than `fail-open` or `fail-closed` stays fail-open. |
 | NeverCrashes: missing or malformed records never crash | PASS | An empty venture, a non-JSON decision, investor, alignment, ownership and config, and a garbled raise file: the CLI exits 0 and `lint()` does not throw. Repairing the raise file brings the finding back. |

@@ -11,16 +11,16 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../interface/router.mjs";
-import { entries } from "../packages/core/provenance.mjs";
-import { checkKit, wrap } from "../interface/kit-boundary.mjs";
-import { approve } from "./decisions.mjs";
+import { call } from "../router.mjs";
+import { entries } from "../../packages/core/provenance.mjs";
+import { checkKit, wrap } from "../kit-boundary.mjs";
+import { approve } from "../../schema/decisions.mjs";
 import {
   KINDS, Uncaught, answersModel, assertJson, checkRequest, checkStep, checkSteps, commandModel, confirm, expectDeterministic,
   keepComputed, outcomeOf, payload, provenanceOf, run, settle, stepsOf, typed, waterfall, waves,
-} from "./model-steps.mjs";
+} from "../../schema/model-steps.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

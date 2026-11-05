@@ -9,12 +9,12 @@ import { existsSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "freshness-test-"));
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.NAIVE_NOW;
-const { call, routes } = await import("../interface/router.mjs");
-const F = await import("./freshness.mjs");
+const { call, routes } = await import("../router.mjs");
+const F = await import("../../schema/freshness.mjs");
 
 let failed = 0;
 /** @param {string} name @param {unknown} ok @param {unknown} [detail] */

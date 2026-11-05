@@ -4,7 +4,7 @@ TLA+ model of `schema/lint-customers.mjs` (route `customers/lint`). One customer
 
 `icp = "gone"` is a missing ICP file and an unreadable one. Both leave no profile ids. The CLI replay below runs those two cases separately. `configMode = "config-bad"` is an unreadable `naive.config.json`: the override is not applied, so both rules stay fail-open.
 
-TLC (tla2tools 1.7.4) reached 350 states. Every rule held, including `NoDeadlock`. No rule break to replay. The chart paths were replayed with `node schema/lint-customers-test.mjs`.
+TLC (tla2tools 1.7.4) reached 350 states. Every rule held, including `NoDeadlock`. No rule break to replay. The chart paths were replayed with `node interface/tests/lint-customers-test.mjs`.
 
 ## Regenerate
 
@@ -24,7 +24,7 @@ Then render `chart.mmd` with Pele 1.9.0 (`naive-example/pele/render.mjs`) and `p
 
 | Rule | Result | Replay |
 |---|---|---|
-| TypeOK | PASS | `node schema/lint-customers-test.mjs`: every run prints JSON with `rules`, `findings` and `ok`, and exits 0, 1 or 2 |
+| TypeOK | PASS | `node interface/tests/lint-customers-test.mjs`: every run prints JSON with `rules`, `findings` and `ok`, and exits 0, 1 or 2 |
 | FindingsMatch | PASS | `no-icp-match` fires for a customer whose `icp` is not a profile, and for a customer with no `icp`. `promise-not-kept` fires only when a readable customer has a promise the current product record does not keep |
 | ExitIffFailClosed | PASS | Fail-open with a finding exits 0. Fail-closed with a finding exits 1. Fail-closed with no finding exits 0. A fail-open finding exits 0 while another rule is fail-closed and quiet. A mode other than `fail-open` or `fail-closed` stays fail-open. An unreadable config stays fail-open |
 | SilentOnClean | PASS | Customer `ada`, ICP `shop-owners`, promise `next-day pickup` while `product/desk.json` job contains those words: 0 findings, exit 0 |

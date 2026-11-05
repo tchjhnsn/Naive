@@ -7,9 +7,9 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, routes } from "../interface/router.mjs";
+import { call, routes } from "../router.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 const bin = join(repo, "schema/lint-legal.mjs");
 let failed = 0;
 const expect = (name, ok, detail = "") => {

@@ -2,21 +2,21 @@
 // records, the shared telemetry schema and writer, the plugin beta's gate and the feedback router. No network:
 // Jev and the telemetry sender are stubs.
 //
-//   node schema/validation-study-test.mjs
+//   node interface/tests/validation-study-test.mjs
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, resolve } from "../interface/router.mjs";
-import { blocked, giveFeedback, manifest, status, unlock } from "./beta-gate.mjs";
-import { route } from "./feedback-route.mjs";
-import { events, flush, record, refuse, ventureHash } from "./telemetry.mjs";
-import { summary } from "./bugs.mjs";
-import { check } from "./check-validation-study.mjs";
+import { call, resolve } from "../router.mjs";
+import { blocked, giveFeedback, manifest, status, unlock } from "../../schema/beta-gate.mjs";
+import { route } from "../../schema/feedback-route.mjs";
+import { events, flush, record, refuse, ventureHash } from "../../schema/telemetry.mjs";
+import { summary } from "../../schema/bugs.mjs";
+import { check } from "../../schema/check-validation-study.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "validation-study-test-"));

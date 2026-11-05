@@ -5,9 +5,9 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { ventureFile } from "../../packages/core/venture-paths.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "setup-skill-test-"));
 const dir = join(base, "acme");
 const env = { ...process.env, HOME: base };
@@ -15,8 +15,8 @@ for (const k of ["MENTURA_WORKSPACE", "TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", 
 const made = spawnSync("node", [join(repo, "interface/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--rho-fixture", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
 if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); process.exit(1); }
 process.env.MENTURA_WORKSPACE = base;
-const { handle } = await import("../interface/mcp/server.mjs");
-const { decisions } = await import("./decisions.mjs");
+const { handle } = await import("../mcp/server.mjs");
+const { decisions } = await import("../../schema/decisions.mjs");
 
 let failed = 0, n = 0;
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };

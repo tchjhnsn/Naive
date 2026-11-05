@@ -4,7 +4,7 @@ TLA+ model of `schema/lint-product.mjs` (route `product/lint`). One product reco
 
 TLC 1.7.4 checked the model at 40 states and 40 steps. Every rule held. The chart draws 9 states and 14 arrows. It hides the `Done` stutter (10 steps), which stays in Exit 0 or Exit 1 and changes nothing.
 
-The model is one record and one defect at a time. The code can fire more than one rule on one product. `schema/lint-product-test.mjs` replays that case. The model also leaves out the router's wrapping of a non-zero exit as `ok: false`. The route test replays that.
+The model is one record and one defect at a time. The code can fire more than one rule on one product. `interface/tests/lint-product-test.mjs` replays that case. The model also leaves out the router's wrapping of a non-zero exit as `ok: false`. The route test replays that.
 
 ## Regenerate
 
@@ -26,7 +26,7 @@ Copy `/tmp/product-lint-chart/chart.mmd` to `verification/lint-product/out/chart
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
-| EachRuleFires | PASS | `node schema/lint-product-test.mjs`: one product with no ICP, a feature with no job, and a business model with no pricing record. Exit 0. Findings are `product-no-icp`, `feature-no-job`, and `business-model-no-pricing`. |
+| EachRuleFires | PASS | `node interface/tests/lint-product-test.mjs`: one product with no ICP, a feature with no job, and a business model with no pricing record. Exit 0. Findings are `product-no-icp`, `feature-no-job`, and `business-model-no-pricing`. |
 | SilentOnClean | PASS | Same test: a product offered to `shop-owners`, a feature whose job is that profile's job, and `validation/pricing.json` naming the product. Exit 0. No findings. |
 | ExitIffFailClosed | PASS | Same test: `product_lint.rules.product-no-icp.mode` set to `fail-closed` while that rule has no finding exits 0. `feature-no-job` set to `fail-closed` while it has a finding exits 1. A mode other than `fail-open` or `fail-closed` stays fail-open. |
 | MalformedNeverCrashes | PASS | Same test: a product file, an ICP file, a pricing file, and `naive.config.json` that are not JSON. Exit 0. The sibling card is still judged. A directory with no `venture.json` exits 2. |

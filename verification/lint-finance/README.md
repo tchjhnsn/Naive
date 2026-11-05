@@ -34,7 +34,7 @@ The chart draws 13 states and 25 arrows. It hides:
 
 | Rule | What must hold | TLC | Replay |
 | --- | --- | --- | --- |
-| TypeOK | Phase, records, mode, findings and the exit code stay in the sets the checker uses | PASS | Every case in `node schema/lint-finance-test.mjs` returns JSON |
+| TypeOK | Phase, records, mode, findings and the exit code stay in the sets the checker uses | PASS | Every case in `node interface/tests/lint-finance-test.mjs` returns JSON |
 | FiresOnFixture | Each rule fires on the fixture that breaks it. A metric fires only in a phase that has no numeric target | PASS | `one fixture fails each rule`. `phase discovery with no target fires metric-no-target` (and beachhead, scale, platform). `a non-numeric target fires metric-no-target` |
 | SilentWhenClean | A clean venture, a missing record, a malformed record, and a missing price or cost stay silent. A metric targeted for Validation stays silent in Validation | PASS | `a clean venture stays silent`. `a venture with none of these records stays silent`. `malformed records and a missing phase do not crash`. `a missing price does not crash and does not fire`. `a missing cost does not crash and does not fire`. `a metric with a target for the current phase stays silent`. `a target of zero counts for the current phase` |
 | ExitIffFailClosed | Exit 1 if and only if a fail-closed rule has a finding | PASS | `fail-open findings exit 0`. `fail-closed with a finding exits 1`. `fail-closed on a rule with no finding exits 0`. `two fail-closed rules exit 1 when one of them has a finding`. `fail-closed with no findings exits 0` |
@@ -42,4 +42,4 @@ The chart draws 13 states and 25 arrows. It hides:
 | InputsFromVentureFile | Record bytes come from `ventureFile` | PASS | `structured layout reads pricing and decisions through ventureFile`. `structured layout reads the metric and its phase through ventureFile`. `structured layout reads finance_lint mode through ventureFile` |
 | NoDeadlock | Every state has a next step | PASS | TLC (`out/report.md`). The CLI runs finish |
 
-TLC reported no broken rule. The replays above match the code, so there is no bug to fix. `node schema/lint-finance-test.mjs` is the replay.
+TLC reported no broken rule. The replays above match the code, so there is no bug to fix. `node interface/tests/lint-finance-test.mjs` is the replay.
