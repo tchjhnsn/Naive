@@ -9,16 +9,13 @@
 // The cheap checks run first; under CI a failure there stops the run. Steps in `exclusive` run alone, last.
 
 import { spawn } from "node:child_process";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { availableParallelism } from "node:os";
 import { join } from "node:path";
 
 const root = new URL(".", import.meta.url).pathname;
-/** The site's packages are installed: nextra, hoisted to the root node_modules by the workspace, or local to site/. */
-const siteInstalled = ["node_modules/nextra", "site/node_modules/nextra"].some((p) => existsSync(join(root, p)));
-const ventures = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => !e.isDirectory() ? []
-  : existsSync(join(dir, e.name, "venture.json")) ? [join(dir, e.name), ...ventures(join(dir, e.name))] : ventures(join(dir, e.name)));
 
+/** @type {Array<[string, string, string[]]>} */
 const steps = [
   ["schema records are valid", "python3", ["-I", "schema/validate.py"]],
   ["checker tests (with cases that must fail)", "node", ["schema/test.mjs"]],
@@ -136,8 +133,6 @@ const steps = [
   ["workspace: settings, cross-venture reads, naive capture and the inbox", "node", ["schema/workspace-test.mjs"]],
   ["validation study: interviews, feedback, bugs, telemetry, the beta gate and feedback routing", "node", ["interface/tests/validation-study-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
-  // The site's pages compile as MDX; needs the site's packages, which the root `npm ci` installs into the root
-  // node_modules now that the site is a workspace. CI's site job also runs both.
 ];
 
 // Generated files: the committed copy must equal a fresh render.

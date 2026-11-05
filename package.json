@@ -6,15 +6,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tchjhnsn/everything-ecosystem.git"
+    "url": "git+https://github.com/tchjhnsn/naive.git"
   },
   "engines": {
     "node": ">=20"
   },
-  "workspaces": [
-    "console",
-    "site"
-  ],
   "bin": {
     "naive": "interface/cli/naive.mjs",
     "mentura": "interface/cli/mentura.mjs"
@@ -39,7 +35,6 @@
     "operations/",
     "governance/",
     "evidence/",
-    "platform/",
     "frameworks/",
     "docs/reference/",
     "docs/decisions/",
@@ -51,15 +46,12 @@
     "!**/*.steps.mjs",
     "!**/*.feature",
     "!packages/create-venture/package.json",
-    "!platform/integrations/fixtures/",
-    "!platform/research/",
     "!schema/examples/docket-scenarios.json",
     "!**/.env*",
     "!**/*.pem",
     "!**/*.key",
     "!**/_private/",
     "!**/_internal/",
-    "!platform/agents/",
     "!schema/check-types.ts",
     "!schema/check-types-test.ts",
     "!schema/record-types.ts",
