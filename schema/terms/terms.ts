@@ -245,7 +245,7 @@ export const hasBroader = (f: Hierarchy): boolean[] => Array.from({ length: f.no
 export const topCategory: Term<Hierarchy> = {
   id: "top-category", form: "compound", label: "Top category", level: "hierarchy", kind: "role",
   labels: sharedTerm("adapted", "standard"),
-  meaning: "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. Then every category reaches exactly one top category, which lean/Naive/Upper.lean proves. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
+  meaning: "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. lean/Naive/Upper.lean proves that on any finite hierarchy no cycle, no orphan and no category reaching two top categories give every category exactly one top category (upper_one_top_of_checks); that these checks state those hypotheses is read off the code, not proved. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
   props: [
     { id: "U1", says: "no category is broader than itself, directly or through others (no cycle)", check: (f) => below(f).every((row, a) => !row[a]), uses: [below] },
     { id: "U2", says: "a top category has nothing broader", check: (f) => f.broader.every(([a]) => !f.tops.includes(a)) },
@@ -253,7 +253,7 @@ export const topCategory: Term<Hierarchy> = {
     { id: "U4", says: "no category reaches two top categories", check: (f) => topsReached(f).every((ts) => ts.length <= 1), uses: [topsReached, below] },
   ],
   sources: ["ISO/IEC 21838-2:2021, Basic Formal Ontology", "W3C SKOS Reference (2009): skos:broader, skos:hasTopConcept", "Ledger N-049 (2026-11-02): own top categories, each mapped to BFO; every noun traces to exactly one through broader", "docs/design/ONTOLOGY_CORE_2026-11-04.md, part 2"],
-  lean: ["upper_no_cycle", "upper_top_only_itself", "upper_reaches_top", "upper_top_unique", "upper_one_top", "upper_isA_top"],
+  lean: ["upper_no_cycle", "upper_rank_of_no_cycle", "upper_top_only_itself", "upper_reaches_top", "upper_top_unique", "upper_one_top", "upper_cat_of_u4", "upper_one_top_of_u4", "upper_one_top_of_checks", "upper_isA_top"],
 };
 
 export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory];

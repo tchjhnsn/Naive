@@ -8,7 +8,8 @@
 // Each failed property is reported by name: the nouns on a cycle (U1), a top category with something broader
 // (U2), an orphan, a noun that is not a top category and has nothing broader (U3), and a noun that reaches two
 // top categories (U4). Before the term runs, every broader target must be a top category or a live noun, and no
-// top category may share a noun's name. After it, the term engine's own hook: where both ends of a link name an
+// top category may share a noun's name, and each top category's BFO class must be the label of its IRI in the
+// table of BFO classes the upper ontology uses (BFO 2020, ISO/IEC 21838-2). After it, the term engine's own hook: where both ends of a link name an
 // admitted term at one level, the relation schema/terms/admit.ts read off their pass sets must be is_a or equal.
 
 import { spawnSync } from "node:child_process";
@@ -25,6 +26,14 @@ type Verdict = { problems: string[]; topOf: Map<string, string> };
 
 const ONTOLOGY = "docs/ontology.json";
 const ADMITTED = "schema/terms/admitted.json";
+const OBO = "http://purl.obolibrary.org/obo/";
+const BFO_LABELS = new Map([
+  [`${OBO}BFO_0000004`, "independent continuant"],
+  [`${OBO}BFO_0000015`, "process"],
+  [`${OBO}BFO_0000017`, "realizable entity"],
+  [`${OBO}BFO_0000019`, "quality"],
+  [`${OBO}BFO_0000031`, "generically dependent continuant"],
+]);
 
 export function checkUpper(ontology: OntologyMetamodel, admitted: Admitted): Verdict {
   const names = [...ontology.top_categories.map((t) => t.name), ...ontology.nouns.map((n) => n.noun)];
@@ -34,6 +43,11 @@ export function checkUpper(ontology: OntologyMetamodel, admitted: Admitted): Ver
     if (index.has(name)) problems.push(`${name}: a top category and a noun, or two of either, share this name`);
     else index.set(name, i);
   });
+  for (const { name, bfo } of ontology.top_categories) {
+    const label = BFO_LABELS.get(bfo.iri);
+    if (label === undefined) problems.push(`${name}: BFO IRI ${bfo.iri} is not a class the upper ontology uses`);
+    else if (label !== bfo.class) problems.push(`${name}: BFO class ${bfo.class} does not match ${bfo.iri}, which is ${label}`);
+  }
   const retired = new Set(ontology.nouns.filter((n) => n.status === "retired").map((n) => n.noun));
   const links: [number, number][] = [];
   for (const n of ontology.nouns) for (const target of n.broader ?? []) {
@@ -126,16 +140,31 @@ function fixtureCases(): void {
   const inverted = problems(pair("founder", "co-founder"));
   expect("a link between admitted terms the engine reads as has_a_kind is named", inverted.length === 1 && inverted[0] === "a: broader b, but the engine reads founder has_a_kind co-founder, not is_a or equal", inverted.join("; "));
 
-  const root = mkdtempSync(join(tmpdir(), "upper-"));
-  try {
-    const put = (path: string, text: string): void => { mkdirSync(dirname(join(root, path)), { recursive: true }); writeFileSync(join(root, path), text); };
-    put(ONTOLOGY, JSON.stringify(relink("decision", undefined)));
-    put(ADMITTED, JSON.stringify(admitted));
-    const r = spawnSync(process.execPath, [self, "--root", root], { encoding: "utf8" });
-    expect("removing one broader link in a copy exits 1 and names the orphan", r.status === 1 && r.stdout.includes("orphan: decision"), `${r.status} ${r.stdout}${r.stderr}`);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
+  const remap = (name: string, bfo: { class: string; iri: string }): OntologyMetamodel => ({
+    ...ontology,
+    top_categories: ontology.top_categories.map((t) => (t.name === name ? { ...t, bfo } : t)),
+  });
+  const copy = (o: OntologyMetamodel): { status: number | null; out: string } => {
+    const root = mkdtempSync(join(tmpdir(), "upper-"));
+    try {
+      const put = (path: string, text: string): void => { mkdirSync(dirname(join(root, path)), { recursive: true }); writeFileSync(join(root, path), text); };
+      put(ONTOLOGY, JSON.stringify(o));
+      put(ADMITTED, JSON.stringify(admitted));
+      const r = spawnSync(process.execPath, [self, "--root", root], { encoding: "utf8" });
+      return { status: r.status, out: r.stdout + r.stderr };
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  };
+
+  const orphaned = copy(relink("decision", undefined));
+  expect("removing one broader link in a copy exits 1 and names the orphan", orphaned.status === 1 && orphaned.out.includes("orphan: decision"), `${orphaned.status} ${orphaned.out}`);
+
+  const mislabelled = copy(remap("process", { class: "quality", iri: `${OBO}BFO_0000015` }));
+  expect("a top category whose BFO class is not its IRI's label exits 1 and names the category", mislabelled.status === 1 && mislabelled.out.includes(`FAIL  process: BFO class quality does not match ${OBO}BFO_0000015, which is process`), `${mislabelled.status} ${mislabelled.out}`);
+
+  const unknownIri = copy(remap("capacity", { class: "realizable entity", iri: `${OBO}BFO_0000099` }));
+  expect("a top category with a BFO IRI outside the table exits 1 and names the category", unknownIri.status === 1 && unknownIri.out.includes(`FAIL  capacity: BFO IRI ${OBO}BFO_0000099 is not a class the upper ontology uses`), `${unknownIri.status} ${unknownIri.out}`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

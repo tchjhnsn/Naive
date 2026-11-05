@@ -745,7 +745,7 @@
         },
         "grade": "standard"
       },
-      "meaning": "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. Then every category reaches exactly one top category, which lean/Naive/Upper.lean proves. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
+      "meaning": "A category at the top of a hierarchy of categories joined by broader links, as in an upper ontology. Whether a category is a top category depends on the whole hierarchy, so the test runs on the whole: broader holds no cycle, a top category has nothing broader, every other category has something broader, and none reaches two top categories. lean/Naive/Upper.lean proves that on any finite hierarchy no cycle, no orphan and no category reaching two top categories give every category exactly one top category (upper_one_top_of_checks); that these checks state those hypotheses is read off the code, not proved. Naive's top categories are listed in docs/ontology.json, each mapped to a class of BFO (N-049).",
       "status": "proposed",
       "hash": "24f679e53efbc73f",
       "properties": [
@@ -773,10 +773,14 @@
       "predictions": [],
       "lean": [
         "upper_no_cycle",
+        "upper_rank_of_no_cycle",
         "upper_top_only_itself",
         "upper_reaches_top",
         "upper_top_unique",
         "upper_one_top",
+        "upper_cat_of_u4",
+        "upper_one_top_of_u4",
+        "upper_one_top_of_checks",
         "upper_isA_top"
       ],
       "sources": [
