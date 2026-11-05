@@ -27,7 +27,8 @@
 
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { createRequire } from "node:module";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 
@@ -37,13 +38,17 @@ const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const GRAPH = "purpose/ideas/graph.json";
 const NEED = load(join(repo, "schema/need-now.json")).records;
 
-// The term engine is TypeScript. Node strips types from 22.18, and never under node_modules, so an installed
-// package cannot load it. Without it the graph still builds from judged dependencies, and any stated relation is
-// refused rather than let through unchecked.
-const NO_TYPESCRIPT = ["ERR_UNKNOWN_FILE_EXTENSION", "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING"];
-const terms = await Promise.all([import("../../../schema/terms/engine.ts"), import("../../../schema/terms/terms.ts"), import("../../../schema/terms/relations.ts")])
-  .then(([engine, defs, rel]) => ({ ...engine, ...defs, ...rel }))
-  .catch((e) => { if (NO_TYPESCRIPT.includes(e?.code)) return null; throw e; });
+// The term engine is TypeScript, loaded only when an idea states a relation, so a process that imports this file for
+// its constants (every naive or mentura process, through the router) does not pay for it. Node strips types from
+// 22.18, and never under node_modules, so an installed package cannot load it. Without it the graph still builds
+// from judged dependencies, and any stated relation is refused rather than let through unchecked.
+/** @returns {(typeof import("../../../schema/terms/engine.ts") & typeof import("../../../schema/terms/terms.ts") & typeof import("../../../schema/terms/relations.ts")) | null} */
+function termEngine() {
+  if (!process.features.typescript) return null;
+  const require = createRequire(import.meta.url);
+  try { return { ...require("../../../schema/terms/engine.ts"), ...require("../../../schema/terms/terms.ts"), ...require("../../../schema/terms/relations.ts") }; }
+  catch (e) { if (e?.code === "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING") return null; throw e; }
+}
 
 // Naive's convention of which records build on which, used when no judge has answered. An idea that
 // feeds a later record builds on an idea that feeds an earlier one in the same department.
@@ -76,12 +81,14 @@ export function conventionEdges(ideas) {
   return edges;
 }
 
-// Keeps the graph a DAG: edges are added strongest first, and one that would close a cycle is dropped.
+// Keeps the graph a DAG: edges are added strongest first. A repeat of an edge already kept (a stated builds_on that
+// the convention or Jev also gives) adds nothing, and one that would close a cycle is dropped.
 function acyclic(ids, edges) {
   const out = new Map(ids.map((i) => [i, new Set()]));
   const reaches = (from, to) => { const seen = new Set(), stack = [from]; while (stack.length) { const x = stack.pop(); if (x === to) return true; if (seen.has(x)) continue; seen.add(x); stack.push(...out.get(x)); } return false; };
   const kept = [], dropped = [];
   for (const e of [...edges].sort((a, b) => b.p - a.p)) {
+    if (out.get(e.from).has(e.to)) continue;
     if (reaches(e.to, e.from)) { dropped.push(e); continue; }
     out.get(e.from).add(e.to); kept.push(e);
   }
@@ -103,13 +110,15 @@ export const catalogScopes = () => [...load(join(repo, "docs/ontology-catalog.js
  * @param {{ id: string, relations?: { relation: string, to: string }[], scope?: { scope: string, via: string } }[]} ideas
  * @param {string[]} [scopes] the scopes a link can name; by default catalogScopes() */
 export function checkRelations(ideas, scopes) {
-  const malformed = ideas.filter((i) => i.relations !== undefined && !Array.isArray(i.relations)).map((i) => `${i.id}: relations is not a list`);
+  const malformed = ideas.flatMap((i) => i.relations === undefined ? [] : !Array.isArray(i.relations) ? [`${i.id}: relations is not a list`]
+    : i.relations.flatMap((r, k) => (r !== null && typeof r === "object" ? [] : [`${i.id}: relations[${k}] is ${JSON.stringify(r)}, not a relation`])));
   if (malformed.length) return malformed;
   const stated = ideas.flatMap((i, from) => [
     ...relationsOf(i).map((r) => ({ type: String(r.relation), target: "idea", from, name: r.to })),
     ...(i.scope ? [{ type: String(i.scope.via), target: "scope", from, name: i.scope.scope }] : []),
   ]);
   if (!stated.length) return [];
+  const terms = termEngine();
   if (!terms) return [`${stated.length} stated relation(s) need the EE-095 term engine, which runs from a checkout on Node 22.18 or later`];
   scopes ??= catalogScopes();
   const at = { idea: new Map(ideas.map((i, k) => [i.id, k])), scope: new Map(scopes.map((s, k) => [s, k])) };
@@ -220,8 +229,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const mapOf = (d) => parse(readFileSync(join(d, MAP), "utf8"));
   if (a === "request") console.log(JSON.stringify(request(mapOf(b).ideas, venture(b))));
   else if (a === "check" && b) {
-    const records = readdirSync(b).filter((f) => f.endsWith(".json")).sort().map((f) => load(join(b, f)));
-    const problems = checkRelations(records);
+    const files = readdirSync(b).filter((f) => f.endsWith(".json")).sort();
+    const records = files.map((f) => load(join(b, f)));
+    // Facts are keyed by id, so a second record with one id would hide the first one's links. An id names its file.
+    const holders = new Map();
+    records.forEach((r, k) => holders.set(r.id, [...(holders.get(r.id) ?? []), files[k]]));
+    const misnamed = [...files.flatMap((f, k) => (records[k].id === basename(f, ".json") ? [] : [`${f}: id ${records[k].id} does not match the file name`])),
+      ...[...holders].filter(([, fs]) => fs.length > 1).map(([id, fs]) => `${id}: the same id in ${fs.join(", ")}`)];
+    const problems = misnamed.length ? misnamed : checkRelations(records);
     for (const p of problems) console.log(`FAIL ${p}`);
     const n = records.reduce((s, r) => s + (r.relations?.length ?? 0) + (r.scope ? 1 : 0), 0);
     console.log(problems.length ? `${problems.length} problem(s)` : `${records.length} ideas, ${n} relations and scopes, typed-link passes`);

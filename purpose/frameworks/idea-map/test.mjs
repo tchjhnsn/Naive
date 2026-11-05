@@ -7,11 +7,15 @@ import { route, stageOf, ideasOf } from "./route.mjs";
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { spawnSync } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { RELATIONS, namesBetween } from "../../../schema/terms/relations.ts";
 
+// Tests start in order and may await a child process, so the command runs overlap; results print in order.
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
+const results = [];
+const t = (name, fn) => results.push((async () => fn())().then(() => `ok   ${name}`, (e) => { failed++; return `FAIL ${name}: ${e.message}`; }));
+/** @returns {Promise<{ status: number | string, stdout: string, stderr: string }>} */
+const node = (args) => new Promise((resolve) => execFile("node", args, { encoding: "utf8" }, (e, stdout, stderr) => resolve({ status: e ? (e.code ?? 1) : 0, stdout, stderr })));
 const ok = (c, m) => { if (!c) throw new Error(m); };
 
 const dump = `no shows are killing my clinic
@@ -105,14 +109,22 @@ t("without a judge, Naive's record order supplies the dependencies", () => {
   ok(g.judged_by === "convention" && g.edges.length === 1 && g.edges[0].from === "i-01", JSON.stringify(g.edges));
 });
 
+t("a stated builds_on that the convention already gives is one edge, and the root does not move", () => {
+  const pair = [{ ...ideas[0], departments: ["products"] }, ideas[1]];
+  const plain = build(pair), twice = build([pair[0], { ...pair[1], relations: [{ relation: "builds_on", to: "i-01" }] }]);
+  ok(twice.root === plain.root && twice.edges.length === 1 && JSON.stringify(twice.nodes.find((n) => n.id === "i-02").builds_on) === JSON.stringify(["i-01"]), JSON.stringify(twice.edges));
+});
+
 // Typed relations (S2-PR9): an idea's stated relations become typed edges, checked through the term typed-link.
 const graphCli = new URL("./graph.mjs", import.meta.url).pathname;
 const repoFile = (f) => new URL(`../../../${f}`, import.meta.url).pathname;
-const ideasFolder = (records) => {
+const examples = repoFile("schema/examples/workspace/people/p-0a0a0a0a/ideas");
+const checkFiles = (files) => {
   const d = mkdtempSync(join(tmpdir(), "ideas-"));
-  for (const r of records) writeFileSync(join(d, `${r.id}.json`), JSON.stringify(r));
-  return spawnSync("node", [graphCli, "check", d], { encoding: "utf8" });
+  for (const [f, r] of Object.entries(files)) writeFileSync(join(d, f), JSON.stringify(r));
+  return node([graphCli, "check", d]);
 };
+const ideasFolder = (records) => checkFiles(Object.fromEntries(records.map((r) => [`${r.id}.json`, r])));
 
 t("a stated relation becomes a typed edge; dependencies are builds_on, and only they shape the hashes", () => {
   const plain = build(ideas, { answers });
@@ -124,29 +136,61 @@ t("a stated relation becomes a typed edge; dependencies are builds_on, and only 
   ok(noBuild.root === plain.root && JSON.stringify(noBuild.nodes.map((n) => n.hash)) === JSON.stringify(plain.nodes.map((n) => n.hash)), "contradicts leaves every hash alone");
 });
 
-t("a relation outside the closed set is rejected through the term engine, by the check command and by the build", () => {
-  const r = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "rebuts", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05" }]);
+t("a relation outside the closed set is rejected through the term engine, by the check command and by the build", async () => {
+  const r = await ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "rebuts", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05" }]);
   ok(r.status === 1 && /a: rebuts b: rebuts is not a relation between ideas/.test(r.stdout), r.stdout + r.stderr);
   let threw = "";
   try { build([{ id: "i-01", text: "x", relations: [{ relation: "rebuts", to: "i-02" }] }, { id: "i-02", text: "y" }]); } catch (e) { threw = e.message; }
   ok(/rejected relations/.test(threw) && /rebuts/.test(threw), threw);
 });
 
-t("the example ideas pass: a contradicts relation, a builds_on, and an amends scope", () => {
-  const r = spawnSync("node", [graphCli, "check", repoFile("schema/examples/workspace/people/p-0a0a0a0a/ideas")], { encoding: "utf8" });
+t("the example ideas pass: a contradicts relation, a builds_on, and an amends scope", async () => {
+  const r = await node([graphCli, "check", examples]);
   ok(r.status === 0 && /typed-link passes/.test(r.stdout), r.stdout + r.stderr);
 });
 
-t("a cycle stated through broader and narrower is one cycle; a self link, a missing idea and an unlisted scope are named", () => {
-  const cyc = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "broader", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05", relations: [{ relation: "broader", to: "a" }] }]);
+t("check refuses an id that does not name its file, so a second record with one id cannot hide a cycle", async () => {
+  const r = await checkFiles({ "a.json": { id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "broader", to: "b" }] }, "az.json": { id: "a", text: "x", captured: "2026-11-05" },
+    "b.json": { id: "b", text: "y", captured: "2026-11-05", relations: [{ relation: "broader", to: "a" }] } });
+  ok(r.status === 1 && /FAIL az\.json: id a does not match the file name/.test(r.stdout) && /FAIL a: the same id in a\.json, az\.json/.test(r.stdout), r.stdout + r.stderr);
+});
+
+t("check names a relations entry that is not an object, and exits 1 without a stack", async () => {
+  const r = await ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [null, 7] }]);
+  ok(r.status === 1 && /FAIL a: relations\[0\] is null/.test(r.stdout) && /FAIL a: relations\[1\] is 7/.test(r.stdout) && !r.stderr, r.stdout + r.stderr);
+});
+
+t("without the term engine, check refuses stated relations instead of passing them", async () => {
+  const r = await node(["--no-experimental-strip-types", graphCli, "check", examples]);
+  ok(r.status === 1 && /5 stated relation\(s\) need the EE-095 term engine/.test(r.stdout), r.stdout + r.stderr);
+});
+
+t("importing the router does not load the term engine; checking a stated relation does", async () => {
+  const probe = `import { registerHooks } from "node:module";
+const seen = new Set();
+registerHooks({ resolve(s, c, next) { const r = next(s, c); seen.add(r.url); return r; } });
+const engine = () => [...seen].some((u) => u.endsWith("/schema/terms/engine.ts"));
+await import(${JSON.stringify(repoFile("interface/router.mjs"))});
+const router = engine();
+const { checkRelations } = await import(${JSON.stringify(graphCli)});
+const problems = checkRelations([{ id: "a", relations: [{ relation: "related", to: "b" }] }, { id: "b" }]);
+console.log(JSON.stringify({ router, check: engine(), problems }));`;
+  const r = await node(["--input-type=module", "-e", probe]);
+  ok(r.stdout.trim() === JSON.stringify({ router: false, check: true, problems: [] }), r.stdout + r.stderr);
+});
+
+t("a cycle stated through broader and narrower is one cycle; a self link, a missing idea and an unlisted scope are named", async () => {
+  const [cyc, mixed, odd, notList, fresh] = await Promise.all([
+    ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "broader", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05", relations: [{ relation: "broader", to: "a" }] }]),
+    ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "broader", to: "b" }, { relation: "narrower", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05" }]),
+    ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "related", to: "a" }, { relation: "supports", to: "gone" }], scope: { scope: "naive@astrology", via: "amends" } }]),
+    ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: { relation: "rebuts", to: "a" } }]),
+    ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", scope: { scope: "naive@astrology", via: "creates" } }]),
+  ]);
   ok(cyc.status === 1 && /broader cycle through: a, b/.test(cyc.stdout), cyc.stdout);
-  const mixed = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "broader", to: "b" }, { relation: "narrower", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05" }]);
   ok(mixed.status === 1 && /broader cycle through: a, b/.test(mixed.stdout), mixed.stdout);
-  const odd = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "related", to: "a" }, { relation: "supports", to: "gone" }], scope: { scope: "naive@astrology", via: "amends" } }]);
   ok(odd.status === 1 && /relate to itself/.test(odd.stdout) && /supports gone: no idea has that id/.test(odd.stdout) && /naive@astrology: not a scope/.test(odd.stdout), odd.stdout);
-  const notList = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: { relation: "rebuts", to: "a" } }]);
   ok(notList.status === 1 && /a: relations is not a list/.test(notList.stdout), notList.stdout);
-  const fresh = ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", scope: { scope: "naive@astrology", via: "creates" } }]);
   ok(fresh.status === 0, `creates may name a scope the catalog does not list yet: ${fresh.stdout}`);
 });
 
@@ -200,5 +244,6 @@ t("docket stages follow what moves a decision next, and decisions trace to the i
   ok(JSON.stringify(ideasOf({ ideas: ["i-02"], question: "Lead with i-03?", answer: "Yes, i-03 and i-02" })) === JSON.stringify(["i-02", "i-03"]), "ideasOf");
 });
 
+for (const line of await Promise.all(results)) console.log(line);
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }
 console.log("\nall passing");
