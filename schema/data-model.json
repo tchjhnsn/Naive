@@ -907,7 +907,7 @@
         "docs/reviews/ontology-golden/*.json",
         "schema/examples/ontology-golden/*.json"
       ],
-      "note": "Torian's ruling on one field (status, importance, relation or scope) of one idea record, with the comment URL that carries it (ontology program S3-PR2). Only Torian's rulings enter docs/reviews/ontology-golden/; scripts/golden-ruling-test.ts checks each is named <idea>.<field>.json and names an idea that exists"
+      "note": "Torian's ruling on one field (status, importance, relation or scope) of one idea record, citing exactly one source, Torian's GitHub comment URL or the decision card he tapped (ontology program S3-PR2). Only Torian's rulings enter docs/reviews/ontology-golden/; scripts/golden-ruling-test.ts checks each is named <idea>.<field>.json and names an idea that exists"
     },
     {
       "id": "reference",

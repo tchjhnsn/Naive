@@ -1309,7 +1309,7 @@ export type Goal = {
   decision?: string;
 };
 
-/** Torian's ruling on one field of one idea record (docs/reviews/ontology-golden/<idea>.<field>.json). Only Torian's rulings are golden records; a model, an agent or a checker never writes one. The value has the shape the idea record's field takes in schema/founder-idea.schema.json, so a gated label and a ruling compare as equal values. The comment is the issue or pull request comment where Torian gave the ruling. */
+/** Torian's ruling on one field of one idea record (docs/reviews/ontology-golden/<idea>.<field>.json). Only Torian's rulings are golden records; a model, an agent or a checker never writes one. The value has the shape the idea record's field takes in schema/founder-idea.schema.json, so a gated label and a ruling compare as equal values. A ruling cites exactly one source of Torian's words: comment, the issue or pull request comment where he gave it, or card, the decision card he tapped in the project thread. */
 export type GoldenRuling = {
   /** The id of an idea in instance/people/p-54697df9/ideas/ */
   idea: string;
@@ -1318,7 +1318,19 @@ export type GoldenRuling = {
   /** Torian's value, in the shape of that field of the idea record */
   value: unknown;
   /** The URL of the GitHub comment that carries the ruling */
-  comment: string;
+  comment?: string;
+  /** The decision card Torian tapped. The platform verifies the tap came from his own client */
+  card?: {
+    /** The id of the project thread that holds the card */
+    thread: string;
+    /** The id of the card message */
+    message: string;
+    /**
+     * When Torian tapped the option, in UTC
+     * @format date-time
+     */
+    chosen_at: string;
+  };
   /**
    * The day Torian gave the ruling
    * @format date
@@ -1336,6 +1348,10 @@ export type GoldenRuling = {
 } | {
   field?: "scope";
   value?: GoldenRulingScope;
+}) & ({
+  comment: unknown;
+} | {
+  card: unknown;
 });
 
 /** The idea status values; scripts/golden-ruling-test.ts keeps them equal to founder-idea.schema.json */
