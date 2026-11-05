@@ -81,6 +81,8 @@ const steps = [
   ["a founder's own frameworks and playbooks (list, new, check, publish --dry-run)", "node", ["schema/user-frameworks-test.mjs"]],
   ["transcript diagnosis (human words only, redacted first, one raw draft per run)", "node", ["scripts/diagnose-transcripts-test.mjs"]],
   ["architecture inventory (the review matches a fresh run of the script)", "node", ["scripts/architecture-inventory-test.ts"]],
+  ["dependency rules (no new cycle between units, one version per shared dependency)", "node", ["scripts/dependency-rules.ts"]],
+  ["dependency rules break on copies that violate them", "node", ["scripts/dependency-rules-test.ts"]],
   ["preservation coverage (ledger rows with no copy in the repo, grouped by source)", "node", ["scripts/preservation-coverage-test.ts"]],
   ["ledger import (one idea record per merged ledger row, verbatim, confidential rows from the full ledger, reruns converge)", "node", ["scripts/import-ledger-test.ts"]],
   ["golden rulings (the sample validates; no comment URL, an unknown field or another field's value is rejected; each ruling is named for its idea and field)", "node", ["scripts/golden-ruling-test.ts"]],

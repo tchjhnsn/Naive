@@ -2175,6 +2175,10 @@
       "reason": "Claude Code project settings for the builder (EE-111): the cursor/plugins marketplace and pstack only. Not a record"
     },
     {
+      "path": "scripts/dependency-rules.json",
+      "reason": "The monorepo's known import cycles, read by scripts/dependency-rules.ts; repository tooling, not a record"
+    },
+    {
       "path": "site/package.json",
       "reason": "The developer-docs site's npm manifest (EE-034); not a record"
     },
