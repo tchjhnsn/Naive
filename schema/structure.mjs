@@ -115,8 +115,8 @@ export function structure(dir) {
   return { errors, warnings, private: privateFolders };
 }
 
-const PACKAGE_NAMES = () => existsSync(join(repo, "packages")) ? readdirSync(join(repo, "packages")).filter((n) => existsSync(join(repo, "packages", n, "package.json"))) : [];
-const pkgOf = (n) => load(join(repo, "packages", n, "package.json"));
+const PACKAGE_NAMES = () => existsSync(join(repo, "library", "packages")) ? readdirSync(join(repo, "library", "packages")).filter((n) => existsSync(join(repo, "library", "packages", n, "package.json"))) : [];
+const pkgOf = (n) => load(join(repo, "library", "packages", n, "package.json"));
 const FUNCTIONS = () => load(join(repo, "operations/departments.json")).departments.map((d) => d.id);
 
 /**

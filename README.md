@@ -35,7 +35,7 @@ A **venture development framework** (proposed genus, EE-024), in the same genus 
 | Project structure | Workspace, venture folders, six layers, record types (`schema/data-model.json`) |
 | Generator (`rails new`) | `node schema/init-venture.mjs` |
 | Test suite | `node test.mjs`: every check, run in CI |
-| Packages and plug-ins | Venture packages (`packages/<name>/package.json`); a kit is Mentura's enhanced package (`platform/kits/`, EE-071) |
+| Packages and plug-ins | Venture packages (`library/packages/<name>/package.json`); a kit is Mentura's enhanced package (`platform/kits/`, EE-071) |
 | Inversion of control | The framework's checks and runners call on the venture's records |
 
 It replaces the earlier description "AI-Native OS for Builders": an operating system or operating model describes how one organization runs, while a framework is reused by many builders to build their own.

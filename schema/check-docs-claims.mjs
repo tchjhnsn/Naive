@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Checks that the docs describe only what is built. Scans site/content/docs/**/*.mdx, docs/master/*.md,
-// packages/*/playbooks/*.md, every SKILL.md and every README.md for claims in backticks and code blocks, and fails on any that the code does not have:
+// library/packages/*/playbooks/*.md, every SKILL.md and every README.md for claims in backticks and code blocks, and fails on any that the code does not have:
 //
 //   naive <cmd> / mentura <cmd>   the command is dispatched by interface/cli/naive.mjs or mentura.mjs
 //   --flag after a naive command  the command (or the script it runs) reads that flag
-//   schema/..., interface/..., purpose/..., packages/..., docs/...   the repository path exists
+//   schema/..., interface/..., purpose/..., library/packages/..., docs/...   the repository path exists
 //   foundation/problem            a record route in the route table (interface/router.mjs routes())
 //   [text](../other/README.md)    a relative Markdown link, inline or reference-style, resolves to a file or folder
 //                                 next to the doc (HTML href and src are not checked)
@@ -31,7 +31,7 @@ const read = (p) => readFileSync(join(repo, p), "utf8");
 const walk = (d) => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 // The docs this linter scans. The docs-required CI check counts a change as docs only when it touches one of these.
-const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && ((r.startsWith("site/content/docs/") && r.endsWith(".mdx")) || /^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
+const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && ((r.startsWith("site/content/docs/") && r.endsWith(".mdx")) || /^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^library\/packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
 const stdinPaths = () => readFileSync(0, "utf8").split("\n").map((l) => l.trim()).filter(Boolean);
 if (argv[0] === "--scanned") {
   for (const r of stdinPaths()) if (scanned(r)) console.log(r);
@@ -39,7 +39,7 @@ if (argv[0] === "--scanned") {
 }
 // The README.md nearest a code file, searched up to its top-level folder (never the repo root README).
 // Anything under a playbooks/ folder is content, not code (Torian's decision for now).
-const CODE = /^(schema|interface|packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
+const CODE = /^(schema|interface|library\/packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
 const nearestReadme = (r) => {
   for (let d = r.split("/").slice(0, -1); d.length; d.pop()) if (existsSync(join(repo, ...d, "README.md"))) return [...d, "README.md"].join("/");
   return null;
@@ -90,7 +90,7 @@ function flagsOf(cmd) {
 }
 
 // --- The claims ---
-const REPO_DIRS = ["schema", "interface", "purpose", "packages", "docs"];
+const REPO_DIRS = ["schema", "interface", "purpose", "library", "docs"];
 const VENTURE = /^(k-base|meta|codebase|artifacts|raw|inbox|founder|_drafts|_private|my-|\.release|\.naive|operations|evidence)\b/;
 const failures = [];
 let claims = 0;

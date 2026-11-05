@@ -1,6 +1,6 @@
 # Bessemer SaaS metrics playbook
 
-Model of `packages/finance/playbooks/bessemer-saas-metrics.md`: the states a founder's records move through as the template steps run. TLC checks the rules. `replay.mjs` runs the same routes on fixture ventures.
+Model of `library/packages/finance/playbooks/bessemer-saas-metrics.md`: the states a founder's records move through as the template steps run. TLC checks the rules. `replay.mjs` runs the same routes on fixture ventures.
 
 The chart hides two kinds of step. `CiteTarget` stays on "Metrics record proposed" (a later phase may cite a published number only after the Bessemer pages are filed, and discovery and validation never do). `Done` is the stutter on the end states: checks failed, you decided with no telos on file, and targets drafted on the telos. The earlier TLC run counted 88 of those model steps. The drawn chart is the path a reader follows.
 

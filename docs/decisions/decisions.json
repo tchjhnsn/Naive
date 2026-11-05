@@ -1617,6 +1617,32 @@
       ]
     },
     {
+      "id": "EE-116",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "Venture packages (EE-070, EE-071) live at library/packages/<name>/package.json, with the catalog at library/packages/catalog.json, so that packages/ holds code packages as the monorepo standard expects. The noun venture package and the route alias packages/<name> do not change; only the folder moves.",
+      "why": "Torian asked on 2026-11-05 to rebuild the codebase on the monorepo standard, where packages/ means code libraries that apps import. He chose \"Move venture packages to library/\" on the decision card at 10:18Z, over keeping packages/ and putting code in libs/. This resolves the open question O-apps-packages in the master architecture record.",
+      "related": [
+        "EE-070",
+        "EE-071",
+        "EE-108"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "library/packages/catalog.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/catalog.json",
+          "root": "repo",
+          "expect": "absent"
+        }
+      ]
+    },
+    {
       "id": "EE-117",
       "date": "2026-11-05",
       "status": "in-force",

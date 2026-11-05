@@ -100,8 +100,8 @@ const skillsOf = (k) => (k.skills?.length ? k.skills : k.skill ? [k.skill] : [])
 export function kits() {
   const model = load(join(repo, "schema/data-model.json"));
   const paths = [...model.layers.map((l) => `${l}/layer.json`), "schema/layer.json"];
-  const pkgDir = join(repo, "packages");
-  if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`packages/${d}/package.json`);
+  const pkgDir = join(repo, "library", "packages");
+  if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`library/packages/${d}/package.json`);
   return paths.filter((p) => existsSync(join(repo, p))).map((p) => {
     const k = load(join(repo, p));
     const name = k.name ?? k.kit;
@@ -122,12 +122,12 @@ function buildRoutes() {
   const out = [];
   for (const r of model.records.filter((x) => x.level === "venture" && x.id !== "venture")) {
     const k = owner.get(r.id);
-    const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
+    const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("library/packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
     const short = sub && r.id.startsWith(`${sub}-`) ? r.id.slice(sub.length + 1) : r.id;
     const filesOf = r.paths.filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
     if (filesOf.length && filesOf.every((f) => f.startsWith(".naive/"))) continue; // .naive/ is local and never routed.
     // The template is the package's template dir, or <manifest folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
-    const tdir = k?.template_dir ?? (k && !k.path.startsWith("packages/") ? join(dirname(k.path), "templates") : null);
+    const tdir = k?.template_dir ?? (k && !k.path.startsWith("library/packages/") ? join(dirname(k.path), "templates") : null);
     const tname = tdir && existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
     const template = tname ? `${tdir}/${tname}` : null;
     const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && c.startsWith("schema/check-") && c !== "schema/check-data-model.mjs"))];
@@ -135,7 +135,7 @@ function buildRoutes() {
     const base = PACKAGE_ROUTE[r.id] ?? legacy;
     const form = r.form ?? "json";
     const groups = PHASES.map((p) => p.id).filter((p) => (N.records[r.id]?.base?.[p] ?? 0) >= N.suggest).map((p) => `(${p})`);
-    const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
+    const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("library/packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
       decision_class: r.decision_class ?? null, groups, note: r.note ?? "", ...(r.view_of ? { view_of: r.view_of } : {}) };
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
     const collection = filesOf.length >= 1 && filesOf.every((p) => (p.match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(p) && !p.includes("**"));
@@ -356,7 +356,7 @@ export function capture(fn) {
  *  chain is the AGENTS.md files from the venture root down to the route, nearest last. */
 export function layout(r, dir) {
   const ks = kits();
-  const owned = r.kit_path && (r.kit_path.startsWith("packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
+  const owned = r.kit_path && (r.kit_path.startsWith("library/packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
   const stack = [ks.find((k) => k.path === "schema/layer.json"), ks.find((k) => k.path === `${r.layer ?? r.route.split("/")[0]}/layer.json`), owned]
     .filter(Boolean).map((k) => {
       const refs = (k.references && existsSync(join(repo, k.references)) ? k.references : null)

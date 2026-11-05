@@ -32,7 +32,7 @@
     "interface/",
     "schema/",
     "scripts/diagnose-transcripts.mjs",
-    "packages/",
+    "library/packages/",
     "purpose/",
     "knowledge/",
     "operations/",

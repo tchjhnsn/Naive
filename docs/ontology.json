@@ -80,7 +80,7 @@
     {
       "noun": "venture development framework",
       "level": "system",
-      "meaning": "Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages (packages/<name>/package.json, EE-071). The builder's venture calls on it, and its checks call back on the venture's records",
+      "meaning": "Proposed genus of the Everything Ecosystem (EE-024): an opinionated framework for developing ventures, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, with references), a fixed structure the builder fills in (the venture folder, layers and records), generators (init-venture), checks that run like tests, a data model, and packages (library/packages/<name>/package.json, EE-071). The builder's venture calls on it, and its checks call back on the venture's records",
       "standard": "software framework (Johnson and Foote 1988; Rails' convention over configuration) applied to venture development (venture building, venture studios)",
       "status": "new",
       "function": null,

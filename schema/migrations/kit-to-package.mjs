@@ -50,7 +50,7 @@ export function apply(dir, ctx) {
   if (Array.isArray(cfg.kits) && cfg.kits.length) {
     const keep = [];
     for (const name of cfg.kits) {
-      if (existsSync(join(repo, "packages", name, "package.json"))) {
+      if (existsSync(join(repo, "library", "packages", name, "package.json"))) {
         cfg.packages = { ...(cfg.packages ?? {}), [name]: cfg.packages?.[name] ?? {} };
         ctx.note(`naive.config.json: ${name} is a Naive package, so it moved from kits to packages`);
       } else if (existsSync(join(repo, "platform/kits", name, "kit.json"))) keep.push(name);

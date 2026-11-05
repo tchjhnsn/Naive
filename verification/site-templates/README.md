@@ -2,7 +2,7 @@
 
 How a file in this repository becomes a card on `/templates`, then a filter result, a detail page, and a Use command.
 
-The loader is `site/lib/templates/catalog.mjs`. It reads venture types, packages, the decision sets `create-venture` writes, frames, kits, skills, handoffs, the docs guides, and files tagged playbook. It also reads `packages/<function>/playbooks/` (JSON with `id`, `title`, and `purpose` or `when`, or Markdown with a heading). That directory is empty on this branch. A file added there is listed on the next build without a change to the loader.
+The loader is `site/lib/templates/catalog.mjs`. It reads venture types, packages, the decision sets `create-venture` writes, frames, kits, skills, handoffs, the docs guides, and files tagged playbook. It also reads `library/packages/<function>/playbooks/` (JSON with `id`, `title`, and `purpose` or `when`, or Markdown with a heading). That directory is empty on this branch. A file added there is listed on the next build without a change to the loader.
 
 ## Rules
 
@@ -19,7 +19,7 @@ Before that filter, the loader showed text that cannot be run, such as `node sch
 
 ## What the model leaves out
 
-One Discover step stands for every file the loader keeps, including a future playbook under `packages/<function>/playbooks/`. The chart does not name the 80 records or the words on the cards. It does not run npm or the network. The replay runs `create-venture` from this checkout with `--skip-install` and `--no-git`, which the page's command does not pass, because those two flags only skip work this check does not need.
+One Discover step stands for every file the loader keeps, including a future playbook under `library/packages/<function>/playbooks/`. The chart does not name the 80 records or the words on the cards. It does not run npm or the network. The replay runs `create-venture` from this checkout with `--skip-install` and `--no-git`, which the page's command does not pass, because those two flags only skip work this check does not need.
 
 The chart hides no steps.
 

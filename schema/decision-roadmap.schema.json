@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "decision-roadmap.schema.json",
   "title": "Decision roadmap",
-  "description": "An ordered set of frames from the decision library, at packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder.",
+  "description": "An ordered set of frames from the decision library, at library/packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. schema/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder.",
   "type": "object",
   "required": ["id", "title", "function", "version", "steps"],
   "additionalProperties": false,
@@ -22,7 +22,7 @@
         "additionalProperties": false,
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-          "frame": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A frame id in packages/*/frames" },
+          "frame": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A frame id in library/packages/*/frames" },
           "order": { "type": "integer", "minimum": 1 },
           "needed_in": { "enum": ["discovery", "validation", "beachhead", "scale", "platform"] },
           "depends_on": { "type": "array", "items": { "type": "string" }, "description": "Step ids that must be decided first" },

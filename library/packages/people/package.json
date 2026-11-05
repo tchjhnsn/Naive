@@ -1,0 +1,68 @@
+{
+  "name": "people",
+  "title": "People",
+  "kind": "core",
+  "purpose": "Who the venture needs, what each person brings, and on what terms people join.",
+  "department": "human-capital",
+  "required": [
+    "validation-team",
+    "team-plan"
+  ],
+  "optional": [
+    "founder-agreement"
+  ],
+  "refs": [],
+  "planned": [],
+  "base": {
+    "discovery": 0.2,
+    "validation": 0.4,
+    "beachhead": 0.6,
+    "scale": 0.8,
+    "platform": 0.8
+  },
+  "when": [
+    {
+      "if": "team:looking",
+      "at_least": 0.9
+    },
+    {
+      "if": "team:cofounders",
+      "at_least": 0.8
+    },
+    {
+      "if": "hiring",
+      "at_least": 0.85
+    },
+    {
+      "if": "path:cofounder-first",
+      "at_least": 0.9
+    }
+  ],
+  "why": "When looking for a cofounder, with cofounders, or hiring",
+  "unlocks": [
+    "recruiting outreach",
+    "onboarding"
+  ],
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [
+    "schema/validation-team.schema.json",
+    "schema/team-plan.schema.json",
+    "schema/founder-agreement.schema.json"
+  ],
+  "templates": [
+    "operations/templates/recruiting-brief.md"
+  ],
+  "checks": [
+    "schema/check-validation.mjs",
+    "schema/check-governance.mjs",
+    "schema/check-team.mjs",
+    "schema/lint-people.mjs"
+  ],
+  "skill": {
+    "id": "people-function",
+    "path": "library/packages/people/skill/SKILL.md"
+  },
+  "use_model": []
+}

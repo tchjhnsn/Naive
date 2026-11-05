@@ -1001,7 +1001,7 @@
           "checked_by": "schema/check-data-model.mjs"
         }
       ],
-      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are packages/<name>/package.json. A kit is Mentura's, at platform/kits/."
+      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are library/packages/<name>/package.json. A kit is Mentura's, at platform/kits/."
     },
     {
       "id": "handoff",
@@ -1387,8 +1387,8 @@
       "form": "json",
       "paths": [
         "schema/packages.json",
-        "packages/catalog.json",
-        "packages/*/package.json"
+        "library/packages/catalog.json",
+        "library/packages/*/package.json"
       ],
       "refs": [
         {
@@ -1406,7 +1406,7 @@
       "schema": "schema/frame.schema.json",
       "form": "json",
       "paths": [
-        "packages/*/frames/*.frame.json"
+        "library/packages/*/frames/*.frame.json"
       ],
       "refs": [
         {
@@ -2046,7 +2046,7 @@
       "schema": "schema/decision-roadmap.schema.json",
       "form": "json",
       "paths": [
-        "packages/*/roadmaps/*.json"
+        "library/packages/*/roadmaps/*.json"
       ],
       "refs": [
         {

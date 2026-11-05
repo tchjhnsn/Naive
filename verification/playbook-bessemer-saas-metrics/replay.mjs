@@ -13,7 +13,7 @@ import { call, routes } from "../../interface/router.mjs";
 import { propose } from "../../schema/decisions.mjs";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const playbookPath = join(repo, "packages/finance/playbooks/bessemer-saas-metrics.md");
+const playbookPath = join(repo, "library/packages/finance/playbooks/bessemer-saas-metrics.md");
 const playbook = readFileSync(playbookPath, "utf8");
 const PHRASE = "no published Bessemer target";
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];

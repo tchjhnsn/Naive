@@ -897,7 +897,7 @@
     "interface/context-test.mjs"
    ],
    "page": "get-started/prefetching-and-vitals",
-   "note": "navigate/mentura_read prefetch: refs (data-model refs), links (strings that are routes), 'reads first' and 'waits on this' from packages/catalog.json after links, and the need-now next step; code only, no model. --no-prefetch / prefetch:false turns it off."
+   "note": "navigate/mentura_read prefetch: refs (data-model refs), links (strings that are routes), 'reads first' and 'waits on this' from library/packages/catalog.json after links, and the need-now next step; code only, no model. --no-prefetch / prefetch:false turns it off."
   },
   {
    "id": "N-4",
@@ -1038,10 +1038,10 @@
    "evidence": [
     "schema/model-steps.mjs",
     "schema/model-steps-test.mjs",
-    "packages/customers/package.json"
+    "library/packages/customers/package.json"
    ],
    "page": "get-started/agents-and-people",
-   "note": "Five step kinds (classify, noul, choice, score, draft), checked by checkStep and typed by typed(); one atomic question per item. packages/customers declares two real steps (stage: choice, summary: draft)."
+   "note": "Five step kinds (classify, noul, choice, score, draft), checked by checkStep and typed by typed(); one atomic question per item. library/packages/customers declares two real steps (stage: choice, summary: draft)."
   },
   {
    "id": "S-3",
@@ -1161,7 +1161,7 @@
    "status": "built",
    "evidence": [
     "schema/model-steps.mjs",
-    "packages/customers/package.json",
+    "library/packages/customers/package.json",
     "schema/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
@@ -1335,7 +1335,7 @@
     "schema/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
-   "note": "waterfall(): record types in waves from packages/catalog.json after links with waits_on and status (mentura steps waterfall); steps follow their own after links; a cycle in either is uncaught. Page is agents-and-people, not routes-and-records."
+   "note": "waterfall(): record types in waves from library/packages/catalog.json after links with waits_on and status (mentura steps waterfall); steps follow their own after links; a cycle in either is uncaught. Page is agents-and-people, not routes-and-records."
   },
   {
    "id": "F-11",
@@ -1611,9 +1611,9 @@
    "status": "built",
    "evidence": [
     "schema/caching.mjs",
-    "packages/foundation/package.json",
-    "packages/decisions/package.json",
-    "packages/validation/package.json",
+    "library/packages/foundation/package.json",
+    "library/packages/decisions/package.json",
+    "library/packages/validation/package.json",
     "schema/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -2362,12 +2362,12 @@
    "status": "built",
    "evidence": [
     "schema/gate.mjs",
-    "packages/money/package.json",
-    "packages/validation/package.json",
+    "library/packages/money/package.json",
+    "library/packages/validation/package.json",
     "schema/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
-   "note": "Each venture has one gate. It runs fail_closed rules, then the config's rules, then gate_rules imported from packages/<name>/package.json. money ships money-to-finance and validation ships validation-low-confidence. naive.config.json gate.packages can leave out one package's rules or all of them. The free-text package 'gates' (completion gates) are left as they were."
+   "note": "Each venture has one gate. It runs fail_closed rules, then the config's rules, then gate_rules imported from library/packages/<name>/package.json. money ships money-to-finance and validation ships validation-low-confidence. naive.config.json gate.packages can leave out one package's rules or all of them. The free-text package 'gates' (completion gates) are left as they were."
   },
   {
    "id": "X-6",

@@ -20,7 +20,7 @@ const valid = (schema, file) => spawnSync("python3", [join(repo, "schema/validat
 
 // ---- roadmaps ----
 const brand = roadmapOf("brand");
-expect("the brand roadmap is in packages/marketing and passes its check", brand?.package === "marketing" && check(brand).length === 0, check(brand ?? {}).join("; "));
+expect("the brand roadmap is in library/packages/marketing and passes its check", brand?.package === "marketing" && check(brand).length === 0, check(brand ?? {}).join("; "));
 for (const r of roadmaps()) { const v = valid("decision-roadmap.schema.json", join(repo, r.file)); expect(`${r.file} matches its schema`, v.status === 0, v.stdout + v.stderr); }
 expect("the brand roadmap runs ethos to stand, and the stand is the founder's one-way door", ordered(brand).map((s) => s.id).join() === "ethos,audiences,tagline,visual-identity,first-campaign,stand" && brand.steps.find((s) => s.id === "stand").door === "one-way");
 const bad = (patch) => check({ ...brand, steps: brand.steps.map((s) => patch[s.id] ? { ...s, ...patch[s.id] } : s) });

@@ -1,6 +1,6 @@
 # Seed fundraising playbook
 
-Model of `packages/investors/playbooks/y-combinator-fundraise.md`. TLC checks the template's order. The replay runs the same routes on a fixture venture through `interface/cli/mentura.mjs`.
+Model of `library/packages/investors/playbooks/y-combinator-fundraise.md`. TLC checks the template's order. The replay runs the same routes on a fixture venture through `interface/cli/mentura.mjs`.
 
 The chart hides one step: `Done`, the stutter that stays on "Signed instrument on the cap table" so the end state is not a deadlock.
 

@@ -52,7 +52,7 @@ expect("C-5: package versions are part of a judgment key", JSON.stringify(versio
 
 // C-2 and C-3: on in the recommended defaults; declared in package definitions
 expect("C-2: caching is on in the recommended defaults", configOf(dir).enabled === true);
-expect("C-3: packages declare use_cache (foundation, decisions, validation)", ["purpose/foundation", "governance/decisions", "purpose/validation/assess"].every((r) => declarationFor(dir, r)?.by?.startsWith("packages/")));
+expect("C-3: packages declare use_cache (foundation, decisions, validation)", ["purpose/foundation", "governance/decisions", "purpose/validation/assess"].every((r) => declarationFor(dir, r)?.by?.startsWith("library/packages/")));
 expect("C-3: a route nobody declares is not cached", declarationFor(dir, "knowledge/catalog") === null);
 
 // C-1, C-3, S-8: a derived record is stored and reused until the venture changes
@@ -66,7 +66,7 @@ expect("H-3: a write never uses the cache", pw.ok && pw.cache === undefined && !
 const r3 = await run("system/need-now");
 expect("C-5: changing the venture's files changes the key, so it is computed again", r3.cache?.status === "miss" && r3.cache.key !== r1.cache.key);
 const d1 = await run("governance/decisions");
-expect("C-3: a package-declared route is cached with its life", d1.cache?.by === "packages/decisions" && d1.cache.life === "minutes");
+expect("C-3: a package-declared route is cached with its life", d1.cache?.by === "library/packages/decisions" && d1.cache.life === "minutes");
 const bypass = await run("system/need-now", { input: { cache: "no-store" } });
 expect("H-3: a read can opt out with cache no-store", bypass.cache?.status === "bypass");
 let calls = 0;

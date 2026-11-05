@@ -102,7 +102,7 @@ export function stepsOf({ packages: names, kit } = {}) {
     const k = typeof kit === "string" ? load(kit) : kit;
     return (k.boundary?.use_model ?? []).map((s) => ({ ...s, package: k.name }));
   }
-  const dir = join(repo, "packages");
+  const dir = join(repo, "library", "packages");
   return readdirSync(dir).filter((n) => existsSync(join(dir, n, "package.json")) && (!names?.length || names.includes(n)))
     .flatMap((n) => (load(join(dir, n, "package.json")).use_model ?? []).map((s) => (typeof s === "string" ? { step: s, package: n } : { ...s, package: n })));
 }
@@ -659,7 +659,7 @@ export function confirm(dir, id, { by, note } = {}) {
 // ---- The waterfall: the venture's real order (F-10) ------------------------------------------------
 
 /**
- * Records in order: each after the records it reads first (packages/catalog.json records.after). A cycle is uncaught.
+ * Records in order: each after the records it reads first (library/packages/catalog.json records.after). A cycle is uncaught.
  * @param {string} dir
  * @param {{ graph?: Record<string, string[]> }} [opts]
  */

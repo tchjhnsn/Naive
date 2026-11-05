@@ -92,7 +92,7 @@ const validRecord = (file, schema) => spawnSync("python3", [join(repo, "schema/v
 // U-4: package versions are pinned in naive.config.json.
 {
   const have = installed();
-  const catalog = read(join(repo, "packages/catalog.json")).version;
+  const catalog = read(join(repo, "library/packages/catalog.json")).version;
   expect("U-4: a package without its own version is versioned with the catalog", have.validation === catalog && have.money === catalog);
   setConfig({ packages: { validation: "0.0.1" } });
   const fails = node("schema/check-config.mjs", dir);

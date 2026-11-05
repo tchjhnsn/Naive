@@ -4,7 +4,7 @@
 // decider or merger that is not a role template, or
 // delegate a one-way door away from the founder.
 //
-//   node schema/check-roadmap.mjs [<roadmap file> ...]     every roadmap in packages/*/roadmaps when none is named
+//   node schema/check-roadmap.mjs [<roadmap file> ...]     every roadmap in library/packages/*/roadmaps when none is named
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -14,11 +14,11 @@ const repo = new URL("..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const FOUNDER = "founder";
 
-const dirOf = (pkg) => join(repo, "packages", pkg, "roadmaps");
+const dirOf = (pkg) => join(repo, "library", "packages", pkg, "roadmaps");
 export function roadmaps() {
-  if (!existsSync(join(repo, "packages"))) return [];
-  return readdirSync(join(repo, "packages")).filter((p) => existsSync(dirOf(p))).flatMap((p) =>
-    readdirSync(dirOf(p)).filter((f) => f.endsWith(".json")).map((f) => ({ ...load(join(dirOf(p), f)), package: p, file: `packages/${p}/roadmaps/${f}` })));
+  if (!existsSync(join(repo, "library", "packages"))) return [];
+  return readdirSync(join(repo, "library", "packages")).filter((p) => existsSync(dirOf(p))).flatMap((p) =>
+    readdirSync(dirOf(p)).filter((f) => f.endsWith(".json")).map((f) => ({ ...load(join(dirOf(p), f)), package: p, file: `library/packages/${p}/roadmaps/${f}` })));
 }
 export const roadmapOf = (id) => roadmaps().find((r) => r.id === id) ?? null;
 
@@ -37,7 +37,7 @@ export function check(r, known = new Set(frames().map((f) => f.id)), roles = rol
     if (ids.has(s.id)) errors.push(`${r.id}: step ${s.id} appears twice`);
     ids.add(s.id);
   }
-  if (r.package && r.package !== r.function) errors.push(`${r.id}: lives in packages/${r.package} but its function is ${r.function}`);
+  if (r.package && r.package !== r.function) errors.push(`${r.id}: lives in library/packages/${r.package} but its function is ${r.function}`);
   for (const s of r.steps ?? []) {
     if (!known.has(s.frame)) errors.push(`${r.id}: step ${s.id} uses frame ${s.frame}, which the decision library does not have`);
     if (!s.decided_by?.trim()) errors.push(`${r.id}: step ${s.id} has no decider`);

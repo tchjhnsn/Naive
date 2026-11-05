@@ -8,7 +8,7 @@ authority: advisory
 status: DRAFT
 governed-by: EE-018 (proposed)
 tags: [everything-ecosystem, layers, kits, data-model, schema]
-description: "How the seven layers relate, which skills and schemas belong to which layer, and whether the ecosystem has a master schema. Machine form: schema/data-model.json and <layer>/layer.json; the relationship table at the end is generated from them. Venture packages are packages/<name>/package.json (EE-071)."
+description: "How the seven layers relate, which skills and schemas belong to which layer, and whether the ecosystem has a master schema. Machine form: schema/data-model.json and <layer>/layer.json; the relationship table at the end is generated from them. Venture packages are library/packages/<name>/package.json (EE-071)."
 ---
 
 # Layers, kits and the master schema
@@ -53,7 +53,7 @@ Shared records (workspace, venture, nouns, references, tooling) belong to the **
 
 ## Kits
 
-A layer manifest lists its skills, the record types it still owns, the record types it reads and writes, and its checks. Each layer has a manifest at `<layer>/layer.json`, and the system layer is at `schema/layer.json` (was `<layer>/kit.json`). A venture package, at `packages/<name>/package.json`, owns the venture records it lists. A kit is Mentura's enhanced package and is not built yet (EE-071). Three rules, enforced by `node schema/check-data-model.mjs`:
+A layer manifest lists its skills, the record types it still owns, the record types it reads and writes, and its checks. Each layer has a manifest at `<layer>/layer.json`, and the system layer is at `schema/layer.json` (was `<layer>/kit.json`). A venture package, at `library/packages/<name>/package.json`, owns the venture records it lists. A kit is Mentura's enhanced package and is not built yet (EE-071). Three rules, enforced by `node schema/check-data-model.mjs`:
 
 - Every record type is owned by exactly one layer or one package. A layer that owns a record is of that record's layer.
 - Every skill (`SKILL.md`) belongs to exactly one layer or package. A package has at most one skill.
