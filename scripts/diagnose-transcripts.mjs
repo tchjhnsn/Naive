@@ -33,6 +33,9 @@ import { listFrameworks } from "../schema/user-frameworks.mjs";
 import { findWorkspace } from "../schema/workspace.mjs";
 import { localDate, zoneOf } from "../schema/clock.mjs";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
+import { humanText, transcriptFiles, walk } from "../schema/transcripts.mjs";
+
+export { humanText, transcriptFiles };
 
 /** @typedef {{ file: string, timestamp: string | null, sha256: string }} Citation */
 /** @typedef {{ kind: string, also: string[], quote: string, file: string | null, timestamp: string | null, source: Citation | null, by: "heuristic" | "model", asked?: number, sources?: Citation[], matches?: string | null, status?: "recorded" | "missed" }} Candidate */
@@ -72,31 +75,6 @@ export const KINDS = [...new Set([...CATCHES.map((c) => c.kind), "frame"])];
 const STOP = new Set("about after also because being could every from have into just like make more need only other really should some that their them then there these they thing things think this those through want what when where which while will with would your youre its were been does dont".split(" "));
 const words = (s) => new Set(String(s).toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/[\s-]+/).filter((w) => w.length > 3 && !STOP.has(w)));
 export const sha256 = (text) => createHash("sha256").update(String(text)).digest("hex");
-
-function* walk(dir, depth = 0) {
-  if (depth > 6 || !existsSync(dir)) return;
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    if ([".git", "node_modules", ".naive", "raw"].includes(e.name)) continue;
-    const p = join(dir, e.name);
-    if (e.isDirectory()) yield* walk(p, depth + 1);
-    else yield p;
-  }
-}
-export function* transcriptFiles(dir) {
-  for (const p of [...walk(dir)].filter((p) => p.endsWith(".jsonl")).sort()) yield p;
-}
-
-// The human's own words in one transcript line, or null: no tool results, meta lines, commands or reminders.
-export function humanText(entry) {
-  if (entry?.type !== "user" || entry.isMeta || entry.isSidechain || entry.isCompactSummary || entry.isVisibleInTranscriptOnly || entry.message?.role !== "user") return null;
-  const c = entry.message.content;
-  const parts = typeof c === "string" ? [c] : Array.isArray(c) ? c.filter((b) => b?.type === "text").map((b) => b.text) : [];
-  const text = parts.join("\n")
-    .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "")
-    .replace(/<(command-[a-z-]+|local-command-[a-z-]+|bash-[a-z-]+|task-notification|user-prompt-submit-hook|ide_[a-z_]+)>[\s\S]*?<\/\1>/g, "")
-    .trim();
-  return text || null;
-}
 
 // The assistant's visible text in one line, or null: used only to tell whether a question was answered and whether
 // the founder's "yes" replied to options. It is never kept or written.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The publish lint (publishing gate, pipeline): every check a page must pass before it is public, run in
-// order over the files given. Stages: copy distance (operations/marketing/check-public.mjs, when a venture
+// order over the files given. Stages: copy distance (schema/check-public.mjs, when a venture
 // with marketing content is named), leaks (schema/check-leaks.mjs), brand (schema/brand-lint.mjs, when it
 // exists and a venture is named), claims (a sentence asserting a number or customers needs a source in the
 // file's frontmatter sources list), marks (other companies' marks), personal data (emails, phone numbers)
@@ -125,8 +125,8 @@ export async function check(paths, { venture } = {}) {
   const publishedOf = new Map(files.map((f) => [resolve(f), frontmatter(readFileSync(f, "utf8")).meta.publish === true]));
 
   // 1. copy distance
-  if (on("copy-distance") && venture && existsSync(join(repo, "operations/marketing/check-public.mjs"))) {
-    const { check: pub, CONTENT } = await import("../operations/marketing/check-public.mjs");
+  if (on("copy-distance") && venture) {
+    const { check: pub, CONTENT } = await import("./check-public.mjs");
     if (existsSync(join(venture, CONTENT))) {
       stages.push("copy-distance");
       const given = new Set(files.map((f) => resolve(f)));

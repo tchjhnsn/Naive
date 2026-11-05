@@ -129,7 +129,7 @@ const card = JSON.parse(readFileSync(join(dir, ".release/card.json"), "utf8"));
 const price = card.headline.find((h) => h.label === "Price");
 expect("P-25, O-7: the release card holds name, phase, headline numbers with their dates, and who confirmed them", card.name === "kettle" && card.phase === "discovery" && card.release === m.release && price?.value === 49 && price.unit === "USD per month" && card.headline.every((h) => h.as_of) && card.confirmed_by.length > 0, JSON.stringify(card.headline));
 const svg = run([join(repo, "schema/release-card.mjs"), dir]);
-expect("O-7: the interface draws the card; the release holds no picture or styles", svg.status === 0 && svg.stdout.startsWith("<svg") && svg.stdout.includes("kettle") && svg.stdout.includes("49") && !tree(join(dir, ".release")).some((f) => /\.(svg|css|html|png)$/.test(f)), svg.stderr);
+expect("O-7: schema/release-card.mjs draws the card; the release holds no picture or styles", svg.status === 0 && svg.stdout.startsWith("<svg") && svg.stdout.includes("kettle") && svg.stdout.includes("49") && !tree(join(dir, ".release")).some((f) => /\.(svg|css|html|png)$/.test(f)), svg.stderr);
 
 // C-17: stores and keys.
 expect("C-17: the cache lives in .naive/, ignored by git, never in the release", existsSync(join(dir, ".naive/cache/release.json")) && readFileSync(join(dir, ".naive/.gitignore"), "utf8").includes("*") && !tree(join(dir, ".release")).some((f) => f.includes(".naive")));
@@ -183,7 +183,7 @@ if (port) {
   const missing = await at("/customers/acme");
   expect("C-12: the server serves the release index", idx.release === base.release);
   expect("C-12: a release is read-only: a POST answers 405", post.status === 405 && post.headers.get("allow") === "GET, HEAD");
-  expect("O-7: /card.svg is the card drawn by the interface", svgRes.status === 200 && /image\/svg\+xml/.test(svgRes.headers.get("content-type")) && (await svgRes.text()).includes("kettle"));
+  expect("O-7: /card.svg is the card drawn from card.json", svgRes.status === 200 && /image\/svg\+xml/.test(svgRes.headers.get("content-type")) && (await svgRes.text()).includes("kettle"));
   const miss = /** @type {{ not_in_release?: boolean, items: string[], add: string }} */ (await missing.json());
   expect("C-18: an item not known at build time answers 404 with the shell's items and the command that adds it", missing.status === 404 && miss.not_in_release && miss.items.includes("bean") && /--add customers\/acme/.test(miss.add), JSON.stringify(miss));
   // C-18: add one new item without rebuilding the rest.

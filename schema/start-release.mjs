@@ -3,7 +3,7 @@
 // <venture>/.release/ and nothing else (schema/release-read.mjs), as a CDN serves a static shell. It
 // reads the manifest on each request, so an item added with build-release --add shows at once (C-18).
 // It listens on 127.0.0.1 only. The paths are listed in schema/release-read.mjs; /card.svg is the
-// release card drawn by the interface (schema/release-card.mjs).
+// release card drawn by schema/release-card.mjs.
 //
 //   node schema/start-release.mjs <venture dir> [--port n]     serve; --port 0 picks a free port (default 4330)
 //   node schema/start-release.mjs <venture dir> --get <path>   answer one path and exit, without a server

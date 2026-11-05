@@ -12,7 +12,7 @@
 //   foundation  artifact/foundation.html, the strategic foundation one-pager
 //
 // In order, and any failure stops the build:
-//   1. gate     operations/marketing/check-public.mjs (EE-064): every public variant names its source,
+//   1. gate     schema/check-public.mjs (EE-064): every public variant names its source,
 //               audience and approver, and copies no ten-word run of its source
 //   2. compile  each field reaches the output only through schema/visibility.mjs publicValue: the field
 //               when a person approved its wording as public, or its approved MDX variant
@@ -26,7 +26,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { check, CONTENT, frontmatter } from "./check-public.mjs";
+import { check, CONTENT, frontmatter } from "../../schema/check-public.mjs";
 import { leaks } from "../../schema/check-leaks.mjs";
 import { visibilityOf } from "../../schema/visibility.mjs";
 import { ventureFile } from "../../packages/core/venture-paths.mjs";

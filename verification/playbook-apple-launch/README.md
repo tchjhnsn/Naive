@@ -45,7 +45,7 @@ node verification/playbook-apple-launch/replay.mjs
 
 ## What replay showed about the public gate
 
-`operations/marketing/public` only reads `operations/marketing/content/` (`operations/marketing/check-public.mjs`). A broken file at `marketing/content/bad.mdx` comes back as a pass with `files: 0`. The same file under `operations/marketing/content/` fails. The template writes the gated folder so the public gate can fail. The model assumes that folder. This is not a counterexample in the model.
+`operations/marketing/public` only reads `operations/marketing/content/` (`schema/check-public.mjs`). A broken file at `marketing/content/bad.mdx` comes back as a pass with `files: 0`. The same file under `operations/marketing/content/` fails. The template writes the gated folder so the public gate can fail. The model assumes that folder. This is not a counterexample in the model.
 
 `marketing/voice` (`schema/brand.mjs`, mode `voice`) prints violations and exits 0. The playbook reads `result.ok`, not the process status. Replay confirmed both.
 

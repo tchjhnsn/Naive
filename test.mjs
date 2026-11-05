@@ -101,7 +101,7 @@ const steps = [
   ["publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop", "node", ["schema/publish-lint-test.mjs"]],
   ["public site carries no internal text", "node", ["schema/check-leaks.mjs", "site/content/marketing"]],
   ["publish build: every public word compiled through the gate; canaries reach no channel", "node", ["operations/marketing/publish-build-test.mjs"]],
-  ["public gate (EE-064): the repository's venture", "node", ["operations/marketing/check-public.mjs", "instance/ventures/everything-ecosystem"]],
+  ["public gate (EE-064): the repository's venture", "node", ["schema/check-public.mjs", "instance/ventures/everything-ecosystem"]],
   ["publishing: build, the one-way/two-way door gate, the manifest, rollback, embargo, republish on change", "node", ["schema/publish-test.mjs"]],
   ["publications: instance", "node", ["schema/check-publications.mjs", "instance"]],
   ["publications: examples", "node", ["schema/check-publications.mjs", "schema/examples/workspace"]],

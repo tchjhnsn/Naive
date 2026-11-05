@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { build, internalWording } from "../../operations/marketing/publish-build.mjs";
-import { check } from "../../operations/marketing/check-public.mjs";
+import { check } from "../../schema/check-public.mjs";
 import { leaks } from "../../schema/check-leaks.mjs";
 
 const repo = new URL("../../", import.meta.url).pathname;

@@ -6,11 +6,11 @@
 // it (EE-025). And it must not copy the internal record: any run of ten words shared with it is a leak,
 // unless the run is a public field (the venture's name and tagline, a product's name).
 //
-//   node operations/marketing/check-public.mjs <venture> [--json]
+//   node schema/check-public.mjs <venture> [--json]
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { ventureFile } from "../packages/core/venture-paths.mjs";
 
 export const CONTENT = "operations/marketing/content";
 const RUN = 10;
@@ -64,7 +64,7 @@ export function check(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir) { console.error("usage: node operations/marketing/check-public.mjs <venture> [--json]"); process.exit(2); }
+  if (!dir) { console.error("usage: node schema/check-public.mjs <venture> [--json]"); process.exit(2); }
   const r = check(dir);
   if (process.argv.includes("--json")) console.log(JSON.stringify(r, null, 2));
   else {

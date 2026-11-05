@@ -59,7 +59,7 @@
     "schema/check-departments.mjs",
     "operations/marketing/site/presence.mjs",
     "operations/marketing/site/plan.mjs",
-    "operations/marketing/check-public.mjs",
+    "schema/check-public.mjs",
     "schema/check-brand.mjs",
     "schema/check-assets.mjs"
   ],

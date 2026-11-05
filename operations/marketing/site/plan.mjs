@@ -11,7 +11,7 @@
 // own page, labelled for it. The plan is a marketing record (operations/marketing/sitemap.json). It
 // names, for each section, the internal record it draws on and the public variant a marketing agent
 // writes (operations/marketing/content/<page>/<item>.mdx), so nothing internal is published as is
-// (check-public.mjs). Planning the sitemap and designing the site are separate agents: this plan is
+// (schema/check-public.mjs). Planning the sitemap and designing the site are separate agents: this plan is
 // part of the marketing package handed to engineering, which builds the site (EE-065).
 //
 //   node plan.mjs <venture> [--raising] [--hiring] [--contributors] [--write] [--json]

@@ -64,7 +64,7 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
   - any condition;
   - the internal record it draws on;
   - the public variant a marketing agent writes, at `operations/marketing/content/<page>/<item>.mdx`.
-- **The public gate.** `../check-public.mjs` checks every content file before it can be published:
+- **The public gate.** `schema/check-public.mjs` checks every content file before it can be published:
   - it names the internal record it is a variant of, its audience, and whether it is published;
   - a published file names the person who approved it;
   - it copies no run of ten words from its internal record, apart from public fields.

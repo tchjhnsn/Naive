@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { plan, offeringsOf } from "./plan.mjs";
-import { check } from "../check-public.mjs";
+import { check } from "../../../schema/check-public.mjs";
 import { weights, needs, score, request, pageType, typesOf, customerNeeds, icpOf, MATRIX } from "./presence.mjs";
 
 let failed = 0;
