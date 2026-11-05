@@ -23,7 +23,8 @@
     "./evidence/*": "./evidence/*",
     "./frameworks/*": "./frameworks/*",
     "./library/*": "./library/*",
-    "./docs/*": "./docs/*"
+    "./docs/*": "./docs/*",
+    "./lean/*": "./lean/*"
   },
   "bin": {
     "naive": "interface/cli/naive.mjs",
@@ -54,13 +55,14 @@
     "docs/decisions/",
     "docs/ontology.md",
     "docs/ontology.json",
+    "lean/Naive/",
+    "lean/README.md",
     "!**/*test.mjs",
     "!**/*-test.mjs",
     "!**/test.mjs",
     "!**/*.steps.mjs",
     "!**/*.feature",
     "!packages/create-venture/package.json",
-    "!schema/examples/docket-scenarios.json",
     "!**/.env*",
     "!**/*.pem",
     "!**/*.key",
