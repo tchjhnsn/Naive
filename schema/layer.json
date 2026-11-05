@@ -1,7 +1,6 @@
 {
   "layer": "system",
   "purpose": "Hold the records every layer shares (workspace, venture, nouns, references, tooling, the data model and layer manifests, the provenance log) and the checks that tie the layers together.",
-  "product": "everything-ecosystem/kit",
   "skills": [],
   "records": [
     "workspace",
@@ -33,11 +32,7 @@
     "founder-idea",
     "founder-reference",
     "founder-inspiration",
-    "founder-private",
-    "research-cell",
-    "research-source",
-    "research-claim",
-    "research-citation"
+    "founder-private"
   ],
   "reads": [
     "product",

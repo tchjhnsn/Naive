@@ -1001,7 +1001,7 @@
           "checked_by": "schema/check-data-model.mjs"
         }
       ],
-      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are library/packages/<name>/package.json. A kit is Mentura's, at platform/kits/."
+      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are library/packages/<name>/package.json. A kit is Mentura's and lives in the app that installs it."
     },
     {
       "id": "handoff",
@@ -1558,10 +1558,9 @@
       "level": "method",
       "schema": "schema/adapter.schema.json",
       "paths": [
-        "interface/adapters/*.json",
-        "platform/adapter.json"
+        "interface/adapters/*.json"
       ],
-      "note": "What runs Naive on a platform or in an agent harness (Z-4): the entry files a harness adapter writes into a venture and where it loads skills, or the tests a platform adapter runs. Verified when it passes the framework's tests (interface/adapters.mjs verify)"
+      "note": "What runs Naive on a platform or in an agent harness (Z-4): the entry files a harness adapter writes into a venture and where it loads skills, or the tests a platform adapter runs. A platform's adapter lives in the app that hosts Naive and is passed in with NAIVE_PLATFORM_ADAPTER. Verified when it passes the framework's tests (interface/adapters.mjs verify)"
     },
     {
       "id": "upgrade-registry",
@@ -1585,9 +1584,7 @@
       "layer": "system",
       "level": "method",
       "schema": "schema/kit.schema.json",
-      "paths": [
-        "platform/kits/*/kit.json"
-      ],
+      "paths": [],
       "refs": [
         {
           "field": "extends.package",
@@ -1595,7 +1592,7 @@
           "checked_by": null
         }
       ],
-      "note": "A Mentura kit (EE-071): an enhanced package or command, with its automations (triggers that need a complete package, M-12) or its agent workflow (the agent-run upgrade, U-3). The framework reads it as data and never imports its code (schema/kits.mjs)"
+      "note": "A Mentura kit (EE-071): an enhanced package or command, with its automations (triggers that need a complete package, M-12) or its agent workflow (the agent-run upgrade, U-3). Kits live in the app that installs them, which points the framework at them with NAIVE_KITS; this repository has none. The framework reads a kit as data and never imports its code (schema/kits.mjs)"
     },
     {
       "id": "icp",
@@ -2070,66 +2067,6 @@
       "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); schema/lifecycle.mjs reads its gate evidence"
     },
     {
-      "id": "research-cell",
-      "layer": "system",
-      "level": "method",
-      "schema": "platform/research/schemas/research-cell.schema.json",
-      "form": "json-lines",
-      "paths": [
-        ".naive/research/cells.jsonl"
-      ],
-      "note": "A research cell (confidential, Mentura): state(subject, time, aspect) for a venture, function and frame. Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
-      "confidential": true
-    },
-    {
-      "id": "research-source",
-      "layer": "system",
-      "level": "method",
-      "schema": "platform/research/schemas/source.schema.json",
-      "form": "json-lines",
-      "paths": [
-        ".naive/research/sources.jsonl"
-      ],
-      "note": "A source the research engine read, with credibility factors 1-4 (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
-      "confidential": true
-    },
-    {
-      "id": "research-claim",
-      "layer": "system",
-      "level": "method",
-      "schema": "platform/research/schemas/claim.schema.json",
-      "form": "json-lines",
-      "paths": [
-        ".naive/research/claims.jsonl"
-      ],
-      "note": "A claim for a research cell; confidence and verdict computed in code by platform/research/credibility.mjs (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
-      "confidential": true
-    },
-    {
-      "id": "research-citation",
-      "layer": "system",
-      "level": "method",
-      "schema": "platform/research/schemas/citation.schema.json",
-      "form": "json-lines",
-      "paths": [
-        ".naive/research/citations.jsonl"
-      ],
-      "note": "Ties a research claim to a source with a locator and an optional short quote (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
-      "refs": [
-        {
-          "field": "claim_id",
-          "to": "research-claim",
-          "checked_by": null
-        },
-        {
-          "field": "source_id",
-          "to": "research-source",
-          "checked_by": null
-        }
-      ],
-      "confidential": true
-    },
-    {
       "id": "term-list",
       "layer": "knowledge",
       "level": "method",
@@ -2181,22 +2118,6 @@
     {
       "path": "site/package.json",
       "reason": "The developer-docs site's npm manifest (EE-034); not a record"
-    },
-    {
-      "path": "console/package.json",
-      "reason": "The venture console's npm manifest (Mentura demo beta, 2026-10-30); not a record"
-    },
-    {
-      "path": "console/tsconfig.json",
-      "reason": "TypeScript settings for the venture console; not a record"
-    },
-    {
-      "path": "console/components.json",
-      "reason": "shadcn/ui settings for the venture console; not a record"
-    },
-    {
-      "path": "platform/integrations/fixtures/rho-sandbox.json",
-      "reason": "What Rho's sandbox (a fictional company) answered to one sync, replayed offline by platform/integrations/rho-test.mjs and the harness's --money; vendor data, not a record"
     },
     {
       "path": "schema/examples/docket-scenarios.json",
@@ -2293,6 +2214,10 @@
     {
       "path": "schema/fixtures/ontology-gate/founder-properties.json",
       "reason": "A handoff package whose founder facts fail a term-engine check, read by schema/ontology-gate-test.ts; a fixture, not a record"
+    },
+    {
+      "path": "naive.data-model.json",
+      "reason": "An app's own record types and ignore entries, merged into this data model by packages/records when the file sits at the root of the repository being checked; not a record"
     }
   ]
 }

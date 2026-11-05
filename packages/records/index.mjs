@@ -7,16 +7,17 @@
 //   schemaFile(name)      "venture" or "venture.schema.json" to the absolute file
 //   dataModelFile()       the absolute data-model.json
 //   readSchema(name)      the parsed schema, read fresh on each call
-//   readDataModel()       the parsed data model, read fresh on each call
+//   readDataModel()       the parsed data model, read fresh on each call, with the app's additions merged in
+//                         (APP_DATA_MODEL below)
 //   recordPath(stored)    a stored repository path ("schema/venture.schema.json", as data-model.json and the
 //                         manifests name a schema) to the absolute file; a path under another folder
-//                         ("platform/research/schemas/claim.schema.json") resolves from the repository root
+//                         ("app/schemas/claim.schema.json") resolves from the repository root
 //   listSchemas()         every schema file name in RECORDS, sorted
 //   schemaNameOf(stored)  a stored path to the name schema/validate.py --schema takes
 //   recordsIn(root)       the same functions for another copy of the repository, such as a test's temp copy
 //                         (the EE_ROOT pattern of schema/check-data-model.mjs)
 
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -27,6 +28,24 @@ export const FOLDER = "schema";
 export const PREFIXES = Object.freeze(["schema/"]);
 export const SUFFIX = ".schema.json";
 export const DATA_MODEL = "data-model.json";
+/** An app that uses Naive (such as Mentura) adds its own record types here, at the root of the repository being
+ *  checked: { "records": [...], "ignore": [...] }, each entry shaped as in data-model.json. readDataModel appends
+ *  them, so the app's records are checked like Naive's without Naive's data model naming them. */
+export const APP_DATA_MODEL = "naive.data-model.json";
+
+/**
+ * The data model with an app's additions appended. Only records and ignore entries may be added.
+ * @param {any} model
+ * @param {any} app
+ * @param {string} file where the additions came from, for the error
+ */
+export function mergeAppDataModel(model, app, file) {
+  const extra = Object.keys(app ?? {}).filter((k) => !["records", "ignore", "note"].includes(k));
+  if (extra.length || !Array.isArray(app.records ?? []) || !Array.isArray(app.ignore ?? [])) {
+    throw new Error(`${file}: an app adds only "records" and "ignore" arrays to the data model`);
+  }
+  return { ...model, records: [...model.records, ...(app.records ?? [])], ignore: [...model.ignore, ...(app.ignore ?? [])] };
+}
 
 /** The repository root this module sits in: packages/records/ is two folders below it. */
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url));
@@ -65,7 +84,11 @@ export function recordsIn(root) {
   /** @param {string} name @returns {any} */
   const readSchema = (name) => JSON.parse(readFileSync(schemaFile(name), "utf8"));
   /** @returns {any} */
-  const readDataModel = () => JSON.parse(readFileSync(dataModelFile(), "utf8"));
+  const readDataModel = () => {
+    const model = JSON.parse(readFileSync(dataModelFile(), "utf8"));
+    const app = join(base, APP_DATA_MODEL);
+    return existsSync(app) ? mergeAppDataModel(model, JSON.parse(readFileSync(app, "utf8")), APP_DATA_MODEL) : model;
+  };
   /** @param {string} stored */
   const recordPath = (stored) => {
     if (isAbsolute(stored)) return stored;
