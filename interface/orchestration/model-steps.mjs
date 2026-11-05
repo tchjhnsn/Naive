@@ -28,7 +28,7 @@
 //                 and a code check disagree, the code wins (overruled)
 //
 // The model is passed in: a function (tests), an answers file (--answers, written by the founder's agent
-// or by platform/integrations/jev.mjs), or MENTURA_MODEL_CMD, a command that reads one request on stdin
+// or by the app's Jev client), or MENTURA_MODEL_CMD, a command that reads one request on stdin
 // and prints {model, answers} (the same protocol as Jev). With none, run refuses and payload shows what
 // would be asked. This module never names a vendor or a credential.
 //

@@ -10,7 +10,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ALLOW, check, disagreements, RESOLVER, scan, staleAllow } from "./check-record-paths.ts";
 import {
-  dataModelFile, listSchemas, readDataModel, readSchema, RECORDS, recordPath, recordRelative, recordsIn, ROOT, schemaFile, schemaName, schemaNameOf,
+  APP_DATA_MODEL, dataModelFile, listSchemas, readDataModel, readSchema, RECORDS, recordPath, recordRelative, recordsIn, ROOT, schemaFile, schemaName, schemaNameOf,
 } from "../packages/records/index.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -65,15 +65,15 @@ try {
   });
 
   test("a stored path under another folder resolves from the repository root, and an absolute path is kept", () => {
-    assert.equal(recordPath("platform/research/schemas/claim.schema.json"), join(root, "platform/research/schemas/claim.schema.json"));
-    assert.equal(recordRelative("platform/research/schemas/claim.schema.json"), null);
+    assert.equal(recordPath("app/schemas/claim.schema.json"), join(root, "app/schemas/claim.schema.json"));
+    assert.equal(recordRelative("app/schemas/claim.schema.json"), null);
     assert.equal(recordPath("/x/y.schema.json"), "/x/y.schema.json");
     assert.equal(recordRelative("./schema/venture.schema.json"), "venture.schema.json");
   });
 
   test("schemaNameOf gives the name schema/validate.py takes, and keeps another folder's path whole", () => {
     assert.equal(schemaNameOf("schema/venture.schema.json"), "venture.schema.json");
-    assert.equal(schemaNameOf("platform/research/schemas/claim.schema.json"), "platform/research/schemas/claim.schema.json");
+    assert.equal(schemaNameOf("app/schemas/claim.schema.json"), "app/schemas/claim.schema.json");
   });
 
   test("a schema name is a name: a path or an empty name is refused", () => {
@@ -88,6 +88,20 @@ try {
     assert.equal(other.schemaFile("venture"), join(tmp, "copy", "schema", "venture.schema.json"));
     assert.equal(other.recordPath("schema/x.schema.json"), join(tmp, "copy", "schema", "x.schema.json"));
     assert.equal(other.recordPath("docs/x.json"), join(tmp, "copy", "docs", "x.json"));
+  });
+
+  test("an app's naive.data-model.json adds record types and ignore entries; anything else is refused", () => {
+    const dir = join(tmp, "app");
+    mkdirSync(join(dir, "schema"), { recursive: true });
+    writeFileSync(join(dir, "schema", "data-model.json"), JSON.stringify({ version: 1, layers: [], records: [{ id: "a" }], ignore: [] }));
+    const at = recordsIn(dir);
+    assert.deepEqual(at.readDataModel().records.map((r: { id: string }) => r.id), ["a"]);
+    writeFileSync(join(dir, APP_DATA_MODEL), JSON.stringify({ records: [{ id: "b" }], ignore: [{ path: "x.json", reason: "test" }] }));
+    const merged = at.readDataModel();
+    assert.deepEqual(merged.records.map((r: { id: string }) => r.id), ["a", "b"]);
+    assert.deepEqual(merged.ignore.map((i: { path: string }) => i.path), ["x.json"]);
+    writeFileSync(join(dir, APP_DATA_MODEL), JSON.stringify({ layers: ["mine"] }));
+    assert.throws(() => at.readDataModel(), /adds only "records" and "ignore"/);
   });
 
   // The check.

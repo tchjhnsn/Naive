@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Adapters (Z-4). Next.js adapters let a platform customize build and deploy, and a verified adapter
 // passes the Next.js test suite. Naive's adapters run the framework on a platform or in an agent
-// harness. Mentura is the first, as Vercel is for Next.js (platform/adapter.json). Claude Code, Codex and
-// Cursor adapt the framework through the venture's AGENTS.md and skills (interface/adapters/*.json):
+// harness. Mentura is the first, as Vercel is for Next.js; its adapter file lives in the app and is handed
+// in with NAIVE_PLATFORM_ADAPTER. Claude Code, Codex and Cursor adapt the framework through the venture's AGENTS.md and skills (interface/adapters/*.json):
 // adapt() writes the entry files a harness reads and copies the skills of the packages open now. An
 // adapter is verified when it passes the framework's tests: verify() runs them.
 //
@@ -19,7 +19,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 import { ventureFile } from "../packages/core/venture-paths.mjs";
 import { adapt, adapters, byName, refresh, skillsFor } from "../schema/adapters.mjs";
 
@@ -71,12 +71,14 @@ async function harnessSuite(a) {
   return results;
 }
 
-// A platform adapter runs the framework itself; it is verified by the test programs it names.
+// A platform adapter runs the framework itself; it is verified by the test programs it names: a path in this
+// repository (a framework test) or an absolute path (the app's own test of the hooks it implements).
 function platformSuite(a) {
   if (!a.verify?.length) return [{ test: "names the framework tests it must pass", passed: false, detail: "verify is empty" }];
   return a.verify.map((p) => {
-    if (!existsSync(join(repo, p))) return { test: p, passed: false, detail: "not found" };
-    const r = spawnSync("node", [join(repo, p)], { cwd: repo, encoding: "utf8", timeout: 600000 });
+    const file = isAbsolute(p) ? p : join(repo, p);
+    if (!existsSync(file)) return { test: p, passed: false, detail: "not found" };
+    const r = spawnSync("node", [file], { cwd: repo, encoding: "utf8", timeout: 600000 });
     const tail = (r.stdout + r.stderr).trim().split("\n").slice(-4).join(" / ");
     return { test: p, passed: r.status === 0, detail: tail };
   });

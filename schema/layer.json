@@ -32,11 +32,7 @@
     "founder-idea",
     "founder-reference",
     "founder-inspiration",
-    "founder-private",
-    "research-cell",
-    "research-source",
-    "research-claim",
-    "research-citation"
+    "founder-private"
   ],
   "reads": [
     "product",

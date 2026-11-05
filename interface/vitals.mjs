@@ -15,7 +15,7 @@
 //
 //   node interface/vitals.mjs <venture dir> [--json] [--check]     --check exits 1 when a vital fails
 //   node interface/vitals.mjs <venture dir> --trace [--session <id>] the events as a trace, for
-//                                                                   platform/integrations/langsmith.mjs
+//                                                                   an exporter in the app that hosts Naive
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";

@@ -28,9 +28,27 @@ let fetchImpl = null;
 /** Points every GitHub-style connector at another fetch (the evals' fake GitHub); null restores the real one. */
 export const useFetch = (f) => { fetchImpl = f; };
 
-/** The connector registry: integration id -> { module, writes, ... } from knowledge/tooling/integrations.json. */
+// Connectors an app that hosts Naive registers in its own process (EE-041): a vendor connector, such as
+// GitHub's, reaches the network, so it lives in the app and Naive never names its module.
+const registered = new Map();
+/**
+ * Registers an app's connector: id -> { module (an absolute path to a module that exports connect(options)),
+ * writes, options, name }. A registered id replaces the framework's entry of the same id.
+ * @param {string} id
+ * @param {{ module: string, writes: string[], options?: string[], name?: string }} entry
+ */
+export function registerConnector(id, entry) {
+  if (!entry || !isAbsolute(entry.module ?? "") || !Array.isArray(entry.writes) || !entry.writes.length) {
+    throw new Error(`registerConnector(${id}): name an absolute module path and at least one write mode`);
+  }
+  registered.set(id, { id, name: entry.name ?? id, ...entry });
+}
+
+/** The connector registry: integration id -> { module, writes, ... } from knowledge/tooling/integrations.json,
+ *  then the connectors an app registered. */
 export function registry() {
-  return new Map(load(join(repo, "knowledge/tooling/integrations.json")).filter((t) => t.connector).map((t) => [t.id, { id: t.id, name: t.name, ...t.connector }]));
+  const own = load(join(repo, "knowledge/tooling/integrations.json")).filter((t) => t.connector).map((t) => [t.id, { id: t.id, name: t.name, ...t.connector }]);
+  return new Map([...own, ...registered]);
 }
 
 /** A venture's source map, with the implicit venture source first. */
@@ -83,7 +101,7 @@ const cache = new Map();
 export async function connect(source, dir) {
   const reg = registry().get(source.connector);
   if (!reg) throw new Error(`no connector ${source.connector}: knowledge/tooling/integrations.json has ${[...registry().keys()].join(", ")}`);
-  const mod = cache.get(reg.module) ?? await import(join(repo, reg.module));
+  const mod = cache.get(reg.module) ?? await import(isAbsolute(reg.module) ? reg.module : join(repo, reg.module));
   cache.set(reg.module, mod);
   const opts = { ...source };
   delete opts.connector; delete opts.implicit;

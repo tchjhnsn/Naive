@@ -4,7 +4,7 @@
 // question for an independent judge, so the docket, the judge and the source can be compared.
 //
 //   node schema/docket-eval.mjs [--json]                    the docket against the scenarios
-//   node schema/docket-eval.mjs request | <judge> > a.json  the judge's request (Jev: platform/integrations/jev.mjs)
+//   node schema/docket-eval.mjs request | <judge> > a.json  the judge's request (a Jev client, as NAIVE_JUDGE_CMD names)
 //   node schema/docket-eval.mjs --answers a.json [--json]   the docket and the judge against the scenarios
 //
 // Per state: does the docket's next decision match the expected one, and its leading function? For the

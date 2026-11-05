@@ -15,6 +15,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { kit } from "../kits.mjs";
 
 export const id = "kit-to-package";
 export const describe = "Moves Naive packages out of naive.config.json kits into packages, and rewrites layer and kit routes inside records (decision unlocks, team-plan access, where-used parents) to package routes";
@@ -53,7 +54,7 @@ export function apply(dir, ctx) {
       if (existsSync(join(repo, "library", "packages", name, "package.json"))) {
         cfg.packages = { ...(cfg.packages ?? {}), [name]: cfg.packages?.[name] ?? {} };
         ctx.note(`naive.config.json: ${name} is a Naive package, so it moved from kits to packages`);
-      } else if (existsSync(join(repo, "platform/kits", name, "kit.json"))) keep.push(name);
+      } else if (kit(name)) keep.push(name);
       else { keep.push(name); ctx.escalate(`naive.config.json: kits names ${name}, which is neither a Naive package nor a Mentura kit; left as it is`); }
     }
     if (keep.length !== cfg.kits.length) ctx.configChanged();

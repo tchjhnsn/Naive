@@ -1,6 +1,6 @@
 // The boundary around a kit's agent workflow (S-15): the Next.js advice to wrap a third-party component
 // that uses client features, with the library author declaring "use client". A kit (Mentura's enhanced
-// package, platform/kits/<name>/kit.json) declares, under boundary, what its workflow reads, what it
+// package, <NAIVE_KITS>/<name>/kit.json) declares, under boundary, what its workflow reads, what it
 // writes and which of its steps use a model:
 //
 //   { "name": "...", "package": "<the package it extends>",
@@ -9,7 +9,7 @@
 // wrap(kit) returns the router's call with that boundary around it: a read outside reads or writes, a
 // write outside writes, or a command it does not read is refused as an expected error, and every call
 // acts as the kit's agent, never as a person. A kit that uses a model writes judgments, so it declares
-// knowledge/judgment/** in writes. This module reads kit.json as data and never imports from platform/.
+// knowledge/judgment/** in writes. This module reads kit.json as data and never imports the app's code.
 //
 //   node interface/kit-boundary.mjs <kit.json>      check one kit's boundary
 

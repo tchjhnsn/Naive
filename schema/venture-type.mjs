@@ -1,13 +1,13 @@
 // Venture types (EE-082): the registry, and a classifier that reads a founder's few words and says
-// which type the venture is. The classifier asks Jev one yes-or-no question per type (Noul) and ranks
-// the answers; below the threshold it is uncertain, and the founder picks from the list instead. Without
-// TYPESAFE_API_KEY there is no model call at all: the list is the way to choose.
+// which type the venture is. The classifier asks a judge one yes-or-no question per type (Noul) and ranks
+// the answers; below the threshold it is uncertain, and the founder picks from the list instead. Without a
+// judge command there is no model call at all: the list is the way to choose.
 //
 //   node schema/venture-type.mjs list
 //   node schema/venture-type.mjs classify "<a few words about the venture>"
 //
-// MENTURA_TYPE_CMD replaces the call to platform/integrations/jev.mjs (it reads the request on stdin and
-// prints {answers}), for tests.
+// The judge is MENTURA_TYPE_CMD, else NAIVE_JUDGE_CMD: a command the app that hosts Naive names (such as
+// its Jev client), which reads the request on stdin and prints {answers}. Tests use a stand-in.
 
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -26,8 +26,11 @@ export function roles() {
   return JSON.parse(readFileSync(join(repo, "governance/venture-template/roles/venture-roles.json"), "utf8")).roles;
 }
 
-/** Whether a model can classify: a TypeSafe key, or a stand-in command. */
-export const canClassify = () => Boolean(process.env.MENTURA_TYPE_CMD || process.env.TYPESAFE_API_KEY || process.env.TYPESAFEAI_API_KEY);
+/** The judge command, or null: MENTURA_TYPE_CMD, else NAIVE_JUDGE_CMD. */
+const typeCmd = () => process.env.MENTURA_TYPE_CMD || process.env.NAIVE_JUDGE_CMD || null;
+
+/** Whether a model can classify: a judge command is set. */
+export const canClassify = () => Boolean(typeCmd());
 
 /** The typed request: for each type, is the venture described this kind of venture? */
 export function request(description) {
@@ -42,7 +45,8 @@ export function request(description) {
 
 /** Ranked types for a description, most likely first, with uncertain set when none reaches the threshold. */
 export function classify(description) {
-  const cmd = process.env.MENTURA_TYPE_CMD ? process.env.MENTURA_TYPE_CMD.split(" ") : ["node", join(repo, "platform/integrations/jev.mjs")];
+  if (!typeCmd()) throw new Error("no judge: set MENTURA_TYPE_CMD or NAIVE_JUDGE_CMD, or pick a type from the list");
+  const cmd = String(typeCmd()).trim().split(/\s+/);
   const p = spawnSync(cmd[0], cmd.slice(1), { input: JSON.stringify(request(description)), encoding: "utf8", env: process.env });
   if (p.status !== 0) throw new Error(`the type classifier stopped: ${(p.stderr || p.stdout).trim().slice(0, 300)}`);
   const { answers = {}, model = null } = JSON.parse(p.stdout);

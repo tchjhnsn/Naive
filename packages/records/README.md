@@ -10,11 +10,12 @@ The resolver for the record types: the framework's JSON Schema files (`<name>.sc
 
 | Path | Holds |
 |---|---|
-| [`index.mjs`](./index.mjs) | `RECORDS` (the absolute folder that holds the record types, computed from the module's own place), `schemaFile(name)`, `dataModelFile()`, `readSchema(name)`, `readDataModel()`, `recordPath(stored)`, `listSchemas()`, `schemaNameOf(stored)`, `venturePaths(record)` and `recordsIn(root)`. |
+| [`index.mjs`](./index.mjs) | `RECORDS` (the absolute folder that holds the record types, computed from the module's own place), `schemaFile(name)`, `dataModelFile()`, `readSchema(name)`, `readDataModel()`, `recordPath(stored)`, `listSchemas()`, `schemaNameOf(stored)`, `venturePaths(record)`, `recordsIn(root)`, and `APP_DATA_MODEL` with `mergeAppDataModel`. |
 
 - `schemaFile` and `readSchema` take a name, `venture` or `venture.schema.json`, never a path.
-- `recordPath` maps a stored repository path, as the data model and the package manifests name a schema (`schema/venture.schema.json`), to the absolute file. A stored path under another folder, such as `platform/research/schemas/claim.schema.json`, resolves from the repository root. The prefixes it reads are listed in `PREFIXES`, so the move can accept `packages/records/` and keep `schema/` for one release.
+- `recordPath` maps a stored repository path, as the data model and the package manifests name a schema (`schema/venture.schema.json`), to the absolute file. A stored path under another folder, such as an app's `app/schemas/claim.schema.json`, resolves from the repository root. The prefixes it reads are listed in `PREFIXES`, so the move can accept `packages/records/` and keep `schema/` for one release.
 - `venturePaths(record)` gives a venture-level record type's paths relative to a venture folder. In `data-model.json` those paths carry the prefix `VENTURE_PREFIX` (`instance/**/`), the name the data model has always used for a workspace. It names no folder Naive reads, so code asks `venturePaths` instead of slicing the prefix.
+- `readDataModel` appends an app's own record types. An app that uses Naive, such as Mentura, keeps its record types out of Naive's data model and lists them in `naive.data-model.json` at the root of the repository being checked: `{ "records": [...], "ignore": [...] }`, each entry shaped as in `data-model.json`. Anything else in that file is refused. Every check that reads the data model then checks the app's records like Naive's. Naive itself has no such file.
 - `schemaNameOf` turns a stored path into the name `python3 schema/validate.py --schema` takes.
 - `recordsIn(root)` gives the same functions for another copy of the repository, such as a test's temp copy (the `EE_ROOT` pattern of `schema/check-data-model.mjs`).
 

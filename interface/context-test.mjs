@@ -7,8 +7,7 @@
 //
 //   node interface/context-test.mjs
 
-import { spawn, spawnSync } from "node:child_process";
-import { createServer } from "node:http";
+import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -213,23 +212,12 @@ const vr = await call({ venture: "tandem", route: "system/vitals", action: "run"
 expect("C-15 system/vitals reports the failing vital", vr.ok && vr.result.passed === false && vr.result.failing.includes("calls_per_task"));
 config({ instrumentation: { events: true } });
 
-// P-4: the events as a trace, shipped by the platform's LangSmith exporter (here to a local stand-in).
+// P-4: the events as a trace, the shape an exporter ships. The exporter itself (LangSmith) belongs to the app
+// that hosts Naive and is tested there.
 const tr = spawnSync("node", [join(repo, "interface/vitals.mjs"), tandem, "--trace", "--session", "s1"], { encoding: "utf8" });
 writeFileSync(join(tmp, "trace.json"), tr.stdout);
 const trace = JSON.parse(tr.stdout);
 expect("P-4 the trace has a run per call, nested calls under their parent, and the vitals as feedback", trace.children.length === s1.calls && trace.feedback.length >= 3);
-const got = [];
-const server = createServer((req, res) => { let body = ""; req.on("data", (d) => { body += d; }); req.on("end", () => { got.push({ url: req.url, body: body ? JSON.parse(body) : null }); res.setHeader("content-type", "application/json"); res.end(req.url.startsWith("/sessions") ? "[]" : "{}"); }); });
-await /** @type {Promise<void>} */ (new Promise((ok) => server.listen(0, "127.0.0.1", ok)));
-const up = await new Promise((done) => {
-  const p = spawn("node", [join(repo, "platform/integrations/langsmith.mjs"), join(tmp, "trace.json"), "--project", "naive-vitals"],
-    { env: { ...process.env, LANGSMITH_API_KEY: "stand-in", LANGSMITH_ENDPOINT: `http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}` } });
-  let out = ""; p.stdout.on("data", (d) => { out += d; }); p.on("close", (code) => done({ code, out }));
-});
-server.close();
-const batchPost = got.find((g) => g.url === "/runs/batch");
-expect("P-4 the platform exporter ships the trace as runs and the vitals as feedback", up.code === 0 && batchPost?.body.post.length >= trace.children.length + 1 && got.filter((g) => g.url === "/feedback").length === trace.feedback.length, up.out);
-
 expect("nothing was written into the repository", !existsSync(join(repo, "schema/examples/workspace/ventures/tandem/.naive")) && !existsSync(join(repo, "schema/examples/workspace/ventures/tandem/naive.config.json")));
 
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }

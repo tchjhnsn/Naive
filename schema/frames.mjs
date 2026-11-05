@@ -11,8 +11,8 @@
 //   check    a frame matches its schema's rules and names no instrument as an answer
 //   eval     judges the frame's worked cases and compares the verdicts with what they expect
 //
-// Judgments go through the judgment cache (schema/caching.mjs) with the command in NAIVE_JUDGE_CMD,
-// else Jev when TYPESAFE_API_KEY is set. Lookups are a kit's job: run reads one from --lookup.
+// Judgments go through the judgment cache (schema/caching.mjs) with the command in NAIVE_JUDGE_CMD
+// (the app that hosts Naive names its judge there). Lookups are a kit's job: run reads one from --lookup.
 //
 //   node schema/frames.mjs list
 //   node schema/frames.mjs match "<the founder's words>"
@@ -141,12 +141,11 @@ export function verdicts(f, answers, facts = null) {
 
 function judgeCmd() {
   if (process.env.NAIVE_JUDGE_CMD) return process.env.NAIVE_JUDGE_CMD;
-  if (process.env.TYPESAFE_API_KEY || process.env.TYPESAFEAI_API_KEY) return `node ${join(repo, "platform/integrations/jev.mjs")}`;
   return null;
 }
 async function ask(dir, req) {
   const cmd = judgeCmd();
-  if (!cmd) throw new Error("no judge: set NAIVE_JUDGE_CMD (a command that answers the Jev protocol) or TYPESAFE_API_KEY");
+  if (!cmd) throw new Error("no judge: set NAIVE_JUDGE_CMD (a command that answers the Jev protocol)");
   const { judge } = await import("./caching.mjs");
   return judge(dir, req, { cmd, packages: [req.package].filter(Boolean) });
 }

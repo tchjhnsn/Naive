@@ -3,8 +3,8 @@
 // U-6, M-12, E-7, V-9 and Z-4): naive upgrade and its migrations, pins, channels and early packages,
 // version guides, a staged upgrade, updating the installed framework, triggers and their failures,
 // stale summaries, and adapters. Everything runs in temporary folders; the repository is never written to.
-// The agent-run upgrade and kits' automations are tested in platform/kits/test.mjs, the webhook in
-// platform/webhooks/test.mjs.
+// The agent-run upgrade, kits' automations and the webhook are the app's (Mentura's) and are tested there.
+// The platform adapter here is a stand-in, handed in with NAIVE_PLATFORM_ADAPTER as an app would.
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -229,22 +229,26 @@ expect("writing the summary again makes it fresh", !/"stale"/.test(mentura(["pro
 expect("a source the venture does not have is refused", mentura(["notify", "--venture", "vee", "--source", "ramp", "--path", "x.json"]).status === 1);
 expect("a change nothing reads marks nothing", /nothing reads what changed/.test(mentura(["notify", "--venture", "vee", "--source", "crm", "--path", "customers/zed.json"]).stdout));
 
-// Z-4: adapters, verified by the framework's tests.
-const list = JSON.parse(mentura(["adapters", "--json"]).stdout);
+// Z-4: adapters, verified by the framework's tests. The platform adapter is a stand-in for the app's.
+const platformAdapter = join(ws, "platform-adapter.json");
+writeFileSync(platformAdapter, JSON.stringify({ name: "mentura", title: "Mentura (stand-in)", kind: "platform", reads: ["knowledge/sources.json"], files: [], skills: null, verify: ["knowledge/connectors/eval.mjs"], sources: [], note: "A stand-in for the app's platform adapter" }));
+const withPlatform = { NAIVE_PLATFORM_ADAPTER: platformAdapter };
+const list = JSON.parse(mentura(["adapters", "--json"], withPlatform).stdout);
 expect("Mentura is listed as the platform adapter beside the harness adapters", list[0]?.name === "mentura" && list[0].kind === "platform" && ["claude-code", "codex", "cursor"].every((x) => list.some((l) => l.name === x && l.kind === "harness")));
 const h = make("harnessed");
 naive(["upgrade", h]);
 const ad = mentura(["adapt", "claude-code", "--venture", "harnessed"]);
 expect("mentura adapt writes Claude Code's entry file and copies the open packages' skills", ad.status === 0 && readFileSync(join(h, "CLAUDE.md"), "utf8") === "@AGENTS.md\n" && existsSync(join(h, ".claude/skills/problem-validation/SKILL.md")), ad.stdout + ad.stderr);
-expect("adapting the platform adapter into a venture is refused", mentura(["adapt", "mentura", "--venture", "harnessed"]).status === 1);
+expect("adapting the platform adapter into a venture is refused", mentura(["adapt", "mentura", "--venture", "harnessed"], withPlatform).status === 1);
+expect("without NAIVE_PLATFORM_ADAPTER only the harness adapters are listed", JSON.parse(mentura(["adapters", "--json"]).stdout).every((l) => l.kind === "harness"));
 for (const name of ["claude-code", "codex", "cursor"]) {
   const r = JSON.parse(mentura(["adapters", "verify", name, "--json"]).stdout)[0];
   expect(`the ${name} adapter is verified: it passes the framework's adapter tests`, r.verified, JSON.stringify(r.results.filter((x) => !x.passed)));
 }
 if (!process.env.NAIVE_SKIP_PLATFORM_VERIFY) {
-  const m = mentura(["adapters", "verify", "mentura", "--json"]);
+  const m = mentura(["adapters", "verify", "mentura", "--json"], withPlatform);
   const mr = JSON.parse(m.stdout)[0];
-  expect("the Mentura adapter is verified: it passes the framework's tests it names (connector contract, webhooks, kits)", mr.verified && mr.results.length === 3, JSON.stringify(mr.results.filter((x) => !x.passed)));
+  expect("a platform adapter is verified when it passes the framework tests it names (here the connector contract)", mr.verified && mr.results.length === 1, JSON.stringify(mr.results.filter((x) => !x.passed)));
 }
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");

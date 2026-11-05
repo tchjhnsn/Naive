@@ -71,7 +71,7 @@ try {
   } else if (has("agent")) {
     // The agent-run upgrade is a Mentura kit (U-3, I-29): the framework finds it and runs it as its own process.
     const k = kitFor("upgrade --agent");
-    if (!k) fail(new Error("an agent-run upgrade is a Mentura kit (platform/kits/agent-upgrade), and none is installed here; --stage upgrades a copy without an agent"));
+    if (!k) fail(new Error("an agent-run upgrade is a Mentura kit (agent-upgrade, in the folder NAIVE_KITS names), and none is installed here; --stage upgrades a copy without an agent"));
     process.exit(spawnSync("node", [join(k.dir, k.entry), dir, ...(json ? ["--json"] : [])], { stdio: "inherit" }).status ?? 1);
   } else if (has("status")) {
     const d = draft(dir);

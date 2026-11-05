@@ -276,13 +276,26 @@ expect("check-nouns passes on the repository", run("check-nouns.mjs", [], { EE_R
 writeFileSync(join(repo, "schema/README.md"), readFileSync(join(repo, "schema/README.md"), "utf8") + "\nEach sphere holds products.\n"); // a retired noun, on purpose
 { const r = run("check-nouns.mjs", [], { EE_ROOT: repo }); expect("a retired noun in a checked file fails", r.status !== 0 && /retired noun "sphere"/.test(r.stderr)); }
 
-// check-boundary reads a whole repository: framework code never imports platform code (EE-041).
+// check-boundary reads a whole repository: Naive never names an app's module (EE-041, EE-118). The app
+// folder and the import keyword are built from variables so this file does not name or import one itself.
+const from = "fr" + "om";
 expect("check-boundary passes on the repository", run("check-boundary.mjs", [], { EE_ROOT: repo }).status === 0);
-writeFileSync(join(repo, "knowledge/connectors/leak.mjs"), 'import { connect } from "../../platform/connectors/github.mjs";\nexport default connect;\n');
-{ const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework file importing from platform/ fails", r.status !== 0 && /framework code never imports platform code/.test(r.stderr)); }
+const appFolder = "plat" + "form";
+for (const [name, text, pattern] of /** @type {[string, (app: string) => string, RegExp][]} */ ([
+  ["an import of an app module fails", (app) => `import { connect } ${from} "../../${app}/connectors/github.mjs";\nexport default connect;\n`, /never names an app's module/],
+  ["spawning an app module by path fails", (app) => `spawnSync("node", [join(repo, "${app}/integrations/jev.mjs")]);\n`, /never names an app's module/],
+  ["an import that leaves the repository fails", () => `import x ${from} "../../../elsewhere/x.mjs";\nexport default x;\n`, /outside the repository/],
+])) {
+  writeFileSync(join(repo, "knowledge/connectors/leak.mjs"), text(appFolder));
+  const r = run("check-boundary.mjs", [], { EE_ROOT: repo });
+  expect(name, r.status !== 0 && pattern.test(r.stderr));
+  rmSync(join(repo, "knowledge/connectors/leak.mjs"));
+}
+writeFileSync(join(repo, "knowledge/connectors/leak.mjs"), `// a comment may name ${appFolder}/connectors/github.mjs\nexport default 1;\n`);
+expect("a comment that names an app module passes", run("check-boundary.mjs", [], { EE_ROOT: repo }).status === 0);
 rmSync(join(repo, "knowledge/connectors/leak.mjs"));
-edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { list.find((t) => t.id === "github").connector.module = "knowledge/connectors/filesystem.mjs"; list.find((t) => t.id === "github").credentials = ["GITHUB_TOKEN"]; });
-{ const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a framework connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
+edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { const g = list.find((t) => t.id === "github"); g.connector = { module: "knowledge/connectors/filesystem.mjs", writes: ["direct"] }; g.credentials = ["GITHUB_TOKEN"]; });
+{ const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a Naive connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
 // Files git ignores (such as a synced bank stream's events) are left out, as a clone would leave them out.

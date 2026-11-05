@@ -42,7 +42,7 @@
           },
           "confidential": {
             "type": "boolean",
-            "description": "Mentura's confidential records (platform/research/): checked like any other, left out of generated docs"
+            "description": "Records an app marks confidential (such as Mentura's research records, added through naive.data-model.json): checked like any other, left out of generated docs"
           },
           "layer": {
             "description": "The owning layer, or system for records every layer shares",

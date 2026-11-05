@@ -13,8 +13,8 @@ Version 0.1.0, ours and unevaluated (EE-062, EE-063, EE-064, EE-065). For the de
 
 ## What it does
 
-1. **Read.** `platform/integrations/site.mjs` reads the home page and up to nine pages it links to. Pages a marketing site usually has (about, pricing, careers, investors, community, press, security) come first, one per section. Firecrawl renders the pages when `FIRECRAWL_API_KEY` is set. Otherwise a plain fetch reads the HTML, which misses sites that only render in the browser. Each page records where it sits: the home page, the header or navigation, linked from the home page (the footer counts), or deeper.
-2. **Judge.** Jev answers one typed question per page and item: "Does this page tell a visitor …?" That is 150 questions for ten pages, in about 0.4 seconds. Without a Jev key, the matrix's keywords judge instead, which is rougher, and the result says so.
+1. **Read.** The app's site reader, named by `NAIVE_SITE_CMD` (run by `interface/harness/site.mjs`), reads the home page and up to nine pages it links to. Pages a marketing site usually has (about, pricing, careers, investors, community, press, security) come first, one per section. Each page records where it sits: the home page, the header or navigation, linked from the home page (the footer counts), or deeper.
+2. **Judge.** Jev answers one typed question per page and item: "Does this page tell a visitor …?" That is 150 questions for ten pages, in about 0.4 seconds. The judge is the command `NAIVE_JUDGE_CMD` names. Without one, the matrix's keywords judge instead, which is rougher, and the result says so.
 3. **Weigh.** The marketing matrix (`matrix.json`) names six audiences: customers, investors, candidates, contributors, partners and press. It lists fifteen items each audience may need to learn, and the record each item comes from. Every item is public by default (publish: true).
    - **Audience weights** come from the venture's facts: raising, hiring, inviting contributors, and what its ICP records say about who it courts. Investors weigh 1 while the venture is raising and 0.15 otherwise.
    - **An item's need** is its strongest audience weight times importance.

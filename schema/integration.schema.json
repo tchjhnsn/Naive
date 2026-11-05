@@ -109,8 +109,8 @@
       "properties": {
         "module": {
           "type": "string",
-          "pattern": "^(knowledge|platform)/connectors/[a-z0-9-]+\\.mjs$",
-          "description": "Path from the repository root; it exports connect(options). A connector that works offline and names no vendor is framework (knowledge/connectors/); any other is platform (platform/connectors/), EE-041"
+          "pattern": "^knowledge/connectors/[a-z0-9-]+\\.mjs$",
+          "description": "Path from the repository root; it exports connect(options). Naive ships only connectors that work offline and name no vendor (knowledge/connectors/); an app that hosts Naive registers any other with registerConnector in knowledge/connectors/index.mjs (EE-041)"
         },
         "writes": {
           "type": "array",

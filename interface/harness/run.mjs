@@ -5,10 +5,16 @@
 // questions first and fails closed on them, and decides what the agent sees and may do: need-now
 // picks the kit, the router gates every write, the agent's proposals wait for the founder, and routes
 // an open decision unlocks stay closed. The agent is one the founder already has (Claude Code,
-// headless); Naive holds no model key. Platform tools are handed to the agent beside Naive's own MCP
-// server, or spawned by path, never imported: Jev tags the ideas when TYPESAFE_API_KEY is set, and
-// Firecrawl researches the market when FIRECRAWL_API_KEY is set. With --money, the founder's money source
-// (Rho; its sandbox by default) fills the venture's money package, and the agent sees only its summary.
+// headless); Naive holds no model key. The app that hosts Naive hands in its own tools as commands, never
+// imported and never named here:
+//
+//   NAIVE_JUDGE_CMD     a judge that answers the Jev protocol; it tags the ideas and judges the graph
+//   NAIVE_RESEARCH_MCP  an MCP server the agent may use to research the market, beside Naive's own
+//   NAIVE_MONEY_CMD     a money sync, run as <cmd> sync --venture <dir> [--live | --fixture <file>]
+//   NAIVE_TRACE_CMD     an exporter, run as <cmd> <trace.json>, that ships the trace
+//
+// With --money and NAIVE_MONEY_CMD set, the founder's money source fills the venture's money package, and
+// the agent sees only its summary.
 //
 //   node interface/harness/run.mjs discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>]
 //        [--workspace <dir>] [--board] [--yes] [--steps <n>] [--money sandbox|live|<fixture.json>]
@@ -16,7 +22,7 @@
 //   --board   serves the decision board at http://127.0.0.1:4331/ and the idea map at /map
 //   --yes     the founder settles the top-ranked decisions as worded (rehearsals and tests)
 //   --steps   how many decisions the founder settles between the agent's passes (default 3)
-//   --money   syncs money/ from Rho (sandbox, live with RHO_API_TOKEN, or a saved fixture) before pass 1
+//   --money   syncs money/ with NAIVE_MONEY_CMD (its sandbox, live, or a saved fixture) before pass 1
 //
 // 1. Naive maps the dump (Jev, else the agent tags it with the same conventions), then structures the
 //    map as an idea graph: a Merkle DAG with signal and lanes (EE-060).
@@ -34,6 +40,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
+import { judgeCommand } from "../../schema/caching.mjs";
 import { decisions } from "../../schema/decisions.mjs";
 import { docket } from "../../schema/docket.mjs";
 import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../purpose/frameworks/idea-map/ideamap.mjs";
@@ -59,8 +66,14 @@ const founder = opt("founder") ?? process.env.MENTURA_PERSON ?? "Founder";
 const ws = resolve(opt("workspace") ?? join(mkdtempSync(join(tmpdir(), "naive-run-")), "workspace"));
 const dir = join(ws, "ventures", id);
 const steps = Number(opt("steps") ?? 3);
-const jev = Boolean(process.env.TYPESAFE_API_KEY ?? process.env.TYPESAFEAI_API_KEY);
-const research = Boolean(process.env.FIRECRAWL_API_KEY);
+const judgeCmd = judgeCommand(process.env.NAIVE_JUDGE_CMD);
+const jev = Boolean(judgeCmd);
+const researchCmd = judgeCommand(process.env.NAIVE_RESEARCH_MCP);
+const research = Boolean(researchCmd);
+const moneyCmd = judgeCommand(process.env.NAIVE_MONEY_CMD);
+const traceCmd = judgeCommand(process.env.NAIVE_TRACE_CMD);
+/** Runs the app's judge on one request. */
+const judgeRun = (req) => spawnSync(judgeCmd[0], judgeCmd.slice(1), { input: JSON.stringify(req), encoding: "utf8", maxBuffer: 1 << 26 });
 const t0 = Date.now();
 const laps = [];
 const lap = (what) => { const s = (Date.now() - t0) / 1000; laps.push({ at: s, what }); console.log(`\n[${s.toFixed(1)}s] ${what}`); };
@@ -80,10 +93,11 @@ lap(`venture ${id} scaffolded in ${ws}; idea dump saved (${readFileSync(dumpFile
 // Money (EE-070): the money source stays the system of record. Naive syncs pointers and a summary into
 // the money data package; transactions stay in a sensitive stream that neither the agent nor the trace sees.
 let money = null;
-if (opt("money")) {
+if (opt("money") && !moneyCmd) console.log("   --money needs NAIVE_MONEY_CMD, the app's money sync; the run goes on without it");
+if (opt("money") && moneyCmd) {
   const m = opt("money");
   const src = m === "live" ? ["--live"] : m === "sandbox" ? [] : ["--fixture", resolve(m)];
-  const p = spawnSync("node", [join(repo, "platform/integrations/rho.mjs"), "sync", "--venture", dir, ...src], { encoding: "utf8" });
+  const p = spawnSync(moneyCmd[0], [...moneyCmd.slice(1), "sync", "--venture", dir, ...src], { encoding: "utf8" });
   if (p.status === 0 && existsSync(join(ventureFile(dir, "money/_summary.json")))) {
     money = JSON.parse(readFileSync(join(ventureFile(dir, "money/_summary.json")), "utf8"));
     prov(dir, { entity: "money/_summary.json", route: "money/_summary", activity: "create", agent: agentFromEnv("agent", "harness", { id: "naive-money" }), note: `synced from ${money.source}; ${money.transactions} transactions kept as pointers in a sensitive stream` });
@@ -92,14 +106,14 @@ if (opt("money")) {
 }
 
 const servers = { naive: { command: "node", args: [join(repo, "interface/mcp/server.mjs")], env: { MENTURA_WORKSPACE: ws, MENTURA_PERSON: founder } } };
-if (research) servers.research = { command: "node", args: [join(repo, "platform/mcp/research.mjs")], env: { FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY } };
+if (researchCmd) servers.research = { command: researchCmd[0], args: researchCmd.slice(1) };
 const mcp = join(ws, ".mcp-harness.json");
 writeFileSync(mcp, JSON.stringify({ mcpServers: servers }));
 
 let board = null;
 if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("../demo/board.mjs")).serve(4331, id); console.log("Decision board: http://127.0.0.1:4331/   Idea map: http://127.0.0.1:4331/map"); }
 
-// The trace (EE-058): every step and every tool call the agent made, with timings, for LangSmith.
+// The trace (EE-058): every step and every tool call the agent made, with timings, for an exporter such as LangSmith.
 const iso = () => new Date().toISOString();
 const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, ideas: readFileSync(ventureFile(dir, DUMP), "utf8"), founder, phase }, children: [], metadata: {
   venture: id, venture_id: id, pipeline_step: phase, money: money?.source ?? null,
@@ -155,7 +169,7 @@ async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", 
   return result.result;
 }
 
-// The run's evals and trace: written beside the workspace, and sent to LangSmith when a key is set.
+// The run's evals and trace: written beside the workspace, and shipped by NAIVE_TRACE_CMD when it is set.
 function finish(code = 0) {
   trace.end = iso();
   const evals = existsSync(ventureFile(dir, DUMP)) ? evaluate(dir, { researched, settled }) : [];
@@ -167,9 +181,9 @@ function finish(code = 0) {
   trace.outputs = { settled, docket: { steps: docketSteps, now: compact(docket(dir)) }, drafted, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
   writeFileSync(join(ws, "trace.json"), JSON.stringify(trace, null, 2) + "\n");
   console.log(`\nEvals:\n${evals.map((e) => `   ${e.score === 1 ? "pass" : e.score === 0 ? "FAIL" : "part"}  ${e.key.padEnd(26)} ${e.score}  ${e.comment}`).join("\n")}`);
-  if (process.env.LANGSMITH_API_KEY) {
-    const p = spawnSync("node", [join(repo, "platform/integrations/langsmith.mjs"), join(ws, "trace.json")], { encoding: "utf8" });
-    console.log(p.status === 0 ? `LangSmith: ${p.stdout.trim()}` : `LangSmith upload failed: ${(p.stderr || p.stdout).trim()}`);
+  if (traceCmd) {
+    const p = spawnSync(traceCmd[0], [...traceCmd.slice(1), join(ws, "trace.json")], { encoding: "utf8" });
+    console.log(p.status === 0 ? `Trace: ${p.stdout.trim()}` : `Trace upload failed: ${(p.stderr || p.stdout).trim()}`);
   }
   // The board keeps serving the finished run, or the stopped one, so the founder can see where it got to.
   if (board) { console.log(`\nThe board keeps serving${code ? " what the run got to" : ""}: http://127.0.0.1:4331/ and /map. Ctrl-C to stop. Workspace: ${ws}`); return; }
@@ -188,7 +202,7 @@ const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
 let tags, tagger;
 const mapNode = { name: "idea map", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
 if (jev) {
-  const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(request(ideas, venture)), encoding: "utf8", maxBuffer: 1 << 26 });
+  const p = judgeRun(request(ideas, venture));
   if (p.status !== 0) { console.error(p.stderr); process.exit(1); }
   const out = JSON.parse(p.stdout);
   tags = fromAnswers(out.answers);
@@ -199,7 +213,7 @@ if (jev) {
 departments (at most ${CONVENTIONS.max.departments}, the ones the idea is mainly about): ${JSON.stringify(CONVENTIONS.departments)}
 records (at most ${CONVENTIONS.max.records}, the ones it mainly feeds): ${JSON.stringify(Object.fromEntries(Object.entries(CONVENTIONS.records).map(([k, v]) => [k, v.about])))}
 exists: true only if ${CONVENTIONS.exists}.
-Ideas: ${JSON.stringify(Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])))}`, "tagging the ideas (no Jev key)", { tools: null, quiet: true });
+Ideas: ${JSON.stringify(Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])))}`, "tagging the ideas (no judge command)", { tools: null, quiet: true });
   tags = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
   tagger = "claude-code";
 }
@@ -215,7 +229,7 @@ const graphNode = { name: "idea graph", run_type: "tool", start: iso(), inputs: 
 const mapIdeas = parse(readFileSync(ventureFile(dir, MAP), "utf8")).ideas;
 let graphAnswers = null;
 if (jev) {
-  const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(graphRequest(mapIdeas, venture)), encoding: "utf8", maxBuffer: 1 << 26 });
+  const p = judgeRun(graphRequest(mapIdeas, venture));
   if (p.status === 0) { const out = JSON.parse(p.stdout); graphAnswers = out.answers; console.log(`   Jev answered ${Object.keys(out.answers).length} dependency and concreteness questions in ${out.ms} ms`); }
   else console.log(`   Jev could not judge the dependencies (${p.stderr.trim().slice(0, 200)}); using Naive's record order`);
 }
@@ -294,7 +308,7 @@ if (jev) {
   const rq = spawnSync("node", [join(repo, "interface/orchestration/venture-package.mjs"), "request", dir], { encoding: "utf8" });
   const q = rq.status === 0 ? JSON.parse(rq.stdout) : null;
   if (q && Object.keys(q.questions).length) {
-    const p = spawnSync("node", [join(repo, "platform/integrations/jev.mjs")], { input: JSON.stringify(q), encoding: "utf8" });
+    const p = judgeRun(q);
     if (p.status === 0) { writeFileSync(join(ws, "package-answers.json"), p.stdout); pkgArgs = ["--answers", join(ws, "package-answers.json")]; console.log(`   Jev answered ${Object.keys(q.questions).length} of the question matrix's questions`); }
   }
 }

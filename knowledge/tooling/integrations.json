@@ -46,26 +46,10 @@
       "cli"
     ],
     "status": "in-use",
-    "reason": "Docs as code (EE-005); the second connector (EE-037)",
+    "reason": "Docs as code (EE-005); the second connector (EE-037). Its connector reaches the network, so it belongs to the app that hosts Naive, which registers it with registerConnector (knowledge/connectors/index.mjs)",
     "credentials": [
       "GITHUB_TOKEN"
-    ],
-    "connector": {
-      "module": "platform/connectors/github.mjs",
-      "writes": [
-        "pull-request",
-        "none"
-      ],
-      "options": [
-        "repo",
-        "ref",
-        "root",
-        "token",
-        "api",
-        "search"
-      ],
-      "eval": "node platform/connectors/eval.mjs (live: MENTURA_EVAL_GITHUB_REPO=owner/name)"
-    }
+    ]
   },
   {
     "id": "notion",

@@ -345,7 +345,7 @@ export type DataModel = {
   layers: string[];
   records: {
     id: string;
-    /** Mentura's confidential records (platform/research/): checked like any other, left out of generated docs */
+    /** Records an app marks confidential (such as Mentura's research records, added through naive.data-model.json): checked like any other, left out of generated docs */
     confidential?: boolean;
     /** The owning layer, or system for records every layer shares */
     layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
@@ -1589,7 +1589,7 @@ export type Integration = {
   links?: string[];
   /** Knowledge layer only: the module that implements the connector contract (knowledge/connectors/contract.mjs) for this integration, so a venture's knowledge/sources.json can keep records in it (EE-037) */
   connector?: {
-    /** Path from the repository root; it exports connect(options). A connector that works offline and names no vendor is framework (knowledge/connectors/); any other is platform (platform/connectors/), EE-041 */
+    /** Path from the repository root; it exports connect(options). Naive ships only connectors that work offline and name no vendor (knowledge/connectors/); an app that hosts Naive registers any other with registerConnector in knowledge/connectors/index.mjs (EE-041) */
     module: string;
     /** The write modes it supports; the first is its default */
     writes: ("direct" | "pull-request" | "none")[];
