@@ -2166,6 +2166,19 @@ export type NaiveConfig = {
       by?: string;
     }[];
   };
+  /** The publish build (operations/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one */
+  publish_build?: {
+    /** The default output folder, relative to the venture folder (default .release/publish-build) */
+    out?: string;
+    channels?: {
+      [key: string]: {
+        /** The files the channel writes, relative to the output folder */
+        outputs: string[];
+        /** Scripts run in order with node, each relative to the venture folder or absolute */
+        builders: string[];
+      };
+    };
+  };
   /** What starts the next step on an event (interface/orchestration/triggers.mjs) */
   triggers?: unknown[];
   /** Per-rule mode for the product lint (schema/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed. */
@@ -2286,7 +2299,10 @@ export type NextjsStatus = {
     id: string;
     chapter: string;
     status: "built" | "partial" | "not built" | "n/a";
+    /** Files in this repository that show the concept working */
     evidence?: string[];
+    /** Files in everything-ecosystem (the Mentura platform, the docs site) that show the concept working; not checked here */
+    evidence_elsewhere?: string[];
     page?: string;
     note?: string;
   }[];

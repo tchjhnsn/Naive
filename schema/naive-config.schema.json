@@ -324,6 +324,45 @@
         }
       }
     },
+    "publish_build": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The publish build (operations/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one",
+      "properties": {
+        "out": {
+          "type": "string",
+          "description": "The default output folder, relative to the venture folder (default .release/publish-build)"
+        },
+        "channels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "outputs",
+              "builders"
+            ],
+            "properties": {
+              "outputs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The files the channel writes, relative to the output folder"
+              },
+              "builders": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                },
+                "description": "Scripts run in order with node, each relative to the venture folder or absolute"
+              }
+            }
+          }
+        }
+      }
+    },
     "triggers": {
       "type": "array",
       "description": "What starts the next step on an event (interface/orchestration/triggers.mjs)"

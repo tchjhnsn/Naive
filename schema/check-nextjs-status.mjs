@@ -1,18 +1,24 @@
 #!/usr/bin/env node
 // Checks docs/design/naive-nextjs-status.json against the Next.js translation ledger and the code: every
-// concept row in the ledger has exactly one status; a built or partial row cites files that exist and a
-// docs page that exists; and the generated "What's built" page matches the data.
+// concept row in the ledger has exactly one status, and a built or partial row cites files that exist (or,
+// in evidence_elsewhere, files in everything-ecosystem, which are not checked here) and names a docs page. The docs pages live with the docs site, outside this repository: given --docs <dir>
+// (the site's MDX content folder), each named page must exist there and the generated "What's built" page,
+// <dir>/get-started/whats-built.mdx, must match the data.
 //
-//   node schema/check-nextjs-status.mjs            check, and print the counts
-//   node schema/check-nextjs-status.mjs --write    write site/content/docs/get-started/whats-built.mdx
+//   node schema/check-nextjs-status.mjs                          check, and print the counts
+//   node schema/check-nextjs-status.mjs --docs <dir>             also check the pages and the What's built page
+//   node schema/check-nextjs-status.mjs --docs <dir> --write     write <dir>/get-started/whats-built.mdx
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 const repo = new URL("..", import.meta.url).pathname;
 const LEDGER = "docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md";
 const STATUS = "docs/design/naive-nextjs-status.json";
-const PAGE = "site/content/docs/get-started/whats-built.mdx";
+const di = process.argv.indexOf("--docs");
+const DOCS = di >= 0 ? resolve(process.argv[di + 1]) : null;
+const PAGE = DOCS && join(DOCS, "get-started/whats-built.mdx");
+if (process.argv.includes("--write") && !DOCS) { console.error("--write needs --docs <dir>, the docs site's MDX content folder"); process.exit(2); }
 const STATES = ["built", "partial", "not built", "n/a"];
 
 const ids = [...readFileSync(join(repo, LEDGER), "utf8").matchAll(/^\| ([A-Z]-\d+) \|/gm)].map((m) => m[1]);
@@ -25,10 +31,11 @@ for (const r of data.rows) {
   if (!ids.includes(r.id)) errors.push(`${r.id} is not a row of the ledger`);
   if (!STATES.includes(r.status)) errors.push(`${r.id}: status ${r.status} is not one of ${STATES.join(", ")}`);
   if (r.status === "built" || r.status === "partial") {
-    if (!r.evidence?.length) errors.push(`${r.id} is ${r.status} but cites no file`);
+    // evidence is checked here; evidence_elsewhere names files in everything-ecosystem, which this repository cannot check.
+    if (!r.evidence?.length && !r.evidence_elsewhere?.length) errors.push(`${r.id} is ${r.status} but cites no file`);
     for (const f of r.evidence ?? []) if (!existsSync(join(repo, f))) errors.push(`${r.id} cites ${f}, which does not exist`);
     if (!r.page) errors.push(`${r.id} is ${r.status} but names no docs page`);
-    else if (!existsSync(join(repo, "site/content/docs", `${r.page}.mdx`))) errors.push(`${r.id} names page ${r.page}, which does not exist`);
+    else if (DOCS && !existsSync(join(DOCS, `${r.page}.mdx`))) errors.push(`${r.id} names page ${r.page}, which does not exist`);
   }
 }
 for (const id of ids) if (!seen.has(id)) errors.push(`${id} is in the ledger but has no status`);
@@ -72,8 +79,8 @@ function page() {
   return lines.join("\n");
 }
 
-if (process.argv.includes("--write")) { writeFileSync(join(repo, PAGE), page()); console.log(`wrote ${PAGE}`); }
-else if (!existsSync(join(repo, PAGE)) || readFileSync(join(repo, PAGE), "utf8") !== page()) errors.push(`${PAGE} is out of date: run node schema/check-nextjs-status.mjs --write`);
+if (PAGE && process.argv.includes("--write")) { writeFileSync(PAGE, page()); console.log(`wrote ${PAGE}`); }
+else if (PAGE && (!existsSync(PAGE) || readFileSync(PAGE, "utf8") !== page())) errors.push(`${PAGE} is out of date: run node schema/check-nextjs-status.mjs --docs <dir> --write`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
 console.log(`${data.rows.length} concepts: ${STATES.map((s) => `${counts[s]} ${s}`).join(", ")}`);

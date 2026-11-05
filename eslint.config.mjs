@@ -41,7 +41,7 @@ export default tseslint.config(
   },
   {
     rules: {
-      // TODO(2026-10-29): 35 unused variables and imports across interface/, schema/ and site/. Back to "error" once
+      // TODO(2026-10-29): 35 unused variables and imports across interface/ and schema/. Back to "error" once
       // they are removed; they are warnings so parallel branches touching those files do not conflict.
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" }],
       // Empty catch blocks are the house idiom for "best effort" reads; other empty blocks still fail.

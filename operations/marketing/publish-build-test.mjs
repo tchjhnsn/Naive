@@ -1,13 +1,14 @@
 // Tests for naive publish build (the publishing gate, item 2): a canary in every internal field of a fixture
 // venture never reaches any channel's output; an approved public variant does; an unapproved draft does not
 // and is listed as pending; a variant that copies its source is refused at the gate; and a builder that
-// reads a record directly is refused at the verify stage.
+// reads a record directly is refused at the verify stage. Naive ships no channel: the fixture venture names
+// its channels in naive.config.json, with Naive-owned stand-in builders (operations/marketing/fixtures/).
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { build, CHANNELS } from "./publish-build.mjs";
+import { join, relative } from "node:path";
+import { build, channelsFor } from "./publish-build.mjs";
 
 const repo = new URL("../../", import.meta.url).pathname;
 let failed = 0;
@@ -21,9 +22,21 @@ w("venture.json", { id: "canary", name: "Canary", type: "software-startup", pare
 w("people/people.json", { venture: "canary", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] });
 w("foundation/problem.json", { venture: "canary", statement: `${CANARY} problem: founders cannot tell which decision matters most this week.`, segment: `${CANARY} segment: solo founders building with agents`, forms: [{ id: "f", statement: `${CANARY} form: nobody uses what they built` }], evidence: [] });
 w("foundation/alignment.json", { venture: "canary", principles: [{ id: "p", statement: `${CANARY} principle: people decide by default, always` }] });
+// The channels, named the way an app names them: builders relative to the venture folder.
+const fx = (f) => relative(v, join(repo, "operations/marketing/fixtures", f));
+const channels = {
+  site: { outputs: ["generated/venture-facts.json"], builders: [fx("facts.ts")] },
+  artifact: { outputs: ["generated/venture-facts.json", "artifact/index.html"], builders: [fx("facts.ts"), fx("page.ts")] },
+  foundation: { outputs: ["artifact/foundation.html"], builders: [fx("foundation.ts")] },
+};
+w("naive.config.json", { publish_build: { channels } });
+const CHANNELS = channelsFor(v).channels;
 const all = () => Object.keys(CHANNELS).flatMap((c) => CHANNELS[c].outputs.map((p) => { try { return readFileSync(join(out, p), "utf8"); } catch { return ""; } })).join("\n");
 
 try {
+  expect("the venture's naive.config.json names its channels, builders resolved against the venture folder", Object.keys(CHANNELS).join() === "site,artifact,foundation" && CHANNELS.site.builders[0] === join(repo, "operations/marketing/fixtures/facts.ts"), CHANNELS);
+  const none = build("site", join(repo, "schema/examples/workspace/ventures/acme-labs"), { out });
+  expect("a venture that names no channel has none: Naive ships no builder", !none.ok && /names no channel/.test(none.errors.join(" ")), none);
   for (const c of Object.keys(CHANNELS)) {
     const r = build(c, v, { out });
     expect(`${c}: builds with no public variant`, r.ok, r);
@@ -52,22 +65,24 @@ try {
   expect("a published variant with no approver is refused at the gate", !r.ok && r.stage === "gate", r);
   w("operations/marketing/content/problem.mdx", "---\nvariant_of: foundation/problem.json#statement\naudience: founders\npublish: true\napproved_by: Founder\n---\nPicking the decision that matters is the hard part now.\n");
 
-  // A builder that reads a record directly, as site/scripts/foundation.mjs did before this gate.
+  // A builder that reads a record directly, as a marketing site's one-pager once did before this gate.
   const bad = join(tmp, "bad-builder.mjs");
   writeFileSync(bad, `import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 const p = JSON.parse(readFileSync(process.env.NAIVE_VENTURE + "/foundation/problem.json", "utf8"));
 mkdirSync(process.env.NAIVE_PUBLISH_OUT + "/artifact", { recursive: true });
 writeFileSync(process.env.NAIVE_PUBLISH_OUT + "/artifact/bad.html", "<p>" + p.segment + "</p>");\n`);
-  r = build("bad", v, { out, channels: { bad: { outputs: ["artifact/bad.html"], scripts: [bad] } } });
+  r = build("bad", v, { out, channels: { bad: { outputs: ["artifact/bad.html"], builders: [bad] } } });
   expect("a builder that renders a record's own wording is refused at the verify stage", !r.ok && r.stage === "verify" && /foundation\/problem\.json#segment/.test(r.errors.join(" ")), r);
 
   expect("an unknown channel is refused", !build("nope", v, { out }).ok);
   const cli = spawnSync("node", [join(repo, "operations/marketing/publish-build.mjs"), "site", v, "--out", out], { encoding: "utf8" });
   expect("the command line runs the build", cli.status === 0 && /built site for canary/.test(cli.stdout), cli.stdout + cli.stderr);
   expect("every published fact is confirmed by construction, so no fact carries a status", !Object.values(JSON.parse(readFileSync(join(out, "generated/venture-facts.json"), "utf8"))).some((f) => f && typeof f === "object" && "status" in f));
-  expect("a marketing page cannot use the removed Term component", !readFileSync(join(repo, "site/scripts/check-content.mjs"), "utf8").includes('"Term"'));
-  const repoVenture = spawnSync("node", [join(repo, "operations/marketing/publish-build.mjs"), "foundation", join(repo, "instance/ventures/everything-ecosystem"), "--out", out], { encoding: "utf8" });
-  expect("the repository's own venture builds its foundation one-pager through the gate", repoVenture.status === 0, repoVenture.stdout + repoVenture.stderr);
+  r = build("missing", v, { out, channels: { missing: { outputs: ["artifact/never.html"], builders: [fx("facts.ts")] } } });
+  expect("an output the builders did not write is refused at the build stage", !r.ok && r.stage === "build", r);
+  // An app registers its channels in code; an example venture builds its foundation one-pager through the gate.
+  const example = build("foundation", join(repo, "schema/examples/workspace/ventures/acme-labs"), { out, channels: { foundation: { outputs: ["artifact/foundation.html"], builders: [join(repo, "operations/marketing/fixtures/foundation.ts")] } } });
+  expect("channels registered in code build an example venture's foundation one-pager through the gate", example.ok, example);
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }

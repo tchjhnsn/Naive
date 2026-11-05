@@ -19,7 +19,8 @@
           "id": { "type": "string", "pattern": "^[A-Z]-[0-9]+$" },
           "chapter": { "type": "string" },
           "status": { "enum": ["built", "partial", "not built", "n/a"] },
-          "evidence": { "type": "array", "items": { "type": "string" } },
+          "evidence": { "type": "array", "items": { "type": "string" }, "description": "Files in this repository that show the concept working" },
+          "evidence_elsewhere": { "type": "array", "items": { "type": "string" }, "description": "Files in everything-ecosystem (the Mentura platform, the docs site) that show the concept working; not checked here" },
           "page": { "type": "string" },
           "note": { "type": "string" }
         }

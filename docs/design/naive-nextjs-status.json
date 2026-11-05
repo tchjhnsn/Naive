@@ -1,5 +1,5 @@
 {
- "about": "Whether each concept in docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md is built, and where the docs explain it. built: works end to end and is tested; partial: some of it works, the note or the page says what is missing; not built: the ledger describes it, the code does not have it; n/a: the ledger marks it as not converting. Checked by schema/check-nextjs-status.mjs; site/content/docs/get-started/whats-built.mdx is generated from it.",
+ "about": "Whether each concept in docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md is built, and where the docs explain it. built: works end to end and is tested; partial: some of it works, the note or the page says what is missing; not built: the ledger describes it, the code does not have it; n/a: the ledger marks it as not converting. evidence names files in this repository; evidence_elsewhere names files in everything-ecosystem (the Mentura platform and the docs site), which this repository cannot check. Checked by schema/check-nextjs-status.mjs; the docs site's What's built page is generated from it (--docs <dir> --write).",
  "checked": "2026-10-29",
  "rows": [
   {
@@ -262,7 +262,7 @@
    "id": "I-27",
    "chapter": "Chapter 1: Installation",
    "status": "built",
-   "evidence": [
+   "evidence_elsewhere": [
     "site/content/docs/get-started/install.mdx"
    ],
    "note": "Installation gives a copyable prompt for your coding agent on the quick start and on connecting the agent",
@@ -331,8 +331,10 @@
     "packages/core/instrumentation.mjs",
     "packages/core/provenance.mjs",
     "interface/vitals.mjs",
-    "platform/integrations/langsmith.mjs",
     "interface/context-test.mjs"
+   ],
+   "evidence_elsewhere": [
+    "platform/integrations/langsmith.mjs"
    ],
    "page": "get-started/prefetching-and-vitals",
    "note": "Opt-in via naive.config.json instrumentation.events (or NAIVE_INSTRUMENT=1/0); register() listeners; calls, judgments and every provenance entry (write, draft, accept, confirm, decisions) emit events to .naive/events.jsonl (gitignored). vitals --trace builds a trace that the existing platform LangSmith uploader ships; the test runs that uploader against a local stand-in server. A live LangSmith upload was not run (needs LANGSMITH_API_KEY). Decision analytics from events is still the separate governance/analytics route."
@@ -1513,8 +1515,10 @@
     "schema/trigger.schema.json",
     "schema/kit.schema.json",
     "packages/core/provenance.mjs",
+    "schema/upgrades-test.mjs"
+   ],
+   "evidence_elsewhere": [
     "platform/kits/validation-kickoff/kit.json",
-    "schema/upgrades-test.mjs",
     "platform/kits/test.mjs"
    ],
    "page": "get-started/bringing-a-project-in",
@@ -1900,9 +1904,11 @@
    "evidence": [
     "schema/stale.mjs",
     "interface/router.mjs",
-    "platform/webhooks/server.mjs",
-    "platform/webhooks/test.mjs",
     "schema/upgrades-test.mjs"
+   ],
+   "evidence_elsewhere": [
+    "platform/webhooks/server.mjs",
+    "platform/webhooks/test.mjs"
    ],
    "page": "get-started/bringing-a-project-in",
    "note": "mentura notify marks stale the records derived from a changed source item (provenance derived_from) and the where-used children. Reads then carry a stale field until the record is written again. mentura stale lists what is stale. Signed HMAC webhooks on the platform call the same notify."
@@ -2091,9 +2097,11 @@
    "status": "built",
    "evidence": [
     "interface/brand.mjs",
-    "platform/integrations/remote-image.mjs",
     "schema/assets.mjs",
     "interface/tests/brand-test.mjs"
+   ],
+   "evidence_elsewhere": [
+    "platform/integrations/remote-image.mjs"
    ],
    "page": "get-started/brand-and-assets",
    "note": "mentura assets remote records a remote image as a link with a note in raw/sources/<id>/ (source.json plus text.md, immutable). A full copy in public/ fails the check unless its license allows a copy. The platform fetcher allows only hosts in remote_hosts, checks again after every redirect, refuses anything that is not an image, keeps the original private in raw/sources/<id>/original.* (gitignored), and copies only with --copy under a license that allows it. The test runs it against a local HTTP server. The allowlist is a field in public/assets.json (mentura assets hosts), not in knowledge/sources.json: a source there needs a store-contract connector, and that seemed the wrong shape."
@@ -2417,9 +2425,11 @@
     "interface/adapters/claude-code.json",
     "interface/adapters/codex.json",
     "interface/adapters/cursor.json",
-    "platform/adapter.json",
     "schema/adapter.schema.json",
     "schema/upgrades-test.mjs"
+   ],
+   "evidence_elsewhere": [
+    "platform/adapter.json"
    ],
    "page": "get-started/upgrading",
    "note": "mentura adapt writes each harness's entry files and copies of the skills of open packages, and never overwrites a file a person wrote or changed. mentura adapters verify runs the framework's suite for a harness adapter, or for mentura spawns the platform's connector, webhook and kit tests. An upgrade refreshes the venture's adapters."
@@ -2461,10 +2471,12 @@
    "chapter": "Chapter 18: Upgrading",
    "status": "built",
    "evidence": [
+    "schema/upgrades.mjs"
+   ],
+   "evidence_elsewhere": [
     "platform/kits/agent-upgrade/kit.json",
     "platform/kits/agent-upgrade/run.mjs",
     "platform/kits/agent-upgrade/stand-in-agent.mjs",
-    "schema/upgrades.mjs",
     "platform/kits/test.mjs"
    ],
    "page": "get-started/upgrading",
