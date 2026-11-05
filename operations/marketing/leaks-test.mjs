@@ -7,11 +7,11 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hash, mayKnow, visibilityOf } from "./visibility.mjs";
-import { leaks } from "./check-leaks.mjs";
-import { build } from "../operations/marketing/publish-build.mjs";
+import { hash, mayKnow, visibilityOf } from "../../schema/visibility.mjs";
+import { leaks } from "../../schema/check-leaks.mjs";
+import { build } from "./publish-build.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 

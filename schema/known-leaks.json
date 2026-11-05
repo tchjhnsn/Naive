@@ -1,5 +1,5 @@
 {
-  "note": "Public outputs that leak internal record text today, found by schema/canaries-test.mjs. The test plants a unique canary in each internal record of a copy of a fixture venture, builds the facts and both artifacts through the publish build, and fails on any canary not listed here, so a NEW leak fails. It also fails when a listed leak no longer happens, so this list only shrinks: remove an entry when the fix lands (gate items 2 and 10). Each output is a path relative to the publish build's output folder. Empty means the gate holds everywhere.",
+  "note": "Public outputs that leak internal record text today, found by operations/marketing/canaries-test.mjs. The test plants a unique canary in each internal record of a copy of a fixture venture, builds the facts and both artifacts through the publish build, and fails on any canary not listed here, so a NEW leak fails. It also fails when a listed leak no longer happens, so this list only shrinks: remove an entry when the fix lands (gate items 2 and 10). Each output is a path relative to the publish build's output folder. Empty means the gate holds everywhere.",
   "as_of": "2026-10-30",
   "leaks": []
 }

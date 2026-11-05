@@ -10,9 +10,9 @@
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { build } from "../operations/marketing/publish-build.mjs";
+import { build } from "./publish-build.mjs";
 
-const repo = new URL("..", import.meta.url).pathname;
+const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const walk = (p) => !existsSync(p) ? [] : statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];
