@@ -1,0 +1,53 @@
+{
+  "name": "product",
+  "title": "Product",
+  "kind": "core",
+  "purpose": "What the venture offers, each product's role (flagship, substrate, wedge) and what it is offered to whom.",
+  "department": "products",
+  "required": [
+    "product"
+  ],
+  "optional": [
+    "anatomy-answers"
+  ],
+  "refs": [
+    "icp"
+  ],
+  "planned": [
+    "specs",
+    "roadmap"
+  ],
+  "base": {
+    "discovery": 0.6,
+    "validation": 0.9,
+    "beachhead": 1,
+    "scale": 1,
+    "platform": 1
+  },
+  "when": [
+    {
+      "if": "products>=1",
+      "at_least": 0.8
+    }
+  ],
+  "why": "Once a product idea exists",
+  "unlocks": [
+    "the engineering handoff: build what is specified"
+  ],
+  "gates": [
+    "a person has confirmed every required record and every record this package reads"
+  ],
+  "schemas": [
+    "packages/naive/src/records/product.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/lint-product.mjs"
+  ],
+  "skill": {
+    "id": "product-function",
+    "path": "packages/naive/library/packages/product/skill/SKILL.md"
+  },
+  "use_model": []
+}

@@ -14,8 +14,8 @@ if (!dir) { console.error("usage: node packages/naive/src/checks/check-private.m
 const repo = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 
-const packages = readdirSync(join(repo, "library", "packages")).flatMap((name) => {
-  const p = join(repo, "library", "packages", name, "package.json");
+const packages = readdirSync(join(repo, "packages/naive/library", "packages")).flatMap((name) => {
+  const p = join(repo, "packages/naive/library", "packages", name, "package.json");
   return existsSync(p) ? [load(p)] : [];
 });
 const inputs = packages.flatMap((pkg) => (pkg.use_model ?? []).flatMap((step) => {

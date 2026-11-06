@@ -44,8 +44,8 @@ mkdirSync(join(dir, "section"));
 writeFileSync(join(dir, "section", "index.mdx"), "");
 expect("a README link does not fall back to .mdx", "[a](./onlymdx)\n", false, /the link points at nothing/);
 expect("an .mdx doc falls back to .mdx and index.mdx", "[a](./onlymdx) [b](./section)\n", true, null, ".mdx");
-const scanned = spawnSync("node", ["packages/naive/src/checks/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\npackages/naive/src/engine/x.mjs\npackages/naive/src/engine/README.md\nREADME.md\nlibrary/packages/finance/playbooks/bessemer-saas-metrics.md\nlibrary/packages/finance/playbooks/x/deep.md\npackages/naive/test/verification/lint-finance/README.md\n" }).stdout.trim().split("\n");
-const scannedOk = scanned.join() === "docs/master/naive-docs.md,knowledge/skills/x/SKILL.md,packages/naive/src/engine/README.md,README.md,library/packages/finance/playbooks/bessemer-saas-metrics.md,packages/naive/test/verification/lint-finance/README.md";
+const scanned = spawnSync("node", ["packages/naive/src/checks/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\npackages/naive/src/engine/x.mjs\npackages/naive/src/engine/README.md\nREADME.md\npackages/naive/library/packages/finance/playbooks/bessemer-saas-metrics.md\npackages/naive/library/packages/finance/playbooks/x/deep.md\npackages/naive/test/verification/lint-finance/README.md\n" }).stdout.trim().split("\n");
+const scannedOk = scanned.join() === "docs/master/naive-docs.md,knowledge/skills/x/SKILL.md,packages/naive/src/engine/README.md,README.md,packages/naive/library/packages/finance/playbooks/bessemer-saas-metrics.md,packages/naive/test/verification/lint-finance/README.md";
 if (!scannedOk) failed++;
 console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
 const tree = join(dir, "tree");
@@ -56,7 +56,7 @@ const owedOf = (input) => spawnSync("node", ["packages/naive/src/checks/check-do
 const owed = [
   ["code next to a README owes that README", "packages/naive/src/engine/x.mjs\n", "packages/naive/src/engine/README.md"],
   ["a lint owes the checks README", "packages/naive/src/checks/lint-finance.mjs\n", "packages/naive/src/checks/README.md"],
-  ["a playbook with no README in its package owes none", "library/packages/finance/playbooks/bessemer-saas-metrics.md\n", ""],
+  ["a playbook with no README in its package owes none", "packages/naive/library/packages/finance/playbooks/bessemer-saas-metrics.md\n", ""],
   ["a playbook JSON next to a README owes none", "purpose/deep/playbooks/first.json\n", ""],
   ["a playbook schema is code and owes its README", "packages/naive/src/records/playbook.schema.json\n", "packages/naive/src/records/README.md"],
   ["changing the README pays it", "packages/naive/src/engine/x.mjs\npackages/naive/src/engine/README.md\n", ""],
@@ -94,7 +94,7 @@ check("the failure message never offers the placeholder", message !== "" && !wor
 const codeLine = workflow.split("\n").find((l) => l.trim().startsWith("code="))?.trim() ?? "";
 const codeOf = (changed) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$code"`], { cwd: repo, encoding: "utf8", env: { ...process.env, changed } }).stdout.trim();
 check("the workflow's code is any non-Markdown file", codeOf("schema/notes.md\npurpose/x.mdx\ndocs/a.mjs") === "" && codeOf("schema/data.json\nschema/notes.md") === "schema/data.json", codeLine);
-check("the workflow's code skips playbooks but keeps playbook schemas", codeOf("purpose/playbooks/torians-playbook.json\nlibrary/packages/finance/playbooks/x.json") === "" && codeOf("packages/naive/src/records/playbook.schema.json") === "packages/naive/src/records/playbook.schema.json", codeLine);
+check("the workflow's code skips playbooks but keeps playbook schemas", codeOf("purpose/playbooks/torians-playbook.json\npackages/naive/library/packages/finance/playbooks/x.json") === "" && codeOf("packages/naive/src/records/playbook.schema.json") === "packages/naive/src/records/playbook.schema.json", codeLine);
 const all = spawnSync("node", ["packages/naive/src/checks/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });
 if (all.status !== 0) failed++;
 console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, playbooks, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}${all.stderr}`}`);

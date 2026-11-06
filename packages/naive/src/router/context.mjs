@@ -18,7 +18,7 @@
 //                 computation never blocks the read
 //   prefetch      (N-3, L-12) short summaries of the routes the agent is likely to need next: the
 //                 record's refs and links, the records it reads first and the ones that wait on it
-//                 (the after links in library/packages/catalog.json), and the need-now next step. Confirmed
+//                 (the after links in packages/naive/library/packages/catalog.json), and the need-now next step. Confirmed
 //                 records come in full when small, changing ones send only their state (N-4); large
 //                 collections send a count unless the task names them (N-12); every entry costs
 //                 tokens from the prefetch budget (C-16)
@@ -239,7 +239,7 @@ export async function templateFor(r, dir, set = settings(dir)) {
 // Prefetch (N-3, N-4, N-12, L-12, C-16)
 
 const MODEL = () => readDataModel();
-const AFTER = () => { try { return load(join(repoRoot, "library/packages/catalog.json")).records ?? {}; } catch { return {}; } };
+const AFTER = () => { try { return load(join(repoRoot, "packages/naive/library/packages/catalog.json")).records ?? {}; } catch { return {}; } };
 const valuesAt = (o, path) => path.split(".").reduce((xs, k) => xs.flatMap((x) => (Array.isArray(x) ? x : [x]).flatMap((y) => (y && typeof y === "object" && y[k] !== undefined ? [y[k]] : []))), [o]).flat();
 const ROUTEISH = /^[a-z][a-z0-9-]*(\/[a-z0-9.\-[\]]+)+$/;
 function strings(o, out = [], depth = 0) {

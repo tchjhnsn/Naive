@@ -82,7 +82,7 @@ for (const r of types.values()) if (r.decision_class && !classIds.has(r.decision
 // Layers and packages (EE-071). A layer manifest is <layer>/layer.json. A package that lists
 // `records` owns those record types (the validation package absorbed the old validation kit).
 const layerFiles = [...model.layers.map((l) => `${l}/layer.json`), "packages/naive/src/records/layer.json"];
-const packageFiles = all.filter((f) => /^library\/packages\/[^/]+\/package\.json$/.test(f));
+const packageFiles = all.filter((f) => /^packages\/naive\/library\/packages\/[^/]+\/package\.json$/.test(f));
 const skillsOf = (k) => [...(k.skills ?? []), ...(k.skill ? [k.skill] : [])];
 const kits = new Map();
 const owner = new Map();
@@ -91,7 +91,7 @@ const own = (id, t, k, p) => {
   if (owner.has(t)) errors.push(`${t}: owned by both ${owner.get(t)} and ${id}`);
   owner.set(t, id);
   if (k.layer && types.get(t).layer !== k.layer) errors.push(`${id}: owns ${t}, which the data model gives to ${types.get(t).layer}`);
-  if (!k.layer && p.startsWith("library/packages/")) errors.push(`${id}: owns ${t} but names no layer`);
+  if (!k.layer && p.startsWith("packages/naive/library/packages/")) errors.push(`${id}: owns ${t} but names no layer`);
 };
 for (const p of layerFiles) {
   if (!existsSync(join(root, p))) { errors.push(`${p}: missing; every layer has a manifest`); continue; }

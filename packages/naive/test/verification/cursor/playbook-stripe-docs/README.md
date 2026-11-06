@@ -1,6 +1,6 @@
 # Stripe docs playbook
 
-The model is the template in `library/packages/product/playbooks/stripe-docs.md`. Each step is one route read or write. TLC checks four rules. `replay.mjs` runs those routes on a temporary venture and throws the venture away.
+The model is the template in `packages/naive/library/packages/product/playbooks/stripe-docs.md`. Each step is one route read or write. TLC checks four rules. `replay.mjs` runs those routes on a temporary venture and throws the venture away.
 
 The chart hides the four `Done` steps. Those are the stutter on "Stopped: no reader on file", the two check failures, and "Habit and entries listed". Nothing changes there.
 

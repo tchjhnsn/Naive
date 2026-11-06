@@ -646,7 +646,7 @@ export type DecisionRights = {
   }[];
 };
 
-/** An ordered set of frames from the decision library, at library/packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. packages/naive/src/engine/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder. */
+/** An ordered set of frames from the decision library, at packages/naive/library/packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. packages/naive/src/engine/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder. */
 export type DecisionRoadmap = {
   id: string;
   title: string;
@@ -658,7 +658,7 @@ export type DecisionRoadmap = {
   source?: string;
   steps: {
     id: string;
-    /** A frame id in library/packages/*\/frames */
+    /** A frame id in packages/naive/library/packages/*\/frames */
     frame: string;
     order: number;
     needed_in?: "discovery" | "validation" | "beachhead" | "scale" | "platform";
@@ -1051,7 +1051,7 @@ export type FounderProfile = {
   confirmed?: boolean;
 };
 
-/** One recurring venture problem, as a shape, at library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide. */
+/** One recurring venture problem, as a shape, at packages/naive/library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide. */
 export type Frame = {
   id: string;
   title: string;
@@ -1672,7 +1672,7 @@ export type Kit = {
   title: string;
   purpose: string;
   extends: {
-    /** The Naive package it enhances (library/packages/<name>/package.json) */
+    /** The Naive package it enhances (packages/naive/library/packages/<name>/package.json) */
     package?: string;
     /** The framework command it extends, such as "upgrade --agent" */
     command?: string;
@@ -1772,7 +1772,7 @@ export type KnowledgeSources = {
     } };
 };
 
-/** What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/records/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.mjs checks this file. */
+/** What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/records/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at packages/naive/library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.mjs checks this file. */
 export type Layer = {
   layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
   /** What the layer is for, in one sentence */
@@ -4078,7 +4078,7 @@ export type Venture = {
   };
   /** The departments this venture imports, by id from operations/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048). */
   departments?: string[];
-  /** The Naive packages this venture uses, by name from library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.mjs. */
+  /** The Naive packages this venture uses, by name from packages/naive/library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.mjs. */
   packages?: string[];
   /** The Mentura kits this venture uses (EE-071). Each names the one package it extends, which the venture must use; the kit itself lives on the platform. */
   kits?: {

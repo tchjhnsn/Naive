@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 import { call, routes } from "../../../src/router/router.mjs";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
-const playbook = readFileSync(join(repo, "library/packages/people/playbooks/netflix-culture.md"), "utf8");
+const playbook = readFileSync(join(repo, "packages/naive/library/packages/people/playbooks/netflix-culture.md"), "utf8");
 const rows = [];
 const fail = (rule, message) => {
   rows.push({ rule, result: "FAIL", replay: message });

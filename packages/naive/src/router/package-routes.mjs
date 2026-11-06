@@ -29,8 +29,8 @@ export const GROUPS = {
   "go-to-market": { packages: ["marketing", "relationships", "customers"], context: "Who the venture sells to and how it reaches them. Marketing and sales share the ICP, the offer and the accounts, so they share one layout." },
 };
 
-export const packageNames = () => existsSync(join(repo, "library", "packages")) ? readdirSync(join(repo, "library", "packages")).filter((n) => existsSync(join(repo, "library", "packages", n, "package.json"))) : [];
-export const packageDef = (n) => load(join(repo, "library", "packages", n, "package.json"));
+export const packageNames = () => existsSync(join(repo, "packages/naive/library", "packages")) ? readdirSync(join(repo, "packages/naive/library", "packages")).filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))) : [];
+export const packageDef = (n) => load(join(repo, "packages/naive/library", "packages", n, "package.json"));
 
 /** The venture's route groups: the framework's, then its own from naive.config.json. */
 export function groupsOf(dir) {

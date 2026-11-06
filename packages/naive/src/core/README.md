@@ -4,7 +4,7 @@ Up: [repository](../../../../AGENTS.md)
 
 ## What this is
 
-The first code package of the monorepo rebuild. It holds the modules every layer needs and that import nothing else in the repository: where a venture's logical files sit, the venture's hash-chained provenance log, the instrumentation of calls, and one action's memo scope. They moved here from `schema/` and `interface/`, and now sit in `packages/naive/src/core/` (EE-118 step 5), so that the layers stop importing each other through them. Venture packages, which are records and not code, live in [`library/packages/`](../../../../library/packages/) (EE-116).
+The first code package of the monorepo rebuild. It holds the modules every layer needs and that import nothing else in the repository: where a venture's logical files sit, the venture's hash-chained provenance log, the instrumentation of calls, and one action's memo scope. They moved here from `schema/` and `interface/`, and now sit in `packages/naive/src/core/` (EE-118 step 5), so that the layers stop importing each other through them. Venture packages, which are records and not code, live in [`packages/naive/library/packages/`](../../library/packages/) (EE-116).
 
 ## Where things are
 

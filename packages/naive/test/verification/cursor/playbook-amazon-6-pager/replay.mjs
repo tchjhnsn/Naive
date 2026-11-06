@@ -11,7 +11,7 @@ import { approve, propose } from "../../../../src/engine/decisions.mjs";
 import { call, resolve } from "../../../../src/router/router.mjs";
 
 const repo = join(import.meta.dirname, "../../..");
-const playbook = readFileSync(join(repo, "library/packages/decisions/playbooks/amazon-6-pager.md"), "utf8");
+const playbook = readFileSync(join(repo, "packages/naive/library/packages/decisions/playbooks/amazon-6-pager.md"), "utf8");
 const spec = readFileSync(join(import.meta.dirname, "AmazonSixPager.tla"), "utf8");
 
 const patternRoutes = [

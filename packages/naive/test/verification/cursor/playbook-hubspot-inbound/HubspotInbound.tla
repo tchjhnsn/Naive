@@ -1,5 +1,5 @@
 ---- MODULE HubspotInbound ----
-\* The hubspot-inbound playbook (library/packages/marketing/playbooks/hubspot-inbound.md).
+\* The hubspot-inbound playbook (packages/naive/library/packages/marketing/playbooks/hubspot-inbound.md).
 \* One step is one template step. A comment names the Naive route.
 \* Routes were read from `node interface/router.mjs` on this branch.
 \* The venture provides sitemap, icp, problem, product, and publication policy,

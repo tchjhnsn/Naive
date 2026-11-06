@@ -16,7 +16,7 @@
       "minProperties": 1,
       "maxProperties": 1,
       "properties": {
-        "package": { "type": "string", "description": "The Naive package it enhances (library/packages/<name>/package.json)" },
+        "package": { "type": "string", "description": "The Naive package it enhances (packages/naive/library/packages/<name>/package.json)" },
         "command": { "type": "string", "description": "The framework command it extends, such as \"upgrade --agent\"" }
       }
     },

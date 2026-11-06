@@ -1,6 +1,6 @@
 ---- MODULE BessemerSaasMetrics ----
 \* The states a founder's records move through while the Bessemer SaaS metrics playbook runs
-\* (library/packages/finance/playbooks/bessemer-saas-metrics.md).
+\* (packages/naive/library/packages/finance/playbooks/bessemer-saas-metrics.md).
 \* Each action is one route call. The comment names the route the replay drives.
 
 VARIABLES

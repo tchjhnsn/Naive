@@ -899,7 +899,7 @@
     "packages/naive/src/interfaces/context-test.mjs"
    ],
    "page": "get-started/prefetching-and-vitals",
-   "note": "navigate/mentura_read prefetch: refs (data-model refs), links (strings that are routes), 'reads first' and 'waits on this' from library/packages/catalog.json after links, and the need-now next step; code only, no model. --no-prefetch / prefetch:false turns it off."
+   "note": "navigate/mentura_read prefetch: refs (data-model refs), links (strings that are routes), 'reads first' and 'waits on this' from packages/naive/library/packages/catalog.json after links, and the need-now next step; code only, no model. --no-prefetch / prefetch:false turns it off."
   },
   {
    "id": "N-4",
@@ -1040,10 +1040,10 @@
    "evidence": [
     "packages/naive/src/router/orchestration/model-steps.mjs",
     "packages/naive/src/interfaces/tests/model-steps-test.mjs",
-    "library/packages/customers/package.json"
+    "packages/naive/library/packages/customers/package.json"
    ],
    "page": "get-started/agents-and-people",
-   "note": "Five step kinds (classify, noul, choice, score, draft), checked by checkStep and typed by typed(); one atomic question per item. library/packages/customers declares two real steps (stage: choice, summary: draft)."
+   "note": "Five step kinds (classify, noul, choice, score, draft), checked by checkStep and typed by typed(); one atomic question per item. packages/naive/library/packages/customers declares two real steps (stage: choice, summary: draft)."
   },
   {
    "id": "S-3",
@@ -1163,7 +1163,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/model-steps.mjs",
-    "library/packages/customers/package.json",
+    "packages/naive/library/packages/customers/package.json",
     "packages/naive/src/interfaces/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
@@ -1337,7 +1337,7 @@
     "packages/naive/src/interfaces/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
-   "note": "waterfall(): record types in waves from library/packages/catalog.json after links with waits_on and status (mentura steps waterfall); steps follow their own after links; a cycle in either is uncaught. Page is agents-and-people, not routes-and-records."
+   "note": "waterfall(): record types in waves from packages/naive/library/packages/catalog.json after links with waits_on and status (mentura steps waterfall); steps follow their own after links; a cycle in either is uncaught. Page is agents-and-people, not routes-and-records."
   },
   {
    "id": "F-11",
@@ -1615,9 +1615,9 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/caching.mjs",
-    "library/packages/foundation/package.json",
-    "library/packages/decisions/package.json",
-    "library/packages/validation/package.json",
+    "packages/naive/library/packages/foundation/package.json",
+    "packages/naive/library/packages/decisions/package.json",
+    "packages/naive/library/packages/validation/package.json",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -2370,12 +2370,12 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/gate.mjs",
-    "library/packages/money/package.json",
-    "library/packages/validation/package.json",
+    "packages/naive/library/packages/money/package.json",
+    "packages/naive/library/packages/validation/package.json",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
-   "note": "Each venture has one gate. It runs fail_closed rules, then the config's rules, then gate_rules imported from library/packages/<name>/package.json. money ships money-to-finance and validation ships validation-low-confidence. naive.config.json gate.packages can leave out one package's rules or all of them. The free-text package 'gates' (completion gates) are left as they were."
+   "note": "Each venture has one gate. It runs fail_closed rules, then the config's rules, then gate_rules imported from packages/naive/library/packages/<name>/package.json. money ships money-to-finance and validation ships validation-low-confidence. naive.config.json gate.packages can leave out one package's rules or all of them. The free-text package 'gates' (completion gates) are left as they were."
   },
   {
    "id": "X-6",

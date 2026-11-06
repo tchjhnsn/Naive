@@ -18,9 +18,9 @@ import { configFor, functionOf, packageDefs, packagesOf, pinsBlocking, threshold
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 
-/** Package gates, imported from library/packages/<name>/package.json: the completion gates, as written. No model, no network. */
+/** Package gates, imported from packages/naive/library/packages/<name>/package.json: the completion gates, as written. No model, no network. */
 export function packageGates() {
-  const dir = join(repo, "library", "packages");
+  const dir = join(repo, "packages/naive/library", "packages");
   if (!existsSync(dir)) return [];
   return readdirSync(dir).flatMap((name) => {
     const p = join(dir, name, "package.json");

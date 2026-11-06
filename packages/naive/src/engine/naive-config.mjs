@@ -86,7 +86,7 @@ export function answersFor(answers, config, framework) {
 let pkgCache = null;
 export function packageDefs() {
   if (pkgCache) return pkgCache;
-  const dir = join(repo, "library", "packages");
+  const dir = join(repo, "packages/naive/library", "packages");
   const catalog = existsSync(join(dir, "catalog.json")) ? load(join(dir, "catalog.json")) : {};
   pkgCache = existsSync(dir) ? readdirSync(dir).filter((n) => existsSync(join(dir, n, "package.json"))).sort().map((n) => {
     const p = load(join(dir, n, "package.json"));

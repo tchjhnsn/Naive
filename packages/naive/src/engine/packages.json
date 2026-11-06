@@ -1,4 +1,4 @@
 {
-  "alias_of": "library/packages/",
-  "note": "Split into library/packages/<name>/package.json and library/packages/catalog.json (EE-071). This file remains as the alias for one release. Loaders read the package files, not this stub."
+  "alias_of": "packages/naive/library/packages/",
+  "note": "Split into packages/naive/library/packages/<name>/package.json and packages/naive/library/packages/catalog.json (EE-071). This file remains as the alias for one release. Loaders read the package files, not this stub."
 }

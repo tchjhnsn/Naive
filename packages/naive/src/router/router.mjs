@@ -147,7 +147,7 @@ export function capture(fn) {
  *  chain is the AGENTS.md files from the venture root down to the route, nearest last. */
 export function layout(r, dir) {
   const ks = kits();
-  const owned = r.kit_path && (r.kit_path.startsWith("library/packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
+  const owned = r.kit_path && (r.kit_path.startsWith("packages/naive/library/packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
   const stack = [ks.find((k) => k.path === "packages/naive/src/records/layer.json"), ks.find((k) => k.path === `${r.layer ?? r.route.split("/")[0]}/layer.json`), owned]
     .filter(Boolean).map((k) => {
       const refs = (k.references && existsSync(join(repo, k.references)) ? k.references : null)

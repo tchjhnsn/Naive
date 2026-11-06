@@ -74,7 +74,7 @@ for (const sub of ["raw/dump", "raw/sources", "ideas", ...packageDirs, "decision
 // Every package folder explains itself (EE-086): a README.md from its package, for people. GitHub and
 // editors show it when the folder is opened; an AGENTS.md beside it is the founder's, for agents.
 if (structured) for (const pkg of packageDirs) {
-  const f = join(repo, "library", "packages", pkg, "package.json");
+  const f = join(repo, "packages/naive/library", "packages", pkg, "package.json");
   if (!existsSync(f)) continue;
   const p = JSON.parse(readFileSync(f, "utf8"));
   const lines = [`# ${p.title ?? pkg}`, "", p.purpose ?? "", ...(p.required?.length ? ["", `What goes in it first: ${p.required.join(", ")}.`] : []), ...(p.optional?.length ? [`Also: ${p.optional.join(", ")}.`] : []),

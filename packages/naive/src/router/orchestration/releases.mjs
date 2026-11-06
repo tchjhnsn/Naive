@@ -63,9 +63,9 @@ export const NOT_SHIPPED = { "idea-dump": "raw input: the founder's notes", "raw
 
 /** What a release and its cache are keyed by: the framework version, the package definitions and the model. */
 export function key() {
-  const pk = readdirSync(join(repo, "library", "packages")).filter((n) => existsSync(join(repo, "library", "packages", n, "package.json"))).sort()
-    .map((n) => readFileSync(join(repo, "library", "packages", n, "package.json"), "utf8"));
-  return { framework: readFileSync(join(repo, "packages/naive/src/records/VERSION"), "utf8").trim(), packages: sha(readFileSync(join(repo, "library/packages/catalog.json"), "utf8") + pk.join("\n")).slice(0, 16), model: process.env.MENTURA_MODEL ?? null };
+  const pk = readdirSync(join(repo, "packages/naive/library", "packages")).filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))).sort()
+    .map((n) => readFileSync(join(repo, "packages/naive/library", "packages", n, "package.json"), "utf8"));
+  return { framework: readFileSync(join(repo, "packages/naive/src/records/VERSION"), "utf8").trim(), packages: sha(readFileSync(join(repo, "packages/naive/library/packages/catalog.json"), "utf8") + pk.join("\n")).slice(0, 16), model: process.env.MENTURA_MODEL ?? null };
 }
 
 /** The local cache for a key: { entries, hits, misses, fresh, get(k, f), save() }. A different key starts it fresh. */

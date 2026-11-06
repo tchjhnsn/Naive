@@ -1,6 +1,6 @@
 # Amazon six-pager memo
 
-Model of `library/packages/decisions/playbooks/amazon-6-pager.md`: the states a decision memo moves through, and the rules that memo has to keep.
+Model of `packages/naive/library/packages/decisions/playbooks/amazon-6-pager.md`: the states a decision memo moves through, and the rules that memo has to keep.
 
 The replay runs against the router on this branch, where each ICP profile is its own record. The actions match:
 

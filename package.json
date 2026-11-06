@@ -24,7 +24,7 @@
     "./governance/*": "./governance/*",
     "./evidence/*": "./evidence/*",
     "./frameworks/*": "./frameworks/*",
-    "./library/*": "./library/*",
+    "./library/*": "./packages/naive/library/*",
     "./docs/*": "./docs/*"
   },
   "bin": {
@@ -44,7 +44,7 @@
     "interface/",
     "schema/",
     "scripts/diagnose-transcripts.mjs",
-    "library/packages/",
+    "packages/naive/library/packages/",
     "packages/",
     "purpose/",
     "knowledge/",

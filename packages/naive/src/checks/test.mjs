@@ -324,7 +324,7 @@ for (const [name, change, pattern] of /** @type {[string, (d: string) => void, R
 }
 {
   const d = copy("priv");
-  edit(join(d, "library/packages/customers/package.json"), (p) => { p.use_model = [{ step: "summarize", inputs: ["ada.note"] }]; });
+  edit(join(d, "packages/naive/library/packages/customers/package.json"), (p) => { p.use_model = [{ step: "summarize", inputs: ["ada.note"] }]; });
   mkdirSync(join(d, "workspace/ventures/demo/customers"), { recursive: true });
   writeFileSync(join(d, "workspace/ventures/demo/customers/ada.json"), JSON.stringify({ id: "ada", private_fields: ["note"] }));
   const r = run("check-private.mjs", [join(d, "workspace")], { EE_ROOT: d });

@@ -12,7 +12,7 @@
 // Every cached value has a life (C-4), named like Next.js cacheLife profiles. Caching is on in the
 // recommended defaults (C-2); naive.config.json { "cache": { "enabled": false } } or NAIVE_CACHE=off
 // turns it off. A route is cached only when a declaration names it (C-3, H-3): a package's
-// use_cache in library/packages/<name>/package.json, the framework's own list below, or the venture's
+// use_cache in packages/naive/library/packages/<name>/package.json, the framework's own list below, or the venture's
 // naive.config.json cache.routes. Reads (run, and view over run) may use the cache; writes never do.
 // A result that depends on who is acting is private: stored per person, never returned to anyone
 // else, and not stored at all when the actor is unnamed (C-7).
@@ -106,14 +106,14 @@ export const FRAMEWORK_USE_CACHE = [
   { route: "system/package", level: "record", life: "hours", vary: ["day"] },
 ];
 
-/** Every use_cache declaration: the framework's, then each package's (library/packages/<name>/package.json). */
+/** Every use_cache declaration: the framework's, then each package's (packages/naive/library/packages/<name>/package.json). */
 export function declarations() {
   const out = FRAMEWORK_USE_CACHE.map((d) => ({ ...d, by: "framework" }));
-  const pk = join(repo, "library", "packages");
+  const pk = join(repo, "packages/naive/library", "packages");
   if (existsSync(pk)) for (const name of readdirSync(pk).sort()) {
     const f = join(pk, name, "package.json");
     if (!existsSync(f)) continue;
-    for (const d of load(f).use_cache ?? []) out.push({ level: "record", ...d, by: `library/packages/${name}` });
+    for (const d of load(f).use_cache ?? []) out.push({ level: "record", ...d, by: `packages/naive/library/packages/${name}` });
   }
   return out;
 }
@@ -161,7 +161,7 @@ export function codeVersion() {
 /** Naive's version and each package definition's hash: the versions a judgment's key holds (C-5). */
 export function versionsOf(packages) {
   const naive = readFileSync(join(repo, "packages/naive/src/records/VERSION"), "utf8").trim();
-  const pk = join(repo, "library", "packages");
+  const pk = join(repo, "packages/naive/library", "packages");
   const names = packages?.length ? packages : existsSync(pk) ? readdirSync(pk).filter((n) => existsSync(join(pk, n, "package.json"))).sort() : [];
   return { naive, packages: Object.fromEntries(names.map((n) => {
     const f = join(pk, n, "package.json");

@@ -3,7 +3,7 @@ name: verify-legal-lint
 description: >
   Check a change to the legal lint against its TLA+ model: packages/naive/src/checks/lint-legal.mjs,
   the legal/lint route, and naive check's lint-legal entry. Use before merging a
-  change to those, or to library/packages/legal/skill/SKILL.md where it describes the lint.
+  change to those, or to packages/naive/library/packages/legal/skill/SKILL.md where it describes the lint.
 ---
 
 # Verify the legal lint
