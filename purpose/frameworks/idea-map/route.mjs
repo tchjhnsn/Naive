@@ -4,7 +4,7 @@
 // routes' payoff is next steps: each tagged idea goes to the records it feeds (the framework's
 // destinations, purpose/frameworks/idea-map/conventions.json `records`), and each destination shows
 // where it stands in the framework and the one step that moves it. Nothing here is invented: a
-// destination's stage and next step come from the decision matrix (schema/decisions.mjs), the records
+// destination's stage and next step come from the decision matrix (packages/naive/src/engine/decisions.mjs), the records
 // on disk and the graph. Read as two Kanban boards:
 //   - destinations, by stage: routed (ideas, nothing drafted yet), drafted (an agent's draft awaits the
 //     founder), yours (a decision only a person can make), waiting (held by another decision), done;
@@ -12,7 +12,7 @@
 //     from (a decision record's `ideas`, or the i-NN ids its question and answer cite).
 // A destination moves in order (sync) when it sits on the fail-closed path or its ideas share a lane
 // that builds in order; it moves on its own (async) when its decisions fail open or its ideas stand alone.
-// Each destination names its home package (schema/packages.json), and the routes say whether the
+// Each destination names its home package (packages/naive/src/engine/packages.json), and the routes say whether the
 // founder has confirmed the understanding of their ideas yet: routing follows that gate (EE-069).
 //
 //   node route.mjs <venture> [--json]
@@ -20,13 +20,13 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decisions } from "../../../schema/decisions.mjs";
+import { decisions } from "../../../packages/naive/src/engine/decisions.mjs";
 import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 import { GRAPH, ORDER } from "./graph.mjs";
-import { confirmedIn } from "../../../schema/foundation.mjs";
-import { loadPackages } from "../../../schema/load-packages.mjs";
-import { ventureFile } from "../../../packages/core/venture-paths.mjs";
-import { readDataModel } from "../../../packages/records/index.mjs";
+import { confirmedIn } from "../../../packages/naive/src/engine/foundation.mjs";
+import { loadPackages } from "../../../packages/naive/src/engine/load-packages.mjs";
+import { ventureFile } from "../../../packages/naive/src/core/venture-paths.mjs";
+import { readDataModel } from "../../../packages/naive/src/records/index.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

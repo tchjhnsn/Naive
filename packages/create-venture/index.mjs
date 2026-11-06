@@ -15,9 +15,9 @@
 //
 // --door names the interface when it is not the CLI. Without --account the founder's name is a claim
 // and the provenance log says unverified; --account names the account that door checked.
-// --source says where a function keeps its truth (schema/systems-catalog.json), recorded as pointers in
+// --source says where a function keeps its truth (packages/naive/src/engine/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
-// --source finance=rho. A system whose sync command the app names (NAIVE_SYNC_<SYSTEM>, packages/core/sync.mjs)
+// --source finance=rho. A system whose sync command the app names (NAIVE_SYNC_<SYSTEM>, packages/naive/src/core/sync.mjs)
 // is synced at setup and recorded as connected; any other system is recorded as pointed.
 //
 // --yes takes the recommended defaults: a software startup, you as its solo founder wearing every hat,
@@ -36,17 +36,17 @@ const here = dirname(fileURLToPath(import.meta.url));
 // The framework: the checkout this package sits in, or the installed naive-framework package.
 const framework = (() => {
   const checkout = resolve(here, "../..");
-  if (existsSync(join(checkout, "schema/init-venture.mjs"))) return checkout;
+  if (existsSync(join(checkout, "packages/naive/src/engine/init-venture.mjs"))) return checkout;
   try { return dirname(fileURLToPath(import.meta.resolve("naive-framework/package.json"))); } catch { return null; }
 })();
 if (!framework) { console.error("create-venture could not find the Naive framework (naive-framework) to create the venture with"); process.exit(1); }
 const fw = JSON.parse(readFileSync(join(framework, "package.json"), "utf8"));
-const { layers: PHASE_LAYERS } = JSON.parse(readFileSync(join(framework, "schema/scaffold/defaults.json"), "utf8"));
+const { layers: PHASE_LAYERS } = JSON.parse(readFileSync(join(framework, "packages/naive/src/engine/scaffold/defaults.json"), "utf8"));
 const PHASES = Object.keys(PHASE_LAYERS);
 const LAYERS = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
 // The legal forms venture.json accepts, from its schema, so the question can only offer valid answers. The schema is
 // found through the framework's record types resolver, which knows where the record types sit in that version.
-const { readSchema } = await import(join(framework, "packages/records/index.mjs"));
+const { readSchema } = await import(join(framework, "packages/naive/src/records/index.mjs"));
 const FORMS = readSchema("venture").properties.form.properties.legal_form.enum;
 
 const argv = process.argv.slice(2);
@@ -96,12 +96,12 @@ const id = slug(basename(dir));
 if (!id) fail(`${basename(dir)} has no letters or digits to make a venture id from`);
 if (existsSync(dir) && readdirSync(dir).length) fail(`${dir} already exists and is not empty. create-venture only creates new ventures; to bring an existing project in, create one here and run naive port or naive migrate.`);
 // A workspace file that does not parse stops here, before the venture folder is made.
-const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(join(framework, "schema/workspace.mjs"));
+const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(join(framework, "packages/naive/src/engine/workspace.mjs"));
 let ownWorkspace = null;
 if (!flag("no-workspace")) try { ownWorkspace = findWorkspace(dirname(dir)); if (ownWorkspace) loadWorkspace(ownWorkspace); } catch (e) { fail(e.message); }
 
 // The framework's registries: venture types, roles and functions (EE-082).
-const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "schema/venture-type.mjs")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
+const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "packages/naive/src/engine/venture-type.mjs")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
 const DEPARTMENTS = JSON.parse(readFileSync(join(framework, "operations/departments.json"), "utf8")).departments;
 const deptLabel = (d) => DEPARTMENTS.find((x) => x.id === d)?.label ?? d;
 const roleOf = (r) => ROLES.find((x) => x.id === r);
@@ -182,7 +182,7 @@ else for (const f of fnIds) {
   owners.find((p) => p.id === who).hats.push(f);
 }
 // 6. Where each function keeps its truth (EE-083): pointers to its systems of record, in the founder's words when none fits.
-const CATALOG = JSON.parse(readFileSync(join(framework, "schema/systems-catalog.json"), "utf8"));
+const CATALOG = JSON.parse(readFileSync(join(framework, "packages/naive/src/engine/systems-catalog.json"), "utf8"));
 const asked = [...vtype.departments.filter((d) => CATALOG.functions[d]), "legal"];
 const parseSystems = (text) => {
   const items = text.split(",").map((x) => x.trim()).filter(Boolean);
@@ -231,7 +231,7 @@ rl?.close();
 
 // 4. The venture itself, by the framework's own scaffold.
 console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
-const init = spawnSync("node", [join(framework, "schema/init-venture.mjs"), dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
+const init = spawnSync("node", [join(framework, "packages/naive/src/engine/init-venture.mjs"), dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
   ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");
@@ -245,7 +245,7 @@ writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
 const { ventureFile: vf, physical } = await import(join(framework, "schema/venture-paths.mjs"));
 
 // people/: the roster and one file per founder, the venture.json of human capital (EE-082).
-const { agentFromEnv, record } = await import(join(framework, "interface/provenance.mjs"));
+const { agentFromEnv, record } = await import(join(framework, "packages/naive/src/router/provenance.mjs"));
 const today = new Date().toISOString().slice(0, 10);
 mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const door = opt("door") ?? "cli";
@@ -266,8 +266,8 @@ if (answers.dump) {
 }
 
 // knowledge/sources.json: each function's systems of record, as pointers (EE-083). A system whose sync command
-// the app names (packages/core/sync.mjs) is synced now; an older framework without that module syncs nothing.
-const syncModule = join(framework, "packages/core/sync.mjs");
+// the app names (packages/naive/src/core/sync.mjs) is synced now; an older framework without that module syncs nothing.
+const syncModule = join(framework, "packages/naive/src/core/sync.mjs");
 const { sync } = existsSync(syncModule) ? await import(syncModule) : { sync: () => ({ ran: false }) };
 const syncNotes = [];
 for (const f of Object.values(functions)) for (const s of f.systems) {
@@ -299,7 +299,7 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
 writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder conversations and what is caught in them stay local, in case a redaction misses something.\n**/raw/sources/conversations-*/\n**/raw/sources/diagnosis-*/\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
-const { routes } = await import(join(framework, "interface/router.mjs"));
+const { routes } = await import(join(framework, "packages/naive/src/router/router.mjs"));
 const schemas = new Map();
 for (const r of routes()) if (r.kind === "record" && r.schema && r.form !== "md") for (const f of r.files ?? []) if (f.endsWith(".json")) schemas.set(r.schema, [...(schemas.get(r.schema) ?? []), `/${physical(dir, f)}`]);
 mkdirSync(join(dir, ".vscode"), { recursive: true });
@@ -325,7 +325,7 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
 // naive-workspace.json above the venture lists it; with none, the venture's parent folder becomes the
 // workspace, named "Naive workspace" until the founder renames it, with an AGENTS.md for rules that hold
 // across every venture. --no-workspace leaves the parent folder as it is.
-// The workspace's file, AGENTS.md, folders, clock (its timeZone) and calendar come from schema/workspace.mjs,
+// The workspace's file, AGENTS.md, folders, clock (its timeZone) and calendar come from packages/naive/src/engine/workspace.mjs,
 // the same code naive workspace init runs, so both ways in make the same workspace.
 let workspace = null;
 if (!flag("no-workspace")) {

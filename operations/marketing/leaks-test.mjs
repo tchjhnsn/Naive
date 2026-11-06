@@ -7,8 +7,8 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hash, mayKnow, visibilityOf } from "../../schema/visibility.mjs";
-import { leaks } from "../../schema/check-leaks.mjs";
+import { hash, mayKnow, visibilityOf } from "../../packages/naive/src/engine/visibility.mjs";
+import { leaks } from "../../packages/naive/src/engine/check-leaks.mjs";
 import { build } from "./publish-build.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
@@ -61,7 +61,7 @@ try {
   w("foundation/problem.visibility.json", { fields: { statement: { visibility: "variant" } }, record: { visibility: "confidential", level: "C3", access: ["Founder", "cos"] } });
   expect("a C3 record is known to its access list", mayKnow(v, "foundation/problem.json", { actor: "agent", id: "cos" }) && mayKnow(v, "foundation/problem.json", { actor: "person", id: "Founder" }));
   expect("a C3 record is unknown to everyone else", !mayKnow(v, "foundation/problem.json", { actor: "agent", id: "marketing-lead" }) && !mayKnow(v, "foundation/problem.json", { actor: "agent" }));
-  const rd = spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), "foundation/problem", "read", "--venture", "canary", "--json"], { env: { ...process.env, MENTURA_WORKSPACE: ws, MENTURA_ACTOR_ID: "marketing-lead" }, encoding: "utf8" });
+  const rd = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "foundation/problem", "read", "--venture", "canary", "--json"], { env: { ...process.env, MENTURA_WORKSPACE: ws, MENTURA_ACTOR_ID: "marketing-lead" }, encoding: "utf8" });
   expect("a read by someone not on the list answers as if the record were absent", rd.status === 0 && !rd.stdout.includes("CANARY") && /no validation-problem record yet|"result": null/.test(rd.stdout), rd.stdout.slice(0, 300) + rd.stderr);
   w("foundation/problem.visibility.json", { record: { visibility: "confidential", level: "C4", access: ["Founder", "cos"] } });
   expect("a C4 record is never known to an agent, even on the list", !mayKnow(v, "foundation/problem.json", { actor: "agent", id: "cos" }) && mayKnow(v, "foundation/problem.json", { actor: "person", id: "Founder" }));

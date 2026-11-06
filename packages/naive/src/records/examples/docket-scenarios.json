@@ -1,0 +1,138 @@
+{
+  "description": "Venture states where the right next step is argued from a cited source, to check the decision docket against (EE-075, packages/naive/src/engine/docket-eval.mjs). Each decision is given as the decision matrix resolves it: its function, its state (now, overdue, stale, or waiting with held_by), a due time in hours from the scenario's moment, what it unlocks, whether it settles the foundation, whether an agent drafted it, and how many outcomes it projects. The expected next step is not tuned to the docket: it is what the source argues a founder should do. A day scenario lists the expected step at each moment, settling the expected decision before the next.",
+  "labeled_by": "Claude (agent draft, 2026-10-29); awaiting Torian's review. Never treat these labels as the founder's.",
+  "scenarios": [
+    {
+      "id": "default-dead",
+      "phase": "beachhead",
+      "situation": "Five people, revenue flat for two months. The money summary from the bank says 3.5 months of runway at the current net burn. Nobody has put a due date on the money question.",
+      "decisions": [
+        { "id": "fin-raise-or-cut", "question": "Cut burn until the company is default alive, or start raising now?", "function": "finance", "state": "now", "unlocks": ["Plan the cuts or the round"] },
+        { "id": "ppl-hire-eng2", "question": "Hire a second engineer?", "function": "people", "state": "waiting", "held_by": "fin-raise-or-cut", "unlocks": ["Open the role"] },
+        { "id": "mkt-paid-ads", "question": "Start a $5k a month paid ads test?", "function": "marketing", "state": "waiting", "held_by": "fin-raise-or-cut" },
+        { "id": "prod-roadmap", "question": "Which three features ship next quarter?", "function": "product", "state": "now", "unlocks": ["Write the specs", "Plan the sprints"], "drafted": true, "outcomes": 2 },
+        { "id": "mkt-blog", "question": "Publish weekly or every two weeks?", "function": "marketing", "state": "now" },
+        { "id": "mkt-homepage", "question": "Approve the new homepage copy?", "function": "marketing", "state": "now", "drafted": true },
+        { "id": "ops-tracker", "question": "Switch the project tracker?", "function": "operations", "state": "now" }
+      ],
+      "expected": { "function": "finance", "decision": "fin-raise-or-cut" },
+      "why": "With flat revenue and 3.5 months of runway the company is default dead; whether to cut to default alive or raise is the question that outweighs everything else, and the hire and the ads spend depend on it.",
+      "source": "https://paulgraham.com/aord.html"
+    },
+    {
+      "id": "talk-to-users-first",
+      "phase": "discovery",
+      "situation": "A solo founder with an idea and no conversations with customers yet. An agent has drafted the MVP's scope and a tech stack.",
+      "decisions": [
+        { "id": "val-interviews", "question": "Run ten problem interviews before building anything?", "function": "validation", "state": "now", "unlocks": ["Draft the interview guide"], "outcomes": 2 },
+        { "id": "prod-mvp-scope", "question": "What does the MVP include?", "function": "product", "state": "now", "unlocks": ["Write the build plan", "Set up the repository"], "drafted": true, "outcomes": 1 },
+        { "id": "prod-stack", "question": "Which tech stack?", "function": "product", "state": "now", "drafted": true },
+        { "id": "mkt-name", "question": "Pick the brand name?", "function": "marketing", "state": "now" },
+        { "id": "mkt-domain", "question": "Buy the domain?", "function": "marketing", "state": "now" }
+      ],
+      "expected": { "function": "validation", "decision": "val-interviews" },
+      "why": "Before building, learn whether the problem is real from what customers do and say about their lives; building first is the common way to waste months.",
+      "source": "https://www.momtestbook.com/"
+    },
+    {
+      "id": "founder-agreement-before-money",
+      "phase": "validation",
+      "situation": "Two cofounders with no signed agreement. An angel has offered $100k on a SAFE.",
+      "decisions": [
+        { "id": "ppl-founder-agreement", "question": "Sign the founder agreement: equity split and vesting?", "function": "people", "state": "now", "unlocks": ["Draft the founder agreement"] },
+        { "id": "legal-safe", "question": "Accept the SAFE's cap and discount?", "function": "legal", "state": "waiting", "held_by": "ppl-founder-agreement" },
+        { "id": "fin-angel", "question": "Take the angel's $100k?", "function": "finance", "state": "waiting", "held_by": "ppl-founder-agreement", "unlocks": ["Update the runway plan"] },
+        { "id": "prod-onboarding", "question": "Rebuild onboarding around the new flow?", "function": "product", "state": "now", "unlocks": ["Spec the flow"], "drafted": true, "outcomes": 2 },
+        { "id": "mkt-waitlist", "question": "Open the waitlist this week?", "function": "marketing", "state": "now", "unlocks": ["Write the waitlist page"] }
+      ],
+      "expected": { "function": "people", "decision": "ppl-founder-agreement" },
+      "why": "Who owns what, and on what vesting, has to be settled between the founders before outside money sets a price on it; the SAFE and the angel's check wait on it.",
+      "source": "https://playbook.samaltman.com/"
+    },
+    {
+      "id": "83b-deadline",
+      "phase": "validation",
+      "situation": "The founder received restricted stock 28 days ago. The 83(b) election must reach the IRS within 30 days of the grant.",
+      "decisions": [
+        { "id": "legal-83b", "question": "File the 83(b) election?", "function": "legal", "state": "now", "due_in_hours": 48 },
+        { "id": "prod-billing", "question": "Add annual billing?", "function": "product", "state": "now", "unlocks": ["Spec annual billing", "Update the pricing page"], "drafted": true, "outcomes": 2 },
+        { "id": "prod-api", "question": "Open a public API?", "function": "product", "state": "now", "unlocks": ["Write the API docs"], "outcomes": 1 },
+        { "id": "mkt-launch", "question": "Launch on Product Hunt next week?", "function": "marketing", "state": "now", "due_in_hours": 120, "unlocks": ["Draft the launch post"] }
+      ],
+      "expected": { "function": "legal", "decision": "legal-83b" },
+      "why": "The election cannot be filed late: missing the 30 days changes the founder's taxes for good, while everything else can move a week.",
+      "source": "https://www.irs.gov/pub/irs-pdf/f15620.pdf"
+    },
+    {
+      "id": "focus-on-the-core",
+      "phase": "validation",
+      "situation": "Marketing has six small open decisions an agent drafted. Product has one: what the core product is, which four other decisions wait on.",
+      "decisions": [
+        { "id": "prod-core", "question": "What is the core product: who it is for and the one job it does?", "function": "product", "state": "now", "unlocks": ["Judge the products against the core"] },
+        { "id": "prod-flagship", "question": "Which product is the flagship?", "function": "product", "state": "waiting", "held_by": "prod-core" },
+        { "id": "val-solution", "question": "Accept the solution hypothesis?", "function": "validation", "state": "waiting", "held_by": "prod-core", "unlocks": ["Plan the solution test"] },
+        { "id": "val-pricing", "question": "Which price to test first?", "function": "validation", "state": "waiting", "held_by": "prod-core" },
+        { "id": "mkt-gtm", "question": "Which channel first?", "function": "marketing", "state": "waiting", "held_by": "prod-core" },
+        { "id": "mkt-tagline", "question": "Approve the tagline?", "function": "marketing", "state": "now", "drafted": true },
+        { "id": "mkt-colors", "question": "Approve the brand colors?", "function": "marketing", "state": "now", "drafted": true },
+        { "id": "mkt-logo", "question": "Approve the logo?", "function": "marketing", "state": "now", "drafted": true },
+        { "id": "mkt-social", "question": "Which social accounts to open?", "function": "marketing", "state": "now", "drafted": true },
+        { "id": "mkt-newsletter", "question": "Start a newsletter?", "function": "marketing", "state": "now", "drafted": true },
+        { "id": "mkt-about", "question": "Approve the About page?", "function": "marketing", "state": "now", "drafted": true }
+      ],
+      "expected": { "function": "product", "decision": "prod-core" },
+      "why": "Before product/market fit the only thing that matters is getting to it; the brand polish can wait, and four decisions cannot move until the core is settled.",
+      "source": "https://pmarchive.com/guide_to_startups_part4.html"
+    },
+    {
+      "id": "launch-day",
+      "phase": "beachhead",
+      "situation": "The launch post goes out in six hours. An agent drafted two product polish decisions.",
+      "decisions": [
+        { "id": "mkt-launch-post", "question": "Approve the launch post?", "function": "marketing", "state": "now", "due_in_hours": 6, "unlocks": ["Schedule the post"] },
+        { "id": "prod-polish-empty", "question": "Redesign the empty states?", "function": "product", "state": "now", "unlocks": ["Spec the empty states", "Update the screenshots"], "drafted": true, "outcomes": 2 },
+        { "id": "prod-polish-dark", "question": "Ship dark mode?", "function": "product", "state": "now", "unlocks": ["Spec dark mode"], "drafted": true, "outcomes": 1 },
+        { "id": "fin-pricing-page", "question": "Show prices on the site?", "function": "finance", "state": "now" }
+      ],
+      "expected": { "function": "marketing", "decision": "mkt-launch-post" },
+      "why": "Launch early and on the date set; polish that misses the launch helps no one, and the post is the one thing with a deadline today.",
+      "source": "https://playbook.samaltman.com/"
+    },
+    {
+      "id": "stale-pricing",
+      "phase": "validation",
+      "situation": "Interviews moved the ICP from agencies to solo consultants after pricing was decided for agencies.",
+      "decisions": [
+        { "id": "fin-pricing", "question": "Which price, for which customer?", "function": "finance", "state": "stale", "unlocks": ["Update the pricing page"] },
+        { "id": "mkt-ads-copy", "question": "Approve the ad copy?", "function": "marketing", "state": "now", "drafted": true },
+        { "id": "mkt-case-study", "question": "Publish the first case study?", "function": "marketing", "state": "now", "unlocks": ["Draft the case study"] },
+        { "id": "prod-team-seats", "question": "Add team seats?", "function": "product", "state": "now", "unlocks": ["Spec team seats"], "drafted": true, "outcomes": 1 }
+      ],
+      "expected": { "function": "finance", "decision": "fin-pricing" },
+      "why": "Validated learning: when what you learned changes who the customer is, the decisions built on the old customer are re-decided first, before more is built on them.",
+      "source": "https://theleanstartup.com/principles"
+    },
+    {
+      "id": "a-day-in-discovery",
+      "phase": "discovery",
+      "situation": "A morning in Discovery: the problem statement is drafted and waiting for the founder. Product scope and the landing page are held behind it. The leading function should move as the day goes on.",
+      "decisions": [
+        { "id": "fnd-problem", "question": "Accept the problem statement?", "function": "foundation", "state": "now", "foundation": true, "drafted": true },
+        { "id": "val-interview-guide", "question": "Approve the interview guide?", "function": "validation", "state": "waiting", "held_by": "fnd-problem", "unlocks": ["Book ten interviews"], "outcomes": 2 },
+        { "id": "prod-mvp-scope", "question": "What does the MVP include?", "function": "product", "state": "waiting", "held_by": "val-interview-guide", "unlocks": ["Write the build plan"] },
+        { "id": "mkt-landing", "question": "Approve the landing page?", "function": "marketing", "state": "waiting", "held_by": "prod-mvp-scope", "unlocks": ["Publish the page"] },
+        { "id": "fin-price-hypothesis", "question": "Which price to test first?", "function": "finance", "state": "now", "unlocks": ["Add the price to the landing page"] },
+        { "id": "ppl-advisor", "question": "Ask the clinic owner to advise?", "function": "people", "state": "now" }
+      ],
+      "steps": [
+        { "function": "foundation", "decision": "fnd-problem" },
+        { "function": "validation", "decision": "val-interview-guide" },
+        { "function": "product", "decision": "prod-mvp-scope" },
+        { "function": "marketing", "decision": "mkt-landing" },
+        { "function": "finance", "decision": "fin-price-hypothesis" }
+      ],
+      "why": "Settle what the problem is, then learn from customers, then scope what to build, then show it, then test a price: the order the Lean Startup's build-measure-learn loop and the Mom Test both argue for, with the leading function changing at each step.",
+      "source": "https://theleanstartup.com/principles"
+    }
+  ]
+}

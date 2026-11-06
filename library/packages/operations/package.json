@@ -53,21 +53,21 @@
     "a person has confirmed every required record and every record this package reads"
   ],
   "schemas": [
-    "schema/department.schema.json",
-    "schema/handoff.schema.json",
-    "schema/validation-operations-readiness.schema.json",
-    "schema/knowledge-sources.schema.json",
-    "schema/where-used.schema.json"
+    "packages/naive/src/records/department.schema.json",
+    "packages/naive/src/records/handoff.schema.json",
+    "packages/naive/src/records/validation-operations-readiness.schema.json",
+    "packages/naive/src/records/knowledge-sources.schema.json",
+    "packages/naive/src/records/where-used.schema.json"
   ],
   "templates": [],
   "checks": [
-    "schema/check-validation.mjs",
-    "schema/check-sources.mjs",
-    "schema/check-where-used.mjs",
-    "schema/check-departments.mjs",
-    "schema/check-execution.mjs",
-    "schema/check-ready.mjs",
-    "schema/check-publication.mjs"
+    "packages/naive/src/checks/check-validation.mjs",
+    "packages/naive/src/checks/check-sources.mjs",
+    "packages/naive/src/checks/check-where-used.mjs",
+    "packages/naive/src/checks/check-departments.mjs",
+    "packages/naive/src/checks/check-execution.mjs",
+    "packages/naive/src/checks/check-ready.mjs",
+    "packages/naive/src/checks/check-publication.mjs"
   ],
   "skill": null,
   "use_model": []

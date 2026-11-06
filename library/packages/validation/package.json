@@ -48,16 +48,16 @@
     { "id": "validation-low-confidence", "routes": ["validation/**", "foundation/problem", "people/team"], "actors": ["agent"], "when": { "confidence_below": "confidence" }, "then": "owner", "note": "A validation record an agent is not confident in goes to its function owner" }
   ],
   "schemas": [
-    "schema/validation-problem.schema.json",
-    "schema/validation-solution.schema.json",
-    "schema/validation-product-market-fit.schema.json",
-    "schema/validation-pricing.schema.json",
-    "schema/validation-go-to-market.schema.json",
-    "schema/validation-team.schema.json",
-    "schema/validation-operations-readiness.schema.json",
-    "schema/evidence.schema.json",
-    "schema/validation-interview.schema.json",
-    "schema/validation-feedback.schema.json"
+    "packages/naive/src/records/validation-problem.schema.json",
+    "packages/naive/src/records/validation-solution.schema.json",
+    "packages/naive/src/records/validation-product-market-fit.schema.json",
+    "packages/naive/src/records/validation-pricing.schema.json",
+    "packages/naive/src/records/validation-go-to-market.schema.json",
+    "packages/naive/src/records/validation-team.schema.json",
+    "packages/naive/src/records/validation-operations-readiness.schema.json",
+    "packages/naive/src/records/evidence.schema.json",
+    "packages/naive/src/records/validation-interview.schema.json",
+    "packages/naive/src/records/validation-feedback.schema.json"
   ],
   "templates": [
     "purpose/kits/validation/templates/go-to-market.md",
@@ -70,10 +70,10 @@
     "purpose/kits/validation/templates/team.md"
   ],
   "checks": [
-    "schema/check-validation.mjs",
-    "schema/assess-problem.mjs",
-    "schema/bdd.mjs",
-    "schema/lint-validation.mjs"
+    "packages/naive/src/checks/check-validation.mjs",
+    "packages/naive/src/engine/assess-problem.mjs",
+    "packages/naive/src/engine/bdd.mjs",
+    "packages/naive/src/checks/lint-validation.mjs"
   ],
   "skill": {
     "id": "problem-validation",

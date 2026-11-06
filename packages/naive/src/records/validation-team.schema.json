@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-team.schema.json",
+  "title": "Validation: team",
+  "description": "The team sub-score (EE-026), at <venture>/purpose/validation/team.json: the skills the coming phases need, the skills held and by whom, and the gaps, including whether a cofounder is sought for them. packages/naive/src/checks/check-validation.mjs lists the gaps.",
+  "type": "object",
+  "required": [
+    "venture",
+    "needed",
+    "held",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "needed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skill",
+          "by_phase"
+        ],
+        "properties": {
+          "skill": {
+            "type": "string"
+          },
+          "by_phase": {
+            "enum": [
+              "discovery",
+              "validation",
+              "beachhead",
+              "scale",
+              "platform"
+            ]
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "held": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skill",
+          "by"
+        ],
+        "properties": {
+          "skill": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string",
+            "description": "A role id, or 'agent:<role>' when an agent holds it"
+          }
+        }
+      }
+    },
+    "cofounder_sought": {
+      "type": "boolean"
+    },
+    "cofounder_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "validation-evidence.schema.json"
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p",
+        "by",
+        "scored"
+      ],
+      "description": "The Jev probability for this sub-score; the evidence grade weighs it in the validation score",
+      "properties": {
+        "p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "by": {
+          "enum": [
+            "jev",
+            "owner"
+          ]
+        },
+        "scored": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

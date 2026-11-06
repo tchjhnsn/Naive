@@ -47,18 +47,18 @@
     "a person has confirmed every required record and every record this package reads"
   ],
   "schemas": [
-    "schema/validation-team.schema.json",
-    "schema/team-plan.schema.json",
-    "schema/founder-agreement.schema.json"
+    "packages/naive/src/records/validation-team.schema.json",
+    "packages/naive/src/records/team-plan.schema.json",
+    "packages/naive/src/records/founder-agreement.schema.json"
   ],
   "templates": [
     "operations/templates/recruiting-brief.md"
   ],
   "checks": [
-    "schema/check-validation.mjs",
-    "schema/check-governance.mjs",
-    "schema/check-team.mjs",
-    "schema/lint-people.mjs"
+    "packages/naive/src/checks/check-validation.mjs",
+    "packages/naive/src/checks/check-governance.mjs",
+    "packages/naive/src/checks/check-team.mjs",
+    "packages/naive/src/checks/lint-people.mjs"
   ],
   "skill": {
     "id": "people-function",

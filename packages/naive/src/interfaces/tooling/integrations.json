@@ -1,0 +1,112 @@
+[
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "layer": "interface",
+    "role": "default interface: agent sessions over the vault, repos, skills and connectors",
+    "interfaces": [
+      "cli",
+      "app"
+    ],
+    "reach": [
+      "purpose",
+      "knowledge",
+      "operations",
+      "evidence",
+      "governance"
+    ],
+    "interface_kind": "agent-harness",
+    "status": "in-use",
+    "reason": "Reads and writes the vault and every repo, runs skills and hooks, reaches Linear, Notion and GitHub through connectors"
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "layer": "interface",
+    "role": "editor-centred agent harness over the repos and vault",
+    "interfaces": [
+      "app"
+    ],
+    "reach": [
+      "purpose",
+      "knowledge",
+      "operations",
+      "evidence",
+      "governance"
+    ],
+    "interface_kind": "agent-harness",
+    "status": "in-use",
+    "reason": ".cursor/ rules and agents in the vault and repos"
+  },
+  {
+    "id": "codex",
+    "name": "OpenAI Codex",
+    "layer": "interface",
+    "role": "agent harness (CLI and app)",
+    "interfaces": [
+      "cli",
+      "app"
+    ],
+    "reach": [
+      "knowledge",
+      "operations",
+      "evidence"
+    ],
+    "interface_kind": "agent-harness",
+    "status": "candidate",
+    "reason": "Named by the owner; same shape as Claude Code"
+  },
+  {
+    "id": "hermes-agent",
+    "name": "Hermes Agent",
+    "layer": "interface",
+    "role": "open-source agent harness",
+    "interfaces": [
+      "cli"
+    ],
+    "reach": [
+      "knowledge",
+      "operations",
+      "evidence"
+    ],
+    "interface_kind": "agent-harness",
+    "status": "candidate",
+    "reason": "Named by the owner; reach to confirm"
+  },
+  {
+    "id": "grok",
+    "name": "Grok agent",
+    "layer": "interface",
+    "role": "agent harness",
+    "interfaces": [
+      "app"
+    ],
+    "reach": [
+      "knowledge",
+      "operations",
+      "evidence"
+    ],
+    "interface_kind": "agent-harness",
+    "status": "candidate",
+    "reason": "Named by the owner as Grokbot; which xAI product is meant, and its reach, to confirm"
+  },
+  {
+    "id": "operator-console",
+    "name": "Operator console",
+    "layer": "interface",
+    "role": "local viewer over the records",
+    "interfaces": [
+      "app"
+    ],
+    "status": "candidate",
+    "reason": "packages/naive/src/interfaces/operator-console",
+    "reach": [
+      "purpose",
+      "knowledge",
+      "operations",
+      "evidence",
+      "governance"
+    ],
+    "interface_kind": "custom"
+  }
+]

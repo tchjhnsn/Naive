@@ -29,13 +29,13 @@
     "money-summary"
   ],
   "schemas": [
-    "schema/data-master.schema.json",
-    "schema/money-summary.schema.json"
+    "packages/naive/src/records/data-master.schema.json",
+    "packages/naive/src/records/money-summary.schema.json"
   ],
   "templates": [],
   "checks": [
-    "schema/check-data-packages.mjs",
-    "schema/lint-money.mjs"
+    "packages/naive/src/checks/check-data-packages.mjs",
+    "packages/naive/src/checks/lint-money.mjs"
   ],
   "skill": {
     "id": "money-function",

@@ -5,7 +5,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { ventureFile } from "../naive/src/core/venture-paths.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "create-venture-test-"));
@@ -132,7 +132,7 @@ t("structured layout: the org chart in venture.json names each function's owner,
   ok(roster.people.every((p) => !("hats" in p)), JSON.stringify(roster));
   const top = readdirSync(join(base, "duo")).filter((f) => !f.startsWith(".")).sort().join(" ");
   ok(top === "AGENTS.md README.md k-base meta package.json venture.json", top);
-  const r = spawnSync("node", [join(repo, "schema/check-people.mjs"), join(base, "duo")], { encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.mjs"), join(base, "duo")], { encoding: "utf8" });
   ok(r.status === 0, r.stdout);
 });
 
@@ -168,12 +168,12 @@ t("a VC fund with a team: an investor role, one file per founder, each function 
   const people = load(ventureFile(join(base, "northstar"), "people/people.json"));
   ok(people.mode === "team" && people.people.every((p) => p.role === "general-partner"), JSON.stringify(people));
   ok(JSON.stringify(load(ventureFile(join(base, "northstar"), "people/founders/ada-lovelace.json")).hats) === JSON.stringify(["finance", "external-relationships"]));
-  const check = spawnSync("node", [join(repo, "schema/check-people.mjs"), base], { encoding: "utf8" });
+  const check = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.mjs"), base], { encoding: "utf8" });
   ok(check.status === 0, check.stdout);
 });
 
 t("described in a few words, a model picks the type, and the founder confirms it", () => {
-  const r = prompts([], ["syndicate", "an angel syndicate for climate founders", "yes", "general-partner", "Sam Lee", "solo", "discovery", "none", "none", "none", "none", "recommended"], { MENTURA_TYPE_CMD: `node ${join(repo, "schema/examples/venture-type/jev.mjs")}` });
+  const r = prompts([], ["syndicate", "an angel syndicate for climate founders", "yes", "general-partner", "Sam Lee", "solo", "discovery", "none", "none", "none", "none", "recommended"], { MENTURA_TYPE_CMD: `node ${join(repo, "packages/naive/src/records/examples/venture-type/jev.mjs")}` });
   ok(r.status === 0, r.stdout + r.stderr);
   ok(/That sounds like a vc fund or firm/.test(r.stdout), r.stdout);
   ok(load(join(base, "syndicate/venture.json")).type === "vc-fund");
@@ -182,19 +182,19 @@ t("described in a few words, a model picks the type, and the founder confirms it
 t("without a model key, describing it falls back to the list; an unclear description is uncertain", () => {
   const r = create(["listed", "--describe", "a newsletter about cafes", "--yes", "--skip-install", "--no-git"]);
   ok(r.status === 1 && /pass --type/.test(r.stderr), r.stderr);
-  const u = spawnSync("node", [join(repo, "schema/venture-type.mjs"), "classify", "something hard to name"], { env: { ...env, MENTURA_TYPE_CMD: `node ${join(repo, "schema/examples/venture-type/jev.mjs")}` }, encoding: "utf8" });
+  const u = spawnSync("node", [join(repo, "packages/naive/src/engine/venture-type.mjs"), "classify", "something hard to name"], { env: { ...env, MENTURA_TYPE_CMD: `node ${join(repo, "packages/naive/src/records/examples/venture-type/jev.mjs")}` }, encoding: "utf8" });
   ok(u.status === 0 && JSON.parse(u.stdout).uncertain === true, u.stdout);
 });
 
 t("--source points functions at systems; a system with a sync command syncs and is marked a fixture; bad pointers are refused", () => {
-  // finance=rho syncs through the app's command (packages/core/sync.mjs); the test names a stand-in.
-  const r = create(["shop", "--type", "ecommerce", "--name", "Lee Park", "--source", "marketing-and-sales=shopify:shop.myshopify.com", "--source", "finance=rho", "--yes", "--skip-install"], base, { NAIVE_SYNC_RHO: `node ${join(repo, "schema/examples/money-sync/sync.ts")}` });
+  // finance=rho syncs through the app's command (packages/naive/src/core/sync.mjs); the test names a stand-in.
+  const r = create(["shop", "--type", "ecommerce", "--name", "Lee Park", "--source", "marketing-and-sales=shopify:shop.myshopify.com", "--source", "finance=rho", "--yes", "--skip-install"], base, { NAIVE_SYNC_RHO: `node ${join(repo, "packages/naive/src/records/examples/money-sync/sync.ts")}` });
   ok(r.status === 0 && /rho: synced from a saved answer \(a fixture/.test(r.stdout) && /Legal documents: none connected yet/.test(r.stdout), r.stdout + r.stderr);
   const fns = load(ventureFile(join(base, "shop"), "knowledge/sources.json")).functions;
   ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(ventureFile(join(base, "shop"), "money/_summary.json")), JSON.stringify(fns));
   ok(fns["marketing-and-sales"].systems[0].status === "pointed");
   // The transactions the sync wrote are sensitive: git must ignore them.
-  const packs = spawnSync("node", [join(repo, "schema/check-data-packages.mjs"), join(base, "shop")], { encoding: "utf8" });
+  const packs = spawnSync("node", [join(repo, "packages/naive/src/checks/check-data-packages.mjs"), join(base, "shop")], { encoding: "utf8" });
   ok(!/sensitive stream/.test(packs.stdout + packs.stderr), `the synced transactions stay out of git: ${packs.stdout}${packs.stderr}`);
   const bad = create(["shop2", "--type", "ecommerce", "--source", "finance=vercel", "--yes", "--skip-install", "--no-git"]);
   ok(bad.status === 1 && /vercel is not offered for finance/.test(bad.stderr) && !existsSync(join(base, "shop2")), bad.stderr);
@@ -231,7 +231,7 @@ t("naive upgrade --framework reinstalls the framework with the venture's package
 });
 
 t("naive build and start say plainly when the release scripts are missing, and otherwise run them", () => {
-  for (const [c, script] of [["build", "interface/orchestration/build-release.mjs"], ["start", "schema/start-release.mjs"]]) {
+  for (const [c, script] of [["build", "packages/naive/src/router/orchestration/build-release.mjs"], ["start", "packages/naive/src/engine/start-release.mjs"]]) {
     const has = existsSync(join(repo, script));
     if (has) continue;
     const r = naive([c], v);

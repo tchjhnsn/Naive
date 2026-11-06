@@ -11,7 +11,7 @@
 // own page, labelled for it. The plan is a marketing record (operations/marketing/sitemap.json). It
 // names, for each section, the internal record it draws on and the public variant a marketing agent
 // writes (operations/marketing/content/<page>/<item>.mdx), so nothing internal is published as is
-// (schema/check-public.mjs). Planning the sitemap and designing the site are separate agents: this plan is
+// (packages/naive/src/engine/check-public.mjs). Planning the sitemap and designing the site are separate agents: this plan is
 // part of the marketing package handed to engineering, which builds the site (EE-065).
 //
 //   node plan.mjs <venture> [--raising] [--hiring] [--contributors] [--write] [--json]
@@ -19,7 +19,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { customerNeeds, factsOf, MATRIX, needs, typesOf, weights } from "./presence.mjs";
-import { ventureFile } from "../../../packages/core/venture-paths.mjs";
+import { ventureFile } from "../../../packages/naive/src/core/venture-paths.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const SITEMAP = "operations/marketing/sitemap.json";

@@ -42,7 +42,7 @@ The rules travel with every Jev request as `state.guidelines` (`conventions.json
 
 ### Typed relations
 
-Idea records (`schema/founder-idea.schema.json`, at `people/<person-id>/ideas/<id>.json`, EE-114) carry an importance, typed relations and one scope. The closed set lives in `schema/terms/relations.ts`, and each relation maps to the standard vocabularies:
+Idea records (`packages/naive/src/records/founder-idea.schema.json`, at `people/<person-id>/ideas/<id>.json`, EE-114) carry an importance, typed relations and one scope. The closed set lives in `packages/naive/src/terms/relations.ts`, and each relation maps to the standard vocabularies:
 
 | Relation | Between | SKOS | PROV-O | DCMI Terms | AIF | IBIS |
 |---|---|---|---|---|---|---|
@@ -61,32 +61,32 @@ Idea records (`schema/founder-idea.schema.json`, at `people/<person-id>/ideas/<i
 
 `broader`, `narrower`, `related`, `part-of` and `derived-from` are the noun relations of preserved PR 157 (EE-103). An empty cell means the vocabulary has no counterpart.
 
-Every relation check runs through the EE-095 term engine, as the term typed-link (`schema/terms/terms.ts`). The term fails on any of four things:
+Every relation check runs through the EE-095 term engine, as the term typed-link (`packages/naive/src/terms/terms.ts`). The term fails on any of four things:
 
 - a name outside the closed set, or one used for the wrong kind of target;
 - an idea that relates to itself;
 - a target that does not exist (a scope the idea `creates` may be one the catalog does not list yet);
 - a cycle through `broader` (with `narrower` read backwards), `part-of` or `builds_on`.
 
-`lean/Naive/Terms.lean` proves three facts about the relation table that reading `narrower` backwards relies on. Inverses come in pairs, a relation and its inverse share one order, and each order is a relation read forward. No Lean theorem covers a graph of links or the cycle search itself. `test.mjs` tests those through the check command, and keeps the schemas, the table and Lean naming the same relations.
+`packages/naive/lean/Naive/Terms.lean` proves three facts about the relation table that reading `narrower` backwards relies on. Inverses come in pairs, a relation and its inverse share one order, and each order is a relation read forward. No Lean theorem covers a graph of links or the cycle search itself. `test.mjs` tests those through the check command, and keeps the schemas, the table and Lean naming the same relations.
 
 `node graph.mjs check <ideas folder>` checks a folder of idea records and exits 1 on any problem, naming each one. Each record's id must match its file name, so no two records share an id, and a relations entry that is not an object is named. `build` refuses ideas whose stated relations fail. The term engine loads only when an idea states a relation, so a process that imports `graph.mjs` for its constants, such as the router, does not load it. Where the engine cannot load (Node before 22.18, or a copy under `node_modules`), check and build refuse every stated relation.
 
 ```mermaid
 flowchart LR
   R["idea records: relations and scope"] --> F["facts: ideas, scopes and typed links, by number"]
-  T["schema/terms/relations.ts: the closed set"] --> TL["term typed-link"]
+  T["packages/naive/src/terms/relations.ts: the closed set"] --> TL["term typed-link"]
   F --> TL
   TL -->|"passes"| G["graph.json: typed edges, builds_on shapes the DAG"]
   TL -->|"fails T1 to T4"| X["check exits 1 and names each problem; build throws"]
-  L["lean/Naive/Terms.lean"] -->|"inverse and order theorems"| TL
+  L["packages/naive/lean/Naive/Terms.lean"] -->|"inverse and order theorems"| TL
 ```
 
 ## 3. Graph to routes
 
 Every tagged idea goes to the records it feeds. A record is a destination: the problem, who it is for, products, the core promise, vision, the solution, go to market, pricing, the team, alignment and brand. The routing table is `conventions.json` `records`: each entry has a title, the route that writes the record, and the decisions it settles (foundation statements and Naive's product and team questions). Any decision an agent proposed about that record also belongs to it.
 
-`route.mjs` reads the record types from the data model through [`packages/records`](../../../packages/records/README.md), and `test.mjs` reads the idea and graph schemas the same way.
+`route.mjs` reads the record types from the data model through [`packages/naive/src/records`](../../../packages/records/README.md), and `test.mjs` reads the idea and graph schemas the same way.
 
 A destination's stage comes from the framework's own state, never from a guess:
 
@@ -109,7 +109,7 @@ The docket is every open decision, staged the same way and ranked as before (EE-
 
 ## The boards
 
-`node interface/demo/board.mjs` serves four pages:
+`node packages/naive/src/interfaces/demo/board.mjs` serves four pages:
 
 - `/map`: the idea map;
 - `/graph`: the idea graph;

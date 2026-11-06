@@ -42,13 +42,13 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-ventures.mjs`, the product schema (`schema/product.schema.json`), and `node schema/lint-product.mjs <venture dir>` (route `product/lint`). The `check` action on `product/[id]` runs the venture check for one card. Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-ventures.mjs`, the product schema (`packages/naive/src/records/product.schema.json`), and `node packages/naive/src/checks/lint-product.mjs <venture dir>` (route `product/lint`). The `check` action on `product/[id]` runs the venture check for one card. Run it after each write, and fix a failure before you report the work done.
 
 `product/lint` warns when a product is offered to no ICP profile, a feature's job is not a job of an ICP it is offered to, or a business model has no pricing record. The ICP jobs and the pricing record are read by key. They are not copied onto the product. Rules are fail-open. Set `product_lint.rules.<id>.mode` to `"fail-closed"` in `naive.config.json` to make that rule fail the run.
 
 ## Actions and artifacts
 
-Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
+Build artifacts by the `choosing-artifacts` skill (`packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
 
 | Action | Artifact | Built from |
 |---|---|---|

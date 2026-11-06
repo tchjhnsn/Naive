@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "knowledge-sources.schema.json",
+  "title": "Knowledge sources",
+  "description": "A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored. Beside the sources Naive reads records from, `functions` says where each of the venture's functions keeps its truth outside Naive (EE-083): the repo, hosting and analytics for the product, a payments or store account for sales, the bank for money, a folder or signing service for legal documents. Those are pointers to systems of record; a system Naive reads through code is connected, one it only knows of is pointed. `truth` says where the venture's source of truth as a whole lives.",
+  "type": "object",
+  "required": [
+    "sources",
+    "records"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "connector"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "not": {
+              "const": "venture"
+            },
+            "description": "The source's id; `venture` is reserved for the venture's own folder"
+          },
+          "connector": {
+            "type": "string",
+            "description": "An integration id with a connector: filesystem, github"
+          },
+          "writes": {
+            "enum": [
+              "direct",
+              "pull-request",
+              "none"
+            ],
+            "description": "How writes reach it; the connector's default when left out"
+          },
+          "root": {
+            "type": "string",
+            "description": "filesystem: the folder, relative to the venture folder or absolute. github: the folder inside the repository"
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^[\\w.-]+/[\\w.-]+$",
+            "description": "github: owner/name"
+          },
+          "ref": {
+            "type": "string",
+            "description": "github: the branch (default main)"
+          },
+          "token": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "description": "github: the environment variable holding a token (default GITHUB_TOKEN)"
+          },
+          "api": {
+            "type": "string",
+            "description": "github: the API base, for GitHub Enterprise"
+          },
+          "search": {
+            "enum": [
+              "api",
+              "scan"
+            ],
+            "description": "github: code search (default) or a scan of the files"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "records": {
+      "type": "object",
+      "description": "Record type id (from packages/naive/src/records/data-model.json) -> source id. Unnamed record types stay in the venture folder.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "rules": {
+      "type": "array",
+      "description": "The source-of-truth matrix (EE-042). Each rule is one cell: for one record type in one context, its system of record and owner. Every field is present and \"*\" means any, so a fast model reads a rule without inferring anything. The rule with the most fields that are not \"*\" wins; two that tie fail the check. `records` is shorthand for rules that match anything.",
+      "items": {
+        "type": "object",
+        "required": [
+          "record",
+          "attribute",
+          "phase",
+          "product",
+          "account",
+          "actor",
+          "system_of_record",
+          "owner"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "record": {
+            "type": "string",
+            "description": "A venture record type id from packages/naive/src/records/data-model.json"
+          },
+          "attribute": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z_][a-z0-9_]*)$",
+            "description": "\"*\" for the whole record, or one top-level field mastered elsewhere (such as price). The router reads the field from that source and writes it there, kept at the record's own path as a JSON object holding only that field; the record's own file does not keep a copy."
+          },
+          "phase": {
+            "enum": [
+              "*",
+              "discovery",
+              "validation",
+              "beachhead",
+              "scale",
+              "platform"
+            ],
+            "description": "The venture's phase this rule holds in"
+          },
+          "product": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z0-9][a-z0-9-]*)$",
+            "description": "A product id, or \"*\""
+          },
+          "account": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z0-9][a-z0-9-]*)$",
+            "description": "An account id, or \"*\""
+          },
+          "actor": {
+            "enum": [
+              "*",
+              "person",
+              "agent"
+            ],
+            "description": "Who is reading or writing"
+          },
+          "system_of_record": {
+            "type": "string",
+            "description": "A source id from `sources`, or venture for the venture's own folder"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The role accountable for this cell's data (the MDM data owner), a role id from governance decision rights or the team plan"
+          },
+          "survivorship": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "also_in",
+              "winner"
+            ],
+            "description": "When the same record also lives in other sources, which value wins. Running these rules across vendors is the platform's; the framework only states and checks them.",
+            "properties": {
+              "also_in": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "winner": {
+                "enum": [
+                  "system-of-record",
+                  "most-recent"
+                ]
+              }
+            }
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "note": {
+      "type": "string"
+    },
+    "truth": {
+      "type": "string",
+      "description": "local: this device is the source of truth; otherwise the address of the host every system is backed up to or hosted on (EE-083)"
+    },
+    "functions": {
+      "type": "object",
+      "description": "Each function's systems of record, by department id (operations/departments.json) or legal (EE-083)",
+      "propertyNames": {
+        "enum": [
+          "strategy",
+          "products",
+          "marketing-and-sales",
+          "supply-chain",
+          "service-delivery",
+          "customer-service",
+          "human-capital",
+          "it",
+          "finance",
+          "assets",
+          "risk-and-compliance",
+          "external-relationships",
+          "capabilities",
+          "legal"
+        ]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "systems"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "systems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "system",
+                "status"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "system": {
+                  "type": "string",
+                  "description": "A system id from packages/naive/src/engine/systems-catalog.json"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string",
+                  "description": "The source in `sources` that reads it, when it is one"
+                },
+                "status": {
+                  "enum": [
+                    "connected",
+                    "pointed"
+                  ],
+                  "description": "connected: read by code (a connector or an integration); pointed: known, not read yet"
+                },
+                "synced": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "fixture": {
+                  "type": "boolean",
+                  "description": "The last sync replayed a saved answer, not the live system"
+                }
+              }
+            }
+          },
+          "note": {
+            "type": "string",
+            "description": "What the founder said about this function, in their words"
+          }
+        }
+      }
+    }
+  }
+}

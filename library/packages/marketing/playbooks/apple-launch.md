@@ -131,7 +131,7 @@ If the read is not-found, you will write a new sitemap whose only page is the la
 
 route: marketing/sitemap action: write
 
-The record matches `schema/marketing-sitemap.schema.json`. Required: `version`, `venture`, `facts`, `offerings`, `audience`, `pages`, `omitted`, `handoff`. Set `handoff.to` to `engineering`. One offering, taken from the product card (`id`, `offering`, `offered_to`). `audience.offered_to` is that same list, `audience.partner_led` is false unless step 2 showed a partner-led audience, and `audience.types` may be empty. `facts` may be `{}`. `omitted` may be `[]`.
+The record matches `packages/naive/src/records/marketing-sitemap.schema.json`. Required: `version`, `venture`, `facts`, `offerings`, `audience`, `pages`, `omitted`, `handoff`. Set `handoff.to` to `engineering`. One offering, taken from the product card (`id`, `offering`, `offered_to`). `audience.offered_to` is that same list, `audience.partner_led` is false unless step 2 showed a partner-led audience, and `audience.types` may be empty. `facts` may be `{}`. `omitted` may be `[]`.
 
 The page you add:
 

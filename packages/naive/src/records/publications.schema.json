@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "publications.schema.json",
+  "title": "Publications manifest",
+  "description": "Every place a venture has published (governance/publications.json): one entry per channel and artifact, naming the channel in governance/publication-policy.json, the artifact that was published (artifacts are what get published, records never are), where it went, the sha256 of the built output, the person who approved it, when, the versions before it (for naive publish rollback) and any embargo. node packages/naive/src/engine/check-publications.mjs fails when something is live without an entry, when an entry's sha256 does not match the built output, or when an entry has no approver.",
+  "type": "object",
+  "required": ["entries"],
+  "additionalProperties": false,
+  "properties": {
+    "venture": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["channel", "artifact"],
+        "additionalProperties": false,
+        "properties": {
+          "channel": { "type": "string", "description": "A channel id in governance/publication-policy.json" },
+          "artifact": { "type": "string", "description": "The artifact id (artifacts/<id>.json) that is published" },
+          "url": { "type": "string", "description": "Where it is published" },
+          "kind": { "enum": ["site", "claude-artifact", "social", "docs", "email", "newsletter", "app-store", "other"] },
+          "sources": { "type": "array", "items": { "type": "string" }, "description": "The public MDX variants that compile to it, venture-relative" },
+          "output": { "type": "string", "description": "The built output, venture-relative, as naive publish build wrote it" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "The sha256 of the built output that is live" },
+          "approved_by": { "type": "string", "description": "The person who approved this version. Never an agent." },
+          "at": { "type": "string", "format": "date-time", "description": "When this version went live" },
+          "decision": { "type": "string", "description": "The publish decision record that approved it (decisions/<file>)" },
+          "door": { "enum": ["one-way", "two-way"] },
+          "not_before": { "type": "string", "format": "date-time", "description": "An embargo: the gate refuses to publish before this time" },
+          "stale": { "type": "boolean", "description": "A record it was built from changed since it was published; rebuild, re-lint and republish" },
+          "previous": {
+            "type": "array",
+            "description": "Earlier live versions, newest first; naive publish rollback restores the first",
+            "items": {
+              "type": "object",
+              "required": ["sha256"],
+              "additionalProperties": false,
+              "properties": {
+                "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+                "output": { "type": "string" },
+                "approved_by": { "type": "string" },
+                "at": { "type": "string", "format": "date-time" },
+                "decision": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

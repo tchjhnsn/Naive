@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketing-brand.schema.json",
+  "title": "Brand",
+  "description": "The venture's brand tokens, in the marketing package at marketing/brand.json: colors, typefaces with their licenses, the font each role uses, voice rules (the global stylesheet for words), the logo and marks, outside design systems by reference, and scopes where a route prefix overrides the venture brand (nearer context wins). Read by every agent's layout and every interface; checked by packages/naive/src/checks/check-brand.mjs. Translates Next.js global CSS, next/font and file-based icons (Y-3, Y-4, Y-5, T-1, T-2, P-24). Version 0.x, unevaluated.",
+  "type": "object",
+  "required": ["version", "venture"],
+  "additionalProperties": false,
+  "$defs": {
+    "colors": {
+      "type": "object",
+      "description": "Token name -> hex color",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": { "type": "string", "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" }
+    },
+    "fonts": {
+      "type": "object",
+      "description": "Role (body, heading, mono, display...) -> typeface id",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": { "type": "string" }
+    },
+    "rule": {
+      "type": "object",
+      "required": ["id", "avoid"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "avoid": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }], "description": "A phrase, or phrases, the venture's words never use; matched as whole words, ignoring case" },
+        "use": { "type": "string", "description": "What to write instead" },
+        "why": { "type": "string" }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tone": { "type": "array", "items": { "type": "string" }, "description": "How the venture sounds, in a few words each" },
+        "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } }
+      }
+    }
+  },
+  "properties": {
+    "version": { "type": "string" },
+    "venture": { "type": "string" },
+    "name": { "type": "string", "description": "The name as the brand writes it" },
+    "colors": { "$ref": "#/$defs/colors" },
+    "typefaces": {
+      "type": "array",
+      "description": "Each typeface, defined once with its license (T-1). self-hosted: its files are in public/ and registered, so a browser makes no outside request; system: the reader's own fonts; remote: served from another host (the check fails it)",
+      "items": {
+        "type": "object",
+        "required": ["id", "family", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "family": { "type": "string" },
+          "source": { "enum": ["self-hosted", "system", "remote"] },
+          "license": { "type": "string", "description": "An SPDX id such as OFL-1.1, or owned, or licensed" },
+          "files": { "type": "array", "items": { "type": "string", "pattern": "^public/" } },
+          "url": { "type": "string" },
+          "fallback": { "type": "array", "items": { "type": "string" } },
+          "credit": { "type": "string" }
+        }
+      }
+    },
+    "fonts": { "$ref": "#/$defs/fonts", "description": "The font each role uses everywhere, as the root layout applies it (T-2)" },
+    "voice": { "$ref": "#/$defs/voice" },
+    "marks": {
+      "type": "array",
+      "description": "The logo and marks (P-24), each a registered file in public/",
+      "items": {
+        "type": "object",
+        "required": ["kind", "asset"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["logo", "icon", "apple-icon", "favicon"] },
+          "asset": { "type": "string", "pattern": "^public/" },
+          "use": { "type": "string" }
+        }
+      }
+    },
+    "design_systems": {
+      "type": "array",
+      "description": "Outside design systems the brand builds on, by reference: linked, with a version and license, never copied in (Y-4)",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "url", "license"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "name": { "type": "string" },
+          "url": { "type": "string" },
+          "version": { "type": "string" },
+          "license": { "type": "string" },
+          "uses": { "type": "array", "items": { "type": "string" }, "description": "What the venture takes from it" }
+        }
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "description": "Overrides for a route prefix (a package such as investors, or one item such as investors/deck). Nearer context wins: a deeper prefix over a shallower one, any scope over the venture brand (Y-5, T-2)",
+      "items": {
+        "type": "object",
+        "required": ["for"],
+        "additionalProperties": false,
+        "properties": {
+          "for": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*(/[a-z0-9][a-z0-9-]*)*$" },
+          "colors": { "$ref": "#/$defs/colors" },
+          "fonts": { "$ref": "#/$defs/fonts" },
+          "voice": { "$ref": "#/$defs/voice" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

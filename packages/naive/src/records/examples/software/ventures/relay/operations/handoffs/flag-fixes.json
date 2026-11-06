@@ -1,0 +1,42 @@
+{
+  "id": "flag-fixes",
+  "title": "Relay CLI: flag parsing fixes",
+  "venture": "relay",
+  "products": [
+    "cli"
+  ],
+  "governed_by": [
+    "EE-017",
+    "EE-019"
+  ],
+  "assignment": "none",
+  "role": "builder",
+  "brief": "flag-fixes.md",
+  "decision_classes": [
+    "implementation-detail",
+    "accept-verified-work"
+  ],
+  "done_criteria": [
+    {
+      "id": "ventures-hold",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-ventures.mjs packages/naive/src/records/examples/software"
+    },
+    {
+      "id": "execution-holds",
+      "kind": "self-proof",
+      "check": "node packages/naive/src/checks/check-execution.mjs packages/naive/src/records/examples/software/ventures/relay"
+    }
+  ],
+  "status": "done",
+  "claimed_by": "session_example_relay",
+  "session_id": "session_example_relay",
+  "attempts": 1,
+  "max_attempts": 3,
+  "run_cap": "2h",
+  "evidence": [
+    "../../evidence/results/flag-fixes-20261101090000.json"
+  ],
+  "pr": "https://example.com/relay/pull/1",
+  "lesson": "Parse flags in one place, so a new flag cannot be read two ways."
+}

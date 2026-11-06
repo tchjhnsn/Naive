@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { diagnose, heuristicCandidates, humanText, isDue, reredactSources, sha256 } from "./diagnose-transcripts.mjs";
-import { redact } from "../schema/redact.mjs";
+import { redact } from "../packages/naive/src/engine/redact.mjs";
 
 const fixtures = new URL("./fixtures/transcripts", import.meta.url).pathname;
 const root = mkdtempSync(join(tmpdir(), "naive-diag-"));

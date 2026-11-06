@@ -20,7 +20,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ventureFile } from "../../../packages/core/venture-paths.mjs";
+import { ventureFile } from "../../../packages/naive/src/core/venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ENDPOINT = "https://api.typesafe.ai/v1/systemone";

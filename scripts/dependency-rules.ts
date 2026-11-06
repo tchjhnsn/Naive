@@ -13,7 +13,7 @@
 //                 trailing `/*` names every folder under it with a package.json) asks for a shared dependency by the
 //                 same version, across dependencies, devDependencies, peerDependencies and optionalDependencies.
 //   leaf          A folder listed under `leaves` in scripts/dependency-rules.json imports nothing in the repository
-//                 outside itself. packages/records, the record types' resolver, is one: every unit reads the record
+//                 outside itself. packages/naive/src/records, the record types' resolver, is one: every unit reads the record
 //                 types through it, so it must sit below them all.
 //
 // An import is a relative specifier in `import ... from`, `export ... from`, `import "..."`, `import("...")` or

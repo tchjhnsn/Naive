@@ -38,12 +38,12 @@
     "a person has confirmed every required record and every record this package reads"
   ],
   "schemas": [
-    "schema/product.schema.json"
+    "packages/naive/src/records/product.schema.json"
   ],
   "templates": [],
   "checks": [
-    "schema/check-ventures.mjs",
-    "schema/lint-product.mjs"
+    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/lint-product.mjs"
   ],
   "skill": {
     "id": "product-function",

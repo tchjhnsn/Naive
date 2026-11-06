@@ -8,7 +8,7 @@ source: hybrid
 
 # Template: public assets
 
-Fills `<venture>/public/assets.json` (`schema/public-assets.schema.json`), the register of what the venture ships as it is. Do not write it by hand: `mentura assets add` registers a file and code fills its facts; `mentura assets fill` refreshes them. Check it with `mentura public/assets check`.
+Fills `<venture>/public/assets.json` (`packages/naive/src/records/public-assets.schema.json`), the register of what the venture ships as it is. Do not write it by hand: `mentura assets add` registers a file and code fills its facts; `mentura assets fill` refreshes them. Check it with `mentura public/assets check`.
 
 ```json
 {

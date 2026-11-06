@@ -43,7 +43,7 @@
   "schemas": [],
   "templates": [],
   "checks": [
-    "schema/lint-finance.mjs"
+    "packages/naive/src/checks/lint-finance.mjs"
   ],
   "skill": {
     "id": "finance-function",

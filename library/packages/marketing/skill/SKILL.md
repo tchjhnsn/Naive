@@ -46,11 +46,11 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-brand.mjs`, `schema/check-assets.mjs` and the public gate (`operations/marketing/public`). Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-brand.mjs`, `packages/naive/src/checks/check-assets.mjs` and the public gate (`operations/marketing/public`). Run it after each write, and fix a failure before you report the work done.
 
 ## Actions and artifacts
 
-Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
+Build artifacts by the `choosing-artifacts` skill (`packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
 
 | Action | Artifact | Built from |
 |---|---|---|

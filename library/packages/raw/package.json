@@ -11,9 +11,9 @@
   ],
   "layer": "purpose",
   "records": ["raw-source", "raw-text"],
-  "schemas": ["schema/raw-source.schema.json"],
+  "schemas": ["packages/naive/src/records/raw-source.schema.json"],
   "templates": [],
-  "checks": ["schema/check-data-packages.mjs"],
+  "checks": ["packages/naive/src/checks/check-data-packages.mjs"],
   "skill": null,
   "use_model": []
 }

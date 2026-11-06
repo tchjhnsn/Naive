@@ -1,0 +1,126 @@
+{
+  "version": "0.1.0",
+  "note": "Systems a venture's functions keep their truth in (EE-083), offered at create-venture and recorded in knowledge/sources.json `functions`. connect names the code that reaches a system; a system without it is recorded as a pointer until a connector exists.",
+  "systems": {
+    "local-repo": {
+      "label": "A local code repository",
+      "kind": "code",
+      "address": "a folder path",
+      "connect": null
+    },
+    "github": {
+      "label": "GitHub",
+      "kind": "code",
+      "address": "owner/name",
+      "connect": "packages/naive/src/store/connectors: the github connector reads records from it (knowledge/sources.json)"
+    },
+    "vercel": {
+      "label": "Vercel",
+      "kind": "hosting and analytics",
+      "address": "team/project",
+      "connect": null
+    },
+    "cloudflare": {
+      "label": "Cloudflare",
+      "kind": "hosting and analytics",
+      "address": "account/zone or Pages project",
+      "connect": null
+    },
+    "stripe": {
+      "label": "Stripe",
+      "kind": "payments and sales",
+      "address": "account id (acct_...)",
+      "connect": null
+    },
+    "square": {
+      "label": "Square",
+      "kind": "payments and sales",
+      "address": "location or merchant id",
+      "connect": null
+    },
+    "shopify": {
+      "label": "Shopify",
+      "kind": "store and sales",
+      "address": "store domain (name.myshopify.com)",
+      "connect": null
+    },
+    "rho": {
+      "label": "Rho",
+      "kind": "bank and spend",
+      "address": "sandbox, or live with RHO_API_TOKEN",
+      "connect": "the app's sync command, named in NAIVE_SYNC_RHO (packages/naive/src/core/sync.mjs): accounts, transactions and a summary, as pointers in money/"
+    },
+    "google-drive": {
+      "label": "Google Drive",
+      "kind": "documents",
+      "address": "folder URL",
+      "connect": null
+    },
+    "docusign": {
+      "label": "DocuSign",
+      "kind": "signatures",
+      "address": "account",
+      "connect": null
+    },
+    "local-folder": {
+      "label": "A local folder",
+      "kind": "documents",
+      "address": "a folder path",
+      "connect": null
+    }
+  },
+  "functions": {
+    "products": [
+      "local-repo",
+      "github",
+      "vercel",
+      "cloudflare"
+    ],
+    "marketing-and-sales": [
+      "vercel",
+      "cloudflare",
+      "stripe",
+      "square",
+      "shopify"
+    ],
+    "customer-service": [
+      "stripe",
+      "shopify",
+      "square"
+    ],
+    "finance": [
+      "rho",
+      "stripe",
+      "square",
+      "shopify"
+    ],
+    "risk-and-compliance": [
+      "google-drive",
+      "docusign",
+      "local-folder"
+    ],
+    "legal": [
+      "google-drive",
+      "docusign",
+      "local-folder"
+    ],
+    "it": [
+      "github",
+      "vercel",
+      "cloudflare"
+    ],
+    "external-relationships": [
+      "google-drive",
+      "local-folder"
+    ],
+    "service-delivery": [
+      "local-folder",
+      "google-drive"
+    ],
+    "supply-chain": [
+      "shopify",
+      "square",
+      "local-folder"
+    ]
+  }
+}

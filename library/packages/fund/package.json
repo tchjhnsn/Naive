@@ -38,8 +38,8 @@
     "a person has confirmed the thesis and the terms"
   ],
   "schemas": [
-    "schema/fund-thesis.schema.json",
-    "schema/fund-terms.schema.json"
+    "packages/naive/src/records/fund-thesis.schema.json",
+    "packages/naive/src/records/fund-terms.schema.json"
   ],
   "templates": [],
   "checks": [],

@@ -15,9 +15,9 @@ jobs:
         run: |
           git fetch origin ${{ github.base_ref }}
           changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
-          code=$(echo "$changed" | node schema/check-docs-claims.mjs --code)
-          docs=$(echo "$changed" | node schema/check-docs-claims.mjs --scanned)
-          owed=$(echo "$changed" | node schema/check-docs-claims.mjs --readmes)
+          code=$(echo "$changed" | node packages/naive/src/checks/check-docs-claims.mjs --code)
+          docs=$(echo "$changed" | node packages/naive/src/checks/check-docs-claims.mjs --scanned)
+          owed=$(echo "$changed" | node packages/naive/src/checks/check-docs-claims.mjs --readmes)
           if [ -z "$code" ] || { [ -n "$docs" ] && [ -z "$owed" ]; }; then echo "ok"; exit 0; fi
           if printf '%s' "$BODY" | grep -qE '^[[:space:]]*No docs change: *[^[:space:]<]'; then echo "ok: the PR says why no docs change"; exit 0; fi
           if [ -n "$owed" ]; then echo "This PR changes code next to these READMEs but not the READMEs:"; echo "$owed"

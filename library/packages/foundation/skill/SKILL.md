@@ -48,11 +48,11 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-telos.mjs`, `schema/check-validation.mjs`, `schema/foundation.mjs`, `schema/lint-foundation.mjs` (route `foundation/lint`) and the schema checks (`schema/validate.py`). `foundation/lint` warns, and does not fail, unless `naive.config.json` sets `foundation_lint.rules.<id>.mode` to `fail-closed`. Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-telos.mjs`, `packages/naive/src/checks/check-validation.mjs`, `packages/naive/src/engine/foundation.mjs`, `packages/naive/src/checks/lint-foundation.mjs` (route `foundation/lint`) and the schema checks (`packages/naive/src/records/validate.py`). `foundation/lint` warns, and does not fail, unless `naive.config.json` sets `foundation_lint.rules.<id>.mode` to `fail-closed`. Run it after each write, and fix a failure before you report the work done.
 
 ## Actions and artifacts
 
-Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
+Build artifacts by the `choosing-artifacts` skill (`packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
 
 | Action | Artifact | Built from |
 |---|---|---|

@@ -8,7 +8,7 @@ Restate the goal first. Name each principle you use and the choice it changed.
 
 One item per pull request. Never push to main. No force-push to a shared branch. No Co-Authored-By trailer. No secrets and no .env files.
 
-Never bypass the EE-095 term engine (schema/terms) and the Lean proofs in lean/Naive for anything symbolic.
+Never bypass the EE-095 term engine (packages/naive/src/terms) and the Lean proofs in packages/naive/lean/Naive for anything symbolic.
 
 Make a mermaid diagram for every design.
 

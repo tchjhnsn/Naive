@@ -1,0 +1,27 @@
+{
+  "id": "json-output-20261101100000",
+  "subject": {
+    "kind": "handoff",
+    "id": "json-output",
+    "version": "example"
+  },
+  "ran_at": "2026-11-01T10:00:00Z",
+  "runner": "session_example_relay",
+  "results": [
+    {
+      "criterion": "ventures-hold",
+      "kind": "conformance",
+      "passed": true,
+      "command": "node packages/naive/src/checks/check-ventures.mjs packages/naive/src/records/examples/software",
+      "output": "1 ventures: all cross-venture rules hold."
+    },
+    {
+      "criterion": "execution-holds",
+      "kind": "self-proof",
+      "passed": true,
+      "command": "node packages/naive/src/checks/check-execution.mjs packages/naive/src/records/examples/software/ventures/relay",
+      "output": "relay: all execution rules hold."
+    }
+  ],
+  "passed": true
+}

@@ -20,7 +20,7 @@ Package `library/packages/finance`. A venture function is a part of the venture 
 
 | Route | What it is | Record type |
 |---|---|---|
-| `business-models` | The business models the venture uses (a system record from `schema/vocab/business-models.json`; no route of its own yet, so read it through `mentura_layout`) | `business-models` |
+| `business-models` | The business models the venture uses (a system record from `packages/naive/src/records/vocab/business-models.json`; no route of its own yet, so read it through `mentura_layout`) | `business-models` |
 | `validation/pricing` | Price model, points, buyer and evidence they pay (owned by validation, read here) | `validation-pricing` |
 | `purpose/money/summary` | Cash, monthly flows and runway (owned by money, read here) | `money-summary` |
 
@@ -41,11 +41,11 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`node schema/lint-finance.mjs <venture dir> [--json]` (route `finance/lint`) checks spend decisions, prices and metrics. Rules: `spend-no-runway` (a spend decision whose answer, note and options never say what it does to runway), `price-below-cost` (a pricing point whose amount is below its cost) and `metric-no-target` (a metric with no numeric target for the venture's current phase). Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `finance_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1). `naive check` runs it, and still covers the records this function reads (validation and money checks). Run it after each write, and fix a failure before you report the work done.
+`node packages/naive/src/checks/lint-finance.mjs <venture dir> [--json]` (route `finance/lint`) checks spend decisions, prices and metrics. Rules: `spend-no-runway` (a spend decision whose answer, note and options never say what it does to runway), `price-below-cost` (a pricing point whose amount is below its cost) and `metric-no-target` (a metric with no numeric target for the venture's current phase). Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `finance_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1). `naive check` runs it, and still covers the records this function reads (validation and money checks). Run it after each write, and fix a failure before you report the work done.
 
 ## Actions and artifacts
 
-Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
+Build artifacts by the `choosing-artifacts` skill (`packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
 
 | Action | Artifact | Built from |
 |---|---|---|

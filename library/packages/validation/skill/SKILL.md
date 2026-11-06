@@ -32,6 +32,6 @@ Read and write through the router. A missing record stays missing.
 
 ## Checks
 
-`node schema/lint-validation.mjs <venture dir> [--json]` (route `validation/lint`) warns, fail-open, when a claim cites no evidence, evidence is past the assumption shelf life (the freshness profile's expire, or a phase change after it was collected), an assumption was graded only by an agent (`probability.by` is not `owner`), or a decision was made in Validation on evidence that grades very low. Set `validation_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make that rule fail the run (exit 1). `naive check` runs it.
+`node packages/naive/src/checks/lint-validation.mjs <venture dir> [--json]` (route `validation/lint`) warns, fail-open, when a claim cites no evidence, evidence is past the assumption shelf life (the freshness profile's expire, or a phase change after it was collected), an assumption was graded only by an agent (`probability.by` is not `owner`), or a decision was made in Validation on evidence that grades very low. Set `validation_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make that rule fail the run (exit 1). `naive check` runs it.
 
-`schema/check-validation.mjs` grades each record from its evidence. `schema/assess-problem.mjs` (route `purpose/validation/assess`) labels the four assumptions and asks before it runs on an incomplete record.
+`packages/naive/src/checks/check-validation.mjs` grades each record from its evidence. `packages/naive/src/engine/assess-problem.mjs` (route `purpose/validation/assess`) labels the four assumptions and asks before it runs on an incomplete record.

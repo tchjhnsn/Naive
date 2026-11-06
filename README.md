@@ -13,7 +13,7 @@ This is Naive's own repository (EE-118), split out of tchjhnsn/everything-ecosys
 | Governance (cross-cutting) | Who may decide | `governance/` | Company vault template, roles, decision rights, pillar skills |
 | Interface (cross-cutting) | How you work across the layers at once | `interface/` | Agent harnesses (Claude Code, Cursor), operator console |
 
-`docs/design/` holds the ecosystem's own domain and systems design. Each layer has a `tooling/integrations.json` listing the tools it can plug into (Obsidian, Notion, Linear, the Claude and Cursor agent SDKs and so on), checked against `schema/integration.schema.json`. 
+`docs/design/` holds the ecosystem's own domain and systems design. Each layer has a `tooling/integrations.json` listing the tools it can plug into (Obsidian, Notion, Linear, the Claude and Cursor agent SDKs and so on), checked against `packages/naive/src/records/integration.schema.json`. 
 The loop: Purpose is articulated into Knowledge, Operations hands the work to people and agents, and Evidence feeds back into Knowledge and Purpose.
 
 ## What Naive is, and who it is for
@@ -34,8 +34,8 @@ A **venture development framework** (proposed genus, EE-024), in the same genus 
 | Web development framework | Everything Ecosystem |
 |---|---|
 | Conventions over configuration | One opinionated default per choice, each with references (EE-014) |
-| Project structure | Workspace, venture folders, six layers, record types (`schema/data-model.json`) |
-| Generator (`rails new`) | `node schema/init-venture.mjs` |
+| Project structure | Workspace, venture folders, six layers, record types (`packages/naive/src/records/data-model.json`) |
+| Generator (`rails new`) | `node packages/naive/src/engine/init-venture.mjs` |
 | Test suite | `node test.mjs`: every check, run in CI |
 | Packages and plug-ins | Venture packages (`library/packages/<name>/package.json`); a kit is Mentura's enhanced package, kept in Mentura and found through `NAIVE_KITS` (EE-071) |
 | Inversion of control | The framework's checks and runners call on the venture's records |
@@ -44,7 +44,7 @@ It replaces the earlier description "AI-Native OS for Builders": an operating sy
 
 ## Framework and platform
 
-The system has two sides, the way Next.js and Vercel do (EE-041): the framework is **Naive** and the platform is **Mentura** (EE-043). The framework is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Mentura lives in another repository (everything-ecosystem) and depends on Naive by version (EE-118). Naive never names a Mentura module: Mentura hands in its tools by configuration (`NAIVE_JUDGE_CMD`, `NAIVE_KITS`, `NAIVE_PLATFORM_ADAPTER`, `registerConnector`), and `node schema/check-boundary.mjs` fails on code that names one.
+The system has two sides, the way Next.js and Vercel do (EE-041): the framework is **Naive** and the platform is **Mentura** (EE-043). The framework is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Mentura lives in another repository (everything-ecosystem) and depends on Naive by version (EE-118). Naive never names a Mentura module: Mentura hands in its tools by configuration (`NAIVE_JUDGE_CMD`, `NAIVE_KITS`, `NAIVE_PLATFORM_ADAPTER`, `registerConnector`), and `node packages/naive/src/checks/check-boundary.mjs` fails on code that names one.
 
 ## The Claude Code plugin
 
@@ -55,8 +55,8 @@ This repository, and so the naive-framework npm package, is Naive's Claude Code 
 /plugin install naive@naive
 ```
 
-From a clone, add it by path instead: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here. `node interface/plugin-test.mjs` tests the plugin.
+From a clone, add it by path instead: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here. `node packages/naive/src/interfaces/plugin-test.mjs` tests the plugin.
 
 ## Vault and repo
 
-Docs as code (EE-005): this repo holds the method, its design docs, schemas, skills and templates. Each instance keeps its own notes and decisions in its own ventures. The schema's decisions are in `docs/decisions/decisions.json`, and `schema/README.md` indexes every record type.
+Docs as code (EE-005): this repo holds the method, its design docs, schemas, skills and templates. Each instance keeps its own notes and decisions in its own ventures. The schema's decisions are in `docs/decisions/decisions.json`, and `packages/naive/src/engine/README.md` indexes every record type.

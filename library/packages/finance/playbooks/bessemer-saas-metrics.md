@@ -124,7 +124,7 @@ The venture provides, before step 1, whatever it already has. This playbook does
 1. Read `venture`. Take `phase` from the manifest. Naive phases are discovery, validation, beachhead, scale, and platform.
 2. Read `product/[id]` for the product this record is about. Use `business_model` only when the card is there.
 3. Read `validation/pricing`. Use `model` only when the record is there. Pricing stays owned by validation.
-4. Read `purpose/money/summary`. When the read returns a record, the actuals for cash, monthly inflow, monthly outflow, monthly net, and `runway_months` are that record's figures, in the minor units the summary uses. When the read is not found, those actuals are `not in the venture`. Do not treat monthly inflow as ARR. The summary has no ARR field (`schema/money-summary.schema.json`).
+4. Read `purpose/money/summary`. When the read returns a record, the actuals for cash, monthly inflow, monthly outflow, monthly net, and `runway_months` are that record's figures, in the minor units the summary uses. When the read is not found, those actuals are `not in the venture`. Do not treat monthly inflow as ARR. The summary has no ARR field (`packages/naive/src/records/money-summary.schema.json`).
 5. Read `validation/product-market-fit`. Retention cohorts stay on that record. Do not copy a Bessemer retention number in as if it were the venture's cohort.
 6. Read `foundation/telos`. If it is missing, leave it missing. This playbook does not invent `statement`, `end_state`, or `owner_outcome`.
 7. Write one `raw/sources/[id]` record for each page you will cite. `fetched` is the date you fetched that page, not the date Bessemer published it. The ids are `bessemer-scaling-100m` (origin `https://www.bvp.com/atlas/scaling-to-100-million`), `bessemer-state-of-the-cloud-2023` (origin `https://www.bvp.com/atlas/state-of-the-cloud-2023`), `bessemer-state-of-the-cloud-2024` (origin `https://www.bvp.com/atlas/state-of-the-cloud-2024`), and `bessemer-cloud-100-benchmarks-2025` (origin `https://www.bvp.com/atlas/the-cloud-100-benchmarks-report`).
@@ -161,7 +161,7 @@ The venture provides, before step 1, whatever it already has. This playbook does
 
 9. Write `evidence/[id]` for the check run. `subject.kind` is `venture`. `passed` is true only when every criterion below passed. A failed run is still written, with `passed` false. That is how a check can fail.
 10. A person decides with `mentura decide finance-saas-metrics --by "<name>" --confirm finance-saas-metrics --answer "$(cat metrics.json)"`. `metrics.json` is the metrics record from step 8 with `arr_band`, `segment`, `stage_note`, and any phase target the person changed. They may replace a phase target only by the rule in the checks. They type the decision id themselves. The `note` keeps what the agent proposed. Once the status is `decided`, `answer` is the metrics record, and every check reads it. While the status is `open`, the checks read `note`.
-11. After that decision is `decided`, and only if step 6 found a telos, draft the accepted numeric targets for the current phase onto `foundation/telos` as exit criteria. Each criterion's `statement` is the target value, its `evidence` names the `raw/sources` id, and `serves` names a measure that already exists on the telos. An agent's write of `foundation/telos` is a draft (`strategy-or-constitution` in `schema/data-model.json`). A person accepts it. If there is no telos, stop. Do not create one in this playbook.
+11. After that decision is `decided`, and only if step 6 found a telos, draft the accepted numeric targets for the current phase onto `foundation/telos` as exit criteria. Each criterion's `statement` is the target value, its `evidence` names the `raw/sources` id, and `serves` names a measure that already exists on the telos. An agent's write of `foundation/telos` is a draft (`strategy-or-constitution` in `packages/naive/src/records/data-model.json`). A person accepts it. If there is no telos, stop. Do not create one in this playbook.
 
 Replace a target's `value` only when all of the following are true. Otherwise leave `no published Bessemer target`.
 
@@ -189,7 +189,7 @@ A replaced target looks like this:
 }
 ```
 
-`condition` is the label in the checker (`verification/playbook-bessemer-saas-metrics/replay.mjs`). The 2024 vertical-AI figures and the 2025 Cloud 100 growth and years-to-Centaur figures are not conditions. Do not paste them.
+`condition` is the label in the checker (`packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.mjs`). The 2024 vertical-AI figures and the 2025 Cloud 100 growth and years-to-Centaur figures are not conditions. Do not paste them.
 
 ## Checks
 
@@ -201,7 +201,7 @@ Run them after step 8 and again after a person decides. An `answer` that does no
 | `targets-sourced` | Every phase value is `no published Bessemer target`, or it is a string in the tables above whose `source` file exists under `raw/sources` and whose condition matches `arr_band`, `segment`, and `stage_note` | A number with no source, a number that is not in the tables, or a condition the venture's note does not meet |
 | `no-early-number` | Discovery and validation values are `no published Bessemer target` | Either of those phases has any other value |
 | `actuals-from-records` | Each actual equals `purpose/money/summary` when that read returned a record, and is `not in the venture` when it did not | An actual is filled in with no summary, or it disagrees with the summary |
-| `decision-open` | Status is `open`, or status is `decided` and `provenance.approved_by` is present | Status is `decided` with no approver. Propose with any status other than open is refused (`schema/decisions.mjs`) |
+| `decision-open` | Status is `open`, or status is `decided` and `provenance.approved_by` is present | Status is `decided` with no approver. Propose with any status other than open is refused (`packages/naive/src/engine/decisions.mjs`) |
 | `telos-when-decided` | Before the decision is decided, this criterion passes without a telos write. After it is decided, either there is still no telos and no telos write was made, or the current phase's accepted numeric targets appear as exit criteria on a telos draft or record and each one names its source | A telos was created from nothing in this playbook, or a numeric target was written onto it before the decision was decided |
 
-`node verification/playbook-bessemer-saas-metrics/replay.mjs` runs these checks both ways against the router, on fixture ventures.
+`node packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.mjs` runs these checks both ways against the router, on fixture ventures.

@@ -17,7 +17,7 @@ description: >
 
 # Cofounder structure
 
-Governance layer, ownership-and-control kit (EE-022). Writes `ownership.json` (founder holders and grants) and `founder-agreement.json` with its prose beside it. `node schema/check-governance.mjs` then requires an agreement once two or more founders share ownership.
+Governance layer, ownership-and-control kit (EE-022). Writes `ownership.json` (founder holders and grants) and `founder-agreement.json` with its prose beside it. `node packages/naive/src/checks/check-governance.mjs` then requires an agreement once two or more founders share ownership.
 
 ## 1. Read the venture first
 

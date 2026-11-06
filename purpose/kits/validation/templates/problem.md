@@ -8,7 +8,7 @@ source: hybrid
 
 # Template: the problem record
 
-Fills `<venture>/purpose/validation/problem.json` (schema `schema/validation-problem.schema.json`). Grade it with `node schema/check-validation.mjs <venture dir>`.
+Fills `<venture>/purpose/validation/problem.json` (schema `packages/naive/src/records/validation-problem.schema.json`). Grade it with `node packages/naive/src/checks/check-validation.mjs <venture dir>`.
 
 ## Weak: a claim only (grades very low)
 

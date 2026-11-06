@@ -1,6 +1,6 @@
 .DS_Store
 node_modules
 _catalog/
-# Founder-supplied originals stay out of git (EE-070). Sensitive streams are enforced by schema/check-data-packages.mjs.
+# Founder-supplied originals stay out of git (EE-070). Sensitive streams are enforced by packages/naive/src/checks/check-data-packages.mjs.
 **/raw/**/original.*
 .naive/

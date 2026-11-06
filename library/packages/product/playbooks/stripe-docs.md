@@ -78,9 +78,9 @@ The method to borrow: every caller-visible change gets an entry with a date, wha
 
 ## Template
 
-Work in your venture, from a checkout of this framework. Each step names the route it reads or writes. Commands are `node interface/cli/mentura.mjs`, as in `AGENTS.md`. Replace `<venture>` with your venture id.
+Work in your venture, from a checkout of this framework. Each step names the route it reads or writes. Commands are `node packages/naive/src/interfaces/cli/mentura.mjs`, as in `AGENTS.md`. Replace `<venture>` with your venture id.
 
-The product function reads `foundation/icp` and does not keep its own copy of who the reader is. `offered_to` on a product card stores ICP profile ids (`schema/product.schema.json`). Do not paste a profile's `who`, `jobs`, or `traits` into the card.
+The product function reads `foundation/icp` and does not keep its own copy of who the reader is. `offered_to` on a product card stores ICP profile ids (`packages/naive/src/records/product.schema.json`). Do not paste a profile's `who`, `jobs`, or `traits` into the card.
 
 This template does not publish. Publishing waits on `governance/publication-policy` (a channel and a person approving). That route is not a step here.
 
@@ -91,7 +91,7 @@ A missing record comes back as `ok: true` with `result: null` and `not_found`. T
 Route: read `foundation/icp`.
 
 ```bash
-node interface/cli/mentura.mjs foundation/icp read --venture <venture> --json
+node packages/naive/src/interfaces/cli/mentura.mjs foundation/icp read --venture <venture> --json
 ```
 
 The venture provides this record. This playbook does not write it. `foundation/icp` is the list of profiles and takes no write. Each profile is written at `foundation/icp/<id>`. An agent's write there is a draft for you to accept, because the route is a strategy-or-constitution record.
@@ -105,7 +105,7 @@ If `result` lists profiles, keyed by id, pick the profile this product is offere
 Route: read `product`.
 
 ```bash
-node interface/cli/mentura.mjs product read --venture <venture> --json
+node packages/naive/src/interfaces/cli/mentura.mjs product read --venture <venture> --json
 ```
 
 `result` null means there is no card yet. A result is an object whose keys are product ids. Pick the card this spec is about, or choose a new id of lowercase letters, digits, and hyphens. Call it `<product-id>`.
@@ -117,15 +117,15 @@ Route: write or read `product/<product-id>`.
 If the list already has `<product-id>`, read it:
 
 ```bash
-node interface/cli/mentura.mjs product/<product-id> read --venture <venture> --json
+node packages/naive/src/interfaces/cli/mentura.mjs product/<product-id> read --venture <venture> --json
 ```
 
-If it does not, write a card. Required fields are `id`, `name`, and `description` (`schema/product.schema.json`). Set `offered_to` to an array of profile ids you read in step 1. `description` is one paragraph in your words: what a caller does with the product. Do not copy a Stripe sentence into it.
+If it does not, write a card. Required fields are `id`, `name`, and `description` (`packages/naive/src/records/product.schema.json`). Set `offered_to` to an array of profile ids you read in step 1. `description` is one paragraph in your words: what a caller does with the product. Do not copy a Stripe sentence into it.
 
 `status` is one of `idea`, `building`, `live`, `retired` if you want to set it. Leave it unset until you know. The schema does not require it.
 
 ```bash
-node interface/cli/mentura.mjs product/<product-id> write --venture <venture> --input <card.json> --note "product card for the docs spec"
+node packages/naive/src/interfaces/cli/mentura.mjs product/<product-id> write --venture <venture> --input <card.json> --note "product card for the docs spec"
 ```
 
 An agent's write of a product card is the record. It is not a draft. Read `product/<product-id>` back and confirm `offered_to` contains `<profile-id>`.
@@ -155,14 +155,14 @@ changelog: <date, what the caller sees differently, whether the previous wording
 `objects` is the nouns a caller sees. For each noun, you will add a glossary term in step 5. Say, in `retry-writes`, which writes may be repeated after a dropped connection. Say, in `error-shape`, the one shape every error uses. Say, in `versions`, what a caller on the current wording can ignore (something only added) and what forces a new wording (a rename, a removal, or a new shape). `changelog` names the four facts step 7 will record. This line is the rule. Step 6 turns it into a habit, and step 7 writes entries.
 
 ```bash
-node interface/cli/mentura.mjs propose --venture <venture> --input <spec.json>
-node interface/cli/mentura.mjs decisions/docs-spec read --venture <venture> --json
+node packages/naive/src/interfaces/cli/mentura.mjs propose --venture <venture> --input <spec.json>
+node packages/naive/src/interfaces/cli/mentura.mjs decisions/docs-spec read --venture <venture> --json
 ```
 
 The read should show `status` `open` and `provenance.drafted_by.kind` `agent`. You decide it later, in your own words, with:
 
 ```bash
-node interface/cli/mentura.mjs decide docs-spec --venture <venture> --by "<your name>" --confirm docs-spec
+node packages/naive/src/interfaces/cli/mentura.mjs decide docs-spec --venture <venture> --by "<your name>" --confirm docs-spec
 ```
 
 Add `--answer` only if you want to replace the drafted wording. Until you do this, the proposal is enough for the checks.
@@ -174,7 +174,7 @@ Route: write `glossary/product`, which reads the `objects` line from step 4.
 `package` is `product`. Each token in `objects` is a `term`. `meaning` is your sentence for what the caller means by that noun. Leave `export` false unless another package must see the term. Do not use a Stripe object name as a term.
 
 ```bash
-node interface/cli/mentura.mjs glossary/product write --venture <venture> --as person --input <glossary.json> --note "nouns from the docs spec"
+node packages/naive/src/interfaces/cli/mentura.mjs glossary/product write --venture <venture> --as person --input <glossary.json> --note "nouns from the docs spec"
 ```
 
 The glossary route exists before a venture is in the beachhead phase. Need-now may still call it "coming soon". A glossary is a public commitment, so a person's write is the record, and an agent's write is a draft until you run `mentura accept glossary/product --venture <venture>`.
@@ -195,8 +195,8 @@ product: <the product id this habit is for>
 `product` here is the id the habit is about, `<product-id>`, or the words you will use on every entry to point at a product id. Check 4 only requires the four lines to be filled. Check 5 requires each entry's `product` line to equal a real product id.
 
 ```bash
-node interface/cli/mentura.mjs propose --venture <venture> --input <habit.json>
-node interface/cli/mentura.mjs decisions/changelog-habit read --venture <venture> --json
+node packages/naive/src/interfaces/cli/mentura.mjs propose --venture <venture> --input <habit.json>
+node packages/naive/src/interfaces/cli/mentura.mjs decisions/changelog-habit read --venture <venture> --json
 ```
 
 ### 7. Write one entry when a caller-visible thing changes
@@ -213,8 +213,8 @@ product: <product-id>
 ```
 
 ```bash
-node interface/cli/mentura.mjs propose --venture <venture> --input <entry.json>
-node interface/cli/mentura.mjs decisions/<entry-id> read --venture <venture> --json
+node packages/naive/src/interfaces/cli/mentura.mjs propose --venture <venture> --input <entry.json>
+node packages/naive/src/interfaces/cli/mentura.mjs decisions/<entry-id> read --venture <venture> --json
 ```
 
 Read `decisions` to see the habit and the entries in one list. That list returns every decision filed at `decisions/*.decision.json`, including decisions the venture already had. It also returns a decision filed under `product/decisions/` and the foundation statements still open. The list is the `decisions` array in the output, not `result`.
@@ -223,7 +223,7 @@ Read `decisions` to see the habit and the entries in one list. That list returns
 
 A check passes or fails from the records on the routes above. A placeholder line (one that still contains `<` or `>`) fails. Run them after the step that writes the record they read.
 
-`product/<product-id> check` is not one of these checks. That action runs `schema/check-ventures.mjs` on the whole venture, not on this card alone, and it does not read the spec or `offered_to`. A repository missing on a different software card fails it. Use the five checks below for this playbook.
+`product/<product-id> check` is not one of these checks. That action runs `packages/naive/src/checks/check-ventures.mjs` on the whole venture, not on this card alone, and it does not read the spec or `offered_to`. A repository missing on a different software card fails it. Use the five checks below for this playbook.
 
 ### Check 1. The card names a reader the venture has
 

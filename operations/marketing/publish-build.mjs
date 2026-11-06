@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The publish build through the publishing gate: compile a venture's public words for one of its channels
 // and write what a publish may read. Publishing reads only this output, never a venture record. naive
-// publish build (schema/publish.mjs) compiles a channel's approved MDX into .release/publish/; this does the
+// publish build (packages/naive/src/engine/publish.mjs) compiles a channel's approved MDX into .release/publish/; this does the
 // same for what a channel's own builders render (a marketing site's facts, a one-page artifact).
 //
 //   node operations/marketing/publish-build.mjs <channel> <venture dir> [--out <dir>] [--json]
@@ -15,13 +15,13 @@
 // output folder) set, and writes its outputs (paths relative to the output folder) under NAIVE_PUBLISH_OUT.
 //
 // In order, and any failure stops the build:
-//   1. gate     schema/check-public.mjs (EE-064): every public variant names its source,
+//   1. gate     packages/naive/src/engine/check-public.mjs (EE-064): every public variant names its source,
 //               audience and approver, and copies no ten-word run of its source
-//   2. compile  each field reaches the output only through schema/visibility.mjs publicValue: the field
+//   2. compile  each field reaches the output only through packages/naive/src/engine/visibility.mjs publicValue: the field
 //               when a person approved its wording as public, or its approved MDX variant
 //   3. build    the channel's builders, in order, reading only the compiled output
 //   4. verify   the output carries no internal field's own wording (a field not approved as public) and
-//               nothing schema/check-leaks.mjs matches
+//               nothing packages/naive/src/engine/check-leaks.mjs matches
 //   5. record   generated/publish-build.<channel>.json: each output's sha256, the approved variants it
 //               drew on, and the drafts still waiting for a person (for the publish manifest, item 1)
 
@@ -29,11 +29,11 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { check, CONTENT, frontmatter } from "../../schema/check-public.mjs";
-import { leaks } from "../../schema/check-leaks.mjs";
-import { visibilityOf } from "../../schema/visibility.mjs";
-import { ventureFile } from "../../packages/core/venture-paths.mjs";
-import { configFor } from "../../schema/naive-config.mjs";
+import { check, CONTENT, frontmatter } from "../../packages/naive/src/engine/check-public.mjs";
+import { leaks } from "../../packages/naive/src/engine/check-leaks.mjs";
+import { visibilityOf } from "../../packages/naive/src/engine/visibility.mjs";
+import { ventureFile } from "../../packages/naive/src/core/venture-paths.mjs";
+import { configFor } from "../../packages/naive/src/engine/naive-config.mjs";
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 

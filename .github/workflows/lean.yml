@@ -4,10 +4,10 @@ on:
   pull_request:
     # A PR retargeted onto main needs a push, or a close and reopen, before its suite runs.
     branches: [main]
-    paths: ["lean/**", "schema/terms/**", "docs/ontology.json", ".github/workflows/lean.yml"]
+    paths: ["packages/naive/lean/**", "packages/naive/src/terms/**", "packages/naive/src/terms/ontology.json", ".github/workflows/lean.yml"]
   push:
     branches: [main]
-    paths: ["lean/**", "schema/terms/**", "docs/ontology.json"]
+    paths: ["packages/naive/lean/**", "packages/naive/src/terms/**", "packages/naive/src/terms/ontology.json"]
 jobs:
   build:
     runs-on: ubuntu-latest

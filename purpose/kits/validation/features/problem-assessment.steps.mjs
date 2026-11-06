@@ -1,11 +1,11 @@
-// Step definitions for problem-assessment.feature (EE-050), run by schema/bdd.mjs. Records are
+// Step definitions for problem-assessment.feature (EE-050), run by packages/naive/src/engine/bdd.mjs. Records are
 // written to a temp venture folder; interface scenarios run on a copy of the example workspace.
 
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { assess } from "../../../../schema/assess-problem.mjs";
+import { assess } from "../../../../packages/naive/src/engine/assess-problem.mjs";
 
 const repo = new URL("../../../../", import.meta.url).pathname;
 const ok = (cond, msg) => { if (!cond) throw new Error(msg); };
@@ -21,13 +21,13 @@ const label = (w, a) => result(w).assumptions?.find((x) => x.assumption === a)?.
 // The example workspace, for interface scenarios.
 const example = (w, id) => {
   const d = mkdtempSync(join(tmpdir(), "assess-ws-"));
-  cpSync(join(repo, "schema/examples/workspace"), join(d, "workspace"), { recursive: true });
+  cpSync(join(repo, "packages/naive/src/records/examples/workspace"), join(d, "workspace"), { recursive: true });
   const was = process.env.MENTURA_WORKSPACE;
   process.env.MENTURA_WORKSPACE = join(d, "workspace");
   w.venture = id; w.cleanup = () => { process.env.MENTURA_WORKSPACE = was; if (was === undefined) delete process.env.MENTURA_WORKSPACE; rmSync(d, { recursive: true, force: true }); };
 };
-const router = () => import(join(repo, "interface/router.mjs"));
-const cli = (w, ...a) => spawnSync("node", [join(repo, "interface/cli/mentura.mjs"), ...a, "--venture", w.venture], { encoding: "utf8", env: process.env, input: "" });
+const router = () => import(join(repo, "packages/naive/src/router/router.mjs"));
+const cli = (w, ...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a, "--venture", w.venture], { encoding: "utf8", env: process.env, input: "" });
 
 export const steps = [
   // Records.
@@ -85,11 +85,11 @@ export const steps = [
   [/^the founder runs "([^"]+)" through the CLI$/, (w, rt) => { w.route = rt; w.p = cli(w, rt, "run"); }],
   [/^the CLI prints the question and both choices$/, (w) => ok(w.p.status === 0 && /Fill them in first, or run it as is\?/.test(w.p.stdout) && /Fill in:/.test(w.p.stdout) && /Run as is:/.test(w.p.stdout), `CLI printed: ${w.p.stdout}${w.p.stderr}`)],
   [/^running it again with --as-is assesses$/, (w) => { const p = cli(w, w.route, "run", "--as-is"); ok(p.status === 0 && JSON.parse(p.stdout).assumptions?.length === 4, `CLI --as-is printed: ${p.stdout}${p.stderr}`); }],
-  [/^an agent calls mentura_run for "([^"]+)" through MCP$/, async (w, rt) => { w.route = rt; const { handle } = await import(join(repo, "interface/mcp/server.mjs")); w.mcp = handle;
+  [/^an agent calls mentura_run for "([^"]+)" through MCP$/, async (w, rt) => { w.route = rt; const { handle } = await import(join(repo, "packages/naive/src/interfaces/mcp/server.mjs")); w.mcp = handle;
     w.m = await handle({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "mentura_run", arguments: { venture: w.venture, route: rt } } }); }],
   [/^the tool result tells the agent to ask the person and lists what is missing$/, (w) => ok(!w.m.result.isError && /^Ask the person before running/.test(w.m.result.content[0].text) && /"missing"/.test(w.m.result.content[0].text), "MCP did not ask")],
   [/^calling it again with as_is assesses$/, async (w) => { const m = await w.mcp({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "mentura_run", arguments: { venture: w.venture, route: w.route, as_is: true } } }); ok(JSON.parse(m.result.content[0].text).assumptions?.length === 4, "MCP as_is did not assess"); }],
-  [/^a client posts to "([^"]+)" through the API$/, async (w, p) => { w.path = `/ventures/${w.venture}/${p}`; const { route } = await import(join(repo, "interface/api/server.mjs")); w.http = route; w.a = await route("POST", w.path); }],
+  [/^a client posts to "([^"]+)" through the API$/, async (w, p) => { w.path = `/ventures/${w.venture}/${p}`; const { route } = await import(join(repo, "packages/naive/src/interfaces/api/server.mjs")); w.http = route; w.a = await route("POST", w.path); }],
   [/^the API answers with needs_input listing what is missing$/, (w) => ok(w.a[0] === 200 && w.a[1].needs_input?.missing.length > 0, "API did not answer needs_input")],
   [/^posting again with as_is assesses$/, async (w) => { const a = await w.http("POST", w.path, { as_is: true }); ok(a[0] === 200 && a[1].result?.assumptions?.length === 4, "API as_is did not assess"); }],
   [/^an agent writes the problem record through the router$/, async (w) => { const { call } = await router(); const cur = (await call({ venture: w.venture, route: "purpose/validation/problem", action: "read" })).result; w.r = await call({ venture: w.venture, route: "purpose/validation/problem", action: "write", input: cur }); }],

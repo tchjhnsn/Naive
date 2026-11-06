@@ -14,7 +14,7 @@ The system is opinionated: each layer names one default for each choice, and its
 
 ## Where references live
 
-One file per layer: `<layer>/references/references.json`, checked by `schema/reference.schema.json`. Each record has an id, title, authors, year, kind, summary, what it informs (`phase:validation`, `noun:wedge`, `field:venture.industry`), and a stance (adopted, adapted, alternative or rejected, with why). A url and the date it was last checked are recorded when a page exists.
+One file per layer: `<layer>/references/references.json`, checked by `packages/naive/src/records/reference.schema.json`. Each record has an id, title, authors, year, kind, summary, what it informs (`phase:validation`, `noun:wedge`, `field:venture.industry`), and a stance (adopted, adapted, alternative or rejected, with why). A url and the date it was last checked are recorded when a page exists.
 
 ## Fill a missing URL
 

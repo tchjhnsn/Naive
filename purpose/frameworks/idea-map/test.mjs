@@ -8,8 +8,8 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile, spawnSync } from "node:child_process";
-import { RELATIONS, namesBetween } from "../../../schema/terms/relations.ts";
-import { readSchema } from "../../../packages/records/index.mjs";
+import { RELATIONS, namesBetween } from "../../../packages/naive/src/terms/relations.ts";
+import { readSchema } from "../../../packages/naive/src/records/index.mjs";
 
 // Tests start in order and may await a child process, so the command runs overlap; results print in order.
 let failed = 0;
@@ -119,7 +119,7 @@ t("a stated builds_on that the convention already gives is one edge, and the roo
 // Typed relations (S2-PR9): an idea's stated relations become typed edges, checked through the term typed-link.
 const graphCli = new URL("./graph.mjs", import.meta.url).pathname;
 const repoFile = (f) => new URL(`../../../${f}`, import.meta.url).pathname;
-const examples = repoFile("schema/examples/workspace/people/p-0a0a0a0a/ideas");
+const examples = repoFile("packages/naive/src/records/examples/workspace/people/p-0a0a0a0a/ideas");
 const checkFiles = (files) => {
   const d = mkdtempSync(join(tmpdir(), "ideas-"));
   for (const [f, r] of Object.entries(files)) writeFileSync(join(d, f), JSON.stringify(r));
@@ -171,7 +171,7 @@ t("importing the router does not load the term engine; checking a stated relatio
 const seen = new Set();
 registerHooks({ resolve(s, c, next) { const r = next(s, c); seen.add(r.url); return r; } });
 const engine = () => [...seen].some((u) => u.endsWith("/schema/terms/engine.ts"));
-await import(${JSON.stringify(repoFile("interface/router.mjs"))});
+await import(${JSON.stringify(repoFile("packages/naive/src/router/router.mjs"))});
 const router = engine();
 const { checkRelations } = await import(${JSON.stringify(graphCli)});
 const problems = checkRelations([{ id: "a", relations: [{ relation: "related", to: "b" }] }, { id: "b" }]);
@@ -201,7 +201,7 @@ t("the schemas, the term engine and Lean name the same relations", () => {
   ok(JSON.stringify(idea.$defs.relation.enum) === JSON.stringify(namesBetween("idea")), `relation enum ${idea.$defs.relation.enum}`);
   ok(JSON.stringify(idea.$defs.attachment.enum) === JSON.stringify(namesBetween("scope")), `attachment enum ${idea.$defs.attachment.enum}`);
   ok(graph.properties.edges.items.properties.relation.$ref === "founder-idea.schema.json#/$defs/relation", "graph edges share the relation list");
-  const lean = readFileSync(repoFile("lean/Naive/Terms.lean"), "utf8");
+  const lean = readFileSync(repoFile("packages/naive/lean/Naive/Terms.lean"), "utf8");
   const camel = (n) => n.replace(/[-_]([a-z])/g, (_, c) => c.toUpperCase());
   const ctors = /inductive IdeaRelation((?:\s*\|\s*\w+)+)/.exec(lean)?.[1].split("|").map((x) => x.trim()).filter(Boolean);
   ok(JSON.stringify(ctors) === JSON.stringify(namesBetween("idea").map(camel)), `Lean IdeaRelation ${ctors}`);
@@ -214,7 +214,7 @@ t("the schemas, the term engine and Lean name the same relations", () => {
 // Routes (EE-061): the graph's ideas go to the framework's destinations, each with a stage and a step.
 const venture = (() => {
   const v = join(mkdtempSync(join(tmpdir(), "routes-")), "kept");
-  spawnSync("node", [new URL("../../../schema/init-venture.mjs", import.meta.url).pathname, v, "kept", "--phase", "discovery"], { encoding: "utf8" });
+  spawnSync("node", [new URL("../../../packages/naive/src/engine/init-venture.mjs", import.meta.url).pathname, v, "kept", "--phase", "discovery"], { encoding: "utf8" });
   mkdirSync(join(v, "purpose/ideas"), { recursive: true });
   const tagged = [{ ...ideas[0], records: ["validation-problem"] }, { ...ideas[1], records: ["product"], exists: true }, { id: "i-03", text: "never sell patient data", departments: ["risk-and-compliance"], records: ["alignment"] }, { id: "i-04", text: "a vibe", departments: ["strategy"], records: [] }];
   writeFileSync(join(v, GRAPH), JSON.stringify(build(tagged)));

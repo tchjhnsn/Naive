@@ -1,6 +1,6 @@
 # README template
 
-Every folder that holds code gets a `README.md` built from this template. The README sits next to the code it describes, the code is the source of truth, and a pull request that changes the code changes the nearest README in the same commit (or a line of its body starts with `No docs change: ` and gives a real reason). The `docs required` check enforces it, and `node schema/check-docs-claims.mjs` checks every README: each path, command and route it names exists, and each relative Markdown link, inline or reference-style, resolves (HTML `href` and `src` are not checked).
+Every folder that holds code gets a `README.md` built from this template. The README sits next to the code it describes, the code is the source of truth, and a pull request that changes the code changes the nearest README in the same commit (or a line of its body starts with `No docs change: ` and gives a real reason). The `docs required` check enforces it, and `node packages/naive/src/checks/check-docs-claims.mjs` checks every README: each path, command and route it names exists, and each relative Markdown link, inline or reference-style, resolves (HTML `href` and `src` are not checked).
 
 Copy everything below the line. Keep each README to about a page; when a section outgrows that, give the subfolder its own README and link to it. Write only what is built; anything planned says "not built" in that sentence.
 
