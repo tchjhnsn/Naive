@@ -113,6 +113,17 @@
       },
       "description": "What the content came from: venture-relative paths, URLs or decision ids (prov:wasDerivedFrom)"
     },
+    "span": {
+      "type": "object",
+      "required": ["trace_id", "span_id"],
+      "additionalProperties": false,
+      "description": "The trace span the write was made inside (traces/<session>.jsonl), so what changed points to the agent step that changed it",
+      "properties": {
+        "trace_id": { "type": "string" },
+        "span_id": { "type": "string" },
+        "session": { "type": "string", "description": "The trace file's session, when it differs from the trace id" }
+      }
+    },
     "decision": {
       "type": "string",
       "description": "The decision or decision class the activity acted under, such as EE-026 or ownership-or-control"

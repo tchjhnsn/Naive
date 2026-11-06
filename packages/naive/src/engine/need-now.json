@@ -406,6 +406,16 @@
       },
       "why": "Written by the interfaces on every write, so it costs nothing; run mentura baseline once to adopt records written before it (EE-031)"
     },
+    "trace-span": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.4,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "Off by default; turn traces on in naive.config.json once agents work in the venture, so each run's steps are kept in the venture's files and read offline (EE-121)"
+    },
     "naive-config": {
       "base": {
         "discovery": 0.1,

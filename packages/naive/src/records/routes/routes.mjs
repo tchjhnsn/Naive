@@ -114,6 +114,8 @@ function buildRoutes() {
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
     // Context hook (packages/naive/src/router/vitals.mjs, packages/naive/src/router/context.mjs): agent vitals and the context budget (N-6, C-15, N-13).
     cmd("system/vitals", "packages/naive/src/router/vitals.mjs", "Agent vitals (N-6): calls per task, tokens of context per call, time to a useful answer and time from a decision opening to a person deciding it, at the 75th percentile, each checked against its threshold (C-15). Reads the events log that instrumentation writes"),
+    // Traces (EE-121): packages/naive/src/core/instrumentation.mjs writes them, packages/naive/src/engine/trace-cli.ts reads them.
+    cmd("system/traces", "packages/naive/src/engine/trace-cli.ts", "The venture's trace sessions in traces/, one span per step of an agent run after the OpenTelemetry GenAI conventions, hash-chained and linked from provenance; read offline. naive trace show <session> prints one as a tree", { args: ["show"], actions: ["run", "layout"] }),
     cmd("system/context", "packages/naive/src/router/context.mjs", "The context budget (N-13): what every route sends an agent, in tokens, against its budget, with the largest part and where to move it (S-14, F-6)", { args: ["budget"] }),
     cmd("knowledge/catalog", "packages/naive/src/store/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "packages/naive/src/store/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),

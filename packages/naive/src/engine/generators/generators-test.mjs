@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import * as bug from "./bug.mjs";
 import * as glossary from "./glossary.mjs";
 import * as reference from "./reference.mjs";
+import * as traceSpan from "./trace-span.mjs";
 
 let fails = 0;
 const t = (name, ok) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}`); if (!ok) fails++; };
@@ -14,10 +15,14 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
+
+const sp = traceSpan.draft({ name: "invoke_agent strategy", kind: "agent" });
+t("trace-span: draft passes the schema", sp.ok && sp.draft.prev === "genesis");
+t("trace-span: a span with no kind is refused", !traceSpan.draft({ name: "x" }).ok);
 t("bug: id is unique among the venture's bugs", b.draft.id === "save-loses-draft-2");
 t("bug: opens with no fix", b.draft.status === "open" && b.draft.fixed_in === null);
 t("bug: a bad severity fails the schema", !bug.draft({ title: "x", severity: "P9", found_in: "1" }).ok);
