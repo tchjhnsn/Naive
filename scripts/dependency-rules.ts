@@ -5,8 +5,8 @@
 //
 // Three rules:
 //
-//   acyclic       Units import each other without cycles. A unit is a tracked top-level folder until the code
-//                 moves into workspace packages; then each package is a unit. Today's cycles are listed in
+//   acyclic       Units import each other without cycles. A unit is a folder of packages/naive/src, another folder
+//                 of packages/naive, another package under packages/, or else a tracked top-level folder. Today's cycles are listed in
 //                 scripts/dependency-rules.json as known, so the check passes now and fails on any new cycle, on a
 //                 known cycle that grew, and on a known cycle that is gone but still listed (so the list only shrinks).
 //   one version   Every package.json of the workspace (the root and each workspace in its `workspaces`, where a
@@ -38,10 +38,16 @@ function tracked(root: string): string[] {
   return out.stdout.split("\n").filter(Boolean);
 }
 
-/** The unit a repository path belongs to: its top-level folder, or "(root)" for a file at the root. */
+/** The unit a repository path belongs to: a folder of packages/naive/src (packages/naive/src/engine), another folder of
+ *  packages/naive (packages/naive/lean), another package (packages/create-venture), else its top-level folder, or
+ *  "(root)" for a file at the root. */
 export function unitOf(path: string): string {
-  const i = path.indexOf("/");
-  return i < 0 ? "(root)" : path.slice(0, i);
+  const parts = path.split("/");
+  if (parts.length === 1) return "(root)";
+  if (parts[0] === "packages" && parts[1] === "naive" && parts[2] === "src" && parts.length > 4) return parts.slice(0, 4).join("/");
+  if (parts[0] === "packages" && parts[1] === "naive" && parts.length > 3) return parts.slice(0, 3).join("/");
+  if (parts[0] === "packages" && parts.length > 2) return parts.slice(0, 2).join("/");
+  return parts[0];
 }
 
 /** The import graph between units: from unit, to unit, number of imports. Edges inside a unit are left out. */

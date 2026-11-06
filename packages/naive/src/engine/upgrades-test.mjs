@@ -134,7 +134,7 @@ expect("--stage on a venture with nothing to upgrade is refused", naive(["upgrad
 // U-1: updating the installed framework is a fast-forward of its checkout.
 const up1 = join(ws, "naive-upstream"), inst = join(ws, "naive-installed");
 const gitIn = (d, ...x) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...x], { cwd: d, encoding: "utf8" });
-mkdirSync(join(up1, "schema"), { recursive: true });
+mkdirSync(join(up1, "packages/naive/src/engine"), { recursive: true });
 writeFileSync(join(up1, "packages/naive/src/engine/upgrades.json"), JSON.stringify({ ...reg, framework: "0.3.0" }));
 gitIn(up1, "init", "-q"); gitIn(up1, "add", "-A"); gitIn(up1, "commit", "-qm", "0.3.0");
 gitIn(ws, "clone", "-q", up1, inst);

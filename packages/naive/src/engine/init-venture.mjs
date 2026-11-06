@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { KBASE, ventureFile } from "../core/venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repo = join(here, "..");
+const repo = join(here, "../../../..");
 const { layers, formalized, pillars, readme } = JSON.parse(readFileSync(join(here, "scaffold/defaults.json"), "utf8"));
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };

@@ -97,7 +97,7 @@ function report(root: string): boolean {
 let failed = 0;
 const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const self = new URL(import.meta.url).pathname;
-const repo = join(dirname(self), "../..");
+const repo = join(dirname(self), "../../../..");
 
 function fixtureCases(): void {
   const ontology = read<OntologyMetamodel>(repo, ONTOLOGY);

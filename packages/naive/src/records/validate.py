@@ -37,13 +37,13 @@ except ImportError as error:
     sys.stderr.write(f"validate.py needs jsonschema: pip install jsonschema ({error})\n")
     sys.exit(2)
 
-root = Path(__file__).resolve().parent.parent
+root = Path(__file__).resolve().parents[4]
 
 # Where the record types sit, the same mapping as packages/naive/src/records/index.mjs (FOLDER and PREFIXES there).
 # packages/naive/src/checks/check-record-paths.ts fails when the two disagree. Step 5a-2 moves the folder to packages/naive/src/records
 # and adds its prefix here, keeping "schema/" for one release.
-RECORDS_FOLDER = "schema"
-RECORD_PREFIXES = ("schema/",)
+RECORDS_FOLDER = "packages/naive/src/records"
+RECORD_PREFIXES = ("packages/naive/src/records/", "schema/")
 
 def record_relative(stored):
     """A stored repository path with the record types' prefix taken off, or None when it names another folder."""

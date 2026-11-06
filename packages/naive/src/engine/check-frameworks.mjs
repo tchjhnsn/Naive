@@ -29,8 +29,9 @@ export function check(root) {
     for (const p of [f.template, f.playbook, f.skill, f.adapter, ...(f.checks ?? [])].filter(Boolean)) if (!existsSync(join(root, p))) errors.push(`${dir}: ${p} not found`);
     for (const c of f.checks ?? []) allowed.add(c);
   }
-  const sdir = join(root, "schema");
-  const core = [...(existsSync(sdir) ? readdirSync(sdir) : []).filter((n) => n.endsWith(".mjs")).map((n) => `schema/${n}`)].filter((p) => !/-test\.mjs$|\/test\.mjs$|-eval\.mjs$/.test(p));
+  // The units that held schema/ before EE-118 step 5, the folder this check read.
+  const units = ["records", "terms", "engine", "checks"].map((u) => `packages/naive/src/${u}`);
+  const core = units.flatMap((u) => (existsSync(join(root, u)) ? readdirSync(join(root, u)) : []).filter((n) => n.endsWith(".mjs")).map((n) => `${u}/${n}`)).filter((p) => !/-test\.mjs$|\/test\.mjs$|-eval\.mjs$/.test(p));
   for (const p of core) {
     if (allowed.has(p)) continue;
     readFileSync(join(root, p), "utf8").split("\n").forEach((line, i) => {

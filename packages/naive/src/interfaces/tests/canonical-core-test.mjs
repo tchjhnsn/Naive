@@ -66,15 +66,15 @@ expect("canonical goals are routes", g.ok && g.result?.kind === "venture", JSON.
 // check-frameworks.
 expect("check-frameworks passes on the repo", check(repo).errors.length === 0, check(repo).errors.join("\n"));
 const bad = join(tmp, "repo");
-mkdirSync(join(bad, "schema"), { recursive: true });
+mkdirSync(join(bad, "packages/naive/src/engine"), { recursive: true });
 cpSync(join(repo, "frameworks"), join(bad, "frameworks"), { recursive: true });
 for (const p of ["purpose/templates/telos-based-smart.md", "purpose/skills/telos/SKILL.md", "purpose/skills/ambition-tier/SKILL.md", "packages/naive/src/checks/check-telos.mjs"]) { mkdirSync(join(bad, p, ".."), { recursive: true }); cpSync(join(repo, p), join(bad, p)); }
 const fw = load(join(bad, "frameworks/telos/framework.json"));
 fw.maps_to.push({ framework_field: "statement", canonical_route: "foundation/telos", canonical_field: "statement" });
 writeFileSync(join(bad, "frameworks/telos/framework.json"), JSON.stringify(fw));
 expect("check-frameworks catches a maps_to onto a non-canonical route", check(bad).errors.some((e) => /foundation\/telos, which is not a canonical route/.test(e)), check(bad).errors.join("\n"));
-writeFileSync(join(bad, "schema/core.mjs"), 'const a = v.ambition;\nconst t = "foundation/telos.json";\n');
-expect("check-frameworks catches core code reading framework-only fields", check(bad).errors.filter((e) => e.startsWith("schema/core.mjs")).length === 2, check(bad).errors.join("\n"));
+writeFileSync(join(bad, "packages/naive/src/engine/core.mjs"), 'const a = v.ambition;\nconst t = "foundation/telos.json";\n');
+expect("check-frameworks catches core code reading framework-only fields", check(bad).errors.filter((e) => e.startsWith("packages/naive/src/engine/core.mjs")).length === 2, check(bad).errors.join("\n"));
 
 rmSync(tmp, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passing");

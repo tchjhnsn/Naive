@@ -114,7 +114,7 @@ w("governance/publications.json", { entries: m2.entries.filter((x) => x !== e) }
 expect("check-publications fails when something is live without an entry", /live \(published\) with no entry/.test(checkVenture(dir).errors.join("\n")));
 
 // A venture whose delegation names its founder lets that founder approve a one-way publish.
-const named = join(import.meta.dirname, "examples", "software", "ventures", "relay");
+const named = join(import.meta.dirname, "../records/examples/software/ventures/relay");
 expect("a venture's named founder may approve a one-way publish", mayApprove(named, { by: "Ada", door: "one-way", exposure: "high" }).ok, JSON.stringify(mayApprove(named, { by: "Ada", door: "one-way", exposure: "high" })));
 expect("someone the delegation does not name may not approve a one-way publish", !mayApprove(named, { by: "Torian", door: "one-way", exposure: "high" }).ok);
 

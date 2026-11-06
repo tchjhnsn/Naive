@@ -51,7 +51,7 @@ To use the whole system, leave out `--layers`. The workspace is the folder that 
 **Claude Code** (one command; add `--scope project` to share it in the venture's repo through `.mcp.json`):
 
 ```sh
-claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="Claude Code" -- node <mentura>/interface/mcp/server.mjs
+claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="Claude Code" -- node <mentura>/packages/naive/src/interfaces/mcp/server.mjs
 ```
 
 **Cursor** (`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json` for every project):
@@ -61,7 +61,7 @@ claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="C
   "mcpServers": {
     "mentura": {
       "command": "node",
-      "args": ["<mentura>/interface/mcp/server.mjs"],
+      "args": ["<mentura>/packages/naive/src/interfaces/mcp/server.mjs"],
       "env": { "MENTURA_WORKSPACE": "<folder>", "MENTURA_HARNESS": "Cursor" }
     }
   }

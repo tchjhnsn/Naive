@@ -99,7 +99,7 @@
       "app"
     ],
     "status": "candidate",
-    "reason": "packages/naive/src/interfaces/operator-console",
+    "reason": "interface/operator-console",
     "reach": [
       "purpose",
       "knowledge",

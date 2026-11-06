@@ -144,7 +144,7 @@ export function render(nouns: Noun[]): string {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const at = process.argv.indexOf("--root");
-  const root = at > 0 ? process.argv[at + 1] : join(new URL(".", import.meta.url).pathname, "../..");
+  const root = at > 0 ? process.argv[at + 1] : join(new URL(".", import.meta.url).pathname, "../../../..");
   const out = join(root, OUTPUT);
   let text: string;
   try {

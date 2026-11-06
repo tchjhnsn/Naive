@@ -293,7 +293,7 @@ def «dataModel» : Concept Placement := ⟨[
 def «recordType» : Concept Placement := ⟨[
   ("level system", fun f => Decidable.decide (f.level = Level.«system»))]⟩
 
-/-- [D] layer manifest (new). The file (<layer>/layer.json, system layer at packages/naive/src/engine/layer.json) that lists what one layer of the framework repository holds: its skills, the record types it still owns, those it reads and writes, and its checks. Layer relationships are derived from manifests (EE-018, EE-071). Standard: package manifest (common software usage). Fields: broader ["information artifact"]; handoff_type false. -/
+/-- [D] layer manifest (new). The file (<layer>/layer.json, system layer at packages/naive/src/records/layer.json) that lists what one layer of the framework repository holds: its skills, the record types it still owns, those it reads and writes, and its checks. Layer relationships are derived from manifests (EE-018, EE-071). Standard: package manifest (common software usage). Fields: broader ["information artifact"]; handoff_type false. -/
 def «layerManifest» : Concept Placement := ⟨[
   ("level system", fun f => Decidable.decide (f.level = Level.«system»))]⟩
 

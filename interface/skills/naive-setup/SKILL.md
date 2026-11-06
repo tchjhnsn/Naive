@@ -26,7 +26,7 @@ The questions and their order come from Naive, not from you. Read them from `men
 Call `mentura_setup` with the venture id. The result has:
 
 - `state`: the people, sources of truth, docket and goal, plus `steps` (which of the four are done), `done`, and `counts`.
-- `artifact`: the state, already rendered into `packages/naive/src/interfaces/skills/naive-setup/artifact.html`, as one self-contained HTML page.
+- `artifact`: the state, already rendered into `interface/skills/naive-setup/artifact.html`, as one self-contained HTML page.
 
 Without MCP, run `node packages/naive/src/router/orchestration/setup.mjs <venture dir> state` and `node packages/naive/src/router/orchestration/setup.mjs <venture dir> artifact`.
 

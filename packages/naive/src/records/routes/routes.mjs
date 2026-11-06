@@ -33,7 +33,7 @@ export const skillsOf = (k) => (k.skills?.length ? k.skills : k.skill ? [k.skill
 /** Layer manifests and any package that owns record types. `kit` is the name, kept so the board still groups routes. */
 export function kits() {
   const model = readDataModel();
-  const paths = [...model.layers.map((l) => `${l}/layer.json`), "packages/naive/src/engine/layer.json"];
+  const paths = [...model.layers.map((l) => `${l}/layer.json`), "packages/naive/src/records/layer.json"];
   const pkgDir = join(repo, "library", "packages");
   if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`library/packages/${d}/package.json`);
   return paths.filter((p) => existsSync(join(repo, p))).map((p) => {
@@ -64,7 +64,7 @@ function buildRoutes() {
     const tdir = k?.template_dir ?? (k && !k.path.startsWith("library/packages/") ? join(dirname(k.path), "templates") : null);
     const tname = tdir && existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
     const template = tname ? `${tdir}/${tname}` : null;
-    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && c.startsWith("schema/check-") && c !== "packages/naive/src/checks/check-data-model.mjs"))];
+    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.mjs"))];
     const legacy = [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/");
     const base = PACKAGE_ROUTE[r.id] ?? legacy;
     const form = r.form ?? "json";

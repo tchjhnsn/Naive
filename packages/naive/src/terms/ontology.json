@@ -2,7 +2,7 @@
   "version": "0.7.0",
   "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. Retired nouns list what replaced them; packages/naive/src/checks/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json. Each noun names what it is a kind of in broader (SKOS broader): another noun, or one of the top_categories, each of which is mapped to a class of BFO (ISO/IEC 21838-2). Every noun reaches exactly one top category (N-049); node packages/naive/src/terms/upper-test.ts checks it.",
   "check": [
-    "schema/",
+    "packages/naive/src/",
     "packages/naive/src/terms/ontology.md",
     "docs/design/VENTURES_2026-10-27.md",
     "purpose/frameworks/product-anatomy/",
@@ -925,7 +925,7 @@
     {
       "noun": "layer manifest",
       "level": "system",
-      "meaning": "The file (<layer>/layer.json, system layer at packages/naive/src/engine/layer.json) that lists what one layer of the framework repository holds: its skills, the record types it still owns, those it reads and writes, and its checks. Layer relationships are derived from manifests (EE-018, EE-071)",
+      "meaning": "The file (<layer>/layer.json, system layer at packages/naive/src/records/layer.json) that lists what one layer of the framework repository holds: its skills, the record types it still owns, those it reads and writes, and its checks. Layer relationships are derived from manifests (EE-018, EE-071)",
       "standard": "package manifest (common software usage)",
       "status": "new",
       "function": null,

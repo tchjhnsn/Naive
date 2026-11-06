@@ -23,10 +23,10 @@ import { isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** The folder, relative to a repository root, that holds the record types. Step 5a-2 makes it packages/naive/src/records. */
-export const FOLDER = "schema";
+export const FOLDER = "packages/naive/src/records";
 /** Stored path prefixes that name the record types' folder. Step 5a-2 adds "packages/naive/src/records/" and keeps
  *  "schema/" for one release, so a venture or a branch that still names schema/x.schema.json resolves. */
-export const PREFIXES = Object.freeze(["schema/"]);
+export const PREFIXES = Object.freeze(["packages/naive/src/records/", "schema/"]);
 export const SUFFIX = ".schema.json";
 export const DATA_MODEL = "data-model.json";
 /** An app that uses Naive (such as Mentura) adds its own record types here, at the root of the repository being

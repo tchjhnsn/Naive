@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.mjs";
 import { layoutOf, ventureFile } from "../core/venture-paths.mjs";
+import { naiveScript } from "../core/scripts.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -33,7 +34,7 @@ expect("hats leave people/ for venture.json functions", !readdirSync(join(ws, "v
 const again = naive("upgrade", dir, "--layout", "structured");
 expect("a structured venture is left alone", again.status === 0 && /already on the structured layout/.test(again.stdout));
 for (const c of ["check-ventures", "check-provenance", "check-people", "check-governance", "check-telos", "check-validation", "check-publication"]) {
-  const r = spawnSync("node", [join(repo, `schema/${c}.mjs`), ws], { encoding: "utf8" });
+  const r = spawnSync("node", [naiveScript(c), ws], { encoding: "utf8" });
   expect(`${c} passes on the moved workspace`, r.status === 0, (r.stdout + r.stderr).trim().split("\n").slice(-3).join("\n      "));
 }
 

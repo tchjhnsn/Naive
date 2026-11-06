@@ -1,10 +1,10 @@
 # records
 
-Up: [repository](../../AGENTS.md)
+Up: [repository](../../../../AGENTS.md)
 
 ## What this is
 
-The resolver for the record types: the framework's JSON Schema files (`<name>.schema.json`) and the data model (`data-model.json`). Every piece of code that reads one of them asks this module where it is, instead of building the path from the folder name `schema`. Today the files still sit in [`schema/`](../../schema/README.md). The monorepo rebuild (step 5a; its design, `MONOREPO_RECORDS_PACKAGE_2026-11-05.md`, is in pull request #243) moves them here in a later pull request, and because every loader goes through this module, that move changes the folder here instead of every loader. It imports nothing in the repository, and `node scripts/dependency-rules.ts` fails if it does.
+The resolver for the record types: the framework's JSON Schema files (`<name>.schema.json`) and the data model (`data-model.json`). Every piece of code that reads one of them asks this module where it is, instead of building the path from the folder name `schema`. Today the files still sit in [`schema/`](../engine/README.md). The monorepo rebuild (step 5a; its design, `MONOREPO_RECORDS_PACKAGE_2026-11-05.md`, is in pull request #243) moves them here in a later pull request, and because every loader goes through this module, that move changes the folder here instead of every loader. It imports nothing in the repository, and `node scripts/dependency-rules.ts` fails if it does.
 
 ## Where things are
 
@@ -31,7 +31,7 @@ It is `.mjs`, like [`packages/naive/src/core`](../core/README.md), because most 
 
 ## How it connects
 
-- Called by: the checkers and modules in [`schema/`](../../schema/README.md) that read the data model or a schema, [`packages/naive/src/router/router.mjs`](../../interface/router.mjs), [`packages/naive/src/router/boundaries.mjs`](../../interface/boundaries.mjs), [`packages/naive/src/router/context.mjs`](../../interface/context.mjs), the CLI, [`packages/naive/src/router/orchestration/`](../../interface/orchestration/README.md), [`packages/naive/src/records/routes`](../routes/README.md), the idea map, the console bridge (through the framework it is pointed at), create-venture and the ontology scripts in `scripts/`.
+- Called by: the checkers and modules in [`schema/`](../engine/README.md) that read the data model or a schema, [`packages/naive/src/router/router.mjs`](../router/router.mjs), [`packages/naive/src/router/boundaries.mjs`](../router/boundaries.mjs), [`packages/naive/src/router/context.mjs`](../router/context.mjs), the CLI, [`packages/naive/src/router/orchestration/`](../router/orchestration/README.md), [`packages/naive/src/records/routes`](routes/README.md), the idea map, the console bridge (through the framework it is pointed at), create-venture and the ontology scripts in `scripts/`.
 - Calls: only Node built-ins.
 
 ## Not built

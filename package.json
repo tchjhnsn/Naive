@@ -13,7 +13,9 @@
   },
   "exports": {
     "./package.json": "./package.json",
-    "./schema/*": "./schema/*",
+    "./src/*": "./packages/naive/src/*",
+    "./lean/*": "./packages/naive/lean/*",
+    "./schema/venture-paths.mjs": "./schema/venture-paths.mjs",
     "./interface/*": "./interface/*",
     "./packages/*": "./packages/*",
     "./knowledge/*": "./knowledge/*",
@@ -23,8 +25,7 @@
     "./evidence/*": "./evidence/*",
     "./frameworks/*": "./frameworks/*",
     "./library/*": "./library/*",
-    "./docs/*": "./docs/*",
-    "./lean/*": "./lean/*"
+    "./docs/*": "./docs/*"
   },
   "bin": {
     "naive": "packages/naive/src/interfaces/cli/naive.mjs",

@@ -10,6 +10,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.mjs";
+import { naiveScript } from "../core/scripts.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -54,7 +55,7 @@ expect("the record holds what the project said, rewritten into Naive's shape", r
 expect("its provenance names the decision and the file it was derived from", entries(dir).some((e) => e.entity === "product/kettle.json" && e.decision === "migrate-product" && e.derived_from?.[0] === `file://${join(src, "notes/plan.md")}`));
 expect("the project is never written to", fingerprint() === before);
 for (const c of ["check-ventures", "check-provenance", "check-sources"]) {
-  const r = spawnSync("node", [join(repo, `schema/${c}.mjs`), ws], { encoding: "utf8" });
+  const r = spawnSync("node", [naiveScript(c), ws], { encoding: "utf8" });
   expect(`the migrated venture passes ${c}`, r.status === 0, r.stdout + r.stderr);
 }
 

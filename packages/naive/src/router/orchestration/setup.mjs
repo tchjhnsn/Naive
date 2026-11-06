@@ -1,7 +1,7 @@
 // Setup (EE-083): the questions that establish a venture's structure, in order: its people and their
 // hats, where each function keeps its truth, the strategic foundation and the first decisions (the decision
 // docket), and a goal for the discovery phase. It holds no view. The naive-setup skill
-// (packages/naive/src/interfaces/skills/naive-setup) renders it in the model's harness, as a Claude artifact where there is one;
+// (interface/skills/naive-setup) renders it in the model's harness, as a Claude artifact where there is one;
 // packages/naive/src/interfaces/dev/setup.mjs serves the same state to a browser.
 //
 //   node packages/naive/src/router/orchestration/setup.mjs <venture dir> state                     the state, as JSON
@@ -17,7 +17,7 @@ import { ventureFile } from "../../core/venture-paths.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-export const TEMPLATE = "packages/naive/src/interfaces/skills/naive-setup/artifact.html";
+export const TEMPLATE = "interface/skills/naive-setup/artifact.html";
 
 const GOAL = "discovery-goal";
 

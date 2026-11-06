@@ -8,10 +8,11 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, write
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readDataModel, recordsIn } from "../records/index.mjs";
+import { naiveScript } from "../core/scripts.mjs";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "ee-schema-test-"));
-const run = (script, args = [], env = {}) => spawnSync("node", [join(root, "schema", script), ...args], { encoding: "utf8", env: { ...process.env, ...env } });
+const run = (script, args = [], env = {}) => spawnSync("node", [naiveScript(script), ...args], { encoding: "utf8", env: { ...process.env, ...env } });
 const edit = (file, f) => { const d = JSON.parse(readFileSync(file, "utf8")); f(d); writeFileSync(file, JSON.stringify(d, null, 2)); };
 let failed = 0, n = 0;
 const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
@@ -270,7 +271,7 @@ knowBroken("a department folder without its tag fails", "check-departments.mjs",
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) });
 expect("check-integrations passes on the repository", run("check-integrations.mjs", [], { EE_ROOT: repo }).status === 0);
-edit(join(repo, "packages/naive/src/interfaces/tooling/integrations.json"), (list) => { list.push({ id: "obsidian", name: "Obsidian", layer: "interface", role: "notes", interfaces: ["app"], reach: ["knowledge"], interface_kind: "custom", status: "in-use" }); });
+edit(join(repo, "interface/tooling/integrations.json"), (list) => { list.push({ id: "obsidian", name: "Obsidian", layer: "interface", role: "notes", interfaces: ["app"], reach: ["knowledge"], interface_kind: "custom", status: "in-use" }); });
 { const r = run("check-integrations.mjs", [], { EE_ROOT: repo }); expect("a single-layer tool listed as an interface fails", r.status !== 0 && /reaches 1 layers/.test(r.stderr)); }
 expect("check-nouns passes on the repository", run("check-nouns.mjs", [], { EE_ROOT: repo }).status === 0);
 writeFileSync(join(repo, "packages/naive/src/engine/README.md"), readFileSync(join(repo, "packages/naive/src/engine/README.md"), "utf8") + "\nEach sphere holds products.\n"); // a retired noun, on purpose
@@ -284,7 +285,7 @@ const appFolder = "plat" + "form";
 for (const [name, text, pattern] of /** @type {[string, (app: string) => string, RegExp][]} */ ([
   ["an import of an app module fails", (app) => `import { connect } ${from} "../../${app}/connectors/github.mjs";\nexport default connect;\n`, /never names an app's module/],
   ["spawning an app module by path fails", (app) => `spawnSync("node", [join(repo, "${app}/integrations/jev.mjs")]);\n`, /never names an app's module/],
-  ["an import that leaves the repository fails", () => `import x ${from} "../../../elsewhere/x.mjs";\nexport default x;\n`, /outside the repository/],
+  ["an import that leaves the repository fails", () => `import x ${from} "../../../../../../elsewhere/x.mjs";\nexport default x;\n`, /outside the repository/],
 ])) {
   writeFileSync(join(repo, "packages/naive/src/store/connectors/leak.mjs"), text(appFolder));
   const r = run("check-boundary.mjs", [], { EE_ROOT: repo });

@@ -601,7 +601,7 @@
       "paths": [
         "purpose/playbooks/*.json"
       ],
-      "note": "A step-by-step guide a venture function runs in conversation with the founder; run by packages/naive/src/interfaces/skills/run-playbook (a template is one record's empty shape; a playbook is the order of the work)"
+      "note": "A step-by-step guide a venture function runs in conversation with the founder; run by interface/skills/run-playbook (a template is one record's empty shape; a playbook is the order of the work)"
     },
     {
       "id": "profile-attributes",
@@ -978,7 +978,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/layer.schema.json",
       "paths": [
-        "*/layer.json"
+        "*/layer.json", "packages/naive/src/records/layer.json"
       ],
       "refs": [
         {

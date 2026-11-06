@@ -3,7 +3,7 @@
     "naive": {
       "command": "node",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/interface/cli/naive.mjs",
+        "${CLAUDE_PLUGIN_ROOT}/packages/naive/src/interfaces/cli/naive.mjs",
         "mcp"
       ],
       "env": {

@@ -4,23 +4,23 @@
   "skills": [
     {
       "id": "install-mentura",
-      "path": "packages/naive/src/interfaces/skills/install-mentura/SKILL.md"
+      "path": "interface/skills/install-mentura/SKILL.md"
     },
     {
       "id": "naive-setup",
-      "path": "packages/naive/src/interfaces/skills/naive-setup/SKILL.md"
+      "path": "interface/skills/naive-setup/SKILL.md"
     },
     {
       "id": "naive-create",
-      "path": "packages/naive/src/interfaces/skills/naive-create/SKILL.md"
+      "path": "interface/skills/naive-create/SKILL.md"
     },
     {
       "id": "choosing-artifacts",
-      "path": "packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md"
+      "path": "interface/skills/choosing-artifacts/SKILL.md"
     },
     {
       "id": "run-playbook",
-      "path": "packages/naive/src/interfaces/skills/run-playbook/SKILL.md"
+      "path": "interface/skills/run-playbook/SKILL.md"
     }
   ],
   "records": [

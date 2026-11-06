@@ -174,7 +174,7 @@ const print = ({ ok, lines }: { ok: boolean; lines: string[] }): boolean => { fo
 let failed = 0;
 const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const self = new URL(import.meta.url).pathname;
-const repo = join(dirname(self), "../..");
+const repo = join(dirname(self), "../../../..");
 
 function fixtureCases(): void {
   const scope = (fn: string, imports: string[] = []): OntologyCatalog["scopes"][number] => ({ scope: `naive@${fn}`, owner: fn, version: "0.1.0", status: "proposed", imports });

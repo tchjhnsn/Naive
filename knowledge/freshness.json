@@ -1,5 +1,5 @@
 {
-  "$schema": "../schema/freshness-profiles.schema.json",
+  "$schema": "../packages/naive/src/records/freshness-profiles.schema.json",
   "note": "Default freshness profiles (Revalidating, V-1 to V-3): how long a record stays fresh, by record type, after Next.js cacheLife profiles. A venture overrides any of them under freshness in its naive.config.json, as a Next.js app defines cacheLife profiles in next.config.js. stale: how long an agent may reuse what it read without reading it again. revalidate: after this the record is stale, still readable with a stale flag, and should be checked or redone. expire: after this it is expired and not frozen into a release. per_phase: the record is stale once the venture changes phase after it was last checked. live: a fast-changing record, never frozen into a release; it stays a live hole. Durations are seconds, or a number with s, m, h, d or w. Version 0.x: ours and unevaluated.",
   "version": "0.1.0",
   "default": "max",

@@ -55,7 +55,7 @@ const checkKeywords = (s: Schema, file: string) => {
   for (const sub of subschemas(s)) checkKeywords(sub, file);
 };
 
-const dir = new URL("../../../../schema", import.meta.url).pathname;
+const dir = new URL(".", import.meta.url).pathname;
 const out = join(dir, "types/records.d.ts");
 
 const pascal = (s: string) => s.split(/[^a-zA-Z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join("");

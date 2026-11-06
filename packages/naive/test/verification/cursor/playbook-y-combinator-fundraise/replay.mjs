@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repo = join(here, "../../..");
+const repo = join(here, "../../../../../..");
 const playbook = readFileSync(join(repo, "library/packages/investors/playbooks/y-combinator-fundraise.md"), "utf8");
 const tla = readFileSync(join(here, "YCFundraise.tla"), "utf8");
 

@@ -219,11 +219,17 @@ function wiring(root: string, file: string, theorems: Set<string>): Wiring | nul
   return theorem ? { via: "lean", theorem } : null;
 }
 
+// The units that held schema/ before EE-118 step 5, the folder this guard scanned.
+const UNITS = ["engine", "checks", "terms", "records"].map((u) => `packages/naive/src/${u}`);
+
 function discover(root: string): string[] {
-  const dir = join(root, "schema");
-  return readdirSync(dir)
-    .filter((f) => (f.startsWith("check-") || f.includes("gate")) && /\.[cm]?[jt]s$/.test(f) && isFile(join(dir, f)))
-    .map((f) => `schema/${f}`);
+  return UNITS.flatMap((unit) => {
+    const dir = join(root, unit);
+    if (!existsSync(dir)) return [];
+    return readdirSync(dir)
+      .filter((f) => (f.startsWith("check-") || f.includes("gate")) && /\.[cm]?[jt]s$/.test(f) && isFile(join(dir, f)))
+      .map((f) => `${unit}/${f}`);
+  });
 }
 
 const BYPASS = `neither imports ${ENGINE} nor runs ${ADMIT}, and names no Lean theorem in packages/naive/lean/Naive`;
@@ -257,80 +263,80 @@ function fixtureCases(): void {
     put(ADMIT, "export {};\n");
     put("packages/naive/lean/Naive/Fixture.lean", "/- a theorem answers for every x -/\ntheorem fixture_holds : True := trivial\n");
     const byLabel = "export const member = (x) => x.label === \"founder\";\n";
-    put("schema/check-wired.mjs", `import { run } from "./terms/engine.ts";\nexport const member = (t, x) => run(t, x);\n`);
-    put("schema/check-bare.mjs", byLabel);
-    put("schema/member-lib.mjs", `export { run } from "./terms/engine.ts";\n`);
-    put("schema/check-via.mjs", `import { run } from "./member-lib.mjs";\nexport const member = (t, x) => run(t, x);\n`);
-    put("schema/check-admit.mjs", `import { spawnSync } from "node:child_process";\nspawnSync("node", ["packages/naive/src/terms/admit.ts", "--check"]);\n`);
-    put("schema/check-lean.mjs", `// Proved for every case by theorem fixture_holds.\n${byLabel}`);
-    put("schema/check-fake-lean.mjs", `// a theorem answers for every x\n${byLabel}`);
-    put("schema/check-commented.mjs", `// import { run } from "./terms/engine.ts";\n${byLabel}`);
-    put("schema/check-shape.mjs", byLabel);
-    put("schema/check-debt.mjs", byLabel);
-    put("schema/check-paid.mjs", `import { run } from "./terms/engine.ts";\nexport { run };\n`);
-    put("schema/check-new.mjs", `import { run } from "./terms/engine.ts";\nexport { run };\n`);
-    put("schema/role-gate.mjs", byLabel);
-    const engineImport = `import { run } from "./terms/engine.ts";`;
-    put("schema/check-single-quote.mjs", `import { run } from './terms/engine.ts';\nexport { run };\n`);
-    put("schema/check-mixed-type.ts", `import { run, type Term } from "./terms/engine.ts";\nexport { run };\nexport type { Term };\n`);
-    put("schema/check-dynamic.mjs", `const quote = /["'\`]/;\nexport const load = () => quote && import("./terms/engine.ts");\n`);
-    put("schema/check-admit-var.mjs", `import { execFileSync } from "node:child_process";\nconst script = new URL("./terms/admit.ts", import.meta.url).pathname;\nexecFileSync(process.execPath, [script, "--check"]);\n`);
-    put("schema/check-trailing-comment.mjs", `const x = 1; // ${engineImport}\n${byLabel}`);
-    put("schema/check-block-comment.mjs", `const x = 1; /* ${engineImport} */\n${byLabel}`);
-    put("schema/check-in-string.mjs", `const text = '${engineImport}';\n${byLabel}`);
-    put("schema/check-in-template.mjs", `const text = \`${engineImport}\`;\n${byLabel}`);
-    put("schema/check-admit-message.mjs", `export const hint = () => { throw new Error("run node packages/naive/src/terms/admit.ts --check first"); };\n${byLabel}`);
-    put("schema/check-type-import.ts", `import type { Term } from "./terms/engine.ts";\nexport type T = Term;\n${byLabel}`);
-    put("schema/check-type-names.ts", `import { type Term, type Base } from "./terms/engine.ts";\nexport type T = [Term, Base];\n${byLabel}`);
-    put("schema/type-lib.ts", `export type { Term } from "./terms/engine.ts";\n${byLabel}`);
-    put("schema/check-type-via.ts", `import { member } from "./type-lib.ts";\nexport { member };\n`);
-    put("schema/check-common.cjs", byLabel);
+    put("packages/naive/src/checks/check-wired.mjs", `import { run } from "../terms/engine.ts";\nexport const member = (t, x) => run(t, x);\n`);
+    put("packages/naive/src/checks/check-bare.mjs", byLabel);
+    put("packages/naive/src/checks/member-lib.mjs", `export { run } from "../terms/engine.ts";\n`);
+    put("packages/naive/src/checks/check-via.mjs", `import { run } from "./member-lib.mjs";\nexport const member = (t, x) => run(t, x);\n`);
+    put("packages/naive/src/checks/check-admit.mjs", `import { spawnSync } from "node:child_process";\nspawnSync("node", ["packages/naive/src/terms/admit.ts", "--check"]);\n`);
+    put("packages/naive/src/checks/check-lean.mjs", `// Proved for every case by theorem fixture_holds.\n${byLabel}`);
+    put("packages/naive/src/checks/check-fake-lean.mjs", `// a theorem answers for every x\n${byLabel}`);
+    put("packages/naive/src/checks/check-commented.mjs", `// import { run } from "../terms/engine.ts";\n${byLabel}`);
+    put("packages/naive/src/checks/check-shape.mjs", byLabel);
+    put("packages/naive/src/checks/check-debt.mjs", byLabel);
+    put("packages/naive/src/checks/check-paid.mjs", `import { run } from "../terms/engine.ts";\nexport { run };\n`);
+    put("packages/naive/src/checks/check-new.mjs", `import { run } from "../terms/engine.ts";\nexport { run };\n`);
+    put("packages/naive/src/checks/role-gate.mjs", byLabel);
+    const engineImport = `import { run } from "../terms/engine.ts";`;
+    put("packages/naive/src/checks/check-single-quote.mjs", `import { run } from '../terms/engine.ts';\nexport { run };\n`);
+    put("packages/naive/src/checks/check-mixed-type.ts", `import { run, type Term } from "../terms/engine.ts";\nexport { run };\nexport type { Term };\n`);
+    put("packages/naive/src/checks/check-dynamic.mjs", `const quote = /["'\`]/;\nexport const load = () => quote && import("../terms/engine.ts");\n`);
+    put("packages/naive/src/checks/check-admit-var.mjs", `import { execFileSync } from "node:child_process";\nconst script = new URL("../terms/admit.ts", import.meta.url).pathname;\nexecFileSync(process.execPath, [script, "--check"]);\n`);
+    put("packages/naive/src/checks/check-trailing-comment.mjs", `const x = 1; // ${engineImport}\n${byLabel}`);
+    put("packages/naive/src/checks/check-block-comment.mjs", `const x = 1; /* ${engineImport} */\n${byLabel}`);
+    put("packages/naive/src/checks/check-in-string.mjs", `const text = '${engineImport}';\n${byLabel}`);
+    put("packages/naive/src/checks/check-in-template.mjs", `const text = \`${engineImport}\`;\n${byLabel}`);
+    put("packages/naive/src/checks/check-admit-message.mjs", `export const hint = () => { throw new Error("run node packages/naive/src/terms/admit.ts --check first"); };\n${byLabel}`);
+    put("packages/naive/src/checks/check-type-import.ts", `import type { Term } from "../terms/engine.ts";\nexport type T = Term;\n${byLabel}`);
+    put("packages/naive/src/checks/check-type-names.ts", `import { type Term, type Base } from "../terms/engine.ts";\nexport type T = [Term, Base];\n${byLabel}`);
+    put("packages/naive/src/checks/type-lib.ts", `export type { Term } from "../terms/engine.ts";\n${byLabel}`);
+    put("packages/naive/src/checks/check-type-via.ts", `import { member } from "./type-lib.ts";\nexport { member };\n`);
+    put("packages/naive/src/checks/check-common.cjs", byLabel);
     const registry: Registry = {
-      "schema/check-wired.mjs": symbolic, "schema/check-bare.mjs": symbolic, "schema/check-via.mjs": symbolic,
-      "schema/check-admit.mjs": symbolic, "schema/check-lean.mjs": symbolic, "schema/check-fake-lean.mjs": symbolic,
-      "schema/check-commented.mjs": symbolic, "schema/check-gone.mjs": symbolic,
-      "schema/check-single-quote.mjs": symbolic, "schema/check-mixed-type.ts": symbolic, "schema/check-dynamic.mjs": symbolic,
-      "schema/check-admit-var.mjs": symbolic, "schema/check-trailing-comment.mjs": symbolic, "schema/check-block-comment.mjs": symbolic,
-      "schema/check-in-string.mjs": symbolic, "schema/check-in-template.mjs": symbolic, "schema/check-admit-message.mjs": symbolic,
-      "schema/check-type-import.ts": symbolic, "schema/check-type-names.ts": symbolic, "schema/check-type-via.ts": symbolic,
-      "schema/check-shape.mjs": plain("fixture: decides shape"),
-      "schema/check-debt.mjs": { kind: "unwired", reason: "fixture debt" },
-      "schema/check-paid.mjs": { kind: "unwired", reason: "fixture debt, since paid" },
+      "packages/naive/src/checks/check-wired.mjs": symbolic, "packages/naive/src/checks/check-bare.mjs": symbolic, "packages/naive/src/checks/check-via.mjs": symbolic,
+      "packages/naive/src/checks/check-admit.mjs": symbolic, "packages/naive/src/checks/check-lean.mjs": symbolic, "packages/naive/src/checks/check-fake-lean.mjs": symbolic,
+      "packages/naive/src/checks/check-commented.mjs": symbolic, "packages/naive/src/checks/check-gone.mjs": symbolic,
+      "packages/naive/src/checks/check-single-quote.mjs": symbolic, "packages/naive/src/checks/check-mixed-type.ts": symbolic, "packages/naive/src/checks/check-dynamic.mjs": symbolic,
+      "packages/naive/src/checks/check-admit-var.mjs": symbolic, "packages/naive/src/checks/check-trailing-comment.mjs": symbolic, "packages/naive/src/checks/check-block-comment.mjs": symbolic,
+      "packages/naive/src/checks/check-in-string.mjs": symbolic, "packages/naive/src/checks/check-in-template.mjs": symbolic, "packages/naive/src/checks/check-admit-message.mjs": symbolic,
+      "packages/naive/src/checks/check-type-import.ts": symbolic, "packages/naive/src/checks/check-type-names.ts": symbolic, "packages/naive/src/checks/check-type-via.ts": symbolic,
+      "packages/naive/src/checks/check-shape.mjs": plain("fixture: decides shape"),
+      "packages/naive/src/checks/check-debt.mjs": { kind: "unwired", reason: "fixture debt" },
+      "packages/naive/src/checks/check-paid.mjs": { kind: "unwired", reason: "fixture debt, since paid" },
     };
     const findings = audit(root, registry);
     const fails = findings.filter((f) => f.fail).map((f) => f.file);
     const named = (file: string): boolean => fails.includes(file);
-    expect("fixture: a check wired through the engine passes", !named("schema/check-wired.mjs"));
-    expect("fixture: a check that decides membership without the engine fails, named", named("schema/check-bare.mjs"));
-    expect("fixture: an engine import through a module the check imports counts", !named("schema/check-via.mjs"));
-    expect("fixture: running packages/naive/src/terms/admit.ts counts", !named("schema/check-admit.mjs"));
-    expect("fixture: naming a theorem packages/naive/lean/Naive declares counts", !named("schema/check-lean.mjs"));
-    expect("fixture: a theorem name packages/naive/lean/Naive does not declare does not count", named("schema/check-fake-lean.mjs"));
-    expect("fixture: a commented-out engine import does not count", named("schema/check-commented.mjs"));
-    expect("fixture: an unregistered check fails even when wired", named("schema/check-new.mjs"));
-    expect("fixture: an unregistered gate that skips the engine fails", named("schema/role-gate.mjs"));
-    expect("fixture: a registered path that is gone fails", named("schema/check-gone.mjs"));
-    expect("fixture: an unwired entry that now reaches the engine fails", named("schema/check-paid.mjs"));
-    expect("fixture: a not-symbolic check passes", !named("schema/check-shape.mjs"));
-    expect("fixture: a single-quoted engine import counts", !named("schema/check-single-quote.mjs"));
-    expect("fixture: an engine import that also names a type counts", !named("schema/check-mixed-type.ts"));
-    expect("fixture: a dynamic engine import after a regex holding quotes counts", !named("schema/check-dynamic.mjs"));
-    expect("fixture: admit's path passed to execFile through a variable counts", !named("schema/check-admit-var.mjs"));
-    expect("fixture: an engine import in a trailing // comment does not count", named("schema/check-trailing-comment.mjs"));
-    expect("fixture: an engine import in a mid-line block comment does not count", named("schema/check-block-comment.mjs"));
-    expect("fixture: an engine import inside a single-quoted string does not count", named("schema/check-in-string.mjs"));
-    expect("fixture: an engine import inside a template literal does not count", named("schema/check-in-template.mjs"));
-    expect("fixture: a message that mentions admit.ts does not count as running it", named("schema/check-admit-message.mjs"));
-    expect("fixture: an import type of the engine does not count", named("schema/check-type-import.ts"));
-    expect("fixture: an import of only type names from the engine does not count", named("schema/check-type-names.ts"));
-    expect("fixture: reaching the engine only through a type-only re-export does not count", named("schema/check-type-via.ts"));
-    expect("fixture: an unregistered .cjs check fails", named("schema/check-common.cjs"));
-    expect("fixture: an unwired entry is reported, not failed", !named("schema/check-debt.mjs") && findings.some((f) => f.file === "schema/check-debt.mjs" && !f.fail));
+    expect("fixture: a check wired through the engine passes", !named("packages/naive/src/checks/check-wired.mjs"));
+    expect("fixture: a check that decides membership without the engine fails, named", named("packages/naive/src/checks/check-bare.mjs"));
+    expect("fixture: an engine import through a module the check imports counts", !named("packages/naive/src/checks/check-via.mjs"));
+    expect("fixture: running packages/naive/src/terms/admit.ts counts", !named("packages/naive/src/checks/check-admit.mjs"));
+    expect("fixture: naming a theorem packages/naive/lean/Naive declares counts", !named("packages/naive/src/checks/check-lean.mjs"));
+    expect("fixture: a theorem name packages/naive/lean/Naive does not declare does not count", named("packages/naive/src/checks/check-fake-lean.mjs"));
+    expect("fixture: a commented-out engine import does not count", named("packages/naive/src/checks/check-commented.mjs"));
+    expect("fixture: an unregistered check fails even when wired", named("packages/naive/src/checks/check-new.mjs"));
+    expect("fixture: an unregistered gate that skips the engine fails", named("packages/naive/src/checks/role-gate.mjs"));
+    expect("fixture: a registered path that is gone fails", named("packages/naive/src/checks/check-gone.mjs"));
+    expect("fixture: an unwired entry that now reaches the engine fails", named("packages/naive/src/checks/check-paid.mjs"));
+    expect("fixture: a not-symbolic check passes", !named("packages/naive/src/checks/check-shape.mjs"));
+    expect("fixture: a single-quoted engine import counts", !named("packages/naive/src/checks/check-single-quote.mjs"));
+    expect("fixture: an engine import that also names a type counts", !named("packages/naive/src/checks/check-mixed-type.ts"));
+    expect("fixture: a dynamic engine import after a regex holding quotes counts", !named("packages/naive/src/checks/check-dynamic.mjs"));
+    expect("fixture: admit's path passed to execFile through a variable counts", !named("packages/naive/src/checks/check-admit-var.mjs"));
+    expect("fixture: an engine import in a trailing // comment does not count", named("packages/naive/src/checks/check-trailing-comment.mjs"));
+    expect("fixture: an engine import in a mid-line block comment does not count", named("packages/naive/src/checks/check-block-comment.mjs"));
+    expect("fixture: an engine import inside a single-quoted string does not count", named("packages/naive/src/checks/check-in-string.mjs"));
+    expect("fixture: an engine import inside a template literal does not count", named("packages/naive/src/checks/check-in-template.mjs"));
+    expect("fixture: a message that mentions admit.ts does not count as running it", named("packages/naive/src/checks/check-admit-message.mjs"));
+    expect("fixture: an import type of the engine does not count", named("packages/naive/src/checks/check-type-import.ts"));
+    expect("fixture: an import of only type names from the engine does not count", named("packages/naive/src/checks/check-type-names.ts"));
+    expect("fixture: reaching the engine only through a type-only re-export does not count", named("packages/naive/src/checks/check-type-via.ts"));
+    expect("fixture: an unregistered .cjs check fails", named("packages/naive/src/checks/check-common.cjs"));
+    expect("fixture: an unwired entry is reported, not failed", !named("packages/naive/src/checks/check-debt.mjs") && findings.some((f) => f.file === "packages/naive/src/checks/check-debt.mjs" && !f.fail));
     const want = [
-      "schema/check-admit-message.mjs", "schema/check-bare.mjs", "schema/check-block-comment.mjs", "schema/check-commented.mjs",
-      "schema/check-common.cjs", "schema/check-fake-lean.mjs", "schema/check-gone.mjs", "schema/check-in-string.mjs",
-      "schema/check-in-template.mjs", "schema/check-new.mjs", "schema/check-paid.mjs", "schema/check-trailing-comment.mjs",
-      "schema/check-type-import.ts", "schema/check-type-names.ts", "schema/check-type-via.ts", "schema/role-gate.mjs",
+      "packages/naive/src/checks/check-admit-message.mjs", "packages/naive/src/checks/check-bare.mjs", "packages/naive/src/checks/check-block-comment.mjs", "packages/naive/src/checks/check-commented.mjs",
+      "packages/naive/src/checks/check-common.cjs", "packages/naive/src/checks/check-fake-lean.mjs", "packages/naive/src/checks/check-gone.mjs", "packages/naive/src/checks/check-in-string.mjs",
+      "packages/naive/src/checks/check-in-template.mjs", "packages/naive/src/checks/check-new.mjs", "packages/naive/src/checks/check-paid.mjs", "packages/naive/src/checks/check-trailing-comment.mjs",
+      "packages/naive/src/checks/check-type-import.ts", "packages/naive/src/checks/check-type-names.ts", "packages/naive/src/checks/check-type-via.ts", "packages/naive/src/checks/role-gate.mjs",
     ];
     expect("fixture: exactly the bypassing and unregistered files fail", JSON.stringify(fails) === JSON.stringify(want), fails.join(", "));
   } finally {
@@ -340,7 +346,7 @@ function fixtureCases(): void {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   fixtureCases();
-  const repo = join(dirname(new URL(import.meta.url).pathname), "../..");
+  const repo = join(dirname(new URL(import.meta.url).pathname), "../../../..");
   const findings = audit(repo, REGISTRY);
   for (const f of findings) console.log(`${f.fail ? "FAIL" : "note"}  ${f.file} ${f.says}`);
   expect("no symbolic check in the repository bypasses EE-095", !findings.some((f) => f.fail));

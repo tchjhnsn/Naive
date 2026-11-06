@@ -15,7 +15,7 @@
 import { readFileSync } from "node:fs";
 import { rankDocket } from "./docket.mjs";
 
-const FILE = new URL("examples/docket-scenarios.json", import.meta.url).pathname;
+const FILE = new URL("../records/examples/docket-scenarios.json", import.meta.url).pathname;
 const NOW = Date.parse("2026-10-29T12:00:00Z");
 const TITLE = { foundation: "Foundation", validation: "Validation", product: "Product", marketing: "Marketing and sales", finance: "Finance", people: "People", legal: "Legal and governance", operations: "Operations" };
 

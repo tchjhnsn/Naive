@@ -49,7 +49,7 @@ Each finding is `{rule, mode, file, message, suggestion}`. The rule ids are `rai
 
 ## Actions and artifacts
 
-Build artifacts by the `choosing-artifacts` skill (`packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
+Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
 
 | Action | Artifact | Built from |
 |---|---|---|

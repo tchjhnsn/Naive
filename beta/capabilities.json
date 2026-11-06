@@ -1,5 +1,5 @@
 {
-  "$schema": "../schema/beta-capabilities.schema.json",
+  "$schema": "../packages/naive/src/records/beta-capabilities.schema.json",
   "version": "0.1.0",
   "note": "The plugin beta's capabilities in unlock order (validation study, section 5). Core starts unlocked: creating the venture, the docket and the foundation records. Each later capability unlocks once the tester has given the checkpoint feedback of the capability before it. The gate is on only when naive.config.json has beta.enabled true.",
   "always_open": ["validation/feedback/**", "product/bugs/**"],

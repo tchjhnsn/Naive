@@ -18,7 +18,7 @@ import { arrangementCases, encounterCases, hierarchyCases, linkCases, membership
 import { labelProblems, TERMS } from "./terms.ts";
 
 const here = new URL(".", import.meta.url).pathname;
-const repo = join(here, "../..");
+const repo = join(here, "../../../..");
 const out = join(here, "admitted.json");
 
 const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases(), link: linkCases() };

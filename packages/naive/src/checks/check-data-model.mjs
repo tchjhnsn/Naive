@@ -81,7 +81,7 @@ for (const r of types.values()) if (r.decision_class && !classIds.has(r.decision
 
 // Layers and packages (EE-071). A layer manifest is <layer>/layer.json. A package that lists
 // `records` owns those record types (the validation package absorbed the old validation kit).
-const layerFiles = [...model.layers.map((l) => `${l}/layer.json`), "packages/naive/src/engine/layer.json"];
+const layerFiles = [...model.layers.map((l) => `${l}/layer.json`), "packages/naive/src/records/layer.json"];
 const packageFiles = all.filter((f) => /^library\/packages\/[^/]+\/package\.json$/.test(f));
 const skillsOf = (k) => [...(k.skills ?? []), ...(k.skill ? [k.skill] : [])];
 const kits = new Map();
@@ -96,7 +96,7 @@ const own = (id, t, k, p) => {
 for (const p of layerFiles) {
   if (!existsSync(join(root, p))) { errors.push(`${p}: missing; every layer has a manifest`); continue; }
   const k = { ...load(p), path: p };
-  const folderLayer = p === "packages/naive/src/engine/layer.json" ? "system" : p.split("/")[0];
+  const folderLayer = p === "packages/naive/src/records/layer.json" ? "system" : p.split("/")[0];
   if (k.layer !== folderLayer) errors.push(`${p}: layer says ${k.layer}`);
   const id = k.name ?? k.kit;
   kits.set(id, k);

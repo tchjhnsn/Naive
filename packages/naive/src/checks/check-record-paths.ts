@@ -41,14 +41,17 @@ const PRESERVED = "docs/design/preserved/";
 const COMMENT = /^\s*(\/\/|\/\*|\*|#)/;
 
 const Q = "[\"'`]";
+/** The record types' folder as code may name it: today's, and the one it had before EE-118 step 5. */
+const F = "(?:packages/naive/src/records|schema)";
+const FE = "(?:packages\\/naive\\/src\\/records|schema)";
 const PATTERNS: readonly { readonly kind: string; readonly re: RegExp; readonly py?: boolean }[] = [
-  { kind: "folder argument", re: new RegExp(`[(,]\\s*${Q}schema${Q}\\s*,\\s*([\\w.]*(schema|data-?model)\\w*\\s*[,)]|${Q}[^"'\`]*(\\.schema\\.json|data-model\\.json)${Q})`, "i") },
-  { kind: "path literal", re: new RegExp(`[(,[]\\s*(${Q})(\\.{1,2}/)*schema/[^"'\`\\s]*?(\\.schema\\.json|data-model\\.json)\\1`) },
+  { kind: "folder argument", re: new RegExp(`[(,]\\s*${Q}${F}${Q}\\s*,\\s*([\\w.]*(schema|data-?model)\\w*\\s*[,)]|${Q}[^"'\`]*(\\.schema\\.json|data-model\\.json)${Q})`, "i") },
+  { kind: "path literal", re: new RegExp(`[(,[]\\s*(${Q})(\\.{1,2}/)*${F}/[^"'\`\\s]*?(\\.schema\\.json|data-model\\.json)\\1`) },
   { kind: "path literal", re: new RegExp(`[(,[]\\s*(${Q})\\.{1,2}/([\\w.-]+/)*([\\w.\${}-]+\\.schema\\.json|data-model\\.json)\\1`) },
-  { kind: "concatenation", re: new RegExp(`${Q}(\\.{1,2}/)*schema/${Q}\\s*\\+|\\+\\s*${Q}(\\.{1,2}/)*schema/${Q}`) },
-  { kind: "stored prefix", re: new RegExp(`replace\\(\\s*/\\^schema\\\\/\\/|[sS]chema\\??\\.startsWith\\(\\s*${Q}schema/${Q}|${Q}schema/${Q}\\.length`) },
-  { kind: "python path", re: /\/\s*["']schema(\/[^"']*)?["']/, py: true },
-  { kind: "stored prefix", re: /startswith\(\s*["']schema\/["']\s*\)/, py: true },
+  { kind: "concatenation", re: new RegExp(`${Q}(\\.{1,2}/)*${F}/${Q}\\s*\\+|\\+\\s*${Q}(\\.{1,2}/)*${F}/${Q}`) },
+  { kind: "stored prefix", re: new RegExp(`replace\\(\\s*/\\^${FE}\\\\/\\/|[sS]chema\\??\\.startsWith\\(\\s*${Q}${F}/${Q}|${Q}${F}/${Q}\\.length`) },
+  { kind: "python path", re: new RegExp(`\\/\\s*["']${F}(\\/[^"']*)?["']`), py: true },
+  { kind: "stored prefix", re: new RegExp(`startswith\\(\\s*["']${F}\\/["']\\s*\\)`), py: true },
 ];
 
 function tracked(root: string): string[] {

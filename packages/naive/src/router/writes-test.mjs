@@ -247,7 +247,7 @@ const copy = mkdtempSync(join(tmpdir(), "writes-framework-"));
 for (const d of ["schema", "interface", "knowledge", "purpose", "operations", "evidence", "governance", "library", "packages", "platform", "frameworks"]) if (existsSync(join(repo, d))) cpSync(join(repo, d), join(copy, d), { recursive: true });
 writeFileSync(recordsIn(copy).dataModelFile(), readFileSync(dataModelFile(), "utf8").slice(0, 500));
 const fw = spawnSync("node", [join(copy, "packages/naive/src/interfaces/cli/mentura.mjs"), "foundation/problem", "read", "--venture", "acme"], { encoding: "utf8", env });
-expect("E-8: a broken data model answers with recovery steps, not a stack trace", fw.status === 1 && /the framework is broken: schema\/data-model\.json/.test(fw.stderr) && /Recovery:/.test(fw.stderr) && /check-data-model/.test(fw.stderr), fw.stderr.slice(0, 400));
+expect("E-8: a broken data model answers with recovery steps, not a stack trace", fw.status === 1 && /the framework is broken: packages\/naive\/src\/records\/data-model\.json/.test(fw.stderr) && /Recovery:/.test(fw.stderr) && /check-data-model/.test(fw.stderr), fw.stderr.slice(0, 400));
 rmSync(copy, { recursive: true, force: true });
 const fix = await c("foundation/problem", "write", { input: { statement: 5 }, actor: "person" });
 expect("P-15: a write that fails answers with the package's skill and template", !fix.ok && fix.fix?.template && fix.fix.skills.length, fix.fix);

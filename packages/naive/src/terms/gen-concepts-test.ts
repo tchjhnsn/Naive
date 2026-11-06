@@ -17,7 +17,7 @@ const noun = (name: string, level: string, fn: string | null) =>
 
 const root = mkdtempSync(join(tmpdir(), "gen-concepts-"));
 const ontology = (nouns: unknown[]): void => {
-  mkdirSync(join(root, "docs"), { recursive: true });
+  mkdirSync(join(root, "packages/naive/src/terms"), { recursive: true });
   writeFileSync(join(root, "packages/naive/src/terms/ontology.json"), JSON.stringify({ nouns }));
 };
 const run = (...args: string[]): { status: number | null; out: string } => {

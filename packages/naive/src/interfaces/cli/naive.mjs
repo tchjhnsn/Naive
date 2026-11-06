@@ -69,6 +69,7 @@ import { logical } from "../../core/venture-paths.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.mjs";
 import { schemaNameOf } from "../../records/index.mjs";
+import { naiveScript } from "../../core/scripts.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -147,7 +148,7 @@ const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sou
 function check(dir) {
   let failed = 0;
   for (const c of CHECKS) {
-    const r = spawnSync("node", [join(repo, `schema/${c}.mjs`), dir], { encoding: "utf8" });
+    const r = spawnSync("node", [naiveScript(c), dir], { encoding: "utf8" });
     const last = (r.stdout + r.stderr).trim().split("\n").filter(Boolean).at(-1) ?? "";
     if (r.status !== 0) failed++;
     console.log(`${r.status === 0 ? "pass" : "FAIL"}  ${c.replace("check-", "")}: ${last}`);

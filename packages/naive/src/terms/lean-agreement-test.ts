@@ -211,7 +211,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (at > 0) report(process.argv[at + 1]);
   else {
     fixtureCases();
-    report(join(dirname(self), "../.."));
+    report(join(dirname(self), "../../../.."));
   }
   console.log(failed ? `${failed} failed` : "Lean agreement: all pass");
   process.exit(failed ? 1 : 0);

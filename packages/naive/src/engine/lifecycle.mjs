@@ -27,7 +27,7 @@ import { phase as changePhase } from "./freshness.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 export const PHASES = load(join(root, "purpose/frameworks/product-anatomy/phases.json")).phases.map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate, binding_constraint }));
 export const DEFAULT_PLAYBOOK = "product-first";

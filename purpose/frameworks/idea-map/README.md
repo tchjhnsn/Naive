@@ -86,7 +86,7 @@ flowchart LR
 
 Every tagged idea goes to the records it feeds. A record is a destination: the problem, who it is for, products, the core promise, vision, the solution, go to market, pricing, the team, alignment and brand. The routing table is `conventions.json` `records`: each entry has a title, the route that writes the record, and the decisions it settles (foundation statements and Naive's product and team questions). Any decision an agent proposed about that record also belongs to it.
 
-`route.mjs` reads the record types from the data model through [`packages/naive/src/records`](../../../packages/records/README.md), and `test.mjs` reads the idea and graph schemas the same way.
+`route.mjs` reads the record types from the data model through [`packages/naive/src/records`](../../../packages/naive/src/records/README.md), and `test.mjs` reads the idea and graph schemas the same way.
 
 A destination's stage comes from the framework's own state, never from a guess:
 

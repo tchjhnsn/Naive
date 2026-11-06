@@ -11,6 +11,7 @@ import * as telosToGoals from "../../engine/migrations/telos-to-goals.mjs";
 import * as structured from "../../engine/migrations/structured-layout.mjs";
 import { physical } from "../../core/venture-paths.mjs";
 import { call } from "../../router/router.mjs";
+import { naiveScript } from "../../core/scripts.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "structure-checks-"));
@@ -18,7 +19,7 @@ let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `\n      ${detail}`}`); if (!ok) failed++; };
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const save = (f, x) => writeFileSync(f, JSON.stringify(x, null, 2) + "\n");
-const run = (script, dir) => spawnSync("node", [join(repo, "schema", script), dir], { encoding: "utf8" });
+const run = (script, dir) => spawnSync("node", [naiveScript(script), dir], { encoding: "utf8" });
 const copy = (ws, venture) => { const d = join(tmp, ws, "ventures", venture); cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures", venture), d, { recursive: true }); return d; };
 const migrate = (dir, m) => m.apply(dir, context(dir, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }));
 

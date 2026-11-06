@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, routes } from "../../../src/router/router.mjs";
 
-const repo = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const playbook = join(repo, "library/packages/marketing/playbooks/apple-launch.md");
 const text = readFileSync(playbook, "utf8");
 let failed = 0;

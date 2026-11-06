@@ -41,8 +41,8 @@ const kinds = (dir: string, paths: string[]): string[] => scan(dir, paths, {}).m
 
 try {
   // The resolver.
-  test("RECORDS is the schema folder of this repository, computed from the module's own place", () => {
-    assert.equal(join(RECORDS), join(root, "schema"));
+  test("RECORDS is the record types' folder of this repository, computed from the module's own place", () => {
+    assert.equal(join(RECORDS), join(root, "packages/naive/src/records"));
     assert.equal(join(ROOT), join(root));
     assert.equal(dataModelFile(), join(root, "packages/naive/src/records/data-model.json"));
   });
@@ -84,16 +84,17 @@ try {
 
   test("recordsIn points the same functions at another copy of the repository", () => {
     const other = recordsIn(join(tmp, "copy"));
-    assert.equal(other.RECORDS, join(tmp, "copy", "schema"));
-    assert.equal(other.schemaFile("venture"), join(tmp, "copy", "schema", "venture.schema.json"));
-    assert.equal(other.recordPath("schema/x.schema.json"), join(tmp, "copy", "schema", "x.schema.json"));
+    assert.equal(other.RECORDS, join(tmp, "copy", "packages/naive/src/records"));
+    assert.equal(other.schemaFile("venture"), join(tmp, "copy", "packages/naive/src/records", "venture.schema.json"));
+    assert.equal(other.recordPath("schema/x.schema.json"), join(tmp, "copy", "packages/naive/src/records", "x.schema.json"));
+    assert.equal(other.recordPath("packages/naive/src/records/x.schema.json"), join(tmp, "copy", "packages/naive/src/records", "x.schema.json"));
     assert.equal(other.recordPath("docs/x.json"), join(tmp, "copy", "docs", "x.json"));
   });
 
   test("an app's naive.data-model.json adds record types and ignore entries; anything else is refused", () => {
     const dir = join(tmp, "app");
-    mkdirSync(join(dir, "schema"), { recursive: true });
-    writeFileSync(join(dir, "schema", "data-model.json"), JSON.stringify({ version: 1, layers: [], records: [{ id: "a" }], ignore: [] }));
+    mkdirSync(join(dir, "packages/naive/src/records"), { recursive: true });
+    writeFileSync(join(dir, "packages/naive/src/records", "data-model.json"), JSON.stringify({ version: 1, layers: [], records: [{ id: "a" }], ignore: [] }));
     const at = recordsIn(dir);
     assert.deepEqual(at.readDataModel().records.map((r: { id: string }) => r.id), ["a"]);
     writeFileSync(join(dir, APP_DATA_MODEL), JSON.stringify({ records: [{ id: "b" }], ignore: [{ path: "x.json", reason: "test" }] }));
@@ -153,12 +154,12 @@ try {
   test("a resolver and packages/naive/src/records/validate.py that disagree fail, on the folder and on the prefixes", () => {
     const folder = repo({});
     const py = join(folder.dir, "packages/naive/src/records/validate.py");
-    writeFileSync(py, readFileSync(py, "utf8").replace(/^RECORDS_FOLDER = "schema"$/m, `RECORDS_FOLDER = "packages/naive/src/records"`));
+    writeFileSync(py, readFileSync(py, "utf8").replace(/^RECORDS_FOLDER = "packages\/naive\/src\/records"$/m, `RECORDS_FOLDER = "schema"`));
     assert.match(disagreements(folder.dir).join("\n"), /the folder differs/);
 
     const prefixes = repo({});
     const js = join(prefixes.dir, RESOLVER);
-    writeFileSync(js, readFileSync(js, "utf8").replace(`Object.freeze(["schema/"])`, `Object.freeze(["packages/naive/src/records/", "schema/"])`));
+    writeFileSync(js, readFileSync(js, "utf8").replace(`Object.freeze(["packages/naive/src/records/", "schema/"])`, `Object.freeze(["packages/naive/src/records/"])`));
     assert.match(disagreements(prefixes.dir).join("\n"), /the stored prefixes differ/);
 
     assert.deepEqual(disagreements(repo({}).dir), []);

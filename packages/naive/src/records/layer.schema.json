@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "layer.schema.json",
   "title": "Layer manifest",
-  "description": "What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/engine/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.mjs checks this file.",
+  "description": "What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/records/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.mjs checks this file.",
   "type": "object",
   "required": [
     "name",

@@ -10,7 +10,7 @@
     "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
     "title": { "type": "string" },
     "kind": { "enum": ["harness", "platform"] },
-    "integration": { "type": "string", "description": "Its entry in packages/naive/src/interfaces/tooling/integrations.json" },
+    "integration": { "type": "string", "description": "Its entry in interface/tooling/integrations.json" },
     "reads": { "type": "array", "items": { "type": "string" }, "description": "The files the harness or platform reads on its own, as globs" },
     "files": {
       "type": "array",

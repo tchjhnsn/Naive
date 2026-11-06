@@ -16,7 +16,7 @@ const expect = (name, text, ok, pattern, ext) => {
   console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n${r.stdout}${r.stderr}`}`);
 };
 expect("a built command, flag, file and route pass", "Run `naive phase --meet x --evidence y`, see `packages/naive/src/checks/check-docs-claims.mjs`, read `foundation/problem`, keep `k-base/raw/` and `artifacts/<id>.json`.\n", true);
-expect("an unknown naive command fails", "Run `naive teleport`.\n", false, /naive teleport: interface\/cli\/naive.mjs has no such command/);
+expect("an unknown naive command fails", "Run `naive teleport`.\n", false, /naive teleport: packages\/naive\/src\/interfaces\/cli\/naive.mjs has no such command/);
 expect("a flag the command never reads fails", "```sh\nnaive phase --warp 9\n```\n", false, /naive phase --warp/);
 expect("a string literal in the source is not a flag", "```sh\nnaive check --node\n```\n", false, /naive check --node/);
 expect("a missing repo file fails", "See `schema/does-not-exist.mjs`.\n", false, /no such file/);
@@ -44,25 +44,25 @@ mkdirSync(join(dir, "section"));
 writeFileSync(join(dir, "section", "index.mdx"), "");
 expect("a README link does not fall back to .mdx", "[a](./onlymdx)\n", false, /the link points at nothing/);
 expect("an .mdx doc falls back to .mdx and index.mdx", "[a](./onlymdx) [b](./section)\n", true, null, ".mdx");
-const scanned = spawnSync("node", ["packages/naive/src/checks/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\nschema/x.mjs\nschema/README.md\nREADME.md\nlibrary/packages/finance/playbooks/bessemer-saas-metrics.md\nlibrary/packages/finance/playbooks/x/deep.md\nverification/lint-finance/README.md\n" }).stdout.trim().split("\n");
+const scanned = spawnSync("node", ["packages/naive/src/checks/check-docs-claims.mjs", "--scanned"], { cwd: repo, encoding: "utf8", input: "docs/design/x.md\ndocs/master/naive-docs.md\nsite/content/docs/index.mdx\nsite/content/docs/meta.json\nknowledge/skills/x/SKILL.md\n.agents/x/SKILL.md\nnode_modules/x/SKILL.md\npackages/naive/src/engine/x.mjs\npackages/naive/src/engine/README.md\nREADME.md\nlibrary/packages/finance/playbooks/bessemer-saas-metrics.md\nlibrary/packages/finance/playbooks/x/deep.md\npackages/naive/test/verification/lint-finance/README.md\n" }).stdout.trim().split("\n");
 const scannedOk = scanned.join() === "docs/master/naive-docs.md,knowledge/skills/x/SKILL.md,packages/naive/src/engine/README.md,README.md,library/packages/finance/playbooks/bessemer-saas-metrics.md,packages/naive/test/verification/lint-finance/README.md";
 if (!scannedOk) failed++;
 console.log(`${scannedOk ? "pass" : "FAIL"}  docs-required counts only the docs this linter scans${scannedOk ? "" : `\n${scanned.join("\n")}`}`);
 const tree = join(dir, "tree");
-for (const d of ["schema", "purpose/deep", "interface"]) mkdirSync(join(tree, d), { recursive: true });
-for (const r of ["packages/naive/src/engine/README.md", "purpose/README.md", "purpose/deep/README.md"]) writeFileSync(join(tree, r), "");
+for (const d of ["packages/naive/src/engine", "packages/naive/src/checks", "packages/naive/src/records", "purpose/deep", "interface"]) mkdirSync(join(tree, d), { recursive: true });
+for (const r of ["packages/naive/src/engine/README.md", "packages/naive/src/checks/README.md", "packages/naive/src/records/README.md", "purpose/README.md", "purpose/deep/README.md"]) writeFileSync(join(tree, r), "");
 mkdirSync(join(tree, "purpose/deep/playbooks"), { recursive: true });
 const owedOf = (input) => spawnSync("node", ["packages/naive/src/checks/check-docs-claims.mjs", "--readmes", "--root", tree], { cwd: repo, encoding: "utf8", input }).stdout.trim();
 const owed = [
-  ["code next to a README owes that README", "schema/x.mjs\n", "packages/naive/src/engine/README.md"],
-  ["a lint owes the schema README", "packages/naive/src/checks/lint-finance.mjs\n", "packages/naive/src/engine/README.md"],
+  ["code next to a README owes that README", "packages/naive/src/engine/x.mjs\n", "packages/naive/src/engine/README.md"],
+  ["a lint owes the checks README", "packages/naive/src/checks/lint-finance.mjs\n", "packages/naive/src/checks/README.md"],
   ["a playbook with no README in its package owes none", "library/packages/finance/playbooks/bessemer-saas-metrics.md\n", ""],
   ["a playbook JSON next to a README owes none", "purpose/deep/playbooks/first.json\n", ""],
-  ["a playbook schema is code and owes its README", "packages/naive/src/records/playbook.schema.json\n", "packages/naive/src/engine/README.md"],
-  ["changing the README pays it", "schema/x.mjs\nschema/README.md\n", ""],
+  ["a playbook schema is code and owes its README", "packages/naive/src/records/playbook.schema.json\n", "packages/naive/src/records/README.md"],
+  ["changing the README pays it", "packages/naive/src/engine/x.mjs\npackages/naive/src/engine/README.md\n", ""],
   ["the nearest README is the one owed", "purpose/deep/x.mjs\n", "purpose/deep/README.md"],
   ["code with no README in its top folder owes none", "interface/x.mjs\n", ""],
-  ["a doc is not code", "schema/notes.md\n", ""],
+  ["a doc is not code", "packages/naive/src/engine/notes.md\n", ""],
 ];
 for (const [name, input, want] of owed) {
   const got = owedOf(input);

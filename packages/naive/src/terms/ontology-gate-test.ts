@@ -307,13 +307,13 @@ function sparse(edit: (_ontology: { nouns: Record<string, unknown>[] }) => void)
     "purpose/kits/validation/references/references.json",
     "governance/references/references.json",
     "operations/references/references.json",
-    "packages/naive/src/interfaces/references/references.json",
+    "interface/references/references.json",
     "operations/departments.json",
   ]) {
     mkdirSync(join(dir, dirname(rel)), { recursive: true });
     cpSync(join(root, rel), join(dir, rel));
   }
-  mkdirSync(join(dir, "docs"), { recursive: true });
+  mkdirSync(join(dir, "packages/naive/src/terms"), { recursive: true });
   const ontology = JSON.parse(readFileSync(join(root, "packages/naive/src/terms/ontology.json"), "utf8")) as { nouns: Record<string, unknown>[] };
   edit(ontology);
   writeFileSync(join(dir, "packages/naive/src/terms/ontology.json"), JSON.stringify(ontology));

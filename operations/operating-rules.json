@@ -1,5 +1,5 @@
 {
-  "$schema": "../schema/operating-rules.schema.json",
+  "$schema": "../packages/naive/src/records/operating-rules.schema.json",
   "id": "default",
   "version": "1",
   "note": "The default operating-rules module. packages/naive/src/terms/operating-rules.ts loads this file and merges a venture's operating-rules.json over it. That file sits at the venture root, or at meta/operating-rules.json when the layout is structured. The membership gate reads rejection.retry. The other settings are declared for later pull requests and are not enforced yet.",

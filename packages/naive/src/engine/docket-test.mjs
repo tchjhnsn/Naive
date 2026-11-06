@@ -6,7 +6,7 @@ import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { docket, replay } from "./docket.mjs";
 
-const root = new URL("examples/workspace/ventures/", import.meta.url).pathname;
+const root = new URL("../records/examples/workspace/ventures/", import.meta.url).pathname;
 const now = Date.parse("2026-10-29T12:00:00Z");
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };

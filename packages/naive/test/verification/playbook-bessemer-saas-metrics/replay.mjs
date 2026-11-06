@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { call, routes } from "../../../src/router/router.mjs";
 import { propose } from "../../../src/engine/decisions.mjs";
 
-const repo = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const playbookPath = join(repo, "library/packages/finance/playbooks/bessemer-saas-metrics.md");
 const playbook = readFileSync(playbookPath, "utf8");
 const PHRASE = "no published Bessemer target";

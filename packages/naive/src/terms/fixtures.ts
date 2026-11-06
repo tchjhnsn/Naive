@@ -24,7 +24,7 @@ function manifests(repo: string): Fixture<Arrangement> {
   const model: { layers: string[]; records: { id: string; layer: string }[] } = recordsIn(repo).readDataModel();
   const owner = new Map(model.records.map((r) => [r.id, r.layer]));
   const parts = [...model.layers, "system"];
-  const kits: { layer: string; reads?: string[] }[] = [...model.layers.map((l) => read(`${l}/layer.json`)), read("packages/naive/src/engine/layer.json")];
+  const kits: { layer: string; reads?: string[] }[] = [...model.layers.map((l) => read(`${l}/layer.json`)), read("packages/naive/src/records/layer.json")];
   const deps = new Map<string, [string, string]>();
   for (const k of kits) for (const t of k.reads ?? []) {
     const o = owner.get(t);
@@ -32,7 +32,7 @@ function manifests(repo: string): Fixture<Arrangement> {
   }
   return {
     id: "naive-layer-manifests", says: "Naive's layers as built: the six layer manifests and the system manifest, with the dependencies their reads declare",
-    source: "<layer>/layer.json, packages/naive/src/engine/layer.json and packages/naive/src/records/data-model.json", parts,
+    source: "<layer>/layer.json, packages/naive/src/records/layer.json and packages/naive/src/records/data-model.json", parts,
     facts: arrangement(parts, [...deps.values()].sort(), true), expects: { layer: false, area: true },
   };
 }

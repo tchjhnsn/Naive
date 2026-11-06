@@ -71,7 +71,7 @@ t("the idea dump is saved verbatim as raw/dump.md and recorded in provenance", (
 t("every record file is mapped to its JSON Schema for the editor", () => {
   const s = load(join(v, ".vscode/settings.json"))["json.schemas"];
   const icp = s.find((x) => x.fileMatch.includes("/k-base/foundation/icp/*.json"));
-  ok(icp?.url === "./node_modules/naive-framework/schema/icp-profile.schema.json", JSON.stringify(icp));
+  ok(icp?.url === "./node_modules/naive-framework/packages/naive/src/records/icp-profile.schema.json", JSON.stringify(icp));
   ok(existsSync(join(v, icp.url)), "the schema it points to is installed");
 });
 
@@ -257,7 +257,7 @@ async function devTest() {
     mkdirSync(ventureFile(v, "foundation/icp"), { recursive: true });
     writeFileSync(ventureFile(v, "foundation/icp/bad.json"), '{"id": 5}\n');
     const python = spawnSync("python3", ["-c", "import jsonschema"]).status === 0;
-    await wait(python ? /✗ foundation\/icp\/bad\.json does not match schema\/icp-profile\.schema\.json/ : /foundation\/icp\/bad\.json changed/);
+    await wait(python ? /✗ foundation\/icp\/bad\.json does not match packages\/naive\/src\/records\/icp-profile\.schema\.json/ : /foundation\/icp\/bad\.json changed/);
     return "ok";
   } finally { child.kill(); rmSync(ventureFile(v, "foundation/icp"), { recursive: true, force: true }); }
 }

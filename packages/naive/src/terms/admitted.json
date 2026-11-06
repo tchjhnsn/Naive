@@ -864,7 +864,7 @@
     {
       "id": "naive-layer-manifests",
       "says": "Naive's layers as built: the six layer manifests and the system manifest, with the dependencies their reads declare",
-      "source": "<layer>/layer.json, packages/naive/src/engine/layer.json and packages/naive/src/records/data-model.json",
+      "source": "<layer>/layer.json, packages/naive/src/records/layer.json and packages/naive/src/records/data-model.json",
       "parts": [
         "purpose",
         "knowledge",

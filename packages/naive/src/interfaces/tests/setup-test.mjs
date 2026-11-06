@@ -1,4 +1,4 @@
-// Setup in the model's harness (EE-083, packages/naive/src/interfaces/skills/naive-setup): the state and its artifact over MCP,
+// Setup in the model's harness (EE-083, interface/skills/naive-setup): the state and its artifact over MCP,
 // the founder's answers relayed as open proposals with their words, and only the founder confirming them.
 
 import { spawnSync } from "node:child_process";

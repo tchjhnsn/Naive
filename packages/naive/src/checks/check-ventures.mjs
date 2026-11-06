@@ -15,7 +15,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const models = (() => {
-  const b = JSON.parse(readFileSync(new URL("vocab/business-models.json", import.meta.url), "utf8"));
+  const b = JSON.parse(readFileSync(new URL("../records/vocab/business-models.json", import.meta.url), "utf8"));
   return new Set([...b.patterns, ...b.extras].map((m) => m.id));
 })();
 

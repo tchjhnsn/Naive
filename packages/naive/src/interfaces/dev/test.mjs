@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { handle } from "./setup.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
+import { naiveScript } from "../../core/scripts.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "setup-test-"));
@@ -68,7 +69,7 @@ await t("answering every first decision and the discovery goal establishes the s
 
 await t("the venture still passes its checks", async () => {
   for (const c of ["check-ventures", "check-people", "check-provenance", "check-sources"]) {
-    const r = spawnSync("node", [join(repo, `schema/${c}.mjs`), base], { encoding: "utf8" });
+    const r = spawnSync("node", [naiveScript(c), base], { encoding: "utf8" });
     ok(r.status === 0, `${c}: ${r.stdout}${r.stderr}`);
   }
 });

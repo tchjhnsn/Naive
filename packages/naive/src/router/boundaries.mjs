@@ -88,7 +88,7 @@ function frameworkFiles() {
   let layers = [];
   try { layers = readDataModel().layers.map((l) => `${l}/layer.json`); } catch {}
   const pkgs = existsSync(join(repo, "library", "packages")) ? readdirSync(join(repo, "library", "packages")).map((n) => `library/packages/${n}/package.json`).filter((f) => existsSync(join(repo, f))) : [];
-  return [...fixed, ...layers, "packages/naive/src/engine/layer.json", ...pkgs];
+  return [...fixed, ...layers, "packages/naive/src/records/layer.json", ...pkgs];
 }
 
 /** The framework's global error (E-8): null when the data model and manifests parse, else the file, the problem and how to recover. */
@@ -152,7 +152,7 @@ export async function boundaries(dir, { only = null } = {}) {
     try {
       const pkg = load(join(repo, "library", "packages", name, "package.json"));
       const types = [...new Set([...(pkg.required ?? []), ...(pkg.optional ?? []), ...(pkg.records ?? [])])];
-      const records = [], checks = new Set((pkg.checks ?? []).filter((c) => /^schema\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.mjs" && existsSync(join(repo, c))));
+      const records = [], checks = new Set((pkg.checks ?? []).filter((c) => /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.mjs" && existsSync(join(repo, c))));
       for (const t of types) {
         const r = rs.find((x) => x.record === t);
         if (!r) continue;

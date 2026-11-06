@@ -50,7 +50,7 @@ import { ventureFile } from "../core/venture-paths.mjs";
 import { readDataModel } from "../records/index.mjs";
 
 const here = dirname(new URL(import.meta.url).pathname);
-const repoRoot = join(here, "..");
+const repoRoot = join(here, "../../../..");
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const sha = (x) => createHash("sha256").update(typeof x === "string" ? x : JSON.stringify(x)).digest("hex").slice(0, 16);
 

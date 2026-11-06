@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 import { call, resolve } from "../../../src/router/router.mjs";
 import { approve } from "../../../src/engine/decisions.mjs";
 
-const repo = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const root = mkdtempSync(join(tmpdir(), "shapeup-replay-"));
 const venture = "shapeup-replay";
 const dir = join(root, venture);

@@ -75,7 +75,7 @@ export type Adapter = {
   name: string;
   title: string;
   kind: "harness" | "platform";
-  /** Its entry in packages/naive/src/interfaces/tooling/integrations.json */
+  /** Its entry in interface/tooling/integrations.json */
   integration?: string;
   /** The files the harness or platform reads on its own, as globs */
   reads: string[];
@@ -1772,7 +1772,7 @@ export type KnowledgeSources = {
     } };
 };
 
-/** What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/engine/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.mjs checks this file. */
+/** What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/records/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.mjs checks this file. */
 export type Layer = {
   layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
   /** What the layer is for, in one sentence */

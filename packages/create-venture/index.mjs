@@ -241,11 +241,11 @@ if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.rol
 // The org chart (EE-086): each function's owner. Hats are read from here, never stored twice.
 if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
 writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
-// Where each logical file sits in this venture's layout (schema/venture-paths.mjs).
-const { ventureFile: vf, physical } = await import(join(framework, "schema/venture-paths.mjs"));
+// Where each logical file sits in this venture's layout (packages/naive/src/core/venture-paths.mjs).
+const { ventureFile: vf, physical } = await import(join(framework, "packages/naive/src/core/venture-paths.mjs"));
 
 // people/: the roster and one file per founder, the venture.json of human capital (EE-082).
-const { agentFromEnv, record } = await import(join(framework, "packages/naive/src/router/provenance.mjs"));
+const { agentFromEnv, record } = await import(join(framework, "packages/naive/src/core/provenance.mjs"));
 const today = new Date().toISOString().slice(0, 10);
 mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const door = opt("door") ?? "cli";
