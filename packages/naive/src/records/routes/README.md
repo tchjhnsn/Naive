@@ -10,7 +10,7 @@ The route table and the pure helpers that read it. Every route a venture has is 
 
 | Path | Holds |
 |---|---|
-| [`routes.mjs`](./routes.mjs) | `routes()`, `resolve()`, `glob()`, `files()`, `kits()`, `groups()`, `ventureDir()`, `ventures()`, `gateOf()`, `allowed()`, `repo` and `PHASES`. |
+| [`routes.mjs`](./routes.mjs) | `routes()`, `resolve()`, `glob()`, `files()`, `kits()`, `groups()`, `ventureDir()`, `ventures()`, `gateOf()`, `allowed()`, `repo` and `PHASES`. It declares the command routes the router itself serves, such as `system/traces` (the venture's trace sessions, EE-121). |
 | [`commands.mjs`](./commands.mjs) | The command routes the function modules add (brand, the lint suites, the cache), as data. Each module in `schema/` re-exports its own list. |
 
 A record's template is `<record>.md`, or one whose name starts `<record>-`, in its package's template dir or beside its manifest. A layer manifest keeps no templates beside it since EE-118 step 7, so its templates are looked up in the function modules' `templates/` folders, in the order `packages/naive/src/functions/departments.json` lists the functions.
