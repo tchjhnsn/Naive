@@ -304,9 +304,9 @@ const ignored = new Set((spawnSync("git", ["ls-files", "--others", "--ignored", 
 const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !ignored.has(s) && !/\/(\.git|\.claude|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
 for (const [name, change, pattern] of /** @type {[string, (d: string) => void, RegExp][]} */ ([
-  ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
+  ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "packages/naive/src/functions/strategy/stray.json"), "{}"), /functions\/strategy\/stray.json: no record type/],
   ["a schema no record type names fails", (d) => writeFileSync(recordsIn(d).schemaFile("stray"), "{}"), /a schema no record type names/],
-  ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
+  ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "packages/naive/src/functions/service-delivery/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "packages/naive/src/functions/service-delivery/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
   ["a layer owning another layer's record fails", (d) => edit(join(d, "packages/naive/src/records/layers/purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
   ["a layer reading an unknown record type fails", (d) => edit(join(d, "packages/naive/src/records/layers/operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
   ["a JSON file beside, not under, an ignored glob fails", (d) => writeFileSync(join(d, "docs/design/preserved.json"), "{}"), /docs\/design\/preserved.json: no record type/],
