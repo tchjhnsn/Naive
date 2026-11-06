@@ -231,7 +231,9 @@ expect("a change nothing reads marks nothing", /nothing reads what changed/.test
 
 // Z-4: adapters, verified by the framework's tests. The platform adapter is a stand-in for the app's.
 const platformAdapter = join(ws, "platform-adapter.json");
-writeFileSync(platformAdapter, JSON.stringify({ name: "mentura", title: "Mentura (stand-in)", kind: "platform", reads: ["knowledge/sources.json"], files: [], skills: null, verify: ["knowledge/connectors/eval.mjs"], sources: [], note: "A stand-in for the app's platform adapter" }));
+// The app's own hook test sits beside its adapter file, named by a relative path, and runs from that folder.
+writeFileSync(join(ws, "app-hooks-test.mjs"), `process.exit(process.cwd() === ${JSON.stringify(ws)} ? 0 : 1);\n`);
+writeFileSync(platformAdapter, JSON.stringify({ name: "mentura", title: "Mentura (stand-in)", kind: "platform", reads: ["knowledge/sources.json"], files: [], skills: null, verify: ["knowledge/connectors/eval.mjs", "app-hooks-test.mjs"], sources: [], note: "A stand-in for the app's platform adapter" }));
 const withPlatform = { NAIVE_PLATFORM_ADAPTER: platformAdapter };
 const list = JSON.parse(mentura(["adapters", "--json"], withPlatform).stdout);
 expect("Mentura is listed as the platform adapter beside the harness adapters", list[0]?.name === "mentura" && list[0].kind === "platform" && ["claude-code", "codex", "cursor"].every((x) => list.some((l) => l.name === x && l.kind === "harness")));
@@ -248,7 +250,7 @@ for (const name of ["claude-code", "codex", "cursor"]) {
 if (!process.env.NAIVE_SKIP_PLATFORM_VERIFY) {
   const m = mentura(["adapters", "verify", "mentura", "--json"], withPlatform);
   const mr = JSON.parse(m.stdout)[0];
-  expect("a platform adapter is verified when it passes the framework tests it names (here the connector contract)", mr.verified && mr.results.length === 1, JSON.stringify(mr.results.filter((x) => !x.passed)));
+  expect("a platform adapter is verified when it passes the tests it names: a framework test (the connector contract) and the app's own, relative to the adapter file and run from its folder", mr.verified && mr.results.length === 2, JSON.stringify(mr.results.filter((x) => !x.passed)));
 }
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");

@@ -11,6 +11,21 @@
   "engines": {
     "node": ">=20"
   },
+  "exports": {
+    "./package.json": "./package.json",
+    "./schema/*": "./schema/*",
+    "./interface/*": "./interface/*",
+    "./packages/*": "./packages/*",
+    "./knowledge/*": "./knowledge/*",
+    "./operations/*": "./operations/*",
+    "./purpose/*": "./purpose/*",
+    "./governance/*": "./governance/*",
+    "./evidence/*": "./evidence/*",
+    "./frameworks/*": "./frameworks/*",
+    "./library/*": "./library/*",
+    "./docs/*": "./docs/*",
+    "./lean/*": "./lean/*"
+  },
   "bin": {
     "naive": "interface/cli/naive.mjs",
     "mentura": "interface/cli/mentura.mjs"
@@ -40,13 +55,19 @@
     "docs/decisions/",
     "docs/ontology.md",
     "docs/ontology.json",
+    "docs/ontology-catalog.json",
+    "docs/upgrades/",
+    "beta/",
+    "docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md",
+    "docs/design/naive-nextjs-status.json",
+    "lean/Naive/",
+    "lean/README.md",
     "!**/*test.mjs",
     "!**/*-test.mjs",
     "!**/test.mjs",
     "!**/*.steps.mjs",
     "!**/*.feature",
     "!packages/create-venture/package.json",
-    "!schema/examples/docket-scenarios.json",
     "!**/.env*",
     "!**/*.pem",
     "!**/*.key",

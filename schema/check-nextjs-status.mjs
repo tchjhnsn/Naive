@@ -8,6 +8,10 @@
 //   node schema/check-nextjs-status.mjs                          check, and print the counts
 //   node schema/check-nextjs-status.mjs --docs <dir>             also check the pages and the What's built page
 //   node schema/check-nextjs-status.mjs --docs <dir> --write     write <dir>/get-started/whats-built.mdx
+//   node schema/check-nextjs-status.mjs --docs <dir> --pages-only
+//       from an app that installs Naive: skip the evidence check (the package leaves its tests out, and
+//       Naive's own CI runs it), check the pages and the What's built page, and check each
+//       evidence_elsewhere file against the current directory, the app's repository
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -19,6 +23,8 @@ const di = process.argv.indexOf("--docs");
 const DOCS = di >= 0 ? resolve(process.argv[di + 1]) : null;
 const PAGE = DOCS && join(DOCS, "get-started/whats-built.mdx");
 if (process.argv.includes("--write") && !DOCS) { console.error("--write needs --docs <dir>, the docs site's MDX content folder"); process.exit(2); }
+const PAGES_ONLY = process.argv.includes("--pages-only");
+if (PAGES_ONLY && !DOCS) { console.error("--pages-only needs --docs <dir>, the docs site's MDX content folder"); process.exit(2); }
 const STATES = ["built", "partial", "not built", "n/a"];
 
 const ids = [...readFileSync(join(repo, LEDGER), "utf8").matchAll(/^\| ([A-Z]-\d+) \|/gm)].map((m) => m[1]);
@@ -33,7 +39,8 @@ for (const r of data.rows) {
   if (r.status === "built" || r.status === "partial") {
     // evidence is checked here; evidence_elsewhere names files in everything-ecosystem, which this repository cannot check.
     if (!r.evidence?.length && !r.evidence_elsewhere?.length) errors.push(`${r.id} is ${r.status} but cites no file`);
-    for (const f of r.evidence ?? []) if (!existsSync(join(repo, f))) errors.push(`${r.id} cites ${f}, which does not exist`);
+    if (!PAGES_ONLY) for (const f of r.evidence ?? []) if (!existsSync(join(repo, f))) errors.push(`${r.id} cites ${f}, which does not exist`);
+    if (PAGES_ONLY) for (const f of r.evidence_elsewhere ?? []) if (!existsSync(resolve(f))) errors.push(`${r.id} cites ${f} in this repository, which does not exist`);
     if (!r.page) errors.push(`${r.id} is ${r.status} but names no docs page`);
     else if (DOCS && !existsSync(join(DOCS, `${r.page}.mdx`))) errors.push(`${r.id} names page ${r.page}, which does not exist`);
   }
