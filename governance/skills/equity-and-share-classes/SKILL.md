@@ -18,7 +18,7 @@ description: >
 
 # Equity and share classes
 
-Governance layer, ownership-and-control kit (EE-022). Keeps `ownership.json`. `check-governance.mjs` checks it; `node schema/payouts.mjs <venture>` shows what each class would get in a sale.
+Governance layer, ownership-and-control kit (EE-022). Keeps `ownership.json`. `check-governance.mjs` checks it; `node packages/naive/src/engine/payouts.mjs <venture>` shows what each class would get in a sale.
 
 ## 1. The unit follows the legal form
 

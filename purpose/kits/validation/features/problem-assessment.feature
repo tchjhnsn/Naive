@@ -1,5 +1,5 @@
 # The behaviors the lean problem assessment must keep (EE-050). Each scenario runs as a test:
-# node schema/bdd.mjs purpose/kits/validation/features/problem-assessment.feature
+# node packages/naive/src/engine/bdd.mjs purpose/kits/validation/features/problem-assessment.feature
 # Step definitions: problem-assessment.steps.mjs beside this file.
 
 Feature: Problem assessment

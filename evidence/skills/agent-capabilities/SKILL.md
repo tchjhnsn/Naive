@@ -17,7 +17,7 @@ description: >
 
 # Agent capabilities
 
-Evidence layer (EE-029). Writes `evidence/capabilities/agent-capabilities.json`; `schema/check-team.mjs` checks it.
+Evidence layer (EE-029). Writes `evidence/capabilities/agent-capabilities.json`; `packages/naive/src/checks/check-team.mjs` checks it.
 
 ## Why
 

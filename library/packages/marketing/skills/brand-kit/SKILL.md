@@ -45,8 +45,8 @@ Offer two or three alternatives per area in `alternatives`, so the person decide
 
 ## 4. Write drafts
 
-- `mentura marketing/design-system write --input <file>`: the ethos, audiences (ICP ids, primary first), choices and components. Schema: `schema/marketing-design-system.schema.json`.
-- `mentura marketing/brand write --input <file>`: the values. Schema: `schema/marketing-brand.schema.json`.
+- `mentura marketing/design-system write --input <file>`: the ethos, audiences (ICP ids, primary first), choices and components. Schema: `packages/naive/src/records/marketing-design-system.schema.json`.
+- `mentura marketing/brand write --input <file>`: the values. Schema: `packages/naive/src/records/marketing-brand.schema.json`.
 
 Both carry the experience-design decision class, so an agent's write is a draft. Put the choices in front of the person as a decision, with your recommendation, and never accept the draft yourself.
 
@@ -60,4 +60,4 @@ Build the design system with the `design-system` skill (`library/packages/market
 
 ## Brand alignment lint
 
-`node schema/brand-lint.mjs <venture dir> [--json]` (route `marketing/brand-lint`) checks every decision record and marketing content file against `marketing/design-system.json`. Rules: `avoid-words` (ethos.avoid terms), `voice-jargon` (a built-in jargon list), `audience-unknown` (an icp id not in `audiences`) and `unsourced-brand-choice` (a choice with no `from`). Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `brand_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1).
+`node packages/naive/src/engine/brand-lint.mjs <venture dir> [--json]` (route `marketing/brand-lint`) checks every decision record and marketing content file against `marketing/design-system.json`. Rules: `avoid-words` (ethos.avoid terms), `voice-jargon` (a built-in jargon list), `audience-unknown` (an icp id not in `audiences`) and `unsourced-brand-choice` (a choice with no `from`). Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `brand_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1).

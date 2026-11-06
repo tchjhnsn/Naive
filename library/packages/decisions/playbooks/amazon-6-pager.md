@@ -10,7 +10,7 @@ tags: [naive, playbook, decisions, amazon-6-pager, draft]
 
 This is a draft. It does not decide anything for the founder. It is a way to fill `decisions/<id>` before a person decides it.
 
-The memo moves through three states. **Draft:** the record exists, `status` is `open`, and `answer` is empty. **Proposed:** `answer` holds the recommendation you are willing to defend, and `status` is still `open`. **Decided:** a person has approved it. The memo never does that step. `schema/decisions.mjs` `approve()`, reached by `mentura decide`, is what sets `status` to `decided`.
+The memo moves through three states. **Draft:** the record exists, `status` is `open`, and `answer` is empty. **Proposed:** `answer` holds the recommendation you are willing to defend, and `status` is still `open`. **Decided:** a person has approved it. The memo never does that step. `packages/naive/src/engine/decisions.mjs` `approve()`, reached by `mentura decide`, is what sets `status` to `decided`.
 
 ## What the source method does
 
@@ -58,7 +58,7 @@ Write `decisions/<id>` with a question and nothing else filled in. This is the d
 - `needed_in` is the phase you are in. Run `governance/decisions` and use the phase it reports.
 - `decides.record` is optional. If this decision settles one record type, name that type. Otherwise omit `decides`.
 - Leave `answer` unset. Leave `options` unset. Leave `note` unset or empty.
-- `provenance.drafted_by` records who wrote it. An agent uses `mentura propose --venture <id> --input <file.json>`, which calls `propose()` in `schema/decisions.mjs`. That function refuses any `status` other than `open`, forces `status` to `open`, and sets `drafted_by.kind` to `agent`. A person can instead write the route `decisions/<id>` themselves, still with `status` `open`.
+- `provenance.drafted_by` records who wrote it. An agent uses `mentura propose --venture <id> --input <file.json>`, which calls `propose()` in `packages/naive/src/engine/decisions.mjs`. That function refuses any `status` other than `open`, forces `status` to `open`, and sets `drafted_by.kind` to `agent`. A person can instead write the route `decisions/<id>` themselves, still with `status` `open`.
 
 ### 2. Customer narrative
 
@@ -120,9 +120,9 @@ Run `governance/decisions`. The memo is on the matrix with `status` `open`. In t
 
 This step is not the memo. Do not set `status` inside the template.
 
-The person named as `owner` on the class you read from `governance/decision-rights` runs `mentura decide <id> --venture <venture> --by <their name>`. That calls `approve()` in `schema/decisions.mjs`. It sets `status` to `decided` and `provenance.approved_by` to that name. It refuses a record that is already decided, and it refuses when there is no `answer` to approve. An agent does not run it.
+The person named as `owner` on the class you read from `governance/decision-rights` runs `mentura decide <id> --venture <venture> --by <their name>`. That calls `approve()` in `packages/naive/src/engine/decisions.mjs`. It sets `status` to `decided` and `provenance.approved_by` to that name. It refuses a record that is already decided, and it refuses when there is no `answer` to approve. An agent does not run it.
 
-`schema/decisions.mjs` treats a decided record in Discovery as a working draft (`firmness` `working`). In a later phase the same status is `firm`. Either way, the memo did not set it.
+`packages/naive/src/engine/decisions.mjs` treats a decided record in Discovery as a working draft (`firmness` `working`). In a later phase the same status is `firm`. Either way, the memo did not set it.
 
 ## Checks
 

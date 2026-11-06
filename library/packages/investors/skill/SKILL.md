@@ -41,9 +41,9 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-data-packages.mjs` (coverage and freshness) and `schema/lint-investors.mjs` (route `investors/lint`).
+`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-data-packages.mjs` (coverage and freshness) and `packages/naive/src/checks/lint-investors.mjs` (route `investors/lint`).
 
-`node schema/lint-investors.mjs <venture dir> [--json]` warns on three things. A raise decision (its id or question says raise, raising, fundraise or fundraising) that never says "use of funds" in the answer, the note, an option or an outcome. Terms that use the distinctive words of an alignment principle that says "never" or "must not": terms text on `investors/[id]`, the answer of a terms decision, or a right or instrument on `governance/ownership`. An investor update (`updates` on `investors/[id]`) that cites a number whose `confirmed` is not true, whether the update is draft or sent.
+`node packages/naive/src/checks/lint-investors.mjs <venture dir> [--json]` warns on three things. A raise decision (its id or question says raise, raising, fundraise or fundraising) that never says "use of funds" in the answer, the note, an option or an outcome. Terms that use the distinctive words of an alignment principle that says "never" or "must not": terms text on `investors/[id]`, the answer of a terms decision, or a right or instrument on `governance/ownership`. An investor update (`updates` on `investors/[id]`) that cites a number whose `confirmed` is not true, whether the update is draft or sent.
 
 Each finding is `{rule, mode, file, message, suggestion}`. The rule ids are `raise-no-use-of-funds`, `terms-conflict-alignment` and `update-unconfirmed-numbers`. Rules are fail-open warnings by default. Set `investors_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make that rule fail the run (exit 1). It reads records through the venture's files, including a structured layout. Run it after each write, and fix a failure before you report the work done.
 

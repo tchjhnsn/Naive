@@ -91,16 +91,16 @@
     "handoff"
   ],
   "checks": [
-    "schema/check-governance.mjs",
-    "schema/payouts.mjs",
-    "schema/check-publication.mjs",
-    "schema/decisions.mjs",
-    "schema/check-delegation.mjs"
+    "packages/naive/src/checks/check-governance.mjs",
+    "packages/naive/src/engine/payouts.mjs",
+    "packages/naive/src/checks/check-publication.mjs",
+    "packages/naive/src/engine/decisions.mjs",
+    "packages/naive/src/checks/check-delegation.mjs"
   ],
   "gaps": [
     "Escalations land in handoffs; nothing collects open escalations for the owner",
     "MAD's governance-tier answers are derived from these records by MAD's derive-answers (MAD repo, operations/skills/methodology-selection/derive-answers.mjs), which does not yet read telos steering, venture regulation or the continue-or-stop, change-direction and set-priorities classes (EE-040)",
-    "The decision matrix (schema/decisions.mjs) gathers decision records, unconfirmed foundation statements and gated drafts; need-now suggestions, failing checks and forecasts are not gathered yet, and nothing writes decision records through the router yet (EE-054)",
+    "The decision matrix (packages/naive/src/engine/decisions.mjs) gathers decision records, unconfirmed foundation statements and gated drafts; need-now suggestions, failing checks and forecasts are not gathered yet, and nothing writes decision records through the router yet (EE-054)",
     "Decision records carry provenance, outcomes and unlocks (EE-058), but nothing yet closes an activity to a person or agent until the decision that unlocks it is made, nothing prompts for actual outcomes when they fall due, and Mentura's decision analytics are not built",
     "agent-roles.json has no schema; the role templates beside it do (role-template)",
     "Roles have no schema"

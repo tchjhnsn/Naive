@@ -41,9 +41,9 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-data-packages.mjs` (coverage and freshness, not completeness) and `schema/lint-customers.mjs` (route `customers/lint`).
+`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-data-packages.mjs` (coverage and freshness, not completeness) and `packages/naive/src/checks/lint-customers.mjs` (route `customers/lint`).
 
-`node schema/lint-customers.mjs <venture dir> [--json]` warns when a customer matches no ICP profile, and when a promise on the customer names a product key whose record no longer keeps that promise. A product keeps a promise when its `job` or `description` still contains the promise text and its status is not `retired`. The product record is read by key (`product/<id>.json`, then `products/<id>.json`) through `ventureFile` on that run, so a later edit to the product shows up on the next run. Nothing is copied onto the customer. Rules are fail-open. Set `customers_lint.rules.<id>.mode` to `"fail-closed"` in `naive.config.json` to make that rule's findings exit 1.
+`node packages/naive/src/checks/lint-customers.mjs <venture dir> [--json]` warns when a customer matches no ICP profile, and when a promise on the customer names a product key whose record no longer keeps that promise. A product keeps a promise when its `job` or `description` still contains the promise text and its status is not `retired`. The product record is read by key (`product/<id>.json`, then `products/<id>.json`) through `ventureFile` on that run, so a later edit to the product shows up on the next run. Nothing is copied onto the customer. Rules are fail-open. Set `customers_lint.rules.<id>.mode` to `"fail-closed"` in `naive.config.json` to make that rule's findings exit 1.
 
 Run the checks after each write, and fix a failure before you report the work done.
 

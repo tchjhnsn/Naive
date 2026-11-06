@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "systems-catalog.schema.json",
+  "title": "Systems catalog",
+  "description": "The systems of record create-venture offers per function (packages/naive/src/engine/systems-catalog.json): each system's kind, what its address looks like, and the code that connects to it, if any.",
+  "type": "object",
+  "required": [
+    "version",
+    "systems",
+    "functions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "systems": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "label",
+          "kind",
+          "address",
+          "connect"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "connect": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "functions": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "strategy",
+          "products",
+          "marketing-and-sales",
+          "supply-chain",
+          "service-delivery",
+          "customer-service",
+          "human-capital",
+          "it",
+          "finance",
+          "assets",
+          "risk-and-compliance",
+          "external-relationships",
+          "capabilities",
+          "legal"
+        ]
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

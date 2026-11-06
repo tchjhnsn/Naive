@@ -9,7 +9,7 @@ description: >
   Help a founder decide which ways the venture might end it should keep open
   (acquisition, IPO, secondary sales, merger, management buyout, wind-down, or
   hold) and see what each owner would get at different sale values from the
-  cap table, using schema/payouts.mjs. Records paths and scenarios in
+  cap table, using packages/naive/src/engine/payouts.mjs. Records paths and scenarios in
   governance/exit.json. Founder decision with counsel (EE-022).
   MANDATORY TRIGGERS: exit, acquisition, sell the company, IPO, secondary,
   preference stack, payout, who gets what, liquidation preference
@@ -18,7 +18,7 @@ description: >
 
 # Exit planning
 
-Governance layer, ownership-and-control kit (EE-022). Writes `exit.json`; payouts are never typed, they are computed from `ownership.json` by `node schema/payouts.mjs`.
+Governance layer, ownership-and-control kit (EE-022). Writes `exit.json`; payouts are never typed, they are computed from `ownership.json` by `node packages/naive/src/engine/payouts.mjs`.
 
 ## 1. Paths follow ambition
 
@@ -32,7 +32,7 @@ Record each path with a stance: preferred, open or ruled-out. Ruling a path out 
 
 ## 2. Who gets what
 
-`node schema/payouts.mjs <venture>` runs every scenario in `exit.json`:
+`node packages/naive/src/engine/payouts.mjs <venture>` runs every scenario in `exit.json`:
 
 - Debt and costs come first. Scenario values are what is left for the owners.
 - Preferred classes take their liquidation preference, highest seniority first. Non-participating preferred converts to common when that pays more.

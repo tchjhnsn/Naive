@@ -34,11 +34,11 @@
   ],
   "writes": [],
   "checks": [
-    "schema/check-integrations.mjs",
-    "interface/test.mjs",
-    "interface/adapters.mjs",
-    "interface/tests/gate-test.mjs",
-    "interface/orchestration/triggers.mjs"
+    "packages/naive/src/checks/check-integrations.mjs",
+    "packages/naive/src/interfaces/test.mjs",
+    "packages/naive/src/interfaces/adapters.mjs",
+    "packages/naive/src/interfaces/tests/gate-test.mjs",
+    "packages/naive/src/router/orchestration/triggers.mjs"
   ],
   "gaps": [
     "The operator console is a folder, not part of the layer yet",

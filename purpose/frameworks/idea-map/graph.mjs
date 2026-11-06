@@ -17,7 +17,7 @@
 // over its answers; otherwise from Naive's convention of which records build on which. Every edge is
 // typed: a dependency is relation builds_on. An idea may also state typed relations of its own
 // (relations: [{ relation, to }], as an idea record does), and those are checked through the EE-095
-// term engine (term typed-link, schema/terms/relations.ts) before anything is built. A rejected
+// term engine (term typed-link, packages/naive/src/terms/relations.ts) before anything is built. A rejected
 // relation stops the build.
 //
 //   node graph.mjs request <venture>                  the Jev request (pairs and concreteness)
@@ -36,17 +36,17 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../..");
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const GRAPH = "purpose/ideas/graph.json";
-const NEED = load(join(repo, "schema/need-now.json")).records;
+const NEED = load(join(repo, "packages/naive/src/engine/need-now.json")).records;
 
 // The term engine is TypeScript, loaded only when an idea states a relation, so a process that imports this file for
 // its constants (every naive or mentura process, through the router) does not pay for it. Node strips types from
 // 22.18, and never under node_modules, so an installed package cannot load it. Without it the graph still builds
 // from judged dependencies, and any stated relation is refused rather than let through unchecked.
-/** @returns {(typeof import("../../../schema/terms/engine.ts") & typeof import("../../../schema/terms/terms.ts") & typeof import("../../../schema/terms/relations.ts")) | null} */
+/** @returns {(typeof import("../../../packages/naive/src/terms/engine.ts") & typeof import("../../../packages/naive/src/terms/terms.ts") & typeof import("../../../packages/naive/src/terms/relations.ts")) | null} */
 function termEngine() {
   if (!process.features.typescript) return null;
   const require = createRequire(import.meta.url);
-  try { return { ...require("../../../schema/terms/engine.ts"), ...require("../../../schema/terms/terms.ts"), ...require("../../../schema/terms/relations.ts") }; }
+  try { return { ...require("../../../packages/naive/src/terms/engine.ts"), ...require("../../../packages/naive/src/terms/terms.ts"), ...require("../../../packages/naive/src/terms/relations.ts") }; }
   catch (e) { if (e?.code === "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING") return null; throw e; }
 }
 
@@ -103,8 +103,8 @@ const relationsOf = (i) => (Array.isArray(i.relations) ? i.relations : []);
 // A graph written before edges were typed has no relation on its edges: every one of them was a dependency.
 const dependency = (e) => (e.relation ?? "builds_on") === "builds_on";
 
-/** The scopes an idea can attach to: every scope in docs/ontology-catalog.json, and shared. */
-export const catalogScopes = () => [...load(join(repo, "docs/ontology-catalog.json")).scopes.map((s) => s.scope), "shared"];
+/** The scopes an idea can attach to: every scope in packages/naive/src/terms/ontology-catalog.json, and shared. */
+export const catalogScopes = () => [...load(join(repo, "packages/naive/src/terms/ontology-catalog.json")).scopes.map((s) => s.scope), "shared"];
 
 /** Every relation and scope the ideas state, run through the term typed-link. Returns the problems, none when it passes.
  * @param {{ id: string, relations?: { relation: string, to: string }[], scope?: { scope: string, via: string } }[]} ideas
@@ -131,7 +131,7 @@ export function checkRelations(ideas, scopes) {
     const who = `${ideas[l.from].id}: ${l.type} ${stated[k].name}`;
     if (failed.has("T1") && !terms.known(l.type, l.target)) problems.push(`${who}: ${l.type} is not ${l.target === "idea" ? "a relation between ideas" : "a scope attachment"} (${terms.namesBetween(l.target).join(", ")})`);
     else if (failed.has("T2") && l.target === "idea" && l.from === l.to) problems.push(`${who}: an idea does not relate to itself`);
-    else if (failed.has("T3") && !terms.resolves(facts, l)) problems.push(`${who}: ${l.target === "idea" ? "no idea has that id" : "not a scope in docs/ontology-catalog.json, and only creates may name a new one"}`);
+    else if (failed.has("T3") && !terms.resolves(facts, l)) problems.push(`${who}: ${l.target === "idea" ? "no idea has that id" : "not a scope in packages/naive/src/terms/ontology-catalog.json, and only creates may name a new one"}`);
   });
   if (failed.has("T4")) for (const [order, vs] of Object.entries(terms.onCycle(facts))) if (vs.length) problems.push(`${order} cycle through: ${vs.map((v) => ideas[v].id).join(", ")}`);
   return problems.length ? problems : [`typed-link failed: ${verdict.failed.join(", ")}`];

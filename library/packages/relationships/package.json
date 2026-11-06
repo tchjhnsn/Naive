@@ -41,11 +41,11 @@
     "a person has confirmed every required record and every record this package reads"
   ],
   "schemas": [
-    "schema/account.schema.json"
+    "packages/naive/src/records/account.schema.json"
   ],
   "templates": [],
   "checks": [
-    "schema/check-ventures.mjs"
+    "packages/naive/src/checks/check-ventures.mjs"
   ],
   "skill": null,
   "use_model": []

@@ -101,7 +101,7 @@ Each check can pass and can fail. Run them on the venture after step 9. A missin
 6. **One open pillar.** Read `marketing/content`. Exactly one file on the topic has `pillar: true`, that file is in the read (so it is not under a private folder the router skips), and `gated` is not true. Other files on the topic set `links_to` to the pillar's page. Pass: one readable pillar, not gated. Fail: none, more than one, a pillar the content read does not return, or `gated: true`.
 7. **Approver, when something is published.** Read `governance/publication-policy` and `marketing/content`. For a file with `publish: false`, this check passes because nothing was published. For a file with `publish: true`, `approved_by` is one of the `approvers` on the channel the plan names. Pass: unpublished drafts, or a published file whose `approved_by` is on that list. Fail: `publish: true` and `approved_by` is missing or is not on that list. The public gate already rejects a missing `approved_by`. It does not compare the name to the policy. This check does.
 
-The model of these steps, and the replay that runs them on a fixture venture, is `verification/cursor/playbook-hubspot-inbound/`.
+The model of these steps, and the replay that runs them on a fixture venture, is `packages/naive/test/verification/cursor/playbook-hubspot-inbound/`.
 
 ## Sources
 

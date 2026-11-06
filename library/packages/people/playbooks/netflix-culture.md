@@ -96,7 +96,7 @@ Read `foundation/alignment`. For each principle, keep the id. You will write `al
 
 Routes: `people/team` read, `people` read, `people/founders` read, `people/founders/[id]` read.
 
-Read `people/team`. A gap is a skill in `needed` that no `held` entry has. `schema/check-validation.mjs` lists gaps the same way. If this read comes back with no record, do not write must-have skills. Stop the hiring bar until the team record exists. You may still draft the culture doc.
+Read `people/team`. A gap is a skill in `needed` that no `held` entry has. `packages/naive/src/checks/check-validation.mjs` lists gaps the same way. If this read comes back with no record, do not write must-have skills. Stop the hiring bar until the team record exists. You may still draft the culture doc.
 
 Read `people`. Read `people/founders`. For each id, read `people/founders/[id]`. If the list is empty, the culture doc says who is here by saying the founders route has no files. Do not invent a person.
 
@@ -104,7 +104,7 @@ Read `people`. Read `people/founders`. For each id, read `people/founders/[id]`.
 
 Routes: `governance/decision-rights` read, `governance/ownership` read.
 
-Read `governance/decision-rights`. If the venture has no file, `schema/check-team.mjs` still uses the template at `governance/venture-template/decision-rights.json`. This playbook does not copy that template into the venture. On the role you add below, leave `authority` off. Add an authority only when the venture's own decision-rights file exists and the class's owner is this role.
+Read `governance/decision-rights`. If the venture has no file, `packages/naive/src/checks/check-team.mjs` still uses the template at `governance/venture-template/decision-rights.json`. This playbook does not copy that template into the venture. On the role you add below, leave `authority` off. Add an authority only when the venture's own decision-rights file exists and the class's owner is this role.
 
 Read `governance/ownership`. If the record is there, you will point the brief at the route and you will not copy a grant amount, a price, or a percent. If the read comes back with no record, the brief says pay is not recorded and equity is not recorded. Pay is `spend-money`. Equity is `ownership-or-control`. You decide those. This playbook does not.
 
@@ -144,7 +144,7 @@ Do not paste an alignment statement, the problem statement, or any phrase in the
 
 ### 7. Write the hiring bar
 
-Route: `people/team-plan` write. Fields: `roles`, `recruiting`. The brief is the file at `recruiting[].brief`, a path relative to the venture folder. `schema/check-team.mjs` requires that file when an open person role is needed by the current phase or an earlier one.
+Route: `people/team-plan` write. Fields: `roles`, `recruiting`. The brief is the file at `recruiting[].brief`, a path relative to the venture folder. `packages/naive/src/checks/check-team.mjs` requires that file when an open person role is needed by the current phase or an earlier one.
 
 Do this only for an open person role whose `needed_by` is the current phase or earlier. A later role stays `planned`. `operations/skills/team-design/SKILL.md` and `operations/skills/recruiting/SKILL.md` already say that. This playbook adds the bar. It does not send outreach. Contact and the offer stay with a person, as the recruiting skill says.
 
@@ -178,7 +178,7 @@ An agent proposes the decision open. A person decides it. Do not write `status: 
 Write the proposal as JSON and run:
 
 ```bash
-node interface/cli/mentura.mjs propose --venture <id> --input <file>
+node packages/naive/src/interfaces/cli/mentura.mjs propose --venture <id> --input <file>
 ```
 
 ```json
@@ -198,13 +198,13 @@ node interface/cli/mentura.mjs propose --venture <id> --input <file>
 `boundary: fail-closed` means that while this decision is open, an agent's write of `people/team-plan` is a draft. Propose this before step 6 if an agent is doing the writing. You accept the draft with:
 
 ```bash
-node interface/cli/mentura.mjs accept people/team-plan --venture <id>
+node packages/naive/src/interfaces/cli/mentura.mjs accept people/team-plan --venture <id>
 ```
 
 You decide it with your name. `--confirm` must be the decision id:
 
 ```bash
-node interface/cli/mentura.mjs decide team-plan-culture --venture <id> --by "<your name>" --confirm team-plan-culture
+node packages/naive/src/interfaces/cli/mentura.mjs decide team-plan-culture --venture <id> --by "<your name>" --confirm team-plan-culture
 ```
 
 Pass `--answer` when the words should be yours rather than the draft. After the decision is decided, a later agent write is not held by this decision. A later change is still yours: write `people/team-plan` as a person (`--as person`), or open a new decision.
@@ -218,10 +218,10 @@ A check that cannot fail is not a check. Each one below fails on a real record a
 Route: `people/team-plan` check.
 
 ```bash
-node interface/cli/mentura.mjs people/team-plan check --venture <id>
+node packages/naive/src/interfaces/cli/mentura.mjs people/team-plan check --venture <id>
 ```
 
-This runs `schema/check-team.mjs`. It fails when an open person role needed by the current phase or earlier has no `recruiting` entry, or the brief file is missing. It passes when that entry and that file exist.
+This runs `packages/naive/src/checks/check-team.mjs`. It fails when an open person role needed by the current phase or earlier has no `recruiting` entry, or the brief file is missing. It passes when that entry and that file exist.
 
 It does not fail when there is no team plan. It does not read the culture note. A pass here is not a pass of the culture check.
 
@@ -243,7 +243,7 @@ It fails when any of these is true:
 
 It passes when none of those are true.
 
-`verification/playbook-netflix-culture/replay.mjs` runs both checks on a fixture venture, including a missing brief, a pasted principle, an invented figure, a check before you decide, and a check after you decide.
+`packages/naive/test/verification/playbook-netflix-culture/replay.mjs` runs both checks on a fixture venture, including a missing brief, a pasted principle, an invented figure, a check before you decide, and a check after you decide.
 
 ## Sources
 

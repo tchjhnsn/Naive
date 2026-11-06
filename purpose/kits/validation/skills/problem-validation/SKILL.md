@@ -10,7 +10,7 @@ description: >
   evidence instead of a statement: who has it, how they cope today, what it
   costs them, and what the evidence is strong enough for (explore, prototype,
   charge, raise), with no single score and never a "not viable" verdict.
-  Writes purpose/validation/problem.json; schema/assess-problem.mjs assesses it
+  Writes purpose/validation/problem.json; packages/naive/src/engine/assess-problem.mjs assesses it
   after asking the person to fill in what is missing or run as is (EE-026, EE-050).
   MANDATORY TRIGGERS: problem validation, validate the problem, is this a real
   problem, customer discovery, problem interview, Mom Test, pain point,
@@ -19,7 +19,7 @@ description: >
 
 # Problem validation
 
-Purpose layer, validation kit (EE-026, EE-050). Writes `purpose/validation/problem.json`; `node schema/assess-problem.mjs <venture dir>` (route `purpose/validation/assess`) says what its evidence is strong enough for. The behaviors it keeps are in `features/problem-assessment.feature`.
+Purpose layer, validation kit (EE-026, EE-050). Writes `purpose/validation/problem.json`; `node packages/naive/src/engine/assess-problem.mjs <venture dir>` (route `purpose/validation/assess`) says what its evidence is strong enough for. The behaviors it keeps are in `features/problem-assessment.feature`.
 
 ## The rule: no verdict from missing evidence
 

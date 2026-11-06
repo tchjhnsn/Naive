@@ -16,13 +16,13 @@
     "data-stream"
   ],
   "schemas": [
-    "schema/data-master.schema.json",
-    "schema/stream.schema.json"
+    "packages/naive/src/records/data-master.schema.json",
+    "packages/naive/src/records/stream.schema.json"
   ],
   "templates": [],
   "checks": [
-    "schema/check-data-packages.mjs",
-    "schema/lint-customers.mjs"
+    "packages/naive/src/checks/check-data-packages.mjs",
+    "packages/naive/src/checks/lint-customers.mjs"
   ],
   "skill": {
     "id": "customers-function",

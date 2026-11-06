@@ -1,5 +1,5 @@
 # The behaviors decisions as a file type must keep (EE-054, EE-057): where a decision lives, what
-# holds it, and when it renders. Run: node schema/bdd.mjs governance/features/decisions.feature
+# holds it, and when it renders. Run: node packages/naive/src/engine/bdd.mjs governance/features/decisions.feature
 
 Feature: Decisions
   Every decision a venture owes sits beside what it decides. A venture fails closed, so open

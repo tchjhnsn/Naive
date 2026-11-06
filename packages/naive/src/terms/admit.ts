@@ -1,0 +1,97 @@
+// Admit every term through the same pipeline (Torian, 2026-10-31: adding a term always runs it; nobody asks).
+//
+//   node packages/naive/src/terms/admit.ts           run the pipeline and write packages/naive/src/terms/admitted.json
+//   node packages/naive/src/terms/admit.ts --check   exit 1 if a term fails, or admitted.json differs from a fresh run
+//
+// For each term: freeze (hash) -> valid test? -> cross-run against every term at its level -> name its Lean
+// theorems (each must exist in packages/naive/lean/; the lean CI job proves them) -> check its labels -> record as proposed, with
+// each prediction marked confirmed or refuted. A refuted prediction is a finding, not a failure: the definition says
+// what it says. Labels are also checked across all terms: one referent per name, and the 10 percent cap.
+// A level may also have fixtures (packages/naive/src/terms/fixtures.ts): real cases each term is run on, recorded with the
+// properties that failed and whether the fixture's expectation held.
+
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { freeze, passSet, relation, run, validTest, type Base, type Relation, type Term } from "./engine.ts";
+import { arrangementFixtures, type Fixture } from "./fixtures.ts";
+import { arrangementCases, encounterCases, hierarchyCases, linkCases, membershipCases, relationshipCases } from "./levels.ts";
+import { labelProblems, TERMS } from "./terms.ts";
+
+const here = new URL(".", import.meta.url).pathname;
+const repo = join(here, "../../../..");
+const out = join(here, "admitted.json");
+
+const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases(), link: linkCases() };
+const FIXTURES: Record<string, Fixture<Base>[]> = { arrangement: arrangementFixtures(repo) };
+
+/** The catalog's scopes. A catalog that cannot be read throws, so admission fails closed. */
+function catalogScopes(): Set<string> {
+  const catalog = JSON.parse(readFileSync(join(repo, "packages/naive/src/terms/ontology-catalog.json"), "utf8")) as { scopes: { scope: string }[] };
+  return new Set(catalog.scopes.map((s) => s.scope));
+}
+
+function leanSource(): string {
+  const d = join(repo, "packages/naive/lean/Naive");
+  return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".lean")).map((f) => readFileSync(join(d, f), "utf8")).join("\n") : "";
+}
+
+export function admitAll(): { record: unknown; problems: string[] } {
+  const problems: string[] = [];
+  const lean = leanSource();
+  const terms = TERMS as Term<Base>[];
+  const ids = terms.map((t) => t.id);
+  if (new Set(ids).size !== ids.length) problems.push("two terms share an id (admission keeps ids unique)");
+  problems.push(...labelProblems(terms, catalogScopes()));
+  const sets = new Map(terms.map((t) => [t.id, passSet(t, CASES[t.level] ?? [])]));
+  const entries = terms.map((t) => {
+    const cases = CASES[t.level];
+    if (!cases) { problems.push(`${t.id}: no cases for level ${t.level}`); return null; }
+    const valid = validTest(t, cases);
+    problems.push(...valid);
+    const relations: Record<string, Relation> = {};
+    for (const o of terms) if (o.id !== t.id && o.level === t.level) relations[o.id] = relation(sets.get(t.id)!, sets.get(o.id)!);
+    const predictions = Object.entries(t.predicts ?? {}).map(([other, expected]) => {
+      const found = relations[other] ?? "cross-level: needs a lift";
+      return { other, expected, found, confirmed: found === expected };
+    });
+    if (t.form === "word" && /\s/.test(t.label)) problems.push(`${t.id}: label "${t.label}" has several words, so its form is not "word"`);
+    if (t.form !== "word" && !/\s/.test(t.label)) problems.push(`${t.id}: label "${t.label}" is one word, so its form is "word"`);
+    for (const thm of t.lean ?? []) if (!new RegExp(`theorem\\s+${thm}\\b`).test(lean)) problems.push(`${t.id}: Lean theorem ${thm} is not in packages/naive/lean/Naive`);
+    const fixtures = (FIXTURES[t.level] ?? []).map((fx) => {
+      const { pass, failed } = run(t, fx.facts);
+      const expected = fx.expects[t.id];
+      return { fixture: fx.id, pass, failed, ...(expected === undefined ? {} : { expected, confirmed: expected === pass }) };
+    });
+    return {
+      id: t.id, label: t.label, form: t.form, level: t.level, kind: t.kind, labels: t.labels, meaning: t.meaning, status: "proposed",
+      hash: freeze(t),
+      properties: t.props.map((p) => ({ id: p.id, says: p.says, ...(p.permission ? { permission: true } : {}) })),
+      rule: t.ruleSays ?? "every property, and P7 (confirmed facts)",
+      valid: valid.length === 0,
+      passes: sets.get(t.id)!.size,
+      relations, predictions, ...(fixtures.length ? { fixtures } : {}), lean: t.lean ?? [], sources: t.sources,
+    };
+  }).filter(Boolean);
+  return {
+    record: { note: "Generated by node packages/naive/src/terms/admit.ts. Every term: frozen, checked as a valid test, cross-run at its level over seeded cases, Lean theorems named (proved by the lean job). Status stays proposed until a person decides. Pass counts reflect the generators, not the world; only the relations mean anything.", terms: entries,
+      fixtures: Object.values(FIXTURES).flat().map(({ id, says, source, parts }) => ({ id, says, source, parts })) },
+    problems,
+  };
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const { record, problems } = admitAll();
+  const text = JSON.stringify(record, null, 2) + "\n";
+  for (const p of problems) console.log(`FAIL ${p}`);
+  if (process.argv.includes("--check")) {
+    const same = existsSync(out) && readFileSync(out, "utf8") === text;
+    if (!same) console.log("FAIL packages/naive/src/terms/admitted.json differs from a fresh run (run node packages/naive/src/terms/admit.ts)");
+    process.exit(problems.length || !same ? 1 : 0);
+  }
+  writeFileSync(out, text);
+  const r = record as { terms: { id: string; predictions: { other: string; expected: string; found: string; confirmed: boolean }[]; fixtures?: { fixture: string; pass: boolean; failed: string[]; confirmed?: boolean }[] }[] };
+  for (const t of r.terms) for (const p of t.predictions) console.log(`${p.confirmed ? "confirmed" : "REFUTED  "}  ${t.id} ${p.expected} ${p.other} (found ${p.found})`);
+  for (const t of r.terms) for (const x of t.fixtures ?? []) console.log(`${x.confirmed === false ? "REFUTED  " : "fixture  "}  ${t.id} ${x.pass ? "passes" : `fails (${x.failed.join(", ")})`} ${x.fixture}`);
+  console.log(problems.length ? `${problems.length} problem(s)` : `${r.terms.length} terms admitted as proposed`);
+  process.exit(problems.length ? 1 : 0);
+}

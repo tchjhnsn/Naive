@@ -9,7 +9,7 @@ description: "Product Anatomy Matrix: fix the venture's core product first, judg
 
 # Product Anatomy Matrix
 
-Version 0.2.0 (unevaluated). Nouns follow `docs/ontology.md`; phases and gates follow EE-012, with sources in `purpose/references/references.json`. Research and reasoning: the Claude Doc "Core product framework: research and proposal" (https://claude.ai/artifact/A8e5fEBS3AsszAB2iaBKvd).
+Version 0.2.0 (unevaluated). Nouns follow `packages/naive/src/terms/ontology.md`; phases and gates follow EE-012, with sources in `purpose/references/references.json`. Research and reasoning: the Claude Doc "Core product framework: research and proposal" (https://claude.ai/artifact/A8e5fEBS3AsszAB2iaBKvd).
 
 ## Order
 
@@ -20,7 +20,7 @@ Version 0.2.0 (unevaluated). Nouns follow `docs/ontology.md`; phases and gates f
    - the **core competence** that makes the promise deliverable
 
    No product can be the flagship until this exists, because the flagship is the product that best delivers the core promise.
-2. **Product cards.** Each product is a card in the venture's `products/` folder (`schema/product.schema.json`): name, description, market, job, technology, offering, business model, and `flows_to`.
+2. **Product cards.** Each product is a card in the venture's `products/` folder (`packages/naive/src/records/product.schema.json`): name, description, market, job, technology, offering, business model, and `flows_to`.
 3. **Judge every product against the core.** `questions.json` holds seven typed judgments per product. Three are about the core: promise delivery, competence draw, and promise breach. Four are about the phase: job intensity, readiness, revenue and reversibility. Jev answers them all in one request. A reasoning model frames the input and writes the reasons. Spillover is computed from the cards' `flows_to`, not asked.
 4. **Succession Matrix.** `phases.json` sets the venture phases (Discovery, Validation, Beachhead, Scale, Platform), the gate for leaving each, and the weights. Discovery has no weights, because nothing is ranked before the core exists. For each phase, the runner:
    - checks the flagship must-holds in code: allowed in the phase, delivers at least part of the promise directly, and does not risk breaching it

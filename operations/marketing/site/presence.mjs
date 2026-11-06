@@ -22,7 +22,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ventureFile } from "../../../packages/core/venture-paths.mjs";
+import { ventureFile } from "../../../packages/naive/src/core/venture-paths.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -242,7 +242,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (dir) { mkdirSync(join(dir, dirname(PRESENCE)), { recursive: true }); writeFileSync(ventureFile(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
     console.log(JSON.stringify(r, null, 2));
   } else if (a && existsSync(join(a, "venture.json"))) {
-    if (!existsSync(join(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node interface/harness/site.mjs <url> --venture <dir>)`); process.exit(1); }
+    if (!existsSync(join(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node packages/naive/src/interfaces/harness/site.mjs <url> --venture <dir>)`); process.exit(1); }
     const r = load(join(a, PRESENCE));
     if (has("json")) console.log(JSON.stringify(r, null, 2));
     else {

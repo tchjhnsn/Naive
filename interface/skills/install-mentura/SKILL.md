@@ -16,7 +16,7 @@ description: >
 
 # Install Mentura
 
-Interface layer (EE-030). Mentura is a set of records, checks and kits in a git repository. This skill connects an agent harness to it. Every interface (CLI, MCP server, HTTP API) goes through `interface/router.mjs`, so each one has the same routes and gates. The routes are listed in `docs/reference/ROUTES.md`.
+Interface layer (EE-030). Mentura is a set of records, checks and kits in a git repository. This skill connects an agent harness to it. Every interface (CLI, MCP server, HTTP API) goes through `packages/naive/src/router/router.mjs`, so each one has the same routes and gates. The routes are listed in `docs/reference/ROUTES.md`.
 
 ## 1. Ask what the builder wants to adopt
 
@@ -38,11 +38,11 @@ cd mentura && npm install && node test.mjs   # Node 22.18+ and python3 with json
 ## 3. Start a venture, or point at existing ones
 
 ```sh
-node interface/cli/mentura.mjs init <folder>/my-venture --id my-venture --layers purpose
-node interface/cli/mentura.mjs system/need-now run --venture my-venture --workspace <folder>
+node packages/naive/src/interfaces/cli/mentura.mjs init <folder>/my-venture --id my-venture --layers purpose
+node packages/naive/src/interfaces/cli/mentura.mjs system/need-now run --venture my-venture --workspace <folder>
 ```
 
-`init` creates new ventures only: it refuses a directory that already has files. To bring an existing project in, create the venture, then run `node interface/cli/naive.mjs port --from <project> --venture <folder>/my-venture`, read the plan it writes, and apply it with `--apply --confirm port`. To have an agent rewrite the project as Naive records instead, use `naive.mjs migrate` with the same flags, have the founder settle each `migrate-<function>` decision, then run `migrate --venture <folder>/my-venture --apply`. Never run `init` on someone's existing project.
+`init` creates new ventures only: it refuses a directory that already has files. To bring an existing project in, create the venture, then run `node packages/naive/src/interfaces/cli/naive.mjs port --from <project> --venture <folder>/my-venture`, read the plan it writes, and apply it with `--apply --confirm port`. To have an agent rewrite the project as Naive records instead, use `naive.mjs migrate` with the same flags, have the founder settle each `migrate-<function>` decision, then run `migrate --venture <folder>/my-venture --apply`. Never run `init` on someone's existing project.
 
 To use the whole system, leave out `--layers`. The workspace is the folder that holds the ventures. Set `MENTURA_WORKSPACE` to it so that you do not have to pass `--workspace` each time.
 
@@ -51,7 +51,7 @@ To use the whole system, leave out `--layers`. The workspace is the folder that 
 **Claude Code** (one command; add `--scope project` to share it in the venture's repo through `.mcp.json`):
 
 ```sh
-claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="Claude Code" -- node <mentura>/interface/mcp/server.mjs
+claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="Claude Code" -- node <mentura>/packages/naive/src/interfaces/mcp/server.mjs
 ```
 
 **Cursor** (`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json` for every project):
@@ -61,14 +61,14 @@ claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="C
   "mcpServers": {
     "mentura": {
       "command": "node",
-      "args": ["<mentura>/interface/mcp/server.mjs"],
+      "args": ["<mentura>/packages/naive/src/interfaces/mcp/server.mjs"],
       "env": { "MENTURA_WORKSPACE": "<folder>", "MENTURA_HARNESS": "Cursor" }
     }
   }
 }
 ```
 
-**Any other harness or script:** use the CLI (`node interface/cli/mentura.mjs help`). You can also run `node interface/api/server.mjs`. It listens only on 127.0.0.1:4330 and has no authentication, so keep it on the builder's own machine.
+**Any other harness or script:** use the CLI (`node packages/naive/src/interfaces/cli/mentura.mjs help`). You can also run `node packages/naive/src/interfaces/api/server.mjs`. It listens only on 127.0.0.1:4330 and has no authentication, so keep it on the builder's own machine.
 
 Use absolute paths in both configs. Check the connection by asking the agent to call `mentura_ventures`, then `mentura_view` on `system/overview`. Before an agent acts on a route, it should call `mentura_layout` for that route: it returns the kit's skills, references, template and gate.
 

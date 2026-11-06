@@ -178,7 +178,7 @@ The schema requires `id`. Also set `name`. Put the rest in `summary`: what the f
 
 Do not write a commitment, a cap, or a share count on this record. A signed instrument is written later, by a person, on `governance/ownership`, and only after the form is signed and the money is received. The documents page says the form is not binding until the money is received.
 
-Do not write `purpose/data-stream/<id>` from this playbook. On 29 October 2026 a write of `purpose/data-stream/meetings` through `interface/router.mjs` stored `customers/_streams/meetings/stream.json`, because that glob is the first one on the route and no stream folder existed yet. Conversation status stays in the investor record's `summary`.
+Do not write `purpose/data-stream/<id>` from this playbook. On 29 October 2026 a write of `purpose/data-stream/meetings` through `packages/naive/src/router/router.mjs` stored `customers/_streams/meetings/stream.json`, because that glob is the first one on the route and no stream folder existed yet. Conversation status stays in the investor record's `summary`.
 
 ### 4. Write the data-room checklist
 

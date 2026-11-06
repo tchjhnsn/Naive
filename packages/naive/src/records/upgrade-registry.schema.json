@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "upgrade-registry.schema.json",
+  "title": "Upgrade registry",
+  "description": "Naive's versions, the migrations between them, and each package's version and channel (packages/naive/src/engine/upgrades.json, EE-076). naive upgrade reads it from the installed copy. A migration rewrites a venture's records when the framework or one package changes, like a Next.js codemod; a version's guide is bundled in docs/upgrades/.",
+  "type": "object",
+  "required": ["framework", "versions", "migrations", "packages"],
+  "additionalProperties": false,
+  "properties": {
+    "framework": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "The installed framework version" },
+    "note": { "type": "string" },
+    "channels": { "type": "object", "additionalProperties": { "type": "string" } },
+    "versions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "summary", "guide", "migrations"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+          "date": { "type": "string", "format": "date" },
+          "summary": { "type": "string" },
+          "guide": { "type": ["string", "null"], "description": "The upgrade guide for this version, a repository path, or null for the first version" },
+          "migrations": { "type": "array", "items": { "type": "string" }, "description": "Framework migrations that move a venture onto this version, in order" }
+        }
+      }
+    },
+    "migrations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "module", "package"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "module": { "type": "string", "description": "A module exporting id, describe and apply(dir, ctx)" },
+          "package": { "type": ["string", "null"], "description": "The package whose schema changed, or null for a framework migration" },
+          "from": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "A package migration: the oldest package version it upgrades" },
+          "to": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "A package migration: the package version it upgrades to" },
+          "decision": { "type": "string" },
+          "aliases": { "type": "string", "description": "The route aliases file that keeps the old routes working" }
+        }
+      }
+    },
+    "packages": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["version", "channel"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+          "channel": { "enum": ["stable", "experimental"] },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

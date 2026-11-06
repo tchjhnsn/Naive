@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "note": "The tags an idea map uses (EE-059): Naive's own conventions, never free-form labels. Each idea in a founder's idea dump is tagged with the departments it bears on (operations/departments.json, APQC with Porter's value chain), the records it feeds (schema/data-model.json), and whether it describes something that already exists. Its pillar follows from its first department. Each idea keeps at most max.departments departments and max.records records, strongest first, at or above the threshold. Version 0.x, ours and unevaluated.",
+  "note": "The tags an idea map uses (EE-059): Naive's own conventions, never free-form labels. Each idea in a founder's idea dump is tagged with the departments it bears on (operations/departments.json, APQC with Porter's value chain), the records it feeds (packages/naive/src/records/data-model.json), and whether it describes something that already exists. Its pillar follows from its first department. Each idea keeps at most max.departments departments and max.records records, strongest first, at or above the threshold. Version 0.x, ours and unevaluated.",
   "threshold": 0.8,
   "pillars": {
     "product": [

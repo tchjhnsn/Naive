@@ -13,7 +13,9 @@
   },
   "exports": {
     "./package.json": "./package.json",
-    "./schema/*": "./schema/*",
+    "./src/*": "./packages/naive/src/*",
+    "./lean/*": "./packages/naive/lean/*",
+    "./schema/venture-paths.mjs": "./schema/venture-paths.mjs",
     "./interface/*": "./interface/*",
     "./packages/*": "./packages/*",
     "./knowledge/*": "./knowledge/*",
@@ -23,17 +25,16 @@
     "./evidence/*": "./evidence/*",
     "./frameworks/*": "./frameworks/*",
     "./library/*": "./library/*",
-    "./docs/*": "./docs/*",
-    "./lean/*": "./lean/*"
+    "./docs/*": "./docs/*"
   },
   "bin": {
-    "naive": "interface/cli/naive.mjs",
-    "mentura": "interface/cli/mentura.mjs"
+    "naive": "packages/naive/src/interfaces/cli/naive.mjs",
+    "mentura": "packages/naive/src/interfaces/cli/mentura.mjs"
   },
   "scripts": {
     "test": "node test.mjs",
     "lint": "eslint .",
-    "typecheck": "node schema/check-types.ts"
+    "typecheck": "node packages/naive/src/checks/check-types.ts"
   },
   "files": [
     "AGENTS.md",
@@ -53,15 +54,15 @@
     "frameworks/",
     "docs/reference/",
     "docs/decisions/",
-    "docs/ontology.md",
-    "docs/ontology.json",
-    "docs/ontology-catalog.json",
+    "packages/naive/src/terms/ontology.md",
+    "packages/naive/src/terms/ontology.json",
+    "packages/naive/src/terms/ontology-catalog.json",
     "docs/upgrades/",
     "beta/",
     "docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md",
     "docs/design/naive-nextjs-status.json",
-    "lean/Naive/",
-    "lean/README.md",
+    "packages/naive/lean/Naive/",
+    "packages/naive/lean/README.md",
     "!**/*test.mjs",
     "!**/*-test.mjs",
     "!**/test.mjs",
@@ -73,10 +74,10 @@
     "!**/*.key",
     "!**/_private/",
     "!**/_internal/",
-    "!schema/check-types.ts",
-    "!schema/check-types-test.ts",
-    "!schema/record-types.ts",
-    "!schema/record-types-test.ts",
+    "!packages/naive/src/checks/check-types.ts",
+    "!packages/naive/src/checks/check-types-test.ts",
+    "!packages/naive/src/records/record-types.ts",
+    "!packages/naive/src/records/record-types-test.ts",
     "!**/.DS_Store"
   ],
   "keywords": [

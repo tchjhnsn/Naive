@@ -35,7 +35,7 @@ const all = () => Object.keys(CHANNELS).flatMap((c) => CHANNELS[c].outputs.map((
 
 try {
   expect("the venture's naive.config.json names its channels, builders resolved against the venture folder", Object.keys(CHANNELS).join() === "site,artifact,foundation" && CHANNELS.site.builders[0] === join(repo, "operations/marketing/fixtures/facts.ts"), CHANNELS);
-  const none = build("site", join(repo, "schema/examples/workspace/ventures/acme-labs"), { out });
+  const none = build("site", join(repo, "packages/naive/src/records/examples/workspace/ventures/acme-labs"), { out });
   expect("a venture that names no channel has none: Naive ships no builder", !none.ok && /names no channel/.test(none.errors.join(" ")), none);
   for (const c of Object.keys(CHANNELS)) {
     const r = build(c, v, { out });
@@ -81,7 +81,7 @@ writeFileSync(process.env.NAIVE_PUBLISH_OUT + "/artifact/bad.html", "<p>" + p.se
   r = build("missing", v, { out, channels: { missing: { outputs: ["artifact/never.html"], builders: [fx("facts.ts")] } } });
   expect("an output the builders did not write is refused at the build stage", !r.ok && r.stage === "build", r);
   // An app registers its channels in code; an example venture builds its foundation one-pager through the gate.
-  const example = build("foundation", join(repo, "schema/examples/workspace/ventures/acme-labs"), { out, channels: { foundation: { outputs: ["artifact/foundation.html"], builders: [join(repo, "operations/marketing/fixtures/foundation.ts")] } } });
+  const example = build("foundation", join(repo, "packages/naive/src/records/examples/workspace/ventures/acme-labs"), { out, channels: { foundation: { outputs: ["artifact/foundation.html"], builders: [join(repo, "operations/marketing/fixtures/foundation.ts")] } } });
   expect("channels registered in code build an example venture's foundation one-pager through the gate", example.ok, example);
 } finally {
   rmSync(tmp, { recursive: true, force: true });

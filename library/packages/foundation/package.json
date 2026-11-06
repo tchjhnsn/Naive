@@ -38,25 +38,25 @@
     "a person has confirmed every required record and every record this package reads"
   ],
   "schemas": [
-    "schema/validation-problem.schema.json",
-    "schema/icp-profile.schema.json",
-    "schema/telos.schema.json",
-    "schema/alignment.schema.json",
-    "schema/goal.schema.json",
-    "schema/requirement.schema.json",
-    "schema/exit-criteria.schema.json",
-    "schema/constraints.schema.json"
+    "packages/naive/src/records/validation-problem.schema.json",
+    "packages/naive/src/records/icp-profile.schema.json",
+    "packages/naive/src/records/telos.schema.json",
+    "packages/naive/src/records/alignment.schema.json",
+    "packages/naive/src/records/goal.schema.json",
+    "packages/naive/src/records/requirement.schema.json",
+    "packages/naive/src/records/exit-criteria.schema.json",
+    "packages/naive/src/records/constraints.schema.json"
   ],
   "templates": [
     "purpose/templates/telos-based-smart.md"
   ],
   "checks": [
-    "schema/check-telos.mjs",
-    "schema/validate.py",
-    "schema/check-validation.mjs",
-    "schema/foundation.mjs",
-    "schema/lint-foundation.mjs",
-    "schema/check-frameworks.mjs"
+    "packages/naive/src/checks/check-telos.mjs",
+    "packages/naive/src/records/validate.py",
+    "packages/naive/src/checks/check-validation.mjs",
+    "packages/naive/src/engine/foundation.mjs",
+    "packages/naive/src/checks/lint-foundation.mjs",
+    "packages/naive/src/engine/check-frameworks.mjs"
   ],
   "skill": {
     "id": "foundation-function",

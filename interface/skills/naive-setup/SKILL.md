@@ -19,7 +19,7 @@ description: >
 
 Interface layer (EE-083). `create-venture` scaffolds the venture. This skill finishes the job in conversation. You ask the questions, the founder answers in their own words, and Naive writes each answer as a decision or a source-of-truth pointer, with provenance. The progress is a view the harness renders, not a server Naive runs. In Claude, it is an artifact.
 
-The questions and their order come from Naive, not from you. Read them from `mentura_setup` (MCP) or `node interface/orchestration/setup.mjs <venture dir> state`, and never invent a question.
+The questions and their order come from Naive, not from you. Read them from `mentura_setup` (MCP) or `node packages/naive/src/router/orchestration/setup.mjs <venture dir> state`, and never invent a question.
 
 ## 1. Read the state
 
@@ -28,7 +28,7 @@ Call `mentura_setup` with the venture id. The result has:
 - `state`: the people, sources of truth, docket and goal, plus `steps` (which of the four are done), `done`, and `counts`.
 - `artifact`: the state, already rendered into `interface/skills/naive-setup/artifact.html`, as one self-contained HTML page.
 
-Without MCP, run `node interface/orchestration/setup.mjs <venture dir> state` and `node interface/orchestration/setup.mjs <venture dir> artifact`.
+Without MCP, run `node packages/naive/src/router/orchestration/setup.mjs <venture dir> state` and `node packages/naive/src/router/orchestration/setup.mjs <venture dir> artifact`.
 
 ## 2. Show it
 
@@ -64,8 +64,8 @@ Work through the first step that is not done, and ask only its next open questio
 The same steps run from the command line:
 
 ```sh
-node interface/orchestration/setup.mjs ~/ventures/acme state
-node interface/orchestration/setup.mjs ~/ventures/acme point finance rho
-node interface/orchestration/setup.mjs ~/ventures/acme answer discovery-goal "Ten clinic owners confirm the scheduling problem by December"
-node interface/orchestration/setup.mjs ~/ventures/acme artifact > setup.html
+node packages/naive/src/router/orchestration/setup.mjs ~/ventures/acme state
+node packages/naive/src/router/orchestration/setup.mjs ~/ventures/acme point finance rho
+node packages/naive/src/router/orchestration/setup.mjs ~/ventures/acme answer discovery-goal "Ten clinic owners confirm the scheduling problem by December"
+node packages/naive/src/router/orchestration/setup.mjs ~/ventures/acme artifact > setup.html
 ```

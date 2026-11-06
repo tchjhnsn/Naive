@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "venture-types.schema.json",
+  "title": "Venture types",
+  "description": "The kinds of venture create-venture scaffolds (packages/naive/src/engine/venture-types.json). A venture's type decides its starting packages, its first decisions, the functions it imports and the roles a person can hold in it. venture.json names its type.",
+  "type": "object",
+  "required": [
+    "version",
+    "types"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "types": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "description",
+          "examples",
+          "roles",
+          "default_role",
+          "departments",
+          "packages",
+          "decisions"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "examples": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Words a founder might use for it; the classifier reads them"
+          },
+          "roles": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "description": "Role ids from governance/venture-template/roles/venture-roles.json a person can hold in this type"
+          },
+          "default_role": {
+            "type": "string"
+          },
+          "departments": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "strategy",
+                "products",
+                "marketing-and-sales",
+                "supply-chain",
+                "service-delivery",
+                "customer-service",
+                "human-capital",
+                "it",
+                "finance",
+                "assets",
+                "risk-and-compliance",
+                "external-relationships",
+                "capabilities"
+              ]
+            },
+            "description": "Functions the type imports from the start (operations/departments.json); a solo founder owns them all"
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Package directories created at the venture root"
+          },
+          "decisions": {
+            "enum": [
+              "product-foundation",
+              "fund-foundation",
+              "none"
+            ],
+            "description": "The first questions the venture answers, written as open decisions by the scaffold"
+          },
+          "funding": {
+            "enum": [
+              "bootstrapped",
+              "grant",
+              "angel",
+              "venture-capital",
+              "debt",
+              "mixed"
+            ]
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "purpose",
+                "knowledge",
+                "operations",
+                "evidence",
+                "governance",
+                "interface"
+              ]
+            },
+            "description": "Layers on from the start, when the phase's defaults would leave a layer the type needs off"
+          }
+        }
+      }
+    }
+  }
+}

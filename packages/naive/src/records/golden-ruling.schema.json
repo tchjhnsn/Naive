@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "golden-ruling.schema.json",
+  "title": "Golden ruling",
+  "description": "Torian's ruling on one field of one idea record (docs/reviews/ontology-golden/<idea>.<field>.json). Only Torian's rulings are golden records; a model, an agent or a checker never writes one. The value has the shape the idea record's field takes in packages/naive/src/records/founder-idea.schema.json, so a gated label and a ruling compare as equal values. A ruling cites exactly one source of Torian's words: comment, the issue or pull request comment where he gave it, or card, the decision card he tapped in the project thread.",
+  "type": "object",
+  "required": ["idea", "field", "value", "ruled"],
+  "additionalProperties": false,
+  "properties": {
+    "idea": { "type": "string", "pattern": "^[a-z0-9-]+$(?![\\s\\S])", "description": "The id of an idea in the workspace founder's ideas folder (people/<id>/ideas/)" },
+    "field": { "enum": ["status", "importance", "relation", "scope"], "description": "The idea field ruled on. relation rules on the idea's whole relations list" },
+    "value": { "description": "Torian's value, in the shape of that field of the idea record" },
+    "comment": {
+      "type": "string",
+      "pattern": "^https://github\\.com/[A-Za-z0-9-]+/[A-Za-z0-9._-]+/(issues|pull)/[1-9][0-9]*#issuecomment-[1-9][0-9]*$(?![\\s\\S])",
+      "description": "The URL of the GitHub comment that carries the ruling"
+    },
+    "card": {
+      "type": "object",
+      "required": ["thread", "message", "chosen_at"],
+      "additionalProperties": false,
+      "description": "The decision card Torian tapped. The platform verifies the tap came from his own client",
+      "properties": {
+        "thread": { "type": "string", "pattern": "^cmsg_[A-Za-z0-9]+$(?![\\s\\S])", "description": "The id of the project thread that holds the card" },
+        "message": { "type": "string", "pattern": "^cmsg_[A-Za-z0-9]+$(?![\\s\\S])", "description": "The id of the card message" },
+        "chosen_at": { "type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$(?![\\s\\S])", "description": "When Torian tapped the option, in UTC" }
+      }
+    },
+    "ruled": { "type": "string", "format": "date", "description": "The day Torian gave the ruling" }
+  },
+  "oneOf": [
+    { "properties": { "field": { "const": "status" }, "value": { "$ref": "#/$defs/status" } } },
+    { "properties": { "field": { "const": "importance" }, "value": { "$ref": "#/$defs/importance" } } },
+    { "properties": { "field": { "const": "relation" }, "value": { "$ref": "#/$defs/relations" } } },
+    { "properties": { "field": { "const": "scope" }, "value": { "$ref": "#/$defs/scope" } } }
+  ],
+  "allOf": [
+    { "description": "Exactly one source", "oneOf": [{ "required": ["comment"] }, { "required": ["card"] }] }
+  ],
+  "$defs": {
+    "status": { "enum": ["open", "in-venture", "shelved", "dropped"], "description": "The idea status values; scripts/golden-ruling-test.ts keeps them equal to founder-idea.schema.json" },
+    "importance": { "enum": ["high", "medium", "low"], "description": "The idea importance values; scripts/golden-ruling-test.ts keeps them equal to founder-idea.schema.json" },
+    "relations": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "Every typed relation the idea has; an empty list rules that it has none",
+      "items": {
+        "type": "object",
+        "required": ["relation", "to"],
+        "additionalProperties": false,
+        "properties": {
+          "relation": { "$ref": "founder-idea.schema.json#/$defs/relation" },
+          "to": { "type": "string", "pattern": "^[a-z0-9-]+$(?![\\s\\S])" }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "required": ["scope", "via"],
+      "additionalProperties": false,
+      "properties": {
+        "scope": { "type": "string", "pattern": "^(naive@[a-z0-9-]+|shared)$(?![\\s\\S])" },
+        "via": { "$ref": "founder-idea.schema.json#/$defs/attachment" }
+      }
+    }
+  }
+}

@@ -1,9 +1,0 @@
-{
-  "note": "Patterns that mark internal text. Public output (the site's content and generated facts, artifact pages) must match none of them (schema/check-leaks.mjs). A venture adds its own at governance/internal-terms.json; unannounced codenames go there.",
-  "patterns": [
-    { "id": "decision-id", "regex": "\\b(?:EE|G|D)-\\d{3}\\b", "why": "a decision or ledger id" },
-    { "id": "dated-attribution", "regex": "\\([A-Z][a-z]+(?: [A-Z][a-z]+)?, \\d{4}-\\d{2}-\\d{2}\\)", "why": "an internal attribution such as (Name, 2026-10-28)" },
-    { "id": "record-path", "regex": "\\b(?:foundation|validation|governance|k-base|knowledge)/[a-z0-9-]+(?:\\.json)?\\b|_drafts\\b|_private\\b", "why": "a record path" },
-    { "id": "draft-marker", "regex": "DRAFT: agent-written|agent-drafted", "why": "a draft marker" }
-  ]
-}

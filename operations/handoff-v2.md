@@ -35,7 +35,7 @@ tags: [handoff, v2]
 - **Other handoffs** (finance, research, design) live in the vault at `<entity>/product/planning/handoffs/`, listed in `<vault>/_meta/registers/work-queue.json`.
 - **To claim (code handoffs):** open a draft PR titled `<id>: <title>` whose first commit sets `handoff-status: in-progress` and `claimed-by` in the index and this file. The open PR is the lock; if two exist, the older wins. Cursor automations open PRs but are not documented to push to main, so this replaces committing to main (see the repo's `docs/handoffs/PICKUP_AUTOMATION.md`).
 - **To claim (vault handoffs):** set `handoff-status: in-progress` and `claimed-by`, commit and push; a rejected push means someone else claimed it.
-- **Before claiming, check it is ready (EE-019):** run `node schema/check-ready.mjs <venture> <id>`. Any FAIL is a question for the author, asked before work starts; do not fill the gap yourself. When every item passes and the brief tells you enough to act, record it with `--record --by <you>`. An in-progress handoff without this record fails `check-execution.mjs`.
+- **Before claiming, check it is ready (EE-019):** run `node packages/naive/src/checks/check-ready.mjs <venture> <id>`. Any FAIL is a question for the author, asked before work starts; do not fill the gap yourself. When every item passes and the brief tells you enough to act, record it with `--record --by <you>`. An in-progress handoff without this record fails `check-execution.mjs`.
 - **While working:** `in-progress`; on an escalation, `escalated` and write §7; when done-criteria pass and the PR is up, `done` with `pr`.
 
 ## 1. Outcome

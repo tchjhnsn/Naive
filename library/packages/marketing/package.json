@@ -49,17 +49,17 @@
     "a person has confirmed every required record and every record this package reads"
   ],
   "schemas": [
-    "schema/marketing-sitemap.schema.json",
-    "schema/site-presence.schema.json",
-    "schema/marketing-brand.schema.json",
-    "schema/public-assets.schema.json",
-    "schema/marketing-design-system.schema.json"
+    "packages/naive/src/records/marketing-sitemap.schema.json",
+    "packages/naive/src/records/site-presence.schema.json",
+    "packages/naive/src/records/marketing-brand.schema.json",
+    "packages/naive/src/records/public-assets.schema.json",
+    "packages/naive/src/records/marketing-design-system.schema.json"
   ],
   "templates": [],
   "checks": [
-    "schema/check-brand.mjs",
-    "schema/check-assets.mjs",
-    "schema/design-system.mjs"
+    "packages/naive/src/checks/check-brand.mjs",
+    "packages/naive/src/checks/check-assets.mjs",
+    "packages/naive/src/engine/design-system.mjs"
   ],
   "skill": {
     "id": "marketing-function",

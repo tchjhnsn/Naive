@@ -57,7 +57,7 @@ Record the rights each class or instrument grants in its `rights`. Board seats m
 
 ## 4. Before signing
 
-Run `node schema/payouts.mjs <venture> <value>` at a low, a middle and a high sale value to see what the terms mean for each holder.
+Run `node packages/naive/src/engine/payouts.mjs <venture> <value>` at a low, a middle and a high sale value to see what the terms mean for each holder.
 
 ## Guardrails (all five ownership-and-control skills)
 

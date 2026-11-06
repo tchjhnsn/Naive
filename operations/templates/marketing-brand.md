@@ -8,7 +8,7 @@ source: hybrid
 
 # Template: brand
 
-Fills `<venture>/marketing/brand.json` (`schema/marketing-brand.schema.json`). The brand is the venture's global stylesheet: every agent's layout carries its voice and fonts, and `marketing/brand/tokens` renders it as design tokens and CSS for any interface. Check it with `mentura marketing/brand check`.
+Fills `<venture>/marketing/brand.json` (`packages/naive/src/records/marketing-brand.schema.json`). The brand is the venture's global stylesheet: every agent's layout carries its voice and fonts, and `marketing/brand/tokens` renders it as design tokens and CSS for any interface. Check it with `mentura marketing/brand check`.
 
 ```json
 {

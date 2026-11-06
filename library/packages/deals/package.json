@@ -17,7 +17,7 @@
     "deal"
   ],
   "schemas": [
-    "schema/deal.schema.json"
+    "packages/naive/src/records/deal.schema.json"
   ],
   "templates": [],
   "checks": [],

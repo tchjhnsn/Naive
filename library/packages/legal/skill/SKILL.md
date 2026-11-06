@@ -45,9 +45,9 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `schema/check-governance.mjs`, `schema/check-publication.mjs`, `schema/check-telos.mjs`, `schema/payouts.mjs`, and `schema/lint-legal.mjs` (route `legal/lint`).
+`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-governance.mjs`, `packages/naive/src/checks/check-publication.mjs`, `packages/naive/src/checks/check-telos.mjs`, `packages/naive/src/engine/payouts.mjs`, and `packages/naive/src/checks/lint-legal.mjs` (route `legal/lint`).
 
-`node schema/lint-legal.mjs <venture dir> [--json]` checks two rules. A published marketing content file with a `claim` and no `source` is a public claim with no source. `governance/founder-agreement.json` must name a counterparty that exists as an ownership holder, a founder, an account, a customer, or an investor. This is a lint, not legal advice. Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `legal_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1). Exit 1 only when a fail-closed rule has findings.
+`node packages/naive/src/checks/lint-legal.mjs <venture dir> [--json]` checks two rules. A published marketing content file with a `claim` and no `source` is a public claim with no source. `governance/founder-agreement.json` must name a counterparty that exists as an ownership holder, a founder, an account, a customer, or an investor. This is a lint, not legal advice. Each finding is `{rule, mode, file, message, suggestion}`. Rules are fail-open warnings by default; set `legal_lint.rules.<id>.mode` to `"fail-closed"` in naive.config.json to make a rule fail the run (exit 1). Exit 1 only when a fail-closed rule has findings.
 
 Run it after each write, and fix a failure before you report the work done.
 
@@ -62,4 +62,4 @@ Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-ar
 
 ## Depends on
 
-Reads the founder agreement and the publication policy. Ownership is the record payouts are computed from (`schema/payouts.mjs`).
+Reads the founder agreement and the publication policy. Ownership is the record payouts are computed from (`packages/naive/src/engine/payouts.mjs`).

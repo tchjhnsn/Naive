@@ -16,7 +16,7 @@ description: >
 
 # Run a playbook
 
-Interface layer. A playbook (`purpose/playbooks/<id>.json`, shape in `schema/playbook.schema.json`) is the order of the work; a template is the empty shape of one record. Each step names its goal, how to hold the conversation, the records it writes, when it is done and the view to build.
+Interface layer. A playbook (`purpose/playbooks/<id>.json`, shape in `packages/naive/src/records/playbook.schema.json`) is the order of the work; a template is the empty shape of one record. Each step names its goal, how to hold the conversation, the records it writes, when it is done and the view to build.
 
 ## Which playbook
 

@@ -47,8 +47,8 @@
   "checks": [
     "purpose/frameworks/product-anatomy/anatomy.mjs",
     "purpose/frameworks/product-anatomy/test.mjs",
-    "schema/check-telos.mjs",
-    "schema/foundation.mjs",
+    "packages/naive/src/checks/check-telos.mjs",
+    "packages/naive/src/engine/foundation.mjs",
     "purpose/frameworks/idea-map/ideamap.mjs",
     "purpose/frameworks/idea-map/graph.mjs",
     "purpose/frameworks/idea-map/route.mjs"

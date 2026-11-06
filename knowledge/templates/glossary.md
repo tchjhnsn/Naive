@@ -8,7 +8,7 @@ source: hybrid
 
 # Template: package glossary
 
-Fills `<venture>/glossary/<package>.json` (`schema/glossary.schema.json`). A package's terms stay local to it: an agent working in another package sees only the terms marked `export`. See what a package sees with `mentura glossary/terms run --value <package>`.
+Fills `<venture>/glossary/<package>.json` (`packages/naive/src/records/glossary.schema.json`). A package's terms stay local to it: an agent working in another package sees only the terms marked `export`. See what a package sees with `mentura glossary/terms run --value <package>`.
 
 ```json
 {

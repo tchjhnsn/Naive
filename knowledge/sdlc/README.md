@@ -16,15 +16,15 @@ Every process also names its **function**: one of the venture's 13 functions (th
 
 ## How MAD uses it
 
-MAD's `method-request` names a task as `<mad_module>/<activity>/<task>`, for example `implementation/perform/write-code`. `node schema/check-sdlc-catalog.ts --refs` prints every such reference, and the check fails if two tasks would share one. The catalog's `version` is the `catalog_version` a request carries, so MAD knows which catalog it was asked against.
+MAD's `method-request` names a task as `<mad_module>/<activity>/<task>`, for example `implementation/perform/write-code`. `node packages/naive/src/checks/check-sdlc-catalog.ts --refs` prints every such reference, and the check fails if two tasks would share one. The catalog's `version` is the `catalog_version` a request carries, so MAD knows which catalog it was asked against.
 
-A request's `open` list is a projection of this file, never a hand-made list. `node schema/check-sdlc-catalog.ts --phase <phase> [--processes a,b]` prints it, where `--processes` takes process ids and fails on an id the catalog does not have: every task a MAD module routes that is needed by that phase, with the `enumeration` block MAD's contract 0.2.0 requires (the catalog file's sha256, the phase, and the count). MAD refuses a request whose `open` list differs in length from the count, so a task can't silently drop out.
+A request's `open` list is a projection of this file, never a hand-made list. `node packages/naive/src/checks/check-sdlc-catalog.ts --phase <phase> [--processes a,b]` prints it, where `--processes` takes process ids and fails on an id the catalog does not have: every task a MAD module routes that is needed by that phase, with the `enumeration` block MAD's contract 0.2.0 requires (the catalog file's sha256, the phase, and the count). MAD refuses a request whose `open` list differs in length from the count, so a task can't silently drop out.
 
 Only the technical processes carry activities and tasks so far. The management, enabling and agreement processes are listed with their owning role and the MAD layer whose questions cover them (`mad_layer`); their tasks are added when a venture needs them.
 
 ## Checks
 
-- `python3 schema/validate.py` validates `catalog.json` against `schema/sdlc-catalog.schema.json`.
-- `node schema/check-sdlc-catalog.ts` checks what the schema can't: unique process ids, clauses that match their group, decision classes and roles that exist, a function that is one of the 13 departments, a MAD module on every technical process MAD routes, and unique task references.
+- `python3 packages/naive/src/records/validate.py` validates `catalog.json` against `packages/naive/src/records/sdlc-catalog.schema.json`.
+- `node packages/naive/src/checks/check-sdlc-catalog.ts` checks what the schema can't: unique process ids, clauses that match their group, decision classes and roles that exist, a function that is one of the 13 departments, a MAD module on every technical process MAD routes, and unique task references.
 
 Nothing sends MAD a method-request yet: the `--phase` projection prints what one would carry, but turning a venture's phase into a request is not built.

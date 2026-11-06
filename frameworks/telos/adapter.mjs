@@ -1,10 +1,10 @@
 // The telos framework's adapter: reads an unmigrated telos.json (the fallback) and renders the telos view
 // of a migrated venture from canonical goals and exit criteria (views, not copies). Only this adapter,
-// the telos-to-goals migration and the telos's own check read telos.json (schema/check-frameworks.mjs).
+// the telos-to-goals migration and the telos's own check read telos.json (packages/naive/src/engine/check-frameworks.mjs).
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../../packages/core/venture-paths.mjs";
+import { ventureFile } from "../../packages/naive/src/core/venture-paths.mjs";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 export const TELOS_FILES = ["foundation/telos.json", "purpose/telos.json"];

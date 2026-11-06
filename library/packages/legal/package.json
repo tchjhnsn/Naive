@@ -54,20 +54,20 @@
     "a person has confirmed every required record and every record this package reads"
   ],
   "schemas": [
-    "schema/ownership.schema.json",
-    "schema/decision-rights.schema.json",
-    "schema/board.schema.json",
-    "schema/exit.schema.json",
-    "schema/publication-policy.schema.json"
+    "packages/naive/src/records/ownership.schema.json",
+    "packages/naive/src/records/decision-rights.schema.json",
+    "packages/naive/src/records/board.schema.json",
+    "packages/naive/src/records/exit.schema.json",
+    "packages/naive/src/records/publication-policy.schema.json"
   ],
   "templates": [],
   "checks": [
-    "schema/check-execution.mjs",
-    "schema/check-governance.mjs",
-    "schema/payouts.mjs",
-    "schema/check-telos.mjs",
-    "schema/check-publication.mjs",
-    "schema/lint-legal.mjs"
+    "packages/naive/src/checks/check-execution.mjs",
+    "packages/naive/src/checks/check-governance.mjs",
+    "packages/naive/src/engine/payouts.mjs",
+    "packages/naive/src/checks/check-telos.mjs",
+    "packages/naive/src/checks/check-publication.mjs",
+    "packages/naive/src/checks/lint-legal.mjs"
   ],
   "skill": {
     "id": "legal-function",

@@ -34,6 +34,6 @@ Then, for the current phase and the next, the exit criteria, each serving one or
 
 ## Check
 
-- `node schema/check-telos.mjs <venture dir>`: every exit criterion traces to a measure, and `governance/exit.json` follows the owner outcome.
+- `node packages/naive/src/checks/check-telos.mjs <venture dir>`: every exit criterion traces to a measure, and `governance/exit.json` follows the owner outcome.
 - The primary measure is what a build method such as MAD reads as the success measure.
 - Other templates can replace this one. The skill offers BASED + SMART first.

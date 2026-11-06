@@ -11,7 +11,7 @@
     "status": "in-use",
     "reason": "Every venture starts with its records in its own folder (EE-037)",
     "connector": {
-      "module": "knowledge/connectors/filesystem.mjs",
+      "module": "packages/naive/src/store/connectors/filesystem.mjs",
       "writes": [
         "direct",
         "none"
@@ -19,7 +19,7 @@
       "options": [
         "root"
       ],
-      "eval": "node knowledge/connectors/eval.mjs"
+      "eval": "node packages/naive/src/store/connectors/eval.mjs"
     }
   },
   {
@@ -46,7 +46,7 @@
       "cli"
     ],
     "status": "in-use",
-    "reason": "Docs as code (EE-005); the second connector (EE-037). Its connector reaches the network, so it belongs to the app that hosts Naive, which registers it with registerConnector (knowledge/connectors/index.mjs)",
+    "reason": "Docs as code (EE-005); the second connector (EE-037). Its connector reaches the network, so it belongs to the app that hosts Naive, which registers it with registerConnector (packages/naive/src/store/connectors/index.mjs)",
     "credentials": [
       "GITHUB_TOKEN"
     ]
