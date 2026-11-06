@@ -33,7 +33,7 @@ export function connect({ id = "venture", root, writes = "direct", venture = fal
   });
   // A venture in the structured layout (EE-086) keeps its records in knowledge/ and meta/: read and write them
   // by their logical paths, and list them that way, so routes never see the layout.
-  const structured = venture && layoutOf(root) === "structured";
+  const structured = venture && layoutOf(root) !== "flat"; // structured (EE-086) or src (EE-118 step 8)
   const file = (p) => (structured ? ventureFile(root, safePath(p)) : join(root, safePath(p)));
   const listed = () => structured ? logicalFiles(root).filter((r) => !r.split("/").some((s) => s.startsWith(".")) && !r.startsWith("_") && !r.startsWith("node_modules/")) : walk(root);
   const git = (...args) => spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });

@@ -54,7 +54,7 @@ export function recordOf(file) {
 // Every *.decision.json in a venture, outside drafts, hidden folders and nested ventures.
 export function decisionFiles(dir, sub = "") {
   // A structured venture (EE-086): its decision files by their logical paths.
-  if (!sub && layoutOf(dir) === "structured") return logicalFiles(dir).filter((r) => r.endsWith(".decision.json") && r.split("/").at(-2) === "decisions" && !r.split("/").some((s) => s.startsWith(".") || s.startsWith("_")));
+  if (!sub && layoutOf(dir) !== "flat") return logicalFiles(dir).filter((r) => r.endsWith(".decision.json") && r.split("/").at(-2) === "decisions" && !r.split("/").some((s) => s.startsWith(".") || s.startsWith("_")));
   return readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.isDirectory()) return e.name.startsWith(".") || e.name.startsWith("_") || existsSync(join(dir, rel, "venture.json")) ? [] : decisionFiles(dir, rel);

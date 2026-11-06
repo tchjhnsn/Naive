@@ -16,7 +16,7 @@ export const describe = "Moves records from the layer folders (purpose/, pillars
 
 export function apply(dir, ctx) {
   // A venture in the structured layout (EE-086) is already past this layout: nothing to move.
-  if (layoutOf(dir) === "structured") return;
+  if (layoutOf(dir) !== "flat") return;
   const load = (p) => JSON.parse(readFileSync(p, "utf8"));
   // A decision file infers its target from the folder it sits in. Stamp that path before the file
   // moves, so the decision still points at the same record.

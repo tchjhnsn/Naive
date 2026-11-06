@@ -3,7 +3,7 @@
 // (EE-011). Starting layers come from scaffold/defaults.json, by phase (EE-012).
 //
 //   node packages/naive/src/engine/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
-//                                [--type <venture type>]
+//                                [--type <venture type>] [--layout flat|structured|src]
 //
 // --type (packages/naive/src/engine/venture-types.json, EE-082) decides the package folders, the functions venture.json
 // imports and the first decisions: a software startup answers the product questions, a VC fund its
@@ -16,7 +16,7 @@
 // so it can never overwrite a founder's files. An existing project comes in through naive port (EE-076).
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { KBASE, ventureFile } from "../core/venture-paths.mjs";
@@ -27,14 +27,16 @@ const { layers, formalized, pillars, readme } = JSON.parse(readFileSync(join(her
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };
 const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form"), only = flag("layers"), typeId = flag("type");
-// --layout structured (EE-086): knowledge/, meta/ and an org chart in venture.json; without it, the flat layout.
+// --layout structured (EE-086): knowledge/, meta/ and an org chart in venture.json. --layout src (EE-118
+// step 8): the template's src/<function>/ and public/, with each package folder under its function.
+// Without either, the flat layout.
 const layout = flag("layout") ?? "flat";
-if (!["flat", "structured"].includes(layout)) { console.error(`unknown layout ${layout}: flat or structured`); process.exit(2); }
+if (!["flat", "structured", "src"].includes(layout)) { console.error(`unknown layout ${layout}: flat, structured or src`); process.exit(2); }
 const structured = layout === "structured";
 const vtype = typeId ? JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8")).types.find((t) => t.id === typeId) : null;
 if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node packages/naive/src/engine/venture-type.mjs list`); process.exit(2); }
 const [dir, id] = args;
-if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc]"); process.exit(2); }
+if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
 if (existsSync(dir) && readdirSync(dir).length) { console.error(`${dir} already exists and is not empty: init creates new ventures only, and never writes into an existing project`); process.exit(1); }
 
@@ -58,6 +60,13 @@ if (structured) {
   for (const layer of ALL) venture.layers[layer] = on.includes(layer) ? { location: `${KBASE}/` } : false;
   writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
   for (const sub of [KBASE, "meta"]) mkdirSync(join(dir, sub), { recursive: true });
+}
+if (layout === "src") {
+  // venture.json first, so every package path below resolves into src/<function>/, then the template's
+  // src/ and public/ (packages/naive/template/), one folder per function and the static files.
+  venture.layout = "src";
+  writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
+  for (const sub of ["src", "public"]) cpSync(join(repo, "packages/naive/template", sub), join(dir, sub), { recursive: true });
 }
 for (const layer of structured ? [] : ALL) {
   if (!on.includes(layer)) { if (only !== null || !["governance", "interface"].includes(layer)) venture.layers[layer] = false; continue; }

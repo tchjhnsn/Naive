@@ -35,7 +35,7 @@ for (const dir of walk(ws)) {
   const roster = load(rosterFile);
   // In the structured layout (EE-086) the org chart is venture.json's functions, and a person's hats are the
   // functions they own there; in the flat layout, the departments venture.json imports, worn as hats in people/.
-  const structured = v.layout === "structured";
+  const structured = v.layout === "structured" || (v.layout === "src" && v.functions !== undefined);
   const imported = new Set(structured ? Object.keys(v.functions ?? {}) : v.departments ?? []);
   const ids = new Set(roster.people.map((p) => p.id));
   if (structured) {

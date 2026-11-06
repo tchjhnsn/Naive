@@ -10,7 +10,7 @@ The first code package of the monorepo rebuild. It holds the modules every layer
 
 | Path | Holds |
 |---|---|
-| [`venture-paths.mjs`](./venture-paths.mjs) | Where each logical file of a venture sits in its layout (`ventureFile`, `physical`). Imports nothing in the repository. |
+| [`venture-paths.mjs`](./venture-paths.mjs) | Where each logical file of a venture sits in its layout (`ventureFile`, `physical`, `logical`). The layouts are flat, structured (EE-086) and src (EE-118 step 8): in the src layout a package folder sits under the function that owns it (`PACKAGE_FUNCTION`, `srcPath`), so `foundation/problem.json` is at `src/strategy/foundation/problem.json` while its logical path stays the same. It also maps the venture template's old path to `packages/naive/template/governance/` (`templatePath`). Imports nothing in the repository. |
 | [`instrumentation.mjs`](./instrumentation.mjs) | Timing and measuring of each call and judgment, for agent vitals. Imports `venture-paths.mjs`. |
 | [`provenance.mjs`](./provenance.mjs) | The venture's append-only provenance log, `provenance.jsonl`, with its hash chain (EE-031). Imports the two above. |
 | [`sync.mjs`](./sync.mjs) | Syncing a system of record into a venture (EE-083): `sync(system, dir)` runs the command the app names in `NAIVE_SYNC_<SYSTEM>` (such as `NAIVE_SYNC_RHO`) with `--venture <dir>`, and `syncCommand` and `syncVariable` say which. Naive ships no sync command, so a system with none stays pointed. create-venture and setup use it. Imports nothing in the repository. |

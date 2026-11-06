@@ -37,10 +37,11 @@
     "layout": {
       "enum": [
         "flat",
-        "structured"
+        "structured",
+        "src"
       ],
       "default": "flat",
-      "description": "Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top."
+      "description": "Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. src (EE-118 step 8, what naive init writes): venture.json and naive.config.json at the top, each package folder a function owns in src/<function>/<package>/, decisions/, evidence/ and raw/ at the top, and the static files the venture hands out in public/."
     },
     "functions": {
       "type": "object",

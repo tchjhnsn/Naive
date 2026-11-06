@@ -4036,8 +4036,8 @@ export type Venture = {
   kind?: "venture" | "product";
   /** The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082) */
   type?: string;
-  /** Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. */
-  layout?: "flat" | "structured";
+  /** Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. src (EE-118 step 8, what naive init writes): venture.json and naive.config.json at the top, each package folder a function owns in src/<function>/<package>/, decisions/, evidence/ and raw/ at the top, and the static files the venture hands out in public/. */
+  layout?: "flat" | "structured" | "src";
   /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. */
   functions?: {
     [key: string]: {

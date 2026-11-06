@@ -11,6 +11,11 @@
 //     code the venture keeps (a marketing site, a ported repository)  in codebase/
 //   A structured venture made by 0.3.0 has knowledge/ where k-base/ now is; it is read where it is
 //   until naive upgrade renames it.
+//   src (venture.json layout: "src", EE-118 step 8, the layout naive init writes):
+//     venture.json, naive.config.json, provenance.jsonl and every top-level file   at the top
+//     public/                                                                       the static files the venture hands out
+//     a package folder a function owns (foundation/, product/, marketing/ ...)     in src/<function>/<package>/ (PACKAGE_FUNCTION)
+//     every other folder (decisions/, evidence/, raw/, governance/ ...)             at the top, beside src/
 //
 // `logical` goes the other way, for code that walks the disk and matches files against the data model.
 
@@ -63,6 +68,21 @@ export const TOP = new Set(["venture.json", "AGENTS.md", "README.md", "package.j
 const META = { "provenance.jsonl": "meta/provenance.jsonl", "knowledge/sources.json": "meta/sources.json", "sources.json": "meta/sources.json", "naive.config.json": "meta/naive.config.json", "operating-rules.json": "meta/operating-rules.json" };
 const cache = new Map();
 export const KBASE = "k-base";
+export const SRC = "src";
+/** The 13 functions (packages/naive/src/functions/departments.json), one src/<function>/ folder each in the src layout. */
+export const FUNCTIONS = ["strategy", "products", "marketing-and-sales", "supply-chain", "service-delivery", "customer-service", "human-capital", "it", "finance", "assets", "risk-and-compliance", "external-relationships", "capabilities"];
+/** The function that owns each package folder in the src layout (docs/design/NAIVE_LAYOUT_2026-11-05.md in everything-ecosystem).
+ *  decisions/, evidence/ and raw/ belong to no single function and stay at the top, as does any folder not listed. */
+export const PACKAGE_FUNCTION = Object.freeze({
+  foundation: "strategy", validation: "strategy",
+  product: "products", engineering: "products",
+  marketing: "marketing-and-sales", customers: "marketing-and-sales", deals: "marketing-and-sales",
+  operations: "service-delivery",
+  people: "human-capital", cofounder: "human-capital",
+  finance: "finance", fund: "finance", money: "finance",
+  legal: "risk-and-compliance", counsel: "risk-and-compliance",
+  relationships: "external-relationships", investor: "external-relationships", investors: "external-relationships", partner: "external-relationships",
+});
 export const CODEBASE = "codebase";
 
 /** The venture's knowledge-base folder: k-base/, or knowledge/ in a structured venture made before it was renamed. */
@@ -70,7 +90,7 @@ export function kbaseOf(dir) {
   return !existsSync(join(dir, KBASE)) && existsSync(join(dir, "knowledge", "foundation")) ? "knowledge" : KBASE;
 }
 
-/** The venture's layout: "structured" (EE-086) or "flat". Read once per venture.json change. */
+/** The venture's layout: "src" (EE-118 step 8), "structured" (EE-086) or "flat". Read once per venture.json change. */
 export function layoutOf(dir) {
   const f = join(dir, "venture.json");
   let m = 0;
@@ -78,7 +98,7 @@ export function layoutOf(dir) {
   const hit = cache.get(dir);
   if (hit && hit.m === m) return hit.layout;
   let layout = "flat";
-  try { layout = JSON.parse(readFileSync(f, "utf8")).layout === "structured" ? "structured" : "flat"; } catch {}
+  try { const l = JSON.parse(readFileSync(f, "utf8")).layout; layout = l === "structured" || l === "src" ? l : "flat"; } catch {}
   cache.set(dir, { m, layout });
   return layout;
 }
@@ -91,10 +111,18 @@ function groupOf(dir, pkg) {
   return null;
 }
 
+/** Where a logical path sits in the src layout: src/<function>/<path> for a package folder a function owns, else unchanged. */
+export function srcPath(r) {
+  const f = PACKAGE_FUNCTION[r.split("/")[0]];
+  return f ? `${SRC}/${f}/${r}` : r;
+}
+
 /** The venture-relative physical path of a logical path. */
 export function physical(dir, rel) {
   const r = String(rel).split(sep).join("/").replace(/^\.\//, "");
-  if (layoutOf(dir) !== "structured") return r;
+  const layout = layoutOf(dir);
+  if (layout === "src") return srcPath(r);
+  if (layout !== "structured") return r;
   if (TOP.has(r.split("/")[0])) return r;
   if (r === "profile.md") return "README.md";
   if (META[r]) return META[r];
@@ -113,7 +141,12 @@ export const ventureFile = (dir, rel) => join(dir, physical(dir, rel));
 /** The logical path of a venture-relative physical path: the inverse of `physical`. */
 export function logical(dir, rel) {
   const r = String(rel).split(sep).join("/");
-  if (layoutOf(dir) !== "structured") return r;
+  const layout = layoutOf(dir);
+  if (layout === "src") {
+    const m = r.match(/^src\/([^/]+)\/(([^/]+)(\/.*)?)$/);
+    return m && PACKAGE_FUNCTION[m[3]] === m[1] ? m[2] : r;
+  }
+  if (layout !== "structured") return r;
   if (r === "README.md") return "profile.md";
   for (const [l, p] of Object.entries(META)) if (r === p) return l === "sources.json" ? "knowledge/sources.json" : l;
   if (r === "meta/releases" || r.startsWith("meta/releases/")) return ".release" + r.slice("meta/releases".length);

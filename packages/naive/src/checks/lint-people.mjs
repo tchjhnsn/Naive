@@ -73,7 +73,7 @@ function ownersOf(venture) {
 // Structured layout: venture.json functions say who owns each one. Flat layout: hats do.
 function personOwns(p, venture) {
   if (!p || typeof p !== "object") return false;
-  if (venture?.layout === "structured") {
+  if (venture?.layout === "structured" || (venture?.layout === "src" && venture.functions !== undefined)) {
     const owners = ownersOf(venture);
     return [p.id, p.role, p.name].some((x) => typeof x === "string" && owners.has(x.trim()));
   }
@@ -144,7 +144,7 @@ export function lint(dir) {
   if (plan.status === "ok") for (const r of asArray(plan.value.roles)) {
     if (!r || r.occupant !== "person" || typeof r.id !== "string" || !mustOwn(r.id, reg) || reported.has(r.id)) continue;
     const held = people.some((p) => p.role === r.id && personOwns(p, venture));
-    const byId = venture?.layout === "structured" && ownersOf(venture).has(r.id);
+    const byId = (venture?.layout === "structured" || (venture?.layout === "src" && venture.functions !== undefined)) && ownersOf(venture).has(r.id);
     const soleOwner = r.id === "founder" && typeof venture?.owner === "string" && venture.owner.trim() && !ownersOf(venture).size;
     if (held || byId || soleOwner) continue;
     add("role-no-function", plan.rel, `role ${r.id} owns no function`, `name ${r.id} as a function owner in venture.json, or give the person who holds it a hat`);

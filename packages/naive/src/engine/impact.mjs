@@ -45,7 +45,7 @@ export function functionOf(file) {
 export { files as ventureRecords };
 // Every JSON record in the venture, venture-relative, outside hidden and draft folders and nested ventures.
 function files(dir, sub = "") {
-  if (!sub && layoutOf(dir) === "structured") return logicalFiles(dir).filter((f) => f.endsWith(".json") && !f.split("/").some((s) => s.startsWith(".") || s.startsWith("_")));
+  if (!sub && layoutOf(dir) !== "flat") return logicalFiles(dir).filter((f) => f.endsWith(".json") && !f.split("/").some((s) => s.startsWith(".") || s.startsWith("_")));
   return readdirSync(join(dir, sub), { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.isDirectory()) return e.name.startsWith(".") || e.name.startsWith("_") || e.name === "node_modules" || existsSync(join(dir, rel, "venture.json")) ? [] : files(dir, rel);
