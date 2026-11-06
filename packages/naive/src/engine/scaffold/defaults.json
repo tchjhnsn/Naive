@@ -36,7 +36,7 @@
     "governance"
   ],
   "pillars": {
-    "guides": "governance/venture-template/pillars/",
+    "guides": "packages/naive/template/governance/pillars/",
     "stubs": {
       "product": "What the venture makes: its core product (in venture.json), its products (in products/), and what each needs to be specified, built, shipped and operated.",
       "brand": "How the venture is known: its name, voice, promise wording and visual identity.",

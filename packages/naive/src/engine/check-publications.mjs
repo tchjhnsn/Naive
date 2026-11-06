@@ -18,7 +18,7 @@ const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const sha = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
 const ventures = (d) => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);
 const sub = (d) => { try { return readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules").flatMap((e) => ventures(join(d, e.name))); } catch { return []; } };
-const agentRoles = new Set(load(new URL("../../../../governance/venture-template/roles/agent-roles.json", import.meta.url)).roles.filter((r) => r.tier && r.tier !== "person").map((r) => r.id));
+const agentRoles = new Set(load(new URL("../../template/governance/roles/agent-roles.json", import.meta.url)).roles.filter((r) => r.tier && r.tier !== "person").map((r) => r.id));
 
 /** { errors, warnings } for one venture. */
 export function checkVenture(dir) {

@@ -23,7 +23,7 @@ export function types() {
 export const typeOf = (id) => types().find((t) => t.id === id) ?? null;
 
 export function roles() {
-  return JSON.parse(readFileSync(join(repo, "governance/venture-template/roles/venture-roles.json"), "utf8")).roles;
+  return JSON.parse(readFileSync(join(repo, "packages/naive/template/governance/roles/venture-roles.json"), "utf8")).roles;
 }
 
 /** The judge command, or null: MENTURA_TYPE_CMD, else NAIVE_JUDGE_CMD. */

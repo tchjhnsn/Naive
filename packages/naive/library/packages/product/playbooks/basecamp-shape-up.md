@@ -58,7 +58,7 @@ Each profile is its own record at `foundation/icp/<id>`, and the list read retur
 
 Read `governance/decision-rights`.
 
-When the venture has no record, the read is `not_found`, and `packages/naive/src/checks/check-execution.mjs` still loads `governance/venture-template/decision-rights.json`. The template gives the builder role `implementation-detail` and `accept-verified-work`. Use classes whose owner is the handoff's role. A class owned by another role fails the execution check.
+When the venture has no record, the read is `not_found`, and `packages/naive/src/checks/check-execution.mjs` still loads `packages/naive/template/governance/decision-rights.json`. The template gives the builder role `implementation-detail` and `accept-verified-work`. Use classes whose owner is the handoff's role. A class owned by another role fails the execution check.
 
 ### 4. Write the pitch as a cycle handoff
 

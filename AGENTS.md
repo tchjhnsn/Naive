@@ -25,7 +25,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 | `packages/naive/lean/` | The Lean proofs (`Naive/`) |
 | `packages/naive/test/` | Replayable verification fixtures (`verification/`) |
 | `packages/create-venture/` | The `create-venture` command |
-| `governance/venture-template/` | The venture template, until step 8 moves it to `packages/naive/template/` |
+| `packages/naive/template/governance/` | The venture template, until step 8 moves it to `packages/naive/template/` |
 | `docs/reference/` | Generated reference: `ROUTES.md`, every route a venture has |
 | `docs/design/` | The ecosystem's own domain and systems design |
 
@@ -39,7 +39,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 - `node packages/naive/src/checks/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
 - `node packages/naive/src/checks/check-ready.mjs <venture dir> <handoff id>` checks a handoff is ready before anyone executes it (EE-019); `--record --by <who>` records it.
 - `node packages/naive/src/checks/check-governance.mjs <dir>` checks ownership, boards, founder agreements and exits; `node packages/naive/src/engine/payouts.mjs <venture dir> [value]` computes who gets what in a sale (EE-022).
-- `node packages/naive/src/checks/check-delegation.mjs [venture dir]` checks delegation (`governance/delegation.json`, template at `governance/venture-template/delegation.json`): no grant exceeds its grantor's, every chain reaches the founder, never-redelegated classes are not passed on, one-way doors are never delegated, expired grants fail, and no role template (`governance/venture-template/roles/<id>.json`) verifies itself. `packages/naive/src/checks/verify.mjs` holds the builder-is-not-verifier rule that `check-ready.mjs` and `check-execution.mjs` call (`node packages/naive/src/interfaces/tests/delegation-test.mjs`). The chief of staff agent is `agents/chief-of-staff/AGENTS.md`.
+- `node packages/naive/src/checks/check-delegation.mjs [venture dir]` checks delegation (`governance/delegation.json`, template at `packages/naive/template/governance/delegation.json`): no grant exceeds its grantor's, every chain reaches the founder, never-redelegated classes are not passed on, one-way doors are never delegated, expired grants fail, and no role template (`packages/naive/template/governance/roles/<id>.json`) verifies itself. `packages/naive/src/checks/verify.mjs` holds the builder-is-not-verifier rule that `check-ready.mjs` and `check-execution.mjs` call (`node packages/naive/src/interfaces/tests/delegation-test.mjs`). The chief of staff agent is `agents/chief-of-staff/AGENTS.md`.
 - `node packages/naive/src/checks/check-telos.mjs <dir>` checks each venture's telos (start with the end: every phase exit criterion traces to a measure).
 - `node packages/naive/src/checks/check-publication.mjs <dir>` checks each venture's publication policy and every handoff that publishes: a named channel and content rule, and a person approving (EE-025).
 - `node packages/naive/src/checks/check-validation.mjs <dir> [--json]` grades each venture's validation records from their cited evidence (high to very low, adapted from GRADE). The validation package is `packages/naive/library/packages/validation/` (EE-071). A kit, Mentura's enhanced package, is kept in Mentura and found through `NAIVE_KITS`.

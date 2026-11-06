@@ -47,7 +47,7 @@ for (const dir of walk(ws)) {
   }
   for (const p of roster.people) {
     const role = roles.get(p.role);
-    if (!role) { at(`${p.id} has role ${p.role}, which is not in governance/venture-template/roles/venture-roles.json`); continue; }
+    if (!role) { at(`${p.id} has role ${p.role}, which is not in packages/naive/template/governance/roles/venture-roles.json`); continue; }
     if (type && !type.roles.includes(p.role)) at(`${p.id} is a ${p.role}, which a ${type.label.toLowerCase()} does not have (${type.roles.join(", ")})`);
     for (const h of p.hats ?? []) if (imported.size && !imported.has(h)) at(`${p.id} wears the ${h} hat, but venture.json does not import ${h}`);
     p.hats ??= [];

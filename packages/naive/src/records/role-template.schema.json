@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "role-template.schema.json",
   "title": "Role template",
-  "description": "One role a venture can install, at governance/venture-template/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.mjs.",
+  "description": "One role a venture can install, at packages/naive/template/governance/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.mjs.",
   "type": "object",
   "required": ["id", "name", "function", "grantable_classes", "default_tier", "lint_suites", "verified_by", "skill"],
   "properties": {

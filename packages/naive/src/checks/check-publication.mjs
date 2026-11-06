@@ -25,7 +25,7 @@ if (!dir) { console.error("usage: node packages/naive/src/checks/check-publicati
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const roles = new Map(load(new URL("../../../../governance/venture-template/roles/agent-roles.json", import.meta.url)).roles.map((r) => [r.id, r]));
+const roles = new Map(load(new URL("../../template/governance/roles/agent-roles.json", import.meta.url)).roles.map((r) => [r.id, r]));
 const errors = [], warnings = [];
 let checked = 0;
 

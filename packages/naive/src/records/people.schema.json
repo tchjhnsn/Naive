@@ -42,7 +42,7 @@
           },
           "role": {
             "type": "string",
-            "description": "A role id from governance/venture-template/roles/venture-roles.json"
+            "description": "A role id from packages/naive/template/governance/roles/venture-roles.json"
           },
           "hats": {
             "type": "array",

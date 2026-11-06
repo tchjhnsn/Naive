@@ -76,7 +76,7 @@ for (const f of all.filter((f) => f.endsWith(".json"))) {
 }
 
 // Decision classes a record type names must exist in the decision-rights template (EE-032).
-const classIds = new Set(load("governance/venture-template/decision-rights.json").classes.map((c) => c.id));
+const classIds = new Set(load("packages/naive/template/governance/decision-rights.json").classes.map((c) => c.id));
 for (const r of types.values()) if (r.decision_class && !classIds.has(r.decision_class)) errors.push(`${r.id}: unknown decision class ${r.decision_class}`);
 
 // Layers and packages (EE-071). A layer manifest is packages/naive/src/records/layers/<layer>/layer.json. A package that lists

@@ -408,7 +408,7 @@ const delegationOf = (dir) => { const f = ventureFile(dir, "governance/delegatio
 let oneWayDefault;
 export function oneWayClasses() {
   if (oneWayDefault) return oneWayDefault;
-  const f = join(new URL("../../../..", import.meta.url).pathname, "governance/venture-template/decision-rights.json");
+  const f = join(new URL("../../../..", import.meta.url).pathname, "packages/naive/template/governance/decision-rights.json");
   oneWayDefault = new Set(["production-ship", ...(load(f).classes ?? []).filter((c) => c.level === "escalate").map((c) => c.id)]);
   return oneWayDefault;
 }
@@ -497,7 +497,7 @@ export function mayMerge(dir, d, { by, role, today = new Date().toISOString().sl
 let agentRoles;
 function agentRoleIds() {
   if (agentRoles) return agentRoles;
-  const f = join(new URL("../../../..", import.meta.url).pathname, "governance/venture-template/roles/agent-roles.json");
+  const f = join(new URL("../../../..", import.meta.url).pathname, "packages/naive/template/governance/roles/agent-roles.json");
   try { agentRoles = (load(f).roles ?? []).map((r) => r.id).filter((id) => id && id !== "founder"); } catch { agentRoles = []; }
   return agentRoles;
 }

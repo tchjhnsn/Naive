@@ -15,8 +15,8 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, founder, executive, multi-role, 2026-05-14]
 canonical-for: "founder-role-reference"
 related:
-  - "[[governance/venture-template/index]]"
-  - "[[governance/venture-template/roles/ceo]]"
+  - "[[packages/naive/template/governance/index]]"
+  - "[[packages/naive/template/governance/roles/ceo]]"
 ---
 
 # Founder

@@ -1136,7 +1136,7 @@
       "level": "venture",
       "schema": "packages/naive/src/records/decision-rights.schema.json",
       "paths": [
-        "governance/venture-template/decision-rights.json",
+        "packages/naive/template/governance/decision-rights.json",
         "instance/**/governance/decision-rights.json",
         "packages/naive/src/records/examples/**/governance/decision-rights.json"
       ],
@@ -1161,7 +1161,7 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "governance/venture-template/roles/agent-roles.json"
+        "packages/naive/template/governance/roles/agent-roles.json"
       ],
       "note": "Roles and their tiers; shape used, no schema yet"
     },
@@ -1172,7 +1172,7 @@
       "schema": null,
       "form": "prose",
       "paths": [
-        "governance/venture-template/pillars/*.md",
+        "packages/naive/template/governance/pillars/*.md",
         "instance/**/pillars/*.md"
       ],
       "note": "The product, brand and business pillars: teams, roles and deliverables. The template holds the guides; a venture holds one-line stubs that link to them"
@@ -1780,7 +1780,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/venture-role.schema.json",
       "paths": [
-        "governance/venture-template/roles/venture-roles.json"
+        "packages/naive/template/governance/roles/venture-roles.json"
       ],
       "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
     },
@@ -1790,16 +1790,16 @@
       "level": "method",
       "schema": "packages/naive/src/records/role-template.schema.json",
       "paths": [
-        "governance/venture-template/roles/founder.json",
-        "governance/venture-template/roles/chief-of-staff.json",
-        "governance/venture-template/roles/product-design-lead.json",
-        "governance/venture-template/roles/architect.json",
-        "governance/venture-template/roles/builder.json",
-        "governance/venture-template/roles/marketing-lead.json",
-        "governance/venture-template/roles/finance-lead.json",
-        "governance/venture-template/roles/validation-lead.json",
-        "governance/venture-template/roles/people-lead.json",
-        "governance/venture-template/roles/counsel.json"
+        "packages/naive/template/governance/roles/founder.json",
+        "packages/naive/template/governance/roles/chief-of-staff.json",
+        "packages/naive/template/governance/roles/product-design-lead.json",
+        "packages/naive/template/governance/roles/architect.json",
+        "packages/naive/template/governance/roles/builder.json",
+        "packages/naive/template/governance/roles/marketing-lead.json",
+        "packages/naive/template/governance/roles/finance-lead.json",
+        "packages/naive/template/governance/roles/validation-lead.json",
+        "packages/naive/template/governance/roles/people-lead.json",
+        "packages/naive/template/governance/roles/counsel.json"
       ],
       "refs": [
         {
@@ -1821,7 +1821,7 @@
       "level": "venture",
       "schema": "packages/naive/src/records/delegation.schema.json",
       "paths": [
-        "governance/venture-template/delegation.json",
+        "packages/naive/template/governance/delegation.json",
         "instance/**/governance/delegation.json",
         "packages/naive/src/records/examples/**/governance/delegation.json"
       ],

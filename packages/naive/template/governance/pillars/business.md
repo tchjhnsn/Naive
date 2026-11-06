@@ -13,9 +13,9 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, pillar, business, methodology, 2026-05-14]
 canonical-for: "business-pillar-reference"
 related:
-  - "[[governance/venture-template/index]]"
-  - "[[governance/venture-template/pillars/product]]"
-  - "[[governance/venture-template/pillars/brand]]"
+  - "[[packages/naive/template/governance/index]]"
+  - "[[packages/naive/template/governance/pillars/product]]"
+  - "[[packages/naive/template/governance/pillars/brand]]"
 ---
 
 # Business pillar

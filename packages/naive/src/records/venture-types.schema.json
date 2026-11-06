@@ -57,7 +57,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Role ids from governance/venture-template/roles/venture-roles.json a person can hold in this type"
+            "description": "Role ids from packages/naive/template/governance/roles/venture-roles.json a person can hold in this type"
           },
           "default_role": {
             "type": "string"

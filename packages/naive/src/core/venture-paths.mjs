@@ -41,10 +41,15 @@ export function grantBacked(d, g, today, seen = new Set()) {
   return { ok: true };
 }
 
+/** The template folder moved from governance/venture-template/ to packages/naive/template/governance/ in EE-118 step 8.
+ *  A record that names the old path still resolves, for one release. */
+export const OLD_TEMPLATE = "governance/venture-template/", TEMPLATE = "packages/naive/template/governance/";
+export const templatePath = (p) => String(p).startsWith(OLD_TEMPLATE) ? TEMPLATE + String(p).slice(OLD_TEMPLATE.length) : p;
+
 export function readDelegation(file) {
   const d = JSON.parse(readFileSync(file, "utf8"));
   if (d.extends === undefined) return d;
-  const base = join(new URL("../../../..", import.meta.url).pathname, d.extends);
+  const base = join(new URL("../../../..", import.meta.url).pathname, templatePath(d.extends));
   if (!existsSync(base)) throw new Error(`delegation extends ${d.extends}, which does not exist`);
   let t;
   try { t = JSON.parse(readFileSync(base, "utf8")); } catch (e) { throw new Error(`delegation extends ${d.extends}, which cannot be read: ${e.message}`); }

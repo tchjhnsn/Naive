@@ -49,8 +49,8 @@ const missingInputs = (h.inputs ?? []).filter((p) => !existsSync(join(root, p)))
 item("every input it needs exists", !missingInputs.length, missingInputs.join(", "));
 
 // 3. The holder can act inside its rights.
-const roles = new Set(load(join(root, "governance/venture-template/roles/agent-roles.json")).roles.map((r) => r.id));
-const classes = new Map(load(join(root, "governance/venture-template/decision-rights.json")).classes.map((c) => [c.id, c]));
+const roles = new Set(load(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
+const classes = new Map(load(join(root, "packages/naive/template/governance/decision-rights.json")).classes.map((c) => [c.id, c]));
 const own = join(ventureFile(dir, "governance/decision-rights.json"));
 if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
 item(`role ${h.role} exists`, roles.has(h.role));

@@ -13,7 +13,7 @@ import { decide } from "../../router/orchestration/setup.mjs";
 import { independent, reviewIsIndependent, verificationErrors } from "../../checks/verify.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
-const template = join(repo, "governance/venture-template");
+const template = join(repo, "packages/naive/template/governance");
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const base = JSON.parse(readFileSync(join(template, "delegation.json"), "utf8"));
@@ -95,17 +95,18 @@ const oneRole = overlaid((gov) => cpSync(join(template, "roles/builder.json"), j
 expect("a venture with one role file keeps the template's other roles", oneRole.ok, oneRole.out);
 
 // extends fails closed: the template's lists bind, and a record that cannot honor extends is refused.
-const EXT = "governance/venture-template/delegation.json";
+const EXT = "packages/naive/template/governance/delegation.json";
 const extending = (d) => { d.extends = EXT; delete d.never_redelegated; delete d.one_way_doors; };
 expect("a record extending the template passes", venture(extending).ok);
+expect("a record naming the template's path before EE-118 step 8 still resolves", venture((d) => { extending(d); d.extends = "governance/venture-template/delegation.json"; }).ok);
 fails("a class the template never re-delegates stays so through extends", (d) => {
   extending(d);
   grant(d, "founder-to-finance-lead").may_redelegate = true;
   d.grants.push({ id: "money-on", from: "finance-lead", to: "chief-of-staff", classes: ["spend-register-upkeep"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
 }, /money-on: .*never re-delegated/);
 fails("a one-way door in the template stays one through extends", (d) => { extending(d); grant(d, "founder-to-chief-of-staff").classes.push("contradicts-ledger"); }, /one-way door/);
-fails("an extends that does not exist is refused", (d) => { d.extends = "governance/venture-template/gone.json"; }, /does not exist/);
-fails("an extends of another kind of record is refused", (d) => { d.extends = "governance/venture-template/decision-rights.json"; }, /not a base delegation record/);
+fails("an extends that does not exist is refused", (d) => { d.extends = "packages/naive/template/governance/gone.json"; }, /does not exist/);
+fails("an extends of another kind of record is refused", (d) => { d.extends = "packages/naive/template/governance/decision-rights.json"; }, /not a base delegation record/);
 
 function merger(record) {
   const dir = join(tmp, `v${n++}`);
@@ -123,7 +124,7 @@ writeFileSync(customBase, JSON.stringify({ register: "delegation", root: "founde
 const extendsPath = relative(repo, customBase);
 expect("mayMerge merges a class a grant names", mayMerge(merger({ grants: [mergeGrant(onlyInList)] }), decision(onlyInList), { role: "builder" }).ok);
 expect("mayMerge refuses a one-way door that comes only from extends", /one-way door/.test(mayMerge(merger({ extends: extendsPath, grants: [mergeGrant(onlyInList)] }), decision(onlyInList), { role: "builder" }).error ?? ""));
-const broken = merger({ extends: "governance/venture-template/gone.json", grants: [mergeGrant("implementation-detail")] });
+const broken = merger({ extends: "packages/naive/template/governance/gone.json", grants: [mergeGrant("implementation-detail")] });
 expect("mayMerge refuses a role when extends cannot be honored", !mayMerge(broken, decision("implementation-detail"), { role: "builder" }).ok);
 expect("mayMerge refuses the founder too when extends cannot be honored", !mayMerge(broken, decision("implementation-detail"), { by: "Torian" }).ok);
 

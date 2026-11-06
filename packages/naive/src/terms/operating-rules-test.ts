@@ -55,7 +55,7 @@ const rules = readOperatingRules(modulePath);
 const schema = python(modulePath);
 expect("the default module validates", schema.status === 0 && rules.id === "default", schema.stdout);
 expect("the default retry is one by the lead, then the founder", rules.rejection.retry.retries === 1 && rules.rejection.retry.retry_by === "lead" && rules.rejection.retry.escalate_to === "founder" && rules.rejection.retry.on_reject === "retry" && rules.rejection.retry.then === "escalate");
-expect("the parent who may edit is the chief-of-staff role", rules.rejection.edit.who === "parent" && rules.rejection.edit.role === "chief-of-staff" && existsSync(join(root, "governance/venture-template/roles", `${rules.rejection.edit.role}.json`)));
+expect("the parent who may edit is the chief-of-staff role", rules.rejection.edit.who === "parent" && rules.rejection.edit.role === "chief-of-staff" && existsSync(join(root, "packages/naive/template/governance/roles", `${rules.rejection.edit.role}.json`)));
 expect("a rejecting function returns the package and does not modify it", rules.rejection.rejector.may_modify === false && rules.rejection.rejector.return_to === "parent" && rules.rejection.rejector.carries.join(",") === "failing_gate,reason");
 expect("self-fix proposals need founder approval", rules.self_fix.requires_founder_approval === true);
 expect("gates run before a design is shown", rules.design.gates_before_founder === true);

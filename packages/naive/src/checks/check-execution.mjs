@@ -24,8 +24,8 @@ const jsonIn = (d) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".
 const RANK = { decide: 0, "decide-inform": 1, "recommend-approve": 2, escalate: 3 };
 
 const venture = load(join(dir, "venture.json"));
-const roles = new Set(load(join(root, "governance/venture-template/roles/agent-roles.json")).roles.map((r) => r.id));
-const template = load(join(root, "governance/venture-template/decision-rights.json"));
+const roles = new Set(load(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
+const template = load(join(root, "packages/naive/template/governance/decision-rights.json"));
 const errors = [];
 
 const classes = new Map(template.classes.map((c) => [c.id, c]));

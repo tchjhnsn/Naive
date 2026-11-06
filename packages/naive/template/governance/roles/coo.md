@@ -15,9 +15,9 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, coo, executive, business-pillar-lead, 2026-05-14]
 canonical-for: "coo-role-reference"
 related:
-  - "[[governance/venture-template/index]]"
-  - "[[governance/venture-template/pillars/business]]"
-  - "[[governance/venture-template/roles/ceo]]"
+  - "[[packages/naive/template/governance/index]]"
+  - "[[packages/naive/template/governance/pillars/business]]"
+  - "[[packages/naive/template/governance/roles/ceo]]"
 ---
 
 # COO — Chief Operating Officer

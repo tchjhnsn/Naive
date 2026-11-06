@@ -26,9 +26,9 @@ const CATALOG = "packages/naive/src/functions/products/sdlc/catalog.json";
 const catalog = read(CATALOG) as SdlcCatalog;
 const functions = new Set((read("packages/naive/src/functions/departments.json") as { departments: { id: string }[] }).departments.map((d) => d.id));
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
-const rights = read("governance/venture-template/decision-rights.json") as { classes: { id: string }[] };
+const rights = read("packages/naive/template/governance/decision-rights.json") as { classes: { id: string }[] };
 const classes = new Set(rights.classes.map((c) => c.id));
-const isRole = (id: string): boolean => existsSync(join(root, "governance/venture-template/roles", `${id}.json`));
+const isRole = (id: string): boolean => existsSync(join(root, "packages/naive/template/governance/roles", `${id}.json`));
 
 const CLAUSE: Record<string, string> = { agreement: "6.1.", "organizational-project-enabling": "6.2.", "technical-management": "6.3.", technical: "6.4." };
 // Technical processes that MAD does not route: whether and why to build is the product function's (R-21).
