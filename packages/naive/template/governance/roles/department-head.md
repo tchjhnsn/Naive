@@ -14,7 +14,7 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, department-head, pattern, stub]
 canonical-for: "department-head-role-pattern"
 related:
-  - "[[governance/venture-template/roles/README]]"
+  - "[[packages/naive/template/governance/roles/README]]"
   - "[[position-schema]]"
 status: STUB
 ---

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "decision-rights.schema.json",
   "title": "Decision rights",
-  "description": "Who may decide what (EE-017). The template lives at governance/venture-template/decision-rights.json; a venture may tighten a class (move it to a higher level or a more senior owner) in <venture>/governance/decision-rights.json, and loosening one needs an owner decision. Levels follow RAPID and DACI: decide, decide-inform, recommend-approve, escalate.",
+  "description": "Who may decide what (EE-017). The template lives at packages/naive/template/governance/decision-rights.json; a venture may tighten a class (move it to a higher level or a more senior owner) in <venture>/governance/decision-rights.json, and loosening one needs an owner decision. Levels follow RAPID and DACI: decide, decide-inform, recommend-approve, escalate.",
   "type": "object",
   "required": ["register", "classes"],
   "properties": {

@@ -35,7 +35,7 @@ for (const dir of walk(ws)) {
   const roster = load(rosterFile);
   // In the structured layout (EE-086) the org chart is venture.json's functions, and a person's hats are the
   // functions they own there; in the flat layout, the departments venture.json imports, worn as hats in people/.
-  const structured = v.layout === "structured";
+  const structured = v.layout === "structured" || (v.layout === "src" && v.functions !== undefined);
   const imported = new Set(structured ? Object.keys(v.functions ?? {}) : v.departments ?? []);
   const ids = new Set(roster.people.map((p) => p.id));
   if (structured) {
@@ -47,7 +47,7 @@ for (const dir of walk(ws)) {
   }
   for (const p of roster.people) {
     const role = roles.get(p.role);
-    if (!role) { at(`${p.id} has role ${p.role}, which is not in governance/venture-template/roles/venture-roles.json`); continue; }
+    if (!role) { at(`${p.id} has role ${p.role}, which is not in packages/naive/template/governance/roles/venture-roles.json`); continue; }
     if (type && !type.roles.includes(p.role)) at(`${p.id} is a ${p.role}, which a ${type.label.toLowerCase()} does not have (${type.roles.join(", ")})`);
     for (const h of p.hats ?? []) if (imported.size && !imported.has(h)) at(`${p.id} wears the ${h} hat, but venture.json does not import ${h}`);
     p.hats ??= [];

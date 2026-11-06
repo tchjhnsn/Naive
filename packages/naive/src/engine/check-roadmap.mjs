@@ -23,7 +23,7 @@ export function roadmaps() {
 export const roadmapOf = (id) => roadmaps().find((r) => r.id === id) ?? null;
 
 /** The rules a schema cannot state. Returns a list of errors, empty when the roadmap passes. */
-const rolesDir = join(repo, "governance/venture-template/roles");
+const rolesDir = join(repo, "packages/naive/template/governance/roles");
 /** Role ids and aliases from the role templates (packages/naive/src/records/role-template.schema.json). */
 export function roleIds() {
   return new Set(readdirSync(rolesDir).filter((f) => f.endsWith(".json")).map((f) => load(join(rolesDir, f)))
@@ -41,7 +41,7 @@ export function check(r, known = new Set(frames().map((f) => f.id)), roles = rol
   for (const s of r.steps ?? []) {
     if (!known.has(s.frame)) errors.push(`${r.id}: step ${s.id} uses frame ${s.frame}, which the decision library does not have`);
     if (!s.decided_by?.trim()) errors.push(`${r.id}: step ${s.id} has no decider`);
-    for (const k of ["decided_by", "merged_by"]) if (s[k]?.trim() && !roles.has(s[k])) errors.push(`${r.id}: step ${s.id} ${k} ${s[k]} is not a role in governance/venture-template/roles`);
+    for (const k of ["decided_by", "merged_by"]) if (s[k]?.trim() && !roles.has(s[k])) errors.push(`${r.id}: step ${s.id} ${k} ${s[k]} is not a role in packages/naive/template/governance/roles`);
     if (s.door === "one-way" && s.decided_by !== FOUNDER) errors.push(`${r.id}: step ${s.id} is a one-way door delegated to ${s.decided_by || "no one"}; only the founder decides a one-way door`);
     for (const d of s.depends_on ?? []) if (!ids.has(d)) errors.push(`${r.id}: step ${s.id} depends on ${d}, which is not a step`);
   }

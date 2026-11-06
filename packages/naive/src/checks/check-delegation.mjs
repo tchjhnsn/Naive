@@ -12,7 +12,7 @@
 //
 //   node packages/naive/src/checks/check-delegation.mjs [venture dir | delegation.json] [--today YYYY-MM-DD]
 //
-// With no argument it checks the template (governance/venture-template/delegation.json).
+// With no argument it checks the template (packages/naive/template/governance/delegation.json).
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -21,7 +21,7 @@ import { independent } from "./verify.mjs";
 import { readSchema } from "../records/index.mjs";
 
 const root = new URL("../../../..", import.meta.url).pathname;
-const template = join(root, "governance/venture-template");
+const template = join(root, "packages/naive/template/governance");
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const opt = (n) => process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1] : undefined;
 const today = opt("--today") ?? new Date().toISOString().slice(0, 10);

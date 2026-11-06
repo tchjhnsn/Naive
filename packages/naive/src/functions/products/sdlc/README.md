@@ -2,9 +2,9 @@
 
 What software work exists, written as knowledge Naive can reason over (requirement R-26). `catalog.json` lists the processes of the software life cycle after ISO/IEC/IEEE 12207:2017, in its four groups (agreement, organizational project-enabling, technical management, technical). Each technical process has three activities (prepare, perform, manage results) and the tasks under them. Every task names:
 
-- the **decision classes** it needs, from the venture's decision rights (`governance/venture-template/decision-rights.json`);
+- the **decision classes** it needs, from the venture's decision rights (`packages/naive/template/governance/decision-rights.json`);
 - the **phase it is first needed in** (`needed_from`: discovery, validation, beachhead, scale, platform), so Naive can project which software decisions a venture faces now;
-- the **role that owns it**, a role template in `governance/venture-template/roles/`. Product and design lead (alias product manager) owns whether, why and what; architect (alias CTO) owns how and technology (R-24). One person or agent may hold both.
+- the **role that owns it**, a role template in `packages/naive/template/governance/roles/`. Product and design lead (alias product manager) owns whether, why and what; architect (alias CTO) owns how and technology (R-24). One person or agent may hold both.
 
 Every process also names its **function**: one of the venture's 13 functions (the APQC categories in `packages/naive/src/functions/departments.json`). Most of the software processes are the products function's. Operating the software, managing infrastructure and managing information are IT's. Risk management is risk and compliance's, human resources is human capital's, acquisition is the supply chain's, and supply is marketing and sales'. Life cycle model, portfolio, quality and knowledge management, and measurement, are capabilities (APQC files process, portfolio, quality and knowledge management there). So functions stay total: a venture with no software still has the products function, just with none of this work in it.
 

@@ -23,6 +23,7 @@ const TOP = new Set([...TOP_FILES, ".git", ".naive", "node_modules", KBASE, "met
 
 export function apply(dir, ctx) {
   if (layoutOf(dir) === "structured") return;
+  if (layoutOf(dir) === "src") { ctx.escalate("this venture is on the src layout (EE-118 step 8), which replaces the structured one, so nothing moved"); return; }
   const tracked = (p) => spawnSync("git", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
   const movedPaths = [], gone = new Set();
   const move = (from, to) => {

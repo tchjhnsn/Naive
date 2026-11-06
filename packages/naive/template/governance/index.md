@@ -12,10 +12,10 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, methodology, three-pillars, master-reference, 2026-05-14]
 canonical-for: "what-a-company-is"
 related:
-  - "[[governance/venture-template/README]]"
-  - "[[governance/venture-template/pillars/product]]"
-  - "[[governance/venture-template/pillars/brand]]"
-  - "[[governance/venture-template/pillars/business]]"
+  - "[[packages/naive/template/governance/README]]"
+  - "[[packages/naive/template/governance/pillars/product]]"
+  - "[[packages/naive/template/governance/pillars/brand]]"
+  - "[[packages/naive/template/governance/pillars/business]]"
   - "[[sad/SAD_SKILL_v3]]"
 ---
 

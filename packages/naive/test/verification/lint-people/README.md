@@ -47,7 +47,7 @@ One role, one hire, one decision, and one fail-closed override. The code allows 
 
 The lint does not store history. Once the team plan names the role, `hire-before-plan` clears, including when the hire was written first. The records have no per-role clock that would show the earlier order after that edit.
 
-A hire is a `recruiting` entry with `kind` `hire`, or a person whose role is `operator` or is not in `governance/venture-template/roles/venture-roles.json`. Founders are not hires. A role must own a function when `owns_when_solo` is true, or when it is not in that registry.
+A hire is a `recruiting` entry with `kind` `hire`, or a person whose role is `operator` or is not in `packages/naive/template/governance/roles/venture-roles.json`. Founders are not hires. A role must own a function when `owns_when_solo` is true, or when it is not in that registry.
 
 ## A broken model, not a product bug
 

@@ -15,9 +15,9 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, cmo, executive, brand-pillar-lead, 2026-05-14]
 canonical-for: "cmo-role-reference"
 related:
-  - "[[governance/venture-template/index]]"
-  - "[[governance/venture-template/pillars/brand]]"
-  - "[[governance/venture-template/roles/ceo]]"
+  - "[[packages/naive/template/governance/index]]"
+  - "[[packages/naive/template/governance/pillars/brand]]"
+  - "[[packages/naive/template/governance/roles/ceo]]"
 ---
 
 # CMO — Chief Marketing Officer

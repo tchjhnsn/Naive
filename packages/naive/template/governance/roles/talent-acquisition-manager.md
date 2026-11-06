@@ -14,7 +14,7 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, talent-acquisition, recruiting, business-pillar, stub]
 canonical-for: "talent-acquisition-manager-role-reference"
 related:
-  - "[[governance/venture-template/roles/README]]"
+  - "[[packages/naive/template/governance/roles/README]]"
   - "[[position-schema]]"
   - "[[role-and-candidate-authoring]]"
   - "[[hr-manager]]"

@@ -359,7 +359,7 @@ export type DataModel = {
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;
-    /** The decision class (governance/venture-template/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032) */
+    /** The decision class (packages/naive/template/governance/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032) */
     decision_class?: string;
     /** Globs from the repo root */
     paths: string[];
@@ -621,7 +621,7 @@ export type DecisionRecordReason = {
   }[];
 };
 
-/** Who may decide what (EE-017). The template lives at governance/venture-template/decision-rights.json; a venture may tighten a class (move it to a higher level or a more senior owner) in <venture>/governance/decision-rights.json, and loosening one needs an owner decision. Levels follow RAPID and DACI: decide, decide-inform, recommend-approve, escalate. */
+/** Who may decide what (EE-017). The template lives at packages/naive/template/governance/decision-rights.json; a venture may tighten a class (move it to a higher level or a more senior owner) in <venture>/governance/decision-rights.json, and loosening one needs an owner decision. Levels follow RAPID and DACI: decide, decide-inform, recommend-approve, escalate. */
 export type DecisionRights = {
   register: "decision-rights";
   updated?: string;
@@ -705,7 +705,7 @@ export type Decision = {
   }[];
 };
 
-/** Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at governance/venture-template/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by packages/naive/src/checks/check-delegation.mjs. */
+/** Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at packages/naive/template/governance/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by packages/naive/src/checks/check-delegation.mjs. */
 export type Delegation = {
   register: "delegation";
   updated?: string;
@@ -2758,7 +2758,7 @@ export type People = {
   people: {
     id: string;
     name: string;
-    /** A role id from governance/venture-template/roles/venture-roles.json */
+    /** A role id from packages/naive/template/governance/roles/venture-roles.json */
     role: string;
     /** The functions this person owns. In the structured layout (EE-086) hats are read from the org chart in venture.json and not stored here */
     hats?: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
@@ -3212,7 +3212,7 @@ export type Requirement = {
   conversation?: ConversationRef[];
 };
 
-/** One role a venture can install, at governance/venture-template/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.mjs. */
+/** One role a venture can install, at packages/naive/template/governance/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.mjs. */
 export type RoleTemplate = {
   /** Matches the file name */
   id: string;
@@ -3987,7 +3987,7 @@ export type VentureCore = {
   lifecycle_playbook?: string;
 };
 
-/** The roles a person can hold in a venture (governance/venture-template/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which. */
+/** The roles a person can hold in a venture (packages/naive/template/governance/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which. */
 export type VentureRole = {
   version: string;
   note?: string;
@@ -4013,7 +4013,7 @@ export type VentureTypes = {
     description: string;
     /** Words a founder might use for it; the classifier reads them */
     examples: string[];
-    /** Role ids from governance/venture-template/roles/venture-roles.json a person can hold in this type */
+    /** Role ids from packages/naive/template/governance/roles/venture-roles.json a person can hold in this type */
     roles: string[];
     default_role: string;
     /** Functions the type imports from the start (packages/naive/src/functions/departments.json); a solo founder owns them all */
@@ -4036,8 +4036,8 @@ export type Venture = {
   kind?: "venture" | "product";
   /** The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082) */
   type?: string;
-  /** Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. */
-  layout?: "flat" | "structured";
+  /** Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. src (EE-118 step 8, what naive init writes): venture.json and naive.config.json at the top, each package folder a function owns in src/<function>/<package>/, decisions/, evidence/ and raw/ at the top, and the static files the venture hands out in public/. */
+  layout?: "flat" | "structured" | "src";
   /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. */
   functions?: {
     [key: string]: {

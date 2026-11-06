@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "venture-role.schema.json",
   "title": "Venture roles",
-  "description": "The roles a person can hold in a venture (governance/venture-template/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which.",
+  "description": "The roles a person can hold in a venture (packages/naive/template/governance/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which.",
   "type": "object",
   "required": [
     "version",

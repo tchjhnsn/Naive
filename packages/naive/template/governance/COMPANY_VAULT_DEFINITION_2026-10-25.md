@@ -8,7 +8,7 @@ decision-status: in-force
 status: ACTIVE
 governed-by:
   - "[[SAD_SKILL_v3_AMENDMENT_2026-10-25_docs-as-code-and-workspace-layout]]"
-  - "[[governance/venture-template/index]]"
+  - "[[packages/naive/template/governance/index]]"
 related:
   - "[[POLITY_VAULT_TARGET_STRUCTURE_2026-10-13]]"
   - "ADR-0006-repository-structure (tchjhnsn/polity: docs/adr/ADR-0006-repository-structure.md)"

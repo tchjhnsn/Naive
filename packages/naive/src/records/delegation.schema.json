@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "delegation.schema.json",
   "title": "Delegation",
-  "description": "Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at governance/venture-template/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by packages/naive/src/checks/check-delegation.mjs.",
+  "description": "Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at packages/naive/template/governance/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by packages/naive/src/checks/check-delegation.mjs.",
   "type": "object",
   "required": ["register", "root", "grants"],
   "properties": {

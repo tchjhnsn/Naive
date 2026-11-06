@@ -20,7 +20,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 | `decision-index-test.mjs`, `decision-reasons-test.mjs` | The live decision index and frozen decision reasons. |
 | [`validation-study-test.mjs`](./validation-study-test.mjs) | Interviews, feedback, bugs, telemetry, the beta gate. |
 | [`connectors-router-test.mjs`](./connectors-router-test.mjs) | The filesystem connector through the router: a mapped source, the catalog, the source-of-truth matrix and attributes. It moved here from [`packages/naive/src/store/connectors/eval.mjs`](../../store/connectors/eval.mjs) in step 4. |
-| [`delegation-test.mjs`](./delegation-test.mjs) | Delegation grants and the builder-is-not-verifier rule. It moved here in step 3 because it imports [`packages/naive/src/router/orchestration/setup.mjs`](../../router/orchestration/setup.mjs). |
+| [`delegation-test.mjs`](./delegation-test.mjs) | Delegation grants and the builder-is-not-verifier rule. It moved here in step 3 because it imports [`packages/naive/src/router/orchestration/setup.mjs`](../../router/orchestration/setup.mjs). It reads the role templates from [`packages/naive/template/governance/`](../../../template/README.md) and checks that a record naming the template's path before step 8 still resolves. |
 | `canonical-core-test.mjs`, `design-additions-test.mjs`, `structure-checks-test.mjs`, `visibility-test.mjs` | The canonical core, design additions, structure checks and field visibility. |
 
 ## Run and test

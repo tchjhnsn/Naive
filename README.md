@@ -13,7 +13,7 @@ This is Naive's own repository (EE-118), split out of tchjhnsn/everything-ecosys
 | Governance (cross-cutting) | Who may decide | `packages/naive/src/records/layers/governance/` |
 | Interface (cross-cutting) | How you work across the layers at once | `packages/naive/src/records/layers/interface/` |
 
-A layer organizes record types in the data model. The skills, templates and frameworks Naive ships sit by function, in `packages/naive/src/functions/<function>/`, one module for each of the 13 functions (EE-118 step 7).
+A layer organizes record types in the data model. The skills, templates and frameworks Naive ships sit by function, in `packages/naive/src/functions/<function>/`, one module for each of the 13 functions (EE-118 step 7). The venture template, the files a new venture starts from, is `packages/naive/template/`.
 
 `docs/design/` holds the ecosystem's own domain and systems design. Each layer has a `tooling/integrations.json` beside its manifest listing the tools it can plug into (Obsidian, Notion, Linear, the Claude and Cursor agent SDKs and so on), checked against `packages/naive/src/records/integration.schema.json`. 
 The loop: Purpose is articulated into Knowledge, Operations hands the work to people and agents, and Evidence feeds back into Knowledge and Purpose.

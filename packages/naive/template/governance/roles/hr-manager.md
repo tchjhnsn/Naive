@@ -14,7 +14,7 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, hr, people, business-pillar, stub]
 canonical-for: "hr-manager-role-reference"
 related:
-  - "[[governance/venture-template/roles/README]]"
+  - "[[packages/naive/template/governance/roles/README]]"
   - "[[position-schema]]"
   - "[[coo]]"
 status: STUB

@@ -192,7 +192,7 @@ export function ventures(workspace = defaultWorkspace()) {
 
 // The venture's decision rights: the template, tightened by the venture's own file.
 function decisionRights(dir) {
-  const t = load(join(repo, "governance/venture-template/decision-rights.json"));
+  const t = load(join(repo, "packages/naive/template/governance/decision-rights.json"));
   const classes = new Map(t.classes.map((c) => [c.id, c]));
   const own = join(ventureFile(dir, "governance/decision-rights.json"));
   if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c, level: classes.get(c.id)?.level === "escalate" ? "escalate" : c.level });

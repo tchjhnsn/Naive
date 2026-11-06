@@ -25,8 +25,8 @@ const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
-const registry = new Map(load(join(repo, "governance/venture-template/roles/agent-roles.json")).roles.map((r) => [r.id, r]));
-const template = load(join(repo, "governance/venture-template/decision-rights.json"));
+const registry = new Map(load(join(repo, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => [r.id, r]));
+const template = load(join(repo, "packages/naive/template/governance/decision-rights.json"));
 const caps = load(join(repo, "packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json"));
 const errors = [], warnings = [], recruitNow = [];
 const { routes, glob: routeGlob } = await import("../records/routes/routes.mjs");

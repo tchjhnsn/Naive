@@ -14,7 +14,7 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, fde, forward-deployed, product-pillar, human-required, stub]
 canonical-for: "forward-deployed-engineer-role-reference"
 related:
-  - "[[governance/venture-template/roles/README]]"
+  - "[[packages/naive/template/governance/roles/README]]"
   - "[[position-schema]]"
   - "[[cto]]"
 status: STUB

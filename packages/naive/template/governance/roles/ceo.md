@@ -15,8 +15,8 @@ scope-entity: "[[everything-ecosystem]]"
 tags: [venture-template, role, ceo, executive, cross-pillar, 2026-05-14]
 canonical-for: "ceo-role-reference"
 related:
-  - "[[governance/venture-template/index]]"
-  - "[[governance/venture-template/roles/README]]"
+  - "[[packages/naive/template/governance/index]]"
+  - "[[packages/naive/template/governance/roles/README]]"
 ---
 
 # CEO — Chief Executive
