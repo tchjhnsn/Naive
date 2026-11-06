@@ -33,6 +33,9 @@ delete process.env.NAIVE_TRACES; delete process.env.MENTURA_TRACE_ID; delete pro
   const out = await withSpan(dir, { name: "invoke_agent strategy", kind: "agent" }, () => 42);
   ok("traces off: withSpan still returns, nothing is written", out === 42 && sessions(dir).length === 0);
   ok("traces off: span() writes nothing", span(dir, { name: "x", kind: "model" }) === null);
+  writeFileSync(join(dir, "note.md"), "hello\n");
+  await withSpan(dir, { name: "execute_tool naive_write", kind: "tool" }, () => { record(dir, { entity: "note.md", activity: "write", agent: { kind: "agent", via: "router" } }); });
+  ok("traces off: a write inside withSpan names no span", entries(dir).at(-1)?.span === undefined && checkVenture(dir).errors.length === 0);
 }
 
 // On: nesting, the chain, the provenance link, content kept out.

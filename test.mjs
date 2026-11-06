@@ -56,6 +56,7 @@ const steps = [
   ["upgrades: migrations, pins, early adoption, canary, staged agent upgrades", "node", ["packages/naive/src/engine/upgrades-test.mjs"]],
   ["src layout: naive upgrade --layout src and init-venture --layout src (EE-118 step 8)", "node", ["packages/naive/src/engine/src-layout-test.mjs"]],
   ["traces: spans in traces/, chained and linked from provenance, naive trace, check-traces (EE-121)", "node", ["packages/naive/src/checks/traces-test.ts"]],
+  ["agent files: ls, read, write, edit, glob and grep over the router, drafts for gated writes, tool spans (EE-122)", "node", ["packages/naive/src/interfaces/tests/agent-files-test.ts"]],
   ["naive upgrade --layout structured: a flat venture moves onto k-base/ and meta/", "node", ["packages/naive/src/engine/structured-layout-test.mjs"]],
   ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["packages/naive/src/interfaces/tests/structure-checks-test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["packages/naive/src/engine/frames-test.mjs"]],
