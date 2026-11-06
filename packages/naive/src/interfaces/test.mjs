@@ -30,8 +30,8 @@ expect("routes are unique", new Set(table.map((r) => r.route)).size === table.le
 expect("every route's template exists", table.every((r) => !r.template || existsSync(join(root, r.template))));
 expect("read returns the record", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result?.evidence?.length > 0);
 const missing = (await call({ venture: "woodworking", route: "purpose/telos", action: "read" }));
-expect("not-found: a missing record answers with its template, schema, skills and need-now", missing.result === null && missing.not_found.template === "purpose/templates/telos-based-smart.md"
-  && missing.not_found.need_now?.status && missing.not_found.skills.includes("purpose/skills/telos/SKILL.md"));
+expect("not-found: a missing record answers with its template, schema, skills and need-now", missing.result === null && missing.not_found.template === "packages/naive/src/functions/strategy/templates/telos-based-smart.md"
+  && missing.not_found.need_now?.status && missing.not_found.skills.includes("packages/naive/src/functions/strategy/skills/telos/SKILL.md"));
 expect("an unknown venture is refused", !(await call({ venture: "nobody", route: "purpose/telos", action: "read" })).ok);
 expect("an action a route lacks is refused", /has no action/.test((await call({ venture: "tandem", route: "system/need-now", action: "write", input: {} })).error));
 const bad = (await call({ venture: "tandem", route: "governance/ownership", action: "write", input: { nope: true }, actor: "person" }));
@@ -95,7 +95,7 @@ writeFileSync(join(tandem, "foundation/AGENTS.md"), "tone: warm\n");
 const nested = (await call({ venture: "tandem", route: "foundation/problem", action: "layout" })).result;
 expect("layout: AGENTS.md chain, nearest last, and the nearer file wins", nested.chain.map((f) => f.path).join() === "AGENTS.md,foundation/AGENTS.md" && nested.instructions.tone === "warm" && nested.package.gates.length > 0);
 expect("three outcomes: expected error, uncaught error, uncertain", (await call({ route: "no/such", action: "read" })).outcome === "error" && capture(() => { throw new Error("boom"); }).outcome === "uncaught" && judge(0.2, 0.7, "founder").outcome === "uncertain" && judge(0.2, 0.7, "founder").result === null);
-expect("layout: names the template and need-now status", lay.template === "purpose/kits/validation/templates/problem.md" && lay.need_now?.status === "held");
+expect("layout: names the template and need-now status", lay.template === "packages/naive/src/functions/strategy/kits/validation/templates/problem.md" && lay.need_now?.status === "held");
 expect("layout: works without a venture", (await call({ route: "governance/ownership", action: "layout" })).result.gate.class === "ownership-or-control");
 expect("loading: a read says when an agent's draft is waiting", (await call({ venture: "tandem", route: "governance/ownership", action: "read" })).pending_draft?.file === "_drafts/governance__ownership.json.draft");
 const badCheck = await (async () => { const d = join(ws, "ventures/tandem/purpose/validation/problem.json"); const keep = readFileSync(d, "utf8"); const j = JSON.parse(keep); j.evidence[0].source = { url: "https://example.com" }; writeFileSync(d, JSON.stringify(j)); const r = (await call({ venture: "tandem", route: "purpose/validation/problem", action: "check" })); writeFileSync(d, keep); return r; })();

@@ -76,7 +76,7 @@
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in purpose/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type",
+      "description": "Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type",
       "properties": {
         "template": {
           "type": "string",
@@ -106,7 +106,7 @@
                 },
                 "type": {
                   "type": "string",
-                  "description": "One of the attribute's types in purpose/frameworks/founder-profile/attributes.json"
+                  "description": "One of the attribute's types in packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json"
                 },
                 "function": {
                   "type": "string",

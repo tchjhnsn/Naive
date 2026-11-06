@@ -1,5 +1,5 @@
 // Replays each rule of PublicWords.tla against the real code, on a fixture venture and on Naive's example
-// software venture, with Naive's stand-in channel builders (operations/marketing/fixtures/).
+// software venture, with Naive's stand-in channel builders (packages/naive/src/functions/marketing-and-sales/marketing/fixtures/).
 // Run from the repository root: node packages/naive/test/verification/mdx-everything/replay.mjs
 // Prints one line per rule: what the replay did and what the code answered. The comparison with main's
 // site one-pager, which this replay ran when the branch was verified, stays in everything-ecosystem with
@@ -8,12 +8,12 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { build } from "../../../../../operations/marketing/publish-build.mjs";
+import { build } from "../../../src/functions/marketing-and-sales/marketing/publish-build.mjs";
 import { check } from "../../../src/engine/check-public.mjs";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 const example = join(repo, "packages/naive/src/records/examples/software/ventures/relay");
-const fx = (f) => join(repo, "operations/marketing/fixtures", f);
+const fx = (f) => join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/fixtures", f);
 const channels = {
   site: { outputs: ["generated/venture-facts.json"], builders: [fx("facts.ts")] },
   artifact: { outputs: ["generated/venture-facts.json", "artifact/index.html"], builders: [fx("facts.ts"), fx("page.ts")] },
@@ -23,7 +23,7 @@ const tmp = mkdtempSync(join(tmpdir(), "replay-mdx-"));
 const say = (rule, verdict, what) => console.log(`${rule.padEnd(26)} ${verdict.padEnd(5)} ${what}`);
 
 try {
-  // R1 on the branch: the same channel through operations/marketing/publish-build.mjs.
+  // R1 on the branch: the same channel through packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs.
   for (const c of ["site", "artifact", "foundation"]) {
     const r = build(c, example, { out: join(tmp, "out"), channels });
     say(`NoInternalWords (${c})`, r.ok ? "PASS" : "FAIL", r.ok ? "built; verify found no internal wording and no internal-term match" : r.errors.join("; "));

@@ -59,17 +59,17 @@ const validRecord = (file, schema) => spawnSync("python3", [join(repo, "packages
   rmSync(cfgFile);
   mkdirSync(join(dir, "purpose/ideas"), { recursive: true });
   writeFileSync(join(dir, "purpose/ideas/dump.md"), "- Physios lose an hour a day to the phone\n- We could sell booking to gyms later\n");
-  const all = JSON.parse(node("purpose/frameworks/idea-map/ideamap.mjs", "request", dir).stdout);
+  const all = JSON.parse(node("packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs", "request", dir).stdout);
   setConfig({ questions: { "idea-map": { off: ["exists", "rec.*"] } }, thresholds: { "idea-map": 0.5 } });
-  const some = JSON.parse(node("purpose/frameworks/idea-map/ideamap.mjs", "request", dir).stdout);
+  const some = JSON.parse(node("packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs", "request", dir).stdout);
   const keys = Object.keys(some.questions);
   expect("P-2: questions off leaves those System 1 questions out of the request", Object.keys(all.questions).some((k) => k.startsWith("exists:")) && keys.length && !keys.some((k) => k.startsWith("exists:") || k.startsWith("rec.")) && some.questions_off > 0);
   const answers = join(ws, "answers.json");
   writeFileSync(answers, json({ "dept.products:i-01": { noul: 0.6 }, "exists:i-01": { noul: 0.9 } }));
-  const tags = JSON.parse(node("purpose/frameworks/idea-map/ideamap.mjs", "answers", dir, answers).stdout);
+  const tags = JSON.parse(node("packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs", "answers", dir, answers).stdout);
   expect("P-2: the idea-map threshold comes from naive.config.json, and answers to questions off are ignored", tags["i-01"].departments.includes("products") && !tags["i-01"].tentative && tags["i-01"].exists === false, JSON.stringify(tags));
   rmSync(cfgFile);
-  const dflt = JSON.parse(node("purpose/frameworks/idea-map/ideamap.mjs", "answers", dir, answers).stdout);
+  const dflt = JSON.parse(node("packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs", "answers", dir, answers).stdout);
   expect("P-2: without the override the default threshold (0.8) holds", dflt["i-01"].tentative === true && dflt["i-01"].exists === true, JSON.stringify(dflt));
 }
 

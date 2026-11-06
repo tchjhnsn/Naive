@@ -148,7 +148,7 @@ export function capture(fn) {
 export function layout(r, dir) {
   const ks = kits();
   const owned = r.kit_path && (r.kit_path.startsWith("packages/naive/library/packages/") || r.kit_path.includes("/kits/")) ? ks.find((k) => k.path === r.kit_path) : null;
-  const stack = [ks.find((k) => k.path === "packages/naive/src/records/layer.json"), ks.find((k) => k.path === `${r.layer ?? r.route.split("/")[0]}/layer.json`), owned]
+  const stack = [ks.find((k) => k.path === "packages/naive/src/records/layer.json"), ks.find((k) => k.path === `packages/naive/src/records/layers/${r.layer ?? r.route.split("/")[0]}/layer.json`), owned]
     .filter(Boolean).map((k) => {
       const refs = (k.references && existsSync(join(repo, k.references)) ? k.references : null)
         ?? [join(dirname(k.path), "references/references.json"), join(dirname(k.path), "references")].find((p) => existsSync(join(repo, p)));

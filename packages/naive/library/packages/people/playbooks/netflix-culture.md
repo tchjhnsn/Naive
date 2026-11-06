@@ -146,11 +146,11 @@ Do not paste an alignment statement, the problem statement, or any phrase in the
 
 Route: `people/team-plan` write. Fields: `roles`, `recruiting`. The brief is the file at `recruiting[].brief`, a path relative to the venture folder. `packages/naive/src/checks/check-team.mjs` requires that file when an open person role is needed by the current phase or an earlier one.
 
-Do this only for an open person role whose `needed_by` is the current phase or earlier. A later role stays `planned`. `operations/skills/team-design/SKILL.md` and `operations/skills/recruiting/SKILL.md` already say that. This playbook adds the bar. It does not send outreach. Contact and the offer stay with a person, as the recruiting skill says.
+Do this only for an open person role whose `needed_by` is the current phase or earlier. A later role stays `planned`. `packages/naive/src/functions/human-capital/skills/team-design/SKILL.md` and `packages/naive/src/functions/human-capital/skills/recruiting/SKILL.md` already say that. This playbook adds the bar. It does not send outreach. Contact and the offer stay with a person, as the recruiting skill says.
 
 On the role, `why` is one sentence: what "strong" means for this role, including working with the people already here. Leave `authority` off unless step 4 allowed a class.
 
-Add a `recruiting` entry: `role`, `kind` (`cofounder`, `hire`, `contractor`, `advisor`, or `investor`), and `brief`. Write the brief in the shape of `operations/templates/recruiting-brief.md`, then add this section. Must-have skills are gaps from `people/team`, not a list you make up.
+Add a `recruiting` entry: `role`, `kind` (`cofounder`, `hire`, `contractor`, `advisor`, or `investor`), and `brief`. Write the brief in the shape of `packages/naive/src/functions/human-capital/templates/recruiting-brief.md`, then add this section. Must-have skills are gaps from `people/team`, not a list you make up.
 
 ```text
 ## Hiring bar
@@ -167,7 +167,7 @@ Equity: not recorded
 
 When `governance/ownership` has a record, the last two lines are `Pay: see governance/ownership` and `Equity: see governance/ownership`. They are never a number.
 
-`operations/skills/recruiting/SKILL.md` says an offer of equity is `ownership-or-control` and an offer of pay is `spend-money`. The brief stops before the offer.
+`packages/naive/src/functions/human-capital/skills/recruiting/SKILL.md` says an offer of equity is `ownership-or-control` and an offer of pay is `spend-money`. The brief stops before the offer.
 
 ### 8. You accept it
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "idea-graph.schema.json",
   "title": "Idea graph",
-  "description": "The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by purpose/frameworks/idea-map/graph.mjs; it holds no decisions.",
+  "description": "The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs; it holds no decisions.",
   "type": "object",
   "required": ["version", "venture", "phase", "root", "judged_by", "nodes", "edges", "lanes", "next"],
   "properties": {

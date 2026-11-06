@@ -1,5 +1,5 @@
 {
-  "note": "The catalog of ontologies (N-050, docs/design/ONTOLOGY_CORE_2026-11-04.md part 3). Seeded with one scope per function, the 13 in operations/departments.json (gate G5, Torian 2026-11-05). A scope's terms are the live nouns in packages/naive/src/terms/ontology.json whose function is its suffix; a shared noun (function null) and a top category are visible to every scope. Checked by node packages/naive/src/terms/catalog-test.ts.",
+  "note": "The catalog of ontologies (N-050, docs/design/ONTOLOGY_CORE_2026-11-04.md part 3). Seeded with one scope per function, the 13 in packages/naive/src/functions/departments.json (gate G5, Torian 2026-11-05). A scope's terms are the live nouns in packages/naive/src/terms/ontology.json whose function is its suffix; a shared noun (function null) and a top category are visible to every scope. Checked by node packages/naive/src/terms/catalog-test.ts.",
   "scopes": [
     {
       "scope": "naive@strategy",

@@ -74,7 +74,7 @@ expect("a tier outside low, costly, one_way_door is rejected", badTier.status ==
 expect("an unknown --def exits 2, a checker that cannot run", unknownDef.status === 2, unknownDef.out);
 
 const withNoun = (patch: Record<string, unknown>) => ({ ...ontology, nouns: [{ ...ontology.nouns[0], ...patch }, ...ontology.nouns.slice(1)] });
-const rules = JSON.parse(readFileSync(join(root, "operations/operating-rules.json"), "utf8")) as { design: { diff: { verbs: Record<string, { kinds: string[]; derive_names?: string; merge_names?: string }> } }; questions: { impact: { tiers: string[] } } };
+const rules = JSON.parse(readFileSync(join(root, "packages/naive/src/terms/operating-rules.json"), "utf8")) as { design: { diff: { verbs: Record<string, { kinds: string[]; derive_names?: string; merge_names?: string }> } }; questions: { impact: { tiers: string[] } } };
 const deriveField = rules.design.diff.verbs.create?.derive_names ?? "";
 const mergeField = rules.design.diff.verbs.delete?.merge_names ?? "";
 const merge2 = { verb: "delete", kind: "merge", noun: "client", tier: "low" };
@@ -133,17 +133,17 @@ expect("every class and field names a SKOS term, an OWL term or none", unnamed.l
 const fieldGaps = ["ontology", "noun", "top_category"].filter((c) => JSON.stringify(Object.keys(metamodel.mappings[c]?.fields ?? {}).sort()) !== JSON.stringify(Object.keys(metamodel.$defs[c]?.properties ?? {}).sort()));
 expect("the ontology, noun and top category fields are mapped one to one", fieldGaps.length === 0, fieldGaps.join(", "));
 
-// operations/operating-rules.json declares the same verbs, kinds and tiers; the two must not drift.
+// packages/naive/src/terms/operating-rules.json declares the same verbs, kinds and tiers; the two must not drift.
 const pairs = Object.fromEntries((metamodel.$defs.change_line?.allOf ?? []).flatMap((b) => {
   const verb = b.if?.properties?.verb?.const;
   const kinds = b.then?.properties?.kind?.enum;
   return verb && kinds ? [[verb, kinds]] : [];
 }));
 const declared = Object.fromEntries(Object.entries(rules.design.diff.verbs).map(([v, { kinds }]) => [v, kinds]));
-expect("verbs and their kinds match design.diff.verbs in operations/operating-rules.json", JSON.stringify(pairs) === JSON.stringify(declared)
+expect("verbs and their kinds match design.diff.verbs in packages/naive/src/terms/operating-rules.json", JSON.stringify(pairs) === JSON.stringify(declared)
   && JSON.stringify(metamodel.$defs.verb?.enum) === JSON.stringify(Object.keys(declared))
   && JSON.stringify(metamodel.$defs.kind?.enum) === JSON.stringify(Object.values(declared).flat()));
-expect("tiers match questions.impact.tiers in operations/operating-rules.json", JSON.stringify(metamodel.$defs.tier?.enum) === JSON.stringify(rules.questions.impact.tiers));
+expect("tiers match questions.impact.tiers in packages/naive/src/terms/operating-rules.json", JSON.stringify(metamodel.$defs.tier?.enum) === JSON.stringify(rules.questions.impact.tiers));
 
 rmSync(tmp, { recursive: true, force: true });
 if (failed) { console.error(`${failed} test(s) failed`); process.exit(1); }

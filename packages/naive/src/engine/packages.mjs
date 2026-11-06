@@ -110,7 +110,7 @@ export const HOME = Object.fromEntries(Object.entries(PACKAGES.core).flatMap(([i
 
 /**
  * The venture package. `routes` is the idea map's routing for the venture (route() in
- * purpose/frameworks/idea-map/route.mjs), passed in by packages/naive/src/router/orchestration/venture-package.mjs:
+ * packages/naive/src/functions/strategy/frameworks/idea-map/route.mjs), passed in by packages/naive/src/router/orchestration/venture-package.mjs:
  * with it, each record gets the idea map's title and where the founder's ideas for it stand. This
  * module does not import the idea map, because the idea map reads schema/ itself (router inversion,
  * step 4c).

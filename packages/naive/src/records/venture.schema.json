@@ -44,7 +44,7 @@
     },
     "functions": {
       "type": "object",
-      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from operations/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
+      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
       "additionalProperties": {
         "type": "object",
         "required": [
@@ -74,7 +74,7 @@
         "scale",
         "platform"
       ],
-      "description": "How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: purpose/frameworks/product-anatomy/phases.json."
+      "description": "How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: packages/naive/src/functions/products/frameworks/product-anatomy/phases.json."
     },
     "timeZone": {
       "type": "string",
@@ -83,7 +83,7 @@
     "lifecycle_playbook": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
-      "description": "The lifecycle playbook the venture follows (purpose/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default."
+      "description": "The lifecycle playbook the venture follows (packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default."
     },
     "ambition": {
       "enum": [
@@ -174,7 +174,7 @@
     },
     "departments": {
       "type": "array",
-      "description": "The departments this venture imports, by id from operations/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048).",
+      "description": "The departments this venture imports, by id from packages/naive/src/functions/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048).",
       "items": {
         "type": "string",
         "pattern": "^[a-z0-9-]+$"

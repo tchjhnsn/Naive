@@ -327,7 +327,7 @@
     "publish_build": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The publish build (operations/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one",
+      "description": "The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one",
       "properties": {
         "out": {
           "type": "string",

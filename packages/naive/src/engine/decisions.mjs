@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The decision matrix (EE-054, EE-057): every decision a venture has open, by layer and phase,
 // with its parent, its boundary and whether it renders now. Behaviors:
-// purpose/features/decisions.feature.
+// packages/naive/src/functions/strategy/features/decisions.feature.
 //
 //   node packages/naive/src/engine/decisions.mjs <venture or workspace dir> [--json | --md]
 //

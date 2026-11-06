@@ -4,7 +4,7 @@
 // A venture has to keep its knowledge fresh the same two ways, so this module applies both to
 // records:
 //
-//   by time       each record type has a freshness profile (knowledge/freshness.json, overridden
+//   by time       each record type has a freshness profile (packages/naive/src/engine/freshness.json, overridden
 //                 under freshness in the venture's naive.config.json): stale after revalidate, expired
 //                 after expire, and, a profile Next.js has no need for, per_phase: stale once the
 //                 venture changes phase after the record was last checked (V-2)
@@ -44,7 +44,7 @@ import { ventureFile } from "../core/venture-paths.mjs";
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 export const LOG = "knowledge/freshness.jsonl";
-export const DEFAULTS = "knowledge/freshness.json";
+export const DEFAULTS = "packages/naive/src/engine/freshness.json";
 const UNITS = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };
 // Activities that change a record's content, and those that only say a person looked at it.
 const CONTENT = new Set(["write", "accept", "baseline", "move", "port", "create"]);

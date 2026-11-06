@@ -1,11 +1,11 @@
 {
   "version": "0.7.0",
-  "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. Retired nouns list what replaced them; packages/naive/src/checks/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json. Each noun names what it is a kind of in broader (SKOS broader): another noun, or one of the top_categories, each of which is mapped to a class of BFO (ISO/IEC 21838-2). Every noun reaches exactly one top category (N-049); node packages/naive/src/terms/upper-test.ts checks it.",
+  "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from packages/naive/src/functions/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. Retired nouns list what replaced them; packages/naive/src/checks/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json. Each noun names what it is a kind of in broader (SKOS broader): another noun, or one of the top_categories, each of which is mapped to a class of BFO (ISO/IEC 21838-2). Every noun reaches exactly one top category (N-049); node packages/naive/src/terms/upper-test.ts checks it.",
   "check": [
-    "packages/naive/src/",
+    "packages/naive/src/core/", "packages/naive/src/records/", "packages/naive/src/terms/", "packages/naive/src/store/", "packages/naive/src/engine/", "packages/naive/src/checks/", "packages/naive/src/router/", "packages/naive/src/interfaces/",
     "packages/naive/src/terms/ontology.md",
     "docs/design/VENTURES_2026-10-27.md",
-    "purpose/frameworks/product-anatomy/",
+    "packages/naive/src/functions/products/frameworks/product-anatomy/",
     "AGENTS.md",
     "README.md",
     "site/content/"
@@ -634,7 +634,7 @@
     {
       "noun": "capability register",
       "level": "evidence",
-      "meaning": "What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (evidence/capabilities/agent-capabilities.json, EE-029)",
+      "meaning": "What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json, EE-029)",
       "standard": "ours",
       "status": "new",
       "function": null,
@@ -1342,7 +1342,7 @@
     {
       "noun": "strategic foundation",
       "level": "venture",
-      "meaning": "The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (purpose/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052)",
+      "meaning": "The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (packages/naive/src/functions/strategy/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052)",
       "standard": "strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How",
       "status": "new",
       "function": null,

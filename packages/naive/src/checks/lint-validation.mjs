@@ -60,12 +60,12 @@ function durationMs(d) {
 }
 const human = (ms) => { const s = ms / 1000; return s % 604800 === 0 && s ? `${s / 604800}w` : s % 86400 === 0 && s ? `${s / 86400}d` : `${s}s`; };
 
-// The assumption profile (knowledge/freshness.json): expire is the shelf, per_phase restarts it
+// The assumption profile (packages/naive/src/engine/freshness.json): expire is the shelf, per_phase restarts it
 // when the venture changes phase. A venture may override it under freshness in naive.config.json.
 function shelfOf(dir) {
   let expire = 365 * DAY, perPhase = true;
   try {
-    const a = JSON.parse(readFileSync(new URL("../../../../knowledge/freshness.json", import.meta.url), "utf8"))?.profiles?.assumption ?? {};
+    const a = JSON.parse(readFileSync(new URL("../engine/freshness.json", import.meta.url), "utf8"))?.profiles?.assumption ?? {};
     const ms = durationMs(a.expire);
     if (ms != null) expire = ms;
     if (typeof a.per_phase === "boolean") perPhase = a.per_phase;

@@ -10,7 +10,7 @@ const root = new URL("../../../..", import.meta.url).pathname;
 export const LAYERS = ["governance", "operations"];
 export const GROUPS = ["primary", "support"];
 
-export const catalog = () => JSON.parse(readFileSync(join(root, "operations/departments.json"), "utf8")).departments;
+export const catalog = () => JSON.parse(readFileSync(join(root, "packages/naive/src/functions/departments.json"), "utf8")).departments;
 
 /** Every department folder in a venture: { layer, path (its logical path), folder, group, tag }. */
 export function foldersOf(dir) {

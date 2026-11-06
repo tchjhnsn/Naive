@@ -1,10 +1,10 @@
-// Checks the SDLC catalog (knowledge/sdlc/catalog.json, R-26) for what its schema cannot state:
+// Checks the SDLC catalog (packages/naive/src/functions/products/sdlc/catalog.json, R-26) for what its schema cannot state:
 // process ids are unique and their clauses follow their group; every task's decision classes
 // are classes in the venture template's decision rights, and every owner role is a role
 // template; a technical process names a MAD module unless it is the product function's or
 // listed for completeness; task references (<mad_module>/<activity>/<task>) are unique, so
 // MAD's method-request can name a task by them; every process names one of the venture
-// functions in operations/departments.json. It prints the references with --refs.
+// functions in packages/naive/src/functions/departments.json. It prints the references with --refs.
 //
 // --phase <id> [--processes a,b] (process ids) prints what a method-request's `open` and `enumeration`
 // carry for that phase: the catalog file's sha256, the count, and each task a MAD module
@@ -22,9 +22,9 @@ import type { SdlcCatalog } from "../records/types/records.d.ts";
 const root = fileURLToPath(new URL("../../../..", import.meta.url));
 const read = (rel: string): unknown => JSON.parse(readFileSync(join(root, rel), "utf8"));
 
-const CATALOG = "knowledge/sdlc/catalog.json";
+const CATALOG = "packages/naive/src/functions/products/sdlc/catalog.json";
 const catalog = read(CATALOG) as SdlcCatalog;
-const functions = new Set((read("operations/departments.json") as { departments: { id: string }[] }).departments.map((d) => d.id));
+const functions = new Set((read("packages/naive/src/functions/departments.json") as { departments: { id: string }[] }).departments.map((d) => d.id));
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const rights = read("governance/venture-template/decision-rights.json") as { classes: { id: string }[] };
 const classes = new Set(rights.classes.map((c) => c.id));
@@ -46,7 +46,7 @@ for (const group of catalog.groups) {
     ids.add(p.id);
     if (!p.clause.startsWith(CLAUSE[group.id])) errors.push(`${p.id}: clause ${p.clause} is not in group ${group.id} (${CLAUSE[group.id]}x)`);
     if (!isRole(p.owner_role)) errors.push(`${p.id}: owner role ${p.owner_role} is not a role template`);
-    if (!functions.has(p.function)) errors.push(`${p.id}: function ${p.function} is not a department in operations/departments.json`);
+    if (!functions.has(p.function)) errors.push(`${p.id}: function ${p.function} is not a department in packages/naive/src/functions/departments.json`);
     if (group.id === "technical") {
       if (p.mad_layer) errors.push(`${p.id}: a technical process names a MAD module, not a layer`);
       if (!p.mad_module && !NOT_MAD.has(p.id)) errors.push(`${p.id}: technical process with no MAD module`);

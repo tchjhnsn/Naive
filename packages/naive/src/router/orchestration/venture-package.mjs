@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The venture package with the idea map's routing (EE-067, EE-069, EE-061). packages/naive/src/engine/packages.mjs computes
-// the package; route() in purpose/frameworks/idea-map/route.mjs says where the founder's ideas for each
+// the package; route() in packages/naive/src/functions/strategy/frameworks/idea-map/route.mjs says where the founder's ideas for each
 // record stand and the one step that moves it. The idea map reads schema/ itself, so packages/naive/src/engine/packages.mjs
 // cannot import it without a cycle; this module composes the two (router inversion, step 4c).
 //
@@ -12,7 +12,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { packages, request, write } from "../../engine/packages.mjs";
-import { route } from "../../../../../purpose/frameworks/idea-map/route.mjs";
+import { route } from "../../functions/strategy/frameworks/idea-map/route.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 

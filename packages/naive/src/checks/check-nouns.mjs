@@ -65,9 +65,12 @@ for (const n of nouns.filter((x) => x.retired_pattern)) {
     if (re.test(line) && !/\(was|retired/i.test(line)) errors.push(`${f.slice(root.length)}:${i + 1}: retired noun "${n.noun}" (use ${n.replaced_by})`);
   });
 }
-// Layer references, and those of any kit inside a layer (<layer>/kits/<kit>/references).
-const refFiles = readdirSync(root).flatMap((d) => [join(d, "references/references.json"),
-  ...(existsSync(join(root, d, "kits")) ? readdirSync(join(root, d, "kits")).map((k) => join(d, "kits", k, "references/references.json")) : [])]);
+// Layer references (packages/naive/src/records/layers/<layer>/references), and those of any kit inside a function module
+// (packages/naive/src/functions/<function>/kits/<kit>/references).
+const sub = (d) => existsSync(join(root, d)) ? readdirSync(join(root, d)) : [];
+const LAYERS = "packages/naive/src/records/layers", FUNCTIONS = "packages/naive/src/functions";
+const refFiles = [...sub(LAYERS).map((l) => join(LAYERS, l, "references/references.json")),
+  ...sub(FUNCTIONS).flatMap((f) => sub(join(FUNCTIONS, f, "kits")).map((k) => join(FUNCTIONS, f, "kits", k, "references/references.json")))];
 const known = new Set(refFiles.filter((f) => existsSync(join(root, f)))
   .flatMap((f) => JSON.parse(readFileSync(join(root, f), "utf8")).references.map((r) => r.id)));
 for (const n of nouns) for (const r of n.references ?? []) if (!known.has(r)) errors.push(`packages/naive/src/terms/ontology.json: ${n.noun} cites unknown reference ${r}`);

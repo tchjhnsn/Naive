@@ -30,7 +30,7 @@ type Inputs = { catalog: OntologyCatalog; ontology: OntologyMetamodel; admitted:
 const CATALOG = "packages/naive/src/terms/ontology-catalog.json";
 const ONTOLOGY = "packages/naive/src/terms/ontology.json";
 const ADMITTED = "packages/naive/src/terms/admitted.json";
-const DEPARTMENTS = "operations/departments.json";
+const DEPARTMENTS = "packages/naive/src/functions/departments.json";
 
 const suffixOf = (name: string): string | undefined => /^.+@([^@]+)$/.exec(name)?.[1];
 

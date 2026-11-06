@@ -16,7 +16,7 @@ namespace Ontology
 inductive Level | «evidence» | «function» | «governance» | «interface» | «knowledge» | «operations» | «purpose» | «system» | «venture»
   deriving DecidableEq, Repr
 
-/-- [D] The functions (ids in operations/departments.json) that own a noun. -/
+/-- [D] The functions (ids in packages/naive/src/functions/departments.json) that own a noun. -/
 inductive Department | «finance» | «marketingAndSales» | «products» | «strategy»
   deriving DecidableEq, Repr
 
@@ -205,7 +205,7 @@ def «teamPlan» : Concept Placement := ⟨[
 def «humanLoop» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
-/-- [D] capability register (new). What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (evidence/capabilities/agent-capabilities.json, EE-029). Standard: ours. Fields: broader ["information artifact"]; handoff_type false. -/
+/-- [D] capability register (new). What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json, EE-029). Standard: ours. Fields: broader ["information artifact"]; handoff_type false. -/
 def «capabilityRegister» : Concept Placement := ⟨[
   ("level evidence", fun f => Decidable.decide (f.level = Level.«evidence»))]⟩
 
@@ -429,7 +429,7 @@ def «slot» : Concept Placement := ⟨[
 def «routeAlias» : Concept Placement := ⟨[
   ("level interface", fun f => Decidable.decide (f.level = Level.«interface»))]⟩
 
-/-- [D] strategic foundation (new). The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (purpose/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052). Standard: strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How. Fields: broader ["information artifact"]; handoff_type false. -/
+/-- [D] strategic foundation (new). The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (packages/naive/src/functions/strategy/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052). Standard: strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How. Fields: broader ["information artifact"]; handoff_type false. -/
 def «strategicFoundation» : Concept Placement := ⟨[
   ("level venture", fun f => Decidable.decide (f.level = Level.«venture»))]⟩
 

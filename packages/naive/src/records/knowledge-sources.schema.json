@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "knowledge-sources.schema.json",
   "title": "Knowledge sources",
-  "description": "A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored. Beside the sources Naive reads records from, `functions` says where each of the venture's functions keeps its truth outside Naive (EE-083): the repo, hosting and analytics for the product, a payments or store account for sales, the bank for money, a folder or signing service for legal documents. Those are pointers to systems of record; a system Naive reads through code is connected, one it only knows of is pointed. `truth` says where the venture's source of truth as a whole lives.",
+  "description": "A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in packages/naive/src/records/layers/knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored. Beside the sources Naive reads records from, `functions` says where each of the venture's functions keeps its truth outside Naive (EE-083): the repo, hosting and analytics for the product, a payments or store account for sales, the bank for money, a folder or signing service for legal documents. Those are pointers to systems of record; a system Naive reads through code is connected, one it only knows of is pointed. `truth` says where the venture's source of truth as a whole lives.",
   "type": "object",
   "required": [
     "sources",
@@ -184,7 +184,7 @@
     },
     "functions": {
       "type": "object",
-      "description": "Each function's systems of record, by department id (operations/departments.json) or legal (EE-083)",
+      "description": "Each function's systems of record, by department id (packages/naive/src/functions/departments.json) or legal (EE-083)",
       "propertyNames": {
         "enum": [
           "strategy",

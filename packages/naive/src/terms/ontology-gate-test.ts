@@ -303,12 +303,12 @@ for (const [file, fn, , verdict, witness] of rows) {
 function sparse(edit: (_ontology: { nouns: Record<string, unknown>[] }) => void): string {
   const dir = join(tmp, `ont-${++n}`);
   for (const rel of [
-    "purpose/references/references.json",
-    "purpose/kits/validation/references/references.json",
-    "governance/references/references.json",
-    "operations/references/references.json",
-    "interface/references/references.json",
-    "operations/departments.json",
+    "packages/naive/src/records/layers/purpose/references/references.json",
+    "packages/naive/src/functions/strategy/kits/validation/references/references.json",
+    "packages/naive/src/records/layers/governance/references/references.json",
+    "packages/naive/src/records/layers/operations/references/references.json",
+    "packages/naive/src/records/layers/interface/references/references.json",
+    "packages/naive/src/functions/departments.json",
   ]) {
     mkdirSync(join(dir, dirname(rel)), { recursive: true });
     cpSync(join(root, rel), join(dir, rel));

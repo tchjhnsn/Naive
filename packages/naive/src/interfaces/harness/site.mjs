@@ -14,7 +14,7 @@ import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { judgeCommand } from "../../engine/caching.mjs";
-import { factsOf, icpOf, request, score, PRESENCE } from "../../../../../operations/marketing/site/presence.mjs";
+import { factsOf, icpOf, request, score, PRESENCE } from "../../functions/marketing-and-sales/marketing/site/presence.mjs";
 
 const run = (cmd, args, input) => new Promise((resolve) => {
   const p = spawn(cmd[0], [...cmd.slice(1), ...args], { stdio: ["pipe", "pipe", "pipe"] });

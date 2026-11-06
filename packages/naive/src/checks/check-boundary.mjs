@@ -8,7 +8,7 @@
 //      the repository. Comments are not code. An app hands Naive its modules by configuration instead:
 //      an environment variable such as NAIVE_JUDGE_CMD, or a hook it calls such as registerConnector
 //      (packages/naive/src/store/connectors/index.mjs).
-//   2. Every connector the registry names (knowledge/tooling/integrations.json) is a module in this
+//   2. Every connector the registry names (packages/naive/src/records/layers/knowledge/tooling/integrations.json) is a module in this
 //      repository that works offline and names no vendor: no fetch, no node:http, node:https or
 //      node:net, and no credentials. A vendor connector is the app's, registered at run time.
 //
@@ -50,7 +50,7 @@ for (const f of walk(root)) {
 }
 
 // 2. Connectors in the registry.
-const regFile = join(root, "knowledge/tooling/integrations.json");
+const regFile = join(root, "packages/naive/src/records/layers/knowledge/tooling/integrations.json");
 const reg = existsSync(regFile) ? JSON.parse(readFileSync(regFile, "utf8")).filter((t) => t.connector) : [];
 const NET = /\bfetch\s*\(|["']node:(https?|net|tls|dgram)["']/;
 for (const t of reg) {

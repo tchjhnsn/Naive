@@ -14,7 +14,7 @@
     { "id": "tier", "question": "Why does the venture exist, and how far through the phases does it mean to go?", "answers": "ambition" }
   ],
   "template": null,
-  "skill": "purpose/skills/ambition-tier/SKILL.md",
+  "skill": "packages/naive/src/functions/strategy/skills/ambition-tier/SKILL.md",
   "adapter": "frameworks/ambition-tier/adapter.mjs",
   "checks": [],
   "maps_to": [

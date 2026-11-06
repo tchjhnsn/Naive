@@ -8,5 +8,5 @@
   "default_tier": "person",
   "lint_suites": [],
   "verified_by": null,
-  "skill": "governance/skills/executive-roles/SKILL.md"
+  "skill": "packages/naive/src/functions/human-capital/skills/executive-roles/SKILL.md"
 }

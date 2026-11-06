@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The venture development lifecycle (VDL): where a venture is, what its phase's gate asks, and whether
-// it may move on. Phases and gates are defined once in purpose/frameworks/product-anatomy/phases.json;
+// it may move on. Phases and gates are defined once in packages/naive/src/functions/products/frameworks/product-anatomy/phases.json;
 // each venture states its own exit criteria per phase (foundation/exit-criteria/<phase>.json, or its telos before migration). A criterion is met when a person
 // says so, with evidence; a phase change is a person's decision, and the gate refuses it while the
 // current phase has unmet criteria, unless the person overrides it with a reason (logged).
@@ -13,7 +13,7 @@
 // skipping a phase needs --override. The change itself, with its staleness, is packages/naive/src/engine/freshness.mjs's phase().
 //
 // The gate and the evidence that clears it come from the venture's lifecycle playbook (venture.json
-// lifecycle_playbook; purpose/frameworks/product-anatomy/playbooks/). With none named, product-first is
+// lifecycle_playbook; packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/). With none named, product-first is
 // read and its evidence is reported only, so a venture that never chose keeps today's behavior. A venture
 // that names a playbook cannot pass a gate until a met exit criterion supplies each piece of its evidence.
 
@@ -29,9 +29,9 @@ import { exitCriteria } from "./canonical.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-export const PHASES = load(join(root, "purpose/frameworks/product-anatomy/phases.json")).phases.map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate, binding_constraint }));
+export const PHASES = load(join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json")).phases.map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate, binding_constraint }));
 export const DEFAULT_PLAYBOOK = "product-first";
-const playbookDir = join(root, "purpose/frameworks/product-anatomy/playbooks");
+const playbookDir = join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/playbooks");
 export const playbooks = () => existsSync(playbookDir) ? readdirSync(playbookDir).filter((f) => f.endsWith(".json")).map((f) => load(join(playbookDir, f))) : [];
 export const playbookOf = (id) => playbooks().find((p) => p.id === id) ?? null;
 // Exit criteria are canonical records (foundation/exit-criteria/<phase>.json), read through packages/naive/src/engine/canonical.mjs;

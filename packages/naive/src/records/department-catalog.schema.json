@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "department-catalog.schema.json",
   "title": "Department catalog",
-  "description": "The departments a venture can import (EE-047): APQC Process Classification Framework categories, each tagged with its place in Porter's value chain and given need-now priors (EE-028). The framework's copy is operations/departments.json.",
+  "description": "The departments a venture can import (EE-047): APQC Process Classification Framework categories, each tagged with its place in Porter's value chain and given need-now priors (EE-028). The framework's copy is packages/naive/src/functions/departments.json.",
   "type": "object",
   "required": ["version", "departments"],
   "properties": {

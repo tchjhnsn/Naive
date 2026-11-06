@@ -2,7 +2,7 @@
 // The publish check for field visibility: every fact a public page uses must come through the gate.
 // A page's <Fact name="..."/> or <FactList name="..."/> reads a facts file (generated/venture-facts.json), which
 // the app's facts builder writes through packages/naive/src/engine/visibility.mjs, in the publish build
-// (operations/marketing/publish-build.mjs). The pages and the facts file belong to the app that publishes
+// (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs). The pages and the facts file belong to the app that publishes
 // them, so both are named on the command line. A name the gate refused (the field
 // is internal, its approved wording changed, or no person approved it) is missing there: the page would
 // silently drop it, so this check fails and names the field a person must approve. A fact present in the

@@ -12,5 +12,5 @@
   "default_tier": "workhorse",
   "lint_suites": [],
   "verified_by": "architect",
-  "skill": "operations/skills/team-design/SKILL.md"
+  "skill": "packages/naive/src/functions/human-capital/skills/team-design/SKILL.md"
 }

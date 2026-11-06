@@ -1,4 +1,4 @@
-// Tests for field visibility beyond the leak canaries (operations/marketing/leaks-test.mjs): only a person sets public,
+// Tests for field visibility beyond the leak canaries (packages/naive/src/functions/marketing-and-sales/marketing/leaks-test.mjs): only a person sets public,
 // an agent only proposes, the router's public reader sees only public fields, and the publish check
 // (packages/naive/src/checks/check-visibility.mjs) refuses a page that uses a fact no person approved.
 

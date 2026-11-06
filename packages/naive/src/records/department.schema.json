@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "department.schema.json",
   "title": "Department",
-  "description": "The tag in each of a venture's department folders (EE-047): which department the folder is and where it sits in the value chain. It lives in the folder at <layer>/departments/<id>/department.json, or under an optional grouping folder, <layer>/departments/primary/<id>/ or support/<id>/, which is for looking at only; the tag, not the folder, says what the department is. Its values must match operations/departments.json.",
+  "description": "The tag in each of a venture's department folders (EE-047): which department the folder is and where it sits in the value chain. It lives in the folder at <layer>/departments/<id>/department.json, or under an optional grouping folder, <layer>/departments/primary/<id>/ or support/<id>/, which is for looking at only; the tag, not the folder, says what the department is. Its values must match packages/naive/src/functions/departments.json.",
   "type": "object",
   "required": ["department", "value_chain", "apqc"],
   "properties": {

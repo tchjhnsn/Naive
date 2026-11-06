@@ -38,7 +38,7 @@ A component shows a record's content by reading it through Naive at build time; 
 
 ## Present it
 
-Make the Design System artifact with the `choosing-artifacts` skill (`interface/skills/choosing-artifacts/SKILL.md`), from the Design System artifact type when one is listed. Put its link in `marketing/design-system.json` `artifact`. The artifact is a view: the records stay the source of truth.
+Make the Design System artifact with the `choosing-artifacts` skill (`packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md`), from the Design System artifact type when one is listed. Put its link in `marketing/design-system.json` `artifact`. The artifact is a view: the records stay the source of truth.
 
 ## Check
 

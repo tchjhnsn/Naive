@@ -79,9 +79,9 @@ for (const f of all.filter((f) => f.endsWith(".json"))) {
 const classIds = new Set(load("governance/venture-template/decision-rights.json").classes.map((c) => c.id));
 for (const r of types.values()) if (r.decision_class && !classIds.has(r.decision_class)) errors.push(`${r.id}: unknown decision class ${r.decision_class}`);
 
-// Layers and packages (EE-071). A layer manifest is <layer>/layer.json. A package that lists
+// Layers and packages (EE-071). A layer manifest is packages/naive/src/records/layers/<layer>/layer.json. A package that lists
 // `records` owns those record types (the validation package absorbed the old validation kit).
-const layerFiles = [...model.layers.map((l) => `${l}/layer.json`), "packages/naive/src/records/layer.json"];
+const layerFiles = [...model.layers.map((l) => `packages/naive/src/records/layers/${l}/layer.json`), "packages/naive/src/records/layer.json"];
 const packageFiles = all.filter((f) => /^packages\/naive\/library\/packages\/[^/]+\/package\.json$/.test(f));
 const skillsOf = (k) => [...(k.skills ?? []), ...(k.skill ? [k.skill] : [])];
 const kits = new Map();
@@ -96,7 +96,7 @@ const own = (id, t, k, p) => {
 for (const p of layerFiles) {
   if (!existsSync(join(root, p))) { errors.push(`${p}: missing; every layer has a manifest`); continue; }
   const k = { ...load(p), path: p };
-  const folderLayer = p === "packages/naive/src/records/layer.json" ? "system" : p.split("/")[0];
+  const folderLayer = p === "packages/naive/src/records/layer.json" ? "system" : p.split("/").at(-2);
   if (k.layer !== folderLayer) errors.push(`${p}: layer says ${k.layer}`);
   const id = k.name ?? k.kit;
   kits.set(id, k);
@@ -130,7 +130,7 @@ for (const k of kits.values()) if (k.product) {
 }
 
 // Skills: each SKILL.md belongs to exactly one layer or package.
-const skillFiles = all.filter((f) => /(^|\/)SKILL\.md$/.test(f) && !f.includes("/_archive/") && model.layers.includes(f.split("/")[0]));
+const skillFiles = all.filter((f) => /(^|\/)SKILL\.md$/.test(f) && !f.includes("/_archive/") && (model.layers.includes(f.split("/")[0]) || /^packages\/naive\/src\/(functions|interfaces)\//.test(f)));
 const listed = new Map();
 for (const k of kits.values()) for (const s of skillsOf(k)) {
   const id = k.name ?? k.kit;

@@ -14,7 +14,7 @@
 // Data checks: product-market fit's Ellis share (very disappointed / asked; 40% is the usual bar)
 // and whether retention levels off; team gaps (skills needed with no holder); operations
 // readiness grades as its weakest MAD tier.
-// Score (--score): V = sum(w p e) / sum(w), weights and floors from purpose/kits/validation/weights.json
+// Score (--score): V = sum(w p e) / sum(w), weights and floors from packages/naive/src/functions/strategy/kits/validation/weights.json
 // by go-to-market path and venture kind; a missing sub-score counts 0 and is listed.
 // Errors: duplicate evidence ids, a URL with no checked date, a source file that does not exist
 // (paths are relative to the venture folder), a date in the future.
@@ -106,7 +106,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const load = (p) => JSON.parse(readFileSync(p, "utf8"));
   const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
     : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-  const W = load(new URL("../../../../purpose/kits/validation/weights.json", import.meta.url));
+  const W = load(new URL("../functions/strategy/kits/validation/weights.json", import.meta.url));
   const errors = [], out = [], scores = [];
   const today = new Date();
   for (const root of walk(dir)) {

@@ -81,7 +81,7 @@
                 "capabilities"
               ]
             },
-            "description": "Functions the type imports from the start (operations/departments.json); a solo founder owns them all"
+            "description": "Functions the type imports from the start (packages/naive/src/functions/departments.json); a solo founder owns them all"
           },
           "packages": {
             "type": "array",

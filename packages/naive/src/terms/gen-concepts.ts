@@ -106,7 +106,7 @@ export function render(nouns: Noun[]): string {
       `def ${quote(name)} : Concept Placement := ⟨[\n  ${props.join(",\n  ")}]⟩\n`;
   });
   const department = departments.size === 0 ? [] : [
-    "/-- [D] The functions (ids in operations/departments.json) that own a noun. -/",
+    "/-- [D] The functions (ids in packages/naive/src/functions/departments.json) that own a noun. -/",
     `inductive Department | ${[...departments.values()].join(" | ")}`,
     "  deriving DecidableEq, Repr",
     "",

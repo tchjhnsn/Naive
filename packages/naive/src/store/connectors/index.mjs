@@ -2,7 +2,7 @@
 // venture already uses, and the router reaches each through a connector with one contract
 // (contract.mjs). Nothing is copied.
 //
-//   The registry   knowledge/tooling/integrations.json: an integration with a `connector` names
+//   The registry   packages/naive/src/records/layers/knowledge/tooling/integrations.json: an integration with a `connector` names
 //                  the module that implements the contract for it.
 //   A source map   <venture>/knowledge/sources.json (optional): the venture's sources, and which
 //                  record types live in which source. A record type it does not name, and every
@@ -44,10 +44,10 @@ export function registerConnector(id, entry) {
   registered.set(id, { id, name: entry.name ?? id, ...entry });
 }
 
-/** The connector registry: integration id -> { module, writes, ... } from knowledge/tooling/integrations.json,
+/** The connector registry: integration id -> { module, writes, ... } from packages/naive/src/records/layers/knowledge/tooling/integrations.json,
  *  then the connectors an app registered. */
 export function registry() {
-  const own = load(join(repo, "knowledge/tooling/integrations.json")).filter((t) => t.connector).map((t) => [t.id, { id: t.id, name: t.name, ...t.connector }]);
+  const own = load(join(repo, "packages/naive/src/records/layers/knowledge/tooling/integrations.json")).filter((t) => t.connector).map((t) => [t.id, { id: t.id, name: t.name, ...t.connector }]);
   return new Map([...own, ...registered]);
 }
 
@@ -100,7 +100,7 @@ const cache = new Map();
 /** A connected connector for one source of one venture. */
 export async function connect(source, dir) {
   const reg = registry().get(source.connector);
-  if (!reg) throw new Error(`no connector ${source.connector}: knowledge/tooling/integrations.json has ${[...registry().keys()].join(", ")}`);
+  if (!reg) throw new Error(`no connector ${source.connector}: packages/naive/src/records/layers/knowledge/tooling/integrations.json has ${[...registry().keys()].join(", ")}`);
   const mod = cache.get(reg.module) ?? await import(isAbsolute(reg.module) ? reg.module : join(repo, reg.module));
   cache.set(reg.module, mod);
   const opts = { ...source };

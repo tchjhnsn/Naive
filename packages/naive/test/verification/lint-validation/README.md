@@ -59,7 +59,7 @@ The route reproduced it: `call` on `validation/lint` returned the usage line. Th
 
 ## Left out
 
-- Time is one tick past the shelf, not a calendar. The code uses the assumption profile's `expire` (365d in `knowledge/freshness.json`) and `per_phase`, overridable under `freshness.profiles.assumption` in `naive.config.json`.
+- Time is one tick past the shelf, not a calendar. The code uses the assumption profile's `expire` (365d in `packages/naive/src/engine/freshness.json`) and `per_phase`, overridable under `freshness.profiles.assumption` in `naive.config.json`.
 - The model has Discovery and Validation. A later phase is the same test: a `phase` event in `knowledge/freshness.jsonl` dated after `collected`.
 - The model closes one rule at a time. The code can close several. Exit is 1 if any closed rule has a finding.
 - An agent can grade a stated assumption before any evidence is cited. The code fires `claim-no-evidence` and `agent-only-grade` together. The model only grades an assumption after evidence is cited. The test `a stated assumption graded by an agent, with no evidence` is that replay.

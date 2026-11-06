@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "eval-suite.schema.json",
   "title": "Eval suite",
-  "description": "A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing evidence/evals/*.json files.",
+  "description": "A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing packages/naive/test/evals/*.json files.",
   "type": "object",
   "required": ["evals"],
   "properties": {

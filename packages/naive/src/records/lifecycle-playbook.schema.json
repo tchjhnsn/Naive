@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "lifecycle-playbook.schema.json",
   "title": "Lifecycle playbook",
-  "description": "An ordering of the venture development lifecycle, at purpose/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook.",
+  "description": "An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook.",
   "type": "object",
   "required": ["id", "title", "version", "phases"],
   "additionalProperties": false,

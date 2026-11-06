@@ -67,7 +67,7 @@ expect("L-2 without a session the whole layout comes every time", none.result.la
 // N-7: a sibling keeps the shared layout and swaps only the record's context.
 const sib = await nav("purpose/validation/solution", { session: "s1" });
 expect("N-7 a sibling route keeps the stack and AGENTS.md and swaps only the record's part", JSON.stringify(Object.keys(sib.result.layout.parts)) === JSON.stringify(["record:validation/solution"])
-  && sib.result.layout.kept.includes("stack:purpose/layer.json") && sib.result.layout.kept.includes("chain:AGENTS.md"), JSON.stringify(sib.result.layout));
+  && sib.result.layout.kept.includes("stack:packages/naive/src/records/layers/purpose/layer.json") && sib.result.layout.kept.includes("chain:AGENTS.md"), JSON.stringify(sib.result.layout));
 
 // P-12 and F-6: the template is recomputed every time, never part of the layout, and never blocks.
 expect("P-12 the template holds need-now and open decisions, computed now", again.result.template.need_now?.phase && typeof again.result.template.decisions?.open === "number"

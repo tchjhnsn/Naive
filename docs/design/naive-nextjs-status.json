@@ -303,7 +303,7 @@
     "packages/naive/src/engine/naive-config.mjs",
     "packages/naive/src/records/naive-config.schema.json",
     "packages/naive/src/checks/check-config.mjs",
-    "purpose/frameworks/idea-map/ideamap.mjs",
+    "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs",
     "packages/naive/src/records/data-model.json",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
@@ -560,7 +560,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/brand.mjs",
-    "operations/marketing/site/plan.mjs",
+    "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -1810,7 +1810,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/freshness.mjs",
-    "knowledge/freshness.json",
+    "packages/naive/src/engine/freshness.json",
     "packages/naive/src/interfaces/cli/freshness.mjs",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
@@ -1822,7 +1822,7 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "knowledge/freshness.json",
+    "packages/naive/src/engine/freshness.json",
     "packages/naive/src/records/freshness-profiles.schema.json",
     "packages/naive/src/engine/freshness.mjs",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"

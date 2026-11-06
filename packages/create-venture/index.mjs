@@ -102,7 +102,7 @@ if (!flag("no-workspace")) try { ownWorkspace = findWorkspace(dirname(dir)); if 
 
 // The framework's registries: venture types, roles and functions (EE-082).
 const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "packages/naive/src/engine/venture-type.mjs")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
-const DEPARTMENTS = JSON.parse(readFileSync(join(framework, "operations/departments.json"), "utf8")).departments;
+const DEPARTMENTS = JSON.parse(readFileSync(join(framework, "packages/naive/src/functions/departments.json"), "utf8")).departments;
 const deptLabel = (d) => DEPARTMENTS.find((x) => x.id === d)?.label ?? d;
 const roleOf = (r) => ROLES.find((x) => x.id === r);
 const gitName = () => spawnSync("git", ["config", "user.name"], { encoding: "utf8" }).stdout?.trim() || null;

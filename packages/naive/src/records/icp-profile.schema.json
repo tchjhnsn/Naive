@@ -117,7 +117,7 @@
     },
     "customer_type": {
       "type": "string",
-      "description": "The customer type from the marketing matrix (operations/marketing/site/matrix.json customer_types), when the founder sets it; otherwise it is judged from who (EE-063)"
+      "description": "The customer type from the marketing matrix (packages/naive/src/functions/marketing-and-sales/marketing/site/matrix.json customer_types), when the founder sets it; otherwise it is judged from who (EE-063)"
     },
     "conversation": {
       "type": "array",

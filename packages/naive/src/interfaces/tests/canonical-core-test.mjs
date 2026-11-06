@@ -68,7 +68,7 @@ expect("check-frameworks passes on the repo", check(repo).errors.length === 0, c
 const bad = join(tmp, "repo");
 mkdirSync(join(bad, "packages/naive/src/engine"), { recursive: true });
 cpSync(join(repo, "frameworks"), join(bad, "frameworks"), { recursive: true });
-for (const p of ["purpose/templates/telos-based-smart.md", "purpose/skills/telos/SKILL.md", "purpose/skills/ambition-tier/SKILL.md", "packages/naive/src/checks/check-telos.mjs"]) { mkdirSync(join(bad, p, ".."), { recursive: true }); cpSync(join(repo, p), join(bad, p)); }
+for (const p of ["packages/naive/src/functions/strategy/templates/telos-based-smart.md", "packages/naive/src/functions/strategy/skills/telos/SKILL.md", "packages/naive/src/functions/strategy/skills/ambition-tier/SKILL.md", "packages/naive/src/checks/check-telos.mjs"]) { mkdirSync(join(bad, p, ".."), { recursive: true }); cpSync(join(repo, p), join(bad, p)); }
 const fw = load(join(bad, "frameworks/telos/framework.json"));
 fw.maps_to.push({ framework_field: "statement", canonical_route: "foundation/telos", canonical_field: "statement" });
 writeFileSync(join(bad, "frameworks/telos/framework.json"), JSON.stringify(fw));

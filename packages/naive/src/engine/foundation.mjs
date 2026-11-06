@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Reports a venture's strategic foundation (EE-051, EE-052): for each question of the Five Ws and How plus
-// whether (purpose/strategic-foundation.json), the record attributes that answer it, and whether
+// whether (packages/naive/src/functions/strategy/strategic-foundation.json), the record attributes that answer it, and whether
 // each is confirmed, drafted by an agent, waiting as a draft, or missing. This is what a founder
 // keeps in front of them; a platform renders it always visible. Behaviors:
-// purpose/kits/validation/features/strategic-foundation.feature.
+// packages/naive/src/functions/strategy/kits/validation/features/strategic-foundation.feature.
 //
 //   node packages/naive/src/engine/foundation.mjs <venture dir> [--json]
 //
@@ -21,7 +21,7 @@ import { readDataModel, venturePaths } from "../records/index.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-export const FRAME = load(join(repo, "purpose/strategic-foundation.json"));
+export const FRAME = load(join(repo, "packages/naive/src/functions/strategy/strategic-foundation.json"));
 const MODEL = readDataModel();
 
 // "." is the whole record: a collection whose items are the statement, such as one file per ICP profile.

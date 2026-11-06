@@ -147,7 +147,7 @@ theorem counted_le_inCap (ts : List Labeled) : (ts.filter countsTowardCap).lengt
 /-! Typed links (S2-PR9): the relations an idea may state toward another idea, from packages/naive/src/terms/relations.ts.
     The term typed-link reads a link whose type is not its order backwards, so a narrower b counts as b broader a
     when it looks for a cycle. These theorems show the table keeps that sound. That this table and the TypeScript
-    one name the same relations is checked by purpose/frameworks/idea-map/test.mjs. -/
+    one name the same relations is checked by packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs. -/
 
 /-- [D] The relations between two ideas. -/
 inductive IdeaRelation | broader | narrower | related | partOf | derivedFrom | buildsOn | supports | contradicts

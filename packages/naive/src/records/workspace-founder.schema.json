@@ -75,7 +75,7 @@
     },
     "profile": {
       "$ref": "founder.schema.json#/$defs/profile",
-      "description": "Who the founder is: attributes from purpose/frameworks/founder-profile/attributes.json in the founder's own words. An agent may draft it; only the founder confirms it"
+      "description": "Who the founder is: attributes from packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json in the founder's own words. An agent may draft it; only the founder confirms it"
     },
     "confirmed_by": {
       "type": "object",

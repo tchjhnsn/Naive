@@ -1,0 +1,53 @@
+{
+  "layer": "evidence",
+  "purpose": "Prove what is true: results of running checks, eval suites, benchmarks, and audits of coverage, fidelity, findability and metrics.",
+  "skills": [
+    {
+      "id": "design-coverage",
+      "path": "packages/naive/src/functions/capabilities/skills/design-coverage/SKILL.md"
+    },
+    {
+      "id": "fidelity-ladder-audit",
+      "path": "packages/naive/src/functions/capabilities/skills/fidelity-ladder-audit/SKILL.md"
+    },
+    {
+      "id": "findability",
+      "path": "packages/naive/src/functions/capabilities/skills/findability/SKILL.md"
+    },
+    {
+      "id": "foreshadowing-audit",
+      "path": "packages/naive/src/functions/capabilities/skills/foreshadowing-audit/SKILL.md"
+    },
+    {
+      "id": "metrics-review",
+      "path": "packages/naive/src/functions/strategy/skills/metrics-review/SKILL.md"
+    },
+    {
+      "id": "agent-capabilities",
+      "path": "packages/naive/src/functions/human-capital/skills/agent-capabilities/SKILL.md"
+    }
+  ],
+  "records": [
+    "evidence",
+    "eval-suite",
+    "design-documents-registry",
+    "benchmark",
+    "agent-capability",
+    "bug",
+    "telemetry-event"
+  ],
+  "reads": [
+    "handoff",
+    "design-document",
+    "venture-profile",
+    "decision"
+  ],
+  "writes": [],
+  "checks": [
+    "packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs"
+  ],
+  "gaps": [
+    "Audits (coverage, fidelity, findability) print reports but do not write evidence records"
+  ],
+  "name": "evidence"
+}
