@@ -1,0 +1,36 @@
+# interfaces
+
+Up: [src](../README.md)
+
+## What this is
+
+The ways a person, or an agent, works with a venture: the `naive` and `mentura` CLIs, the MCP server and the local HTTP API, all over one router (EE-030). Also the skills the Claude Code plugin ships, the harness adapters, the agent harness and the operator console.
+
+## Where things are
+
+| Path | Holds |
+|---|---|
+| [`adapters/`](./adapters) | Harness adapters: Claude Code, Codex, Cursor. |
+| [`adapters.mjs`](./adapters.mjs) | Adapters (Z-4). |
+| [`api/`](./api) | The local HTTP API over the router. |
+| [`cli/`](./cli) | `naive.mjs` and `mentura.mjs`, the CLIs. |
+| [`context-test.mjs`](./context-test.mjs) | Tests for context (packages/naive/src/router/context.mjs), instrumentation (packages/naive/src/core/instrumentation.mjs) and agent vitals (packages/naive/src/router/vitals.mjs). |
+| [`demo/`](./demo) | Demos: the decision harness and a live agent over MCP. |
+| [`dev/`](./dev) | `naive dev` setup and its test. |
+| [`harness/`](./harness) | The agent harness, its evals and examples. |
+| [`mcp/`](./mcp) | The MCP server over the router. |
+| [`operator-console/`](./operator-console/README.md) | The operator console. |
+| [`plugin-mcp.json`](./plugin-mcp.json) | The Claude Code plugin's MCP server entry (EE-084). |
+| [`plugin-test.mjs`](./plugin-test.mjs) | The Claude Code plugin (EE-084). |
+| [`skills/`](./skills) | The skills the plugin ships: install, create, setup, choosing artifacts, run a playbook. |
+| [`test.mjs`](./test.mjs) | Tests for the router and the three interfaces over it (EE-030). |
+| [`tests/`](./tests/README.md) | Tests that run a module in `packages/naive/src/engine/` through the router. |
+
+## Run and test
+
+- `node packages/naive/src/interfaces/test.mjs` tests the router and the three interfaces over it.
+- `node packages/naive/src/interfaces/plugin-test.mjs` tests the plugin manifest and skills.
+
+## How it connects
+
+- Calls: [`router`](../router/router.mjs).
