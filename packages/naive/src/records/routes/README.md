@@ -15,7 +15,7 @@ The route table and the pure helpers that read it. Every route a venture has is 
 
 A record's template is `<record>.md`, or one whose name starts `<record>-`, in its package's template dir or beside its manifest. A layer manifest keeps no templates beside it since EE-118 step 7, so its templates are looked up in the function modules' `templates/` folders, in the order `packages/naive/src/functions/departments.json` lists the functions.
 
-`defaultWorkspace()` is `MENTURA_WORKSPACE`, else the current directory. The framework never defaults to a folder of its own. A record type's venture-relative paths come from `venturePaths` in [`packages/naive/src/records`](../README.md).
+`defaultWorkspace()` is `MENTURA_WORKSPACE`, else the current directory. The framework never defaults to a folder of its own. A venture's decision rights start from the template's, `packages/naive/template/governance/decision-rights.json`, tightened by the venture's own file. A record type's venture-relative paths come from `venturePaths` in [`packages/naive/src/records`](../README.md).
 
 `packages/naive/src/router/router.mjs` re-exports everything in `routes.mjs`, so code that imports the route table from the router keeps working. New code below the router imports `packages/naive/src/records/routes/routes.mjs`.
 
