@@ -10,6 +10,7 @@ The routes' actions, shared by the CLI, the MCP server and the HTTP API (EE-030)
 
 | Path | Holds |
 |---|---|
+| [`agent-files.ts`](./agent-files.ts) | The agent filesystem (EE-122): `ls`, `read`, `write`, `edit`, `glob` and `grep` over the router, for deep agents. A path is a route with a leading slash, a file is a record as JSON, and every write meets the schema, the gate and provenance, so a gated agent write comes back as a draft. Each operation is a tool span when traces are on. No LangChain import; an app wraps it as a deepagents backend. |
 | [`acting.mjs`](./acting.mjs) | Who is acting (M-18, like cookies in a Server Action) and access on every read (F-5). |
 | [`boundaries.mjs`](./boundaries.mjs) | Error boundaries (Next.js translation P-15, E-5, E-6, E-8). |
 | [`brand.mjs`](./brand.mjs) | The brand and asset verbs of the CLI (mentura brand ..., mentura assets ...). |

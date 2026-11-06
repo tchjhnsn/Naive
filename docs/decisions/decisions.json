@@ -1675,7 +1675,7 @@
       "id": "EE-121",
       "date": "2026-11-06",
       "status": "in-force",
-      "decision": "Agent runs leave traces in the venture's own files: traces/<session>.jsonl, one span per step (an agent or subagent run, a model call, a tool call, a router call, a judgment or a trigger) after the OpenTelemetry GenAI semantic conventions, hash-chained like the provenance log. A provenance line written inside a span names it, so what changed points to the step that changed it, offline. Traces are off by default (naive.config.json traces) and keep inputs and outputs only when traces.content is on. Naive imports no agent framework and names no vendor: LangChain, LangSmith and any exporter belong to the app that hosts Naive (EE-041). Not built yet: Naive's agent file operations over the router, and Mentura's LangChain callback handler, deepagents backend and OpenTelemetry exporter.",
+      "decision": "Agent runs leave traces in the venture's own files: traces/<session>.jsonl, one span per step (an agent or subagent run, a model call, a tool call, a router call, a judgment or a trigger) after the OpenTelemetry GenAI semantic conventions, hash-chained like the provenance log. A provenance line written inside a span names it, so what changed points to the step that changed it, offline. Traces are off by default (naive.config.json traces) and keep inputs and outputs only when traces.content is on. Naive imports no agent framework and names no vendor: LangChain, LangSmith and any exporter belong to the app that hosts Naive (EE-041). Not built yet: Mentura's LangChain callback handler, deepagents backend and OpenTelemetry exporter.",
       "why": "Torian, 2026-11-06 17:22Z to 17:43Z in the master architecture thread: provenance should exist in the file system so traces run offline; agents are built with LangChain and run by Grokbot's always-on agents, which go through Naive's deterministic layers; 'focus too on traces and observability existing in the file system'. The design is NAIVE_TRACES_AND_LANGCHAIN_2026-11-06.md in the project files. OpenTelemetry's GenAI conventions are the standard LangSmith and other tools ingest, so the files need no conversion to be shipped.",
       "related": [
         "EE-031",
@@ -1692,6 +1692,26 @@
         {
           "kind": "path",
           "target": "packages/naive/src/checks/check-traces.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-122",
+      "date": "2026-11-06",
+      "status": "in-force",
+      "decision": "Agents reach a venture's records as files through Naive's router: ls, read, write, edit, glob and grep, the six operations deep agents work through. A path is a route with a leading slash, a folder is a route prefix or a collection, and a file is one record as JSON. Every operation goes through the router's call, so reads meet access and confidentiality, writes meet the schema, the gate, decision rights and provenance, and a gated agent write comes back as a draft for a person. Each operation is a tool span when the venture keeps traces (EE-121). Naive ships the operations as plain functions and imports no agent framework; an app wraps them as a deepagents backend (EE-041). Text records (Markdown) are read but not written this way, because the router writes records as JSON.",
+      "why": "Torian, 2026-11-06 17:36Z in the master architecture thread: Grokbot's agents do not run end to end; they go through Naive's deterministic layers (subagents, planning, tools, system prompts) built with LangChain deepagents. Deep agents act through file tools, so giving them the router as their filesystem keeps every write under the gate and in provenance. The design is NAIVE_TRACES_AND_LANGCHAIN_2026-11-06.md in the project files.",
+      "related": [
+        "EE-121",
+        "EE-041",
+        "EE-030"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/router/agent-files.ts",
           "root": "repo",
           "expect": "exists"
         }

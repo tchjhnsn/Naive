@@ -188,6 +188,8 @@ export async function withSpan(dir, s, fn) {
   const ctx = { trace_id, span_id: randomUUID(), session: s.session ?? parent?.session ?? process.env.MENTURA_SESSION ?? trace_id };
   const start = new Date().toISOString();
   const write = (extra) => { try { span(dir, { ...s, ...ctx, parent_span_id: parent?.span_id ?? null, start, ...extra }); } catch {} };
+  // With traces off nothing is written, so nothing runs inside the span either: a provenance line must not name it.
+  if (!tracing(dir).on) return await fn(ctx);
   try {
     const out = await spanScope.run(ctx, () => fn(ctx));
     write({});
