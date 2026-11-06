@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "frame.schema.json",
   "title": "Frame (decision library)",
-  "description": "One recurring venture problem, as a shape, at library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide.",
+  "description": "One recurring venture problem, as a shape, at packages/naive/library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide.",
   "type": "object",
   "required": [
     "id",

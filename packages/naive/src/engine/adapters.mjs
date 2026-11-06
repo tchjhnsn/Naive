@@ -30,7 +30,7 @@ export async function skillsFor(dir) {
   const { packages } = await import("./packages.mjs");
   const p = packages(dir);
   return [...p.core, ...p.handoff].filter((x) => x.in === "now").flatMap((x) => {
-    const f = join(repo, "library", "packages", x.id, "package.json");
+    const f = join(repo, "packages/naive/library", "packages", x.id, "package.json");
     const s = existsSync(f) ? load(f).skill : null;
     return s && existsSync(join(repo, s.path)) ? [{ id: s.id, path: s.path, package: x.id }] : [];
   });

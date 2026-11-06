@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The pitch check for library/packages/product/playbooks/basecamp-shape-up.md.
+// The pitch check for packages/naive/library/packages/product/playbooks/basecamp-shape-up.md.
 // Passes when the cycle brief has the handoff sections check-ready.mjs requires
 // (Outcome, Work) and the five pitch sections, and the appetite names six weeks.
 // A blank section or any other appetite fails.

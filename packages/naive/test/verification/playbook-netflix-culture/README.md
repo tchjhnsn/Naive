@@ -1,6 +1,6 @@
 # Netflix culture playbook
 
-Model of `library/packages/people/playbooks/netflix-culture.md`: the records a founder reads and writes while the template runs, and the checks at the end.
+Model of `packages/naive/library/packages/people/playbooks/netflix-culture.md`: the records a founder reads and writes while the template runs, and the checks at the end.
 
 TLC 1.7.4 (`tla2tools.jar` sha256 `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`) found no broken rule. 74 distinct states, depth 15. The chart is `out/chart.mmd` and `out/chart.png`. `out/report.md` is the statechart summary. `out/tlc.out` is TLC's own log from the config as written.
 

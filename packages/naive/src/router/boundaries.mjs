@@ -84,10 +84,10 @@ export function ventureHealth(dir) {
 // The framework files every route depends on. A broken one stops every route, so it is checked first.
 function frameworkFiles() {
   const fromRoot = (f) => relative(ROOT, f);
-  const fixed = [fromRoot(dataModelFile()), "packages/naive/src/engine/need-now.json", fromRoot(schemaFile("venture")), "library/packages/catalog.json", "purpose/frameworks/product-anatomy/phases.json", "purpose/strategic-foundation.json", "operations/departments.json"];
+  const fixed = [fromRoot(dataModelFile()), "packages/naive/src/engine/need-now.json", fromRoot(schemaFile("venture")), "packages/naive/library/packages/catalog.json", "purpose/frameworks/product-anatomy/phases.json", "purpose/strategic-foundation.json", "operations/departments.json"];
   let layers = [];
   try { layers = readDataModel().layers.map((l) => `${l}/layer.json`); } catch {}
-  const pkgs = existsSync(join(repo, "library", "packages")) ? readdirSync(join(repo, "library", "packages")).map((n) => `library/packages/${n}/package.json`).filter((f) => existsSync(join(repo, f))) : [];
+  const pkgs = existsSync(join(repo, "packages/naive/library", "packages")) ? readdirSync(join(repo, "packages/naive/library", "packages")).map((n) => `packages/naive/library/packages/${n}/package.json`).filter((f) => existsSync(join(repo, f))) : [];
   return [...fixed, ...layers, "packages/naive/src/records/layer.json", ...pkgs];
 }
 
@@ -144,13 +144,13 @@ export async function boundaries(dir, { only = null } = {}) {
   const venture = { ok: !verrors.length, ...(verrors.length ? { errors: verrors, fix: "node packages/naive/src/engine/structure.mjs " + dir } : {}), warnings: s.warnings };
   const m = await manifest(dir);
   // Asked for by name, a package is checked whether or not the venture lists it.
-  const names = only ? only.filter((n) => existsSync(join(repo, "library", "packages", n, "package.json"))) : m.packages.list.filter((p) => p.known).map((p) => p.name);
+  const names = only ? only.filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))) : m.packages.list.filter((p) => p.known).map((p) => p.name);
   const rs = routes().filter((r) => r.kind === "record" && r.collection !== "list");
   const out = [];
   for (const name of names) {
     // A package's failure stays in its result: an exception here is caught and reported as that package's.
     try {
-      const pkg = load(join(repo, "library", "packages", name, "package.json"));
+      const pkg = load(join(repo, "packages/naive/library", "packages", name, "package.json"));
       const types = [...new Set([...(pkg.required ?? []), ...(pkg.optional ?? []), ...(pkg.records ?? [])])];
       const records = [], checks = new Set((pkg.checks ?? []).filter((c) => /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.mjs" && existsSync(join(repo, c))));
       for (const t of types) {

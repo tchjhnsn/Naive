@@ -1,5 +1,5 @@
 ---- MODULE ShapeUpCycle ----
-\* One six-week cycle from library/packages/product/playbooks/basecamp-shape-up.md.
+\* One six-week cycle from packages/naive/library/packages/product/playbooks/basecamp-shape-up.md.
 \* Each action is one template step. The comment names the Naive route.
 \* interface/router.mjs resolve() and call() are the code those routes run.
 \* The venture starts with a product card and an ICP. The framework template

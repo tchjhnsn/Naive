@@ -1,6 +1,6 @@
 # Founder-led sales, checked
 
-The model is one customer record moving through the buying stages in `library/packages/customers/playbooks/sales-founder-led.md`. The earlier TLC run did not find a broken rule. The chart is `out/chart.mmd` and `out/chart.png`.
+The model is one customer record moving through the buying stages in `packages/naive/library/packages/customers/playbooks/sales-founder-led.md`. The earlier TLC run did not find a broken rule. The chart is `out/chart.mmd` and `out/chart.png`.
 
 The chart hides a step that stays in one label. That covers you stopping once the foundation records are missing or the checks already have a result, the two answers of the price read (a price is on file, or none), and whether `knowledge/knowledge-sources` names another source. Those answers share a label. Both check results are drawn: Checks passed and Checks failed.
 

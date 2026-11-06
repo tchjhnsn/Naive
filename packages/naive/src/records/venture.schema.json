@@ -183,7 +183,7 @@
     },
     "packages": {
       "type": "array",
-      "description": "The Naive packages this venture uses, by name from library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.mjs.",
+      "description": "The Naive packages this venture uses, by name from packages/naive/library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.mjs.",
       "items": {
         "type": "string",
         "pattern": "^[a-z0-9-]+$"

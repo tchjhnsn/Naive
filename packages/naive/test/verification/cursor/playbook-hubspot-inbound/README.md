@@ -1,6 +1,6 @@
 # Inbound content plan, checked
 
-The model is the template in `library/packages/marketing/playbooks/hubspot-inbound.md`. One step is one prompt. TLC checks the rules below. `replay.mjs` runs the same routes on a temporary fixture venture.
+The model is the template in `packages/naive/library/packages/marketing/playbooks/hubspot-inbound.md`. One step is one prompt. TLC checks the rules below. `replay.mjs` runs the same routes on a temporary fixture venture.
 
 ## Regenerate
 

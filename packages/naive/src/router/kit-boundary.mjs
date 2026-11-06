@@ -29,7 +29,7 @@ export async function checkKit(kit) {
   const e = [];
   if (!kit || typeof kit !== "object") return ["a kit.json is an object"];
   if (typeof kit.name !== "string" || !ID.test(kit.name)) e.push("a kit has a name of lowercase letters, digits and hyphens");
-  if (typeof kit.package !== "string" || !existsSync(join(repo, "library", "packages", kit.package, "package.json"))) e.push(`kit ${kit.name}: package ${kit.package} is not a package in library/packages/ (a kit extends one package and never replaces it)`);
+  if (typeof kit.package !== "string" || !existsSync(join(repo, "packages/naive/library", "packages", kit.package, "package.json"))) e.push(`kit ${kit.name}: package ${kit.package} is not a package in packages/naive/library/packages/ (a kit extends one package and never replaces it)`);
   const b = kit.boundary;
   if (!b || typeof b !== "object") { e.push(`kit ${kit.name}: declares a boundary: what it reads, what it writes, which steps use a model`); return e; }
   for (const k of ["reads", "writes", "use_model"]) if (!Array.isArray(b[k])) e.push(`kit ${kit.name}: boundary.${k} is an array${k === "use_model" ? ", empty when it calls no model" : ""}`);

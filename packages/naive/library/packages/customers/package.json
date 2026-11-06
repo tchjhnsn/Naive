@@ -1,0 +1,70 @@
+{
+  "name": "customers",
+  "title": "Customers",
+  "kind": "data",
+  "purpose": "Master data for customers: one [id].json each, plus append-only _streams/ activity. Never complete. Gated by coverage and freshness. Pointers and summaries when a CRM is the system of record (EE-070).",
+  "required": [],
+  "optional": [],
+  "refs": [],
+  "gates": [
+    "coverage",
+    "freshness"
+  ],
+  "layer": "purpose",
+  "records": [
+    "customer",
+    "data-stream"
+  ],
+  "schemas": [
+    "packages/naive/src/records/data-master.schema.json",
+    "packages/naive/src/records/stream.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "packages/naive/src/checks/check-data-packages.mjs",
+    "packages/naive/src/checks/lint-customers.mjs"
+  ],
+  "skill": {
+    "id": "customers-function",
+    "path": "packages/naive/library/packages/customers/skill/SKILL.md"
+  },
+  "use_model": [
+    {
+      "step": "stage",
+      "kind": "choice",
+      "for_each": "customers",
+      "question": "Which buying stage do the notes {item.notes} put this customer at?",
+      "inputs": [
+        "item.notes"
+      ],
+      "options": [
+        "aware",
+        "trying",
+        "paying",
+        "gone"
+      ],
+      "threshold": 0.7
+    },
+    {
+      "step": "summary",
+      "kind": "draft",
+      "for_each": "customers",
+      "after": [
+        "stage"
+      ],
+      "question": "Write one plain sentence about this customer from the notes {item.notes} and the stage {steps.stage}, with the seat count written as {{seats}}.",
+      "inputs": [
+        "item.notes"
+      ],
+      "computed": {
+        "seats": {
+          "item": "seats"
+        }
+      },
+      "keep": [
+        "seats"
+      ]
+    }
+  ],
+  "complete": false
+}

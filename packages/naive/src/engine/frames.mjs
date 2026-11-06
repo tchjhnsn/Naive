@@ -44,11 +44,11 @@ export const ATTACKS = {
 // that says "use a SAFE" carries the error that a SAFE gives up no equity; it converts at a later round.
 export const NEVER = ["safe", "convertible note", "revenue-based financing", "venture debt", "dual-class", "preferred stock", "crowdfunding", "bootstrap", "term sheet", "series a"];
 
-const framesDir = (pkg) => join(repo, "library", "packages", pkg, "frames");
+const framesDir = (pkg) => join(repo, "packages/naive/library", "packages", pkg, "frames");
 export function frames() {
-  if (!existsSync(join(repo, "library", "packages"))) return [];
-  return readdirSync(join(repo, "library", "packages")).filter((p) => existsSync(framesDir(p))).flatMap((p) =>
-    readdirSync(framesDir(p)).filter((f) => f.endsWith(".frame.json")).map((f) => ({ ...load(join(framesDir(p), f)), package: p, file: `library/packages/${p}/frames/${f}` })));
+  if (!existsSync(join(repo, "packages/naive/library", "packages"))) return [];
+  return readdirSync(join(repo, "packages/naive/library", "packages")).filter((p) => existsSync(framesDir(p))).flatMap((p) =>
+    readdirSync(framesDir(p)).filter((f) => f.endsWith(".frame.json")).map((f) => ({ ...load(join(framesDir(p), f)), package: p, file: `packages/naive/library/packages/${p}/frames/${f}` })));
 }
 export const frameOf = (id) => frames().find((f) => f.id === id) ?? null;
 
@@ -65,7 +65,7 @@ export function check(f) {
     for (const r of p.reads ?? []) if (!f.props.includes(r)) errors.push(`${f.id}: premise ${p.id} reads ${r}, which is not one of its props`);
   }
   for (const s of [f.goal, f.reframe]) for (const ph of placeholders(s)) if (!f.props.includes(ph)) errors.push(`${f.id}: {${ph}} is not one of its props`);
-  if (f.package && f.package !== f.functions[0]) errors.push(`${f.id}: lives in library/packages/${f.package} but its first function is ${f.functions[0]}`);
+  if (f.package && f.package !== f.functions[0]) errors.push(`${f.id}: lives in packages/naive/library/packages/${f.package} but its first function is ${f.functions[0]}`);
   for (const e of f.emits) if ((e.options_from ?? "frame") === "frame" && !e.options?.length) errors.push(`${f.id}: ${e.id} takes its options from the frame but lists none`);
   for (const c of f.cases ?? []) for (const k of Object.keys(c.expect)) if (k !== "dichotomy" && !f.premises.some((p) => p.id === k)) errors.push(`${f.id}: case ${c.id} expects a verdict for ${k}, which is not a premise`);
   return errors;

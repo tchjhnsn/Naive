@@ -1,6 +1,6 @@
 # Lean validation playbook
 
-The model is the founder's records as `library/packages/validation/playbooks/lean-validation.md` runs. TLC 1.7.4 checked it. The chart is the flow. A rule that fails in TLC is a bug only when a replay on the router does the same thing.
+The model is the founder's records as `packages/naive/library/packages/validation/playbooks/lean-validation.md` runs. TLC 1.7.4 checked it. The chart is the flow. A rule that fails in TLC is a bug only when a replay on the router does the same thing.
 
 ## Regenerate
 

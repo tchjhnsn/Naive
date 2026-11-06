@@ -1,6 +1,6 @@
 # Shape Up cycle
 
-TLA+ model of `library/packages/product/playbooks/basecamp-shape-up.md`: the records a founder writes as one six-week cycle runs (shaping, betting, building, cool-down) and the circuit breaker.
+TLA+ model of `packages/naive/library/packages/product/playbooks/basecamp-shape-up.md`: the records a founder writes as one six-week cycle runs (shaping, betting, building, cool-down) and the circuit breaker.
 
 TLC 1.7.4 (`tla2tools.jar` sha256 `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`) reached 22 states and 28 steps. Every invariant held, including TLC's deadlock check. The chart draws 17 states and 21 arrows. It hides 5 steps that stay in one chart state: `Done`, which stays put in "You declined the bet" and in "Cool-down between cycles" (several model states share that label).
 

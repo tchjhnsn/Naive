@@ -1002,7 +1002,7 @@
           "checked_by": "packages/naive/src/checks/check-data-model.mjs"
         }
       ],
-      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are library/packages/<name>/package.json. A kit is Mentura's and lives in the app that installs it."
+      "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are packages/naive/library/packages/<name>/package.json. A kit is Mentura's and lives in the app that installs it."
     },
     {
       "id": "handoff",
@@ -1391,8 +1391,8 @@
       "form": "json",
       "paths": [
         "packages/naive/src/engine/packages.json",
-        "library/packages/catalog.json",
-        "library/packages/*/package.json"
+        "packages/naive/library/packages/catalog.json",
+        "packages/naive/library/packages/*/package.json"
       ],
       "refs": [
         {
@@ -1410,7 +1410,7 @@
       "schema": "packages/naive/src/records/frame.schema.json",
       "form": "json",
       "paths": [
-        "library/packages/*/frames/*.frame.json"
+        "packages/naive/library/packages/*/frames/*.frame.json"
       ],
       "refs": [
         {
@@ -2048,7 +2048,7 @@
       "schema": "packages/naive/src/records/decision-roadmap.schema.json",
       "form": "json",
       "paths": [
-        "library/packages/*/roadmaps/*.json"
+        "packages/naive/library/packages/*/roadmaps/*.json"
       ],
       "refs": [
         {

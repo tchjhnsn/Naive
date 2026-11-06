@@ -57,7 +57,7 @@ export function versionOf(dir) {
   return readConfig(dir).naive?.version ?? "0.1.0";
 }
 
-const kindOf = (name) => { const f = join(repo, "library", "packages", name, "package.json"); return existsSync(f) ? load(f).kind : null; };
+const kindOf = (name) => { const f = join(repo, "packages/naive/library", "packages", name, "package.json"); return existsSync(f) ? load(f).kind : null; };
 
 /** The packages a venture should be pinned to: what it pins now, what fits its phase now, and its data folders. */
 function wanted(dir, reg, cfg) {

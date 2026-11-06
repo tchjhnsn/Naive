@@ -117,7 +117,7 @@ try {
       "a/relative.mjs": `const model = load(join(here, "../../schema/data-model.json"));`,
       "a/template.ts": "const f = join(root, `schema/${name}.schema.json`);",
       "a/beside.mjs": `const m = JSON.parse(readFileSync(new URL("../records/data-model.json", import.meta.url), "utf8"));`,
-      "a/listed.mjs": `const fixed = ["packages/naive/src/records/venture.schema.json", "library/packages/catalog.json"];`,
+      "a/listed.mjs": `const fixed = ["packages/naive/src/records/venture.schema.json", "packages/naive/library/packages/catalog.json"];`,
       "a/concat.js": `const f = "schema/" + name + ".schema.json";`,
       "a/prefix.mjs": `const name = r.schema.replace(/^schema\\//, "");\nif (schema?.startsWith("schema/")) n = schema.slice("schema/".length);`,
       "a/path.py": `model = json.loads((root / "packages/naive/src/records/data-model.json").read_text())\nschemas = (root / "schema").glob("*.schema.json")\nok = s.startswith("schema/")`,

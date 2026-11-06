@@ -1,6 +1,6 @@
 # apple-launch
 
-The TLA+ model of `library/packages/marketing/playbooks/apple-launch.md`: the states a founder's records move through as the template steps run.
+The TLA+ model of `packages/naive/library/packages/marketing/playbooks/apple-launch.md`: the states a founder's records move through as the template steps run.
 
 TLC 2.19 (tla2tools 1.7.4, sha256 `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`) checked 134 distinct states in the 2026-10-29 run (`out/tlc.out`). No invariant failed. TLC was not re-run for the later playbook edits, which change no model step. The chart is `out/chart.mmd` and `out/chart.png`.
 

@@ -1,6 +1,6 @@
 # Jobs playbook, checked
 
-The model is the template in `library/packages/foundation/playbooks/jtbd.md`. One profile moves from the records the venture already has, through a draft, to a founder accept. TLC 2.19 (tla2tools 1.7.4) checked it. The replay drives `packages/naive/src/router/router.mjs` `resolve` and `call` on a fixture venture.
+The model is the template in `packages/naive/library/packages/foundation/playbooks/jtbd.md`. One profile moves from the records the venture already has, through a draft, to a founder accept. TLC 2.19 (tla2tools 1.7.4) checked it. The replay drives `packages/naive/src/router/router.mjs` `resolve` and `call` on a fixture venture.
 
 The chart hides `Park`. That action is true only in the end states (stopped, check failed, accepted) and changes nothing, so the chart has no arrow for it. The earlier playbook run hid 12 of those steps. No other step is hidden.
 
@@ -62,4 +62,4 @@ The model is one profile. The playbook loops every profile `foundation/icp` list
 
 ## Covered code
 
-`library/packages/foundation/playbooks/jtbd.md`. `packages/naive/src/router/router.mjs` `resolve` and `call` for the routes in the table. `packages/naive/src/engine/foundation.mjs` for a `problem_forms` id the problem record lacks. `packages/naive/src/records/icp-profile.schema.json` `jobs`. `packages/naive/src/interfaces/cli/mentura.mjs` `accept` for `foundation/icp/<id>`. Confirmed on this branch before the pull request, by the commands above.
+`packages/naive/library/packages/foundation/playbooks/jtbd.md`. `packages/naive/src/router/router.mjs` `resolve` and `call` for the routes in the table. `packages/naive/src/engine/foundation.mjs` for a `problem_forms` id the problem record lacks. `packages/naive/src/records/icp-profile.schema.json` `jobs`. `packages/naive/src/interfaces/cli/mentura.mjs` `accept` for `foundation/icp/<id>`. Confirmed on this branch before the pull request, by the commands above.

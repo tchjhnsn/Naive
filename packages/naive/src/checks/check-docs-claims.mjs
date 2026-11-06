@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Checks that the docs describe only what is built. Scans docs/master/*.md,
-// library/packages/*/playbooks/*.md, every SKILL.md and every README.md for claims in backticks and code blocks, and fails on any that the code does not have:
+// packages/naive/library/packages/*/playbooks/*.md, every SKILL.md and every README.md for claims in backticks and code blocks, and fails on any that the code does not have:
 //
 //   naive <cmd> / mentura <cmd>   the command is dispatched by packages/naive/src/interfaces/cli/naive.mjs or mentura.mjs
 //   --flag after a naive command  the command (or the script it runs) reads that flag
-//   schema/..., interface/..., purpose/..., library/packages/..., docs/...   the repository path exists
+//   schema/..., interface/..., purpose/..., packages/naive/library/packages/..., docs/...   the repository path exists
 //   foundation/problem            a record route in the route table (packages/naive/src/records/routes/routes.mjs routes())
 //   [text](../other/README.md)    a relative Markdown link, inline or reference-style, resolves to a file or folder
 //                                 next to the doc (HTML href and src are not checked)
@@ -31,7 +31,7 @@ const read = (p) => readFileSync(join(repo, p), "utf8");
 const walk = (d) => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 // The docs this linter scans. The docs-required CI check counts a change as docs only when it touches one of these.
-const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && (/^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^library\/packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
+const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && (/^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^packages\/naive\/library\/packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
 const stdinPaths = () => readFileSync(0, "utf8").split("\n").map((l) => l.trim()).filter(Boolean);
 if (argv[0] === "--scanned") {
   for (const r of stdinPaths()) if (scanned(r)) console.log(r);
@@ -39,7 +39,7 @@ if (argv[0] === "--scanned") {
 }
 // The README.md nearest a code file, searched up to its top-level folder (never the repo root README).
 // Anything under a playbooks/ folder is content, not code (Torian's decision for now).
-const CODE = /^(schema|interface|library\/packages|packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
+const CODE = /^(schema|interface|packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
 const nearestReadme = (r) => {
   for (let d = r.split("/").slice(0, -1); d.length; d.pop()) if (existsSync(join(repo, ...d, "README.md"))) return [...d, "README.md"].join("/");
   return null;
@@ -67,8 +67,8 @@ const { routes, resolve } = await import(join(repo, "packages/naive/src/records/
 const table = routes();
 const routeTop = new Set(table.map((r) => r.route.split("/")[0]));
 // packages/<name> is a route alias for a venture package (packages/naive/src/router/package-routes.mjs), not a folder: the
-// packages live at library/packages/<name> (EE-116).
-const packageAlias = (c) => /^packages\/[a-z0-9-]+$/.test(c) && existsSync(join(repo, "library", c, "package.json"));
+// packages live at packages/naive/library/packages/<name> (EE-116).
+const packageAlias = (c) => /^packages\/[a-z0-9-]+$/.test(c) && existsSync(join(repo, "packages/naive/library", c, "package.json"));
 const isRoute = (c) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r) => r.route === c.replace(/<[^>]+>/g, "[id]")) || packageAlias(c);
 
 // The flags a naive command reads: in naive.mjs's branch for it and in the scripts that branch runs.
@@ -93,7 +93,7 @@ function flagsOf(cmd) {
 }
 
 // --- The claims ---
-const REPO_DIRS = ["schema", "interface", "purpose", "library", "packages", "docs"];
+const REPO_DIRS = ["schema", "interface", "purpose", "packages", "docs"];
 const VENTURE = /^(k-base|meta|codebase|artifacts|raw|inbox|founder|_drafts|_private|my-|\.release|\.naive|operations|evidence)\b/;
 const failures = [];
 let claims = 0;
