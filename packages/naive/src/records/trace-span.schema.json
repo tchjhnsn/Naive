@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trace-span.schema.json",
+  "title": "Trace span",
+  "description": "One step of an agent run, one line of <venture>/traces/<session>.jsonl, after the OpenTelemetry GenAI semantic conventions (a span with a trace id, a span id, its parent, a name, a start and an end, and gen_ai.* attributes), so any OpenTelemetry tool can read it. The file is append-only: each line carries the hash of the line before, as the provenance log does, so an edited or deleted line breaks the chain. A provenance line written inside a span names it in its span field. Spans hold names, routes, sizes, times and tokens; inputs and outputs only when the venture turns on traces.content in naive.config.json. packages/naive/src/checks/check-traces.ts checks it.",
+  "type": "object",
+  "required": ["trace_id", "span_id", "name", "kind", "start", "end", "status", "prev", "hash"],
+  "additionalProperties": false,
+  "properties": {
+    "trace_id": { "type": "string", "minLength": 1, "description": "The run the span belongs to; every span of one top-level run shares it" },
+    "span_id": { "type": "string", "minLength": 1, "description": "This span, unique in its file" },
+    "parent_span_id": { "type": "string", "description": "The span this one ran inside; absent for the top span of a run" },
+    "name": { "type": "string", "minLength": 1, "description": "The OpenTelemetry span name: the operation and its target, such as invoke_agent strategy, chat claude-opus, execute_tool naive_write" },
+    "kind": {
+      "enum": ["agent", "model", "tool", "call", "judgment", "trigger"],
+      "description": "agent: an agent or subagent run (gen_ai.operation.name invoke_agent). model: one model call (chat). tool: one tool call (execute_tool). call: one Naive router call. judgment: one System 1 call or scored check, such as Jev. trigger: a file trigger firing"
+    },
+    "start": { "type": "string", "format": "date-time" },
+    "end": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["ok", "error"], "description": "OpenTelemetry status: ok, or error with error naming what went wrong" },
+    "error": { "type": "string", "description": "What went wrong, when status is error" },
+    "attributes": {
+      "type": "object",
+      "description": "OpenTelemetry attributes: gen_ai.* for model and agent steps (gen_ai.operation.name, gen_ai.agent.name, gen_ai.request.model, gen_ai.usage.input_tokens, gen_ai.usage.output_tokens, gen_ai.tool.name) and naive.* for Naive's own (naive.route, naive.action, naive.venture, naive.ok). gen_ai.input.messages and gen_ai.output.messages, and any naive.input or naive.output, are kept only when traces.content is on",
+      "additionalProperties": { "type": ["string", "number", "boolean", "array", "object", "null"] }
+    },
+    "prev": { "type": "string", "description": "The hash of the line before in this file, or genesis for the first" },
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 of prev and the line's other fields, keys sorted" }
+  }
+}

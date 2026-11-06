@@ -135,6 +135,7 @@
         "exit",
         "telos",
         "provenance",
+        "trace-span",
         "knowledge-sources",
         "people",
         "founder",
@@ -1516,6 +1517,26 @@
         }
       ],
       "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031). A handoff package's membership gate writes <id>.provenance.jsonl beside the package; the line's sha256 is the package body's, so gates need not run in order, and the same gate on the same body is written once"
+    },
+    {
+      "id": "trace-span",
+      "layer": "system",
+      "level": "venture",
+      "schema": "packages/naive/src/records/trace-span.schema.json",
+      "generator": "packages/naive/src/engine/generators/trace-span.mjs",
+      "form": "json-lines",
+      "paths": [
+        "instance/**/traces/*.jsonl",
+        "packages/naive/src/records/examples/**/traces/*.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "parent_span_id",
+          "to": "trace-span",
+          "checked_by": "packages/naive/src/checks/check-traces.ts"
+        }
+      ],
+      "note": "One step of an agent run (an agent or subagent, a model call, a tool call, a router call, a judgment or a trigger), one line per span in traces/<session>.jsonl, after the OpenTelemetry GenAI semantic conventions; hash-chained like provenance. A provenance line made inside a span names it, so what changed points to the step that changed it. Holds names, routes, sizes, times and tokens; inputs and outputs only when the venture turns on traces.content"
     },
     {
       "id": "naive-config",

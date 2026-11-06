@@ -55,6 +55,8 @@
 //   naive beta status|feedback <capability>|unlock  the plugin beta: which capabilities are open, the checkpoint feedback
 //                                                   that unlocks the next, and unlocking it (beta.enabled in naive.config.json)
 //   naive bugs [--all]                              open P0 and P1 bugs; stable means none
+//   naive trace append [--session <id>]             span lines on stdin, chained into traces/<session>.jsonl (EE-121)
+//   naive trace show [<session>] [--json]           the venture's trace sessions, or one as a tree of spans, offline
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -316,6 +318,10 @@ else if (cmd === "build" || cmd === "start") {
   // The plugin beta's gate (packages/naive/src/engine/beta-gate.mjs) and the bug summary (packages/naive/src/engine/bugs.mjs).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run(cmd === "beta" ? "packages/naive/src/engine/beta-gate.mjs" : "packages/naive/src/engine/bugs.mjs", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
+} else if (cmd === "trace") {
+  // Traces in the venture's files (packages/naive/src/engine/trace-cli.ts, EE-121).
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/trace-cli.ts", [here(), ...(args.length ? args : ["show"])]));
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }

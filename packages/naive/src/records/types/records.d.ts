@@ -2065,6 +2065,11 @@ export type MoneySummary = {
 /** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.mjs <venture dir> checks it. */
 export type NaiveConfig = {
   $schema?: string;
+  /** Traces in the venture's files (EE-121): true writes one span per step of an agent run to traces/<session>.jsonl, hash-chained and linked from provenance. content keeps inputs and outputs too, redacted; off by default because a trace is internal. Off by default. */
+  traces?: boolean | {
+    spans?: boolean;
+    content?: boolean;
+  };
   /** The plugin beta's gate (packages/naive/src/engine/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default. */
   beta?: {
     enabled?: boolean;
@@ -2915,6 +2920,13 @@ export type ProvenanceEntry = {
   };
   /** What the content came from: venture-relative paths, URLs or decision ids (prov:wasDerivedFrom) */
   derived_from?: string[];
+  /** The trace span the write was made inside (traces/<session>.jsonl), so what changed points to the agent step that changed it */
+  span?: {
+    trace_id: string;
+    span_id: string;
+    /** The trace file's session, when it differs from the trace id */
+    session?: string;
+  };
   /** The decision or decision class the activity acted under, such as EE-026 or ownership-or-control */
   decision?: string;
   note?: string;
@@ -3533,6 +3545,42 @@ export type Telos = {
     change_of_direction?: "pivot-on-evidence" | "formal-change-control" | "owner-decides" | "public-proposal" | "other";
     note?: string;
   };
+};
+
+/** One step of an agent run, one line of <venture>/traces/<session>.jsonl, after the OpenTelemetry GenAI semantic conventions (a span with a trace id, a span id, its parent, a name, a start and an end, and gen_ai.* attributes), so any OpenTelemetry tool can read it. The file is append-only: each line carries the hash of the line before, as the provenance log does, so an edited or deleted line breaks the chain. A provenance line written inside a span names it in its span field. Spans hold names, routes, sizes, times and tokens; inputs and outputs only when the venture turns on traces.content in naive.config.json. packages/naive/src/checks/check-traces.ts checks it. */
+export type TraceSpan = {
+  /** The run the span belongs to; every span of one top-level run shares it */
+  trace_id: string;
+  /** This span, unique in its file */
+  span_id: string;
+  /** The span this one ran inside; absent for the top span of a run */
+  parent_span_id?: string;
+  /** The OpenTelemetry span name: the operation and its target, such as invoke_agent strategy, chat claude-opus, execute_tool naive_write */
+  name: string;
+  /** agent: an agent or subagent run (gen_ai.operation.name invoke_agent). model: one model call (chat). tool: one tool call (execute_tool). call: one Naive router call. judgment: one System 1 call or scored check, such as Jev. trigger: a file trigger firing */
+  kind: "agent" | "model" | "tool" | "call" | "judgment" | "trigger";
+  /**
+   * @format date-time
+   */
+  start: string;
+  /**
+   * @format date-time
+   */
+  end: string;
+  /** OpenTelemetry status: ok, or error with error naming what went wrong */
+  status: "ok" | "error";
+  /** What went wrong, when status is error */
+  error?: string;
+  /** OpenTelemetry attributes: gen_ai.* for model and agent steps (gen_ai.operation.name, gen_ai.agent.name, gen_ai.request.model, gen_ai.usage.input_tokens, gen_ai.usage.output_tokens, gen_ai.tool.name) and naive.* for Naive's own (naive.route, naive.action, naive.venture, naive.ok). gen_ai.input.messages and gen_ai.output.messages, and any naive.input or naive.output, are kept only when traces.content is on */
+  attributes?: {
+    [key: string]: string | number | boolean | unknown[] | {
+      [key: string]: unknown;
+    } | null;
+  };
+  /** The hash of the line before in this file, or genesis for the first */
+  prev: string;
+  /** sha256 of prev and the line's other fields, keys sorted */
+  hash: string;
 };
 
 /** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). packages/naive/src/router/orchestration/triggers.mjs runs them. */

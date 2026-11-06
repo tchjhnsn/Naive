@@ -9,6 +9,20 @@
     "$schema": {
       "type": "string"
     },
+    "traces": {
+      "description": "Traces in the venture's files (EE-121): true writes one span per step of an agent run to traces/<session>.jsonl, hash-chained and linked from provenance. content keeps inputs and outputs too, redacted; off by default because a trace is internal. Off by default.",
+      "oneOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "spans": { "type": "boolean" },
+            "content": { "type": "boolean" }
+          }
+        }
+      ]
+    },
     "beta": {
       "type": "object",
       "additionalProperties": false,

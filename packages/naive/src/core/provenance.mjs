@@ -11,7 +11,7 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { appendFileSync, closeSync, constants, existsSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { emit } from "./instrumentation.mjs";
+import { currentSpan, emit } from "./instrumentation.mjs";
 import { ventureFile } from "./venture-paths.mjs";
 
 export const LOG = "provenance.jsonl";
@@ -177,8 +177,11 @@ export function actingAgent(by) {
 export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement, statements }) {
   const prior = entries(dir);
   const prev = prior.length ? prior.at(-1).hash : "genesis";
+  // A write made inside a trace span names it (EE-121), so what changed points to the step that changed it.
+  const cur = currentSpan();
+  const span = cur ? { trace_id: cur.trace_id, span_id: cur.span_id, ...(cur.session && cur.session !== cur.trace_id ? { session: cur.session } : {}) } : undefined;
   const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
-    derived_from: derived_from?.length ? derived_from : undefined, decision, note, source, statement, statements, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+    derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, source, statement, statements, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
   entry.hash = lineHash(prev, entry);
   appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\n");
   // Context hook: every provenance entry (write, draft, accept, confirm, decision) is an instrumentation event (P-4).

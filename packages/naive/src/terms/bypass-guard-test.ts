@@ -64,6 +64,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-people.mjs": { kind: "unwired", reason: "decides who is a founder from the role label (role.founder), and EE-095 records that founder records are not yet checked against the founder term" },
   "packages/naive/src/checks/check-private.mjs": plain("private records never reach a use_model step"),
   "packages/naive/src/checks/check-provenance.mjs": plain("the hash chain of the provenance log"),
+  "packages/naive/src/checks/check-traces.ts": plain("the hash chain, fields and span links of the trace files, and that provenance names spans that exist"),
   "packages/naive/src/engine/check-public.mjs": plain("marketing content names its source record, audience and approver, and shares no ten-word run with that record; it compares text and does not decide what a thing is"),
   "packages/naive/src/checks/check-publication.mjs": plain("publication policy references, channels and approvals"),
   "packages/naive/src/engine/check-publications.mjs": plain("manifest entries match built outputs by sha256 and carry a person as approver"),
