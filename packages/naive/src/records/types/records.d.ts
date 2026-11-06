@@ -75,7 +75,7 @@ export type Adapter = {
   name: string;
   title: string;
   kind: "harness" | "platform";
-  /** Its entry in interface/tooling/integrations.json */
+  /** Its entry in packages/naive/src/records/layers/interface/tooling/integrations.json */
   integration?: string;
   /** The files the harness or platform reads on its own, as globs */
   reads: string[];
@@ -93,7 +93,7 @@ export type Adapter = {
   note?: string;
 };
 
-/** What agents can and cannot do, task by task, with sources and dates (EE-029), at evidence/capabilities/agent-capabilities.json. Team plans cite these entries: a task an agent cannot do, may not do, or is not known to do needs a named human loop. Kept current by reading new research and by our own evals. */
+/** What agents can and cannot do, task by task, with sources and dates (EE-029), at packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json. Team plans cite these entries: a task an agent cannot do, may not do, or is not known to do needs a named human loop. Kept current by reading new research and by our own evals. */
 export type AgentCapability = {
   /**
    * @format date
@@ -438,7 +438,7 @@ export type DecisionRecord = {
     /** A venture-relative file, such as purpose/icp.json */
     path?: string;
   };
-  /** The strategic-foundation statement this decision settles (purpose/strategic-foundation.json), if any. It then stands in for that statement in the matrix and is part of the foundation. */
+  /** The strategic-foundation statement this decision settles (packages/naive/src/functions/strategy/strategic-foundation.json), if any. It then stands in for that statement in the matrix and is part of the foundation. */
   statement?: string;
   /** The layer it belongs to; defaults to the decided record's layer */
   layer?: "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface" | "system";
@@ -742,7 +742,7 @@ export type Delegation = {
   }[];
 };
 
-/** The departments a venture can import (EE-047): APQC Process Classification Framework categories, each tagged with its place in Porter's value chain and given need-now priors (EE-028). The framework's copy is operations/departments.json. */
+/** The departments a venture can import (EE-047): APQC Process Classification Framework categories, each tagged with its place in Porter's value chain and given need-now priors (EE-028). The framework's copy is packages/naive/src/functions/departments.json. */
 export type DepartmentCatalog = {
   version: string;
   note?: string;
@@ -774,7 +774,7 @@ export type DepartmentCatalog = {
   }[];
 };
 
-/** The tag in each of a venture's department folders (EE-047): which department the folder is and where it sits in the value chain. It lives in the folder at <layer>/departments/<id>/department.json, or under an optional grouping folder, <layer>/departments/primary/<id>/ or support/<id>/, which is for looking at only; the tag, not the folder, says what the department is. Its values must match operations/departments.json. */
+/** The tag in each of a venture's department folders (EE-047): which department the folder is and where it sits in the value chain. It lives in the folder at <layer>/departments/<id>/department.json, or under an optional grouping folder, <layer>/departments/primary/<id>/ or support/<id>/, which is for looking at only; the tag, not the folder, says what the department is. Its values must match packages/naive/src/functions/departments.json. */
 export type Department = {
   department: string;
   value_chain: "primary" | "support";
@@ -784,7 +784,7 @@ export type Department = {
   owner?: string;
 };
 
-/** A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing evidence/evals/*.json files. */
+/** A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing packages/naive/test/evals/*.json files. */
 export type EvalSuite = {
   skill_name?: string;
   /** Product or skill id the suite tests, when not a skill */
@@ -909,7 +909,7 @@ export type FounderAgreement = {
   deadlock?: string;
 };
 
-/** One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node purpose/frameworks/idea-map/graph.mjs check <ideas folder>. */
+/** One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs check <ideas folder>. */
 export type FounderIdea = {
   id: string;
   /** The idea in its owner's own words */
@@ -943,10 +943,10 @@ export type FounderIdea = {
   note?: string;
 };
 
-/** How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds_on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which purpose/frameworks/idea-map/test.mjs keeps equal to this list */
+/** How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds_on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list */
 export type FounderIdeaRelation = "broader" | "narrower" | "related" | "part-of" | "derived-from" | "builds_on" | "supports" | "contradicts";
 
-/** How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which purpose/frameworks/idea-map/test.mjs keeps equal to this list */
+/** How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list */
 export type FounderIdeaAttachment = "creates" | "amends" | "appends_to" | "derives_from";
 
 /** A person who inspires the founder, and what about them invokes the founder's zeal (founders/<handle>/inspirations/<id>.json). A public figure may be named; a private person is an opaque id whose name sits in founders/<handle>/_private/. */
@@ -1031,7 +1031,7 @@ export type Founder = {
   profile?: FounderProfile;
 };
 
-/** Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in purpose/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type */
+/** Who the founder is, as a mentor learns it (Torian's playbook). Built from a template of attributes in packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json; any attribute from that library can be added. Each attribute is a list of entries, prose in the founder's words with an optional type */
 export type FounderProfile = {
   /** The template it started from; default if absent */
   template?: string;
@@ -1041,7 +1041,7 @@ export type FounderProfile = {
     [key: string]: {
       /** In the founder's own words */
       text: string;
-      /** One of the attribute's types in purpose/frameworks/founder-profile/attributes.json */
+      /** One of the attribute's types in packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json */
       type?: string;
       /** For a strength or weakness of type venture-function: the venture function it is about */
       function?: string;
@@ -1184,7 +1184,7 @@ export type FreshnessLog = {
   };
 };
 
-/** How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are knowledge/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.mjs reads both. */
+/** How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are packages/naive/src/engine/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.mjs reads both. */
 export type FreshnessProfiles = {
   $schema?: string;
   note?: string;
@@ -1371,7 +1371,7 @@ export type GoldenRulingScope = {
   via: FounderIdeaAttachment;
 };
 
-/** One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.mjs checks it is ready before work starts; packages/naive/src/checks/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17). */
+/** One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (packages/naive/src/functions/capabilities/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.mjs checks it is ready before work starts; packages/naive/src/checks/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17). */
 export type Handoff = {
   id: string;
   title: string;
@@ -1498,13 +1498,13 @@ export type IcpProfile = {
   buying_roles?: ("initiator" | "user" | "influencer" | "decider" | "buyer" | "gatekeeper")[];
   /** Other profiles (ids) through whom the venture reaches this one, such as a channel partner in a B2B2C venture (EE-064) */
   reached_through?: string[];
-  /** The customer type from the marketing matrix (operations/marketing/site/matrix.json customer_types), when the founder sets it; otherwise it is judged from who (EE-063) */
+  /** The customer type from the marketing matrix (packages/naive/src/functions/marketing-and-sales/marketing/site/matrix.json customer_types), when the founder sets it; otherwise it is judged from who (EE-063) */
   customer_type?: string;
   /** The founder's messages this record was made from (naive diagnose catches) */
   conversation?: ConversationRef[];
 };
 
-/** The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by purpose/frameworks/idea-map/graph.mjs; it holds no decisions. */
+/** The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs; it holds no decisions. */
 export type IdeaGraph = {
   version: string;
   venture: string;
@@ -1695,7 +1695,7 @@ export type Kit = {
   note?: string;
 };
 
-/** A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored. Beside the sources Naive reads records from, `functions` says where each of the venture's functions keeps its truth outside Naive (EE-083): the repo, hosting and analytics for the product, a payments or store account for sales, the bank for money, a folder or signing service for legal documents. Those are pointers to systems of record; a system Naive reads through code is connected, one it only knows of is pointed. `truth` says where the venture's source of truth as a whole lives. */
+/** A venture's source map (<venture>/knowledge/sources.json, EE-037): the sources its records live in and which record types live where. Optional: a record type it does not name, and every record of a venture without one, lives in the venture's own folder (the implicit `venture` source). The venture decides its own layout; Mentura does not. Rules make it a source-of-truth matrix: a system of record per record type, attribute and context, written for a fast model to read (EE-042). Each source names a connector from the registry (an integration with a `connector` in packages/naive/src/records/layers/knowledge/tooling/integrations.json). Credentials are named by environment variable, never stored. Beside the sources Naive reads records from, `functions` says where each of the venture's functions keeps its truth outside Naive (EE-083): the repo, hosting and analytics for the product, a payments or store account for sales, the bank for money, a folder or signing service for legal documents. Those are pointers to systems of record; a system Naive reads through code is connected, one it only knows of is pointed. `truth` says where the venture's source of truth as a whole lives. */
 export type KnowledgeSources = {
   sources: {
     /** The source's id; `venture` is reserved for the venture's own folder */
@@ -1750,7 +1750,7 @@ export type KnowledgeSources = {
   note?: string;
   /** local: this device is the source of truth; otherwise the address of the host every system is backed up to or hosted on (EE-083) */
   truth?: string;
-  /** Each function's systems of record, by department id (operations/departments.json) or legal (EE-083) */
+  /** Each function's systems of record, by department id (packages/naive/src/functions/departments.json) or legal (EE-083) */
   functions?: { [K in "strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities" | "legal"]?: {
       systems: {
         /** A system id from packages/naive/src/engine/systems-catalog.json */
@@ -1805,7 +1805,7 @@ export type Layer = {
   name: string;
 };
 
-/** An ordering of the venture development lifecycle, at purpose/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
+/** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
 export type LifecyclePlaybook = {
   id: string;
   title: string;
@@ -1949,7 +1949,7 @@ export type MarketingDesignSystem = {
 /** The inputs the choice rests on, by key from marketing/design-system/inputs: mission, problem, icp:<id>, alignment:<id>, market:<product>, founder:<id>, competitor:<name> */
 export type MarketingDesignSystemFrom = string[];
 
-/** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by operations/marketing/site/plan.mjs. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
+/** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
 export type MarketingSitemap = {
   version: string;
   venture: string;
@@ -2166,7 +2166,7 @@ export type NaiveConfig = {
       by?: string;
     }[];
   };
-  /** The publish build (operations/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one */
+  /** The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one */
   publish_build?: {
     /** The default output folder, relative to the venture folder (default .release/publish-build) */
     out?: string;
@@ -2407,7 +2407,7 @@ export type OntologyMetamodelChangeLine = {
   successor?: string;
 };
 
-/** Naive's operating rules as a module. The default module is operations/operating-rules.json. packages/naive/src/terms/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry, except the one_way_door skip, which is declared and not enforced. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests and are not enforced yet. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. */
+/** Naive's operating rules as a module. The default module is packages/naive/src/terms/operating-rules.json. packages/naive/src/terms/operating-rules.ts validates a module and merges a venture's operating-rules.json over the default (meta/operating-rules.json when the venture layout is structured). The membership gate reads rejection.retry, except the one_way_door skip, which is declared and not enforced. Who may edit a rejected package, what a rejecting function may do, self-fix approval, gates before a design, the Jev layer, the design-diff verb set, question routing, impact tiers, standing rules, SPRT loss, signals, time to detect, suspension, notifications and the Lean requirement are declared for later pull requests and are not enforced yet. Wilson thresholds and SPRT parameters are provisional, pending Lean proofs. */
 export type OperatingRules = {
   $schema?: string;
   /** Module id. The framework's module is default. A venture overlay may set its own id. */
@@ -3266,7 +3266,7 @@ export type SdlcCatalog = {
       id: string;
       name: string;
       clause: string;
-      /** The venture function (one of the 13 APQC categories in operations/departments.json) whose work this process is. The software processes are mostly the products function's; operating the software is IT's, and the organizational processes belong where APQC files them. The check makes sure it names a department. */
+      /** The venture function (one of the 13 APQC categories in packages/naive/src/functions/departments.json) whose work this process is. The software processes are mostly the products function's; operating the software is IT's, and the organizational processes belong where APQC files them. The check makes sure it names a department. */
       function: string;
       /** Technical processes only: the MAD process module that routes its methods, or null when it is not MAD's (business or mission analysis is the product function's). */
       mad_module?: "requirements" | "system-design" | "implementation" | "integration" | "verification" | "transition" | "validation" | "operation" | "maintenance" | null;
@@ -3292,7 +3292,7 @@ export type SdlcCatalog = {
   }[];
 };
 
-/** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by operations/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated. */
+/** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated. */
 export type SitePresence = {
   version: string;
   site: string;
@@ -3498,7 +3498,7 @@ export type Telos = {
     path: "acquisition" | "ipo" | "secondary-sale" | "merger" | "management-buyout" | "wind-down" | "hold";
     why?: string;
   };
-  /** Per phase, what must be true to leave it; refines that phase's generic gate in purpose/frameworks/product-anatomy/phases.json for this venture */
+  /** Per phase, what must be true to leave it; refines that phase's generic gate in packages/naive/src/functions/products/frameworks/product-anatomy/phases.json for this venture */
   phases?: {
     phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
     exit_criteria: {
@@ -4016,7 +4016,7 @@ export type VentureTypes = {
     /** Role ids from governance/venture-template/roles/venture-roles.json a person can hold in this type */
     roles: string[];
     default_role: string;
-    /** Functions the type imports from the start (operations/departments.json); a solo founder owns them all */
+    /** Functions the type imports from the start (packages/naive/src/functions/departments.json); a solo founder owns them all */
     departments: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
     /** Package directories created at the venture root */
     packages: string[];
@@ -4038,7 +4038,7 @@ export type Venture = {
   type?: string;
   /** Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. */
   layout?: "flat" | "structured";
-  /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from operations/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. */
+  /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. */
   functions?: {
     [key: string]: {
       /** A role or a person's name; no personal details */
@@ -4047,11 +4047,11 @@ export type Venture = {
   };
   /** The id of the venture that holds this one; null at the top of a workspace. */
   parent: string | null;
-  /** How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: purpose/frameworks/product-anatomy/phases.json. */
+  /** How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: packages/naive/src/functions/products/frameworks/product-anatomy/phases.json. */
   phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
   /** The venture's IANA time zone, when it differs from its workspace's (packages/naive/src/engine/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's */
   timeZone?: string;
-  /** The lifecycle playbook the venture follows (purpose/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default. */
+  /** The lifecycle playbook the venture follows (packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default. */
   lifecycle_playbook?: string;
   /** Why the venture exists and how far through the phases it means to go. hobby follows the IRS sense: not engaged in for profit. */
   ambition?: "hobby" | "survival" | "lifestyle" | "managed-growth" | "aggressive-growth";
@@ -4076,7 +4076,7 @@ export type Venture = {
     /** The core competence that makes the promise deliverable (Prahalad and Hamel) */
     competence?: string;
   };
-  /** The departments this venture imports, by id from operations/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048). */
+  /** The departments this venture imports, by id from packages/naive/src/functions/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048). */
   departments?: string[];
   /** The Naive packages this venture uses, by name from packages/naive/library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.mjs. */
   packages?: string[];
@@ -4219,7 +4219,7 @@ export type WorkspaceFounder = {
     /** The founder's idea (ideas/<id>.json) the venture grew from, if any */
     from_idea?: string;
   }[];
-  /** Who the founder is: attributes from purpose/frameworks/founder-profile/attributes.json in the founder's own words. An agent may draft it; only the founder confirms it */
+  /** Who the founder is: attributes from packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json in the founder's own words. An agent may draft it; only the founder confirms it */
   profile?: FounderProfile;
   /** Who confirmed the profile reads true. Must be this founder (kind person, id = this id); an agent never confirms */
   confirmed_by?: {

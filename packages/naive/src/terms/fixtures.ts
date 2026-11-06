@@ -24,7 +24,7 @@ function manifests(repo: string): Fixture<Arrangement> {
   const model: { layers: string[]; records: { id: string; layer: string }[] } = recordsIn(repo).readDataModel();
   const owner = new Map(model.records.map((r) => [r.id, r.layer]));
   const parts = [...model.layers, "system"];
-  const kits: { layer: string; reads?: string[] }[] = [...model.layers.map((l) => read(`${l}/layer.json`)), read("packages/naive/src/records/layer.json")];
+  const kits: { layer: string; reads?: string[] }[] = [...model.layers.map((l) => read(`packages/naive/src/records/layers/${l}/layer.json`)), read("packages/naive/src/records/layer.json")];
   const deps = new Map<string, [string, string]>();
   for (const k of kits) for (const t of k.reads ?? []) {
     const o = owner.get(t);

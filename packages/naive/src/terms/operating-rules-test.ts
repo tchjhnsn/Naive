@@ -13,7 +13,7 @@ import { applyOverlay, OperatingRulesError, operatingRulesFor, readOperatingRule
 
 const root = fileURLToPath(new URL("../../../..", import.meta.url));
 const tmp = mkdtempSync(join(tmpdir(), "operating-rules-"));
-const modulePath = join(root, "operations/operating-rules.json");
+const modulePath = join(root, "packages/naive/src/terms/operating-rules.json");
 let failed = 0;
 const expect = (name: string, ok: boolean, detail = "") => {
   console.log(`${ok ? "ok  " : "FAIL"} ${name}${detail && !ok ? `: ${detail}` : ""}`);

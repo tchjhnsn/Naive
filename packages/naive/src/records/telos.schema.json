@@ -170,7 +170,7 @@
           }
         }
       },
-      "description": "Per phase, what must be true to leave it; refines that phase's generic gate in purpose/frameworks/product-anatomy/phases.json for this venture"
+      "description": "Per phase, what must be true to leave it; refines that phase's generic gate in packages/naive/src/functions/products/frameworks/product-anatomy/phases.json for this venture"
     },
     "steering": {
       "type": "object",

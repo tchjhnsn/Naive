@@ -45,7 +45,7 @@
     },
     "statement": {
       "type": "string",
-      "description": "The strategic-foundation statement this decision settles (purpose/strategic-foundation.json), if any. It then stands in for that statement in the matrix and is part of the foundation."
+      "description": "The strategic-foundation statement this decision settles (packages/naive/src/functions/strategy/strategic-foundation.json), if any. It then stands in for that statement in the matrix and is part of the foundation."
     },
     "layer": {
       "enum": [

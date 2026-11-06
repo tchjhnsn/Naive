@@ -1,0 +1,80 @@
+{
+  "id": "torians-playbook",
+  "title": "Torian's playbook: from your life's puzzle to a venture",
+  "purpose": "A founder with a fresh venture and no idea where to start ends with a founder profile, a problem their life points at, the markets around it, what already solves it and how they feel about that: the start of a venture worth building.",
+  "when": "Offer it right after create-venture when the founder has no problem statement yet, or says they don't know where to start.",
+  "function": "foundation",
+  "phase": "discovery",
+  "sources": ["Aristotle, Nicomachean Ethics: the good life as the work a person is for (ergon) and its end (telos)", "Mentorship as questions, not answers"],
+  "steps": [
+    {
+      "id": "know-the-founder",
+      "title": "Get to know the founder",
+      "goal": "The puzzle of the founder's life: what they keep turning over, what they are passionate about, what they are for, what they want to become.",
+      "conversation": [
+        "Act as a mentor, not an interviewer. Ask one question at a time and follow what they say.",
+        "Start with their life, not with business: what problem have you kept coming back to for years? What do people come to you for? What makes you angry about how things are done?",
+        "Ask what a good life looks like for them in ten years, and what they would do if money were settled.",
+        "Reflect back the pattern you hear in their own words, and ask whether you have it right. Never name their passion for them.",
+        "Keep it in the founder's words. Do not judge whether it could be a business yet."
+      ],
+      "writes": [{ "route": "people/founders/[id]", "as": "draft", "note": "the profile from the torians-playbook template (packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json): each attribute a list of entries in the founder's words, typed where a type fits" }],
+      "done_when": "The founder confirms their profile reads true.",
+      "artifact": "Document: the founder profile, for them to correct"
+    },
+    {
+      "id": "find-the-problem",
+      "title": "Find the problem their puzzle points at",
+      "goal": "A real problem in the world that the founder's puzzle is oriented towards, and who has it.",
+      "conversation": [
+        "From the profile, ask who else lives with the puzzle they described, and what it costs those people.",
+        "Push for a specific person and a specific moment: who, when, what goes wrong, what they do today instead.",
+        "Separate the founder's own pain from other people's: is this a problem many people have, or one person's?",
+        "Name what is still a guess. A problem is a hypothesis until evidence backs it."
+      ],
+      "writes": [{ "route": "foundation/problem", "as": "draft" }],
+      "done_when": "The founder confirms a problem statement with a segment and at least one piece of evidence or a plan to get it.",
+      "artifact": "Document: the problem statement"
+    },
+    {
+      "id": "map-the-markets",
+      "title": "Map the markets they are drawn to",
+      "goal": "The markets where that problem lives, and which ones the founder is drawn to.",
+      "conversation": [
+        "List the places the problem shows up (industries, kinds of customers, settings) and ask which ones the founder cares about and why.",
+        "Look things up rather than guess, and bring back sources. Research comes back as evidence, not fact.",
+        "Note which markets the founder has an unfair advantage in: access, knowledge, people they know."
+      ],
+      "writes": [{ "route": "evidence/[id]", "as": "evidence", "note": "one record per market looked at, with its sources" }],
+      "done_when": "The founder has picked one or two markets to look at first.",
+      "artifact": "Page with a diagram: the problem and the markets around it"
+    },
+    {
+      "id": "meet-the-solutions",
+      "title": "Meet the solutions that already exist",
+      "goal": "What already solves the problem in those markets, and how the founder feels about each one. This is competitive research the founder lives through.",
+      "conversation": [
+        "Find the existing solutions, including the workarounds people use today, and show each with its source.",
+        "Ask how the founder feels about each one, not what they think of it as a business: would they use it, recommend it, be proud to have made it?",
+        "Listen for dissatisfaction. A founder who dislikes every existing answer to a problem they care about has found the start of a venture.",
+        "If an existing solution is good and they like it, say so. That is a reason to join or use it, not to build."
+      ],
+      "writes": [{ "route": "evidence/[id]", "as": "evidence", "note": "each solution, with sources and the founder's reaction" }],
+      "done_when": "Every solution the founder named has their reaction recorded.",
+      "artifact": "Document: the solutions and the founder's reactions, side by side"
+    },
+    {
+      "id": "decide-to-build",
+      "title": "Decide whether this is a venture",
+      "goal": "The founder's own decision: build a better answer to this problem, look further, or stop.",
+      "conversation": [
+        "Lay out what was learned: the puzzle, the problem, the markets, the solutions and how they felt.",
+        "Ask the founder to decide. Propose the decision with the options; never make it.",
+        "If they choose to build, the next playbook is validation: test the problem with the people who have it."
+      ],
+      "writes": [{ "route": "decisions/[id]", "as": "decision", "note": "build, keep looking, or stop; open until the founder decides" }],
+      "done_when": "The founder has decided.",
+      "artifact": "Page that collects the decision (the docket)"
+    }
+  ]
+}

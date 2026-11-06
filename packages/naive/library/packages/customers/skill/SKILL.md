@@ -49,7 +49,7 @@ Run the checks after each write, and fix a failure before you report the work do
 
 ## Actions and artifacts
 
-Build artifacts by the `choosing-artifacts` skill (`interface/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
+Build artifacts by the `choosing-artifacts` skill (`packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md`). Each artifact names the records it was built from.
 
 | Action | Artifact | Built from |
 |---|---|---|

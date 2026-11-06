@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "freshness-profiles.schema.json",
   "title": "Freshness profiles",
-  "description": "How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are knowledge/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.mjs reads both.",
+  "description": "How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are packages/naive/src/engine/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.mjs reads both.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

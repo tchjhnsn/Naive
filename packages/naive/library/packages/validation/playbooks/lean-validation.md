@@ -45,7 +45,7 @@ On the [teacher page](https://www.momtestbook.com/teachers) Fitzpatrick lists th
 
 In [a 2022 essay](https://robfitz.com/c/writing/bias-is-never-0-validation-is-never-100-context-and-pragmatism-in-custdev/) he writes that a conversation will not be free of bias. Keep the bits that are clean, ignore the bits that are biased, and then choose whether to learn more or to try something.
 
-The question wording this framework already uses is `purpose/kits/validation/templates/problem-interview.md`. The kit's reference for that template is Rob Fitzpatrick, *The Mom Test* (2013), in `purpose/kits/validation/references/references.json`.
+The question wording this framework already uses is `packages/naive/src/functions/strategy/kits/validation/templates/problem-interview.md`. The kit's reference for that template is Rob Fitzpatrick, *The Mom Test* (2013), in `packages/naive/src/functions/strategy/kits/validation/references/references.json`.
 
 ### Trademark
 
@@ -100,7 +100,7 @@ Write `raw/sources/problem-interview-plan`:
 
 Read `raw/sources/problem-interview-plan` back. If it is not found, stop.
 
-In the conversations, use the questions in `purpose/kits/validation/templates/problem-interview.md`. Ask about a specific time it happened, what they did, what it cost, and what they already pay for. Decide the commitment before you meet. A compliment, a general wish, or a guess about a future product is biased data. Ignore it. Do not pitch.
+In the conversations, use the questions in `packages/naive/src/functions/strategy/kits/validation/templates/problem-interview.md`. Ask about a specific time it happened, what they did, what it cost, and what they already pay for. Decide the commitment before you meet. A compliment, a general wish, or a guess about a future product is biased data. Ignore it. Do not pitch.
 
 Raw records are immutable. A new plan is a new id. Do not edit this one.
 
@@ -112,7 +112,7 @@ Save the notes at `raw/sources/problem-interview-notes/text.md`. That is the fil
 
 Read `purpose/raw/text/problem-interview-notes`. If it is not found, the file is not there yet. Do not write evidence.
 
-Keep names out of the notes, or keep the file out of a public repository. `purpose/kits/validation/skills/problem-validation/SKILL.md` says the same thing.
+Keep names out of the notes, or keep the file out of a public repository. `packages/naive/src/functions/strategy/kits/validation/skills/problem-validation/SKILL.md` says the same thing.
 
 ### 5. Evidence on the problem
 

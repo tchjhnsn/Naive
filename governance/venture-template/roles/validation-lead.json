@@ -11,5 +11,5 @@
     "validation/lint"
   ],
   "verified_by": "founder",
-  "skill": "purpose/kits/validation/skills/problem-validation/SKILL.md"
+  "skill": "packages/naive/src/functions/strategy/kits/validation/skills/problem-validation/SKILL.md"
 }

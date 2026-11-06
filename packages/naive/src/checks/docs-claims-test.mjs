@@ -94,7 +94,7 @@ check("the failure message never offers the placeholder", message !== "" && !wor
 const codeLine = workflow.split("\n").find((l) => l.trim().startsWith("code="))?.trim() ?? "";
 const codeOf = (changed) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$code"`], { cwd: repo, encoding: "utf8", env: { ...process.env, changed } }).stdout.trim();
 check("the workflow's code is any non-Markdown file", codeOf("schema/notes.md\npurpose/x.mdx\ndocs/a.mjs") === "" && codeOf("schema/data.json\nschema/notes.md") === "schema/data.json", codeLine);
-check("the workflow's code skips playbooks but keeps playbook schemas", codeOf("purpose/playbooks/torians-playbook.json\npackages/naive/library/packages/finance/playbooks/x.json") === "" && codeOf("packages/naive/src/records/playbook.schema.json") === "packages/naive/src/records/playbook.schema.json", codeLine);
+check("the workflow's code skips playbooks but keeps playbook schemas", codeOf("packages/naive/src/functions/strategy/playbooks/torians-playbook.json\npackages/naive/library/packages/finance/playbooks/x.json") === "" && codeOf("packages/naive/src/records/playbook.schema.json") === "packages/naive/src/records/playbook.schema.json", codeLine);
 const all = spawnSync("node", ["packages/naive/src/checks/check-docs-claims.mjs"], { cwd: repo, encoding: "utf8" });
 if (all.status !== 0) failed++;
 console.log(`${all.status === 0 ? "pass" : "FAIL"}  the docs, master docs, playbooks, skills and READMEs claim only what is built${all.status === 0 ? "" : `\n${all.stdout}${all.stderr}`}`);

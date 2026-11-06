@@ -37,8 +37,8 @@ expect("default profiles follow cacheLife: stale, revalidate and expire, in seco
 expect("default profiles add per_phase and live, which Next.js has no need for", P.profiles.assumption.per_phase === true && P.profiles.live.live === true);
 let threw = null; try { F.seconds("soon"); } catch (e) { threw = e.message; }
 expect("a duration that is not one is refused, so a typo never means never stale", /not a duration/.test(threw ?? ""));
-const schemaCheck = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "freshness-profiles.schema.json", "--file", join(repo, "knowledge/freshness.json")], { encoding: "utf8" });
-expect("knowledge/freshness.json matches its schema", schemaCheck.status === 0, schemaCheck.stdout);
+const schemaCheck = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "freshness-profiles.schema.json", "--file", join(repo, "packages/naive/src/engine/freshness.json")], { encoding: "utf8" });
+expect("packages/naive/src/engine/freshness.json matches its schema", schemaCheck.status === 0, schemaCheck.stdout);
 
 // A venture with a solution, a product card derived from it, and a customer.
 const dir = init("clinic");

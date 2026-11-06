@@ -41,7 +41,7 @@ The `github` connector is the app's: Mentura registers it, and Naive alone has n
 
 1. Decide which side it is on. If it works offline, needs no credentials and names no vendor, it is Naive's and goes in `packages/naive/src/store/connectors/<id>.mjs`. Otherwise it is the app's: it lives in the app, which calls `registerConnector` (EE-041). `node packages/naive/src/checks/check-boundary.mjs` enforces this: a connector in the registry must be in this repository, offline and without credentials, and no code names an app's module.
 2. Export `connect(options)`, returning an object that meets the contract.
-3. For a Naive connector, add a `connector` to its entry in `knowledge/tooling/integrations.json`: the module, its write modes and its options. An app passes the same fields to `registerConnector`.
+3. For a Naive connector, add a `connector` to its entry in `packages/naive/src/records/layers/knowledge/tooling/integrations.json`: the module, its write modes and its options. An app passes the same fields to `registerConnector`.
 4. Run it through `contract()` from `suite.mjs`: against a fake of its API offline, and against the real one when credentials are given.
 
 ## Running the evals

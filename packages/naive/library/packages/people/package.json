@@ -52,7 +52,7 @@
     "packages/naive/src/records/founder-agreement.schema.json"
   ],
   "templates": [
-    "operations/templates/recruiting-brief.md"
+    "packages/naive/src/functions/human-capital/templates/recruiting-brief.md"
   ],
   "checks": [
     "packages/naive/src/checks/check-validation.mjs",

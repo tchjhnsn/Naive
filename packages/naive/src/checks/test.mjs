@@ -168,7 +168,7 @@ function valBroken(name, change, pattern) {
 const problemOf = (d) => join(d, "purpose/validation/problem.json");
 {
   const { score, facts } = await import(join(root, "packages/naive/src/checks/check-validation.mjs"));
-  const W = JSON.parse(readFileSync(join(root, "purpose/kits/validation/weights.json"), "utf8"));
+  const W = JSON.parse(readFileSync(join(root, "packages/naive/src/functions/strategy/kits/validation/weights.json"), "utf8"));
   const all = (p, e = 1) => Object.fromEntries(["problem", "solution", "product-market-fit", "pricing", "go-to-market", "team", "operations-readiness"].map((k) => [k, { probability: p, weight: e }]));
   expect("score: strong evidence on every sub-score recommends Validation", score(all(0.9), W).recommends_validated);
   expect("score: a problem below its floor holds the venture back", (() => { const r = all(0.9); r.problem = { probability: 0.9, weight: 0.1 }; const s = score(r, W); return !s.recommends_validated && s.below_floor.includes("problem"); })());
@@ -271,7 +271,7 @@ knowBroken("a department folder without its tag fails", "check-departments.mjs",
 const repo = join(tmp, "repo");
 cpSync(root, repo, { recursive: true, filter: (s) => !/\/(\.git|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) });
 expect("check-integrations passes on the repository", run("check-integrations.mjs", [], { EE_ROOT: repo }).status === 0);
-edit(join(repo, "interface/tooling/integrations.json"), (list) => { list.push({ id: "obsidian", name: "Obsidian", layer: "interface", role: "notes", interfaces: ["app"], reach: ["knowledge"], interface_kind: "custom", status: "in-use" }); });
+edit(join(repo, "packages/naive/src/records/layers/interface/tooling/integrations.json"), (list) => { list.push({ id: "obsidian", name: "Obsidian", layer: "interface", role: "notes", interfaces: ["app"], reach: ["knowledge"], interface_kind: "custom", status: "in-use" }); });
 { const r = run("check-integrations.mjs", [], { EE_ROOT: repo }); expect("a single-layer tool listed as an interface fails", r.status !== 0 && /reaches 1 layers/.test(r.stderr)); }
 expect("check-nouns passes on the repository", run("check-nouns.mjs", [], { EE_ROOT: repo }).status === 0);
 writeFileSync(join(repo, "packages/naive/src/engine/README.md"), readFileSync(join(repo, "packages/naive/src/engine/README.md"), "utf8") + "\nEach sphere holds products.\n"); // a retired noun, on purpose
@@ -295,7 +295,7 @@ for (const [name, text, pattern] of /** @type {[string, (app: string) => string,
 writeFileSync(join(repo, "packages/naive/src/store/connectors/leak.mjs"), `// a comment may name ${appFolder}/connectors/github.mjs\nexport default 1;\n`);
 expect("a comment that names an app module passes", run("check-boundary.mjs", [], { EE_ROOT: repo }).status === 0);
 rmSync(join(repo, "packages/naive/src/store/connectors/leak.mjs"));
-edit(join(repo, "knowledge/tooling/integrations.json"), (list) => { const g = list.find((t) => t.id === "github"); g.connector = { module: "packages/naive/src/store/connectors/filesystem.mjs", writes: ["direct"] }; g.credentials = ["GITHUB_TOKEN"]; });
+edit(join(repo, "packages/naive/src/records/layers/knowledge/tooling/integrations.json"), (list) => { const g = list.find((t) => t.id === "github"); g.connector = { module: "packages/naive/src/store/connectors/filesystem.mjs", writes: ["direct"] }; g.credentials = ["GITHUB_TOKEN"]; });
 { const r = run("check-boundary.mjs", [], { EE_ROOT: repo }); expect("a Naive connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.
@@ -304,11 +304,11 @@ const ignored = new Set((spawnSync("git", ["ls-files", "--others", "--ignored", 
 const copy = (name) => { const d = join(tmp, name); cpSync(root, d, { recursive: true, filter: (s) => !ignored.has(s) && !/\/(\.git|\.claude|node_modules|\.naive|\.next|_pagefind)(\/|$)|\/site\/(generated|out)(\/|$)/.test(s) }); return d; };
 expect("check-data-model passes on the repository", run("check-data-model.mjs", [], { EE_ROOT: copy("dm0") }).status === 0);
 for (const [name, change, pattern] of /** @type {[string, (d: string) => void, RegExp][]} */ ([
-  ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "purpose/stray.json"), "{}"), /purpose\/stray.json: no record type/],
+  ["a JSON file with no record type fails", (d) => writeFileSync(join(d, "packages/naive/src/functions/strategy/stray.json"), "{}"), /functions\/strategy\/stray.json: no record type/],
   ["a schema no record type names fails", (d) => writeFileSync(recordsIn(d).schemaFile("stray"), "{}"), /a schema no record type names/],
-  ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "operations/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "operations/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
-  ["a layer owning another layer's record fails", (d) => edit(join(d, "purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
-  ["a layer reading an unknown record type fails", (d) => edit(join(d, "operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
+  ["a skill no layer or package lists fails", (d) => { mkdirSync(join(d, "packages/naive/src/functions/service-delivery/skills/run-handoff"), { recursive: true }); writeFileSync(join(d, "packages/naive/src/functions/service-delivery/skills/run-handoff/SKILL.md"), "---\n---\n"); }, /no layer or package lists this skill/],
+  ["a layer owning another layer's record fails", (d) => edit(join(d, "packages/naive/src/records/layers/purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
+  ["a layer reading an unknown record type fails", (d) => edit(join(d, "packages/naive/src/records/layers/operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
   ["a JSON file beside, not under, an ignored glob fails", (d) => writeFileSync(join(d, "docs/design/preserved.json"), "{}"), /docs\/design\/preserved.json: no record type/],
 ])) {
   const d = copy(`dm${++n}`);

@@ -48,7 +48,7 @@ expect("an unknown roadmap is refused", !(await install(dir, "nope")).ok);
 
 // ---- playbooks ----
 expect("product-first and revenue-first exist", ["product-first", "revenue-first"].every((id) => playbookOf(id)));
-for (const p of playbooks()) { const f = join(repo, "purpose/frameworks/product-anatomy/playbooks", `${p.id}.json`); const v = valid("lifecycle-playbook.schema.json", f); expect(`${p.id} matches its schema`, v.status === 0, v.stdout + v.stderr); }
+for (const p of playbooks()) { const f = join(repo, "packages/naive/src/functions/products/frameworks/product-anatomy/playbooks", `${p.id}.json`); const v = valid("lifecycle-playbook.schema.json", f); expect(`${p.id} matches its schema`, v.status === 0, v.stdout + v.stderr); }
 const person = { kind: "person", via: "cli", id: "maya" };
 let l = lifecycle(dir);
 expect("with no playbook named, product-first is read and the gate is unchanged", l.playbook.id === "product-first" && !l.playbook.chosen && l.current.gate === "Product-market fit: retention holds" && l.gate_evidence[0].id === "retention");

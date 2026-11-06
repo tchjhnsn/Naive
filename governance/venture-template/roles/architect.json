@@ -18,5 +18,5 @@
   "default_tier": "frontier",
   "lint_suites": [],
   "verified_by": "founder",
-  "skill": "governance/skills/executive-roles/SKILL.md"
+  "skill": "packages/naive/src/functions/human-capital/skills/executive-roles/SKILL.md"
 }

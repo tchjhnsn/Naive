@@ -1,5 +1,5 @@
 // Checks each venture's departments (EE-047): every id in venture.json `departments` is in the
-// catalog (operations/departments.json) and has at least one folder; every department folder
+// catalog (packages/naive/src/functions/departments.json) and has at least one folder; every department folder
 // holds a department.json whose tags match the catalog, is named for its department, sits
 // directly under departments/ or under the grouping folder for its place in the value chain, and
 // is listed in `departments`. A venture with no departments passes: they are imported only when
@@ -25,7 +25,7 @@ for (const v of walk(dir)) {
   if (!listed.length && !found.length) continue;
   ventures++;
   for (const id of listed) {
-    if (!byId.has(id)) errors.push(`${venture.id}: departments lists ${id}, which is not in operations/departments.json`);
+    if (!byId.has(id)) errors.push(`${venture.id}: departments lists ${id}, which is not in packages/naive/src/functions/departments.json`);
     else if (!found.some((f) => f.tag?.department === id)) errors.push(`${venture.id}: ${id} is listed but has no folder (node packages/naive/src/engine/add-department.mjs ${v} ${id})`);
   }
   for (const f of found) {

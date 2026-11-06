@@ -21,7 +21,7 @@ export const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 export const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 // The workspace is MENTURA_WORKSPACE, else the current directory: a framework never defaults to a folder of its own.
 export const defaultWorkspace = () => process.env.MENTURA_WORKSPACE ?? process.cwd();
-export const PHASES = load(join(repo, "purpose/frameworks/product-anatomy/phases.json")).phases;
+export const PHASES = load(join(repo, "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json")).phases;
 
 export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
 // A venture's files, stopping at a nested venture (which has its own records) and skipping dot and private folders.
@@ -33,7 +33,7 @@ export const skillsOf = (k) => (k.skills?.length ? k.skills : k.skill ? [k.skill
 /** Layer manifests and any package that owns record types. `kit` is the name, kept so the board still groups routes. */
 export function kits() {
   const model = readDataModel();
-  const paths = [...model.layers.map((l) => `${l}/layer.json`), "packages/naive/src/records/layer.json"];
+  const paths = [...model.layers.map((l) => `packages/naive/src/records/layers/${l}/layer.json`), "packages/naive/src/records/layer.json"];
   const pkgDir = join(repo, "packages/naive/library", "packages");
   if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`packages/naive/library/packages/${d}/package.json`);
   return paths.filter((p) => existsSync(join(repo, p))).map((p) => {
@@ -44,6 +44,8 @@ export function kits() {
 }
 
 const needNowPriors = () => load(join(repo, "packages/naive/src/engine/need-now.json"));
+// The template folders of the function modules, in the order departments.json lists the functions.
+const FUNCTION_TEMPLATES_OF = () => load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d) => `packages/naive/src/functions/${d.id}/templates`).filter((d) => existsSync(join(repo, d)));
 
 /** The route table, generated from packages/naive/src/records/data-model.json, the kit manifests and packages/naive/src/engine/need-now.json. */
 // Caching hook (F-12): built once per action and shared.
@@ -56,14 +58,19 @@ function buildRoutes() {
   const out = [];
   for (const r of model.records.filter((x) => x.level === "venture" && x.id !== "venture")) {
     const k = owner.get(r.id);
-    const sub = k?.path.match(/^[a-z]+\/kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("packages/naive/library/packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
+    const sub = k?.path.match(/(?:^|\/)kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("packages/naive/library/packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
     const short = sub && r.id.startsWith(`${sub}-`) ? r.id.slice(sub.length + 1) : r.id;
     const filesOf = venturePaths(r);
     if (filesOf.length && filesOf.every((f) => f.startsWith(".naive/"))) continue; // .naive/ is local and never routed.
     // The template is the package's template dir, or <manifest folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
-    const tdir = k?.template_dir ?? (k && !k.path.startsWith("packages/naive/library/packages/") ? join(dirname(k.path), "templates") : null);
-    const tname = tdir && existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
-    const template = tname ? `${tdir}/${tname}` : null;
+    // A layer manifest (packages/naive/src/records/layers/<layer>/layer.json) keeps no templates beside it since EE-118 step 7: its templates sit in
+    // the function modules, packages/naive/src/functions/<function>/templates/.
+    const layerManifest = k?.path?.startsWith("packages/naive/src/records/layers/");
+    const tdirs = k?.template_dir ? [k.template_dir] : !k || k.path.startsWith("packages/naive/library/packages/") ? []
+      : layerManifest ? FUNCTION_TEMPLATES_OF() : [join(dirname(k.path), "templates")];
+    const pick = (tdir) => existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
+    const found = tdirs.map((tdir) => [tdir, pick(tdir)]).find(([, n]) => n);
+    const template = found ? `${found[0]}/${found[1]}` : null;
     const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.mjs"))];
     const legacy = [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/");
     const base = PACKAGE_ROUTE[r.id] ?? legacy;
@@ -94,12 +101,12 @@ function buildRoutes() {
     cmd("purpose/validation/assess", "packages/naive/src/engine/assess-problem.mjs", "What the problem's evidence is strong enough for: each assumption labelled demonstrated, inferred, assumed, unknown or contradicted, the commitment it supports and the next test (EE-050). Asks first when the record is incomplete; input as_is runs it anyway", { as_is: true }),
     cmd("governance/analytics", "packages/naive/src/engine/decision-analytics.mjs", "Decision analytics (EE-072): how many decisions of each type each function has made, open against decided, in whose words, in which phase, and their outcomes. Data only; a view is the platform's, or a visualization skill's", { actions: ["run", "layout"] }),
     cmd("governance/decisions", "packages/naive/src/engine/decisions.mjs", "The decision matrix: every decision the venture owes by layer and phase, with its parent and boundary, and whether it renders now, waits, comes later, is stale or deferred (EE-054, EE-057)"),
-    cmd("operations/marketing/sitemap", "operations/marketing/site/plan.mjs", "Plan the public site from the venture's records: the product decides whom it is offered to, that decides the audiences, and each page gets its sections in order with the MDX component, need, audience, reason, condition, source record and the public variant to write (EE-064)"),
+    cmd("operations/marketing/sitemap", "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs", "Plan the public site from the venture's records: the product decides whom it is offered to, that decides the audiences, and each page gets its sections in order with the MDX component, need, audience, reason, condition, source record and the public variant to write (EE-064)"),
     cmd("operations/marketing/public", "packages/naive/src/engine/check-public.mjs", "The public gate: every marketing content file is a variant of a named internal record, says its audience and whether it is published, has a person's approval when published, and copies no run of ten words from its internal record (EE-064)"),
-    cmd("operations/marketing/site", "operations/marketing/site/presence.mjs", "How present the venture's public records are on its marketing site: a score weighed by who the site must speak to now (raising, hiring, contributors, ICPs), and each item missing, not prominent enough or present, with where it belongs (EE-062). Read the site first with packages/naive/src/interfaces/harness/site.mjs"),
-    cmd("purpose/ideas/routes", "purpose/frameworks/idea-map/route.mjs", "Where each idea goes in the framework: the records it feeds, each destination's stage (routed, drafted, your decision, waiting, done), whether it moves in order or on its own, and the one step that moves it; plus the decision docket traced to the ideas (EE-061)"),
-    cmd("purpose/ideas/graph", "purpose/frameworks/idea-map/graph.mjs", "The idea graph: which ideas build on which, each idea's signal, the lanes that move in order and the ones that can move on their own, and the ideas to develop next (EE-060)"),
-    cmd("purpose/ideas", "purpose/frameworks/idea-map/ideamap.mjs", "The founder's idea dump mapped onto Naive's conventions: each idea verbatim with its departments, records and whether it exists, where the ideas cluster, what the dump never mentions, and what it says about whether a product exists (EE-059)"),
+    cmd("operations/marketing/site", "packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs", "How present the venture's public records are on its marketing site: a score weighed by who the site must speak to now (raising, hiring, contributors, ICPs), and each item missing, not prominent enough or present, with where it belongs (EE-062). Read the site first with packages/naive/src/interfaces/harness/site.mjs"),
+    cmd("purpose/ideas/routes", "packages/naive/src/functions/strategy/frameworks/idea-map/route.mjs", "Where each idea goes in the framework: the records it feeds, each destination's stage (routed, drafted, your decision, waiting, done), whether it moves in order or on its own, and the one step that moves it; plus the decision docket traced to the ideas (EE-061)"),
+    cmd("purpose/ideas/graph", "packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs", "The idea graph: which ideas build on which, each idea's signal, the lanes that move in order and the ones that can move on their own, and the ideas to develop next (EE-060)"),
+    cmd("purpose/ideas", "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs", "The founder's idea dump mapped onto Naive's conventions: each idea verbatim with its departments, records and whether it exists, where the ideas cluster, what the dump never mentions, and what it says about whether a product exists (EE-059)"),
     cmd("purpose/foundation", "packages/naive/src/engine/foundation.mjs", "The venture's strategic foundation by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051)"),
     cmd("purpose/validation/score", "packages/naive/src/checks/check-validation.mjs", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
     cmd("governance/payouts", "packages/naive/src/engine/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),

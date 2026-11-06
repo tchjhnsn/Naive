@@ -14,8 +14,9 @@ const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..",
 const MIN_REACH = 3;
 const errors = [];
 let count = 0;
-for (const layer of readdirSync(root)) {
-  const f = join(root, layer, "tooling/integrations.json");
+const LAYERS = join(root, "packages/naive/src/records/layers");
+for (const layer of existsSync(LAYERS) ? readdirSync(LAYERS) : []) {
+  const f = join(LAYERS, layer, "tooling/integrations.json");
   if (!existsSync(f)) continue;
   const ids = new Set();
   for (const t of JSON.parse(readFileSync(f, "utf8"))) {

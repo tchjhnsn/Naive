@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "founder-idea.schema.json",
   "title": "Founder idea",
-  "description": "One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node purpose/frameworks/idea-map/graph.mjs check <ideas folder>.",
+  "description": "One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs check <ideas folder>.",
   "type": "object",
   "required": ["id", "text", "captured"],
   "additionalProperties": false,
@@ -41,11 +41,11 @@
   "$defs": {
     "relation": {
       "enum": ["broader", "narrower", "related", "part-of", "derived-from", "builds_on", "supports", "contradicts"],
-      "description": "How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds_on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which purpose/frameworks/idea-map/test.mjs keeps equal to this list"
+      "description": "How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds_on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list"
     },
     "attachment": {
       "enum": ["creates", "amends", "appends_to", "derives_from"],
-      "description": "How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which purpose/frameworks/idea-map/test.mjs keeps equal to this list"
+      "description": "How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list"
     }
   }
 }

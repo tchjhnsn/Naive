@@ -5,7 +5,7 @@
 //   path (go-to-market record), people, founders, agents, products (counts), publishes (a handoff
 //   under public-commitment), team (the answer to Naive's team question: solo, cofounders, looking),
 //   type (the venture type, EE-082).
-// Departments (EE-047) are scored the same way, from their priors in operations/departments.json, and
+// Departments (EE-047) are scored the same way, from their priors in packages/naive/src/functions/departments.json, and
 // held once venture.json lists them. Records that already exist are listed as held; a record in a layer the venture has turned off is
 // listed as layer off, not suggested. Jev re-scores the priors per venture once the
 // scorer runs; until then the priors are the default.
@@ -21,7 +21,7 @@ import { readDataModel, venturePaths } from "../records/index.mjs";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const PHASES = load(join(root, "purpose/frameworks/product-anatomy/phases.json")).phases.map((p) => p.id);
+const PHASES = load(join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json")).phases.map((p) => p.id);
 
 const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.isDirectory() ? files(join(d, e.name), base) : [join(d, e.name).slice(base.length + 1)]) : [];

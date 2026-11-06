@@ -368,7 +368,7 @@
         "instance/**/purpose/ideas/map.mdx",
         "packages/naive/src/records/examples/**/purpose/ideas/map.mdx"
       ],
-      "note": "The idea dump mapped onto Naive's conventions: one <Idea> per idea, its text unchanged, tagged with departments, records and whether it exists (purpose/frameworks/idea-map); drawn as a mind map (EE-059)"
+      "note": "The idea dump mapped onto Naive's conventions: one <Idea> per idea, its text unchanged, tagged with departments, records and whether it exists (packages/naive/src/functions/strategy/frameworks/idea-map); drawn as a mind map (EE-059)"
     },
     {
       "id": "idea-graph",
@@ -577,7 +577,7 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "purpose/kits/validation/weights.json"
+        "packages/naive/src/functions/strategy/kits/validation/weights.json"
       ],
       "note": "Validation score weights and floors by go-to-market path and venture kind (EE-026), version 0.x"
     },
@@ -588,8 +588,8 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "purpose/frameworks/product-anatomy/phases.json",
-        "purpose/frameworks/product-anatomy/questions.json"
+        "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json",
+        "packages/naive/src/functions/products/frameworks/product-anatomy/questions.json"
       ],
       "note": "Phases, gates and questions of Product Anatomy; self-describing, checked by its runner's tests"
     },
@@ -599,9 +599,9 @@
       "level": "method",
       "schema": "packages/naive/src/records/playbook.schema.json",
       "paths": [
-        "purpose/playbooks/*.json"
+        "packages/naive/src/functions/strategy/playbooks/*.json"
       ],
-      "note": "A step-by-step guide a venture function runs in conversation with the founder; run by interface/skills/run-playbook (a template is one record's empty shape; a playbook is the order of the work)"
+      "note": "A step-by-step guide a venture function runs in conversation with the founder; run by packages/naive/src/interfaces/skills/run-playbook (a template is one record's empty shape; a playbook is the order of the work)"
     },
     {
       "id": "profile-attributes",
@@ -609,7 +609,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/profile-attributes.schema.json",
       "paths": [
-        "purpose/frameworks/founder-profile/attributes.json"
+        "packages/naive/src/functions/strategy/frameworks/founder-profile/attributes.json"
       ],
       "note": "The library of founder-profile attributes (puzzles, passions, telos, ambitions, strengths, weaknesses ...) with their types, and the templates a profile starts from"
     },
@@ -620,7 +620,7 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "purpose/frameworks/idea-map/conventions.json"
+        "packages/naive/src/functions/strategy/frameworks/idea-map/conventions.json"
       ],
       "note": "The tags an idea map may use: departments, records, pillars and the exists judgment, with the threshold (EE-059); checked by the idea-map runner"
     },
@@ -634,14 +634,14 @@
         "instance/**/product/anatomy/answers*.json",
         "instance/**/product/anatomy.answers*.json",
         "instance/**/purpose/anatomy.answers*.json",
-        "purpose/frameworks/product-anatomy/examples/*.json",
-        "purpose/frameworks/product-anatomy/examples/*/*.json"
+        "packages/naive/src/functions/products/frameworks/product-anatomy/examples/*.json",
+        "packages/naive/src/functions/products/frameworks/product-anatomy/examples/*/*.json"
       ],
       "refs": [
         {
           "field": "(keys)",
           "to": "product",
-          "checked_by": "purpose/frameworks/product-anatomy/anatomy.mjs"
+          "checked_by": "packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.mjs"
         }
       ],
       "note": "Scores per product per question; the matrix is rendered from them"
@@ -656,7 +656,7 @@
         "instance/**/product/anatomy/*.json",
         "instance/**/purpose/anatomy/*.json"
       ],
-      "note": "Product Anatomy input for one product with parts (venture, core, products, flows), such as Naive or Mentura; read by purpose/frameworks/product-anatomy/anatomy.mjs"
+      "note": "Product Anatomy input for one product with parts (venture, core, products, flows), such as Naive or Mentura; read by packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.mjs"
     },
     {
       "id": "decision",
@@ -771,7 +771,7 @@
       "schema": "packages/naive/src/records/freshness-profiles.schema.json",
       "form": "json",
       "paths": [
-        "knowledge/freshness.json"
+        "packages/naive/src/engine/freshness.json"
       ],
       "refs": [
         {
@@ -789,7 +789,7 @@
       "schema": "packages/naive/src/records/sdlc-catalog.schema.json",
       "form": "json",
       "paths": [
-        "knowledge/sdlc/catalog.json"
+        "packages/naive/src/functions/products/sdlc/catalog.json"
       ],
       "refs": [
         {
@@ -835,7 +835,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/department-catalog.schema.json",
       "paths": [
-        "operations/departments.json"
+        "packages/naive/src/functions/departments.json"
       ],
       "note": "The departments a venture can import: APQC categories tagged with Porter's value chain, with need-now priors (EE-047)"
     },
@@ -845,7 +845,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/operating-rules.schema.json",
       "paths": [
-        "operations/operating-rules.json"
+        "packages/naive/src/terms/operating-rules.json"
       ],
       "refs": [
         {
@@ -917,10 +917,10 @@
       "schema": "packages/naive/src/records/reference.schema.json",
       "generator": "packages/naive/src/engine/generators/reference.mjs",
       "paths": [
-        "*/references/references.json",
-        "*/kits/*/references/references.json"
+        "packages/naive/src/records/layers/*/references/references.json",
+        "packages/naive/src/functions/*/kits/*/references/references.json"
       ],
-      "note": "Each layer keeps the sources behind its defaults; filled by knowledge/skills/find-reference; a kit inside a layer keeps its own at <layer>/kits/<kit>/references/references.json"
+      "note": "Each layer keeps the sources behind its defaults; filled by packages/naive/src/functions/capabilities/skills/find-reference; a kit inside a layer keeps its own at <layer>/kits/<kit>/references/references.json"
     },
     {
       "id": "integration",
@@ -929,7 +929,7 @@
       "schema": "packages/naive/src/records/integration.schema.json",
       "form": "json-list",
       "paths": [
-        "*/tooling/integrations.json"
+        "packages/naive/src/records/layers/*/tooling/integrations.json"
       ],
       "refs": [
         {
@@ -978,7 +978,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/layer.schema.json",
       "paths": [
-        "*/layer.json", "packages/naive/src/records/layer.json"
+        "packages/naive/src/records/layers/*/layer.json", "packages/naive/src/records/layer.json"
       ],
       "refs": [
         {
@@ -1098,7 +1098,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/eval-suite.schema.json",
       "paths": [
-        "evidence/evals/*.json"
+        "packages/naive/test/evals/*.json"
       ]
     },
     {
@@ -1108,13 +1108,13 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "evidence/design-documents.registry.json"
+        "packages/naive/src/functions/capabilities/design-documents.registry.json"
       ],
       "refs": [
         {
           "field": "documents",
           "to": "design-document",
-          "checked_by": "evidence/skills/design-coverage/check.mjs"
+          "checked_by": "packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs"
         }
       ],
       "note": "Self-describing; which design documents a venture needs at which phase"
@@ -1126,7 +1126,7 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "evidence/benchmarks/*.json"
+        "packages/naive/test/benchmarks/*.json"
       ],
       "note": "Raw outputs kept as evidence for a benchmark write-up beside them"
     },
@@ -1323,7 +1323,7 @@
       "schema": null,
       "form": "json",
       "paths": [
-        "operations/marketing/site/matrix.json"
+        "packages/naive/src/functions/marketing-and-sales/marketing/site/matrix.json"
       ],
       "note": "The marketing matrix: the audiences a public site speaks to, what each needs to learn and from which record, where it belongs, and how prominent it must be by need; weighted by whether the venture is raising, hiring or inviting contributors, and by its ICPs (EE-062). Version 0.x, unevaluated"
     },
@@ -1482,7 +1482,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/agent-capability.schema.json",
       "paths": [
-        "evidence/capabilities/agent-capabilities.json"
+        "packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json"
       ],
       "refs": [
         {
@@ -1637,7 +1637,7 @@
       "level": "method",
       "schema": "packages/naive/src/records/strategic-foundation.schema.json",
       "paths": [
-        "purpose/strategic-foundation.json"
+        "packages/naive/src/functions/strategy/strategic-foundation.json"
       ],
       "refs": [
         {
@@ -2066,7 +2066,7 @@
       "schema": "packages/naive/src/records/lifecycle-playbook.schema.json",
       "form": "json",
       "paths": [
-        "purpose/frameworks/product-anatomy/playbooks/*.json"
+        "packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/*.json"
       ],
       "refs": [],
       "note": "A lifecycle playbook: an ordering of the venture development lifecycle, with the gate and the evidence that clears each phase. A venture names one in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads its gate evidence"
@@ -2186,7 +2186,7 @@
     },
     {
       "path": "packages/naive/src/engine/known-leaks.json",
-      "reason": "The dated list of public outputs that leak internal text today, read by operations/marketing/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
+      "reason": "The dated list of public outputs that leak internal text today, read by packages/naive/src/functions/marketing-and-sales/marketing/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
     },
     {
       "path": "packages/naive/src/engine/internal-terms.json",

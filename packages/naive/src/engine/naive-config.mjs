@@ -21,7 +21,7 @@ export const DEFAULTS = Object.freeze({
   gate: { fail_closed: [], rules: [], packages: true, variants: false },
   owners: {},
   checks: { off: [], warn: [] },
-  thresholds: { confidence: 0.7, "idea-map": load(join(repo, "purpose/frameworks/idea-map/conventions.json")).threshold },
+  thresholds: { confidence: 0.7, "idea-map": load(join(repo, "packages/naive/src/functions/strategy/frameworks/idea-map/conventions.json")).threshold },
   questions: {},
   packages: {},
   acting: { unknown_roles: "allow" },

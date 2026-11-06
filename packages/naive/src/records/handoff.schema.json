@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "handoff.schema.json",
   "title": "Handoff",
-  "description": "One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (operations/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.mjs checks it is ready before work starts; packages/naive/src/checks/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17).",
+  "description": "One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (packages/naive/src/functions/capabilities/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.mjs checks it is ready before work starts; packages/naive/src/checks/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17).",
   "type": "object",
   "required": [
     "id",

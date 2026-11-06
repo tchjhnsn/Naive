@@ -1,0 +1,109 @@
+{
+  "layer": "governance",
+  "purpose": "Say who owns and controls the venture and who may decide what: ownership (cap table), founders, boards, investor rights and exits, roles, decision rights, where it publishes and who may publish what (the publication gate), the venture template and its pillars, and escalation to the owner.",
+  "skills": [
+    {
+      "id": "brand-pillar",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/brand-pillar/SKILL.md"
+    },
+    {
+      "id": "business-pillar",
+      "path": "packages/naive/src/functions/strategy/skills/business-pillar/SKILL.md"
+    },
+    {
+      "id": "chief-of-staff",
+      "path": "packages/naive/src/functions/strategy/skills/chief-of-staff/SKILL.md"
+    },
+    {
+      "id": "cross-pillar-tradeoff",
+      "path": "packages/naive/src/functions/strategy/skills/cross-pillar-tradeoff/SKILL.md"
+    },
+    {
+      "id": "executive-roles",
+      "path": "packages/naive/src/functions/human-capital/skills/executive-roles/SKILL.md"
+    },
+    {
+      "id": "office-hours-mode",
+      "path": "packages/naive/src/functions/strategy/skills/office-hours-mode/SKILL.md"
+    },
+    {
+      "id": "product-pillar",
+      "path": "packages/naive/src/functions/products/skills/product-pillar/SKILL.md"
+    },
+    {
+      "id": "role-and-candidate-authoring",
+      "path": "packages/naive/src/functions/human-capital/skills/role-and-candidate-authoring/SKILL.md"
+    },
+    {
+      "id": "stakeholder-update",
+      "path": "packages/naive/src/functions/external-relationships/skills/stakeholder-update/SKILL.md"
+    },
+    {
+      "id": "cofounder-structure",
+      "path": "packages/naive/src/functions/human-capital/skills/cofounder-structure/SKILL.md"
+    },
+    {
+      "id": "board-design",
+      "path": "packages/naive/src/functions/strategy/skills/board-design/SKILL.md"
+    },
+    {
+      "id": "equity-and-share-classes",
+      "path": "packages/naive/src/functions/finance/skills/equity-and-share-classes/SKILL.md"
+    },
+    {
+      "id": "financing-and-investor-rights",
+      "path": "packages/naive/src/functions/finance/skills/financing-and-investor-rights/SKILL.md"
+    },
+    {
+      "id": "exit-planning",
+      "path": "packages/naive/src/functions/finance/skills/exit-planning/SKILL.md"
+    },
+    {
+      "id": "publication-policy",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/publication-policy/SKILL.md"
+    }
+  ],
+  "records": [
+    "decision-rights",
+    "role",
+    "pillar",
+    "ownership",
+    "board",
+    "founder-agreement",
+    "exit",
+    "publication-policy",
+    "internal-terms",
+    "decision-record",
+    "decision-impact",
+    "venture-role",
+    "role-template",
+    "delegation",
+    "publications"
+  ],
+  "reads": [
+    "handoff",
+    "evidence",
+    "venture",
+    "telos"
+  ],
+  "writes": [
+    "decision",
+    "handoff"
+  ],
+  "checks": [
+    "packages/naive/src/checks/check-governance.mjs",
+    "packages/naive/src/engine/payouts.mjs",
+    "packages/naive/src/checks/check-publication.mjs",
+    "packages/naive/src/engine/decisions.mjs",
+    "packages/naive/src/checks/check-delegation.mjs"
+  ],
+  "gaps": [
+    "Escalations land in handoffs; nothing collects open escalations for the owner",
+    "MAD's governance-tier answers are derived from these records by MAD's derive-answers (MAD repo, operations/skills/methodology-selection/derive-answers.mjs), which does not yet read telos steering, venture regulation or the continue-or-stop, change-direction and set-priorities classes (EE-040)",
+    "The decision matrix (packages/naive/src/engine/decisions.mjs) gathers decision records, unconfirmed foundation statements and gated drafts; need-now suggestions, failing checks and forecasts are not gathered yet, and nothing writes decision records through the router yet (EE-054)",
+    "Decision records carry provenance, outcomes and unlocks (EE-058), but nothing yet closes an activity to a person or agent until the decision that unlocks it is made, nothing prompts for actual outcomes when they fall due, and Mentura's decision analytics are not built",
+    "agent-roles.json has no schema; the role templates beside it do (role-template)",
+    "Roles have no schema"
+  ],
+  "name": "governance"
+}

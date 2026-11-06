@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "site-presence.schema.json",
   "title": "Site presence",
-  "description": "How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by operations/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated.",
+  "description": "How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated.",
   "type": "object",
   "required": [
     "version",

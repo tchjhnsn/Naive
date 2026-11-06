@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "marketing-sitemap.schema.json",
   "title": "Marketing sitemap",
-  "description": "The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by operations/marketing/site/plan.mjs. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated.",
+  "description": "The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated.",
   "type": "object",
   "required": [
     "version",

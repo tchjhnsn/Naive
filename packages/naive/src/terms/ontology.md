@@ -13,7 +13,7 @@ The system is opinionated: it names one default for each choice, and every defau
 
 - Canonical: `packages/naive/src/terms/ontology.json`. This page is generated from it; regenerate with `node packages/naive/src/checks/check-nouns.mjs --md`.
 - `node packages/naive/src/checks/check-nouns.mjs` fails when a retired noun reappears in the schema, design docs, Product Anatomy, AGENTS.md or README.md, when a noun has no standard, or when a function's capabilities are missing, retired or owned by another function.
-- Each noun names a `function` (one id from `operations/departments.json`, or nothing when the word is shared) and a handoff type (yes when that noun can type a package). A shared noun may appear in any package and never decides which function the package belongs to.
+- Each noun names a `function` (one id from `packages/naive/src/functions/departments.json`, or nothing when the word is shared) and a handoff type (yes when that noun can type a package). A shared noun may appear in any package and never decides which function the package belongs to.
 - `node packages/naive/src/checks/check-nouns.mjs --package <file> --function <id>` prints one verdict: admit, refer to the function that owns the type, or reject. `--record` appends that verdict to `<id>.provenance.jsonl` beside the package. The verdict is not stored on the handoff. The receiver has to be a function noun. A schema checker that cannot run exits 2 and records nothing.
 - A scoped noun is written `name@function`. The suffix is a function id, and the noun's function is that same id. A bare name is not added beside a scoped sense. A retired bare name may stay, as the pointer to the senses that replaced it.
 - A fact value is the boolean true or a record. Any other value fails that property. Two records that give one field two values are a reject. A record the term cannot read fails every property of that type. That is a reject of the package, and it is recorded.
@@ -63,7 +63,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | pillar | Product, brand and business, in every venture | ours |  |  |  |
 | venture template | The scaffold for a venture: pillars, roles, decision rights | ours |  |  |  |
 | kit | Mentura's word (EE-071): an enhanced package that adds automations, agent workflows, richer skills and connectors, at platform/kits/<name>/kit.json. A kit names the one package it extends and never replaces it, so the package works without the kit. The framework does not use kit for its own manifests (was the layer bundle at <layer>/kit.json) | product bundling (Adams and Yellen 1976), kept for the platform |  |  |  |
-| strategic foundation | The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (purpose/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052) | strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How |  |  |  |
+| strategic foundation | The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (packages/naive/src/functions/strategy/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052) | strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How |  |  |  |
 | customer@marketing-and-sales | The buyer this function sells to. The finance sense of the same word is customer@finance. The @ scope is the one the term list uses for two senses of one word. | Schema.org Customer |  | marketing-and-sales |  |
 | customer@finance | The party the books record as the source of revenue. The marketing sense of the same word is customer@marketing-and-sales. | FIBO (Financial Industry Business Ontology), Customer |  | finance |  |
 
@@ -110,7 +110,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | --- | --- | --- | --- | --- | --- |
 | eval | A test of whether something worked; evals are grouped in eval suites (eval-suite.schema.json) | AI evals |  |  |  |
 | evidence | The recorded result of one run of a check or eval: subject and version, each criterion's outcome and its output, at <venture>/evidence/results/<id>.json. Append-only | common audit usage |  |  |  |
-| capability register | What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (evidence/capabilities/agent-capabilities.json, EE-029) | ours |  |  |  |
+| capability register | What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json, EE-029) | ours |  |  |  |
 
 ### Governance
 

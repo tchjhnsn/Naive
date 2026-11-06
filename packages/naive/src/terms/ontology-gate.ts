@@ -86,7 +86,7 @@ function loadNouns(root: string): Noun[] {
 }
 
 function departmentIds(root: string): Set<string> {
-  const raw = JSON.parse(readFileSync(join(root, "operations/departments.json"), "utf8")) as unknown;
+  const raw = JSON.parse(readFileSync(join(root, "packages/naive/src/functions/departments.json"), "utf8")) as unknown;
   if (!isRecord(raw) || !Array.isArray(raw.departments)) return new Set();
   return new Set(raw.departments.filter(isRecord).map((d) => d.id).filter((id): id is string => typeof id === "string"));
 }

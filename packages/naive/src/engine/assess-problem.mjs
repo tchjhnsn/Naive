@@ -2,7 +2,7 @@
 // Assesses a venture's problem from its evidence (EE-050), the lean validation suite. No single
 // score: the problem splits into four assumptions, each labelled from its evidence, and the
 // labels say which commitment the evidence is strong enough for. Behaviors it must keep are in
-// purpose/kits/validation/features/problem-assessment.feature.
+// packages/naive/src/functions/strategy/kits/validation/features/problem-assessment.feature.
 //
 //   node packages/naive/src/engine/assess-problem.mjs <venture dir> [--json] [--preflight] [--as-is]
 //
@@ -121,7 +121,7 @@ export function assess(dir, { as_is = false, today = new Date() } = {}) {
   const rec = f ? JSON.parse(readFileSync(f, "utf8")) : null;
   const missing = preflight(rec);
   if (missing.length && !as_is) return { needs_input: { ask: ASK, missing, options: [
-    { choice: "fill-in", how: "write the missing fields through foundation/problem (foundation/problem.json, or purpose/validation/problem.json when that file is already the record; template: purpose/kits/validation/templates/problem.md), then run again" },
+    { choice: "fill-in", how: "write the missing fields through foundation/problem (foundation/problem.json, or purpose/validation/problem.json when that file is already the record; template: packages/naive/src/functions/strategy/kits/validation/templates/problem.md), then run again" },
     { choice: "run-as-is", how: "run again with as_is (CLI --as-is; MCP and API as_is: true)" }] } };
   const labels = label(rec, today);
   // Each open form is assessed from its own evidence; its evidence also counts for the root.

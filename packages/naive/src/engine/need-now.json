@@ -455,7 +455,7 @@
         "platform": 1
       },
       "when": [],
-      "why": "Departments are imported one at a time; each has its own priors in operations/departments.json, listed below"
+      "why": "Departments are imported one at a time; each has its own priors in packages/naive/src/functions/departments.json, listed below"
     },
     "icp": {
       "base": {

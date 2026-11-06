@@ -19,8 +19,8 @@
     { "id": "owner-outcome", "question": "What do the owners intend to happen then: hold, sell, list or wind down?", "answers": "owner_outcome" },
     { "id": "exit", "question": "For this phase, what must be true to leave it, and which measure does each serve?", "answers": "phases.exit_criteria" }
   ],
-  "template": "purpose/templates/telos-based-smart.md",
-  "skill": "purpose/skills/telos/SKILL.md",
+  "template": "packages/naive/src/functions/strategy/templates/telos-based-smart.md",
+  "skill": "packages/naive/src/functions/strategy/skills/telos/SKILL.md",
   "adapter": "frameworks/telos/adapter.mjs",
   "checks": ["packages/naive/src/checks/check-telos.mjs"],
   "maps_to": [

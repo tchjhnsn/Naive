@@ -84,9 +84,9 @@ export function ventureHealth(dir) {
 // The framework files every route depends on. A broken one stops every route, so it is checked first.
 function frameworkFiles() {
   const fromRoot = (f) => relative(ROOT, f);
-  const fixed = [fromRoot(dataModelFile()), "packages/naive/src/engine/need-now.json", fromRoot(schemaFile("venture")), "packages/naive/library/packages/catalog.json", "purpose/frameworks/product-anatomy/phases.json", "purpose/strategic-foundation.json", "operations/departments.json"];
+  const fixed = [fromRoot(dataModelFile()), "packages/naive/src/engine/need-now.json", fromRoot(schemaFile("venture")), "packages/naive/library/packages/catalog.json", "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json", "packages/naive/src/functions/strategy/strategic-foundation.json", "packages/naive/src/functions/departments.json"];
   let layers = [];
-  try { layers = readDataModel().layers.map((l) => `${l}/layer.json`); } catch {}
+  try { layers = readDataModel().layers.map((l) => `packages/naive/src/records/layers/${l}/layer.json`); } catch {}
   const pkgs = existsSync(join(repo, "packages/naive/library", "packages")) ? readdirSync(join(repo, "packages/naive/library", "packages")).map((n) => `packages/naive/library/packages/${n}/package.json`).filter((f) => existsSync(join(repo, f))) : [];
   return [...fixed, ...layers, "packages/naive/src/records/layer.json", ...pkgs];
 }

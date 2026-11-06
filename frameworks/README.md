@@ -9,4 +9,4 @@ Naive's schema is opinionated and stable. A framework for thinking (the telos, a
 
 Canonical records: `foundation/goals/<id>.json`, `foundation/requirements/<id>.json`, `foundation/exit-criteria/<phase>.json`, `foundation/constraints.json`. Core code reads them through `packages/naive/src/engine/canonical.mjs`. `node packages/naive/src/engine/check-frameworks.mjs` fails when a `maps_to` targets a non-canonical route, or when core code reads a framework-only field (`telos.json`, `ambition`) outside the adapters, the migration and the fallback.
 
-Skills stay at their layer paths (`purpose/skills/telos/`, `purpose/skills/ambition-tier/`); the framework names them.
+Skills stay at their layer paths (`packages/naive/src/functions/strategy/skills/telos/`, `packages/naive/src/functions/strategy/skills/ambition-tier/`); the framework names them.

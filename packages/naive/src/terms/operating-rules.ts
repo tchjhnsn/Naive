@@ -1,6 +1,6 @@
 // Naive's operating rules, as a module a venture can override.
 //
-// The default module is operations/operating-rules.json. A venture supplies its own
+// The default module is packages/naive/src/terms/operating-rules.json. A venture supplies its own
 // operating-rules.json, merged over the default. On a structured venture that file is
 // meta/operating-rules.json. Scalars and arrays in the overlay replace the default.
 // Objects merge key by key. The merged module is checked by packages/naive/src/records/validate.py, the
@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
 import { ventureFile } from "../core/venture-paths.mjs";
 import type { OperatingRules } from "../records/types/records.d.ts";
 
-export const DEFAULT_MODULE = "operations/operating-rules.json";
+export const DEFAULT_MODULE = "packages/naive/src/terms/operating-rules.json";
 export const VENTURE_MODULE = "operating-rules.json";
 
 export class OperatingRulesError extends Error {

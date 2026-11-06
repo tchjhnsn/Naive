@@ -117,7 +117,7 @@ export function structure(dir) {
 
 const PACKAGE_NAMES = () => existsSync(join(repo, "packages/naive/library", "packages")) ? readdirSync(join(repo, "packages/naive/library", "packages")).filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))) : [];
 const pkgOf = (n) => load(join(repo, "packages/naive/library", "packages", n, "package.json"));
-const FUNCTIONS = () => load(join(repo, "operations/departments.json")).departments.map((d) => d.id);
+const FUNCTIONS = () => load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d) => d.id);
 
 /**
  * The manifest venture.json declares (P-3), with what is derived when it does not declare it:

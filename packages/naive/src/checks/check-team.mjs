@@ -1,5 +1,5 @@
 // Checks each venture's team plan (operations/team-plan.json) against the agent capability register
-// (evidence/capabilities/agent-capabilities.json) and decision rights (EE-029). Rules:
+// (packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json) and decision rights (EE-029). Rules:
 //   roles: ids unique; a role not in the registry has a name; an agent occupies only a role the
 //     registry gives to agents, or its own.
 //   authority: each delegated class exists in the venture's decision rights; its owner is this
@@ -27,7 +27,7 @@ const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.nam
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const registry = new Map(load(join(repo, "governance/venture-template/roles/agent-roles.json")).roles.map((r) => [r.id, r]));
 const template = load(join(repo, "governance/venture-template/decision-rights.json"));
-const caps = load(join(repo, "evidence/capabilities/agent-capabilities.json"));
+const caps = load(join(repo, "packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json"));
 const errors = [], warnings = [], recruitNow = [];
 const { routes, glob: routeGlob } = await import("../records/routes/routes.mjs");
 const routeList = routes().map((r) => r.route.replace("[id]", "x"));

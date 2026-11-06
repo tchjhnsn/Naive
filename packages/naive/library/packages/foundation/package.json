@@ -48,7 +48,7 @@
     "packages/naive/src/records/constraints.schema.json"
   ],
   "templates": [
-    "purpose/templates/telos-based-smart.md"
+    "packages/naive/src/functions/strategy/templates/telos-based-smart.md"
   ],
   "checks": [
     "packages/naive/src/checks/check-telos.mjs",

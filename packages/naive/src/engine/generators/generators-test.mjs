@@ -30,8 +30,8 @@ t("glossary: adds a term to the current file", g1.ok && g1.draft.terms.length ==
 t("glossary: a second meaning for a defined term is refused", !glossary.draft({ package: "brand", term: "Kettle", meaning: "a pot" }, { venture: v }).ok);
 t("glossary: the same meaning again adds nothing", glossary.draft({ package: "brand", term: "kettle", meaning: "the product" }, { venture: v }).added === false);
 
-mkdirSync(join(v, "purpose/references"), { recursive: true });
-writeFileSync(join(v, "purpose/references/references.json"), JSON.stringify({ layer: "purpose", references: [{ id: "minsky-1974-framework", title: "x", authors: ["M"], year: 1974, kind: "paper", summary: "s", informs: [], stance: { is: "adopted", why: "w" } }] }));
+mkdirSync(join(v, "packages/naive/src/records/layers/purpose/references"), { recursive: true });
+writeFileSync(join(v, "packages/naive/src/records/layers/purpose/references/references.json"), JSON.stringify({ layer: "purpose", references: [{ id: "minsky-1974-framework", title: "x", authors: ["M"], year: 1974, kind: "paper", summary: "s", informs: [], stance: { is: "adopted", why: "w" } }] }));
 const r = reference.draft({ layer: "purpose", title: "A Framework for Representing Knowledge", authors: ["Marvin Minsky"], year: 1974, kind: "paper", summary: "frames", stance: { is: "adapted", why: "Naive's frame record" } }, { root: v });
 t("reference: draft passes the schema", r.ok);
 t("reference: id is unique in the file", r.added === "minsky-1974-framework-2");

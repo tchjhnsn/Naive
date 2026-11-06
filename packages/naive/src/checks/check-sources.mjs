@@ -1,6 +1,6 @@
 // Checks each venture's source map (<venture>/knowledge/sources.json, EE-037) for what its schema
 // cannot state: source ids are unique; each names a connector in the registry
-// (knowledge/tooling/integrations.json) and a write mode that connector supports; a GitHub source
+// (packages/naive/src/records/layers/knowledge/tooling/integrations.json) and a write mode that connector supports; a GitHub source
 // names its repository; every record type it maps is a venture record type and goes to a source
 // it lists. The venture, its provenance log and the map itself stay in the venture folder, so they
 // cannot be mapped away. It does not connect to any source: the connector evals do that.

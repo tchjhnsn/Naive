@@ -1,0 +1,153 @@
+[
+  {
+    "id": "ee-evals",
+    "name": "Repo evals",
+    "layer": "evidence",
+    "role": "skill and harness evals in packages/naive/test/evals",
+    "interfaces": [
+      "files"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "github-checks",
+    "name": "GitHub checks",
+    "layer": "evidence",
+    "role": "CI results as evidence",
+    "interfaces": [
+      "api"
+    ],
+    "status": "in-use"
+  },
+  {
+    "id": "stripe",
+    "name": "Stripe",
+    "layer": "evidence",
+    "role": "per-product revenue for the P&L",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Lineup draft names it as the revenue source"
+  },
+  {
+    "id": "amplitude",
+    "name": "Amplitude",
+    "layer": "evidence",
+    "role": "product analytics",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Connector available, not signed in"
+  },
+  {
+    "id": "vercel",
+    "name": "Vercel",
+    "layer": "evidence",
+    "role": "web analytics and deployments: visitors, users and page views per site, for the products a venture deploys there",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): business operations needs to know how audiences receive a product, not how its code is built, so analytics are a source of truth for validation evidence",
+    "credentials": [
+      "VERCEL_TOKEN"
+    ],
+    "links": [
+      "https://vercel.com/docs/analytics"
+    ]
+  },
+  {
+    "id": "cloudflare",
+    "name": "Cloudflare",
+    "layer": "evidence",
+    "role": "web analytics and traffic for sites and Workers a venture deploys there",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): business operations needs to know how audiences receive a product, not how its code is built, so analytics are a source of truth for validation evidence",
+    "credentials": [
+      "CLOUDFLARE_API_TOKEN"
+    ],
+    "links": [
+      "https://developers.cloudflare.com/web-analytics/"
+    ]
+  },
+  {
+    "id": "netlify",
+    "name": "Netlify",
+    "layer": "evidence",
+    "role": "site analytics for ventures that deploy there",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): business operations needs to know how audiences receive a product, not how its code is built, so analytics are a source of truth for validation evidence",
+    "credentials": [
+      "NETLIFY_AUTH_TOKEN"
+    ]
+  },
+  {
+    "id": "google-analytics",
+    "name": "Google Analytics 4",
+    "layer": "evidence",
+    "role": "website and app analytics: users, sessions, acquisition and conversions",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): business operations needs to know how audiences receive a product, not how its code is built, so analytics are a source of truth for validation evidence",
+    "credentials": [
+      "GOOGLE_APPLICATION_CREDENTIALS"
+    ]
+  },
+  {
+    "id": "posthog",
+    "name": "PostHog",
+    "layer": "evidence",
+    "role": "product analytics: active users, funnels and retention",
+    "interfaces": [
+      "mcp",
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): business operations needs to know how audiences receive a product, not how its code is built, so analytics are a source of truth for validation evidence",
+    "credentials": [
+      "POSTHOG_API_KEY"
+    ]
+  },
+  {
+    "id": "listen-labs",
+    "name": "Listen Labs",
+    "layer": "evidence",
+    "role": "AI-moderated customer interviews with recruited participants: qualitative evidence for problem, solution, pricing and product-market-fit validation, and later audience research",
+    "interfaces": [
+      "app"
+    ],
+    "status": "candidate",
+    "reason": "Owner, 2026-10-28 (EE-039): a research tool for the validation phase and any phase it serves. Its site states no API or MCP server yet, so studies come in as exported reports until one is confirmed (docs.listenlabs.ai)",
+    "links": [
+      "https://listenlabs.ai"
+    ]
+  },
+  {
+    "id": "jev",
+    "name": "Jev (TypeSafe AI)",
+    "layer": "evidence",
+    "role": "scores validation sub-scores and need-now priors as probabilities",
+    "interfaces": [
+      "api"
+    ],
+    "status": "candidate",
+    "reason": "The validation schemas name it as the scorer (EE-026, EE-028)",
+    "credentials": [
+      "TYPESAFE_API_KEY"
+    ]
+  }
+]
