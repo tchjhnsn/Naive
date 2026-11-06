@@ -2,7 +2,7 @@
 // out unless turned on; check-traces catches an edited line and a dangling link; naive trace append and
 // show work from the command line; router calls become spans; traces off writes nothing.
 //
-//   node packages/naive/src/engine/traces-test.ts
+//   node packages/naive/src/checks/traces-test.ts
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -11,8 +11,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emit, sessions, span, spans, withSpan } from "../core/instrumentation.mjs";
 import { entries, record } from "../core/provenance.mjs";
-import { checkVenture } from "../checks/check-traces.ts";
-import { append, tree } from "./trace-cli.ts";
+import { checkVenture } from "./check-traces.ts";
+import { append, tree } from "../engine/trace-cli.ts";
 
 const repo = fileURLToPath(new URL("../../../..", import.meta.url));
 let failed = 0;

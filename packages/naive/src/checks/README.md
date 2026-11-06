@@ -28,6 +28,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-private.mjs`](./check-private.mjs) | Private records, fields, and sensitive streams never reach a model (EE-073). |
 | [`check-provenance.mjs`](./check-provenance.mjs) | Checks each venture's provenance log (<venture>/provenance.jsonl, EE-031). |
 | [`check-traces.ts`](./check-traces.ts) | Checks each venture's traces (<venture>/traces/<session>.jsonl, EE-121): the hash chain, the fields, inputs and outputs kept only when traces.content is on, and every span a provenance line names. |
+| [`traces-test.ts`](./traces-test.ts) | Tests traces: spans nest, chain and link from provenance, content stays out unless turned on, `check-traces.ts` catches an edited line and a dangling link, and `naive trace` works from the command line. |
 | [`check-publication.mjs`](./check-publication.mjs) | Checks each venture's publication policy (governance/publication-policy.json, EE-025) and the handoffs that publish. |
 | [`check-ready.mjs`](./check-ready.mjs) | Checks that a handoff is ready to execute before anyone starts on it (EE-019). |
 | [`check-reasons.mjs`](./check-reasons.mjs) | The check for reasons with citations (packages/naive/src/engine/reasons.mjs). |
