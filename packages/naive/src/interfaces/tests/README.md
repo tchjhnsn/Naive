@@ -4,7 +4,7 @@ Up: [repository](../../../../../AGENTS.md)
 
 ## What this is
 
-Tests that run a module in `schema/` through the router: its route via `call`, the MCP server or the HTTP API. They moved here from `schema/` in the monorepo rebuild (router inversion, step 2), because a test that runs a route tests the router and the module together, so it sits above both. That way `schema/` does not import `interface/` for its tests. The design is [`docs/design/MONOREPO_ROUTER_INVERSION_2026-11-05.md`](../../../../../docs/design/MONOREPO_ROUTER_INVERSION_2026-11-05.md).
+Tests that run a module in `packages/naive/src/engine/` through the router: its route via `call`, the MCP server or the HTTP API. They moved here from the old `schema` folder in the monorepo rebuild (router inversion, step 2), because a test that runs a route tests the router and the module together, so it sits above both. That way the engine does not import the router for its tests. The design is [`docs/design/MONOREPO_ROUTER_INVERSION_2026-11-05.md`](../../../../../docs/design/MONOREPO_ROUTER_INVERSION_2026-11-05.md).
 
 ## Where things are
 

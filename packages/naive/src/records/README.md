@@ -11,6 +11,7 @@ The resolver for the record types: the framework's JSON Schema files (`<name>.sc
 | Path | Holds |
 |---|---|
 | [`index.mjs`](./index.mjs) | `RECORDS` (the absolute folder that holds the record types, computed from the module's own place), `schemaFile(name)`, `dataModelFile()`, `readSchema(name)`, `readDataModel()`, `recordPath(stored)`, `listSchemas()`, `schemaNameOf(stored)`, `venturePaths(record)`, `recordsIn(root)`, and `APP_DATA_MODEL` with `mergeAppDataModel`. |
+| [`layers/`](./layers/) | Each layer's manifest (`layers/<layer>/layer.json`), its tooling list (`tooling/integrations.json`) and its references (`references/references.json`). They moved here from the layer folders at the repository root in EE-118 step 7, when the skills and templates went to the function modules in [`../functions/`](../functions/README.md). `layer.json` beside this README is the system layer's manifest. |
 
 - `schemaFile` and `readSchema` take a name, `venture` or `venture.schema.json`, never a path.
 - `recordPath` maps a stored repository path, as the data model and the package manifests name a schema (`packages/naive/src/records/venture.schema.json`), to the absolute file. A stored path under another folder, such as an app's `app/schemas/claim.schema.json`, resolves from the repository root. The prefixes it reads are listed in `PREFIXES`, so the move can accept `packages/naive/src/records/` and keep `schema/` for one release.

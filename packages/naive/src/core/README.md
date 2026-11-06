@@ -4,7 +4,7 @@ Up: [repository](../../../../AGENTS.md)
 
 ## What this is
 
-The first code package of the monorepo rebuild. It holds the modules every layer needs and that import nothing else in the repository: where a venture's logical files sit, the venture's hash-chained provenance log, the instrumentation of calls, and one action's memo scope. They moved here from `schema/` and `interface/`, and now sit in `packages/naive/src/core/` (EE-118 step 5), so that the layers stop importing each other through them. Venture packages, which are records and not code, live in [`packages/naive/library/packages/`](../../library/packages/) (EE-116).
+The first code package of the monorepo rebuild. It holds the modules every layer needs and that import nothing else in the repository: where a venture's logical files sit, the venture's hash-chained provenance log, the instrumentation of calls, and one action's memo scope. They moved here from the old `schema` and `interface` folders, and now sit in `packages/naive/src/core/` (EE-118 step 5), so that the layers stop importing each other through them. Venture packages, which are records and not code, live in [`packages/naive/library/packages/`](../../library/packages/) (EE-116).
 
 ## Where things are
 
@@ -32,4 +32,4 @@ The old path `schema/venture-paths.mjs` re-exports `venture-paths.mjs` for one r
 ## Not built
 
 - This folder is not an npm workspace package yet. It becomes one, with a scoped name, once the workspaces pull request lands and the scope is chosen (open in the rebuild plan).
-- The route table moved to [`packages/naive/src/records/routes`](../records/routes/README.md). The modules that ran routes through the router's `call` moved to [`packages/naive/src/router/orchestration/`](../router/orchestration/README.md), so `schema/` no longer imports `interface/`. No import cycle between units remains (`node scripts/dependency-rules.ts`).
+- The route table moved to [`packages/naive/src/records/routes`](../records/routes/README.md). The modules that ran routes through the router's `call` moved to [`packages/naive/src/router/orchestration/`](../router/orchestration/README.md), so the engine no longer imports the router. No import cycle between units remains (`node scripts/dependency-rules.ts`).

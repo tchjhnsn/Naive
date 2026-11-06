@@ -4,16 +4,18 @@ This is Naive's own repository (EE-118), split out of tchjhnsn/everything-ecosys
 
 **An AI-native venture development framework for builders.** One methodology for developing what a builder builds, from a hobby to a company, with AI agents, in four layers that form a loop, plus two that cut across them. It is a schema: a builder's workspace is an instance of it (EE-002). Private for now (G-035); which parts become public is decided later.
 
-| Layer | Question | Folder | Today |
-|---|---|---|---|
-| Purpose | Why | `purpose/` | Discovery frameworks (BASED goals), ambition tiers |
-| Knowledge | Memory: where every record is stored; the other layers define what they write here (EE-036) | `knowledge/` | storage tooling, the find-reference and industry-awareness skills |
-| Operations | How the business runs: team, hiring, handoffs of work to people and agents (EE-038), by department (EE-047) | `operations/` | Department catalog (APQC and the value chain), imported only when needed (EE-048); team design, recruiting and tool-selection skills; handoff v2; founder operating model. MAD, the method for building software, is a separate product |
-| Evidence | Did it work | `evidence/` | Evals, design-coverage registry and checks, metrics review |
-| Governance (cross-cutting) | Who may decide | `governance/` | Company vault template, roles, decision rights, pillar skills |
-| Interface (cross-cutting) | How you work across the layers at once | `interface/` | Agent harnesses (Claude Code, Cursor), operator console |
+| Layer | Question | Where its manifest is |
+|---|---|---|
+| Purpose | Why | `packages/naive/src/records/layers/purpose/` |
+| Knowledge | Memory: where every record is stored; the other layers define what they write here (EE-036) | `packages/naive/src/records/layers/knowledge/` |
+| Operations | How the business runs: team, hiring, handoffs of work to people and agents (EE-038), by department (EE-047) | `packages/naive/src/records/layers/operations/` |
+| Evidence | Did it work | `packages/naive/src/records/layers/evidence/` |
+| Governance (cross-cutting) | Who may decide | `packages/naive/src/records/layers/governance/` |
+| Interface (cross-cutting) | How you work across the layers at once | `packages/naive/src/records/layers/interface/` |
 
-`docs/design/` holds the ecosystem's own domain and systems design. Each layer has a `tooling/integrations.json` listing the tools it can plug into (Obsidian, Notion, Linear, the Claude and Cursor agent SDKs and so on), checked against `packages/naive/src/records/integration.schema.json`. 
+A layer organizes record types in the data model. The skills, templates and frameworks Naive ships sit by function, in `packages/naive/src/functions/<function>/`, one module for each of the 13 functions (EE-118 step 7).
+
+`docs/design/` holds the ecosystem's own domain and systems design. Each layer has a `tooling/integrations.json` beside its manifest listing the tools it can plug into (Obsidian, Notion, Linear, the Claude and Cursor agent SDKs and so on), checked against `packages/naive/src/records/integration.schema.json`. 
 The loop: Purpose is articulated into Knowledge, Operations hands the work to people and agents, and Evidence feeds back into Knowledge and Purpose.
 
 ## What Naive is, and who it is for
