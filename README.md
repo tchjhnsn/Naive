@@ -1,6 +1,13 @@
 # Naive
 
-This is Naive's own repository (EE-118), split out of tchjhnsn/everything-ecosystem with its history on 2026-11-05. The text below still uses the ecosystem's older names in places; it is rewritten in step 10 of the layout plan.
+This is Naive's own repository (EE-118), split out of tchjhnsn/everything-ecosystem with its history on 2026-11-05.
+
+| Path | Holds |
+|---|---|
+| [`packages/naive/`](./packages/naive/README.md) | The framework: [`src/`](./packages/naive/src/README.md) (the code in units), `lean/`, [`library/`](./packages/naive/library/README.md), [`template/`](./packages/naive/template/README.md) and [`test/`](./packages/naive/test/README.md) |
+| [`packages/create-venture/`](./packages/create-venture/README.md) | The generator, `npx create-venture` |
+| `docs/` | Decisions, designs, the generated route reference and the upgrade guides |
+| `frameworks/`, `agents/`, `beta/` | Frameworks, agent definitions and the plugin beta's capabilities, which are not layers |
 
 **An AI-native venture development framework for builders.** One methodology for developing what a builder builds, from a hobby to a company, with AI agents, in four layers that form a loop, plus two that cut across them. It is a schema: a builder's workspace is an instance of it (EE-002). Private for now (G-035); which parts become public is decided later.
 
@@ -33,7 +40,7 @@ The loop: Purpose is articulated into Knowledge, Operations hands the work to pe
 
 A **venture development framework** (proposed genus, EE-024), in the same genus as web development frameworks. A web framework gives a developer conventions, a project structure, generators, a test runner and plug-in packages, and calls the developer's code. This one gives a builder the same for a venture:
 
-| Web development framework | Everything Ecosystem |
+| Web development framework | Naive |
 |---|---|
 | Conventions over configuration | One opinionated default per choice, each with references (EE-014) |
 | Project structure | Workspace, venture folders, six layers, record types (`packages/naive/src/records/data-model.json`) |
