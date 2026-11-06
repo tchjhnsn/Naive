@@ -246,13 +246,16 @@ const v6 = await venture("speculate-venture");
   const step = { package: "spec", step: "more-seats", kind: "noul", for_each: "customers", question: "Do the notes {item.notes} suggest they want more seats?", inputs: ["item.notes"],
     computed: { seats: { item: "seats" } }, when: { computed: "seats", gte: 10 } };
   const ans = { "spec/more-seats/ada": { value: true, confidence: 0.9 }, "spec/more-seats/bo": { value: false, confidence: 0.9 } };
-  const slow = { compute: async (f) => { await sleep(300); return f(); } };
+  // When code finished computing, so speculation is judged by order, not by a wall-clock bound a loaded machine misses.
+  let computed = 0;
+  const slow = { compute: async (f) => { await sleep(300); computed = Date.now(); return f(); } };
   const a = recorder(ans, { delay: 300 });
   const plain = await run(v6, [step], { ask: a.ask, hooks: slow, write: false });
+  const plainComputed = computed;
   const b = recorder(ans, { delay: 300 });
   const spec = await run(v6, [step], { ask: b.ask, hooks: slow, write: false, speculate: true });
-  expect("F-13 without speculation, code computes first and only the judgments needed are asked", a.calls[0].keys.join() === "spec/more-seats/ada" && plain.skipped.some((s) => s.key === "spec/more-seats/bo") && plain.ms >= 600, `${plain.ms}ms`);
-  expect("F-13 with speculation, the judgments start while code computes", b.calls[0].keys.length === 2 && spec.ms < 550, `${spec.ms}ms`);
+  expect("F-13 without speculation, code computes first and only the judgments needed are asked", a.calls[0].keys.join() === "spec/more-seats/ada" && plain.skipped.some((s) => s.key === "spec/more-seats/bo") && a.calls[0].start >= plainComputed, `${plain.ms}ms`);
+  expect("F-13 with speculation, the judgments start while code computes", b.calls[0].keys.length === 2 && b.calls[0].start < computed, `${spec.ms}ms`);
   expect("F-13 ...and the ones not used are discarded", spec.discarded.map((d) => d.key).join() === "spec/more-seats/bo" && spec.judgments.map((j) => j.key).join() === "spec/more-seats/ada");
 }
 

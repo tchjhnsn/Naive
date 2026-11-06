@@ -17,7 +17,7 @@
     "./lean/*": "./packages/naive/lean/*",
     "./schema/venture-paths.mjs": "./schema/venture-paths.mjs",
     "./packages/*": "./packages/*",
-    "./governance/*": "./governance/*",
+    "./template/*": "./packages/naive/template/*",
     "./frameworks/*": "./frameworks/*",
     "./library/*": "./packages/naive/library/*",
     "./docs/*": "./docs/*"
