@@ -1,0 +1,54 @@
+{
+  "id": "feedback-accept",
+  "title": "Accept Jev's routing of a feedback item",
+  "description": "Feedback routing takes Jev's destination for a beta tester's feedback when Jev's confidence is at or above the line. Below it, the fallback decides.",
+  "call_site": "packages/naive/src/engine/feedback-route.mjs route, accept",
+  "tier": "low",
+  "question": {
+    "verb": "accept",
+    "noun": "routing",
+    "asking_function": "products",
+    "text": "Is Jev's destination for this feedback item right?"
+  },
+  "evidence": {
+    "kind": "founder-agent",
+    "sensor": "Jev (TypeSafe), the client the venture injects",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "validation/feedback/[id]",
+        "note": "routing.confidence on each feedback record"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "max": 1,
+      "meaning": "Jev's confidence in its destination, 0 to 1",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 0.95,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 1,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "2w"
+  },
+  "note": "An accept option passed to route still takes precedence over this line."
+}

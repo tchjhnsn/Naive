@@ -810,11 +810,13 @@ export type DetectorTrial = {
   at: string;
   /** trial only: the sensor's score. */
   score?: number;
-  /** trial only: the criterion in force when the call was made, copied from the detector: its lines as numbers, or route person. */
+  /** trial only: the criterion in force when the call was made, copied from the detector: its lines as numbers and yes_when from its evidence scale, or route person. */
   criterion?: {
     yes?: number;
     no?: number;
     route?: "person";
+    /** The detector's evidence.scale.yes_when. above: a score at or above yes is yes. below: a score below yes is yes. */
+    yes_when?: "above" | "below";
   } & unknown;
   /** trial only: the call. unsure: the score fell between the two lines and went to a person. Under route person, the call is the person's. */
   call?: "yes" | "no" | "unsure";
@@ -861,7 +863,7 @@ export type Detector = {
     /** The question in a plain sentence. */
     text?: string;
   };
-  /** Where the signals come from, the sensor that turns them into a score, and the scale of that score. A higher score means more evidence for yes. */
+  /** Where the signals come from, the sensor that turns them into a score, and the scale of that score. A higher score means more evidence for yes unless scale.yes_when is below. */
   evidence: {
     /** check: a deterministic check computes the score. founder-agent: the founder's own agent gives a confidence with its answer. person: a person rates on a scale. accumulated: a statistic over past outcomes. sequential: evidence added up over time until it crosses a boundary, as the standing rule's SPRT does. */
     kind: "check" | "founder-agent" | "person" | "accumulated" | "sequential";
@@ -881,11 +883,13 @@ export type Detector = {
       max?: number;
       /** What the score is, such as a confidence from 0 to 1 or a log likelihood ratio. */
       meaning?: string;
+      /** Which side of the yes line is yes, matching the call site's own comparison. above (the default): a score at or above yes is yes. below: a score strictly below yes is yes, as the gate holds a write whose confidence is below its line. Scores are never inverted with 1 - x, so a line keeps the exact number the call site compares against. */
+      yes_when?: "above" | "below";
     };
     /** True when the score is a likelihood ratio, so a criterion can be derived from the costs and the base rate by formula. A raw confidence from a model is not calibrated. */
     calibrated?: boolean;
   };
-  /** Where the line is drawn on the score scale, or route person when every call goes to a person. With yes alone, a score at or above it is a yes call and any other score is a no. With yes and no, a score at or above yes is yes, a score at or below no is no, and a score between them is unsure and goes to a person. no must be below yes. */
+  /** Where the line is drawn on the score scale, or route person when every call goes to a person. Under evidence.scale.yes_when above (the default): with yes alone, a score at or above it is a yes call and any other score is a no; with yes and no, a score at or above yes is yes, a score at or below no is no, a score between them is unsure and goes to a person, and no must be below yes. Under yes_when below the sides swap and the yes line is strict: a score below yes is yes, a score at or above no (or at or above yes when there is no no line) is no, and no must be above yes. */
   criterion: {
     yes?: DetectorLine;
     no?: DetectorLine;
@@ -934,7 +938,7 @@ export type Detector = {
 export type DetectorLine = {
   /** The score at the line. */
   value: number;
-  /** The person who set it, or derived when Naive derived it from the costs and the base rate and a person accepted it. */
+  /** The person who set it; derived when Naive derived it from the costs and the base rate and a person accepted it; or default when it is a default Naive ships in packages/naive/template/governance/detectors/, chosen by hand in Naive and not by a person of the venture. A venture that keeps its own copy names the person who set it. */
   set_by: string;
   /** The decision that set or accepted it, if any. */
   decision?: string;

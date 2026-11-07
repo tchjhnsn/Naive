@@ -1,0 +1,54 @@
+{
+  "id": "validation-recommend",
+  "title": "Recommend Validation",
+  "description": "The validation score recommends Validation when the score V is at or above the line and no sub-score is below its floor. The owner decides.",
+  "call_site": "packages/naive/src/checks/check-validation.mjs score, W.threshold",
+  "tier": "low",
+  "question": {
+    "verb": "recommend",
+    "noun": "validation score",
+    "asking_function": "strategy",
+    "text": "Is the venture's problem validated?"
+  },
+  "evidence": {
+    "kind": "check",
+    "sensor": "packages/naive/src/checks/check-validation.mjs",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "purpose/validation/score",
+        "note": "The graded validation records the score is computed from"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "max": 1,
+      "meaning": "The validation score V, 0 to 1",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 0.6,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 1,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "12w"
+  },
+  "note": "The same number as threshold in packages/naive/src/functions/strategy/kits/validation/weights.json."
+}

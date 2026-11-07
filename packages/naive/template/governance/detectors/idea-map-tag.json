@@ -1,0 +1,54 @@
+{
+  "id": "idea-map-tag",
+  "title": "Tag an idea from a System 1 answer",
+  "description": "The idea map tags an idea with a department or record when the System 1 answer's score is at or above the line.",
+  "call_site": "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs fromAnswers, read through naive.config.json thresholds.idea-map",
+  "tier": "low",
+  "question": {
+    "verb": "tag",
+    "noun": "idea",
+    "asking_function": "strategy",
+    "text": "Does this idea bear on this department or record?"
+  },
+  "evidence": {
+    "kind": "founder-agent",
+    "sensor": "the System 1 answers the idea map reads (Noul through Jev, or the founder's agent's answers file)",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "purpose/ideas",
+        "note": "The tags on the venture's idea map"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "max": 1,
+      "meaning": "The answer's score for the tag, 0 to 1",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 0.8,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 1,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "4w"
+  },
+  "note": "The same number as threshold in packages/naive/src/functions/strategy/frameworks/idea-map/conventions.json. naive.config.json thresholds.idea-map still takes precedence over this line."
+}

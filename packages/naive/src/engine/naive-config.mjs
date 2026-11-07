@@ -11,6 +11,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { line } from "./detectors.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -44,9 +45,20 @@ export function rawConfig(dir) {
   try { return load(f); } catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e.message}`); }
 }
 
-/** The resolved config: the defaults with the venture's overrides on top. */
+/** The thresholds a detector holds (packages/naive/src/engine/detectors.mjs): threshold name to detector id. */
+export const DETECTOR_THRESHOLDS = Object.freeze({ confidence: "gate-confidence", "idea-map": "idea-map-tag" });
+
+/**
+ * The resolved config: the defaults with the venture's overrides on top. A threshold a detector holds is, in order,
+ * the venture's naive.config.json thresholds, its governance/detectors/<id>.json, Naive's shipped detector, then
+ * the default here.
+ */
 export function configFor(dir) {
-  return merge(DEFAULTS, rawConfig(dir));
+  const raw = rawConfig(dir);
+  const c = merge(DEFAULTS, raw);
+  for (const [name, id] of Object.entries(DETECTOR_THRESHOLDS))
+    if (typeof raw.thresholds?.[name] !== "number") c.thresholds[name] = line(dir, id, c.thresholds[name]);
+  return c;
 }
 
 /** A threshold by name, from the config, else the fallback. */

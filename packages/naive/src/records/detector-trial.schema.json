@@ -43,7 +43,7 @@
     "criterion": {
       "type": "object",
       "additionalProperties": false,
-      "description": "trial only: the criterion in force when the call was made, copied from the detector: its lines as numbers, or route person.",
+      "description": "trial only: the criterion in force when the call was made, copied from the detector: its lines as numbers and yes_when from its evidence scale, or route person.",
       "properties": {
         "yes": {
           "type": "number"
@@ -53,6 +53,14 @@
         },
         "route": {
           "const": "person"
+        },
+        "yes_when": {
+          "enum": [
+            "above",
+            "below"
+          ],
+          "default": "above",
+          "description": "The detector's evidence.scale.yes_when. above: a score at or above yes is yes. below: a score below yes is yes."
         }
       },
       "oneOf": [

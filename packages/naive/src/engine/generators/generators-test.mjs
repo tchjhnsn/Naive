@@ -68,6 +68,10 @@ t("detector: a source that names no records fails the schema", !validate("detect
 
 const band = { yes: 4, no: 2 };
 t("detector-trial: the call follows the band", detectorTrial.call(4, band) === "yes" && detectorTrial.call(3, band) === "unsure" && detectorTrial.call(2, band) === "no" && detectorTrial.call(3, { yes: 4 }) === "no" && detectorTrial.call(3, { route: "person" }) === "unsure");
+const below = { yes: 0.7, yes_when: /** @type {const} */ ("below") };
+t("detector-trial: under yes_when below the yes line is strict", detectorTrial.call(0.69, below) === "yes" && detectorTrial.call(0.7, below) === "no" && detectorTrial.call(0.7, { yes: 0.7, yes_when: "above" }) === "yes");
+const bt = detectorTrial.draft({ detector: "gate-confidence", score: 0.7, criterion: below });
+t("detector-trial: a trial copies yes_when and passes the schema", bt.ok && bt.draft.call === "no" && bt.draft.criterion?.yes_when === "below");
 const pt = detectorTrial.draft({ detector: "breaking-release", score: 0.9, criterion: { route: "person" }, call: "yes" });
 t("detector-trial: under route person the person's call is kept", pt.ok && pt.draft.call === "yes");
 const tr = detectorTrial.draft({ detector: "recipe-ready", score: 3, criterion: band });

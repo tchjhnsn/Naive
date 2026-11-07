@@ -30,11 +30,13 @@ import { entries as provenance } from "../core/provenance.mjs";
 import { decisionFile, decisions, ownScore, PHASES } from "./decisions.mjs";
 import { structural, ventureRecords } from "./impact.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { line } from "./detectors.mjs";
 
 export const INDEX = ".naive/decision-index.json";
 export const HISTORY = ".naive/decision-index-history.jsonl";
 export const REQUIREMENTS = "foundation/requirements";
-/** Propagation stops when an update's weight falls below this. */
+/** Propagation stops when an update's weight falls below this. The index records the decision-index-note
+ *  detector's line (packages/naive/src/engine/detectors.mjs), with this as the fallback. */
 export const THRESHOLD = 0.25;
 /** Link strengths between decisions. */
 export const STRENGTH = { parent: 0.8, child: 0.8, held_by: 0.8, holds: 0.8, blocks: 0.9, blocked_by: 0.9, conflicts: 0.7, record: 0.5, requirement: 0.6 };
@@ -188,7 +190,7 @@ export function rebuild(dir, { now = Date.now(), cause = "rebuild" } = {}) {
   const entries = order(ctx.m.decisions.filter(ACTIVE).map((d) => entry(d, ctx, now)));
   const at = stamp();
   history(dir, entries.map((e) => ({ at, decision: e.id, rank: e.rank, score: e.score, why: e.why, cause })));
-  return save(dir, { venture: ctx.m.venture, phase: ctx.m.phase, built_at: at, updated_at: at, threshold: THRESHOLD,
+  return save(dir, { venture: ctx.m.venture, phase: ctx.m.phase, built_at: at, updated_at: at, threshold: line(dir, "decision-index-note", THRESHOLD),
     cursor: { events: log.length, hash: log.at(-1)?.hash ?? null }, last_update: { mode: "rebuild", events: log.length, seeds: [], touched: entries.map((e) => ({ id: e.id, weight: 1 })) }, entries });
 }
 
@@ -208,7 +210,7 @@ export function update(dir, { now = Date.now(), since } = {}) {
   const at = stamp();
   history(dir, moved.map((e) => ({ at, decision: e.id, rank: e.rank, score: e.score, why: e.why, cause: prior.has(e.id) ? "rank moved" : "new decision" })));
   const active = new Set(ranked.map((e) => e.id));
-  return save(dir, { venture: ctx.m.venture, phase: ctx.m.phase, built_at: idx.built_at, updated_at: at, threshold: THRESHOLD, cursor: { events: log.length, hash: log.at(-1)?.hash ?? null },
+  return save(dir, { venture: ctx.m.venture, phase: ctx.m.phase, built_at: idx.built_at, updated_at: at, threshold: line(dir, "decision-index-note", THRESHOLD), cursor: { events: log.length, hash: log.at(-1)?.hash ?? null },
     last_update: { mode: "update", events: events.length, seeds: [], touched: moved.map((e) => ({ id: e.id, weight: 1 })), removed: [...prior.keys()].filter((id) => !active.has(id)) }, entries: ranked });
 }
 

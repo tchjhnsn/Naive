@@ -44,7 +44,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-types-test.ts`](./check-types-test.ts) | Proves the type gate fails on what it must catch, in a throwaway copy of the gate. |
 | [`check-types.ts`](./check-types.ts) | Type-checks the code with tsc (EE-087). |
 | [`check-validation-study.mjs`](./check-validation-study.mjs) | Checks the validation study's records across files. |
-| [`check-validation.mjs`](./check-validation.mjs) | Grades each venture's validation records (purpose/validation/*.json, EE-026) from their cited evidence, adapting GRADE (the GRADE Working Group's method for rating certainty of evidence). |
+| [`check-validation.mjs`](./check-validation.mjs) | Grades each venture's validation records (purpose/validation/*.json, EE-026) from their cited evidence, adapting GRADE (the GRADE Working Group's method for rating certainty of evidence). `--score` compares the score with the venture's `validation-recommend` detector line, else Naive's shipped default (`packages/naive/src/engine/detectors.mjs`). |
 | [`check-ventures.mjs`](./check-ventures.mjs) | Checks the rules across a workspace's ventures that one venture.json alone cannot (EE-011, EE-012). |
 | [`check-visibility.mjs`](./check-visibility.mjs) | The publish check for field visibility. |
 | [`check-where-used.mjs`](./check-where-used.mjs) | Checks each venture's where-used list (EE-042). |

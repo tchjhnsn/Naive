@@ -1,13 +1,16 @@
 // Feedback routing: where a beta tester's feedback goes.
 //
 //   import { route } from "./feedback-route.mjs"
-//   await route(feedback, { jev, send, fallback, env })  ->  { destination, confidence, model }
+//   await route(feedback, { jev, send, fallback, env, dir })  ->  { destination, confidence, model }
 //
 // Jev (TypeSafe) decides when send is true, TYPESAFE_API_KEY is set and a jev client is injected, and its answer is
-// accepted at confidence 0.95 or more. Otherwise, or below that, the injected fallback decides. The default
-// fallback is keyword rules that call no model. No Jev client is built here: the caller injects one, so
+// accepted at confidence 0.95 or more. Otherwise, or below that, the injected fallback decides. The line is the
+// feedback-accept detector's: an accept option, else the venture's governance/detectors/feedback-accept.json (dir),
+// else Naive's shipped default, else ACCEPT. The default fallback is keyword rules that call no model. No Jev client is built here: the caller injects one, so
 // tests use stubs and never reach the network. send is the venture's explicit opt-in (beta.jev in
 // naive.config.json, read by packages/naive/src/engine/beta-gate.mjs): feedback text stays on the machine without it, key or no key.
+
+import { line } from "./detectors.mjs";
 
 export const DESTINATIONS = ["product/bugs", "validation/feedback", "decisions", "foundation", "inbox"];
 export const ACCEPT = 0.95;
@@ -28,8 +31,8 @@ export function keywordFallback(fb) {
   return { destination: "validation/feedback", confidence: 0.5 };
 }
 
-/** @param {*} feedback @param {{ jev?: *, send?: boolean, fallback?: (fb: *) => *, env?: *, accept?: number }} [opts] */
-export async function route(feedback, { jev, send = false, fallback = keywordFallback, env = process.env, accept = ACCEPT } = {}) {
+/** @param {*} feedback @param {{ jev?: *, send?: boolean, fallback?: (fb: *) => *, env?: *, accept?: number, dir?: string }} [opts] */
+export async function route(feedback, { jev, send = false, fallback = keywordFallback, env = process.env, dir, accept = line(dir, "feedback-accept", ACCEPT) } = {}) {
   if (send === true && env.TYPESAFE_API_KEY && typeof jev === "function") {
     try {
       const j = await jev({ text: textOf(feedback), options: DESTINATIONS, capability: feedback.capability });

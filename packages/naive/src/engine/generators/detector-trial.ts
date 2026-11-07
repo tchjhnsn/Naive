@@ -1,6 +1,6 @@
 // Record generator for a detection ledger line (EE-099; docs/design/SIGNAL_DETECTION_2026-11-07.md). For a trial
 // the agent gives the detector, the score and the criterion in force; the generator makes the call from them (at
-// or above yes is yes, at or below no is no, between is unsure). Under route person the agent gives the person's call. For a resolution it gives the trial, the outcome
+// or above yes is yes, at or below no is no, between is unsure; the sides swap under yes_when below). Under route person the agent gives the person's call. For a resolution it gives the trial, the outcome
 // and who settled it. The generator fills an id, the time (now when absent) and chains the line as the first of a
 // file, so the draft passes the schema. Whoever appends it to governance/detectors/<detector>.trials.jsonl re-chains
 // it onto the ledger's last line. Appending through the router is not built yet.
@@ -14,10 +14,18 @@ const DERIVED = ["id", "call", "prev", "hash"];
 export const describe = () => ({ record, ask: questions(schemaOf(record)).filter((q: { field: string }) => !DERIVED.includes(q.field)),
   derived: { id: "a new id unless given", at: "now unless given", call: "trial: from the score and the criterion", prev: "genesis", hash: "sha256 of prev and the line" } });
 
-/** The call a criterion makes on a score: yes at or above the yes line, no at or below the no line, unsure between.
- * Under route person no line is drawn, so the call is unsure until the person's own call is given. */
+/** The call a criterion makes on a score. Under yes_when above (the default): yes at or above the yes line, no at or
+ * below the no line, unsure between. Under yes_when below the sides swap and the yes line is strict: yes below the
+ * yes line, no at or above the no line (or the yes line when there is no no line), unsure between. The comparisons
+ * are the call sites' own, so a score is never inverted. Under route person no line is drawn, so the call is unsure
+ * until the person's own call is given. */
 export function call(score: number, criterion: NonNullable<DetectorTrial["criterion"]>): "yes" | "no" | "unsure" {
   if (criterion.yes === undefined) return "unsure";
+  if (criterion.yes_when === "below") {
+    if (score < criterion.yes) return "yes";
+    if (criterion.no === undefined || score >= criterion.no) return "no";
+    return "unsure";
+  }
   if (score >= criterion.yes) return "yes";
   if (criterion.no === undefined || score <= criterion.no) return "no";
   return "unsure";
