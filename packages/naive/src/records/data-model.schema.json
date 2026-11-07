@@ -4,6 +4,16 @@
   "title": "Data model",
   "description": "The shape of packages/naive/src/records/data-model.json (EE-018): every record type of the ecosystem, the layer that owns it, its schema, where its records live and what each references. packages/naive/src/checks/check-data-model.mjs checks it against the repository.",
   "type": "object",
+  "$defs": {
+    "kind": {
+      "enum": [
+        "record",
+        "log",
+        "derived"
+      ],
+      "description": "What a host does with the file when it commits a venture's working copy. record (the default): written whole through the store. log: append-only, so a commit may only add lines at the end. derived: a cache Naive rebuilds, which a host may keep or drop"
+    }
+  },
   "required": [
     "version",
     "layers",
@@ -86,6 +96,9 @@
             ],
             "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only"
           },
+          "kind": {
+            "$ref": "#/$defs/kind"
+          },
           "view_of": { "type": "string", "description": "This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written." },
           "decision_class": {
             "type": "string",
@@ -134,6 +147,32 @@
             }
           },
           "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "description": "Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.mjs pathKind reads them together with the record types",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "kind",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^instance/\\*\\*/",
+            "description": "A glob inside any venture folder, written with the instance/**/ prefix venture-level record paths carry"
+          },
+          "kind": {
+            "$ref": "#/$defs/kind"
+          },
+          "reason": {
             "type": "string"
           }
         }

@@ -310,6 +310,10 @@ for (const [name, change, pattern] of /** @type {[string, (d: string) => void, R
   ["a layer owning another layer's record fails", (d) => edit(join(d, "packages/naive/src/records/layers/purpose/layer.json"), (k) => { k.records.push("handoff"); }), /handoff: owned by both/],
   ["a layer reading an unknown record type fails", (d) => edit(join(d, "packages/naive/src/records/layers/operations/layer.json"), (k) => { k.reads.push("no-such-record"); }), /reads unknown record type no-such-record/],
   ["a JSON file beside, not under, an ignored glob fails", (d) => writeFileSync(join(d, "docs/design/preserved.json"), "{}"), /docs\/design\/preserved.json: no record type/],
+  ["a file in an example venture with no kind fails", (d) => writeFileSync(join(d, "packages/naive/src/records/examples/software/ventures/relay/notes.txt"), "x"), /ventures\/relay\/notes.txt: no kind/],
+  ["a json-lines record type that is not a log fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { delete m.records.find((r) => r.id === "provenance").kind; }), /provenance: kind record with form json-lines/],
+  ["a log record type that is not json-lines fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "venture").kind = "log"; }), /venture: kind log with form json/],
+  ["a files entry that disagrees with a record type's kind fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.files.push({ path: "instance/**/provenance.jsonl", kind: "record", reason: "test" }); }), /provenance.jsonl: the data model gives it more than one kind/],
 ])) {
   const d = copy(`dm${++n}`);
   change(d);

@@ -15,6 +15,8 @@
 //   listSchemas()         every schema file name in RECORDS, sorted
 //   schemaNameOf(stored)  a stored path to the name packages/naive/src/records/validate.mjs --schema takes
 //   venturePaths(record)  a venture-level record type's paths relative to a venture folder (VENTURE_PREFIX)
+//   globRegExp(pattern)   a data-model glob (`*` within a folder, `**/` across folders) as a RegExp
+//   pathKind(path, model) the kind of a file at a logical path in a venture: record, log or derived (KINDS), or null
 //   recordsIn(root)       the same functions for another copy of the repository, such as a test's temp copy
 //                         (the EE_ROOT pattern of packages/naive/src/checks/check-data-model.mjs)
 
@@ -31,7 +33,8 @@ export const SUFFIX = ".schema.json";
 export const DATA_MODEL = "data-model.json";
 /** An app that uses Naive (such as Mentura) adds its own record types here, at the root of the repository being
  *  checked: { "records": [...], "ignore": [...] }, each entry shaped as in data-model.json. readDataModel appends
- *  them, so the app's records are checked like Naive's without Naive's data model naming them. */
+ *  them, so the app's records are checked like Naive's without Naive's data model naming them. It may add "files"
+ *  entries too, each a venture file no record type covers with its kind. */
 export const APP_DATA_MODEL = "naive.data-model.json";
 
 /**
@@ -41,11 +44,16 @@ export const APP_DATA_MODEL = "naive.data-model.json";
  * @param {string} file where the additions came from, for the error
  */
 export function mergeAppDataModel(model, app, file) {
-  const extra = Object.keys(app ?? {}).filter((k) => !["records", "ignore", "note"].includes(k));
-  if (extra.length || !Array.isArray(app.records ?? []) || !Array.isArray(app.ignore ?? [])) {
-    throw new Error(`${file}: an app adds only "records" and "ignore" arrays to the data model`);
+  const extra = Object.keys(app ?? {}).filter((k) => !["records", "ignore", "files", "note"].includes(k));
+  if (extra.length || !Array.isArray(app.records ?? []) || !Array.isArray(app.ignore ?? []) || !Array.isArray(app.files ?? [])) {
+    throw new Error(`${file}: an app adds only "records", "ignore" and "files" arrays to the data model`);
   }
-  return { ...model, records: [...model.records, ...(app.records ?? [])], ignore: [...model.ignore, ...(app.ignore ?? [])] };
+  return {
+    ...model,
+    records: [...model.records, ...(app.records ?? [])],
+    ignore: [...model.ignore, ...(app.ignore ?? [])],
+    files: [...(model.files ?? []), ...(app.files ?? [])],
+  };
 }
 
 // The prefix a venture-level record's stored paths carry in data-model.json: "instance/**/products/*.json"
@@ -58,6 +66,47 @@ export const VENTURE_PREFIX = "instance/**/";
  *  @param {{ paths?: string[] } | null | undefined} record @returns {string[]} */
 export function venturePaths(record) {
   return (record?.paths ?? []).filter((p) => p.startsWith(VENTURE_PREFIX)).map((p) => p.slice(VENTURE_PREFIX.length));
+}
+
+// A data-model glob as a RegExp over a whole path: `*` matches within one folder, `**/` matches any folders.
+/** @param {string} pattern @returns {RegExp} */
+export function globRegExp(pattern) {
+  return new RegExp("^" + pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
+}
+
+/** What a host does with a file when it commits a venture's working copy (hosted working copy design, section 2).
+ *  record: written whole through the store. log: append-only, so a commit may only add lines at the end.
+ *  derived: a cache Naive rebuilds, which a host may keep or drop. A record type with no kind is a record. */
+export const KINDS = Object.freeze(["record", "log", "derived"]);
+
+/** @type {WeakMap<object, { re: RegExp, kind: string, from: string }[]>} */
+const kindPatterns = new WeakMap();
+
+// The kind of the file at a logical path in a venture (`provenance.jsonl`, `foundation/problem.json`,
+// `.naive/decision-index.json`): the kind of each venture-level record type and each data-model `files` entry
+// whose pattern matches it, or null when nothing names the file. A nested venture's files match too, as
+// `instance/**/` always has. Throws when the matches disagree, which is a defect in the data model. Pass the
+// model a host already holds to skip reading it again; its patterns are compiled once per model object.
+/**
+ * @param {string} logicalPath
+ * @param {any} [model]
+ * @returns {"record" | "log" | "derived" | null}
+ */
+export function pathKind(logicalPath, model = readDataModel()) {
+  const p = String(logicalPath).replace(/\\/g, "/").replace(/^\.\//, "");
+  if (!p || isAbsolute(p) || p.split("/").includes("..")) throw new Error(`${logicalPath}: a logical path is relative to the venture folder, with no ..`);
+  let patterns = kindPatterns.get(model);
+  if (!patterns) {
+    patterns = [
+      ...model.records.flatMap((/** @type {any} */ r) => venturePaths(r).map((v) => ({ re: globRegExp(VENTURE_PREFIX + v), kind: r.kind ?? "record", from: `record type ${r.id}` }))),
+      ...(model.files ?? []).map((/** @type {any} */ f) => ({ re: globRegExp(f.path), kind: f.kind, from: `files entry ${f.path}` })),
+    ];
+    kindPatterns.set(model, patterns);
+  }
+  const hits = patterns.filter((x) => x.re.test(`instance/${p}`));
+  const kinds = [...new Set(hits.map((x) => x.kind))];
+  if (kinds.length > 1) throw new Error(`${p}: the data model gives it more than one kind (${hits.map((x) => `${x.kind} from ${x.from}`).join(", ")})`);
+  return /** @type {"record" | "log" | "derived" | null} */ (kinds[0] ?? null);
 }
 
 /** The repository root this module sits in: packages/naive/src/records/ is two folders below it. */
@@ -109,7 +158,9 @@ export function recordsIn(root) {
     return inside === null ? join(base, stored) : join(RECORDS, inside);
   };
   const listSchemas = () => readdirSync(RECORDS).filter((f) => f.endsWith(SUFFIX)).sort();
-  return { ROOT: base, RECORDS, schemaFile, dataModelFile, readSchema, readDataModel, recordPath, listSchemas };
+  /** @param {string} logicalPath @param {any} [model] */
+  const kindOf = (logicalPath, model = readDataModel()) => pathKind(logicalPath, model);
+  return { ROOT: base, RECORDS, schemaFile, dataModelFile, readSchema, readDataModel, recordPath, listSchemas, pathKind: kindOf };
 }
 
 const here = recordsIn(ROOT);

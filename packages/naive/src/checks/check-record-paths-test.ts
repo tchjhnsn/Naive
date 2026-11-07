@@ -10,7 +10,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ALLOW, check, RESOLVER, scan, staleAllow } from "./check-record-paths.ts";
 import {
-  APP_DATA_MODEL, dataModelFile, listSchemas, readDataModel, readSchema, RECORDS, recordPath, recordRelative, recordsIn, ROOT, schemaFile, schemaName, schemaNameOf,
+  APP_DATA_MODEL, dataModelFile, KINDS, listSchemas, pathKind, readDataModel, readSchema, RECORDS, recordPath, recordRelative, recordsIn, ROOT, schemaFile, schemaName, schemaNameOf,
 } from "../records/index.mjs";
 
 const root = fileURLToPath(new URL("../../../..", import.meta.url));
@@ -101,7 +101,46 @@ try {
     assert.deepEqual(merged.records.map((r: { id: string }) => r.id), ["a", "b"]);
     assert.deepEqual(merged.ignore.map((i: { path: string }) => i.path), ["x.json"]);
     writeFileSync(join(dir, APP_DATA_MODEL), JSON.stringify({ layers: ["mine"] }));
-    assert.throws(() => at.readDataModel(), /adds only "records" and "ignore"/);
+    assert.throws(() => at.readDataModel(), /adds only "records", "ignore" and "files"/);
+  });
+
+  test("pathKind says what kind of file each logical path in a venture is", () => {
+    const model = readDataModel();
+    assert.deepEqual(KINDS, ["record", "log", "derived"]);
+    for (const [path, kind] of [
+      ["provenance.jsonl", "log"],
+      ["traces/session-1.jsonl", "log"],
+      ["knowledge/freshness.jsonl", "log"],
+      [".naive/telemetry.jsonl", "log"],
+      [".naive/decision-index-history.jsonl", "log"],
+      [".naive/decision-index.json", "derived"],
+      [".naive/cache/shared/release.json", "derived"],
+      [".naive/beta.json", "record"],
+      ["foundation/problem.json", "record"],
+      ["./venture.json", "record"],
+      ["README.md", "record"],
+      ["portfolio/kilnworks/provenance.jsonl", "log"],
+    ] as const) assert.equal(pathKind(path, model), kind, path);
+    assert.equal(pathKind("nothing/names/this.txt", model), null);
+    assert.equal(pathKind("provenance.jsonl"), "log", "reads the data model when none is passed");
+    assert.throws(() => pathKind("/abs/provenance.jsonl", model), /relative to the venture folder/);
+    assert.throws(() => pathKind("../provenance.jsonl", model), /relative to the venture folder/);
+  });
+
+  test("pathKind defaults a record type to record, reads an app's files entries and refuses matches that disagree", () => {
+    const dir = join(tmp, "kinds");
+    mkdirSync(join(dir, "packages/naive/src/records"), { recursive: true });
+    writeFileSync(join(dir, "packages/naive/src/records", "data-model.json"), JSON.stringify({
+      version: 1, layers: [], ignore: [],
+      records: [{ id: "a", paths: ["instance/**/a/*.json"] }, { id: "l", kind: "log", paths: ["instance/**/l.jsonl"] }, { id: "m", kind: "log", paths: ["examples/m.jsonl"] }],
+    }));
+    writeFileSync(join(dir, APP_DATA_MODEL), JSON.stringify({ files: [{ path: "instance/**/.naive/x.json", kind: "derived", reason: "test" }, { path: "instance/**/a/b.json", kind: "log", reason: "test" }] }));
+    const at = recordsIn(dir);
+    assert.equal(at.pathKind("a/c.json"), "record");
+    assert.equal(at.pathKind("l.jsonl"), "log");
+    assert.equal(at.pathKind("examples/m.jsonl"), null, "only venture-level paths name a kind");
+    assert.equal(at.pathKind(".naive/x.json"), "derived");
+    assert.throws(() => at.pathKind("a/b.json"), /more than one kind \(record from record type a, log from files entry instance\/\*\*\/a\/b.json\)/);
   });
 
   // The check.
