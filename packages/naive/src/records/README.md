@@ -24,6 +24,8 @@ The resolver for the record types: the framework's JSON Schema files (`<name>.sc
 
 It is `.mjs`, like [`packages/naive/src/core`](../core/README.md), because most of its callers are `.mjs` and the published package runs on Node 20, which has no type stripping. Its test is TypeScript.
 
+`node packages/naive/src/records/validate.mjs` validates records in JavaScript, with no Python and no dependency, and takes the same arguments as `validate.py` (`--schema`, `--def`, `--file`). It is `.mjs` for the same reason as the resolver: the write path will import it, and an app runs it from `node_modules`, where Node does not strip types. It covers the JSON Schema 2020-12 keywords these schemas use and exits 2 on a keyword it does not know. Of the formats it checks only `date`, as `validate.py` does where it runs. `node packages/naive/src/records/validate-test.ts` checks that both give the same verdict and the same failing paths on every record and on mutants of each. The interfaces still call `validate.py` before a write; moving them to `validate.mjs` and removing the Python is the next step.
+
 `packages/naive/src/records/validate.py` holds the same mapping in Python (`RECORDS_FOLDER`, `RECORD_PREFIXES`, `record_path`), and the check below fails when the two disagree.
 
 ## Run and test
