@@ -124,6 +124,7 @@ const steps = [
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["packages/naive/src/records/record-types-test.ts"]],
   ["record paths: every schema and data-model path goes through packages/naive/src/records", "node", ["packages/naive/src/checks/check-record-paths.ts"]],
   ["record paths: the resolver resolves every schema, and the check breaks on copies that bypass it", "node", ["packages/naive/src/checks/check-record-paths-test.ts"]],
+  ["Markdown renders reach a reader that waits, whole: check-nouns --md and check-data-model --md flush stdout before they exit", "node", ["packages/naive/src/checks/md-render-flush-test.ts"]],
   ["knowledge connectors: contract evals", "node", ["packages/naive/src/store/connectors/eval.mjs"]],
   ["knowledge connectors through the router: router, catalog, matrix and attribute evals", "node", ["packages/naive/src/interfaces/tests/connectors-router-test.mjs"]],
   ["validation lint: claims, shelf life, agent grades, Discovery-grade decisions", "node", ["packages/naive/src/interfaces/tests/lint-validation-test.mjs"]],
