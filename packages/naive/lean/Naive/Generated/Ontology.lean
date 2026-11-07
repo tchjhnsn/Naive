@@ -558,4 +558,40 @@ def «admiraltyRating» : Concept Placement := ⟨[
 def «competitor» : Concept Placement := ⟨[
   ("level purpose", fun f => Decidable.decide (f.level = Level.«purpose»))]⟩
 
+/-- [D] recipe (proposed). The pure code that makes every record at one route pattern (<pattern>.recipe.ts beside the records) from the signals heard and the facts known as of a time; a kind of projection. It runs only in Naive's sandbox, and its records are written only by the projector. Autoresearch design, 2026-11-06. Standard: training recipe (Karpathy 2019); dbt model. Fields: broader ["projection"]; handoff_type false. -/
+def «recipe» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] experiment (proposed). One write of a recipe, scored in code inside the router against a frozen eval plan version and logged whether it is kept or discarded. The writer never supplies the score, and a retried write spends nothing (verdict_deterministic in packages/naive/lean/Naive/Recipes.lean). Standard: autoresearch; design of experiments (Fisher 1935). Fields: broader ["process"]; handoff_type false; term "experiment". -/
+def «experiment» : Concept Placement := ⟨[
+  ("level evidence", fun f => Decidable.decide (f.level = Level.«evidence»))]⟩
+
+/-- [D] experiment log (proposed). The append-only, hash-chained list of a recipe's experiments (<pattern>.experiments.jsonl beside the recipe), written by the evaluator only; the count of dev evaluations per plan version is the budget. Standard: results.tsv (autoresearch). Fields: broader ["information artifact"]; handoff_type false. -/
+def «experimentLog» : Concept Placement := ⟨[
+  ("level evidence", fun f => Decidable.decide (f.level = Level.«evidence»))]⟩
+
+/-- [D] eval plan (proposed). A frozen version of the as-of points, windows, horizon, weights and budgets one recipe is scored against (<pattern>.plan.json), made by a person; its eval set sits in a folder the router never serves (windows_purged and holdout_unread in packages/naive/lean/Naive/Recipes.lean). Standard: pre-registration (Nosek et al. 2018). Fields: broader ["information artifact"]; handoff_type false; term "eval-plan". -/
+def «evalPlan» : Concept Placement := ⟨[
+  ("level evidence", fun f => Decidable.decide (f.level = Level.«evidence»))]⟩
+
+/-- [D] eval window (proposed). One of an eval plan's training, dev, holdout or forward sets of as-of points, each separated from the next by the horizon, so no outcome in one settles inside the next. Standard: dev and test sets; purged cross-validation (Lopez de Prado 2018). Fields: broader ["information artifact"]; handoff_type false. -/
+def «evalWindow» : Concept Placement := ⟨[
+  ("level evidence", fun f => Decidable.decide (f.level = Level.«evidence»))]⟩
+
+/-- [D] as-of view (proposed). The venture as known at one transaction time: each record as provenance and the blob store held it then, and only the signals observed by then. Nothing written later changes it (as_of_no_lookahead in packages/naive/lean/Naive/Recipes.lean). Standard: SQL:2011 system time; Snodgrass 1999. Fields: broader ["information artifact"]; handoff_type false. -/
+def «asOfView» : Concept Placement := ⟨[
+  ("level system", fun f => Decidable.decide (f.level = Level.«system»))]⟩
+
+/-- [D] settled record (proposed). What people and producers established about valid times up to one as-of point once the horizon has passed, folded by Naive's reference fold. An outcome counts once a person states it or two distinct producers confirm it; an agent's write never resolves one (agent_never_resolves in packages/naive/lean/Naive/Recipes.lean). Standard: bitemporal data (Snodgrass 1999); forecast verification (Murphy and Winkler 1987). Fields: broader ["information artifact"]; handoff_type false; term "settled-record". -/
+def «settledRecord» : Concept Placement := ⟨[
+  ("level evidence", fun f => Decidable.decide (f.level = Level.«evidence»))]⟩
+
+/-- [D] hindsight label (proposed). A signal's helpful, inert or harmful effect on one record, found once the horizon has passed by comparing the loss without the signal to the loss with it. A signal the check accepts as noise is always inert (noise_inert in packages/naive/lean/Naive/Recipes.lean). Standard: leave-one-out influence (Cook 1977). Fields: broader ["characteristic"]; handoff_type false. -/
+def «hindsightLabel» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] research program (proposed). A function's person-edited instructions for its researcher (programs/<function>.md), one section per route pattern; the gate refuses an agent's write to it. Standard: program.md (autoresearch); research programme (Lakatos 1970). Fields: broader ["information artifact"]; handoff_type false. -/
+def «researchProgram» : Concept Placement := ⟨[
+  ("level operations", fun f => Decidable.decide (f.level = Level.«operations»))]⟩
+
 end Ontology
