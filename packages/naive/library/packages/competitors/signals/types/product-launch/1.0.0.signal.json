@@ -1,0 +1,61 @@
+{
+  "id": "product-launch",
+  "version": "1.0.0",
+  "title": "Product launch",
+  "description": "A company launched a product: the organization at org and the product at product. It folds the launch into the competitor's signals record, and its org part can start the competitor's master record.",
+  "subject": "The organization's slug",
+  "props": {
+    "type": "object",
+    "required": ["org", "product"],
+    "additionalProperties": false,
+    "properties": {
+      "org": { "type": "object" },
+      "product": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "market": { "type": "string", "description": "The market it was launched in, in the venture's own market ids where the producer knows them" },
+          "url": { "type": "string", "pattern": "^https?://" }
+        }
+      }
+    }
+  },
+  "composes": [
+    { "at": "org", "type": "organization@^1" }
+  ],
+  "projects": [
+    {
+      "route": "competitors/[id]/signals",
+      "fields": {
+        "launches": { "reducer": "append", "value": "props.product", "unique_by": ["props.product.name"] },
+        "first_seen": { "reducer": "min", "value": "time" },
+        "last_seen": { "reducer": "max", "value": "time" }
+      }
+    }
+  ],
+  "freshness": { "max_age": "60d" },
+  "cases": [
+    {
+      "id": "launches-once-each-in-time-order",
+      "given": [
+        { "subject": "acme-robotics", "time": "2026-11-20", "props": { "org": { "name": "Acme Robotics" }, "product": { "name": "Flow Pro", "market": "us-smb" } } },
+        { "subject": "acme-robotics", "time": "2026-10-01", "props": { "org": { "name": "Acme Robotics" }, "product": { "name": "Flow", "market": "us-smb" } } },
+        { "subject": "acme-robotics", "time": "2026-10-03", "props": { "org": { "name": "Acme Robotics" }, "product": { "name": "Flow", "market": "us-smb", "url": "https://acme.example/flow" } } }
+      ],
+      "expect": {
+        "competitors/acme-robotics/signals": {
+          "first_seen": "2026-10-01",
+          "last_seen": "2026-11-20",
+          "launches": [
+            { "name": "Flow", "market": "us-smb", "support": "supported" },
+            { "name": "Flow Pro", "market": "us-smb", "support": "supported" }
+          ]
+        }
+      },
+      "note": "Flow is reported twice and listed once, from the earliest standing report, so the later report's url is not in the entry; append never merges two reports."
+    }
+  ],
+  "note": "Open type in the competitors package (the implicit library naive). The rendered record does not name its subject yet: the render's subject_field is not merged, and the competitor field joins these cases when it is."
+}

@@ -37,9 +37,7 @@
     "requirement",
     "exit-criteria",
     "constraints",
-    "venture-core",
-    "competitor",
-    "competitor-signals"
+    "venture-core"
   ],
   "reads": [
     "venture",
