@@ -22,7 +22,7 @@ This folder is private. Only its own files and its front door, the signal engine
 
 ## How it connects
 
-- Called by: the signal engine [`engine/signals.ts`](../signals.ts), which re-exports `render`, `diff`, `fill` and `withdraw` and uses `receive`, `viewsOf` and `hears` for explain. Pull, explain and replay in [`router/orchestration/signals.ts`](../../router/orchestration/signals.ts) reach it only through that front door.
+- Called by: the signal engine [`engine/signals.ts`](../signals.ts), which re-exports `render`, `diff`, `fill`, `withdraw` and the range helpers (`resolveType`, `satisfies`, `splitRange`, `timeThenId`) and uses `receive`, `viewsOf` and `hears` for explain. Pull, explain and replay in [`router/orchestration/signals.ts`](../../router/orchestration/signals.ts) reach it only through that front door, as does the recipe scorer ([`recipes/outcomes.ts`](../recipes/outcomes.ts) and [`recipes/eval-set.ts`](../recipes/eval-set.ts)).
 - Calls: [`core/signal-id.ts`](../../core/signal-id.ts) for canonical JSON and the signal address, and the record types in [`records/types/records.d.ts`](../../records/types/records.d.ts).
 - Records: none. It reads and writes nothing; the caller passes signals, types, listeners, facts and current records, and commits what the diff says.
 
