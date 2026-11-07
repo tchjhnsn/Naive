@@ -15,7 +15,7 @@ The knowledge layer is where every record is stored and found. It does not copy 
 
 | Part | File | What it does |
 |---|---|---|
-| Contract | `contract.mjs` | The five things every connector does: `list`, `read`, `version`, `search`, `write`. A version is the git blob SHA-1 of the content in every source. |
+| Contract | `contract.mjs` | The five things every connector does: `list`, `read`, `version`, `search`, `write`. A version is the git blob SHA-1 of the content in every source. `write` compares versions when asked (see below). |
 | Registry | `../tooling/integrations.json`, `index.mjs` | An integration with a `connector` names the module that implements the contract for it. An app that hosts Naive adds its own connectors at run time with `registerConnector(id, { module, writes, options })` in `index.mjs`, naming its module by absolute path; a registered id replaces the framework's entry of the same id. |
 | Source map | `<venture>/knowledge/sources.json` | Optional. The venture's sources, and which record type lives in which. Unnamed record types stay in the venture folder. Schema: `packages/naive/src/records/knowledge-sources.schema.json`; checked by `packages/naive/src/checks/check-sources.mjs`. |
 | Connectors | `filesystem.mjs` | A folder or git repository (writes in place). Naive ships only this one: it works offline and names no vendor. It maps a logical path to where the venture's layout keeps it, in any layout other than flat (structured, or src, where a package folder sits under its function). Connectors that reach a vendor, such as GitHub, belong to the app that hosts Naive (Mentura), which registers them (EE-041). |
@@ -36,6 +36,15 @@ The knowledge layer is where every record is stored and found. It does not copy 
 ```
 
 The `github` connector is the app's: Mentura registers it, and Naive alone has no `github` connector, so `node packages/naive/src/checks/check-sources.mjs` refuses this map in a copy of Naive without the app. With this map, `purpose/product/kettle` reads `ventures/tandem/products/kettle.json` from `acme/tandem` and says which version and commit it came from. A write opens a draft pull request, which a person accepts by merging. Every other record stays in the venture folder. The venture folder always keeps `venture.json`, the provenance log and drafts.
+
+## Compare on write
+
+Two writers can start from the same copy of an item, such as two hosted requests for one tenant. `write(path, content, opts)` takes two options so the second one is refused instead of overwriting the first:
+
+- `base`: the version the writer started from, or `null` for an item it believes is new. When the item's current version differs, the write is refused with a `VersionConflict` (`code` is `version-conflict`) whose `current` is the version now, or `null` when the item is missing. The item is left as it was. Retrying is the caller's business.
+- `append`: `content` is new lines (ending in a newline) added to the end of a log. With `base`, the append is refused unless the stored log is still exactly the copy the writer began from, so a hash chain such as `provenance.jsonl` stays whole. An append that is not whole lines, or onto a log that ends mid-line, is refused.
+
+A write without either option replaces the item, as it always has. `checkWrite` in `contract.mjs` holds the rules, so every connector refuses the same writes. The filesystem connector holds a lock file beside the item (`.<name>.lock`, never listed) while it compares and writes, and removes a lock older than 30 seconds as one left by a process that died. The contract suite checks both options on every connector that writes direct, so an app's database connector proves the same behavior.
 
 ## Adding a connector
 

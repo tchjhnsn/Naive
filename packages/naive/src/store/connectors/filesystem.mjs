@@ -8,14 +8,34 @@
 //
 // version is the git blob SHA-1 of the content. When the file is committed and unchanged, read
 // also gives the last commit that touched it.
+//
+// A write with `base` or `append` holds a lock file beside the item (.<name>.lock, skipped by
+// list) while it compares and writes, so two processes cannot both pass the check. A lock older
+// than LOCK_STALE_MS is taken to be left by a process that died, and is removed.
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { blobSha, isText, matches, safePath } from "./contract.mjs";
+import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
+import { blobSha, checkWrite, isText, matches, safePath } from "./contract.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "../../core/venture-paths.mjs";
 
 const SKIP = new Set(["node_modules"]);
+const LOCK_STALE_MS = 30_000;
+const LOCK_TRIES = 200;
+
+/** Runs f while holding an exclusive lock file for the item f writes. */
+function withLock(f, fn) {
+  const lock = join(dirname(f), `.${basename(f)}.lock`);
+  for (let i = 0; ; i++) {
+    try { closeSync(openSync(lock, "wx")); break; } catch (e) {
+      if (/** @type {NodeJS.ErrnoException} */ (e).code !== "EEXIST") throw e;
+      try { if (Date.now() - statSync(lock).mtimeMs > LOCK_STALE_MS) { rmSync(lock, { force: true }); continue; } } catch { continue; }
+      if (i >= LOCK_TRIES) throw new Error(`${f} is locked by another writer`);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+    }
+  }
+  try { return fn(); } finally { rmSync(lock, { force: true }); }
+}
 
 /** @param {{ id?: string, root?: string, writes?: string, venture?: boolean }} [opts] */
 export function connect({ id = "venture", root, writes = "direct", venture = false } = {}) {
@@ -71,14 +91,27 @@ export function connect({ id = "venture", root, writes = "direct", venture = fal
       }
       return out;
     },
-    async write(p, content, _opts = {}) {
+    /** @param {string} p @param {string | Buffer} content @param {{ base?: string | null, append?: boolean, message?: string, title?: string }} [opts] */
+    async write(p, content, opts = {}) {
       if (writes === "none") throw new Error(`${id} is read-only`);
       const f = file(p);
+      const path = safePath(p);
       mkdirSync(dirname(f), { recursive: true });
-      const tmp = `${f}.tmp-${process.pid}`;
-      writeFileSync(tmp, content);
-      renameSync(tmp, f);
-      return { path: safePath(p), version: blobSha(content) };
+      const replace = () => {
+        const tmp = `${f}.tmp-${process.pid}`;
+        writeFileSync(tmp, content);
+        renameSync(tmp, f);
+        return { path, version: blobSha(content) };
+      };
+      if (opts.base === undefined && !opts.append) return replace();
+      return withLock(f, () => {
+        const here = existsSync(f) && statSync(f).isFile();
+        const stored = here ? readFileSync(f) : null;
+        checkWrite(path, stored ? blobSha(stored) : null, stored ? stored.toString("utf8") : null, content, opts);
+        if (!opts.append) return replace();
+        appendFileSync(f, content);
+        return { path, version: blobSha(readFileSync(f)) };
+      });
     },
   };
   return c;
