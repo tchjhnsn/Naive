@@ -134,6 +134,7 @@ const steps = [
   ["foundation statement behaviors (Gherkin scenarios)", "node", ["packages/naive/src/engine/bdd.mjs", "packages/naive/src/functions/strategy/features/strategic-foundation.feature"]],
   ["decision affects grammar: malformed entries rejected, well-formed accepted", "node", ["packages/naive/src/engine/decision-affects-test.mjs"]],
   ["record generators (EE-099): glossary, reference, bug, trace span, detector and detector trial describe and draft records that pass their schemas", "node", ["packages/naive/src/engine/generators/generators-test.mjs"]],
+  ["signal render: every worked case renders to its expected records; receive, withdraw, the fold, the fixpoint, edge listeners and the diff", "node", ["packages/naive/src/engine/signals/render-test.ts"]],
   ["signal library record types: the examples validate, a signal's id is the address of its content, the schemas refuse what the design forbids, and the generators draft records that pass", "node", ["packages/naive/src/engine/generators/signals-test.ts"]],
   ["decisions: examples", "node", ["packages/naive/src/engine/decisions.mjs", "packages/naive/src/records/examples/workspace"]],
   ["decision behaviors (Gherkin scenarios)", "node", ["packages/naive/src/engine/bdd.mjs", "packages/naive/src/functions/strategy/features/decisions.feature"]],
