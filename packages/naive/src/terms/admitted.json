@@ -1771,6 +1771,329 @@
         "Green and Swets, Signal Detection Theory and Psychophysics (1966)",
         "everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md"
       ]
+    },
+    {
+      "id": "experiment",
+      "label": "Experiment",
+      "form": "word",
+      "level": "experiment",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "One write of a recipe, scored in code inside the router against a frozen eval plan version and logged whether it is kept or discarded. The writer never supplies the score.",
+      "status": "proposed",
+      "hash": "112c290c40d9a306",
+      "properties": [
+        {
+          "id": "E1",
+          "says": "edited from the recipe's tip: its base sha is the tip's"
+        },
+        {
+          "id": "E2",
+          "says": "names the eval plan version it was scored under"
+        },
+        {
+          "id": "E3",
+          "says": "the verdict was computed inside the write, not supplied by the writer"
+        },
+        {
+          "id": "E4",
+          "says": "its line is in the recipe's experiment log"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 13709,
+      "relations": {
+        "kept-experiment": "has_a_kind",
+        "discarded-experiment": "has_a_kind"
+      },
+      "predictions": [],
+      "lean": [
+        "verdict_deterministic",
+        "retry_spends_nothing"
+      ],
+      "sources": [
+        "Fisher, The Design of Experiments (1935)",
+        "Karpathy, autoresearch (2026): an agent edits train.py, each run is scored on a fixed budget and kept or reset, and results.tsv logs every run",
+        "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "kept-experiment",
+      "label": "Kept experiment",
+      "form": "compound",
+      "level": "experiment",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "An experiment whose candidate is kept: every row ran, no signal it called noise changed the record when removed, and its dev gain beats max(min_gain, 2 x standard error), or it is no worse and strictly smaller. An agent's kept write lands as a held draft that becomes the new tip.",
+      "status": "proposed",
+      "hash": "5fcfddeb2fcbd6bd",
+      "properties": [
+        {
+          "id": "E1",
+          "says": "edited from the recipe's tip: its base sha is the tip's"
+        },
+        {
+          "id": "E2",
+          "says": "names the eval plan version it was scored under"
+        },
+        {
+          "id": "E3",
+          "says": "the verdict was computed inside the write, not supplied by the writer"
+        },
+        {
+          "id": "E4",
+          "says": "its line is in the recipe's experiment log"
+        },
+        {
+          "id": "K1",
+          "says": "every row ran: no throw, timeout or invalid output"
+        },
+        {
+          "id": "K2",
+          "says": "no signal it called noise changed the record when removed"
+        },
+        {
+          "id": "K3",
+          "says": "its dev gain beats the margin, or it is no worse and strictly smaller"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 5479,
+      "relations": {
+        "experiment": "is_a",
+        "discarded-experiment": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "experiment",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        },
+        {
+          "other": "discarded-experiment",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "verdict_deterministic",
+        "noise_inert",
+        "failed_row_discards"
+      ],
+      "sources": [
+        "Karpathy, autoresearch (2026): an agent edits train.py, each run is scored on a fixed budget and kept or reset, and results.tsv logs every run",
+        "Blum and Hardt, The Ladder: a reliable leaderboard for machine learning competitions (2015)",
+        "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "discarded-experiment",
+      "label": "Discarded experiment",
+      "form": "compound",
+      "level": "experiment",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "An experiment whose candidate fails the keep rule: a row failed, a signal it called noise changed the record, or its gain does not beat the margin. The write is refused with its verdict, and the line stays in the log.",
+      "status": "proposed",
+      "hash": "c46e95132419c240",
+      "properties": [
+        {
+          "id": "E1",
+          "says": "edited from the recipe's tip: its base sha is the tip's"
+        },
+        {
+          "id": "E2",
+          "says": "names the eval plan version it was scored under"
+        },
+        {
+          "id": "E3",
+          "says": "the verdict was computed inside the write, not supplied by the writer"
+        },
+        {
+          "id": "E4",
+          "says": "its line is in the recipe's experiment log"
+        },
+        {
+          "id": "X1",
+          "says": "fails the keep rule"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 8230,
+      "relations": {
+        "experiment": "is_a",
+        "kept-experiment": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "experiment",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        },
+        {
+          "other": "kept-experiment",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "verdict_deterministic",
+        "failed_row_discards"
+      ],
+      "sources": [
+        "Karpathy, autoresearch (2026): an agent edits train.py, each run is scored on a fixed budget and kept or reset, and results.tsv logs every run",
+        "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "eval-plan",
+      "label": "Eval plan",
+      "form": "compound",
+      "level": "plan",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "A frozen version of the as-of points, windows, horizon and budgets one recipe is scored against, made by a person. Training, dev and holdout points are separated by the horizon, the researcher reads only as of the read cut, and the holdout is answered one bit at a time and never reused.",
+      "status": "proposed",
+      "hash": "bce61246d0171c59",
+      "properties": [
+        {
+          "id": "V1",
+          "says": "made by a person"
+        },
+        {
+          "id": "V2",
+          "says": "its eval set is frozen in a folder the router never serves"
+        },
+        {
+          "id": "V3",
+          "says": "a horizon of at least one day"
+        },
+        {
+          "id": "V4",
+          "says": "training, dev and holdout each hold an as-of point"
+        },
+        {
+          "id": "V5",
+          "says": "purged: every training point a horizon before every dev point, and every dev point a horizon before every holdout point"
+        },
+        {
+          "id": "V6",
+          "says": "every holdout point settled by the time the plan was made"
+        },
+        {
+          "id": "V7",
+          "says": "the read cut falls before every dev and holdout point"
+        },
+        {
+          "id": "V8",
+          "says": "its holdout starts after the previous version's ended"
+        },
+        {
+          "id": "V9",
+          "says": "a fixed, positive number of holdout checks"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 9934,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "windows_purged",
+        "holdout_unread",
+        "as_of_no_lookahead"
+      ],
+      "sources": [
+        "Nosek, Ebersole, DeHaven and Mellor, The preregistration revolution, PNAS (2018)",
+        "Lopez de Prado, Advances in Financial Machine Learning (2018): purged and embargoed cross-validation",
+        "Blum and Hardt, The Ladder: a reliable leaderboard for machine learning competitions (2015)",
+        "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "settled-record",
+      "label": "Settled record",
+      "form": "compound",
+      "level": "settlement",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "What people and producers established about valid times up to one as-of point once the horizon has passed, folded by Naive's reference fold. An outcome counts once a person states it or two distinct producers confirm it; an agent's write never resolves anything, so no agent labels its own work.",
+      "status": "proposed",
+      "hash": "6a437da890dc646b",
+      "properties": [
+        {
+          "id": "R1",
+          "says": "the horizon has passed since its as-of point"
+        },
+        {
+          "id": "R2",
+          "says": "it folds only valid times up to its as-of point"
+        },
+        {
+          "id": "R3",
+          "says": "made by Naive's reference fold, not by a recipe"
+        },
+        {
+          "id": "R4",
+          "says": "every outcome is stated by a person or confirmed by two distinct producers"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 11849,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "agent_never_resolves",
+        "agent_alone_settles_nothing"
+      ],
+      "sources": [
+        "Snodgrass, Developing Time-Oriented Database Applications in SQL (1999): valid time and transaction time",
+        "Murphy and Winkler, A general framework for forecast verification (1987)",
+        "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
+      ]
     }
   ],
   "fixtures": [

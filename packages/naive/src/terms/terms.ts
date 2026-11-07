@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Detector, Encounter, Hierarchy, LinkGraph, Membership, Reception, Relationship, Trial } from "./levels.ts";
+import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LinkGraph, Membership, Reception, Relationship, Settlement, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -467,4 +467,95 @@ export const noise: Term<Reception> = {
   predicts: { reception: "is_a", "salient-reception": "disjoint", signal: "is_a", listener: "is_a" },
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise];
+// Autoresearch over venture records (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, build plan
+// item 1). The theorems are in packages/naive/lean/Naive/Recipes.lean. Recipe, experiment log, eval window, as-of
+// view, hindsight label and research program are ontology nouns without a term of their own: each is code, a log,
+// a part of a plan, a read, a value or instructions, not a record whose facts pass or fail. A recipe's contract (its
+// exports, no imports, no literal ids) is for the sandbox lint, which is not built.
+const FISHER = "Fisher, The Design of Experiments (1935)";
+const AUTORESEARCH = "Karpathy, autoresearch (2026): an agent edits train.py, each run is scored on a fixed budget and kept or reset, and results.tsv logs every run";
+const NOSEK = "Nosek, Ebersole, DeHaven and Mellor, The preregistration revolution, PNAS (2018)";
+const LOPEZ = "Lopez de Prado, Advances in Financial Machine Learning (2018): purged and embargoed cross-validation";
+const LADDER = "Blum and Hardt, The Ladder: a reliable leaderboard for machine learning competitions (2015)";
+const SNODGRASS = "Snodgrass, Developing Time-Oriented Database Applications in SQL (1999): valid time and transaction time";
+const AUTORESEARCH_DESIGN = "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md";
+
+/** The keep rule: every row ran, the check found no noise disagreement, and the gain beats the margin, or the
+ *  candidate is no worse and strictly smaller. */
+const keeps = (f: Experiment): boolean => f.rowsOk && f.noiseDisagreements === 0 && f.gain !== null && (f.gain > f.margin || (f.smaller && f.gain >= 0));
+
+export const experiment: Term<Experiment> = {
+  id: "experiment", form: "word", label: "Experiment", level: "experiment", kind: "act",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "One write of a recipe, scored in code inside the router against a frozen eval plan version and logged whether it is kept or discarded. The writer never supplies the score.",
+  props: [
+    { id: "E1", says: "edited from the recipe's tip: its base sha is the tip's", check: (f) => f.baseIsTip },
+    { id: "E2", says: "names the eval plan version it was scored under", check: (f) => f.planNamed },
+    { id: "E3", says: "the verdict was computed inside the write, not supplied by the writer", check: (f) => f.scoredInWrite },
+    { id: "E4", says: "its line is in the recipe's experiment log", check: (f) => f.logged },
+  ],
+  sources: [FISHER, AUTORESEARCH, AUTORESEARCH_DESIGN],
+  lean: ["verdict_deterministic", "retry_spends_nothing"],
+};
+
+export const keptExperiment: Term<Experiment> = {
+  ...experiment, id: "kept-experiment", label: "Kept experiment", form: "compound",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "An experiment whose candidate is kept: every row ran, no signal it called noise changed the record when removed, and its dev gain beats max(min_gain, 2 x standard error), or it is no worse and strictly smaller. An agent's kept write lands as a held draft that becomes the new tip.",
+  props: [...experiment.props,
+    { id: "K1", says: "every row ran: no throw, timeout or invalid output", check: (f) => f.rowsOk },
+    { id: "K2", says: "no signal it called noise changed the record when removed", check: (f) => f.noiseDisagreements === 0 },
+    { id: "K3", says: "its dev gain beats the margin, or it is no worse and strictly smaller", check: (f) => f.gain !== null && (f.gain > f.margin || (f.smaller && f.gain >= 0)) }],
+  sources: [AUTORESEARCH, LADDER, AUTORESEARCH_DESIGN],
+  lean: ["verdict_deterministic", "noise_inert", "failed_row_discards"],
+  predicts: { experiment: "is_a", "discarded-experiment": "disjoint" },
+};
+
+export const discardedExperiment: Term<Experiment> = {
+  ...experiment, id: "discarded-experiment", label: "Discarded experiment", form: "compound",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "An experiment whose candidate fails the keep rule: a row failed, a signal it called noise changed the record, or its gain does not beat the margin. The write is refused with its verdict, and the line stays in the log.",
+  props: [...experiment.props,
+    { id: "X1", says: "fails the keep rule", check: (f) => !keeps(f), uses: [keeps] }],
+  sources: [AUTORESEARCH, AUTORESEARCH_DESIGN],
+  lean: ["verdict_deterministic", "failed_row_discards"],
+  predicts: { experiment: "is_a", "kept-experiment": "disjoint" },
+};
+
+const lowest = (xs: number[]): number => Math.min(...xs);
+const highest = (xs: number[]): number => Math.max(...xs);
+
+export const evalPlan: Term<EvalPlan> = {
+  id: "eval-plan", form: "compound", label: "Eval plan", level: "plan", kind: "act",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "A frozen version of the as-of points, windows, horizon and budgets one recipe is scored against, made by a person. Training, dev and holdout points are separated by the horizon, the researcher reads only as of the read cut, and the holdout is answered one bit at a time and never reused.",
+  props: [
+    { id: "V1", says: "made by a person", check: (f) => f.madeByPerson },
+    { id: "V2", says: "its eval set is frozen in a folder the router never serves", check: (f) => f.frozen },
+    { id: "V3", says: "a horizon of at least one day", check: (f) => f.horizon >= 1 },
+    { id: "V4", says: "training, dev and holdout each hold an as-of point", check: (f) => f.training.length > 0 && f.dev.length > 0 && f.holdout.length > 0 },
+    { id: "V5", says: "purged: every training point a horizon before every dev point, and every dev point a horizon before every holdout point", check: (f) => highest(f.training) + f.horizon < lowest(f.dev) && highest(f.dev) + f.horizon < lowest(f.holdout), uses: [highest, lowest] },
+    { id: "V6", says: "every holdout point settled by the time the plan was made", check: (f) => highest(f.holdout) + f.horizon <= f.made, uses: [highest] },
+    { id: "V7", says: "the read cut falls before every dev and holdout point", check: (f) => f.readCut < lowest(f.dev) && f.readCut < lowest(f.holdout), uses: [lowest] },
+    { id: "V8", says: "its holdout starts after the previous version's ended", check: (f) => f.priorHoldoutEnd === null || f.priorHoldoutEnd < lowest(f.holdout), uses: [lowest] },
+    { id: "V9", says: "a fixed, positive number of holdout checks", check: (f) => Number.isInteger(f.holdoutChecks) && f.holdoutChecks >= 1 },
+  ],
+  sources: [NOSEK, LOPEZ, LADDER, AUTORESEARCH_DESIGN],
+  lean: ["windows_purged", "holdout_unread", "as_of_no_lookahead"],
+};
+
+export const settledRecord: Term<Settlement> = {
+  id: "settled-record", form: "compound", label: "Settled record", level: "settlement", kind: "act",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "What people and producers established about valid times up to one as-of point once the horizon has passed, folded by Naive's reference fold. An outcome counts once a person states it or two distinct producers confirm it; an agent's write never resolves anything, so no agent labels its own work.",
+  props: [
+    { id: "R1", says: "the horizon has passed since its as-of point", check: (f) => f.horizonPassed },
+    { id: "R2", says: "it folds only valid times up to its as-of point", check: (f) => f.validUpToAsOf },
+    { id: "R3", says: "made by Naive's reference fold, not by a recipe", check: (f) => f.referenceFold },
+    { id: "R4", says: "every outcome is stated by a person or confirmed by two distinct producers", check: (f) => f.outcomes.every((o) => o.person || o.producers >= 2) },
+  ],
+  sources: [SNODGRASS, "Murphy and Winkler, A general framework for forecast verification (1987)", AUTORESEARCH_DESIGN],
+  lean: ["agent_never_resolves", "agent_alone_settles_nothing"],
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord];

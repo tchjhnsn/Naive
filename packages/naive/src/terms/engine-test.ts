@@ -1,14 +1,15 @@
 // Tests the term engine: it rejects bad tests (label-reading, vacuous, unconfirmed passing), relations are
 // total, freezing notices a change (to a check or a helper it lists), layer and area decide hand-built
 // arrangements, the detection terms decide hand-built trials and detectors, the signal terms decide hand-built
-// receptions and no property of a signal alone defines noise, labels hold the cap, the adopted quote and one referent per proper name, and the admitted terms
+// receptions and no property of a signal alone defines noise, the autoresearch terms decide hand-built
+// experiments, plans and settled records and no agent statement changes a settled record, labels hold the cap, the adopted quote and one referent per proper name, and the admitted terms
 // check against a fresh run.
 //
 //   node packages/naive/src/terms/engine-test.ts
 
 import { freeze, relation, rng, run, validTest, type Term } from "./engine.ts";
-import { arrangementCases, detectorCases, encounterCases, membershipCases, receptionCases, relationshipCases, trialCases, type Arrangement, type Detector, type Reception, type Relationship, type Trial } from "./levels.ts";
-import { area, capShare, coach, correctRejection, detector, falseAlarm, friend, hit, labelProblems, layer, listener, miss, noise, reception, salientReception, signal, TERMS, trial, type Labels } from "./terms.ts";
+import { arrangementCases, detectorCases, encounterCases, evalPlanCases, experimentCases, membershipCases, receptionCases, relationshipCases, settlementCases, trialCases, type Arrangement, type Detector, type EvalPlan, type Experiment, type Reception, type Relationship, type Settlement, type Trial } from "./levels.ts";
+import { area, capShare, coach, correctRejection, detector, discardedExperiment, evalPlan, experiment, falseAlarm, friend, hit, keptExperiment, labelProblems, layer, listener, miss, noise, reception, salientReception, settledRecord, signal, TERMS, trial, type Labels } from "./terms.ts";
 import { admitAll } from "./admit.ts";
 
 let failed = 0;
@@ -69,11 +70,29 @@ expect("a projecting listener with an age bound fails L5 only", JSON.stringify(r
   const both = [...bySignal.values()].filter((o) => o.size === 2).length;
   expect("no property of a signal alone defines noise: some signals are noise at one reception and salient at another", both > 0, `${both} of ${bySignal.size} heard signals`);
 }
+const exp = (e: Partial<Experiment>): Experiment => ({ confirmed: true, baseIsTip: true, planNamed: true, scoredInWrite: true, logged: true, rowsOk: true, noiseDisagreements: 0, gain: 0.3, margin: 0.1, smaller: false, ...e });
+expect("an experiment that beats its margin is kept", run(keptExperiment, exp({})).pass && !run(discardedExperiment, exp({})).pass);
+expect("a smaller recipe that is no worse is kept", run(keptExperiment, exp({ gain: 0, smaller: true })).pass);
+expect("a failed row discards, whatever the gain would have been (failed_row_discards)", run(discardedExperiment, exp({ rowsOk: false, gain: null })).pass);
+expect("a noise call that changed the record discards (noise_inert)", JSON.stringify(run(keptExperiment, exp({ noiseDisagreements: 1 })).failed) === '["K2"]' && run(discardedExperiment, exp({ noiseDisagreements: 1 })).pass);
+expect("a score the writer supplied is not an experiment (E3)", JSON.stringify(run(experiment, exp({ scoredInWrite: false })).failed) === '["E3"]');
+const plan: EvalPlan = { confirmed: true, madeByPerson: true, frozen: true, horizon: 30, training: [10, 100], dev: [200, 250], holdout: [320, 340], made: 400, readCut: 105, priorHoldoutEnd: null, holdoutChecks: 2 };
+expect("a plan laid out training, gap, dev, gap, holdout, gap passes eval-plan", run(evalPlan, plan).pass);
+expect("a dev point inside the horizon after training fails V5 only (windows_purged)", JSON.stringify(run(evalPlan, { ...plan, dev: [120, 250] }).failed) === '["V5"]');
+expect("a read cut after a dev point fails V7 only (holdout_unread)", JSON.stringify(run(evalPlan, { ...plan, readCut: 210 }).failed) === '["V7"]');
+expect("a holdout that overlaps the previous version's fails V8 only", JSON.stringify(run(evalPlan, { ...plan, priorHoldoutEnd: 330 }).failed) === '["V8"]');
+const settled: Settlement = { confirmed: true, horizonPassed: true, validUpToAsOf: true, referenceFold: true, outcomes: [{ person: true, producers: 0, agents: 0 }, { person: false, producers: 2, agents: 0 }] };
+expect("outcomes from a person and from two producers make a settled record", run(settledRecord, settled).pass);
+expect("one producer's claim does not settle, however many agents back it (R4)", JSON.stringify(run(settledRecord, { ...settled, outcomes: [{ person: false, producers: 1, agents: 5 }] }).failed) === '["R4"]');
+{ // agent_never_resolves, over the generated cases: adding or removing agent claims never changes a verdict.
+  const changed = settlementCases().filter((c) => JSON.stringify(run(settledRecord, c)) !== JSON.stringify(run(settledRecord, { ...c, outcomes: c.outcomes.map((o) => ({ ...o, agents: o.agents + 3 })) }))).length;
+  expect("no agent statement changes whether a record is settled (agent_never_resolves)", changed === 0, `${changed} verdicts changed`);
+}
 const selfNamer: Term<Relationship> = { ...friend, id: "self-namer", label: "self-namer", props: [...friend.props, { id: "X2", says: "goodwill, if it calls itself by name", check: (f) => f.label !== "self-namer" || f.goodwill }] };
 expect("a test that reads its own label in rare cases is caught", validTest(selfNamer, cases).some((p) => /label changes a verdict/.test(p)));
 { const r = rng(11); const seen = new Set<number>(); for (let i = 0; i < 1_000_000; i++) seen.add(r());
   expect("the generator does not cycle within a million draws", seen.size > 999_000, `${seen.size} distinct`); }
-for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases], ["detector", detectorCases], ["trial", trialCases], ["reception", receptionCases]] as const) {
+for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases], ["detector", detectorCases], ["trial", trialCases], ["reception", receptionCases], ["experiment", experimentCases], ["plan", evalPlanCases], ["settlement", settlementCases]] as const) {
   const c = gen(); const distinct = new Set(c.map((x) => JSON.stringify(x))).size;
   expect(`${name} cases are mostly distinct (not repeats of a short cycle)`, distinct > c.length / 2, `${distinct} of ${c.length}`);
 }
