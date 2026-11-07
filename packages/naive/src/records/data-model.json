@@ -1888,6 +1888,7 @@
       "schema": "packages/naive/src/records/detector-trial.schema.json",
       "generator": "packages/naive/src/engine/generators/detector-trial.ts",
       "form": "json-lines",
+      "kind": "log",
       "paths": [
         "instance/**/governance/detectors/*.trials.jsonl",
         "packages/naive/src/records/examples/**/governance/detectors/*.trials.jsonl"
