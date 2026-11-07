@@ -52,6 +52,9 @@ const w = await call({ venture: "tandem", route: "purpose/product/teapot", actio
 expect("router: a write lands in the mapped source, not the venture folder", w.ok && JSON.parse(readFileSync(join(shared, "products/teapot.json"), "utf8")).name === "Teapot" && !existsSync(join(tandem, "products/teapot.json")), JSON.stringify(w));
 const e = entries(tandem).at(-1);
 expect("router: the write is logged by address, with the source's version", e.entity === "shared://products/teapot.json" && e.source?.connector === "filesystem" && e.source.version === blobSha(readFileSync(join(shared, "products/teapot.json"))), JSON.stringify(e));
+const { readAsOf } = await import("../../store/as-of.mjs");
+expect("router: a write to another source keeps its bytes in the venture's blob store, so an as-of read by address returns them",
+  readAsOf(tandem, "shared://products/teapot.json", e.at)?.content === readFileSync(join(shared, "products/teapot.json"), "utf8"));
 const prov = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.mjs"), ws], { encoding: "utf8" });
 const srcCheck = (d) => spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.mjs"), d], { encoding: "utf8" });
 expect("router: check-provenance accepts entries for records in another source", prov.status === 0, prov.stderr);

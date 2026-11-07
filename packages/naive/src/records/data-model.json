@@ -2304,6 +2304,7 @@
     {"path": "instance/**/.naive/trigger-errors.jsonl", "kind": "log", "reason": "Failed trigger runs, one line each (packages/naive/src/router/orchestration/triggers.mjs)"},
     {"path": "instance/**/.naive/lint-findings.jsonl", "kind": "log", "reason": "Each publish lint run's findings (packages/naive/src/engine/publish-lint.mjs)"},
     {"path": "instance/**/.naive/events.jsonl", "kind": "log", "reason": "Instrumentation events when instrumentation is on (packages/naive/src/core/instrumentation.mjs)"},
+    {"path": "instance/**/.naive/blobs/**/*", "kind": "record", "reason": "The blob store: the bytes each provenance line names, under their SHA-256 (packages/naive/src/core/blobs.mjs). Content-addressed and never changed, so it is committed like a record; an as-of read (packages/naive/src/store/as-of.mjs) needs it and cannot rebuild it"},
     {"path": "instance/**/.naive/triggers.json", "kind": "record", "reason": "The trigger cursor and every run's state; not rebuildable, so kept whole"},
     {"path": "instance/**/.naive/beta.json", "kind": "record", "reason": "The plugin beta's unlock state per tester (packages/naive/src/engine/beta-gate.mjs)"},
     {"path": "instance/**/.naive/adapters.json", "kind": "record", "reason": "What the harness adapters wrote, so an upgrade never overwrites a file it did not write"},

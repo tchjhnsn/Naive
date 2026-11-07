@@ -421,7 +421,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
         try { w = await a.store.write(file, part, { message: `${route}.${a.attribute}: ${provenance.note ?? "written through Mentura"}`, title: `Mentura: ${route}.${a.attribute} (${venture})` }); }
         catch (e) { return { ok: false, error: `${a.source.id}: ${String(e.message ?? e)}` }; }
         const at = address(a.source.id, file);
-        log(`${at}#${a.attribute}`, a.store.writes === "pull-request" ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(part).digest("hex"),
+        log(`${at}#${a.attribute}`, a.store.writes === "pull-request" ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(part).digest("hex"), content: part,
           source: { id: a.source.id, connector: a.source.connector, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
         attributeWrites.push({ attribute: a.attribute, written: at, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) });
       }
@@ -439,7 +439,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
       const draft = store.writes === "pull-request";
       const at = address(src.id, file);
-      const entry = log(at, draft ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(recordText).digest("hex"),
+      const entry = log(at, draft ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(recordText).digest("hex"), content: recordText,
         source: { id: src.id, connector: src.connector, version: w.version, ...(w.commit ? { commit: w.commit } : {}), ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
       return { ok: true, result: { written: at, draft, gate: gate?.class ?? null, provenance: entry.hash, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}),
         note: draft ? `opened draft pull request ${w.pull_request.url}; merging it accepts the write` : "written", ...attributesOut }, ...deprecated };
