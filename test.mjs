@@ -139,6 +139,8 @@ const steps = [
   ["workspace: settings, cross-venture reads, naive capture and the inbox", "node", ["packages/naive/src/engine/workspace-test.mjs"]],
   ["validation study: interviews, feedback, bugs, telemetry, the beta gate and feedback routing", "node", ["packages/naive/src/interfaces/tests/validation-study-test.mjs"]],
   ["router, CLI, MCP server and API", "node", ["packages/naive/src/interfaces/test.mjs"]],
+  ["write scope: router, engine and interfaces tests write only inside the venture, the temp dir and named exceptions", "node", ["packages/naive/src/checks/check-write-scope.ts"]],
+  ["write scope: a write outside the venture in a broken copy fails the check", "node", ["packages/naive/src/checks/check-write-scope-test.ts"]],
 ];
 
 // Generated files: the committed copy must equal a fresh render.
