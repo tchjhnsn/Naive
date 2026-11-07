@@ -38,7 +38,7 @@
     },
     "edges": {
       "type": "array",
-      "description": "Typed edges. An edge reads: the idea at to relates to the idea at from by relation. The arrow runs from the idea related to toward the idea whose relation it is, as builds_on always has. Only builds_on edges shape the DAG (hashes, depth, lanes); the others are carried as stated. Every relation an idea states is checked through the EE-095 term engine (term typed-link) before the graph is built",
+      "description": "Typed edges. An edge reads: the idea at to relates to the idea at from by relation. The arrow runs from the idea related to toward the idea whose relation it is, as builds-on always has. Only builds-on edges shape the DAG (hashes, depth, lanes); the others are carried as stated. Every relation an idea states is checked through the EE-095 term engine (term typed-link) before the graph is built",
       "items": {
         "type": "object",
         "required": ["from", "to", "p", "relation"],

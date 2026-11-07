@@ -40,11 +40,11 @@
   },
   "$defs": {
     "relation": {
-      "enum": ["broader", "narrower", "related", "part-of", "derived-from", "builds_on", "supports", "contradicts"],
-      "description": "How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds_on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list"
+      "enum": ["broader", "narrower", "related", "part-of", "derived-from", "builds-on", "supports", "contradicts"],
+      "description": "How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds-on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list"
     },
     "attachment": {
-      "enum": ["creates", "amends", "appends_to", "derives_from"],
+      "enum": ["creates", "amends", "appends-to", "derives-from"],
       "description": "How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list"
     }
   }

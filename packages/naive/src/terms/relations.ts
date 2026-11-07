@@ -2,8 +2,8 @@
 // (the term typed-link in packages/naive/src/terms/terms.ts). An idea relates to another idea, or attaches to one scope.
 //
 // The idea relations keep the names of preserved PR 157 (EE-103: broader, narrower, related, part-of, derived-from),
-// the idea graph's builds_on, and supports and contradicts from argumentation. The scope attachments keep the names
-// the ontology program gives them. Each relation names its counterpart in SKOS, PROV-O, DCMI Terms, AIF and IBIS,
+// the idea graph's builds-on, and supports and contradicts from argumentation. The scope attachments keep the names
+// the ontology program gives them. Every relation name is kebab-case, like Naive's ids (Torian, 2026-11-07). Each relation names its counterpart in SKOS, PROV-O, DCMI Terms, AIF and IBIS,
 // or null where that vocabulary has none. AIF and IBIS publish no single namespace, so their entries name the node
 // or link type.
 //
@@ -21,13 +21,13 @@ export function relationTable() {
     related: { between: "idea", order: null, inverse: "related", skos: "skos:related", provo: null, dcmi: "dcterms:relation", aif: null, ibis: null },
     "part-of": { between: "idea", order: "part-of", inverse: null, skos: null, provo: null, dcmi: "dcterms:isPartOf", aif: null, ibis: null },
     "derived-from": { between: "idea", order: null, inverse: null, skos: null, provo: "prov:wasDerivedFrom", dcmi: "dcterms:source", aif: null, ibis: null },
-    builds_on: { between: "idea", order: "builds_on", inverse: null, skos: null, provo: null, dcmi: "dcterms:requires", aif: null, ibis: null },
+    "builds-on": { between: "idea", order: "builds-on", inverse: null, skos: null, provo: null, dcmi: "dcterms:requires", aif: null, ibis: null },
     supports: { between: "idea", order: null, inverse: null, skos: null, provo: null, dcmi: null, aif: "RA-node (inference)", ibis: "supports" },
     contradicts: { between: "idea", order: null, inverse: null, skos: null, provo: null, dcmi: null, aif: "CA-node (conflict)", ibis: "objects-to" },
     creates: { between: "scope", order: null, inverse: null, skos: null, provo: null, dcmi: null, aif: null, ibis: null },
     amends: { between: "scope", order: null, inverse: null, skos: null, provo: null, dcmi: null, aif: null, ibis: null },
-    appends_to: { between: "scope", order: null, inverse: null, skos: null, provo: null, dcmi: null, aif: null, ibis: null },
-    derives_from: { between: "scope", order: null, inverse: null, skos: null, provo: "prov:wasDerivedFrom", dcmi: null, aif: null, ibis: null },
+    "appends-to": { between: "scope", order: null, inverse: null, skos: null, provo: null, dcmi: null, aif: null, ibis: null },
+    "derives-from": { between: "scope", order: null, inverse: null, skos: null, provo: "prov:wasDerivedFrom", dcmi: null, aif: null, ibis: null },
   } as const;
 }
 

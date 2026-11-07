@@ -57,6 +57,7 @@ const steps = [
   ["foundation lint: mission, ICP jobs, alignment checks, problem forms", "node", ["packages/naive/src/interfaces/tests/lint-foundation-test.mjs"]],
   ["upgrades: migrations, pins, early adoption, canary, staged agent upgrades", "node", ["packages/naive/src/engine/upgrades-test.mjs"]],
   ["src layout: naive upgrade --layout src and init-venture --layout src (EE-118 step 8)", "node", ["packages/naive/src/engine/src-layout-test.mjs"]],
+  ["relation names in kebab-case: rename-relations renames old idea relation names and nothing else", "node", ["packages/naive/src/engine/rename-relations-test.ts"]],
   ["traces: spans in traces/, chained and linked from provenance, naive trace, check-traces (EE-121)", "node", ["packages/naive/src/checks/traces-test.ts"]],
   ["agent files: ls, read, write, edit, glob and grep over the router, drafts for gated writes, tool spans (EE-122)", "node", ["packages/naive/src/interfaces/tests/agent-files-test.ts"]],
   ["hosted mode: each feature that reaches outside the tenant refuses and says why, host hooks stand in, the laptop path is unchanged", "node", ["packages/naive/src/interfaces/tests/hosted-runtime-test.ts"]],

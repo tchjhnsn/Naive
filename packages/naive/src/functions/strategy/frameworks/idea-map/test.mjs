@@ -110,9 +110,9 @@ t("without a judge, Naive's record order supplies the dependencies", () => {
   ok(g.judged_by === "convention" && g.edges.length === 1 && g.edges[0].from === "i-01", JSON.stringify(g.edges));
 });
 
-t("a stated builds_on that the convention already gives is one edge, and the root does not move", () => {
+t("a stated builds-on that the convention already gives is one edge, and the root does not move", () => {
   const pair = [{ ...ideas[0], departments: ["products"] }, ideas[1]];
-  const plain = build(pair), twice = build([pair[0], { ...pair[1], relations: [{ relation: "builds_on", to: "i-01" }] }]);
+  const plain = build(pair), twice = build([pair[0], { ...pair[1], relations: [{ relation: "builds-on", to: "i-01" }] }]);
   ok(twice.root === plain.root && twice.edges.length === 1 && JSON.stringify(twice.nodes.find((n) => n.id === "i-02").builds_on) === JSON.stringify(["i-01"]), JSON.stringify(twice.edges));
 });
 
@@ -127,12 +127,12 @@ const checkFiles = (files) => {
 };
 const ideasFolder = (records) => checkFiles(Object.fromEntries(records.map((r) => [`${r.id}.json`, r])));
 
-t("a stated relation becomes a typed edge; dependencies are builds_on, and only they shape the hashes", () => {
+t("a stated relation becomes a typed edge; dependencies are builds-on, and only they shape the hashes", () => {
   const plain = build(ideas, { answers });
-  const typed = build(ideas.map((i) => i.id === "i-04" ? { ...i, relations: [{ relation: "contradicts", to: "i-02" }, { relation: "builds_on", to: "i-03" }] } : i), { answers });
-  ok(plain.edges.every((e) => e.relation === "builds_on"), JSON.stringify(plain.edges));
+  const typed = build(ideas.map((i) => i.id === "i-04" ? { ...i, relations: [{ relation: "contradicts", to: "i-02" }, { relation: "builds-on", to: "i-03" }] } : i), { answers });
+  ok(plain.edges.every((e) => e.relation === "builds-on"), JSON.stringify(plain.edges));
   ok(typed.edges.some((e) => e.from === "i-02" && e.to === "i-04" && e.relation === "contradicts" && e.by === "stated"), JSON.stringify(typed.edges));
-  ok(JSON.stringify(typed.nodes.find((n) => n.id === "i-04").builds_on) === JSON.stringify(["i-03"]), "a stated builds_on joins the DAG");
+  ok(JSON.stringify(typed.nodes.find((n) => n.id === "i-04").builds_on) === JSON.stringify(["i-03"]), "a stated builds-on joins the DAG");
   const noBuild = build(ideas.map((i) => i.id === "i-04" ? { ...i, relations: [{ relation: "contradicts", to: "i-02" }] } : i), { answers });
   ok(noBuild.root === plain.root && JSON.stringify(noBuild.nodes.map((n) => n.hash)) === JSON.stringify(plain.nodes.map((n) => n.hash)), "contradicts leaves every hash alone");
 });
@@ -145,7 +145,7 @@ t("a relation outside the closed set is rejected through the term engine, by the
   ok(/rejected relations/.test(threw) && /rebuts/.test(threw), threw);
 });
 
-t("the example ideas pass: a contradicts relation, a builds_on, and an amends scope", async () => {
+t("the example ideas pass: a contradicts relation, a builds-on, and an amends scope", async () => {
   const r = await node([graphCli, "check", examples]);
   ok(r.status === 0 && /typed-link passes/.test(r.stdout), r.stdout + r.stderr);
 });

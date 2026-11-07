@@ -804,9 +804,9 @@
         },
         "grade": "seminal"
       },
-      "meaning": "A link from one record to another whose type names how they relate, drawn from a closed set of standard relations: between ideas, broader, narrower, related, part-of, derived-from, builds_on, supports and contradicts; from an idea to its scope, creates, amends, appends_to and derives_from (packages/naive/src/terms/relations.ts, each mapped to SKOS, PROV-O, DCMI Terms, AIF and IBIS). Whether a link is well typed depends on the whole graph, since an ordering relation must not close a cycle, so the test runs on the whole: every type is in the closed set for its target, no idea links to itself, every target exists (a scope the idea creates may be new), and no cycle runs through broader (narrower read backwards), part-of or builds_on.",
+      "meaning": "A link from one record to another whose type names how they relate, drawn from a closed set of standard relations: between ideas, broader, narrower, related, part-of, derived-from, builds-on, supports and contradicts; from an idea to its scope, creates, amends, appends-to and derives-from (packages/naive/src/terms/relations.ts, each mapped to SKOS, PROV-O, DCMI Terms, AIF and IBIS). Whether a link is well typed depends on the whole graph, since an ordering relation must not close a cycle, so the test runs on the whole: every type is in the closed set for its target, no idea links to itself, every target exists (a scope the idea creates may be new), and no cycle runs through broader (narrower read backwards), part-of or builds_on.",
       "status": "proposed",
-      "hash": "413ed8b1e9f5c463",
+      "hash": "3cdf72d445d844b8",
       "properties": [
         {
           "id": "T1",
@@ -822,7 +822,7 @@
         },
         {
           "id": "T4",
-          "says": "no cycle runs through broader (narrower read backwards), part-of or builds_on"
+          "says": "no cycle runs through broader (narrower read backwards), part-of or builds-on"
         }
       ],
       "rule": "every property, and P7 (confirmed facts)",

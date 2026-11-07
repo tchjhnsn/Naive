@@ -34,11 +34,11 @@ The rules travel with every Jev request as `state.guidelines` (`conventions.json
 ## 2. Dump to graph
 
 - **An idea builds on another only when it needs that idea's answer first.** Jev answers one question per ordered pair of ideas, with a bar of 0.5. Without Jev, Naive's record order supplies the edges (`ORDER` in `graph.mjs`).
-- **The graph stays acyclic.** Edges are added strongest first, an edge that would close a cycle is dropped, and only direct dependencies are kept (transitive reduction). A dependency given twice, as when an idea states a `builds_on` that the convention or Jev also gives, is one edge, so the hashes and the root do not change.
+- **The graph stays acyclic.** Edges are added strongest first, an edge that would close a cycle is dropped, and only direct dependencies are kept (transitive reduction). A dependency given twice, as when an idea states a `builds-on` that the convention or Jev also gives, is one edge, so the hashes and the root do not change.
 - **It is a Merkle DAG.** An idea's hash covers its text and the hashes of what it builds on, so a change upstream changes every hash below it.
 - **Signal.** Each idea is weighted by what the phase needs of its records (0.35), how much builds on it (0.25), how concrete it is (0.25) and how much of the dump circles it (0.15).
 - **Lanes.** Ideas tied by dependencies form a lane that moves in order. An idea tied to nothing moves on its own.
-- **Typed edges.** Every edge carries a `relation`. A dependency is `builds_on`. An idea may also state relations of its own, as an idea record does (`relations: [{ relation, to }]`). An edge reads "the idea at `to` relates to the idea at `from`", so its arrow points at the idea that states the relation, the way a dependency always has. Only `builds_on` edges shape the hashes, depth and lanes. The other relations ride along as stated.
+- **Typed edges.** Every edge carries a `relation`. A dependency is `builds-on`. An idea may also state relations of its own, as an idea record does (`relations: [{ relation, to }]`). An edge reads "the idea at `to` relates to the idea at `from`", so its arrow points at the idea that states the relation, the way a dependency always has. Only `builds_on` edges shape the hashes, depth and lanes. The other relations ride along as stated.
 
 ### Typed relations
 
@@ -51,13 +51,13 @@ Idea records (`packages/naive/src/records/founder-idea.schema.json`, at `people/
 | `related` | ideas | `skos:related` | | `dcterms:relation` | | |
 | `part-of` | ideas | | | `dcterms:isPartOf` | | |
 | `derived-from` | ideas | | `prov:wasDerivedFrom` | `dcterms:source` | | |
-| `builds_on` | ideas | | | `dcterms:requires` | | |
+| `builds-on` | ideas | | | `dcterms:requires` | | |
 | `supports` | ideas | | | | RA-node (inference) | supports |
 | `contradicts` | ideas | | | | CA-node (conflict) | objects-to |
 | `creates` | idea to scope | | | | | |
 | `amends` | idea to scope | | | | | |
-| `appends_to` | idea to scope | | | | | |
-| `derives_from` | idea to scope | | `prov:wasDerivedFrom` | | | |
+| `appends-to` | idea to scope | | | | | |
+| `derives-from` | idea to scope | | `prov:wasDerivedFrom` | | | |
 
 `broader`, `narrower`, `related`, `part-of` and `derived-from` are the noun relations of preserved PR 157 (EE-103). An empty cell means the vocabulary has no counterpart.
 
@@ -66,7 +66,7 @@ Every relation check runs through the EE-095 term engine, as the term typed-link
 - a name outside the closed set, or one used for the wrong kind of target;
 - an idea that relates to itself;
 - a target that does not exist (a scope the idea `creates` may be one the catalog does not list yet);
-- a cycle through `broader` (with `narrower` read backwards), `part-of` or `builds_on`.
+- a cycle through `broader` (with `narrower` read backwards), `part-of` or `builds-on`.
 
 `packages/naive/lean/Naive/Terms.lean` proves three facts about the relation table that reading `narrower` backwards relies on. Inverses come in pairs, a relation and its inverse share one order, and each order is a relation read forward. No Lean theorem covers a graph of links or the cycle search itself. `test.mjs` tests those through the check command, and keeps the schemas, the table and Lean naming the same relations.
 
@@ -77,7 +77,7 @@ flowchart LR
   R["idea records: relations and scope"] --> F["facts: ideas, scopes and typed links, by number"]
   T["packages/naive/src/terms/relations.ts: the closed set"] --> TL["term typed-link"]
   F --> TL
-  TL -->|"passes"| G["graph.json: typed edges, builds_on shapes the DAG"]
+  TL -->|"passes"| G["graph.json: typed edges, builds-on shapes the DAG"]
   TL -->|"fails T1 to T4"| X["check exits 1 and names each problem; build throws"]
   L["packages/naive/lean/Naive/Terms.lean"] -->|"inverse and order theorems"| TL
 ```
