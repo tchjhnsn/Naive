@@ -15,13 +15,16 @@
 // and whether retention levels off; team gaps (skills needed with no holder); operations
 // readiness grades as its weakest MAD tier.
 // Score (--score): V = sum(w p e) / sum(w), weights and floors from packages/naive/src/functions/strategy/kits/validation/weights.json
-// by go-to-market path and venture kind; a missing sub-score counts 0 and is listed.
+// by go-to-market path and venture kind; a missing sub-score counts 0 and is listed. The threshold is the
+// validation-recommend detector's line: the venture's governance/detectors/validation-recommend.json, else
+// Naive's shipped default, else weights.json.
 // Errors: duplicate evidence ids, a URL with no checked date, a source file that does not exist
 // (paths are relative to the venture folder), a date in the future.
 //
 //   node packages/naive/src/checks/check-validation.mjs <workspace or venture dir> [--json] [--score]
 
 import { ventureFile } from "../core/venture-paths.mjs";
+import { line } from "../engine/detectors.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -145,7 +148,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         items: r.items.map((i) => ({ id: i.e.id, kind: i.e.kind, grade: i.level, why: i.why, supports: i.e.supports !== false })) });
     }
     const products = ["product", "products"].flatMap((d) => existsSync(ventureFile(root, d)) ? readdirSync(ventureFile(root, d)).filter((f) => f.endsWith(".json")).map((f) => load(ventureFile(root, `${d}/${f}`))) : []);
-    scores.push({ venture: v.id, ...score(graded, W, { path: path ?? "build-first", kind: kindOf(products) }) });
+    scores.push({ venture: v.id, ...score(graded, { ...W, threshold: line(root, "validation-recommend", W.threshold) }, { path: path ?? "build-first", kind: kindOf(products) }) });
   }
   const wantScore = process.argv.includes("--score");
   if (process.argv.includes("--json")) console.log(JSON.stringify(wantScore ? { records: out, scores } : out, null, 2));

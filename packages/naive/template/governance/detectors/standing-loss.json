@@ -1,0 +1,53 @@
+{
+  "id": "standing-loss",
+  "title": "Lose a standing rule",
+  "description": "A standing rule is suspended when the floored SPRT statistic over its recent outcomes reaches the line, log((1 - beta) / alpha) = log 19 at alpha and beta 0.05.",
+  "call_site": "packages/naive/src/terms/operating-rules.json questions.loss (not enforced yet)",
+  "tier": "costly",
+  "question": {
+    "verb": "suspend",
+    "noun": "standing answer",
+    "asking_function": "strategy",
+    "text": "Should this standing rule be suspended?"
+  },
+  "evidence": {
+    "kind": "sequential",
+    "sensor": "the SPRT floored at 0, with p0 0.05 and p1 0.3 (operating-rules.json questions.loss)",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "decisions/[id]",
+        "note": "Overrides and corrections of the rule's answers (operating-rules.json signals.against)"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "meaning": "The floored sum of log likelihood ratios",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 2.9444389791664403,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 3,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "4w"
+  },
+  "note": "The value is Math.log(19), the suspend threshold proved in packages/naive/lean/Naive/StandingRules.lean (suspendThresholdDefault_eq)."
+}

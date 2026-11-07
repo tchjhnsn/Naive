@@ -1,0 +1,54 @@
+{
+  "id": "gate-confidence",
+  "title": "Hold a write for a person",
+  "description": "The gate holds an agent's write as a draft for a person when the confidence the write carries is below the line. A yes is a held write. A write without a confidence is never held for confidence and is not a trial.",
+  "call_site": "packages/naive/src/engine/gate.mjs when.confidence_below, read through naive.config.json thresholds.confidence (packages/naive/src/engine/naive-config.mjs configFor)",
+  "tier": "costly",
+  "question": {
+    "verb": "hold",
+    "noun": "draft",
+    "asking_function": "risk-and-compliance",
+    "text": "Does this write need a person before it lands?"
+  },
+  "evidence": {
+    "kind": "founder-agent",
+    "sensor": "the agent that wrote the record, through provenance.confidence on the write",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "system/provenance",
+        "note": "The confidence each agent write carries"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "max": 1,
+      "meaning": "The writing agent's confidence in the write, 0 to 1",
+      "yes_when": "below"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 0.7,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 3,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "record",
+      "id": "draft"
+    },
+    "time_to_detect": "2w"
+  },
+  "note": "yes_when below matches the gate's strict comparison: a confidence below 0.7 is held, and exactly 0.7 passes. Costly tier, so a bad write let through (a miss) costs three times a held write a person accepts unchanged (a false alarm). naive.config.json thresholds.confidence, and a number in a rule's confidence_below, still take precedence over this line."
+}

@@ -1,0 +1,54 @@
+{
+  "id": "standing-earn-costly",
+  "title": "Earn a standing rule (costly tier)",
+  "description": "A question type of the costly tier earns a standing rule when the Wilson lower bound over the founder's full answer history reaches the line. The founder approves each rule.",
+  "call_site": "packages/naive/src/terms/operating-rules.json questions.standing.costly (not enforced yet)",
+  "tier": "costly",
+  "question": {
+    "verb": "earn",
+    "noun": "standing answer",
+    "asking_function": "strategy",
+    "text": "Has this question type earned a standing answer?"
+  },
+  "evidence": {
+    "kind": "accumulated",
+    "sensor": "the Wilson lower bound at z 1.96 over the founder's answer history (operating-rules.json questions.standing)",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "decisions/[id]",
+        "note": "The founder's answers to the question type"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "max": 1,
+      "meaning": "The Wilson lower bound on the founder's agreement rate, 0 to 1",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 0.9,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 3,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "4w"
+  },
+  "note": "The same number as questions.standing.costly in packages/naive/src/terms/operating-rules.json; the bar is proved in packages/naive/lean/Naive/StandingRules.lean."
+}

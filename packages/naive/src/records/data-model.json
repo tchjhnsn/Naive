@@ -1875,6 +1875,7 @@
       "schema": "packages/naive/src/records/detector.schema.json",
       "generator": "packages/naive/src/engine/generators/detector.ts",
       "paths": [
+        "packages/naive/template/governance/detectors/*.json",
         "instance/**/governance/detectors/*.json",
         "packages/naive/src/records/examples/**/governance/detectors/*.json"
       ],

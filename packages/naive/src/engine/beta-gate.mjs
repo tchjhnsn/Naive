@@ -133,7 +133,7 @@ export async function giveFeedback(dir, capId, answers, { tester, m = manifest()
   if (bad.length) return { ok: false, error: `${bad.map((q) => `${q.id} is ${q.kind}`).join("; ")}` };
   const clean = Object.fromEntries(Object.entries(answers).map(([k, v]) => [k, qs.find((q) => q.id === k).kind === "scale-1-5" ? Number(v) : v]));
   const id = `${capId}-${t}-${now.toISOString().slice(0, 19).replace(/[^0-9]/g, "")}`;
-  const r = await routeFeedback({ capability: capId, answers: clean }, { ...routing, send: jevConsented(dir) });
+  const r = await routeFeedback({ capability: capId, answers: clean }, { dir, ...routing, send: jevConsented(dir) });
   const rec = { id, at: now.toISOString(), tester: t, capability: capId, checkpoint: cap.checkpoint.id, answers: clean, routed_to: r.destination, routing: { model: r.model, confidence: r.confidence, fallback: r.fallback } };
   const f = ventureFile(dir, `validation/feedback/${id}.json`);
   mkdirSync(dirname(f), { recursive: true });

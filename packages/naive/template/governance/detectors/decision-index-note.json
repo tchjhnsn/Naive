@@ -1,0 +1,53 @@
+{
+  "id": "decision-index-note",
+  "title": "Write a note on a decision",
+  "description": "The decision index records this line. Decisions whose score reaches it get a qualitative note from an agent.",
+  "call_site": "packages/naive/src/engine/decision-index.mjs THRESHOLD, written to the index as threshold",
+  "tier": "low",
+  "question": {
+    "verb": "note",
+    "noun": "decision",
+    "asking_function": "strategy",
+    "text": "Does this decision need a written note?"
+  },
+  "evidence": {
+    "kind": "check",
+    "sensor": "packages/naive/src/engine/decision-index.mjs",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "system/decision-index",
+        "note": "Each entry's score"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "meaning": "The decision's score in the index",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 0.25,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 1,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "1w"
+  },
+  "note": "No code compares a score with this line yet: the index records it for the agent that writes notes. yes_when above follows the schema's default."
+}
