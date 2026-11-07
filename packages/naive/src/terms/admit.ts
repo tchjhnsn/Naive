@@ -14,14 +14,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { freeze, passSet, relation, run, validTest, type Base, type Relation, type Term } from "./engine.ts";
 import { arrangementFixtures, type Fixture } from "./fixtures.ts";
-import { arrangementCases, detectorCases, encounterCases, hierarchyCases, linkCases, membershipCases, relationshipCases, trialCases } from "./levels.ts";
+import { arrangementCases, detectorCases, encounterCases, hierarchyCases, linkCases, membershipCases, receptionCases, relationshipCases, trialCases } from "./levels.ts";
 import { labelProblems, TERMS } from "./terms.ts";
 
 const here = new URL(".", import.meta.url).pathname;
 const repo = join(here, "../../../..");
 const out = join(here, "admitted.json");
 
-const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases(), link: linkCases(), detector: detectorCases(), trial: trialCases() };
+const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases(), link: linkCases(), detector: detectorCases(), trial: trialCases(), reception: receptionCases() };
 const FIXTURES: Record<string, Fixture<Base>[]> = { arrangement: arrangementFixtures(repo) };
 
 /** The catalog's scopes. A catalog that cannot be read throws, so admission fails closed. */

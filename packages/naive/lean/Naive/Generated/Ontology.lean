@@ -490,7 +490,7 @@ def «detector» : Concept Placement := ⟨[
 def «sensor» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
-/-- [D] criterion (proposed). The line on a sensor's score scale at or above which a detector's call is yes; two lines make an unsure band. The optimal one rises with the noise base rate and the false alarm cost and falls with the miss cost (criterion_monotone in packages/naive/lean/Naive/Detection.lean). Standard: Green and Swets 1966. Fields: broader ["information artifact"]; handoff_type false. -/
+/-- [D] criterion (proposed). The line a consumer draws to sort what reaches it. On a detector, the line on a sensor's score scale at or above which the call is yes; two lines make an unsure band. The optimal one rises with the noise base rate and the false alarm cost and falls with the miss cost (criterion_monotone in packages/naive/lean/Naive/Detection.lean). On a listener, the consumer's own rating bounds and predicates over the venture's facts that sort a heard signal into salient or noise (noise_salient_partition in packages/naive/lean/Naive/Signals.lean). Standard: Green and Swets 1966. Fields: broader ["information artifact"]; handoff_type false. -/
 def «criterion» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
@@ -525,5 +525,37 @@ def «baseRate» : Concept Placement := ⟨[
 /-- [D] ROC curve (proposed). Hit rate against false alarm rate as the criterion moves. Its area equals the two-alternative proportion correct on the same scores (auc_eq_2afc in packages/naive/lean/Naive/Detection.lean). Standard: Peterson, Birdsall and Fox 1954. Fields: broader ["information artifact"]; handoff_type false. -/
 def «rocCurve» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] signal (proposed). An immutable, content-addressed, dated statement that something happened outside the venture, an element of one signal type, rated with the Admiralty code. Noise is never a field of it: whether it matters is decided at each listener (noise_relative in packages/naive/lean/Naive/Signals.lean). Not the yes case of signal detection. Signal library design, 2026-11-06. Standard: Shannon 1948; CloudEvents 1.0. Fields: broader ["information artifact"]; handoff_type false; term "signal". -/
+def «signal» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] signal type (proposed). A typed, versioned definition of one kind of signal: its props as JSON Schema, the parts it composes, its projection into records and the default age bound for edge listeners (types/<id>/<version>.signal.json in a signal library). Standard: CloudEvents 1.0 type; React component definition (convention). Fields: broader ["information artifact"]; handoff_type false. -/
+def «signalType» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] signal library (proposed). A source that publishes signal types and signals in the naive-signal-library@1 layout and is read in place, listed in knowledge/sources.json with carries signals; nothing in it is copied into the venture. The name is tentative. Standard: component library; package registry. Fields: broader ["information artifact"]; handoff_type false. -/
+def «signalLibrary» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] listener (proposed). The edge between a signal type and one consumer (a record route, a frame or a decision): the type range it hears, the consumer's criterion, and what happens (project, propose or revalidate). A listener for a part's type hears every composite with that part (part_heard in packages/naive/lean/Naive/Signals.lean). Listeners merge from config, packages, frames and kits, so there is no subscription list. Standard: W3C DOM event listener. Fields: broader ["information artifact"]; handoff_type false; term "listener". -/
+def «listener» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] noise (proposed). A reception whose listener's criterion fails: a relation between one signal and one consumer, never a property of the signal, so the same signal can be salient at one listener and noise at another (noise_relative and noise_undefinable in packages/naive/lean/Naive/Signals.lean). In signal detection's standard sense noise is the no case of one question; a listener's criterion answers its consumer's question at once, where a detector's no is noise only once it resolves as a correct rejection. Standard: Green and Swets 1966. Fields: broader ["process"]; handoff_type false; term "noise". -/
+def «noise» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] projection (proposed). The deterministic fold of a record from the signals salient for it, in (time, id) order with six fixed reducers. It reads no clock, writes through the router as the projector, and a second commit of the same render writes nothing (reconcile_idempotent in packages/naive/lean/Naive/Signals.lean). Standard: event sourcing projection (Fowler; Young). Fields: broader ["process"]; handoff_type false. -/
+def «projection» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] Admiralty rating (proposed). How far a signal can be trusted: source reliability A (completely reliable) to F (cannot be judged) and information credibility 1 (confirmed) to 6 (cannot be judged), computed in code by the producer. Standard: NATO STANAG 2511 (Admiralty code). Fields: broader ["characteristic"]; handoff_type false. -/
+def «admiraltyRating» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
+/-- [D] competitor (proposed). A company serving the same customers with an offering that can replace the venture's. Its master record (competitors/<id>.json) is a person's: a projection may create it once and writes only competitors/<id>/signals.json beside it. Standard: Porter 1980. Fields: broader ["party"]; handoff_type false. -/
+def «competitor» : Concept Placement := ⟨[
+  ("level purpose", fun f => Decidable.decide (f.level = Level.«purpose»))]⟩
 
 end Ontology

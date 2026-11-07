@@ -1289,6 +1289,488 @@
         "Green and Swets, Signal Detection Theory and Psychophysics (1966)",
         "Macmillan and Creelman, Detection Theory: A User's Guide, 2nd ed. (2004)"
       ]
+    },
+    {
+      "id": "signal",
+      "label": "Signal",
+      "form": "word",
+      "level": "reception",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "standard"
+      },
+      "meaning": "An immutable, content-addressed, dated statement that something happened outside the venture, an element of one signal type, rated with the Admiralty code. It reads the same at every listener: whether it matters is the reception's question, never the signal's.",
+      "status": "proposed",
+      "hash": "7bc8dc5b5fc2a310",
+      "properties": [
+        {
+          "id": "S1",
+          "says": "content-addressed: its id is the hash of every other field"
+        },
+        {
+          "id": "S2",
+          "says": "names one signal type as id@major.minor"
+        },
+        {
+          "id": "S3",
+          "says": "names its producer"
+        },
+        {
+          "id": "S4",
+          "says": "dated: says when the thing happened"
+        },
+        {
+          "id": "S5",
+          "says": "rated with an Admiralty code: reliability A to F, credibility 1 to 6"
+        },
+        {
+          "id": "S6",
+          "says": "withdraws at most one signal: at most one of retracts or supersedes"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 14393,
+      "relations": {
+        "listener": "overlap",
+        "reception": "has_a_kind",
+        "salient-reception": "has_a_kind",
+        "noise": "has_a_kind"
+      },
+      "predictions": [
+        {
+          "other": "listener",
+          "expected": "overlap",
+          "found": "overlap",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "withdraw_monotone",
+        "live_shrinks"
+      ],
+      "sources": [
+        "Shannon, A Mathematical Theory of Communication (1948)",
+        "CloudEvents 1.0 (CNCF, 2019): id, source, type, time and data, with source named producer and data named props",
+        "NATO STANAG 2511, Intelligence Reports (Admiralty code): source reliability A to F, information credibility 1 to 6",
+        "everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "listener",
+      "label": "Listener",
+      "form": "word",
+      "level": "reception",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "standard"
+      },
+      "meaning": "The edge between a signal type and one consumer (a record route, a frame or a decision): the type range it hears, the consumer's criterion, and what happens to a salient signal. A projecting listener reads no clock; only an edge listener, one that proposes or revalidates, judges age.",
+      "status": "proposed",
+      "hash": "7b3fc9326d9c04b7",
+      "properties": [
+        {
+          "id": "L1",
+          "says": "names one consumer"
+        },
+        {
+          "id": "L2",
+          "says": "names the type range it hears, as id@major"
+        },
+        {
+          "id": "L3",
+          "says": "its rating bounds, where it has them, are Admiralty codes"
+        },
+        {
+          "id": "L4",
+          "says": "says what happens: project, propose or revalidate"
+        },
+        {
+          "id": "L5",
+          "says": "reads no clock when it projects: only an edge listener has an age bound"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 15482,
+      "relations": {
+        "signal": "overlap",
+        "reception": "has_a_kind",
+        "salient-reception": "has_a_kind",
+        "noise": "has_a_kind"
+      },
+      "predictions": [
+        {
+          "other": "signal",
+          "expected": "overlap",
+          "found": "overlap",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "part_heard",
+        "heard_iff",
+        "noise_salient_partition"
+      ],
+      "sources": [
+        "W3C DOM Standard (WHATWG): an event listener has a type, a callback and options",
+        "everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "reception",
+      "label": "Reception",
+      "form": "word",
+      "level": "reception",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "One signal arriving at one listener that hears it: the listener names the signal's type, or the type of one of its parts. Every reception is salient or noise for that listener's consumer, never both.",
+      "status": "proposed",
+      "hash": "e6f95538306913ef",
+      "properties": [
+        {
+          "id": "S1",
+          "says": "content-addressed: its id is the hash of every other field"
+        },
+        {
+          "id": "S2",
+          "says": "names one signal type as id@major.minor"
+        },
+        {
+          "id": "S3",
+          "says": "names its producer"
+        },
+        {
+          "id": "S4",
+          "says": "dated: says when the thing happened"
+        },
+        {
+          "id": "S5",
+          "says": "rated with an Admiralty code: reliability A to F, credibility 1 to 6"
+        },
+        {
+          "id": "S6",
+          "says": "withdraws at most one signal: at most one of retracts or supersedes"
+        },
+        {
+          "id": "L1",
+          "says": "names one consumer"
+        },
+        {
+          "id": "L2",
+          "says": "names the type range it hears, as id@major"
+        },
+        {
+          "id": "L3",
+          "says": "its rating bounds, where it has them, are Admiralty codes"
+        },
+        {
+          "id": "L4",
+          "says": "says what happens: project, propose or revalidate"
+        },
+        {
+          "id": "L5",
+          "says": "reads no clock when it projects: only an edge listener has an age bound"
+        },
+        {
+          "id": "H1",
+          "says": "the listener hears the signal's type or the type of one of its parts"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 3825,
+      "relations": {
+        "signal": "is_a",
+        "listener": "is_a",
+        "salient-reception": "has_a_kind",
+        "noise": "has_a_kind"
+      },
+      "predictions": [
+        {
+          "other": "signal",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        },
+        {
+          "other": "listener",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "part_heard",
+        "noise_salient_partition",
+        "noise_salient_count"
+      ],
+      "sources": [
+        "Shannon, A Mathematical Theory of Communication (1948)",
+        "Green and Swets, Signal Detection Theory and Psychophysics (1966): the observer receives a stimulus and decides",
+        "everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "salient-reception",
+      "label": "Salient reception",
+      "form": "compound",
+      "level": "reception",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "A reception whose listener's criterion holds: the rating within the listener's bounds, an accepted producer, within an edge listener's age bound, and every predicate true on the venture's facts. The same signal may be noise at another listener.",
+      "status": "proposed",
+      "hash": "c6452716f73d8c50",
+      "properties": [
+        {
+          "id": "S1",
+          "says": "content-addressed: its id is the hash of every other field"
+        },
+        {
+          "id": "S2",
+          "says": "names one signal type as id@major.minor"
+        },
+        {
+          "id": "S3",
+          "says": "names its producer"
+        },
+        {
+          "id": "S4",
+          "says": "dated: says when the thing happened"
+        },
+        {
+          "id": "S5",
+          "says": "rated with an Admiralty code: reliability A to F, credibility 1 to 6"
+        },
+        {
+          "id": "S6",
+          "says": "withdraws at most one signal: at most one of retracts or supersedes"
+        },
+        {
+          "id": "L1",
+          "says": "names one consumer"
+        },
+        {
+          "id": "L2",
+          "says": "names the type range it hears, as id@major"
+        },
+        {
+          "id": "L3",
+          "says": "its rating bounds, where it has them, are Admiralty codes"
+        },
+        {
+          "id": "L4",
+          "says": "says what happens: project, propose or revalidate"
+        },
+        {
+          "id": "L5",
+          "says": "reads no clock when it projects: only an edge listener has an age bound"
+        },
+        {
+          "id": "H1",
+          "says": "the listener hears the signal's type or the type of one of its parts"
+        },
+        {
+          "id": "C1",
+          "says": "the rating is within the listener's bounds"
+        },
+        {
+          "id": "C2",
+          "says": "the producer is one the listener accepts"
+        },
+        {
+          "id": "C3",
+          "says": "within an edge listener's age bound; a projecting listener judges no age"
+        },
+        {
+          "id": "C4",
+          "says": "every predicate of the listener holds on the signal"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 964,
+      "relations": {
+        "signal": "is_a",
+        "listener": "is_a",
+        "reception": "is_a",
+        "noise": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "reception",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        },
+        {
+          "other": "noise",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "signal",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        },
+        {
+          "other": "listener",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "noise_salient_partition",
+        "noise_relative"
+      ],
+      "sources": [
+        "Green and Swets, Signal Detection Theory and Psychophysics (1966)",
+        "everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md"
+      ]
+    },
+    {
+      "id": "noise",
+      "label": "Noise",
+      "form": "word",
+      "level": "reception",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "seminal"
+      },
+      "meaning": "A reception whose listener's criterion fails: a relation between one signal and one consumer, never a property of the signal, so the same signal can be noise at one listener and salient at another. In signal detection's standard sense noise is the no case of one question; here the question is the consumer's, and its criterion answers it at once, where a detector's no is noise only once it resolves as a correct rejection.",
+      "status": "proposed",
+      "hash": "dbf46c8a14d438a2",
+      "properties": [
+        {
+          "id": "S1",
+          "says": "content-addressed: its id is the hash of every other field"
+        },
+        {
+          "id": "S2",
+          "says": "names one signal type as id@major.minor"
+        },
+        {
+          "id": "S3",
+          "says": "names its producer"
+        },
+        {
+          "id": "S4",
+          "says": "dated: says when the thing happened"
+        },
+        {
+          "id": "S5",
+          "says": "rated with an Admiralty code: reliability A to F, credibility 1 to 6"
+        },
+        {
+          "id": "S6",
+          "says": "withdraws at most one signal: at most one of retracts or supersedes"
+        },
+        {
+          "id": "L1",
+          "says": "names one consumer"
+        },
+        {
+          "id": "L2",
+          "says": "names the type range it hears, as id@major"
+        },
+        {
+          "id": "L3",
+          "says": "its rating bounds, where it has them, are Admiralty codes"
+        },
+        {
+          "id": "L4",
+          "says": "says what happens: project, propose or revalidate"
+        },
+        {
+          "id": "L5",
+          "says": "reads no clock when it projects: only an edge listener has an age bound"
+        },
+        {
+          "id": "H1",
+          "says": "the listener hears the signal's type or the type of one of its parts"
+        },
+        {
+          "id": "N1",
+          "says": "the criterion fails: the rating is out of bounds, the producer is not accepted, an edge listener's age bound is passed, or a predicate fails"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 2861,
+      "relations": {
+        "signal": "is_a",
+        "listener": "is_a",
+        "reception": "is_a",
+        "salient-reception": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "reception",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        },
+        {
+          "other": "salient-reception",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "signal",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        },
+        {
+          "other": "listener",
+          "expected": "is_a",
+          "found": "is_a",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "noise_relative",
+        "noise_undefinable",
+        "noise_relative_facts",
+        "noise_salient_partition"
+      ],
+      "sources": [
+        "Green and Swets, Signal Detection Theory and Psychophysics (1966)",
+        "everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md"
+      ]
     }
   ],
   "fixtures": [
