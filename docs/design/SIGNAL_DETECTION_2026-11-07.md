@@ -7,7 +7,7 @@ ai-model: claude-opus-5.5
 authority: advisory
 status: DRAFT
 tags: [naive, signal-detection-theory, criterion, gate, mentura-boundary]
-description: "Signal detection theory as the shape of every yes or no call Naive makes on evidence: one detector record per call, a criterion derived from costs and base rates, and a ledger of resolved outcomes. It also draws the line between Naive and Mentura: Naive decides, Mentura senses."
+description: "Signal detection theory as the shape of every yes or no call Naive makes on evidence: one detector record per call, a criterion derived from costs and base rates, and a ledger of resolved outcomes. Everything runs on a plain filesystem install."
 ---
 
 # Signal detection in Naive
@@ -16,11 +16,11 @@ Designed, not built.
 
 ## The ask
 
-Torian, 2026-11-07 at 03:20Z: "I want to research and design signal detection theory more deeply into naive. I think we're still developing deeper distinction between naive and Mentura." Billing is a Mentura question, for Mentura's agents to decide, so it is out of scope here.
+Torian, 2026-11-07 at 03:20Z: "I want to research and design signal detection theory more deeply into naive. I think we're still developing deeper distinction between naive and Mentura." Then, at 03:31Z: "Let's actually just ignore Mentura and focus on naive. ... If someone installed naive and created a venture they should have these capabilities. They would just need a file system." So everything here works with Naive and a folder, and nothing depends on another product or a database.
 
 ## The design in one paragraph
 
-Naive already makes many yes or no calls on uncertain evidence: the gate holds a write whose confidence is below 0.7, feedback routing accepts a model's answer at 0.95, a model step answers or goes to a person, a standing rule is earned by a Wilson bound and lost by an SPRT. Each threshold was picked by hand, none of them comes from what a mistake costs or how often the thing is true, and none of them records whether the call turned out right. Signal detection theory (Green and Swets 1966) says every such call has two separate parts: how well the evidence separates true from false (sensitivity), and where the line is drawn (the criterion). The criterion should come from the costs of the four outcomes and the base rate. Sensitivity can only be measured from resolved outcomes. This design gives each call a **detector** record that names its evidence, its criterion and who resolves it; derives the criterion from the impact tier's costs and a stated base rate; and keeps a **detection ledger** of each call and its later resolution, from which Naive computes hit rate, false alarm rate, sensitivity and ROC area with no model. A person sets the costs and accepts any criterion change. The split with Mentura follows: Naive owns the decision stage (criterion, costs, ledger, the math), and Mentura owns the sensors that produce the evidence (models, research agents, signal libraries) and anything learned across ventures.
+Naive already makes many yes or no calls on uncertain evidence: the gate holds a write whose confidence is below 0.7, feedback routing accepts a model's answer at 0.95, a model step answers or goes to a person, a standing rule is earned by a Wilson bound and lost by an SPRT. Each threshold was picked by hand, none of them comes from what a mistake costs or how often the thing is true, and none of them records whether the call turned out right. Signal detection theory (Green and Swets 1966) says every such call has two separate parts: how well the evidence separates true from false (sensitivity), and where the line is drawn (the criterion). The criterion should come from the costs of the four outcomes and the base rate. Sensitivity can only be measured from resolved outcomes. This design gives each call a **detector** record that names its evidence, its criterion and who resolves it; derives the criterion from the impact tier's costs and a stated base rate; and keeps a **detection ledger** of each call and its later resolution, from which Naive computes hit rate, false alarm rate, sensitivity and ROC area with no model. A person sets the costs and accepts any criterion change. All of it is files in the venture.
 
 ## Signal detection theory, briefly
 
@@ -100,32 +100,36 @@ It runs no model, makes no network call and reads no other venture. It does not 
 
 In the signal library design, a listener's criterion sorts a heard signal into salient or noise. Under this design a listener is a detector whose evidence is the signal's props and rating. One correction follows: a signal below the criterion is a "no" call, not noise. It is noise only if it later resolves as a correct rejection. If it resolves as something that mattered, it was a miss. That is how a listener's line gets better instead of only being set.
 
-## Naive and Mentura
+## On a filesystem install
 
-Signal detection theory splits a detector into a sensory stage, which turns the world into evidence, and a decision stage, which turns evidence into a call. That is the line between the two.
+A founder who installs Naive and creates a venture gets all of this. Detectors are JSON records, the ledger is a JSONL file beside them, and the math is a pure module. Nothing needs an account, a network or a database.
 
-| | Naive (framework) | Mentura (platform) |
+Signal detection theory splits a call into a sensory stage, which turns the world into a score, and a decision stage, which turns the score into a call. Naive always runs the decision stage. In a plain install the sensors are the ones the venture already has:
+
+| Sensor | Example | Score |
 |---|---|---|
-| Stage | decision | sensory |
-| Holds | detectors, criteria, costs, base rates, the ledger, the ROC and cost math, the proposals to move a line | the sensors: models, Jev, research agents, signal libraries, and their calibration |
-| Learns from | this venture's own resolved trials | many ventures' trials, only where each venture opts in (EE-025), and producer outcomes in its libraries |
-| Runs | offline, deterministic, no model | online, with credentials |
-| Gives the other | a detector names a sensor by id and a score scale | a sensor returns a score, and, once calibrated, a likelihood ratio |
+| A deterministic check | `check-validation.mjs`, `premise-lint.mjs`, `decision-index.mjs` | the number the check already computes |
+| The founder's own agent | the answers file a model step reads (`model-steps.mjs run --answers <file>`, written by Claude Code, Cursor or Codex) | the confidence in that answer |
+| A person | a founder or teammate rating a draft on a scale | the rating |
+| Accumulated outcomes | the standing rule's override history | the SPRT statistic |
 
-Two rules make the line testable:
+So the rule is that Naive never produces a score itself, but it does not need anything outside the venture to get one. A detector names its sensor, and the ledger measures that sensor's sensitivity from the venture's own resolved trials.
 
-1. Naive never produces a score. If a number needs a model, a network call or another venture's data, it is Mentura's.
-2. Mentura never sets a venture's criterion. It can propose one, as an open decision, like anyone else.
+### Does a database unlock more?
 
-So "Naive decides, Mentura senses." A Mentura agent that wants to act on a venture goes through a detector like any other write, which is what the master architecture already asks of Grokbot's agents (they go through Naive's deterministic layers). Billing, which Torian placed with Mentura's agents, sits on the sensor side: what is sold is evidence and calibration, never the decision.
+Not for one venture. The detection ledger is append-only and hash-chained, which a JSONL file does exactly; at a founder's volume (hundreds or thousands of trials a year) reading the whole file to compute rates is instant. A database adds three things, none of which this design needs:
+
+- Many writers at once. One founder and their agents write through one router, which already serializes writes.
+- Queries across many ventures. The design learns only from a venture's own trials.
+- Hosting the ledger for people who are not on the founder's machine. That is a question of where the folder lives, not of what Naive can do.
+
+A Postgres store is a connector behind the same router (the store contract), so a venture that keeps its records in one gets the same detectors and ledger with no change to this design.
 
 ```mermaid
 stateDiagram-v2
   direction LR
-  state "Mentura: sensory stage" as M {
+  state "Sensory stage (a check, the founder's agent or a person)" as M {
     Sensor: sensor scores the evidence
-    Calibrate: calibration (pooled, opt-in)
-    Sensor --> Calibrate
   }
   state "Naive: decision stage" as N {
     Scored: trial scored
@@ -145,7 +149,7 @@ stateDiagram-v2
     Ledger --> Proposal: a cheaper criterion exists
     Proposal --> Called: a person accepts
   }
-  Calibrate --> Scored: score or likelihood ratio
+  Sensor --> Scored: score
 ```
 
 ## Nouns for the term engine
@@ -155,7 +159,7 @@ Proposed, not admitted. Each goes through `packages/naive/src/terms/` with theor
 | Candidate | Draft meaning | Standard |
 |---|---|---|
 | detector | The record of one yes or no call on evidence: its question, sensor, criterion, costs, base rate and resolver | Green and Swets 1966 (the observer) |
-| sensor | What turns the world into a score for a detector; named by Naive, run by Mentura or a check | Green and Swets 1966 (the sensory process) |
+| sensor | What turns the world into a score for a detector; a check, the founder's own agent, or a person; named by the detector, never run by it | Green and Swets 1966 (the sensory process) |
 | criterion | The line on the score scale above which the call is yes | Green and Swets 1966 |
 | sensitivity | How well a sensor's scores separate yes from no cases, as ROC area or `d'` | Green and Swets 1966; Macmillan and Creelman 2004 |
 | hit, miss, false alarm, correct rejection | The four outcomes of a resolved call | Green and Swets 1966 |
@@ -185,4 +189,4 @@ All in Naive, one item per pull request.
 - Default costs per impact tier: the tiers say a one way door is worse than a low question, but not by how much. Torian sets the first numbers, or they start equal and only the base rate moves the line.
 - Whether a detector belongs to governance (how decisions are made) or to the function that asks the question.
 - How many resolved trials before Naive proposes a criterion change. A Wilson interval on the cost difference is one answer.
-- Whether the gate's existing `confidence` scores are kept as they are until Mentura calibrates its sensors, or ignored until then.
+- Whether the gate's existing `confidence` scores, which come from whatever agent wrote the record, are trusted as they are until the ledger has measured that agent, or ignored until then.
