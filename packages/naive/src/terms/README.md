@@ -31,7 +31,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`operating-rules-test.ts`](./operating-rules-test.ts) | The operating-rules module. |
 | [`operating-rules.json`](./operating-rules.json) | Naive's default operating rules, which a venture can override. |
 | [`operating-rules.ts`](./operating-rules.ts) | Naive's operating rules, as a module a venture can override. |
-| [`relations.ts`](./relations.ts) | The typed relations an idea record may state (S2-PR9). |
+| [`relations.ts`](./relations.ts) | The typed relations an idea record may state (S2-PR9). Every relation name is kebab-case (`builds-on`, `appends-to`, `derives-from`); `packages/naive/src/engine/rename-relations.ts` renames the old snake_case values in existing idea records. |
 | [`terms.ts`](./terms.ts) | The admitted and proposed terms. The signal detection terms (detector, trial, hit, miss, false-alarm, correct-rejection) cite the theorems in [`Detection.lean`](../../lean/Naive/Detection.lean). |
 | [`upper-test.ts`](./upper-test.ts) | Checks the upper ontology (N-049) through the EE-095 term engine. |
 
