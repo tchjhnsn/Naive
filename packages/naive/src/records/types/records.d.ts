@@ -795,6 +795,143 @@ export type Department = {
   owner?: string;
 };
 
+/** One line of a detection ledger (<venture>/governance/detectors/<id>.trials.jsonl). A trial line is one call: the score, the criterion in force and the call. A resolution line comes later, names the trial and says how it turned out: hit, miss, false alarm or correct rejection. The file is append-only: each line carries the hash of the line before, as the provenance log does, so an edited or deleted line breaks the chain. Silence is no data: a trial with no resolution is unresolved. Design: docs/design/SIGNAL_DETECTION_2026-11-07.md. */
+export type DetectorTrial = {
+  /** trial: a call was made. resolution: a call was settled. */
+  kind: "trial" | "resolution";
+  /** The line's id, unique in the file. */
+  id: string;
+  /** The id of the detector the line belongs to. */
+  detector: string;
+  /**
+   * When the call was made or settled.
+   * @format date-time
+   */
+  at: string;
+  /** trial only: the sensor's score. */
+  score?: number;
+  /** trial only: the criterion in force when the call was made, copied from the detector: its lines as numbers, or route person. */
+  criterion?: {
+    yes?: number;
+    no?: number;
+    route?: "person";
+  } & unknown;
+  /** trial only: the call. unsure: the score fell between the two lines and went to a person. Under route person, the call is the person's. */
+  call?: "yes" | "no" | "unsure";
+  /** trial only: the hash of the provenance.jsonl line of the write the call judged, when it judged a write. */
+  provenance?: string;
+  /** resolution only: the id of the trial it settles. */
+  trial?: string;
+  /** resolution only: hit, yes and right. miss, no and wrong. false-alarm, yes and wrong. correct-rejection, no and right. */
+  outcome?: "hit" | "miss" | "false-alarm" | "correct-rejection";
+  /** resolution only: the signal from operating-rules.json that settled it, when one did. */
+  signal?: "override" | "correction";
+  /** resolution only: who settled it, as the detector's resolver names. */
+  by?: {
+    kind: "person" | "record" | "producer";
+    /** The person, the record that settled it (a venture-relative path), or the producer. */
+    id: string;
+  };
+  note?: string;
+  /** The previous line's hash, or genesis for the first line. */
+  prev: string;
+  /** sha256 of prev followed by this line without its hash field, as JSON with sorted keys. */
+  hash: string;
+};
+
+/** One yes or no call that Naive makes on evidence, after signal detection theory (Green and Swets 1966), at <venture>/governance/detectors/<id>.json. It names the question, the sensor that scores the evidence, the criterion that turns a score into a call, its impact tier, the costs of the four outcomes, the base rate and who resolves each call. A detector names its sensor and never runs it. Every call is a trial in the detection ledger beside it (<id>.trials.jsonl, detector-trial.schema.json). Naive never moves a criterion by itself: a better one is proposed as an open decision and a person accepts it. Design: docs/design/SIGNAL_DETECTION_2026-11-07.md. */
+export type Detector = {
+  /** The detector's id, the same as its file name without .json. */
+  id: string;
+  /** A short name for people. */
+  title?: string;
+  description?: string;
+  /** Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.mjs confidence_below. */
+  call_site?: string;
+  /** The impact tier of the question type, from operating-rules.json. It sets the default costs: low makes a miss and a false alarm cost the same, and costly makes a miss cost three times a false alarm. one_way_door has no criterion: every call goes to a person, the ledger still records each trial, and no criterion change is ever proposed. */
+  tier: "low" | "costly" | "one_way_door";
+  /** The yes or no question, as a question type in operating-rules.json: a verb, a noun or a scoped noun, and the function that asks. */
+  question: {
+    /** What is asked about the noun, such as accept or hold. */
+    verb: string;
+    /** A noun from the ontology, or a scoped noun name@function. */
+    noun: string;
+    /** The id of the function that asks, from packages/naive/src/functions/departments.json. */
+    asking_function: string;
+    /** The question in a plain sentence. */
+    text?: string;
+  };
+  /** The sensor that turns the world into a score, and the scale of that score. A higher score means more evidence for yes. */
+  evidence: {
+    /** check: a deterministic check computes the score. founder-agent: the founder's own agent gives a confidence with its answer. person: a person rates on a scale. accumulated: a statistic over past outcomes. sequential: evidence added up over time until it crosses a boundary, as the standing rule's SPRT does. */
+    kind: "check" | "founder-agent" | "person" | "accumulated" | "sequential";
+    /** What produces the score: a module path, a model step id, a role or a person, as the kind needs. */
+    sensor: string;
+    /** The range and meaning of the score. Leave out a bound the score has none on. */
+    scale: {
+      min?: number;
+      max?: number;
+      /** What the score is, such as a confidence from 0 to 1 or a log likelihood ratio. */
+      meaning?: string;
+    };
+    /** True when the score is a likelihood ratio, so a criterion can be derived from the costs and the base rate by formula. A raw confidence from a model is not calibrated. */
+    calibrated?: boolean;
+  };
+  /** Where the line is drawn on the score scale, or route person when every call goes to a person. With yes alone, a score at or above it is a yes call and any other score is a no. With yes and no, a score at or above yes is yes, a score at or below no is no, and a score between them is unsure and goes to a person. no must be below yes. */
+  criterion: {
+    yes?: DetectorLine;
+    no?: DetectorLine;
+    /** Every call goes to a person and no line is drawn. A one_way_door detector has this and nothing else. */
+    route?: "person";
+  } & unknown;
+  /** What each of the four outcomes is worth, as positive amounts on one scale: hit and correct_rejection are the value of a right call, miss and false_alarm the cost of a wrong one. By default they come from the tier: 1 for each at low, and at costly a miss costs 3 and the rest 1. A person may set others. A one_way_door detector has none. */
+  costs?: {
+    /** The value of saying yes when the answer was yes. */
+    hit: number;
+    /** The cost of saying no when the answer was yes. */
+    miss: number;
+    /** The cost of saying yes when the answer was no. */
+    false_alarm: number;
+    /** The value of saying no when the answer was no. */
+    correct_rejection: number;
+    /** The person who set the costs, or tier when they are the tier's defaults. */
+    set_by: string;
+    /** The decision that set the costs, if any. */
+    decision?: string;
+  };
+  /** How often the true answer is yes. */
+  base_rate: {
+    /** stated: a person stated it in value. ledger: it is computed from the resolved trials in the ledger each time it is needed. */
+    source: "stated" | "ledger";
+    /** stated only: the proportion of calls whose true answer is yes. */
+    value?: number;
+    /** stated only: the person who stated it. */
+    set_by?: string;
+  };
+  /** Who settles whether a call was right, and how long to wait for it. */
+  resolution: {
+    resolver: {
+      /** person: a person decides, by name or role. record: a later record settles it, such as an accepted draft or a reverted write. producer: the code or agent that produced the judged write reports the outcome. */
+      kind: "person" | "record" | "producer";
+      /** The person or role, the record type, or the producer. */
+      id: string;
+    };
+    /** A number followed by s, m, h, d or w. A call with no resolution after this long counts as unresolved, not as right. */
+    time_to_detect: string;
+  };
+  note?: string;
+};
+
+/** One criterion on the score scale. */
+export type DetectorLine = {
+  /** The score at the line. */
+  value: number;
+  /** The person who set it, or derived when Naive derived it from the costs and the base rate and a person accepted it. */
+  set_by: string;
+  /** The decision that set or accepted it, if any. */
+  decision?: string;
+};
+
 /** A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing packages/naive/test/evals/*.json files. */
 export type EvalSuite = {
   skill_name?: string;

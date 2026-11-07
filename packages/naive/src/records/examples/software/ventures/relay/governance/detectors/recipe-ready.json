@@ -1,0 +1,49 @@
+{
+  "id": "recipe-ready",
+  "title": "Publish a recipe",
+  "description": "A reviewer rates each new recipe draft from 1 to 5. A high rating publishes it, a low one sends it back, and a rating between goes to the founder.",
+  "tier": "low",
+  "question": {
+    "verb": "publish",
+    "noun": "publication",
+    "asking_function": "marketing-and-sales",
+    "text": "Is this recipe ready to publish on the docs site?"
+  },
+  "evidence": {
+    "kind": "person",
+    "sensor": "reviewer",
+    "scale": {
+      "min": 1,
+      "max": 5,
+      "meaning": "The reviewer's rating of the draft, 5 for ready"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 4,
+      "set_by": "founder"
+    },
+    "no": {
+      "value": 2,
+      "set_by": "founder"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 1,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "2w"
+  },
+  "note": "Low tier, so a miss and a false alarm cost the same. A published recipe a reader reports as broken settles a false alarm. A recipe sent back and later published unchanged settles a miss."
+}

@@ -4,9 +4,12 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import * as bug from "./bug.mjs";
+import { validate } from "./generate.mjs";
 import * as glossary from "./glossary.mjs";
 import * as reference from "./reference.mjs";
 import * as traceSpan from "./trace-span.mjs";
+import * as detector from "./detector.ts";
+import * as detectorTrial from "./detector-trial.ts";
 
 let fails = 0;
 const t = (name, ok) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}`); if (!ok) fails++; };
@@ -15,7 +18,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -41,6 +44,37 @@ const r = reference.draft({ layer: "purpose", title: "A Framework for Representi
 t("reference: draft passes the schema", r.ok);
 t("reference: id is unique in the file", r.added === "minsky-1974-framework-2");
 t("reference: checked without a url is dropped", !("checked" in r.draft.references[1]));
+
+const det = detector.draft({ id: "recipe-ready", tier: "low", question: { verb: "publish", noun: "publication", asking_function: "marketing-and-sales" },
+  evidence: { kind: "person", sensor: "reviewer", scale: { min: 1, max: 5 } }, criterion: { yes: { value: 4, set_by: "founder" }, no: { value: 2, set_by: "founder" } },
+  resolution: { resolver: { kind: "person", id: "founder" }, time_to_detect: "2w" } });
+t("detector: draft passes the schema", det.ok);
+t("detector: low tier costs a miss the same as a false alarm", det.ok && det.draft.costs?.miss === 1 && det.draft.costs.false_alarm === 1 && det.draft.costs.set_by === "tier");
+const costly = detector.draft({ ...det.draft, costs: undefined, tier: "costly" });
+t("detector: costly tier makes a miss cost three times a false alarm", costly.ok && costly.draft.costs?.miss === 3 && costly.draft.costs.false_alarm === 1);
+const door = detector.draft({ ...det.draft, costs: undefined, criterion: undefined, tier: "one_way_door" });
+t("detector: one_way_door routes every call to a person and has no costs", door.ok && door.draft.criterion.route === "person" && door.draft.costs === undefined);
+t("detector: one_way_door with a line fails the schema", !validate("detector", { ...door.draft, criterion: { yes: { value: 0.5, set_by: "founder" } } }).ok);
+t("detector: one_way_door with costs fails the schema", !validate("detector", { ...door.draft, costs: det.draft.costs }).ok);
+t("detector: a low detector routed to a person fails the schema", !validate("detector", { ...det.draft, criterion: { route: "person" } }).ok);
+t("detector: a criterion with both a line and route person fails the schema", !validate("detector", { ...det.draft, criterion: { ...det.draft.criterion, route: "person" } }).ok);
+t("detector: no tier is refused before the schema", !detector.draft({ ...det.draft, tier: undefined }).ok);
+t("detector: base rate comes from the ledger unless stated", det.ok && det.draft.base_rate.source === "ledger");
+t("detector: a stated base rate with no one stating it fails the schema", !detector.draft({ ...det.draft, base_rate: { source: "stated", value: 0.3 } }).ok);
+t("detector: a criterion that names no one fails the schema", !validate("detector", { ...det.draft, criterion: { yes: { value: 4 } } }).ok);
+t("detector: no criterion is refused before the schema", !detector.draft({ ...det.draft, criterion: undefined }).ok);
+
+const band = { yes: 4, no: 2 };
+t("detector-trial: the call follows the band", detectorTrial.call(4, band) === "yes" && detectorTrial.call(3, band) === "unsure" && detectorTrial.call(2, band) === "no" && detectorTrial.call(3, { yes: 4 }) === "no" && detectorTrial.call(3, { route: "person" }) === "unsure");
+const pt = detectorTrial.draft({ detector: "breaking-release", score: 0.9, criterion: { route: "person" }, call: "yes" });
+t("detector-trial: under route person the person's call is kept", pt.ok && pt.draft.call === "yes");
+const tr = detectorTrial.draft({ detector: "recipe-ready", score: 3, criterion: band });
+t("detector-trial: a trial passes the schema and chains from genesis", tr.ok && tr.draft.call === "unsure" && tr.draft.prev === "genesis");
+const rs = detectorTrial.draft({ detector: "recipe-ready", trial: "t-1", outcome: "false-alarm", by: { kind: "person", id: "founder" } });
+t("detector-trial: a resolution passes the schema", rs.ok && rs.draft.kind === "resolution");
+t("detector-trial: a resolution with no one settling it is refused", !detectorTrial.draft({ detector: "recipe-ready", trial: "t-1", outcome: "hit" }).ok);
+t("detector-trial: a trial line may not carry an outcome", tr.ok && !validate("detector-trial", { ...tr.draft, outcome: "hit" }).ok);
+t("detector-trial: a resolution line may not carry a score", rs.ok && !validate("detector-trial", { ...rs.draft, score: 1 }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

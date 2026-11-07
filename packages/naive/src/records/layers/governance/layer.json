@@ -78,7 +78,9 @@
     "venture-role",
     "role-template",
     "delegation",
-    "publications"
+    "publications",
+    "detector",
+    "detector-trial"
   ],
   "reads": [
     "handoff",

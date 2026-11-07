@@ -83,7 +83,7 @@
           },
           "generator": {
             "type": "string",
-            "pattern": "^packages/naive/src/engine/generators/[a-z0-9-]+\\.mjs$",
+            "pattern": "^packages/naive/src/engine/generators/[a-z0-9-]+\\.(mjs|ts)$",
             "description": "EE-099: the record generator beside the schema; it describes what to ask and drafts one record that passes the schema, and stores nothing itself"
           },
           "form": {

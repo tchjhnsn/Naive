@@ -920,6 +920,26 @@
       },
       "why": "What is live and who approved it; needed from the first publication on"
     },
+    "detector": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.4,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "Worth writing once a yes or no call (a gate, a routed answer, a reviewer's rating) is made often enough that its line and its mistakes matter"
+    },
+    "detector-trial": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.4,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "The ledger beside a detector; it fills as calls are made and settled, so it is needed exactly when its detector is"
+    },
     "validation-interview": {
       "base": {
         "discovery": 0.7,

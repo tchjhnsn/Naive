@@ -125,7 +125,7 @@ const steps = [
   ["strategic foundation: examples", "node", ["packages/naive/src/engine/foundation.mjs", "packages/naive/src/records/examples/workspace"]],
   ["foundation statement behaviors (Gherkin scenarios)", "node", ["packages/naive/src/engine/bdd.mjs", "packages/naive/src/functions/strategy/features/strategic-foundation.feature"]],
   ["decision affects grammar: malformed entries rejected, well-formed accepted", "node", ["packages/naive/src/engine/decision-affects-test.mjs"]],
-  ["record generators (EE-099): glossary, reference and bug describe and draft records that pass their schemas", "node", ["packages/naive/src/engine/generators/generators-test.mjs"]],
+  ["record generators (EE-099): glossary, reference, bug, trace span, detector and detector trial describe and draft records that pass their schemas", "node", ["packages/naive/src/engine/generators/generators-test.mjs"]],
   ["decisions: examples", "node", ["packages/naive/src/engine/decisions.mjs", "packages/naive/src/records/examples/workspace"]],
   ["decision behaviors (Gherkin scenarios)", "node", ["packages/naive/src/engine/bdd.mjs", "packages/naive/src/functions/strategy/features/decisions.feature"]],
   ["decision harness demo (an agent over MCP, paused until the founder decides)", "node", ["packages/naive/src/interfaces/demo/decision-harness.mjs", "--auto"]],
