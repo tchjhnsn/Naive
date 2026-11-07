@@ -18,6 +18,8 @@ const root = new URL(".", import.meta.url).pathname;
 /** @type {Array<[string, string, string[]]>} */
 const steps = [
   ["schema records are valid", "python3", ["-I", "packages/naive/src/records/validate.py"]],
+  ["schema records are valid in TypeScript (validate.ts, no Python)", "node", ["packages/naive/src/records/validate.ts"]],
+  ["validate.ts agrees with validate.py: same verdicts and failing paths on every record and its mutants", "node", ["packages/naive/src/records/validate-test.ts"]],
   ["checker tests (with cases that must fail)", "node", ["packages/naive/src/checks/test.mjs"]],
   ["ventures: examples", "node", ["packages/naive/src/checks/check-ventures.mjs", "packages/naive/src/records/examples/workspace"]],
   ["nouns", "node", ["packages/naive/src/checks/check-nouns.mjs"]],
