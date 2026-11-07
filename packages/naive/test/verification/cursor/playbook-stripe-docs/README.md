@@ -12,7 +12,7 @@ The model leaves out three things the replay still runs, because they are not te
 
 ## Regenerate
 
-From the repo root. The statechart script is `scripts/statechart` in the pstack `statechart` skill (this run used `/tmp/pstack/pstack-kit/skills/statechart/scripts/statechart`). The first run installs TLC and Java with `mise`, which must be on `PATH`. `replay.mjs` needs `python3` with `jsonschema`, the same as `node test.mjs`.
+From the repo root. The statechart script is `scripts/statechart` in the pstack `statechart` skill (this run used `/tmp/pstack/pstack-kit/skills/statechart/scripts/statechart`). The first run installs TLC and Java with `mise`, which must be on `PATH`.
 
 ```sh
 scripts/statechart \

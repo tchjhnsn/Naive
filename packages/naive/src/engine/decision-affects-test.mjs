@@ -1,5 +1,5 @@
 // Tests the affects grammar in decision.schema.json (EE-089): each malformed entry below must be rejected by
-// validate.py, and each well-formed one accepted, so a later edit to the schema's allOf cannot drop a rule silently
+// validate.mjs, and each well-formed one accepted, so a later edit to the schema's allOf cannot drop a rule silently
 // (review of #142 at 9958f75, finding 4).
 //
 //   node packages/naive/src/engine/decision-affects-test.mjs
@@ -21,7 +21,7 @@ let failed = 0, n = 0;
 const valid = (entry) => {
   const f = join(dir, `${n++}.json`);
   writeFileSync(f, JSON.stringify({ ...base, decisions: [{ ...record, affects: [entry] }] }));
-  return spawnSync("python3", ["-I", join(repo, "packages/naive/src/records/validate.py"), "--schema", "decision.schema.json", "--file", f], { encoding: "utf8" }).status === 0;
+  return spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "decision.schema.json", "--file", f], { encoding: "utf8" }).status === 0;
 };
 const expect = (name, want, entry) => {
   const ok = valid(entry) === want;

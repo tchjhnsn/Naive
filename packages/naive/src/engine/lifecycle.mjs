@@ -26,6 +26,7 @@ import { agentFromEnv, record } from "../core/provenance.mjs";
 import { phase as changePhase } from "./freshness.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
+import { validateFile } from "../records/validate.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -94,7 +95,7 @@ export function meet(dir, id, { evidence, by } = {}) {
   const schema = ec.source === "telos" ? "telos.schema.json" : "exit-criteria.schema.json";
   const scratch = mkdtempSync(join(tmpdir(), "exit-"));
   writeFileSync(join(scratch, "record.json"), JSON.stringify(rec));
-  const ok = spawnSync("python3", [join(root, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", join(scratch, "record.json")], { encoding: "utf8" });
+  const ok = validateFile(schema, join(scratch, "record.json"));
   rmSync(scratch, { recursive: true, force: true });
   if (ok.status !== 0) return { ok: false, error: `the record would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
   const tf = ventureFile(dir, ec.file);

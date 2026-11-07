@@ -77,6 +77,7 @@ import { coreOf, statementsIn, withCore } from "../engine/venture-core.mjs";
 import { telosView } from "../../../../frameworks/telos/adapter.mjs";
 import { migrated, scale } from "../engine/canonical.mjs";
 import { schemaNameOf } from "../records/index.mjs";
+import { validateFile } from "../records/validate.mjs";
 import {
   PHASES, allowed, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
 } from "../records/routes/routes.mjs";
@@ -356,7 +357,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const scratch = mkdtempSync(join(tmpdir(), "mentura-write-"));
     const tmp = join(scratch, basename(file));
     writeFileSync(tmp, text);
-    const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schemaNameOf(r.schema), "--file", tmp], { encoding: "utf8" });
+    const v = validateFile(schemaNameOf(r.schema), tmp);
     rmSync(scratch, { recursive: true, force: true });
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) };
     const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
@@ -364,7 +365,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (whole) {
       const held = mkdtempSync(join(tmpdir(), "mentura-write-")), copy = join(held, basename(file));
       writeFileSync(copy, whole);
-      const w = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "venture.schema.json", "--file", copy], { encoding: "utf8" });
+      const w = validateFile("venture.schema.json", copy);
       rmSync(held, { recursive: true, force: true });
       if (w.status !== 0) return { ok: false, error: `${file} does not match packages/naive/src/records/venture.schema.json, so nothing was written:\n${(w.stdout + w.stderr).trim()}`, fix: fix(r) };
     }

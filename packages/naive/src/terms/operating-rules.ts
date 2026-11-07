@@ -3,7 +3,7 @@
 // The default module is packages/naive/src/terms/operating-rules.json. A venture supplies its own
 // operating-rules.json, merged over the default. On a structured venture that file is
 // meta/operating-rules.json. Scalars and arrays in the overlay replace the default.
-// Objects merge key by key. The merged module is checked by packages/naive/src/records/validate.py, the
+// Objects merge key by key. The merged module is checked by packages/naive/src/records/validate.mjs, the
 // same checker the handoff schema uses. Three checks the schema does not express stay
 // here: jev.yes above jev.no, loss.p0 below loss.p1, alpha + beta below 1,
 // standing.costly at least standing.low, and a routing rule id is unique.
@@ -15,12 +15,11 @@
 //
 //   node packages/naive/src/terms/operating-rules-test.ts
 
-import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { validateFile } from "../records/validate.mjs";
 import type { OperatingRules } from "../records/types/records.d.ts";
 
 export const DEFAULT_MODULE = "packages/naive/src/terms/operating-rules.json";
@@ -35,15 +34,14 @@ export class OperatingRulesError extends Error {
 
 const isRecord = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x);
 
-/** Schema problems from packages/naive/src/records/validate.py. Empty when the document matches. A checker that cannot run throws. */
+/** Schema problems from packages/naive/src/records/validate.mjs. Empty when the document matches. A checker that cannot run throws. */
 function schemaProblems(value: unknown): string[] {
   const dir = mkdtempSync(join(tmpdir(), "operating-rules-"));
   const file = join(dir, "module.json");
   try {
     writeFileSync(file, JSON.stringify(value));
-    const script = fileURLToPath(new URL("../records/validate.py", import.meta.url));
-    const ran = spawnSync("python3", ["-I", script, "--schema", "operating-rules.schema.json", "--file", file], { encoding: "utf8" });
-    const text = `${ran.stdout ?? ""}\n${ran.stderr ?? ""}\n${ran.error?.message ?? ""}`.split("\n").map((line) => line.trim()).filter(Boolean);
+    const ran = validateFile("operating-rules.schema.json", file);
+    const text = `${ran.stdout}\n${ran.stderr}`.split("\n").map((line) => line.trim()).filter(Boolean);
     if (ran.status === 0) return [];
     // Exit 1 is the checker reporting that this module failed its schema. Every other exit is the tool.
     if (ran.status === 1) return text.length ? text : ["the module is not valid"];

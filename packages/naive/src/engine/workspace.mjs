@@ -16,13 +16,13 @@
 // Cross-venture reads (canRead): on by default; only published artifacts cross, never records or _private/.
 // Each one is logged in the workspace's meta/provenance.jsonl.
 
-import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { systemZone, validZone } from "./clock.mjs";
 import { initCalendar } from "./calendar.mjs";
 import { goals } from "./canonical.mjs";
+import { validateFile } from "../records/validate.mjs";
 
 export const WORKSPACE_FILE = "naive-workspace.json";
 const DEFAULTS = { cross_venture_reads: true, route_threshold: 0.8 };
@@ -224,7 +224,7 @@ export function renameWorkspace(root, name, { by } = {}) {
 
 /** The workspace file against its schema; null when it passes, else the error. */
 export function checkWorkspace(root) {
-  const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "workspace.schema.json", "--file", workspaceFile(root)], { encoding: "utf8" });
+  const v = validateFile("workspace.schema.json", workspaceFile(root));
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 }
 

@@ -5,6 +5,7 @@
 import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { lint, proposeFindings, ASPECTS } from "./premise-lint.mjs";
 import { approve } from "../engine/decisions.mjs";
@@ -144,11 +145,10 @@ ok(premiseFiles(d5).length === 2 && JSON.parse(readFileSync(openFile, "utf8")).q
 
 // A failed proposal prints why and exits non-zero.
 const d6 = fresh("Grow a good business.");
-const fakeBin = join(d6, "bin");
-mkdirSync(fakeBin);
-writeFileSync(join(fakeBin, "python3"), "#!/bin/sh\necho refused by the validator\nexit 1\n", { mode: 0o755 });
-const bad = spawnSync(process.execPath, [linterPath, d6, "--propose"], { encoding: "utf8", env: { ...process.env, PATH: fakeBin } });
-ok(bad.status === 1 && /refused/.test(bad.stderr), "a failed proposal prints the failure and exits non-zero");
+const preload = join(d6, "no-validator.mjs");
+writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.mjs", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
+const bad = spawnSync(process.execPath, ["--import", pathToFileURL(preload).href, linterPath, d6, "--propose"], { encoding: "utf8" });
+ok(bad.status === 1 && /could not propose .*no schema decision-record\.schema\.json/s.test(bad.stderr), "a failed proposal prints the failure and exits non-zero");
 
 // _private/ is never read: its answer reaches neither the output nor a filed decision.
 const SECRET = "the acquirer is Initech at nine million";

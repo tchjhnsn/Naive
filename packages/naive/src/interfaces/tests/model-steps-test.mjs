@@ -131,7 +131,7 @@ const v2 = await venture("run-venture");
   const pj2 = await provenanceOf(v2, "knowledge/judgments/customers-stage-ada.json");
   expect("S-9 ...or a person confirms the model's output", pj2.status === "person" && after.downstream_of_model.length === 0, JSON.stringify([pj2, after]));
   const p = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.mjs"), ws], { encoding: "utf8" });
-  const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "judgment.schema.json", "--file", join(v2, "knowledge/judgments/customers-summary-ada.json")], { encoding: "utf8" });
+  const v = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "judgment.schema.json", "--file", join(v2, "knowledge/judgments/customers-summary-ada.json")], { encoding: "utf8" });
   expect("judgments match their schema and the provenance chain holds", p.status === 0 && v.status === 0, p.stderr + v.stdout + v.stderr);
   const again = recorder(goodAnswers);
   const r2 = await run(v2, customers, { ask: again.ask });

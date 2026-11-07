@@ -39,3 +39,5 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 
 - `node packages/naive/src/terms/admit.ts` regenerates the admitted terms.
 - `node packages/naive/src/terms/engine-test.ts` tests the engine.
+
+The operating-rules loader and the ontology gate check a module or a handoff against its schema with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md). A checker that cannot run is still a tool error, never a verdict; the tests prove it with a validator that has no schemas (`useValidator`).

@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, merge, propose, rollback } from "./decisions.mjs";
 import { staleOf } from "./stale.mjs";
+import { Validator, useValidator } from "../records/validate.mjs";
 
 let failed = 0;
 const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
@@ -49,7 +50,7 @@ try {
   const conforms = (record, schema) => {
     const f = join(v, "conforms.tmp.json");
     writeFileSync(f, JSON.stringify(record));
-    const r = spawnSync("python3", [new URL("../records/validate.py", import.meta.url).pathname, "--schema", schema, "--file", f], { encoding: "utf8" });
+    const r = spawnSync(process.execPath, [new URL("../records/validate.mjs", import.meta.url).pathname, "--schema", schema, "--file", f], { encoding: "utf8" });
     rmSync(f);
     return r.status === 0;
   };
@@ -125,13 +126,9 @@ try {
   const nw = merge(v, "new-product", { by: "Founder" });
   expect("a merge cannot create a record missing its required fields", !nw.ok && /product\.schema\.json/.test(nw.error) && !existsSync(join(v, "product/new.json")), nw);
   // A validator that cannot run says nothing about the record: the merge is refused.
-  const brokenBin = mkdtempSync(join(tmpdir(), "no-validator-"));
-  writeFileSync(join(brokenBin, "python3"), "#!/bin/sh\necho 'validate.py needs jsonschema' >&2\nexit 1\n", { mode: 0o755 });
-  const path = process.env.PATH;
-  process.env.PATH = `${brokenBin}:${path}`;
+  const before2 = useValidator(new Validator(new Map()));
   const nv = merge(v, "stage", { by: "Founder" });
-  process.env.PATH = path;
-  rmSync(brokenBin, { recursive: true, force: true });
+  useValidator(before2);
   expect("a merge is refused when the validator cannot run", !nv.ok && /could not check venture\.json/.test(nv.error) && readFileSync(join(v, "venture.json"), "utf8") === before, nv);
 
   writeFileSync(join(v, "marketing/why.json"), JSON.stringify({ n: 1 }));

@@ -39,7 +39,7 @@ const setConfig = (c) => writeFileSync(cfgFile, json(c));
 const write = (route, input, extra = {}) => call({ venture: "gt", route, action: "write", input, workspace: ws, ...extra });
 const solution = (statement) => ({ venture: "gt", statement, alternatives: ["a receptionist"], evidence: [] });
 const product = (id, name) => ({ id, name, description: `${name}, for testing the gate` });
-const validRecord = (file, schema) => spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 // P-2: naive.config.json overrides the defaults.
 {

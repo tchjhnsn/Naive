@@ -256,8 +256,7 @@ async function devTest() {
     await new Promise((r) => setTimeout(r, 300));
     mkdirSync(ventureFile(v, "foundation/icp"), { recursive: true });
     writeFileSync(ventureFile(v, "foundation/icp/bad.json"), '{"id": 5}\n');
-    const python = spawnSync("python3", ["-c", "import jsonschema"]).status === 0;
-    await wait(python ? /✗ foundation\/icp\/bad\.json does not match packages\/naive\/src\/records\/icp-profile\.schema\.json/ : /foundation\/icp\/bad\.json changed/);
+    await wait(/✗ foundation\/icp\/bad\.json does not match packages\/naive\/src\/records\/icp-profile\.schema\.json/);
     return "ok";
   } finally { child.kill(); rmSync(ventureFile(v, "foundation/icp"), { recursive: true, force: true }); }
 }

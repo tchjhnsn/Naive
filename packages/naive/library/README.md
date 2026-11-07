@@ -11,3 +11,5 @@ The venture package library (EE-070, EE-071, step 6). A venture package is a fol
 | Path | Holds |
 |---|---|
 | [`packages/`](./packages) | One folder per venture package, each with its `package.json`. |
+
+The foundation package lists `packages/naive/src/records/validate.mjs` among its checks: records are validated in JavaScript, with no Python.

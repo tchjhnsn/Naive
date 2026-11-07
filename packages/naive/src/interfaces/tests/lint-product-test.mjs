@@ -79,7 +79,7 @@ const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
   put(dir, "naive.config.json", { product_lint: { rules: { "feature-no-job": { mode: "fail-closed" } } } });
   const shut = run(dir, "--json");
   expect("exit 1 only when a fail-closed rule has a finding", shut.status === 1 && json(shut).ok === false && json(shut).findings[0].mode === "fail-closed", shut.stdout + shut.stderr);
-  const schema = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "naive-config.schema.json", "--file", ventureFile(dir, "naive.config.json")], { encoding: "utf8" });
+  const schema = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "naive-config.schema.json", "--file", ventureFile(dir, "naive.config.json")], { encoding: "utf8" });
   expect("product_lint.rules is a valid naive.config.json key", schema.status === 0, schema.stdout + schema.stderr);
   put(dir, "naive.config.json", { product_lint: { rules: { "feature-no-job": { mode: "strict" } } } });
   const ignored = run(dir, "--json");
@@ -122,7 +122,7 @@ const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
   put(dir, "product/shop.json", card({ job: "Some other wording", features: [{ id: "payroll", name: "Payroll" }] }));
   const r = run(dir, "--json");
   expect("a feature with no job fires, and the product job string does not", [...rules(r)].join() === "feature-no-job", r.stdout);
-  const valid = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "product.schema.json", "--file", ventureFile(dir, "product/shop.json")], { encoding: "utf8" });
+  const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "product.schema.json", "--file", ventureFile(dir, "product/shop.json")], { encoding: "utf8" });
   expect("a product card with features still matches the product schema", valid.status === 0, valid.stdout + valid.stderr);
 }
 

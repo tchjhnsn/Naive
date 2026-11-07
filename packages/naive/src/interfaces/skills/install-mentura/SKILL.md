@@ -32,7 +32,7 @@ A layer the builder leaves off is written as `false` in `venture.json`. The need
 
 ```sh
 git clone <the Mentura repository> mentura
-cd mentura && npm install && node test.mjs   # Node 22.18+ and python3 with jsonschema (pip install jsonschema)
+cd mentura && npm install && node test.mjs   # Node 22.18+; python3 with jsonschema only for the reference checks (pip install jsonschema)
 ```
 
 ## 3. Start a venture, or point at existing ones

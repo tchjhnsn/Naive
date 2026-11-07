@@ -22,7 +22,7 @@ let failed = 0;
 const t = async (name, fn) => { try { await fn(); console.log(`ok    ${name}`); } catch (e) { failed++; console.log(`FAIL  ${name}\n      ${e.message}`); } };
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
 const FLAGS = ["--skip-install", "--no-git", "--layout", "flat"];
-const validate = (schema, file) => spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const validate = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 await t("init refuses without a venture to create, port or migrate", () => {
   const r = sh(["workspace", "init", "empty"]);

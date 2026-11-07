@@ -20,7 +20,7 @@ const expect = (name: string, ok: boolean, detail = "") => {
   if (!ok) failed++;
 };
 
-const python = (file: string) => spawnSync("python3", ["-I", join(root, "packages/naive/src/records/validate.py"), "--schema", "operating-rules.schema.json", "--file", file], { encoding: "utf8", cwd: root });
+const python = (file: string) => spawnSync(process.execPath, [join(root, "packages/naive/src/records/validate.mjs"), "--schema", "operating-rules.schema.json", "--file", file], { encoding: "utf8", cwd: root });
 type GateBody = { disposition?: { retries?: number; escalate_to?: string; retry_by?: string } };
 const gate = (file: string, fn: string, extra: string[] = []) => {
   const ran = spawnSync(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", fn, ...extra], { encoding: "utf8", cwd: root });
@@ -43,7 +43,7 @@ const throws = (fn: () => unknown) => {
   try { fn(); return ""; }
   catch (e) { return e instanceof Error ? e.message : String(e); }
 };
-/** The loader reports the validate.py line that names this field. */
+/** The loader reports the validate.mjs line that names this field. */
 const agrees = (file: string, field: string) => {
   const ran = python(file);
   const message = throws(() => readOperatingRules(file));

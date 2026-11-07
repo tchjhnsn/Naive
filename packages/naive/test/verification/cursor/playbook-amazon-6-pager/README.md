@@ -32,7 +32,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
 
 Copy `chart.mmd` from that directory over `out/chart.mmd`. Render with Pele 1.9.0 (`node render.mjs out/chart.mmd`, options `limit: 1000000`, `outputLimit: 8000000`, `maxEdges: 10000`), then shoot the SVG to PNG with headless Chrome at 2x (`png.sh` in the pstack kit's `naive-example/pele`).
 
-Replay the rules on a fixture venture (it needs `python3` with `jsonschema`):
+Replay the rules on a fixture venture:
 
 ```sh
 node packages/naive/test/verification/cursor/playbook-amazon-6-pager/replay.mjs

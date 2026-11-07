@@ -65,7 +65,7 @@ const rec = join(studio, "operations/activity/2026-10-28.json");
 const sum = join(studio, "operations/activity/_summary.json");
 assert.ok(written.includes(rec) && written.includes(sum));
 assert.equal(JSON.parse(readFileSync(rec, "utf8")).visibility, "internal");
-const validate = (schema, file) => spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const validate = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", file], { encoding: "utf8" });
 for (const [schema, file] of [["activity.schema.json", rec], ["activity-summary.schema.json", sum]]) {
   const v = validate(schema, file);
   if (/needs jsonschema/.test(v.stderr)) { console.log("activity: python jsonschema missing, schema checks skipped"); break; }

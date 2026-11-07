@@ -28,7 +28,7 @@ const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interf
 const routesMd = () => readFileSync(join(repo, "docs/reference/ROUTES.md"), "utf8");
 const json = (o) => JSON.stringify(o, null, 2) + "\n";
 const put = (f, o) => { mkdirSync(join(f, ".."), { recursive: true }); writeFileSync(f, json(o)); };
-const valid = (schema, o) => { const f = join(ws, `v-${Math.random().toString(36).slice(2)}.json`); writeFileSync(f, JSON.stringify(o)); const r = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" }); rmSync(f); return r.status === 0; };
+const valid = (schema, o) => { const f = join(ws, `v-${Math.random().toString(36).slice(2)}.json`); writeFileSync(f, JSON.stringify(o)); const r = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", f], { encoding: "utf8" }); rmSync(f); return r.status === 0; };
 
 const init = cli("init", join(ws, "ventures/vs"), "--id", "vs", "--layers", "purpose");
 expect("a venture to test in", init.status === 0, init.stderr);

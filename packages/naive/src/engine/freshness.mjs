@@ -40,6 +40,7 @@ import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "..
 import { connect, LOCAL, sourcesOf } from "../store/connectors/index.mjs";
 import { decisions as decisionMatrix, PHASES } from "./decisions.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { validateFile } from "../records/validate.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -358,7 +359,7 @@ function append(dir, event, by) {
   const line = { at: event.at, event: event.event, ...(event.target ? { target: event.target } : {}), ...(event.from ? { from: event.from, to: event.to } : {}), ...(event.reason ? { reason: event.reason } : {}), ...(event.pivot ? { pivot: true } : {}), by };
   const scratch = mkdtempSync(join(tmpdir(), "freshness-"));
   writeFileSync(join(scratch, "line.json"), JSON.stringify(line));
-  const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "freshness-log.schema.json", "--file", join(scratch, "line.json")], { encoding: "utf8" });
+  const v = validateFile("freshness-log.schema.json", join(scratch, "line.json"));
   rmSync(scratch, { recursive: true, force: true });
   if (v.status !== 0) throw new Error(`does not match packages/naive/src/records/freshness-log.schema.json:\n${(v.stdout + v.stderr).trim()}`);
   mkdirSync(dirname(ventureFile(dir, LOG)), { recursive: true });
@@ -430,7 +431,7 @@ export function phase(dir, to, { reason, by, now } = {}) {
   const next = { ...v, phase: to, ...(to !== "discovery" && !v.core ? { core: { promise: "", promised_to: "", must_not: "", competence: "" } } : {}) };
   const scratch = mkdtempSync(join(tmpdir(), "freshness-"));
   writeFileSync(join(scratch, "venture.json"), JSON.stringify(next));
-  const ok = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "venture.schema.json", "--file", join(scratch, "venture.json")], { encoding: "utf8" });
+  const ok = validateFile("venture.schema.json", join(scratch, "venture.json"));
   rmSync(scratch, { recursive: true, force: true });
   if (ok.status !== 0) return { ok: false, error: `venture.json would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
   const agent = by ?? agentFromEnv("person", "router");

@@ -27,7 +27,7 @@ node render.mjs packages/naive/test/verification/playbook-apple-launch/out/chart
 sh png.sh packages/naive/test/verification/playbook-apple-launch/out/chart.svg
 ```
 
-Replay the template on fixture ventures (needs `python3` with `jsonschema`, the same as `node test.mjs`):
+Replay the template on fixture ventures:
 
 ```sh
 node packages/naive/test/verification/playbook-apple-launch/replay.mjs

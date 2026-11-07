@@ -45,6 +45,7 @@ import { HOME, packages } from "../../engine/packages.mjs";
 import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "../../engine/release-read.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
 import { schemaNameOf } from "../../records/index.mjs";
+import { validateFile } from "../../records/validate.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -239,7 +240,7 @@ export async function survey(dir, { cache } = {}) {
         const tmp = mkdtempSync(join(tmpdir(), "naive-release-check-"));
         try {
           writeFileSync(join(tmp, "record.json"), wholeText);
-          const p = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schemaNameOf(ro.r.schema), "--file", join(tmp, "record.json")], { encoding: "utf8" });
+          const p = validateFile(schemaNameOf(ro.r.schema), join(tmp, "record.json"));
           return p.status === 0 ? null : (p.stdout + p.stderr).trim().split("\n").slice(-3).join(" ");
         } finally { rmSync(tmp, { recursive: true, force: true }); }
       });

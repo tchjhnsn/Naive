@@ -38,6 +38,7 @@ import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
 import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../core/venture-paths.mjs";
 import { readDataModel, schemaNameOf, venturePaths } from "../records/index.mjs";
+import { validateFile } from "../records/validate.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -274,7 +275,7 @@ const runValidator = (d, schema) => {
   const scratch = mkdtempSync(join(tmpdir(), "decision-"));
   const f = join(scratch, "d.json");
   writeFileSync(f, JSON.stringify(d));
-  const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" });
+  const v = validateFile(schema, f);
   rmSync(scratch, { recursive: true, force: true });
   return v;
 };
@@ -282,8 +283,8 @@ const validate = (d, schema = "decision-record.schema.json") => {
   const v = runValidator(d, schema);
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 };
-/** The schema errors of a record, one per line, or null when the validator could not run: validate.py
- *  prints schema errors to stdout and exits 1, and anything else is a failure to check. */
+/** The schema errors of a record, one per line, or null when the validator could not run: validate.mjs
+ *  reports schema errors to stdout and exits 1, and anything else is a failure to check. */
 const schemaErrors = (d, schema) => {
   const v = runValidator(d, schema);
   if (v.status === 0) return [];

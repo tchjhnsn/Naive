@@ -37,7 +37,7 @@ expect("default profiles follow cacheLife: stale, revalidate and expire, in seco
 expect("default profiles add per_phase and live, which Next.js has no need for", P.profiles.assumption.per_phase === true && P.profiles.live.live === true);
 let threw = null; try { F.seconds("soon"); } catch (e) { threw = e.message; }
 expect("a duration that is not one is refused, so a typo never means never stale", /not a duration/.test(threw ?? ""));
-const schemaCheck = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "freshness-profiles.schema.json", "--file", join(repo, "packages/naive/src/engine/freshness.json")], { encoding: "utf8" });
+const schemaCheck = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "freshness-profiles.schema.json", "--file", join(repo, "packages/naive/src/engine/freshness.json")], { encoding: "utf8" });
 expect("packages/naive/src/engine/freshness.json matches its schema", schemaCheck.status === 0, schemaCheck.stdout);
 
 // A venture with a solution, a product card derived from it, and a customer.
@@ -182,7 +182,7 @@ const log = await call({ venture: "clinic", route: "knowledge/freshness-log", ac
 expect("the freshness log is a record: read through knowledge/freshness-log", log.ok && Array.isArray(log.result) && log.result.some((e) => e.event === "phase") && log.result.some((e) => e.pivot), log.error);
 const lines = readFileSync(join(dir, "knowledge/freshness.jsonl"), "utf8").trim().split("\n");
 let valid = true;
-for (const l of lines) { const t = join(ws, "line.json"); writeFileSync(t, l); if (spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "freshness-log.schema.json", "--file", t]).status !== 0) valid = false; }
+for (const l of lines) { const t = join(ws, "line.json"); writeFileSync(t, l); if (spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "freshness-log.schema.json", "--file", t]).status !== 0) valid = false; }
 expect("every freshness log line matches its schema", valid && lines.length >= 8);
 const chain = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.mjs"), dir], { encoding: "utf8" });
 expect("every revalidate, verify and phase is in the provenance log, and the chain holds", chain.status === 0 && /every chain holds/.test(chain.stdout), chain.stderr);

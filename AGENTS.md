@@ -31,7 +31,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 ## Build and test
 
-- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` at the root (one root `package-lock.json`), and python3 with `jsonschema` for `packages/naive/src/records/validate.py`.
+- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` at the root (one root `package-lock.json`), and python3 with `jsonschema` only for the reference checks that compare `packages/naive/src/records/validate.mjs` with `packages/naive/src/records/validate.py`. Naive itself validates records in process with `validate.mjs` and needs no Python.
 - `node packages/naive/src/checks/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
 - `node packages/naive/src/records/record-types.ts` writes `packages/naive/src/records/types/records.d.ts`, one TypeScript type per `packages/naive/src/records/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node packages/naive/src/records/record-types-test.ts`).
 - `node packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
@@ -55,7 +55,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 - Code reads the schema files and the data model through `packages/naive/src/records/index.mjs` (`schemaFile`, `readSchema`, `readDataModel`, `recordPath`, `recordsIn` for a copy of the repository). `node packages/naive/src/checks/check-record-paths.ts` fails when code elsewhere builds such a path from the folder name, or when `packages/naive/src/records/validate.py` disagrees with the resolver; `node packages/naive/src/checks/check-record-paths-test.ts` breaks it on copies.
 - `node packages/naive/src/engine/bdd.mjs <file.feature>` runs Gherkin behaviors as tests, with step definitions in `<file>.steps.mjs`; behaviors are written first (EE-050).
 - `node packages/naive/src/functions/products/frameworks/product-anatomy/test.mjs` tests the Product Anatomy runner's role rules.
-- `node packages/naive/src/checks/test.mjs` tests the checkers on broken copies; `python3 packages/naive/src/records/validate.py` validates every record against its schema.
+- `node packages/naive/src/checks/test.mjs` tests the checkers on broken copies; `node packages/naive/src/records/validate.mjs` validates every record against its schema (`python3 packages/naive/src/records/validate.py` is the reference).
 
 ## Docs
 
