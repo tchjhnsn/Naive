@@ -11,6 +11,7 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { appendFileSync, closeSync, constants, existsSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
+import { blobHash, writeBlob } from "./blobs.mjs";
 import { currentSpan, emit } from "./instrumentation.mjs";
 import { ventureFile } from "./venture-paths.mjs";
 
@@ -175,10 +176,24 @@ export function actingAgent(by) {
  * Appends one entry for a file just written: a path relative to the venture folder, or, for a
  * record in another source (EE-037), its address (<source>://<path>) with the content's sha256
  * and the source's version, commit and pull request.
+ *
+ * The bytes the line's sha256 names go to the blob store (packages/naive/src/core/blobs.mjs) before
+ * the line is appended, so an as-of read can return them (packages/naive/src/store/as-of.mjs). With no
+ * sha256 and no content, they are the local file's bytes. A caller that passes content (a write to
+ * another source) has them stored when they hash to the sha256. A caller that passes only a sha256
+ * (a log append, a publish) stores no blob: an append-only log would otherwise keep a whole copy of
+ * itself per line.
  * @param {string} dir
- * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, source?: *, statement?: string, statements?: string[] }} entry
+ * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, content?: string | Buffer, source?: *, statement?: string, statements?: string[] }} entry
  */
-export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement, statements }) {
+export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, content, source, statement, statements }) {
+  // The blob first: a line written from here on always has its bytes in the store.
+  const bytes = content ?? (sha256 === undefined ? readFileSync(ventureFile(dir, entity)) : undefined);
+  if (bytes !== undefined) {
+    const h = blobHash(bytes);
+    if (sha256 === undefined) sha256 = h;
+    if (h === sha256) writeBlob(dir, bytes);
+  }
   // The chain is read and extended inside a lock, so two processes writing at once cannot both chain onto one line.
   const log = ventureFile(dir, LOG);
   const entry = withLockFile(join(dirname(log), `.${basename(log)}.lock`), () => {
@@ -188,7 +203,7 @@ export function record(dir, { entity, route, activity, agent, derived_from, deci
     const cur = currentSpan();
     const span = cur ? { trace_id: cur.trace_id, span_id: cur.span_id, ...(cur.session && cur.session !== cur.trace_id ? { session: cur.session } : {}) } : undefined;
     const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
-      derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, source, statement, statements, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+      derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, source, statement, statements, sha256, prev }).filter(([, v]) => v !== undefined));
     entry.hash = lineHash(prev, entry);
     appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\n");
     return entry;

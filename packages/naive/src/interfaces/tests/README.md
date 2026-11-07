@@ -10,6 +10,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 
 | Path | Holds |
 |---|---|
+| [`as-of-test.ts`](./as-of-test.ts) | The blob store and as-of reads ([`packages/naive/src/store/as-of.mjs`](../../store/as-of.mjs)): a record written through the router at known times read as of each, before the first, after a move and with a blob missing or damaged. It sits here and not in `store/` because it writes through the router, and store comes before router. |
 | [`agent-files-test.ts`](./agent-files-test.ts) | The agent filesystem over the router: ls, read, glob, grep, write, edit, a draft for an agent that decides a decision, and tool spans. |
 | [`hosted-runtime-test.ts`](./hosted-runtime-test.ts) | Hosted mode ([`packages/naive/src/core/runtime.mjs`](../../core/runtime.mjs)): each feature that reaches outside the tenant refuses with a message naming it and why, the host's hooks stand in, and without `NAIVE_RUNTIME` the laptop path still runs. |
 | [`gate-test.mjs`](./gate-test.mjs) | The write gate: `naive.config.json`, one gate per venture, who is acting. |
@@ -21,7 +22,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 | `lint-*-test.mjs` | The function lint suites (customers, finance, foundation, investors, legal, product, validation) run through their routes. The clean ventures they expect silence from are the examples in `packages/naive/src/records/examples/workspace` and `packages/naive/src/records/examples/software`. |
 | `decision-index-test.mjs`, `decision-reasons-test.mjs` | The live decision index and frozen decision reasons. |
 | [`validation-study-test.mjs`](./validation-study-test.mjs) | Interviews, feedback, bugs, telemetry, the beta gate. |
-| [`connectors-router-test.mjs`](./connectors-router-test.mjs) | The filesystem connector through the router: a mapped source, the catalog, the source-of-truth matrix and attributes. It moved here from [`packages/naive/src/store/connectors/eval.mjs`](../../store/connectors/eval.mjs) in step 4. |
+| [`connectors-router-test.mjs`](./connectors-router-test.mjs) | The filesystem connector through the router: a mapped source, the catalog, the source-of-truth matrix and attributes, and that a write to another source keeps its blob under `.naive/blobs/`. It moved here from [`packages/naive/src/store/connectors/eval.mjs`](../../store/connectors/eval.mjs) in step 4. |
 | [`delegation-test.mjs`](./delegation-test.mjs) | Delegation grants and the builder-is-not-verifier rule. It moved here in step 3 because it imports [`packages/naive/src/router/orchestration/setup.mjs`](../../router/orchestration/setup.mjs). It reads the role templates from [`packages/naive/template/governance/`](../../../template/README.md) and checks that a record naming the template's path before step 8 still resolves. |
 | `canonical-core-test.mjs`, `design-additions-test.mjs`, `structure-checks-test.mjs`, `visibility-test.mjs` | The canonical core, design additions, structure checks and field visibility. |
 
