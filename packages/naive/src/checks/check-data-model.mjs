@@ -10,7 +10,8 @@
 // listener schema and name their consumers; every SKILL.md
 // belongs to exactly one layer or package; a record type is a log exactly when its form is
 // json-lines, and every file in an example venture has a kind (record, log or derived), from its
-// record type or from the data model's files entries.
+// record type or from the data model's files entries; a typescript record type's paths end in .ts, and a
+// settles block sits only on a projected type and names only properties of its schema.
 //
 //   node packages/naive/src/checks/check-data-model.mjs          check, and list unchecked references
 //   node packages/naive/src/checks/check-data-model.mjs --md     print the layer relationships derived from the manifests
@@ -64,6 +65,21 @@ for (const r of types.values()) for (const ref of r.refs ?? []) {
 }
 // Kinds (hosted working copy design, section 2): an append-only record type is a log, and a log is append-only.
 for (const r of types.values()) if ((r.form === "json-lines") !== (r.kind === "log")) errors.push(`${r.id}: kind ${r.kind ?? "record"} with form ${r.form ?? "json"}; a record type is a log exactly when its form is json-lines`);
+// A typescript record (a recipe) is a .ts file. Its schema governs what the module exports, so validate.mjs never reads it.
+for (const r of types.values()) if (r.form === "typescript" && r.paths.some((p) => !p.endsWith(".ts"))) errors.push(`${r.id}: form typescript, so every path ends in .ts`);
+// settles (autoresearch design, "The metric"): only a projected type is scored, and each field it scores or forecasts
+// is a top-level property of its schema, scored one way only; a forecast field is a number (a probability).
+for (const r of types.values()) {
+  if (!r.settles) continue;
+  if (r.writer !== "projection") errors.push(`${r.id}: settles needs writer projection; only a projected record is scored`);
+  const props = r.schema && existsSync(records.recordPath(r.schema)) ? JSON.parse(readFileSync(records.recordPath(r.schema), "utf8")).properties ?? {} : {};
+  for (const f of Object.keys(r.settles.loss ?? {})) if (!(f in props)) errors.push(`${r.id}: settles.loss names ${f}, which is not a property of ${r.schema}`);
+  for (const f of Object.keys(r.settles.forecasts ?? {})) {
+    if (!(f in props)) errors.push(`${r.id}: settles.forecasts names ${f}, which is not a property of ${r.schema}`);
+    else if (props[f].type !== "number") errors.push(`${r.id}: settles.forecasts names ${f}, which is not a number in ${r.schema}`);
+    if (f in (r.settles.loss ?? {})) errors.push(`${r.id}: ${f} is both a loss field and a forecast in settles`);
+  }
+}
 // Every file in an example venture has a kind, read by its logical path (the path inside the venture folder).
 for (const f of all) {
   const at = f.match(/^packages\/naive\/src\/records\/examples\/[^/]+\/ventures\/[^/]+\/(.+)$/);

@@ -5,6 +5,153 @@
   "description": "The shape of packages/naive/src/records/data-model.json (EE-018): every record type of the ecosystem, the layer that owns it, its schema, where its records live and what each references. packages/naive/src/checks/check-data-model.mjs checks it against the repository.",
   "type": "object",
   "$defs": {
+    "settles": {
+      "type": "object",
+      "required": [
+        "horizon",
+        "cadence",
+        "loss",
+        "min_counts"
+      ],
+      "additionalProperties": false,
+      "description": "How a projected record type is scored (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"The metric\"): only a type with writer projection may carry it. The prediction is the record a recipe renders as of t; the settled record is what people and producers established about valid times up to t once the horizon passed. Settled loss is the weighted mean over (record, as-of point) rows of each field's loss, and a forecast field is scored by Brier against whether its resolving event arrived within its window. A null record loses every field. packages/naive/src/checks/check-data-model.mjs checks that each field named is a top-level property of the type's schema. The scorers are build plan item 5, not built",
+      "properties": {
+        "horizon": {
+          "$ref": "freshness-profiles.schema.json#/$defs/duration",
+          "description": "How long after an as-of point its outcome settles"
+        },
+        "cadence": {
+          "$ref": "freshness-profiles.schema.json#/$defs/duration",
+          "description": "The spacing of as-of points a plan draws"
+        },
+        "loss": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "fn"
+            ],
+            "additionalProperties": false,
+            "if": {
+              "properties": {
+                "fn": {
+                  "const": "abs-scaled"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "scale"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "scale"
+                ]
+              }
+            },
+            "properties": {
+              "fn": {
+                "enum": [
+                  "exact",
+                  "set-jaccard",
+                  "abs-scaled"
+                ],
+                "description": "The closed catalog. exact: 0 when equal, else 1. set-jaccard: 1 minus the Jaccard index of two lists taken as sets (by each entry's signal when entries carry one). abs-scaled: the absolute difference over scale, capped at 1"
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "abs-scaled only: the difference that costs a whole loss"
+              },
+              "weight": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "The field's weight in the record's loss; 1 when left out"
+              }
+            }
+          },
+          "description": "A loss per scored field, keyed by the field's name"
+        },
+        "forecasts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "resolved_by",
+              "window"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "resolved_by": {
+                "description": "What settles the forecast: a signal of one of these types about the subject from a producer a second producer confirmed, or from a person; or a person deciding or dismissing the decision the record proposed. An agent's write never resolves one",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "signals"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "signals": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "$ref": "signal-type.schema.json#/$defs/range"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "decision"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "decision": {
+                        "const": "decided-or-dismissed"
+                      }
+                    }
+                  }
+                ]
+              },
+              "window": {
+                "$ref": "freshness-profiles.schema.json#/$defs/duration",
+                "description": "How long after the as-of point the resolving event may arrive"
+              }
+            }
+          },
+          "description": "Forecast fields, each a probability from 0 to 1 in the record, keyed by the field's name. The forecast set is fixed, so a recipe that leaves one out still pays for every confirmed event"
+        },
+        "min_counts": {
+          "type": "object",
+          "required": [
+            "training",
+            "dev",
+            "holdout"
+          ],
+          "additionalProperties": false,
+          "description": "The fewest scored rows each window needs before a plan may be made",
+          "properties": {
+            "training": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "dev": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "holdout": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
     "kind": {
       "enum": [
         "record",
@@ -92,9 +239,10 @@
               "json-list",
               "markdown",
               "prose",
-              "json-lines"
+              "json-lines",
+              "typescript"
             ],
-            "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only"
+            "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it"
           },
           "kind": {
             "$ref": "#/$defs/kind"
@@ -105,6 +253,9 @@
               "projection"
             ],
             "description": "Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the gate refuses every other actor, a later build item"
+          },
+          "settles": {
+            "$ref": "#/$defs/settles"
           },
           "view_of": { "type": "string", "description": "This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written." },
           "decision_class": {

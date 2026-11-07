@@ -1,0 +1,378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "experiment.schema.json",
+  "title": "Experiment",
+  "description": "One line of a recipe's experiment log, <pattern>.experiments.jsonl beside the recipe (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"Keep and discard through the router\"). An experiment line is one write of the recipe, scored inside the write: keep (it becomes the tip as a held draft), discard (refused with this verdict) or fail (lint, a throw, a timeout or invalid output; logged and not counted against the budget). A holdout line is one holdout check a person's accept ran: one pass or fail bit. The log is append-only and hash-chained like provenance, written by the evaluator only, so an agent cannot supply a score. The dev evaluations and holdout checks spent under a plan are counted from it. Nothing writes it yet: scoring and the router hook are build plan items 5 and 6.",
+  "type": "object",
+  "required": [
+    "kind",
+    "id",
+    "at",
+    "pattern",
+    "plan",
+    "candidate",
+    "actor",
+    "prev",
+    "hash"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "experiment"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "base",
+          "verdict"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "result"
+              ]
+            },
+            {
+              "required": [
+                "over_holdout"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "holdout"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "result",
+          "over_holdout"
+        ],
+        "properties": {
+          "actor": {
+            "properties": {
+              "kind": {
+                "const": "person"
+              }
+            }
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "verdict"
+              ]
+            },
+            {
+              "required": [
+                "dev"
+              ]
+            },
+            {
+              "required": [
+                "training"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "enum": [
+              "keep",
+              "discard"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "dev"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "fail"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "reason"
+        ],
+        "not": {
+          "required": [
+            "dev"
+          ]
+        }
+      }
+    }
+  ],
+  "properties": {
+    "kind": {
+      "enum": [
+        "experiment",
+        "holdout"
+      ],
+      "description": "experiment: one write of the recipe, scored. holdout: one holdout check, run when a person accepts the tip"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "at": {
+      "$ref": "eval-plan.schema.json#/$defs/time"
+    },
+    "pattern": {
+      "$ref": "eval-plan.schema.json#/$defs/pattern"
+    },
+    "plan": {
+      "$ref": "eval-plan.schema.json#/$defs/sha",
+      "description": "The sha of the eval plan in force"
+    },
+    "candidate": {
+      "$ref": "eval-plan.schema.json#/$defs/sha",
+      "description": "sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.mjs). On a holdout line, the tip that was checked"
+    },
+    "base": {
+      "description": "The tip the candidate was edited from, or null for a recipe's first write. A write whose base is not the tip is refused before it is scored and logs no line",
+      "anyOf": [
+        {
+          "$ref": "eval-plan.schema.json#/$defs/sha"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "verdict": {
+      "enum": [
+        "keep",
+        "discard",
+        "fail"
+      ],
+      "description": "keep: beats the tip on dev by the margin, or is strictly smaller and no worse; it becomes the tip as a held draft. discard: refused with this verdict. fail: lint, a throw, a timeout or invalid output on training or dev; not counted against the budget"
+    },
+    "kept_as": {
+      "enum": [
+        "better",
+        "smaller"
+      ],
+      "description": "On a keep: better (gain above the margin) or smaller (a strictly smaller source that is no worse)"
+    },
+    "dev": {
+      "type": "object",
+      "required": [
+        "score",
+        "stderr",
+        "tip_score",
+        "margin",
+        "rows"
+      ],
+      "additionalProperties": false,
+      "description": "The one aggregate dev gives per experiment, scored against the tip on paired rows",
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The candidate's settled loss on dev; lower is better"
+        },
+        "stderr": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The standard error of the paired difference, from the block bootstrap seeded by the plan's sha"
+        },
+        "tip_score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "The tip's settled loss on the same rows, or null for a recipe's first write"
+        },
+        "margin": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The gain a keep needed: the larger of min_gain and twice stderr"
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The (record, as-of point) rows scored"
+        }
+      }
+    },
+    "training": {
+      "type": "object",
+      "required": [
+        "score",
+        "rows"
+      ],
+      "additionalProperties": false,
+      "description": "The training run's settled loss. Its per-row losses are shown by naive recipes check (not built), never logged here",
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "description": "On a holdout line, the one bit the check answers"
+    },
+    "over_holdout": {
+      "type": "boolean",
+      "description": "On a holdout line, true when the person accepted over a failed check (mentura accept --over-holdout, not built)"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why, in words. Required on a fail: which lint rule, throw, timeout or output check"
+    },
+    "actor": {
+      "$ref": "#/$defs/agent",
+      "description": "Who wrote the candidate (a person or an agent), or on a holdout line the person who accepted"
+    },
+    "span": {
+      "$ref": "#/$defs/span",
+      "description": "The judgment span of the evaluation in the venture's traces (EE-121), which the draft's provenance line names too"
+    },
+    "provenance": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "On a keep, the hash of the held draft's provenance line"
+    },
+    "prev": {
+      "$ref": "#/$defs/prev"
+    },
+    "hash": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "$defs": {
+    "agent": {
+      "type": "object",
+      "required": [
+        "kind",
+        "via"
+      ],
+      "additionalProperties": false,
+      "description": "Who acted, shaped as a provenance line's agent (provenance-entry.schema.json)",
+      "properties": {
+        "kind": {
+          "enum": [
+            "person",
+            "agent",
+            "unverified"
+          ],
+          "description": "unverified: a door with no sign-in said a person acted; the id is a claimed name"
+        },
+        "id": {
+          "type": "string",
+          "description": "A person's name or handle, or an agent's role id from the team plan"
+        },
+        "account": {
+          "type": "string",
+          "description": "The account a door with sign-in checked for this person"
+        },
+        "model": {
+          "type": "string",
+          "description": "An AI agent's model"
+        },
+        "session": {
+          "type": "string",
+          "description": "A link or id for the session that acted"
+        },
+        "harness": {
+          "type": "string",
+          "description": "The agent harness, such as Claude Code or Cursor, as it named itself"
+        },
+        "via": {
+          "enum": [
+            "cli",
+            "mcp",
+            "api",
+            "router",
+            "console"
+          ],
+          "description": "The interface the write came through"
+        }
+      },
+      "if": {
+        "required": [
+          "account"
+        ]
+      },
+      "then": {
+        "properties": {
+          "kind": {
+            "const": "person"
+          }
+        }
+      }
+    },
+    "span": {
+      "type": "object",
+      "required": [
+        "trace_id",
+        "span_id"
+      ],
+      "additionalProperties": false,
+      "description": "The trace span the write was made inside (traces/<session>.jsonl), so what changed points to the agent step that changed it",
+      "properties": {
+        "trace_id": {
+          "type": "string"
+        },
+        "span_id": {
+          "type": "string"
+        },
+        "session": {
+          "type": "string",
+          "description": "The trace file's session, when it differs from the trace id"
+        }
+      }
+    },
+    "prev": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64}|genesis)$",
+      "description": "The previous line's hash, or genesis for the first line"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 of prev followed by this line without its hash field, as JSON with sorted keys"
+    }
+  }
+}

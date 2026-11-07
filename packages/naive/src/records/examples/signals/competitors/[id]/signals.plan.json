@@ -1,0 +1,43 @@
+{
+  "pattern": "competitors/[id]/signals",
+  "version": 1,
+  "made": "2026-11-07T15:00:00Z",
+  "made_by": {
+    "kind": "person",
+    "id": "founder"
+  },
+  "horizon": "90d",
+  "gap": "90d",
+  "read_cut": "2025-09-15T00:00:00Z",
+  "windows": {
+    "training": [
+      "2025-06-02T00:00:00Z",
+      "2025-06-09T00:00:00Z",
+      "2025-06-16T00:00:00Z"
+    ],
+    "dev": [
+      "2025-12-15T00:00:00Z",
+      "2025-12-22T00:00:00Z"
+    ],
+    "holdout": [
+      "2026-04-06T00:00:00Z",
+      "2026-04-13T00:00:00Z"
+    ]
+  },
+  "weights": "uniform",
+  "min_gain": 0.01,
+  "bootstrap": {
+    "block": "7d",
+    "resamples": 1000
+  },
+  "budgets": {
+    "dev_evaluations": 40,
+    "holdout_checks": 3
+  },
+  "limits": {
+    "call_ms": 1000,
+    "wall_ms": 60000,
+    "memory_mb": 128
+  },
+  "sha": "87bef8237ed5af2a5e548d147e9039e5b510f0d43aeb9d46cc3367ec1f88a91a"
+}

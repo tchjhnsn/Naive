@@ -30,6 +30,8 @@
   "records": [
     "evidence",
     "eval-suite",
+    "eval-plan",
+    "experiment",
     "design-documents-registry",
     "benchmark",
     "agent-capability",

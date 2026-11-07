@@ -980,6 +980,46 @@
       },
       "why": "Written only by the signal projector beside a competitor; it fills when a listener hears signals about that competitor"
     },
+    "recipe": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "The code that renders a projected record; a venture needs one only once it projects records from signals"
+    },
+    "eval-plan": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Only a venture that tunes a recipe against outcomes needs a plan, and only once enough outcomes have settled to fill its windows"
+    },
+    "experiment": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "The log beside a recipe; it fills as recipe writes are scored, so it is needed exactly when its plan is"
+    },
+    "reception": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Written only by the projector beside a rendered record; it fills when the record is rendered through a recipe"
+    },
     "validation-interview": {
       "base": {
         "discovery": 0.7,
