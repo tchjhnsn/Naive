@@ -29,6 +29,8 @@ if (process.argv.includes("--md")) {
   }
   console.log(`\n### Retired\n\n| Noun | Status |\n| --- | --- |`);
   nouns.filter((n) => n.status === "retired").forEach((n) => console.log(`| ${n.noun} | retired; use ${n.replaced_by} |`));
+  // Exit only once stdout has drained: a pipe under load is written asynchronously, and exiting at once cut the table short.
+  await new Promise((done) => process.stdout.write("", done));
   process.exit(0);
 }
 

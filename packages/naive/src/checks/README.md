@@ -25,7 +25,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-governance.mjs`](./check-governance.mjs) | Checks each venture's ownership-and-control records (EE-022). |
 | [`check-integrations.mjs`](./check-integrations.mjs) | Checks every layer's tooling/integrations.json for the rules one entry's schema cannot state. |
 | [`check-nextjs-status.mjs`](./check-nextjs-status.mjs) | Checks docs/design/naive-nextjs-status.json against the Next.js translation ledger and the code. |
-| [`check-nouns.mjs`](./check-nouns.mjs) | Checks the system's nouns (EE-014). |
+| [`check-nouns.mjs`](./check-nouns.mjs) | Checks the system's nouns (EE-014). With `--md` it prints the ontology table and exits only once stdout has drained, so a busy pipe never gets a short table. |
 | [`check-people.mjs`](./check-people.mjs) | Checks venture types and people (EE-082) in a workspace. |
 | [`check-private.mjs`](./check-private.mjs) | Private records, fields, and sensitive streams never reach a model (EE-073). |
 | [`check-provenance.mjs`](./check-provenance.mjs) | Checks each venture's provenance log (<venture>/provenance.jsonl, EE-031). |
