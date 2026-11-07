@@ -20,6 +20,7 @@
   "projects": [
     {
       "route": "competitors/[id]/signals",
+      "subject_field": "competitor",
       "fields": {
         "funding": { "reducer": "append", "value": "props.round", "unique_by": ["props.round.series"] },
         "first_seen": { "reducer": "min", "value": "time" },
@@ -43,7 +44,7 @@
           "funding": [{ "series": "seed", "amount": 3000000, "currency": "USD", "support": "supported" }]
         }
       },
-      "note": "Two producers report the same seed round: it is listed once. The test fills each entry's signal with the address of the first signal that reported it."
+      "note": "Two producers report the same seed round: it is listed once. Each rendered entry also names the signal it came from, the earliest standing one that reported it; an expected entry that leaves signal out matches any."
     }
   ]
 }

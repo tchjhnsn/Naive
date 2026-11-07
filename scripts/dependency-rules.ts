@@ -3,7 +3,7 @@
 //   node scripts/dependency-rules.ts            check, exit 1 on a broken rule
 //   node scripts/dependency-rules.ts --graph    print the import graph between units
 //
-// Three rules:
+// Four rules:
 //
 //   acyclic       Units import each other without cycles. A unit is a folder of packages/naive/src, another folder
 //                 of packages/naive, another package under packages/, or else a tracked top-level folder. Today's cycles are listed in
@@ -15,6 +15,10 @@
 //   leaf          A folder listed under `leaves` in scripts/dependency-rules.json imports nothing in the repository
 //                 outside itself. packages/naive/src/records, the record types' resolver, is one: every unit reads the record
 //                 types through it, so it must sit below them all.
+//   private       A folder listed under `private` in scripts/dependency-rules.json is imported only by its own files and
+//                 by its front door, the module of the same name beside it (packages/naive/src/engine/signals.ts for
+//                 packages/naive/src/engine/signals). packages/naive/src/engine/signals, the pure signal render, is one:
+//                 only the signal engine calls it.
 //
 // An import is a relative specifier in `import ... from`, `export ... from`, `import "..."`, `import("...")` or
 // `require("...")` in a tracked .mjs, .js, .cjs, .ts or .tsx file, whose target exists. A specifier that names no file
@@ -25,9 +29,9 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, normalize, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export type Rules = { readonly known_cycles: readonly (readonly string[])[]; readonly leaves?: Readonly<Record<string, string>> };
+export type Rules = { readonly known_cycles: readonly (readonly string[])[]; readonly leaves?: Readonly<Record<string, string>>; readonly private?: Readonly<Record<string, string>> };
 export type Graph = ReadonlyMap<string, ReadonlyMap<string, number>>;
-export type Finding = { readonly rule: "acyclic" | "one-version" | "leaf"; readonly detail: string };
+export type Finding = { readonly rule: "acyclic" | "one-version" | "leaf" | "private"; readonly detail: string };
 
 const CODE = /\.(mjs|cjs|js|ts|tsx)$/;
 const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["'](\.{1,2}\/[^"']+)["']/g;
@@ -144,6 +148,29 @@ export function checkLeaves(root: string, leaves: Readonly<Record<string, string
   return out;
 }
 
+/** The front doors of a private folder: the module of the same name beside it. */
+export const frontDoors = (folder: string): string[] => [".ts", ".mts", ".mjs", ".js", ".cjs"].map((ext) => `${folder}${ext}`);
+
+/** Findings for the private rule: a file outside a private folder, other than its front door, that imports a file
+ *  inside it, or a private folder that holds no code. */
+export function checkPrivate(root: string, folders: Readonly<Record<string, string>>, files = tracked(root)): Finding[] {
+  const out: Finding[] = [];
+  for (const folder of Object.keys(folders).sort()) {
+    const inside = (p: string) => p.startsWith(`${folder}/`);
+    if (!files.some((f) => inside(f) && CODE.test(f) && existsSync(join(root, f)))) out.push({ rule: "private", detail: `${folder} holds no code; remove it from private in scripts/dependency-rules.json` });
+    const doors = new Set(frontDoors(folder));
+    for (const file of files) {
+      if (!CODE.test(file) || file.includes("node_modules/") || inside(file) || doors.has(file) || !existsSync(join(root, file))) continue;
+      for (const m of readFileSync(join(root, file), "utf8").matchAll(SPECIFIER)) {
+        const target = normalize(join(dirname(file), m[1]));
+        if (!inside(target) || !existsSync(join(root, target))) continue;
+        out.push({ rule: "private", detail: `${file} imports ${target}, but ${folder} is private: only its own files and ${folder}.ts may import it (${folders[folder]})` });
+      }
+    }
+  }
+  return out;
+}
+
 type Deps = Record<string, string>;
 type Manifest = {
   readonly workspaces?: readonly string[] | { readonly packages?: readonly string[] };
@@ -191,7 +218,7 @@ export function checkVersions(root: string): Finding[] {
 
 export function check(root: string): Finding[] {
   const rules = JSON.parse(readFileSync(join(root, "scripts/dependency-rules.json"), "utf8")) as Rules;
-  return [...checkCycles(cycles(graph(root)), rules), ...checkLeaves(root, rules.leaves ?? {}), ...checkVersions(root)];
+  return [...checkCycles(cycles(graph(root)), rules), ...checkLeaves(root, rules.leaves ?? {}), ...checkPrivate(root, rules.private ?? {}), ...checkVersions(root)];
 }
 
 if (process.argv[1] && relative(process.argv[1], fileURLToPath(import.meta.url)) === "") {
@@ -206,6 +233,6 @@ if (process.argv[1] && relative(process.argv[1], fileURLToPath(import.meta.url))
     const findings = check(root);
     for (const f of findings) console.log(`FAIL  ${f.rule}: ${f.detail}`);
     if (findings.length) process.exit(1);
-    console.log("pass  dependency rules: no new cycle between units, leaf folders import nothing else, one version per shared dependency");
+    console.log("pass  dependency rules: no new cycle between units, leaf folders import nothing else, private folders are imported only through their front door, one version per shared dependency");
   }
 }

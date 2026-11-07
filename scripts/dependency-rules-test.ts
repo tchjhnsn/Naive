@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, checkCycles, checkLeaves, checkVersions, cycles, graph } from "./dependency-rules.ts";
+import { check, checkCycles, checkLeaves, checkPrivate, checkVersions, cycles, graph } from "./dependency-rules.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 let passed = 0;
@@ -116,6 +116,34 @@ test("one version: peer dependencies count, and a workspaces glob names each pac
     "packages/notes.md": "not a package",
   });
   assert.deepEqual(checkVersions(r.dir).map((f) => f.detail), ["react: 19.3.1 in (root); ^19 in packages/ui"]);
+});
+
+test("private: an import from outside a private folder fails, naming the file and the target", () => {
+  const r = repo({
+    "packages/naive/src/engine/signals/render.ts": `import "./part.ts";\nexport {};`,
+    "packages/naive/src/engine/signals/part.ts": "export {};",
+    "packages/naive/src/engine/signals.ts": `import "./signals/render.ts";`,
+    "packages/naive/src/engine/other.ts": `import { x } from "./signals/render.ts";`,
+    "packages/naive/src/router/r.ts": `const m = await import("../engine/signals/part.ts");`,
+  });
+  const found = checkPrivate(r.dir, { "packages/naive/src/engine/signals": "the render" }, r.paths).map((f) => f.detail);
+  assert.deepEqual(found, [
+    "packages/naive/src/engine/other.ts imports packages/naive/src/engine/signals/render.ts, but packages/naive/src/engine/signals is private: only its own files and packages/naive/src/engine/signals.ts may import it (the render)",
+    "packages/naive/src/router/r.ts imports packages/naive/src/engine/signals/part.ts, but packages/naive/src/engine/signals is private: only its own files and packages/naive/src/engine/signals.ts may import it (the render)",
+  ]);
+});
+
+test("private: its own files and its front door pass; a private folder with no code must leave the list", () => {
+  const r = repo({ "a/p/x.ts": `import "./y.ts";`, "a/p/y.ts": "export {};", "a/p.mjs": `import "./p/x.ts";`, "a/q.ts": `// import "./p/gone.ts" names no file\nconst s = "./p/x.ts";` });
+  assert.deepEqual(checkPrivate(r.dir, { "a/p": "why" }, r.paths), []);
+  assert.match(checkPrivate(r.dir, { "a/gone": "why" }, r.paths)[0].detail, /a\/gone holds no code/);
+});
+
+test("private: an import of the real render from outside the signal engine fails the repository check", () => {
+  const rules = { known_cycles: [], private: { "packages/naive/src/engine/signals": "the render" } };
+  const r = repo({ "packages/naive/src/engine/signals/render.ts": "export {};", "packages/naive/src/checks/peek.ts": `import "../engine/signals/render.ts";` });
+  assert.equal(checkPrivate(r.dir, rules.private, r.paths).length, 1);
+  assert.equal(checkPrivate(root, rules.private).length, 0);
 });
 
 console.log(`${passed} tests passed`);

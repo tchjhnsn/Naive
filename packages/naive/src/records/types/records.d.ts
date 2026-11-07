@@ -397,7 +397,7 @@ export type DataModel = {
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
     kind?: DataModelKind;
-    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the gate refuses every other actor, a later build item */
+    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs) */
     writer?: "any" | "projection";
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;
@@ -2038,7 +2038,7 @@ export type LifecyclePlaybook = {
   }[];
 };
 
-/** The edge between a signal type and one consumer (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): the type range it hears, the consumer's criterion, and what happens to a signal that meets it. Noise is not a property of a signal: it is the outcome of one signal at one listener, so the same signal can be salient at one consumer and noise at another. A listener is not a file of its own. Listeners merge, like triggers, from naive.config.json listeners (a same-id listener replaces any other), each installed package's listeners, each frame's listens and each listed kit's listeners; naive.config.json listeners_off turns one off. The types a pull reads are derived from the listeners, so there is no subscription list. Nothing merges or evaluates listeners yet: that is a later build item. */
+/** The edge between a signal type and one consumer (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): the type range it hears, the consumer's criterion, and what happens to a signal that meets it. Noise is not a property of a signal: it is the outcome of one signal at one listener, so the same signal can be salient at one consumer and noise at another. A listener is not a file of its own. Listeners merge, like triggers, from naive.config.json listeners (a same-id listener replaces any other), each installed package's listeners, each frame's listens and each listed kit's listeners; naive.config.json listeners_off turns one off. The types a pull reads are derived from the listeners, so there is no subscription list. packages/naive/src/engine/signals/render.ts evaluates listeners; merging them from the four places is a later build item. */
 export type Listener = {
   /** Unique among the venture's listeners once merged; a same-id listener in naive.config.json replaces any other */
   id: string;
@@ -3599,7 +3599,7 @@ export type SignalLog = {
   published: string;
 };
 
-/** One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. Nothing renders projections yet: render, pull and check-signals are later build items. */
+/** One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. packages/naive/src/engine/signals/render.ts renders projections and worked cases; pull and check-signals are later build items. */
 export type SignalType = {
   $schema?: string;
   /** The type's id (competitor-funding); a signal names it as id@major.minor */
@@ -3642,6 +3642,8 @@ export type SignalTypePath = string;
 export type SignalTypeProjection = {
   /** The record route it writes, where [id] is the signal's subject: competitors/[id]/signals */
   route: string;
+  /** The record field that holds the signal's subject, the [id] of the route (competitor in competitors/[id]/signals, id in competitors/[id]). Left out, the record does not name its subject */
+  subject_field?: string;
   /** Create the record only when it is missing and never write it again: a person's master record (competitors/[id]) that a projection may start but never overwrite */
   once?: boolean;
   /** Record field to the fold that fills it */
@@ -3677,7 +3679,7 @@ export type SignalTypeCase = {
   note?: string;
 };
 
-/** One signal, an element of one signal type: an immutable, dated, content-addressed and rated statement that something happened outside the venture (signal library design, everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). It sits in a signal library at signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, or in a venture's local library at raw/signals/signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, and is never edited. Names follow CloudEvents 1.0, except that the CloudEvents source is producer (Naive already uses source for a knowledge source) and data is props. The id is the first 24 hex characters of the sha256 of the canonical JSON of every other field (keys sorted at every level, no whitespace; packages/naive/src/core/signal-id.ts), so anyone can check offline that an address names fixed content. A correction is a new signal that retracts or supersedes an earlier one, never an edit. Nothing reads signals yet: the pull, render and replay are later build items. */
+/** One signal, an element of one signal type: an immutable, dated, content-addressed and rated statement that something happened outside the venture (signal library design, everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). It sits in a signal library at signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, or in a venture's local library at raw/signals/signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, and is never edited. Names follow CloudEvents 1.0, except that the CloudEvents source is producer (Naive already uses source for a knowledge source) and data is props. The id is the first 24 hex characters of the sha256 of the canonical JSON of every other field (keys sorted at every level, no whitespace; packages/naive/src/core/signal-id.ts), so anyone can check offline that an address names fixed content. A correction is a new signal that retracts or supersedes an earlier one, never an edit. packages/naive/src/engine/signals/render.ts renders signals as pure functions; the pull and replay that read them from a library are later build items. */
 export type Signal = {
   /** The signal's address: the first 24 hex characters of the sha256 of the canonical JSON of every other field */
   id: SignalAddress;
