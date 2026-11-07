@@ -1,4 +1,4 @@
-// validate.ts against validate.py's jsonschema: the same verdict and the same failing paths on every record
+// validate.mjs against validate.py's jsonschema: the same verdict and the same failing paths on every record
 // in the repository and on mutants of each (a node set to null, to a string, to a number, a key removed, an
 // unknown key added), so every keyword the schemas use is exercised on both sides. The Python side runs
 // once over all cases. Without python3 and jsonschema it says so and skips the comparison; the
@@ -10,7 +10,9 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { ROOT, RECORDS, recordPath } from "./index.mjs";
-import { Validator, equal, recordFiles, registryOf, type Json } from "./validate.ts";
+import { Validator, equal, recordFiles, registryOf } from "./validate.mjs";
+
+type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 
 let failures = 0;
 const check = (ok: boolean, what: string) => { if (!ok) { failures++; console.log(`FAIL  ${what}`); } };
@@ -92,10 +94,10 @@ if (py.status !== 0) {
   cases.forEach((c, i) => {
     const got = pathsOf(c.doc, c.schema), want = expected[i];
     if (want.length) invalid++;
-    check(got.join("|") === want.join("|"), `${c.label}: validate.ts fails at [${got.join(", ")}], jsonschema at [${want.join(", ")}]`);
+    check(got.join("|") === want.join("|"), `${c.label}: validate.mjs fails at [${got.join(", ")}], jsonschema at [${want.join(", ")}]`);
   });
   console.log(`compared ${cases.length} cases with jsonschema (${invalid} invalid)`);
 }
 
-console.log(failures ? `${failures} failing` : "validate.ts agrees with validate.py");
+console.log(failures ? `${failures} failing` : "validate.mjs agrees with validate.py");
 process.exitCode = failures ? 1 : 0;
