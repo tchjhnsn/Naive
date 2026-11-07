@@ -980,6 +980,16 @@
       },
       "why": "Written only by the signal projector beside a competitor; it fills when a listener hears signals about that competitor"
     },
+    "research-program": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "A function's instructions for its researcher; a venture needs one only once it has recipes to improve, and the starter is copied in when the function is listed"
+    },
     "recipe": {
       "base": {
         "discovery": 0.05,

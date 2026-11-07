@@ -25,6 +25,7 @@ import { agentFromEnv, record } from "../core/provenance.mjs";
 import { routes, glob } from "../records/routes/routes.mjs";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.mjs";
 import { packages as packageFit } from "./packages.mjs";
+import { seedPrograms } from "./research-programs.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { git as runGit, isHosted, refusedBy } from "../core/runtime.mjs";
 import { schemaNameOf } from "../records/index.mjs";
@@ -170,6 +171,10 @@ export async function upgrade(dir, { reg = registry(), dry = false, git = true }
       for (const [from, to] of ctx.moved) record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: to, activity: "move", agent, derived_from: [from], note: `moved from ${from} (${m.decision ?? m.id})` }));
       for (const w of ctx.writes.filter((x) => x.log)) record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: w.path, activity: w.activity, agent, derived_from: w.derived_from, note: `${m.id}: ${w.note ?? "rewritten"}`, decision: m.decision ?? undefined }));
     }
+    // Research programs (autoresearch design): each listed function's starter, copied only where programs/<function>.md
+    // is missing, so a founder's program is never touched (packages/naive/src/engine/research-programs.mjs).
+    const programs = seedPrograms(dir, { dry });
+    if (!dry) for (const x of programs) record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: x.path, activity: "write", agent, derived_from: [x.template], note: `starter research program for ${x.function}, copied because it was missing; the venture's copy is the founder's from now on` }));
     // Pins (U-1, U-4): the framework, the channel, and every package the venture uses.
     const before = JSON.stringify(cfg);
     cfg.naive = { ...(cfg.naive ?? {}), version: p.to, channel: cfg.naive?.channel ?? "stable" };
@@ -184,7 +189,7 @@ export async function upgrade(dir, { reg = registry(), dry = false, git = true }
     cfg.packages = Object.fromEntries(Object.entries(now_).sort(([a], [b]) => a.localeCompare(b)));
     if (JSON.stringify(cfg) !== before) configChanged = true;
     const release = { version: p.to, from: p.from, at, venture: p.venture, channel: cfg.naive.channel, migrations: ran,
-      packages: p.packages.filter((x) => !x.missing).map((x) => ({ name: x.name, from: x.from, to: x.to })), guides: p.steps.map((s) => s.guide).filter(Boolean), escalated: [...ran.flatMap((r) => r.escalated), ...escalated] };
+      packages: p.packages.filter((x) => !x.missing).map((x) => ({ name: x.name, from: x.from, to: x.to })), guides: p.steps.map((s) => s.guide).filter(Boolean), escalated: [...ran.flatMap((r) => r.escalated), ...escalated], programs };
     if (!dry && (p.pending || configChanged)) {
       if (configChanged) { writeConfig(dir, cfg); record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: CONFIG, activity: "write", agent, note: `pinned Naive ${p.to} and ${Object.keys(cfg.packages).length} packages (U-1)` })); }
       const rel = `.release/upgrade-${p.to}.json`;
@@ -194,7 +199,7 @@ export async function upgrade(dir, { reg = registry(), dry = false, git = true }
       // Adapters installed in the venture (Z-4) are refreshed, so their copies of package skills follow the upgrade.
       release.adapters = await refreshAdapters(dir);
     }
-    return { ...p, dry, release, changed: !dry && (p.pending || configChanged) };
+    return { ...p, dry, release, changed: !dry && (p.pending || configChanged || programs.length > 0) };
   } finally {
     if (held === undefined) delete process.env.NAIVE_TRIGGERS_ACTIVE; else process.env.NAIVE_TRIGGERS_ACTIVE = held;
   }

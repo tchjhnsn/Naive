@@ -19,3 +19,4 @@ The business capabilities function (APQC 13.0, Develop and Manage Business Capab
 | [skills/foreshadowing-audit](./skills/foreshadowing-audit) | Skill: Run the V[N] → V[N+1] foreshadowing audit. |
 | [skills/industry-awareness](./skills/industry-awareness) | Skill: Map the operator's terminology to industry-standard terminology and surface existing industry solutions BEFORE the operator reinvents the wheel. |
 | [templates/glossary.md](./templates/glossary.md) | Template: package glossary |
+| [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/capabilities.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
