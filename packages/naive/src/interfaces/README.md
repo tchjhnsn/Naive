@@ -17,7 +17,7 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 | [`context-test.mjs`](./context-test.mjs) | Tests for context (packages/naive/src/router/context.mjs), instrumentation (packages/naive/src/core/instrumentation.mjs) and agent vitals (packages/naive/src/router/vitals.mjs). |
 | [`demo/`](./demo) | Demos: the decision harness and a live agent over MCP. |
 | [`dev/`](./dev) | `naive dev` setup and its test. |
-| [`harness/`](./harness) | The agent harness, its evals and examples. |
+| [`harness/`](./harness) | The agent harness, its evals and examples. Hosted (`NAIVE_RUNTIME=hosted`), `run.mjs` refuses to start, and `site.mjs` reads a site and judges it through the host's `site` and `judge` hooks, refusing without a `site` hook. |
 | [`mcp/`](./mcp) | The MCP server over the router. |
 | [`operator-console/`](./operator-console/README.md) | The operator console. |
 | [`plugin-mcp.json`](./plugin-mcp.json) | The Claude Code plugin's MCP server entry (EE-084). |

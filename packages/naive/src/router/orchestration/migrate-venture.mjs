@@ -22,6 +22,7 @@ import { agentFromEnv, record as prov } from "../../core/provenance.mjs";
 import { propose } from "../../engine/decisions.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
 import { recordPath } from "../../records/index.mjs";
+import { HostedRefusal, isHosted } from "../../core/runtime.mjs";
 
 export const PLAN = ".release/migrate-plan.json";
 const MAX_FILE = 512 * 1024;
@@ -56,6 +57,7 @@ export function scan(src) {
 
 /** Runs the agent on a prompt and returns its text. A login problem or refusal is an error that says so. */
 export function runAgent(prompt) {
+  if (isHosted()) throw new HostedRefusal("running the migration agent", "MENTURA_AGENT_CMD is ignored and Naive starts no claude process; pass the host's agent to plan(from, dir, { agent })");
   const cmd = process.env.MENTURA_AGENT_CMD ? process.env.MENTURA_AGENT_CMD.split(" ") : ["claude", "-p", "--output-format", "json", "--tools", "", "--strict-mcp-config"];
   const p = spawnSync(cmd[0], cmd.slice(1), { input: prompt, encoding: "utf8", maxBuffer: 1 << 26 });
   if (p.error) throw new Error(`could not run the agent (${cmd[0]}): ${p.error.message}`);

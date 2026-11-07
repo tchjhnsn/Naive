@@ -24,6 +24,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -139,15 +140,13 @@ export function verdicts(f, answers, facts = null) {
   return { premises: out, dichotomy };
 }
 
-function judgeCmd() {
-  if (process.env.NAIVE_JUDGE_CMD) return process.env.NAIVE_JUDGE_CMD;
-  return null;
-}
+const judgeCmd = () => envCommand("NAIVE_JUDGE_CMD") || null;
 async function ask(dir, req) {
   const cmd = judgeCmd();
-  if (!cmd) throw new Error("no judge: set NAIVE_JUDGE_CMD (a command that answers the Jev protocol)");
+  if (isHosted() && !hostHook("judge")) throw missingHook("judging a frame's premises", "judge");
+  if (!cmd && !isHosted()) throw new Error("no judge: set NAIVE_JUDGE_CMD (a command that answers the Jev protocol)");
   const { judge } = await import("./caching.mjs");
-  return judge(dir, req, { cmd, packages: [req.package].filter(Boolean) });
+  return judge(dir, req, { ...(cmd ? { cmd } : {}), packages: [req.package].filter(Boolean) });
 }
 
 // ---- run ----

@@ -20,6 +20,7 @@ import { humanText, transcriptFiles } from "./transcripts.mjs";
 import { addDays, localDate, daysBetween, zoneOf } from "./clock.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { findWorkspace } from "./workspace.mjs";
+import { HostedRefusal, isHosted } from "../core/runtime.mjs";
 
 export const GAP_MINUTES = 10;
 export const NUDGE_DAYS = 7;
@@ -93,6 +94,10 @@ export function activeMinutes(timestamps) {
 /** Per venture, per day: sessions, active minutes, messages, tokens in.
  *  @param {{ root: string, dir?: string, from?: string, to?: string }} opts */
 export function activity({ root, dir, from, to }) {
+  // Hosted, transcripts reach a venture as records: no folder outside the tenant (~/.claude/projects) is read.
+  if (isHosted() && !(dir && (resolve(dir) === resolve(root) || resolve(dir).startsWith(resolve(root) + sep)))) {
+    throw new HostedRefusal("reading harness transcripts", `${dir ?? "the transcript folder"} is outside the venture, and a hosted run reads nothing outside the tenant (such as ~/.claude/projects)`);
+  }
   const ventures = venturesUnder(root);
   const sessions = readSessions(dir);
   const rows = new Map(); // venture id -> day -> {files, stamps, chars, by}
@@ -167,7 +172,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const root = opt("venture") ? resolve(opt("venture")) : findRoot(process.cwd());
   if (!root) { console.error("no venture.json or workspace here or above: run naive activity inside a venture or workspace, or pass --venture <dir>"); process.exit(1); }
   for (const d of [opt("from"), opt("to")]) if (d && !/^\d{4}-\d{2}-\d{2}$/.test(d)) { console.error(`--from and --to take a date, YYYY-MM-DD: ${d}`); process.exit(2); }
-  const result = activity({ root, dir: resolve(opt("dir") ?? join(homedir(), ".claude/projects")), from: opt("from"), to: opt("to") });
+  let result;
+  try { result = activity({ root, dir: resolve(opt("dir") ?? join(homedir(), ".claude/projects")), from: opt("from"), to: opt("to") }); }
+  catch (e) { if (!(e instanceof HostedRefusal)) throw e; console.error(e.message); process.exit(2); }
   const written = args.includes("--write") ? writeActivity(result) : [];
   if (args.includes("--json")) { console.log(JSON.stringify({ ventures: result, written }, null, 2)); process.exit(0); }
   if (!result.length) console.log("no sessions matched a venture here");

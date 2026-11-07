@@ -26,6 +26,7 @@ import { routes, glob } from "../records/routes/routes.mjs";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.mjs";
 import { packages as packageFit } from "./packages.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { git as runGit, isHosted, refusedBy } from "../core/runtime.mjs";
 import { schemaNameOf } from "../records/index.mjs";
 import { validateFile } from "../records/validate.mjs";
 
@@ -100,7 +101,13 @@ export function plan(dir, { reg = registry() } = {}) {
 // The changes one migration makes, all through here, so a dry run reports them and a real run logs them.
 export function context(dir, { dry, git, cfg, at, onConfig }) {
   const moved = [], writes = [], escalated = [], notes = [], kept = [];
-  const tracked = (p) => git && spawnSync("git", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
+  const tracked = (p) => git && runGit("moving a tracked file with git mv", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
+  // Hosted, the move goes through the host's git working copy (tracked() is false without one).
+  const gitMv = (a, b) => {
+    if (!isHosted()) return execFileSync("git", ["mv", a, b], { cwd: dir, stdio: "pipe" });
+    const r = runGit("moving a tracked file with git mv", ["mv", a, b], { cwd: dir, stdio: "pipe" });
+    if (r.status !== 0) throw new Error(`git mv ${a} ${b} failed: ${String(r.stderr).trim()}`);
+  };
   const removeEmpty = (p) => {
     if (!existsSync(p) || !statSync(p).isDirectory()) return;
     for (const e of readdirSync(p, { withFileTypes: true })) if (e.isDirectory()) removeEmpty(join(p, e.name));
@@ -113,7 +120,7 @@ export function context(dir, { dry, git, cfg, at, onConfig }) {
       if (existsSync(ventureFile(dir, b)) && !moved.some(([, t]) => t === b)) throw new Error(`${b} already exists, so ${a} cannot move there; move one of them yourself and upgrade again`);
       if (!dry) {
         mkdirSync(dirname(ventureFile(dir, b)), { recursive: true });
-        if (tracked(a)) execFileSync("git", ["mv", a, b], { cwd: dir, stdio: "pipe" });
+        if (tracked(a)) gitMv(a, b);
         else renameSync(ventureFile(dir, a), ventureFile(dir, b));
       }
       moved.push([a, b]);
@@ -253,8 +260,11 @@ export function drop(dir, name) {
  * checkout with local changes, or one that cannot fast-forward, is left as it is.
  */
 export function updateFramework(root = repo) {
-  const git = (...a) => spawnSync("git", ["-C", root, ...a], { encoding: "utf8" });
-  if (git("rev-parse", "--is-inside-work-tree").stdout.trim() !== "true") return { ok: false, error: `${root} is not a git checkout: install Naive again from its repository` };
+  const git = (...a) => runGit("updating the installed framework", ["-C", root, ...a], { encoding: "utf8" });
+  const inside = git("rev-parse", "--is-inside-work-tree");
+  const refused = refusedBy(inside);
+  if (refused) return { ok: false, error: refused.message };
+  if (inside.stdout.trim() !== "true") return { ok: false, error: `${root} is not a git checkout: install Naive again from its repository` };
   if (git("status", "--porcelain", "--untracked-files=no").stdout.trim()) return { ok: false, error: `${root} has local changes: commit or stash them, then update` };
   const from = registry(root).framework, head = git("rev-parse", "HEAD").stdout.trim();
   const pull = git("pull", "--ff-only");

@@ -16,6 +16,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { needNow } from "./need-now.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { git, isHosted } from "../core/runtime.mjs";
 import { exitCriteria } from "./canonical.mjs";
 import { readDataModel, venturePaths } from "../records/index.mjs";
 
@@ -25,7 +26,9 @@ const days = (a, b) => a && b ? Math.round((new Date(b).getTime() - new Date(a).
 
 function firstSeen(file) {
   try {
-    const out = execFileSync("git", ["log", "--diff-filter=A", "--follow", "--format=%as", "--", file], { cwd: dirname(file), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim().split("\n").filter(Boolean);
+    const args = ["log", "--diff-filter=A", "--follow", "--format=%as", "--", file];
+    const log = isHosted() ? git("dating a record by its first commit", args, { cwd: dirname(file), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }) : null;
+    const out = (log ? (log.status === 0 ? String(log.stdout) : "") : execFileSync("git", args, { cwd: dirname(file), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })).trim().split("\n").filter(Boolean);
     if (out.length) return out[out.length - 1];
   } catch {}
   try { const j = load(file); if (j.updated || j.opened) return day(j.updated ?? j.opened); } catch {}

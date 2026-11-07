@@ -12,11 +12,11 @@ The modules that compose routes. Each one runs records through the router's `cal
 |---|---|
 | [`triggers.mjs`](./triggers.mjs) | Triggers that run after each write (M-12, E-7). A failed run is raised as a decision. `mentura triggers` shows them. |
 | [`setup.mjs`](./setup.mjs) | Setup in the model's harness (EE-083). It holds the questions, and each answer is a proposal the founder confirms. `naive setup` and the MCP setup tools use it. Pointing a function at a system runs the system's sync command when the app names one ([`packages/naive/src/core/sync.mjs`](../../core/sync.mjs)), and the state lists those systems under `syncs`. |
-| [`migrate-venture.mjs`](./migrate-venture.mjs) | `naive migrate` (EE-076). An agent rewrites a project as records, and each record is written through the router once a person decides. |
+| [`migrate-venture.mjs`](./migrate-venture.mjs) | `naive migrate` (EE-076). An agent rewrites a project as records, and each record is written through the router once a person decides. Hosted, `runAgent` refuses: the host passes its agent to `plan(from, dir, { agent })`. |
 | [`releases.mjs`](./releases.mjs) | The release rules (I-17, C-13): confirmed records frozen in, live holes named, the release card. |
 | [`build-release.mjs`](./build-release.mjs) | `naive build`, the command line over `releases.mjs`. |
 | [`venture-package.mjs`](./venture-package.mjs) | The venture package with the idea map's routing (EE-067, EE-061): `venturePackage(dir)` passes `route()` from the idea map into `packages()` in `packages/naive/src/engine/packages.mjs`, and it holds the command line for the `system/package` route. |
-| [`model-steps.mjs`](./model-steps.mjs) | Model steps (use model, EE-073): the payload code computes, the judgments a model still owes, and how code accepts, overrules or routes each answer. The route is `system/steps`. |
+| [`model-steps.mjs`](./model-steps.mjs) | Model steps (use model, EE-073): the payload code computes, the judgments a model still owes, and how code accepts, overrules or routes each answer. The route is `system/steps`. Hosted, `MENTURA_MODEL_CMD` is ignored and the host passes `ask` to `run`. |
 
 ## Run and test
 

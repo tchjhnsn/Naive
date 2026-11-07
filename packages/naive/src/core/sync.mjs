@@ -9,15 +9,18 @@
 // The command is run as `<command> --venture <dir>`. It writes into the venture (a money source writes
 // money/_summary.json and its streams) and exits 0. Its last stdout line may be JSON saying what it did:
 //   { "address": "sandbox", "fixture": true, "said": "from a saved answer (a fixture, not a live account)" }
-// Imports nothing in the repository.
+// Hosted (packages/naive/src/core/runtime.mjs), the variable is ignored and every system stays pointed.
+// Imports runtime.mjs only.
 
 import { spawnSync } from "node:child_process";
+import { isHosted } from "./runtime.mjs";
 
 /** The environment variable that names a system's sync command. @param {string} system */
 export const syncVariable = (system) => `NAIVE_SYNC_${String(system).toUpperCase().replace(/[^A-Z0-9]+/g, "_")}`;
 
 /** The sync command named for a system, or null. @param {string} system @param {NodeJS.ProcessEnv} [env] */
 export function syncCommand(system, env = process.env) {
+  if (isHosted()) return null; // hosted, NAIVE_SYNC_* is ignored: reaching a system is the host's own work
   const c = env[syncVariable(system)];
   return c && c.trim() ? c.trim() : null;
 }
