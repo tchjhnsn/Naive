@@ -21,7 +21,7 @@
         "rating": { "reliability": "B", "credibility": 2 },
         "predicates": [
           { "id": "in-our-markets", "field": "props.org.domain", "op": "exists" },
-          { "id": "same-currency", "field": "props.round.currency", "op": "in", "value": { "read": "foundation/icp.json#currencies" } }
+          { "id": "not-out-of-scope", "field": "props.org.name", "op": "not-in", "value": { "read": "foundation/icp/shop-owners.json#not" }, "why": "A company the ICP marks out of scope, such as the reseller the venture sells through, raises no decision" }
         ]
       },
       "then": "propose",
@@ -31,14 +31,14 @@
     {
       "id": "large-rounds-in-market",
       "hears": "funding-event@^1",
-      "consumer": { "route": "market/rounds" },
+      "consumer": { "route": "competitors/[id]" },
       "criterion": {
         "predicates": [
           { "id": "ten-million-or-more", "field": "props.amount", "op": "gte", "value": 10000000, "why": "Only rounds that move the market" }
         ]
       },
       "then": "revalidate",
-      "note": "Hears the round part of every competitor-funding signal; a three million seed round is noise here."
+      "note": "Hears the round part of every competitor-funding signal. A round of ten million or more may change how the venture stands toward that competitor, so it marks the person's master record stale for review; a three million seed round is noise here."
     }
   ],
   "listeners_off": []
