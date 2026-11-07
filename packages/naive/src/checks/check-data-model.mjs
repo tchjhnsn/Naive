@@ -7,7 +7,9 @@
 // layer or one package; a layer that owns a record is of that record's layer; a package
 // declares use_model (an array, empty when it calls no model) and at most one skill;
 // layers and packages read and write only known types they do not own; every SKILL.md
-// belongs to exactly one layer or package.
+// belongs to exactly one layer or package; a record type is a log exactly when its form is
+// json-lines, and every file in an example venture has a kind (record, log or derived), from its
+// record type or from the data model's files entries.
 //
 //   node packages/naive/src/checks/check-data-model.mjs          check, and list unchecked references
 //   node packages/naive/src/checks/check-data-model.mjs --md     print the layer relationships derived from the manifests
@@ -18,7 +20,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
-import { recordsIn } from "../records/index.mjs";
+import { globRegExp, pathKind, recordsIn } from "../records/index.mjs";
 
 // EE_ROOT points the check at another copy of the repository (used by packages/naive/src/checks/test.mjs).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..", import.meta.url).pathname;
@@ -36,8 +38,7 @@ const files = (dir) => readdirSync(join(root, dir), { withFileTypes: true }).fla
 // copy outside git, as the tests use, is walked instead.
 const tracked = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" });
 const all = tracked.status === 0 && tracked.stdout.trim() && !process.env.EE_ROOT ? tracked.stdout.trim().split("\n").filter((f) => existsSync(join(root, f))) : files(".").map((f) => relative(".", f));
-const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
-const matches = (g) => all.filter((f) => glob(g).test(f));
+const matches = (g) => all.filter((f) => globRegExp(g).test(f));
 
 // Record types.
 const types = new Map();
@@ -59,12 +60,22 @@ for (const r of types.values()) for (const ref of r.refs ?? []) {
   if (ref.checked_by && !existsSync(join(root, ref.checked_by))) errors.push(`${r.id}.${ref.field}: check ${ref.checked_by} not found`);
   if (!ref.checked_by) warnings.push(`${r.id}.${ref.field} -> ${ref.to}: nothing checks this reference yet`);
 }
+// Kinds (hosted working copy design, section 2): an append-only record type is a log, and a log is append-only.
+for (const r of types.values()) if ((r.form === "json-lines") !== (r.kind === "log")) errors.push(`${r.id}: kind ${r.kind ?? "record"} with form ${r.form ?? "json"}; a record type is a log exactly when its form is json-lines`);
+// Every file in an example venture has a kind, read by its logical path (the path inside the venture folder).
+for (const f of all) {
+  const at = f.match(/^packages\/naive\/src\/records\/examples\/[^/]+\/ventures\/[^/]+\/(.+)$/);
+  if (!at) continue;
+  try {
+    if (!pathKind(at[1], model)) errors.push(`${f}: no kind; no record type or files entry in packages/naive/src/records/data-model.json names it`);
+  } catch (e) { errors.push(`${f}: ${/** @type {Error} */ (e).message}`); }
+}
 for (const c of model.records.filter((r) => r.contains)) for (const t of c.contains) if (!types.has(t)) errors.push(`${c.id}: contains unknown record type ${t}`);
 
 // Every JSON file is a record of some type; every schema file governs one.
 const claimed = new Set([...types.values()].flatMap((r) => r.files));
 // An ignore path may be a glob (`*` within a folder, `**/` across folders), as record type paths are.
-const ignorePatterns = model.ignore.map((i) => glob(i.path));
+const ignorePatterns = model.ignore.map((i) => globRegExp(i.path));
 const isIgnored = (f) => ignorePatterns.some((re) => re.test(f));
 // Schemas are compared by absolute file, so a stored path and a tracked path name the same file wherever the record types sit.
 const schemas = new Set([...types.values()].map((r) => r.schema).filter(Boolean).map((s) => records.recordPath(s)));

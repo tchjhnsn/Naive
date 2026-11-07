@@ -1,6 +1,6 @@
 {
   "version": "0.5.0",
-  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder).",
+  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder). Kinds (record, log, derived) tell a host how to commit each file in a venture: a record type's kind defaults to record, and files names the venture files no record type covers.",
   "layers": [
     "purpose",
     "knowledge",
@@ -817,6 +817,7 @@
       "level": "venture",
       "schema": "packages/naive/src/records/freshness-log.schema.json",
       "form": "json-lines",
+      "kind": "log",
       "paths": [
         "instance/**/knowledge/freshness.jsonl",
         "packages/naive/src/records/examples/**/knowledge/freshness.jsonl"
@@ -1505,6 +1506,7 @@
       "level": "venture",
       "schema": "packages/naive/src/records/provenance-entry.schema.json",
       "form": "json-lines",
+      "kind": "log",
       "paths": [
         "instance/**/provenance.jsonl",
         "packages/naive/src/records/examples/**/provenance.jsonl"
@@ -1525,6 +1527,7 @@
       "schema": "packages/naive/src/records/trace-span.schema.json",
       "generator": "packages/naive/src/engine/generators/trace-span.mjs",
       "form": "json-lines",
+      "kind": "log",
       "paths": [
         "instance/**/traces/*.jsonl",
         "packages/naive/src/records/examples/**/traces/*.jsonl"
@@ -2047,6 +2050,7 @@
       "level": "venture",
       "schema": "packages/naive/src/records/telemetry.schema.json",
       "form": "json-lines",
+      "kind": "log",
       "paths": [
         "instance/**/.naive/telemetry.jsonl"
       ],
@@ -2245,5 +2249,32 @@
       "path": "naive.data-model.json",
       "reason": "An app's own record types and ignore entries, merged into this data model by packages/naive/src/records when the file sits at the root of the repository being checked; not a record"
     }
+  ],
+  "files": [
+    {"path": "instance/**/README.md", "kind": "record", "reason": "A folder's README: prose a venture keeps beside its records, written whole"},
+    {"path": "instance/**/AGENTS.md", "kind": "record", "reason": "The venture's map for agents, written whole"},
+    {"path": "instance/**/.gitkeep", "kind": "record", "reason": "An empty marker that keeps a folder in git"},
+    {"path": "instance/**/.gitignore", "kind": "record", "reason": "A venture folder's git ignore rules, such as money/.gitignore for synced bank streams"},
+    {"path": "instance/**/operations/handoffs/*.md", "kind": "record", "reason": "A handoff's brief beside its handoff record, read by packages/naive/src/checks/check-execution.mjs"},
+    {"path": "instance/**/governance/departments/**/charter.md", "kind": "record", "reason": "A department's charter in prose beside its department record"},
+    {"path": "instance/**/governance/founder-agreement.md", "kind": "record", "reason": "The founder agreement in prose beside governance/founder-agreement.json"},
+    {"path": "instance/**/governance/agreements/*.md", "kind": "record", "reason": "A signed agreement in prose"},
+    {"path": "instance/**/knowledge/research/*.md", "kind": "record", "reason": "A research note the venture's evidence cites"},
+    {"path": "instance/**/.naive/decision-index.json", "kind": "derived", "reason": "The live decision index's cache, rebuilt on each run (packages/naive/src/engine/decision-index.mjs)"},
+    {"path": "instance/**/.naive/cache/**/*", "kind": "derived", "reason": "The venture's route cache (packages/naive/src/engine/caching.mjs), which prune and clear may drop"},
+    {"path": "instance/**/.naive/types/**/*", "kind": "derived", "reason": "Types written by naive typegen from the route table and the MCP tools"},
+    {"path": "instance/**/.naive/upgrade/**/*", "kind": "derived", "reason": "A staged upgrade's copy of the venture (packages/naive/src/engine/upgrades.mjs), discarded or landed"},
+    {"path": "instance/**/.naive/publish/**/*", "kind": "derived", "reason": "Published frameworks built from the venture's folder (packages/naive/src/engine/user-frameworks.mjs)"},
+    {"path": "instance/**/.naive/decision-index-history.jsonl", "kind": "log", "reason": "Rank history of the decision index, one line per re-score"},
+    {"path": "instance/**/.naive/trigger-errors.jsonl", "kind": "log", "reason": "Failed trigger runs, one line each (packages/naive/src/router/orchestration/triggers.mjs)"},
+    {"path": "instance/**/.naive/lint-findings.jsonl", "kind": "log", "reason": "Each publish lint run's findings (packages/naive/src/engine/publish-lint.mjs)"},
+    {"path": "instance/**/.naive/events.jsonl", "kind": "log", "reason": "Instrumentation events when instrumentation is on (packages/naive/src/core/instrumentation.mjs)"},
+    {"path": "instance/**/.naive/triggers.json", "kind": "record", "reason": "The trigger cursor and every run's state; not rebuildable, so kept whole"},
+    {"path": "instance/**/.naive/beta.json", "kind": "record", "reason": "The plugin beta's unlock state per tester (packages/naive/src/engine/beta-gate.mjs)"},
+    {"path": "instance/**/.naive/adapters.json", "kind": "record", "reason": "What the harness adapters wrote, so an upgrade never overwrites a file it did not write"},
+    {"path": "instance/**/.naive/stale.json", "kind": "record", "reason": "Summaries marked stale when a source changed (packages/naive/src/engine/stale.mjs)"},
+    {"path": "instance/**/.naive/telemetry-sent.json", "kind": "record", "reason": "How far the telemetry log has been sent"},
+    {"path": "instance/**/.naive/telemetry-salt", "kind": "record", "reason": "The per-venture salt that hashes the venture id in telemetry; never sent"},
+    {"path": "instance/**/.naive/.gitignore", "kind": "record", "reason": "Keeps .naive/ out of git"}
   ]
 }

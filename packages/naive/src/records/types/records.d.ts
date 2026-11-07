@@ -357,6 +357,7 @@ export type DataModel = {
     generator?: string;
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
+    kind?: DataModelKind;
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;
     /** The decision class (packages/naive/template/governance/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032) */
@@ -374,6 +375,13 @@ export type DataModel = {
     }[];
     note?: string;
   }[];
+  /** Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.mjs pathKind reads them together with the record types */
+  files?: {
+    /** A glob inside any venture folder, written with the instance/**\/ prefix venture-level record paths carry */
+    path: string;
+    kind: DataModelKind;
+    reason: string;
+  }[];
   ignore: {
     path: string;
     reason: string;
@@ -381,6 +389,9 @@ export type DataModel = {
   }[];
   [key: string]: unknown;
 };
+
+/** What a host does with the file when it commits a venture's working copy. record (the default): written whole through the store. log: append-only, so a commit may only add lines at the end. derived: a cache Naive rebuilds, which a host may keep or drop */
+export type DataModelKind = "record" | "log" | "derived";
 
 /** One company in the fund's pipeline (deals/<id>.json), from sourced to invested or passed. An investment it makes becomes a nested venture under portfolio/. */
 export type Deal = {
