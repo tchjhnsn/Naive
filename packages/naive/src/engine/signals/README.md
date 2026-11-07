@@ -28,4 +28,4 @@ This folder is private. Only its own files and its front door, the signal engine
 
 ## Not built
 
-- `check-signals` (item 7) and kits' listeners (item 13). The projector-only rule (item 4), pull, routes and the CLI (item 5) and the `competitors` package (item 6) are built.
+- Kits' listeners (item 13). The projector-only rule (item 4), pull, routes and the CLI (item 5), the `competitors` package (item 6) and `check-signals` (item 7, [`packages/naive/src/checks/check-signals.ts`](../../checks/check-signals.ts), which renders every worked case through the front door) are built.
