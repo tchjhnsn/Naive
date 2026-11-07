@@ -1,0 +1,29 @@
+{
+  "id": "funding-event",
+  "version": "1.0.0",
+  "title": "Funding event",
+  "description": "A round of funding. A part that competitor-funding composes at round; a listener for funding-event@^1 hears the round of every competitor-funding signal, which is how a frame watches the market's rounds without naming a company.",
+  "props": {
+    "type": "object",
+    "required": ["series", "amount", "currency"],
+    "additionalProperties": false,
+    "properties": {
+      "series": { "enum": ["pre-seed", "seed", "series-a", "series-b", "series-c", "later", "debt", "grant"] },
+      "amount": { "type": "number", "minimum": 0 },
+      "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+    }
+  },
+  "projects": [],
+  "freshness": { "max_age": "30d" },
+  "cases": [
+    {
+      "id": "informs-listeners-only",
+      "given": [
+        { "subject": "acme-robotics", "time": "2026-11-05", "props": { "series": "seed", "amount": 3000000, "currency": "USD" } }
+      ],
+      "expect": {},
+      "note": "It projects nothing by itself; the composite competitor-funding folds it into a competitor's record, and edge listeners (propose, revalidate) hear it directly."
+    }
+  ],
+  "note": "Open type in the competitors package (the implicit library naive)."
+}

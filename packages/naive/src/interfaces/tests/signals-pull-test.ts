@@ -65,36 +65,44 @@ const funding = (producer: string, series: string, amount: number, time: string)
 
 try {
   cpSync(join(repo, "packages/naive/src/records/examples/signals/library"), join(ws, "library"), { recursive: true });
-  const venture = (id: string, listeners: unknown[]) => {
+  // The shared library publishes the competitors package's types as they are, so one type id and version means one
+  // content wherever the venture reads it.
+  rmSync(join(ws, "library/types"), { recursive: true });
+  cpSync(join(repo, "packages/naive/library/packages/competitors/signals/types"), join(ws, "library/types"), { recursive: true });
+  const venture = (id: string, listeners: unknown[], off: string[] = []) => {
     const made = node("packages/naive/src/interfaces/cli/mentura.mjs", "init", join(ws, "ventures", id), "--id", id, "--layers", "purpose");
     if (made.status !== 0) throw new Error(made.stderr);
     const dir = join(ws, "ventures", id);
     const cfg = existsSync(join(dir, "naive.config.json")) ? read(join(dir, "naive.config.json")) as Record<string, unknown> : {};
-    writeFileSync(join(dir, "naive.config.json"), JSON.stringify({ ...cfg, listeners }, null, 2) + "\n");
+    writeFileSync(join(dir, "naive.config.json"), JSON.stringify({ ...cfg, listeners, ...(off.length ? { listeners_off: off } : {}) }, null, 2) + "\n");
     mkdirSync(join(dir, "knowledge"), { recursive: true });
     writeFileSync(join(dir, "knowledge/sources.json"), JSON.stringify(sources, null, 2) + "\n");
     return dir;
   };
-  // alpha creates competitors from signals, tracks their rounds, proposes a decision on a well-rated rival raise,
-  // and marks a competitor stale on a round of ten million or more.
+  // The competitors package's listeners apply to every venture unless it turns them off. alpha replaces
+  // track-competitors and rival-raised with its own, and turns off the rest: it creates competitors from signals,
+  // tracks their rounds, proposes a decision on a well-rated rival raise, and marks a competitor stale on a round of
+  // ten million or more.
   const alpha = venture("alpha", [
     { id: "competitor-master", hears: "organization@^1", consumer: { route: "competitors/[id]" }, then: "project", note: "Every company a market signal names is a competitor" },
     TRACK,
     { id: "rival-raised", hears: "competitor-funding@^1", consumer: { decision: "rival-raised" }, criterion: { rating: { reliability: "B", credibility: 2 }, predicates: [{ id: "in-our-markets", field: "props.org.domain", op: "exists" }] }, then: "propose", max_age: "14d", note: "Bears on when to raise" },
     { id: "big-rounds", hears: "funding-event@^1", consumer: { route: "competitors/[id]" }, criterion: { predicates: [{ id: "ten-million-or-more", field: "props.amount", op: "gte", value: 10000000, why: "Only rounds that move the market" }] }, then: "revalidate" },
-  ]);
-  // beta tracks only companies a person already made competitors.
-  const beta = venture("beta", [TRACK]);
+  ], ["name-competitors", "track-launches", "launch-revalidates-stance"]);
+  // beta tracks only companies a person already made competitors: it turns off every other package listener.
+  const beta = venture("beta", [TRACK], ["name-competitors", "rival-raised", "track-launches", "launch-revalidates-stance"]);
   const signalsFile = (dir: string) => join(dir, "competitors/acme-robotics/signals.json");
   const masterFile = (dir: string) => join(dir, "competitors/acme-robotics.json");
   const projectorLines = (dir: string, file: string) => (entries(dir) as { entity: string; agent?: { kind?: string; id?: string }; derived_from?: string[] }[]).filter((e) => e.entity === file && e.agent?.id === "projector");
 
   expect("the router route of a rendered record comes from the data model", routerRoute("competitors/acme-robotics/signals.json") === "purpose/competitor-signals/acme-robotics" && routerRoute("competitors/acme-robotics.json") === "purpose/competitor/acme-robotics");
-  expect("listeners merge from naive.config.json", listenersOf(alpha).listeners.map((l) => l.id).join() === "big-rounds,competitor-master,rival-raised,track-competitors", show(listenersOf(alpha)));
+  expect("naive.config.json listeners replace the package's of the same id, and listeners_off turns the rest off", listenersOf(alpha).listeners.map((l) => `${l.id}:${l.from}`).join() === "big-rounds:naive.config.json,competitor-master:naive.config.json,rival-raised:naive.config.json,track-competitors:naive.config.json", show(listenersOf(alpha)));
+  expect("beta hears only its own track-competitors", listenersOf(beta).listeners.map((l) => l.id).join() === "track-competitors", show(listenersOf(beta)));
 
   // ---- alpha's first pull ----
   const a1 = await pull(alpha, { now: NOW });
   expect("alpha's first pull writes the master record and the projected record", a1.ok && a1.written.join() === "competitors/acme-robotics.json,competitors/acme-robotics/signals.json", show(a1));
+  expect("the library's types and the package's are one content: no conflict is reported", !a1.problems.some((x) => /differs between the libraries/.test(x)), show(a1.problems));
   const rendered = read(signalsFile(alpha)) as { competitor: string; funding: { amount: number; signal: string; support: string }[]; first_seen: string; last_seen: string };
   expect("the projected record says what the signal says", rendered.competitor === "acme-robotics" && rendered.first_seen === "2026-11-05" && rendered.funding.length === 1 && rendered.funding[0].signal === ORIGINAL && rendered.funding[0].support === "supported", show(rendered));
   expect("the master record is created from the organization part", (read(masterFile(alpha)) as { name?: string }).name === "Acme Robotics");
@@ -185,6 +193,7 @@ try {
 
   // ---- the cursor moves only after the commit ----
   const gamma = venture("gamma", [TRACK]);
+  expect("a venture that turns nothing off hears the competitors package's listeners", ["name-competitors", "rival-raised", "track-launches", "launch-revalidates-stance"].every((id) => listenersOf(gamma).listeners.some((l) => l.id === id && l.from === "package competitors")), show(listenersOf(gamma)));
   await call({ venture: "gamma", workspace: ws, route: "purpose/competitor/acme-robotics", action: "write", input: { id: "acme-robotics", name: "Acme Robotics" }, actor: "person" });
   mkdirSync(signalsFile(gamma), { recursive: true }); // a folder where the record goes: the write fails
   let crashed: PullResult | string;

@@ -1,0 +1,53 @@
+{
+  "id": "organization",
+  "version": "1.0.0",
+  "title": "Organization",
+  "description": "A company a signal is about. A part that composite types compose at org (competitor-funding, product-launch); a listener for organization@^1 hears the org part of every one of them. It starts a person's master record, competitors/<id>.json, once, when the record is missing.",
+  "subject": "The organization's slug",
+  "props": {
+    "type": "object",
+    "required": ["name"],
+    "additionalProperties": false,
+    "properties": {
+      "name": { "type": "string", "minLength": 1 },
+      "domain": { "type": "string", "pattern": "^[a-z0-9.-]+\\.[a-z]+$" }
+    }
+  },
+  "projects": [
+    {
+      "route": "competitors/[id]",
+      "subject_field": "id",
+      "once": true,
+      "fields": {
+        "name": { "reducer": "first", "value": "props.name" },
+        "domain": { "reducer": "first", "value": "props.domain" }
+      }
+    }
+  ],
+  "freshness": { "max_age": "365d" },
+  "cases": [
+    {
+      "id": "creates-the-master-record-once",
+      "given": [
+        { "subject": "acme-robotics", "time": "2026-11-05", "props": { "name": "Acme Robotics", "domain": "acme.example" } },
+        { "subject": "acme-robotics", "time": "2026-12-01", "props": { "name": "Acme Robotics Inc", "domain": "acme.example" } }
+      ],
+      "expect": {
+        "competitors/acme-robotics": { "id": "acme-robotics", "name": "Acme Robotics", "domain": "acme.example" }
+      },
+      "note": "first takes the earliest standing value in (time, id) order, so the first name wins. The record is created once: a later render that finds it, written by a person or by this projection, leaves it alone."
+    },
+    {
+      "id": "domain-from-the-first-report-that-has-one",
+      "given": [
+        { "subject": "globex", "time": "2026-11-01", "props": { "name": "Globex" } },
+        { "subject": "globex", "time": "2026-11-03", "props": { "name": "Globex Corporation", "domain": "globex.example" } }
+      ],
+      "expect": {
+        "competitors/globex": { "id": "globex", "name": "Globex", "domain": "globex.example" }
+      },
+      "note": "Each field folds on its own: a signal without a domain contributes nothing to domain, so the domain comes from the first report that has one."
+    }
+  ],
+  "note": "Open type in the competitors package (the implicit library naive)."
+}

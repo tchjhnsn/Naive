@@ -1,0 +1,70 @@
+{
+  "id": "competitor-funding",
+  "version": "1.0.0",
+  "title": "Competitor funding",
+  "description": "A company raised a round of funding: the organization at org and the round at round. It folds the round into the competitor's signals record; its org part can start the competitor's master record, and its round part is heard by any funding-event listener.",
+  "subject": "The organization's slug",
+  "props": {
+    "type": "object",
+    "required": ["org", "round"],
+    "additionalProperties": false,
+    "properties": {
+      "org": { "type": "object" },
+      "round": { "type": "object" }
+    }
+  },
+  "composes": [
+    { "at": "org", "type": "organization@^1" },
+    { "at": "round", "type": "funding-event@^1" }
+  ],
+  "projects": [
+    {
+      "route": "competitors/[id]/signals",
+      "subject_field": "competitor",
+      "fields": {
+        "funding": { "reducer": "append", "value": "props.round", "unique_by": ["props.round.series"] },
+        "first_seen": { "reducer": "min", "value": "time" },
+        "last_seen": { "reducer": "max", "value": "time" }
+      }
+    }
+  ],
+  "freshness": { "max_age": "90d" },
+  "cases": [
+    {
+      "id": "one-round-twice-reported",
+      "given": [
+        { "subject": "acme-robotics", "time": "2026-11-05", "props": { "org": { "name": "Acme Robotics", "domain": "acme.example" }, "round": { "series": "seed", "amount": 3000000, "currency": "USD" } } },
+        { "subject": "acme-robotics", "time": "2026-11-06", "props": { "org": { "name": "Acme Robotics" }, "round": { "series": "seed", "amount": 3000000, "currency": "USD" } } }
+      ],
+      "expect": {
+        "competitors/acme-robotics/signals": {
+          "competitor": "acme-robotics",
+          "first_seen": "2026-11-05",
+          "last_seen": "2026-11-06",
+          "funding": [{ "series": "seed", "amount": 3000000, "currency": "USD", "support": "supported" }]
+        }
+      },
+      "note": "Two reports of one seed round are one entry (unique_by the series), taken from the earliest standing report, which it names as its signal; both count toward first_seen and last_seen."
+    },
+    {
+      "id": "rounds-in-time-order",
+      "given": [
+        { "subject": "globex", "time": "2026-09-15", "props": { "org": { "name": "Globex" }, "round": { "series": "series-a", "amount": 12000000, "currency": "USD" } } },
+        { "subject": "globex", "time": "2026-03-01", "props": { "org": { "name": "Globex" }, "round": { "series": "seed", "amount": 2500000, "currency": "USD" } } }
+      ],
+      "expect": {
+        "competitors/globex/signals": {
+          "competitor": "globex",
+          "first_seen": "2026-03-01",
+          "last_seen": "2026-09-15",
+          "funding": [
+            { "series": "seed", "amount": 2500000, "currency": "USD", "support": "supported" },
+            { "series": "series-a", "amount": 12000000, "currency": "USD", "support": "supported" }
+          ]
+        }
+      },
+      "note": "Signals arrive in any order; the fold reads them in (time, id) order, so the seed round comes first."
+    }
+  ],
+  "note": "Open type in the competitors package (the implicit library naive)."
+}
