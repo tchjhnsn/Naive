@@ -211,7 +211,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   // session, its template and prefetched refs; head stops after the header (N-3, L-2, O-4).
   if (action === "navigate" || action === "head") return (await import("./context.mjs")).navigate({ ...(input ?? {}), venture, route: requested, workspace, actor, actor_id, via, header_only: action === "head" || !!input?.header_only });
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
-  route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  route = r.recipe ? `recipes/${params.pattern ?? ""}` : r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
   // A research program's template is its own function's starter (packages/naive/src/functions/<function>/templates/research-program.md).
   if (action === "template" && r.record === "research-program" && r.collection === "item" && isFunction(params.id)) return { ok: true, result: readFileSync(join(repo, templateOf(params.id)), "utf8"), ...deprecated };
@@ -236,6 +236,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   // NAIVE_BETA_TESTER, the same id as naive beta, never the acting role.
   const beta = betaBlocked(dir, requested, { table: r.route });
   if (beta) return { ok: false, error: beta.message, beta_locked: beta.capability, fix: { feedback: beta.needs, command: beta.needs.capability ? `naive beta feedback ${beta.needs.capability}` : null, then: "naive beta unlock, then retry this call" } };
+
+  // Recipe hook (autoresearch build plan item 6): recipes/<pattern> reads a recipe's tip and writes an experiment, scored
+  // inside the write (packages/naive/src/router/recipes.ts). It is imported only here, because it reaches the TypeScript
+  // scorer, and Node strips no types under node_modules, where an app that installs Naive keeps it.
+  if (r.recipe) return { ...(await (await import("./recipes.ts")).recipeAction({ dir, r, route, pattern: params.pattern, action, input, actor, actor_id, via, provenance })), ...deprecated };
 
   if (action === "view") {
     const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance, reads_as_of });
