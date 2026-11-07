@@ -110,6 +110,7 @@ const steps = [
   ["the type gate fails on what it must catch", "node", ["packages/naive/src/checks/check-types-test.ts"]],
   ["recipe sandbox: the example recipe renders; clock, random, import, eval, loop, state, fs and env each fail closed; 1,000 calls of 40 signals in one child", "node", ["packages/naive/src/engine/recipes/sandbox-test.ts"]],
   ["one writer per file: only the signal projector writes a projection record; a person is refused with the emit hint; the person's master record stays theirs", "node", ["packages/naive/src/interfaces/tests/projector-test.ts"]],
+  ["the signal pull end to end: two ventures, one shared library, local corrections; a second pull writes nothing", "node", ["packages/naive/src/interfaces/tests/signals-pull-test.ts"]],
   ["competitors package: its open signal types and listeners hold together, its projections write records it owns, and every worked case matches its type and its records", "node", ["packages/naive/src/checks/competitors-package-test.ts"]],
   ["detection arithmetic: Macmillan and Creelman worked examples, Wilson intervals, ROC area equals 2AFC, best criterion is an observed score", "node", ["packages/naive/src/engine/detection-test.ts"]],
   ["thresholds as detectors: shipped defaults hold today's constants, a venture's detector file moves the line, overrides keep precedence, yes_when below matches the gate", "node", ["packages/naive/src/engine/detectors-test.ts"]],

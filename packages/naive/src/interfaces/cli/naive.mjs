@@ -57,6 +57,13 @@
 //   naive bugs [--all]                              open P0 and P1 bugs; stable means none
 //   naive trace append [--session <id>]             span lines on stdin, chained into traces/<session>.jsonl (EE-121)
 //   naive trace show [<session>] [--json]           the venture's trace sessions, or one as a tree of spans, offline
+//   naive signals emit <type> --props '<json>' [--subject <id>] [--time <date>] [--rating B2] [--by <person>] [--cite <url>]
+//                     [--supersedes <signal id> | --retracts <signal id>]
+//                                                   record a signal in the venture's local library, raw/signals/, as a person
+//   naive signals pull [--now <iso>]                render what new signals say into records through the listeners, as the
+//                                                   signal projector; a pull after a pull writes nothing
+//   naive signals explain <signal id> [--now <iso>] the signal at every listener: salient or noise, and why
+//   naive signals replay                            render every projected record again from what it cites and report drift
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -321,6 +328,11 @@ else if (cmd === "build" || cmd === "start") {
   // Traces in the venture's files (packages/naive/src/engine/trace-cli.ts, EE-121).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/trace-cli.ts", [here(), ...(args.length ? args : ["show"])]));
+} else if (cmd === "signals") {
+  // The signal library (signal library design, build item 5): packages/naive/src/router/orchestration/signals.ts.
+  const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  if (!["emit", "pull", "explain", "replay"].includes(what)) { console.error("usage: naive signals emit <type> --props '<json>' | pull | explain <signal id> | replay [--venture <dir>]"); process.exit(2); }
+  process.exit(run("packages/naive/src/router/orchestration/signals.ts", [here(), what, ...args]));
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
