@@ -81,7 +81,7 @@ function buildRoutes() {
     const form = r.form ?? "json";
     const groups = PHASES.map((p) => p.id).filter((p) => (N.records[r.id]?.base?.[p] ?? 0) >= N.suggest).map((p) => `(${p})`);
     const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/naive/library/packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
-      decision_class: r.decision_class ?? null, groups, note: r.note ?? "", ...(r.view_of ? { view_of: r.view_of } : {}) };
+      decision_class: r.decision_class ?? null, groups, note: r.note ?? "", ...(r.view_of ? { view_of: r.view_of } : {}), ...(r.writer && r.writer !== "any" ? { writer: r.writer } : {}) };
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
     const collection = filesOf.length >= 1 && filesOf.every((p) => (p.match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(p) && !p.includes("**"));
     const concrete = filesOf.every((f) => !f.includes("*"));

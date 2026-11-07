@@ -17,6 +17,19 @@ import { configFor } from "../engine/naive-config.mjs";
 
 export { mayReadItem, mayReadSome };
 
+// The signal projector (signal library design, "Records people own and records the projector owns"). A record type
+// with `writer: "projection"` in the data model is written only by the projector, and the projector is code: an
+// agent whose role is `projector` and whose call carries this symbol. A symbol never survives JSON, so no CLI flag,
+// MCP tool, HTTP body or environment variable can claim it, and the role id `projector` is refused on any call that
+// does not carry it. Only the router's own code holds it (the signal pull will call asProjector; not built). Nothing
+// below the router imports this file, so engine code cannot reach it either.
+export const PROJECTOR = Symbol("naive.projector");
+export const PROJECTOR_ID = "projector";
+/** A router call made as the signal projector. Only the router's orchestration code calls this. */
+export const asProjector = (args) => ({ ...args, actor: "agent", actor_id: PROJECTOR_ID, [PROJECTOR]: true });
+/** Whether a call carries the projector's symbol. */
+export const isProjector = (a) => !!a && a[PROJECTOR] === true;
+
 /** Checks who is acting on a venture. Returns { ok, who: { kind, role, known, occupant } } or { ok: false, error }. */
 export function actingOf(dir, kind, roleId) {
   const who = { kind, role: roleId ?? null };
@@ -70,7 +83,12 @@ export async function actingCall(a, inner, findDir) {
   const kind = a.actor ?? "agent", role = a.actor_id ?? process.env.MENTURA_ACTOR_ID;
   let dir = null;
   try { dir = a.venture ? findDir(a.venture, a.workspace) : null; } catch {}
-  const check = actingOf(dir, kind, role);
+  const projector = isProjector(a);
+  // The projector is Naive's code, not a team-plan role: it skips the plan, and nobody else may name it.
+  const check = projector
+    ? kind === "agent" && role === PROJECTOR_ID ? { ok: true, who: { kind, role, projector: true } } : { ok: false, error: "the projector acts as an agent with actor_id projector (asProjector)" }
+    : role === PROJECTOR_ID ? { ok: false, error: "projector is the signal projector's id, and only Naive's own code acts as it: a person or another agent may not claim it from the CLI, MCP, the HTTP API or MENTURA_ACTOR_ID" }
+    : actingOf(dir, kind, role);
   const acting = { kind, role: role ?? null };
   if (!check.ok) return { ok: false, error: check.error, acting };
   if (nested.getStore()) return { ...(await inner(a)), acting };

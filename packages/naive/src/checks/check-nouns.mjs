@@ -23,14 +23,16 @@ const { check, nouns } = JSON.parse(readFileSync(join(root, "packages/naive/src/
 if (process.argv.includes("--md")) {
   const caps = (n) => n.level === "function" && n.capabilities?.length ? ` Capabilities: ${n.capabilities.join(", ")}.` : "";
   const row = (n) => `| ${n.noun} | ${n.meaning}${caps(n)} | ${n.standard} | ${(n.references ?? []).join(", ")} | ${n.function ?? ""} | ${n.handoff_type ? "yes" : ""} |`;
+  const lines = [];
   for (const level of [...new Set(nouns.filter((n) => n.status !== "retired").map((n) => n.level))]) {
-    console.log(`\n### ${level[0].toUpperCase() + level.slice(1)}\n\n| Noun | Meaning | Standard | References | Function | Handoff type |\n| --- | --- | --- | --- | --- | --- |`);
-    nouns.filter((n) => n.level === level && n.status !== "retired").forEach((n) => console.log(row(n)));
+    lines.push(`\n### ${level[0].toUpperCase() + level.slice(1)}\n\n| Noun | Meaning | Standard | References | Function | Handoff type |\n| --- | --- | --- | --- | --- | --- |`);
+    nouns.filter((n) => n.level === level && n.status !== "retired").forEach((n) => lines.push(row(n)));
   }
-  console.log(`\n### Retired\n\n| Noun | Status |\n| --- | --- |`);
-  nouns.filter((n) => n.status === "retired").forEach((n) => console.log(`| ${n.noun} | retired; use ${n.replaced_by} |`));
-  // Exit only once stdout has drained: a pipe under load is written asynchronously, and exiting at once cut the table short.
-  await new Promise((done) => process.stdout.write("", done));
+  lines.push(`\n### Retired\n\n| Noun | Status |\n| --- | --- |`);
+  nouns.filter((n) => n.status === "retired").forEach((n) => lines.push(`| ${n.noun} | retired; use ${n.replaced_by} |`));
+  // Stdout to a pipe is asynchronous, so process.exit right after console.log drops what the reader has not taken
+  // yet: test.mjs then compared a cut render with ontology.md and failed at random. Exit only once it is written.
+  await new Promise((done) => process.stdout.write(`${lines.join("\n")}\n`, done));
   process.exit(0);
 }
 

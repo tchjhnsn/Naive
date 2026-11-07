@@ -397,7 +397,7 @@ export type DataModel = {
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
     kind?: DataModelKind;
-    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the gate refuses every other actor, a later build item */
+    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs) */
     writer?: "any" | "projection";
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;
