@@ -16,7 +16,7 @@ import { join } from "node:path";
 export const CANONICAL = ["foundation/goals", "foundation/requirements", "foundation/exit-criteria", "foundation/constraints"];
 const canonical = (route) => CANONICAL.some((c) => route === c || route === `${c}/[id]` || (route.startsWith(`${c}/`) && !route.slice(c.length + 1).includes("/")));
 const FRAMEWORK_ONLY = [/telos\.json/, /\.ambition\b/];
-const ALWAYS_ALLOWED = ["packages/naive/src/engine/canonical.mjs", "packages/naive/src/engine/check-frameworks.mjs", "packages/naive/src/engine/upgrades.mjs", "packages/naive/src/records/validate.py"];
+const ALWAYS_ALLOWED = ["packages/naive/src/engine/canonical.mjs", "packages/naive/src/engine/check-frameworks.mjs", "packages/naive/src/engine/upgrades.mjs", "packages/naive/src/records/validate.mjs"];
 
 export function check(root) {
   const errors = [];

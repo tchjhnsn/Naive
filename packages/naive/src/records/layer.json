@@ -44,7 +44,7 @@
   "writes": [],
   "checks": [
     "test.mjs",
-    "packages/naive/src/records/validate.py",
+    "packages/naive/src/records/validate.mjs",
     "packages/naive/src/checks/check-data-model.mjs",
     "packages/naive/src/checks/check-ventures.mjs",
     "packages/naive/src/checks/check-nouns.mjs",

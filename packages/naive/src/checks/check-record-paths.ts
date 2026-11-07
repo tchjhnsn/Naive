@@ -1,8 +1,7 @@
 // The record types' paths go through one resolver (monorepo rebuild step 5a-1,
 // design docs/design/MONOREPO_RECORDS_PACKAGE_2026-11-05.md in PR #243). Code that reads a framework schema file or the data model
 // asks packages/naive/src/records/index.mjs where it is, so the record types can move in one change. This check fails when
-// code outside the resolver builds such a path from the folder name, and when packages/naive/src/records/validate.py's copy of the
-// mapping disagrees with the resolver.
+// code outside the resolver builds such a path from the folder name.
 //
 //   node packages/naive/src/checks/check-record-paths.ts     check the tracked code, exit 1 on a finding
 //
@@ -16,7 +15,7 @@
 //                     schema.replace(/^schema\//, ""), schema.startsWith("schema/"), "schema/".length, and in
 //                     Python startswith("schema/")
 //   python path       pathlib division by the folder: root / "schema" or root / "packages/naive/src/records/data-model.json"
-// A bare name ("venture.schema.json") is not a path: packages/naive/src/records/validate.py and the resolver look names up.
+// A bare name ("venture.schema.json") is not a path: packages/naive/src/records/validate.mjs and the resolver look names up.
 // A message that mentions a path inside a sentence is not an argument by itself, so it is not a finding.
 
 import { spawnSync } from "node:child_process";
@@ -83,43 +82,10 @@ export function staleAllow(root: string, files: readonly string[] = tracked(root
   return Object.keys(allow).filter((f) => !have.has(f));
 }
 
-const stringsIn = (src: string): string[] => [...src.matchAll(/["']([^"']*)["']/g)].map((m) => m[1]);
-
-/** Where the resolver and packages/naive/src/records/validate.py say the record types sit: the folder and the stored prefixes. */
-export function mappings(root: string): { resolver: { folder: string; prefixes: string[] }; python: { folder: string; prefixes: string[] } } {
-  const js = readFileSync(join(root, RESOLVER), "utf8");
-  const py = readFileSync(join(root, "packages/naive/src/records/validate.py"), "utf8");
-  const one = (src: string, re: RegExp, what: string): string => {
-    const m = src.match(re);
-    if (!m) throw new Error(`cannot find ${what}`);
-    return m[1];
-  };
-  return {
-    resolver: {
-      folder: one(js, /export const FOLDER = "([^"]*)";/, `FOLDER in ${RESOLVER}`),
-      prefixes: stringsIn(one(js, /export const PREFIXES = Object\.freeze\(\[([^\]]*)\]\);/, `PREFIXES in ${RESOLVER}`)),
-    },
-    python: {
-      folder: one(py, /^RECORDS_FOLDER = "([^"]*)"$/m, "RECORDS_FOLDER in packages/naive/src/records/validate.py"),
-      prefixes: stringsIn(one(py, /^RECORD_PREFIXES = \(([^)]*)\)$/m, "RECORD_PREFIXES in packages/naive/src/records/validate.py")),
-    },
-  };
-}
-
-/** A line per disagreement between the resolver and packages/naive/src/records/validate.py. */
-export function disagreements(root: string): string[] {
-  const { resolver, python } = mappings(root);
-  const out: string[] = [];
-  if (resolver.folder !== python.folder) out.push(`the folder differs: ${RESOLVER} says ${resolver.folder}, packages/naive/src/records/validate.py says ${python.folder}`);
-  if (resolver.prefixes.join(" ") !== python.prefixes.join(" ")) out.push(`the stored prefixes differ: ${RESOLVER} says ${resolver.prefixes.join(", ")}, packages/naive/src/records/validate.py says ${python.prefixes.join(", ")}`);
-  return out;
-}
-
 export function check(root: string, files: readonly string[] = tracked(root)): string[] {
   return [
     ...scan(root, files).map((f) => `${f.file}:${f.line}: builds a record path from the folder name (${f.kind}); use ${RESOLVER}: ${f.text}`),
     ...staleAllow(root, files).map((f) => `${f}: is allowlisted in packages/naive/src/checks/check-record-paths.ts but is not tracked; remove its entry`),
-    ...disagreements(root),
   ];
 }
 
@@ -128,5 +94,5 @@ if (process.argv[1] && relative(process.argv[1], fileURLToPath(import.meta.url))
   const problems = check(root);
   for (const p of problems) console.error(`FAIL  ${p}`);
   if (problems.length) process.exit(1);
-  console.log(`pass  record paths: no code outside ${RESOLVER} builds a schema or data-model path from the folder name, and packages/naive/src/records/validate.py agrees with it`);
+  console.log(`pass  record paths: no code outside ${RESOLVER} builds a schema or data-model path from the folder name`);
 }

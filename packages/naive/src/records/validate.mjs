@@ -1,22 +1,20 @@
-// Validates records against their JSON Schemas in JavaScript, with no Python and no dependency. It is the
-// twin of validate.py and takes the same arguments:
+// Validates records against their JSON Schemas in JavaScript, with no Python and no dependency:
 //
 //   node packages/naive/src/records/validate.mjs
 //   node packages/naive/src/records/validate.mjs --schema <name>.schema.json --file <path>
 //   node packages/naive/src/records/validate.mjs --schema <name>.schema.json --def <name> --file <path>
 //
 // Exit 0: valid. Exit 1: a record failed. Exit 2: the checker itself failed, so a caller must not record
-// that as a reject (the same contract as validate.py).
+// that as a reject.
 //
 // It is .mjs with JSDoc types, not .ts, because the write path will import it, and an app that installs
 // Naive runs it from node_modules, where Node does not strip types. It becomes .ts when Naive ships compiled
 // JavaScript.
 //
 // It covers the JSON Schema 2020-12 keywords Naive's schemas use, and fails with exit 2 on a schema keyword
-// it does not know, so a new keyword cannot be silently ignored. Formats: only "date" is checked, because
-// that is the only format validate.py checks where it runs (jsonschema checks date-time and uri only when
-// optional packages are installed, and CI does not install them). validate-test.ts checks that both give
-// the same verdicts on every record until validate.py is removed.
+// it does not know, so a new keyword cannot be silently ignored. Formats: only "date" is checked, the
+// format Python's jsonschema checks without optional packages. validate-test.ts checks that this module and
+// jsonschema give the same verdicts on every record, where python3 with jsonschema is installed (CI has it).
 
 import * as fs from "node:fs";
 import { readFileSync, readdirSync } from "node:fs";
@@ -230,8 +228,8 @@ export function useValidator(next) {
 }
 
 /**
- * Validates one file against one schema, in this process: what `python3 validate.py --schema <name> --file <path>`
- * did, with the same result shape as spawnSync so a caller swaps one line. status 0 valid, 1 invalid (stdout holds
+ * Validates one file against one schema, in this process: what `node validate.mjs --schema <name> --file <path>`
+ * does, with the same result shape as spawnSync so a caller swaps one line. status 0 valid, 1 invalid (stdout holds
  * one "path: message" line per failure), 2 the checker failed (stderr says why). `def` checks one $defs entry.
  * @param {string} name a schema file name, such as "venture.schema.json"
  * @param {string} file the JSON file to check
@@ -279,8 +277,7 @@ export function validateValue(name, value) {
   }
 }
 
-/** Every record file in the repository with the schema and form that govern it: the more specific glob wins,
- *  as in validate.py.
+/** Every record file in the repository with the schema and form that govern it: the more specific glob wins.
  *  @param {string} [root] @returns {{ file: string, schema: string, form: string }[]} */
 export function recordFiles(root = ROOT) {
   /** @type {{ records: { schema?: string | null, form?: string, paths: string[] }[] }} */

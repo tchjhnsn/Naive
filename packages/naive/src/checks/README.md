@@ -33,7 +33,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-ready.mjs`](./check-ready.mjs) | Checks that a handoff is ready to execute before anyone starts on it (EE-019). |
 | [`check-reasons.mjs`](./check-reasons.mjs) | The check for reasons with citations (packages/naive/src/engine/reasons.mjs). |
 | [`check-record-paths-test.ts`](./check-record-paths-test.ts) | Tests the record types' resolver (packages/naive/src/records/index.mjs) and the check that every record path goes through it (packages/naive/src/checks/check-record-paths.ts). |
-| [`check-record-paths.ts`](./check-record-paths.ts) | The record types' paths go through one resolver (monorepo rebuild step 5a-1, design docs/design/MONOREPO_RECORDS_PACKAGE_2026-11-05.md in PR #243). |
+| [`check-record-paths.ts`](./check-record-paths.ts) | The record types' paths go through one resolver (monorepo rebuild step 5a-1, design docs/design/MONOREPO_RECORDS_PACKAGE_2026-11-05.md in PR #243). It no longer compares the resolver with a Python copy of the mapping, because `validate.py` is gone. |
 | [`check-sdlc-catalog.ts`](./check-sdlc-catalog.ts) | Checks the SDLC catalog (packages/naive/src/functions/products/sdlc/catalog.json, R-26) for what its schema cannot state. |
 | [`check-sources.mjs`](./check-sources.mjs) | Checks each venture's source map (<venture>/knowledge/sources.json, EE-037) for what its schema cannot state. |
 | [`check-team.mjs`](./check-team.mjs) | Checks each venture's team plan (operations/team-plan.json) against the agent capability register (packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json) and decision rights (EE-029). |

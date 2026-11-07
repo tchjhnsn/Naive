@@ -1,6 +1,6 @@
 {
   "version": "0.5.0",
-  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.py reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder).",
+  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder).",
   "layers": [
     "purpose",
     "knowledge",
@@ -260,7 +260,7 @@
         {
           "field": "phases.phase",
           "to": "anatomy-framework",
-          "checked_by": "packages/naive/src/records/validate.py"
+          "checked_by": "packages/naive/src/records/validate.mjs"
         }
       ],
       "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023). Since foundation 0.5.0 a framework for thinking (frameworks/telos): the telos-to-goals migration splits it into canonical goals and exit criteria and archives it; the route still reads, rendered from them",
@@ -315,7 +315,7 @@
         {
           "field": "phase",
           "to": "anatomy-framework",
-          "checked_by": "packages/naive/src/records/validate.py"
+          "checked_by": "packages/naive/src/records/validate.mjs"
         }
       ],
       "note": "A phase's canonical exit criteria, each serving a goal measure; the lifecycle gate reads these (packages/naive/src/engine/lifecycle.mjs)",

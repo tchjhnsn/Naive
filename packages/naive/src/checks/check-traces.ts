@@ -7,7 +7,7 @@
 //     turned traces.content on; a provenance line that names a span no trace file holds.
 //   warnings: a span whose parent is in no trace file of the venture (it may have been written by another
 //     process that has not flushed yet); an agent's provenance line with no span, in a venture with traces on.
-// The schema of each line is checked by packages/naive/src/records/validate.py.
+// The schema of each line is checked by packages/naive/src/records/validate.mjs.
 //
 //   node packages/naive/src/checks/check-traces.ts <workspace or venture dir>
 
