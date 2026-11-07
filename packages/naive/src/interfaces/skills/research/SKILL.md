@@ -34,7 +34,7 @@ The skill is Naive's file, not a venture record, so no route writes it: every re
 2. Read the pattern's eval plan, `<pattern>.plan.json` beside the recipe (route `evidence/eval-plan`): its read cut, horizon, weights, `min_gain` and its budgets. Every read after this one is as of `read_cut`.
 3. Read the experiment log, `<pattern>.experiments.jsonl` (route `evidence/experiment`): what was tried, kept, discarded or failed against this plan's sha, the dev score and its margin, and how many dev evaluations are spent. Never repeat a discarded change.
 4. Read the recipe (route `knowledge/recipe`) and the signals and facts it hears, as of the cut.
-5. Get training feedback with `naive recipes check` (not built, build plan item 5): per-row losses, settled and predicted records, noise disagreements. Only the training window answers this way.
+5. Get training feedback with `naive recipes check <pattern>` (built, build plan item 5): per-row losses, settled and predicted records, noise disagreements. Only the training window answers this way.
 6. Make one change to the recipe and write it to `recipes/<pattern>` with the base sha you edited from (not built, build plan item 6). The router lints it, runs training, scores dev against the tip and logs the line. A keep lands as a held draft that becomes the tip; a discard is refused with its verdict; a stale base is refused. The verdict is computed inside the write, so you never supply a score.
 7. Go back to step 3. Stop when the plan's dev budget is spent (counted from the log for this plan's sha), when the program says to stop, or when the person stops you. The unattended loop that stops itself at the budget is Mentura's (not built).
 
@@ -45,7 +45,7 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 - One change per experiment, so the log says what each change did.
 - Prefer less code: a strictly smaller recipe that is no worse is kept.
 - A recipe is pure: no import, no clock, no randomness, no file system, no network. It runs only in the sandbox (`packages/naive/src/engine/recipes/sandbox.ts`), whose lint refuses a subject id or signal address written as a literal. One recipe serves every subject.
-- Every heard signal gets exactly one reception. Calling a signal noise means the record is the same without it, and the sandbox and `check` hold you to that.
+- Every heard signal gets exactly one reception. Calling a signal noise means the record is the same without it. `node packages/naive/src/checks/check-recipes.ts` holds you to that across files (built): it renders the record again with each noise signal dropped and fails when the record changes. The training feedback of `naive recipes check` is not built (build plan item 5).
 - Any throw, timeout or invalid output fails the whole experiment. Never drop hard rows.
 - Forecast your honest probability. The score is a proper scoring rule, so hedging only costs you.
 - You never resolve an outcome, label your own work, write a plan, the log, a reception or a projected record. Only people and producers resolve outcomes, and only the projector writes projected records.
@@ -59,7 +59,8 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 | Programs are a person's: `operations/research-program/<id>`, writer person | built (`writerRule` in `packages/naive/src/engine/gate.mjs`) |
 | The record types: recipe, eval plan, experiment log, reception | built (`packages/naive/src/records/README.md`) |
 | The sandbox and its lint | built (`packages/naive/src/engine/recipes/README.md`) |
-| Eval sets, scoring, plans and the check command | not built (build plan item 5) |
+| Eval sets, scoring, plans and the check command (`naive recipes plan`, `naive recipes check`) | built (build plan item 5) |
+| The cross-file recipe check: recipe, plan, experiment log and receptions agree, and noise is noise by ablation | built (`packages/naive/src/checks/check-recipes.ts`, build plan item 11) |
 | The recipe write route with its base sha and verdict | not built (build plan item 6) |
 | Accept with the holdout check, and the forward monitor | not built (build plan item 8) |
 | Knob search with no model | not built (build plan item 10) |
