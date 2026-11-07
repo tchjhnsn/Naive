@@ -41,6 +41,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | template | A fill-in starting point for one record or document: the fields, what to write in each and what a strong one looks like. A kit holds templates; a template holds no rules and checks nothing | common usage (document template) |  |  |  |
 | provenance | Who or what produced a record, by which activity, from what, and under which decision: explicit in the provenance log for writes through the router, implicit in git history for everything else (EE-031) | W3C PROV (PROV-DM: entity, activity, agent) |  |  |  |
 | provenance log | A venture's append-only record of writes, <venture>/provenance.jsonl: one line per write naming the file, the activity (write, draft, accept, baseline), the person or agent and the interface, what it was derived from and the decision; each line carries the previous line's hash (EE-031) | W3C PROV; hash-chained append-only log (common audit usage) |  |  |  |
+| as-of view | The venture as known at one transaction time: each record as provenance and the blob store held it then, and only the signals observed by then. Nothing written later changes it (as_of_no_lookahead in packages/naive/lean/Naive/Recipes.lean) | SQL:2011 system time; Snodgrass 1999 |  |  |  |
 
 ### Venture
 
@@ -101,6 +102,8 @@ The system is opinionated: it names one default for each choice, and every defau
 | noise | A reception whose listener's criterion fails: a relation between one signal and one consumer, never a property of the signal, so the same signal can be salient at one listener and noise at another (noise_relative and noise_undefinable in packages/naive/lean/Naive/Signals.lean). In signal detection's standard sense noise is the no case of one question; a listener's criterion answers its consumer's question at once, where a detector's no is noise only once it resolves as a correct rejection | Green and Swets 1966 |  |  |  |
 | projection | The deterministic fold of a record from the signals salient for it, in (time, id) order with six fixed reducers. It reads no clock, writes through the router as the projector, and a second commit of the same render writes nothing (reconcile_idempotent in packages/naive/lean/Naive/Signals.lean) | event sourcing projection (Fowler; Young) |  |  |  |
 | Admiralty rating | How far a signal can be trusted: source reliability A (completely reliable) to F (cannot be judged) and information credibility 1 (confirmed) to 6 (cannot be judged), computed in code by the producer | NATO STANAG 2511 (Admiralty code) |  |  |  |
+| recipe | The pure code that makes every record at one route pattern (<pattern>.recipe.ts beside the records) from the signals heard and the facts known as of a time; a kind of projection. It runs only in Naive's sandbox, and its records are written only by the projector. Autoresearch design, 2026-11-06 | training recipe (Karpathy 2019); dbt model |  |  |  |
+| hindsight label | A signal's helpful, inert or harmful effect on one record, found once the horizon has passed by comparing the loss without the signal to the loss with it. A signal the check accepts as noise is always inert (noise_inert in packages/naive/lean/Naive/Recipes.lean) | leave-one-out influence (Cook 1977) |  |  |  |
 
 ### Operations
 
@@ -111,6 +114,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | done-criterion | One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role) | definition of done (Scrum) |  |  |  |
 | pricing decision | A decision that sets or approves a price. Marketing and sales owns the decision. Every package of this type lists finance in touches, and the founder approves. | APQC PCF 7.4 Cross-Industry 3.2.2 Define pricing strategy, including 3.2.2.4 Approve pricing strategy |  | marketing-and-sales | yes |
 | product decision | A decision that changes what the venture offers. The products function owns it. | APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services |  | products | yes |
+| research program | A function's person-edited instructions for its researcher (programs/<function>.md), one section per route pattern; the gate refuses an agent's write to it | program.md (autoresearch); research programme (Lakatos 1970) |  |  |  |
 
 ### Evidence
 
@@ -119,6 +123,11 @@ The system is opinionated: it names one default for each choice, and every defau
 | eval | A test of whether something worked; evals are grouped in eval suites (eval-suite.schema.json) | AI evals |  |  |  |
 | evidence | The recorded result of one run of a check or eval: subject and version, each criterion's outcome and its output, at <venture>/evidence/results/<id>.json. Append-only | common audit usage |  |  |  |
 | capability register | What agents can, cannot, may not or are not yet known to do, task by task, with sources and dates, fed by research and our own evals (packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json, EE-029) | ours |  |  |  |
+| experiment | One write of a recipe, scored in code inside the router against a frozen eval plan version and logged whether it is kept or discarded. The writer never supplies the score, and a retried write spends nothing (verdict_deterministic in packages/naive/lean/Naive/Recipes.lean) | autoresearch; design of experiments (Fisher 1935) |  |  |  |
+| experiment log | The append-only, hash-chained list of a recipe's experiments (<pattern>.experiments.jsonl beside the recipe), written by the evaluator only; the count of dev evaluations per plan version is the budget | results.tsv (autoresearch) |  |  |  |
+| eval plan | A frozen version of the as-of points, windows, horizon, weights and budgets one recipe is scored against (<pattern>.plan.json), made by a person; its eval set sits in a folder the router never serves (windows_purged and holdout_unread in packages/naive/lean/Naive/Recipes.lean) | pre-registration (Nosek et al. 2018) |  |  |  |
+| eval window | One of an eval plan's training, dev, holdout or forward sets of as-of points, each separated from the next by the horizon, so no outcome in one settles inside the next | dev and test sets; purged cross-validation (Lopez de Prado 2018) |  |  |  |
+| settled record | What people and producers established about valid times up to one as-of point once the horizon has passed, folded by Naive's reference fold. An outcome counts once a person states it or two distinct producers confirm it; an agent's write never resolves one (agent_never_resolves in packages/naive/lean/Naive/Recipes.lean) | bitemporal data (Snodgrass 1999); forecast verification (Murphy and Winkler 1987) |  |  |  |
 
 ### Governance
 

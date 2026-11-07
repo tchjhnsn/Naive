@@ -118,6 +118,45 @@ export type Reception = Base & {
   failed: number;                 // the listener's predicates that fail on this signal
 };
 
+/** One experiment: one write of a recipe, scored inside the router against a frozen eval plan
+ *  (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). A field is null when the record does not hold it. */
+export type Experiment = Base & {
+  baseIsTip: boolean;             // edited from the recipe tip's sha
+  planNamed: boolean;             // names the eval plan version (sha) it was scored under
+  scoredInWrite: boolean;         // the verdict was computed inside the router write, not supplied by the writer
+  logged: boolean;                // its line is in the recipe's experiment log
+  rowsOk: boolean;                // every row ran: no throw, timeout or invalid output
+  noiseDisagreements: number;     // signals the recipe called noise whose removal changed the record
+  gain: number | null;            // dev loss of the tip minus the candidate's, positive is better; null when not scored
+  margin: number;                 // max(min_gain, 2 x bootstrap standard error)
+  smaller: boolean;               // the candidate is strictly smaller than the tip
+};
+
+/** One eval plan version: who made it, its frozen set, horizon, as-of points by window, read cut and holdout budget.
+ *  Times are whole days. */
+export type EvalPlan = Base & {
+  madeByPerson: boolean;
+  frozen: boolean;                // its eval set is frozen under _eval/<sha>/, a folder the router never serves
+  horizon: number;
+  training: number[];
+  dev: number[];
+  holdout: number[];
+  made: number;                   // when the plan was made
+  readCut: number;                // the researcher sees the venture only as of here
+  priorHoldoutEnd: number | null; // the last holdout point of the previous version; null for a first version
+  holdoutChecks: number;          // the fixed number of holdout checks for this version
+};
+
+/** One settled record: the reference fold of what is known about valid times up to its as-of point, once the
+ *  horizon has passed. Each outcome says whether a person stated it, how many distinct producers confirmed it and
+ *  how many agent writes claimed it. */
+export type Settlement = Base & {
+  horizonPassed: boolean;
+  validUpToAsOf: boolean;         // it folds only valid times up to its as-of point
+  referenceFold: boolean;         // Naive's reference fold made it, not a recipe
+  outcomes: { person: boolean; producers: number; agents: number }[];
+};
+
 const N = 20000;
 export function membershipCases(seed = 11): Membership[] {
   const r = rng(seed);
@@ -303,5 +342,55 @@ export function receptionCases(seed = 41): Reception[] {
     confirmed: b(0.9), label: ["signal", "noise", "salient", "listener", undefined][Math.floor(r() * 5)],
     signal: pick(signals), listener: pick(listeners),
     age: Math.floor(r() * 365), failed: b(0.7) ? 0 : 1 + Math.floor(r() * 3),
+  }));
+}
+
+/** Most experiments are well formed, with one flaw drawn at random now and then; about half beat their margin. */
+export function experimentCases(seed = 43): Experiment[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => {
+    const rowsOk = b(0.9);
+    return {
+      confirmed: b(0.9), label: ["experiment", "kept", "discarded", "run", undefined][Math.floor(r() * 5)],
+      baseIsTip: b(0.92), planNamed: b(0.95), scoredInWrite: b(0.92), logged: b(0.95), rowsOk,
+      noiseDisagreements: b(0.9) ? 0 : 1 + Math.floor(r() * 3),
+      gain: rowsOk ? Math.round((r() - 0.4) * 200) / 100 : null, margin: Math.round(r() * 50) / 100, smaller: b(0.2),
+    };
+  });
+}
+
+/** Most plans follow the layout (training, gap, dev, gap, holdout, gap, plan made); some break one rule. */
+export function evalPlanCases(seed = 47): EvalPlan[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const points = (from: number, to: number) => Array.from({ length: 1 + Math.floor(r() * 4) }, () => from + Math.floor(r() * Math.max(1, to - from)));
+  return Array.from({ length: N }, () => {
+    const horizon = b(0.95) ? 7 + Math.floor(r() * 90) : 0;
+    const devStart = 200 + Math.floor(r() * 200);
+    const holdStart = devStart + horizon + 30 + Math.floor(r() * 100);
+    const gap = b(0.85) ? horizon : Math.floor(horizon / 2);
+    const training = points(0, devStart);
+    const dev = b(0.97) ? points(devStart + gap, holdStart) : [];
+    const holdout = points(holdStart + (b(0.9) ? gap : 0), holdStart + 120);
+    const made = Math.max(...holdout) + (b(0.9) ? horizon : 0);
+    return {
+      confirmed: b(0.9), label: ["eval plan", "plan", "pre-registration", undefined][Math.floor(r() * 4)],
+      madeByPerson: b(0.92), frozen: b(0.95), horizon, training, dev, holdout, made,
+      readCut: b(0.92) ? devStart - 1 : holdStart + 1,
+      priorHoldoutEnd: b(0.5) ? null : b(0.9) ? Math.floor(r() * devStart) : holdStart + 200,
+      holdoutChecks: b(0.95) ? 1 + Math.floor(r() * 3) : 0,
+    };
+  });
+}
+
+/** Most outcomes are settled by a person or two producers; some rest on one producer; agents claim at random. */
+export function settlementCases(seed = 53): Settlement[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => ({
+    confirmed: b(0.9), label: ["settled record", "truth", "outcome", undefined][Math.floor(r() * 4)],
+    horizonPassed: b(0.9), validUpToAsOf: b(0.92), referenceFold: b(0.92),
+    outcomes: Array.from({ length: Math.floor(r() * 6) }, () => ({ person: b(0.4), producers: b(0.9) ? 2 + Math.floor(r() * 4) : Math.floor(r() * 2), agents: Math.floor(r() * 10) })),
   }));
 }

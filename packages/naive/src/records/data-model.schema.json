@@ -252,7 +252,7 @@
               "any",
               "projection"
             ],
-            "description": "Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the gate refuses every other actor, a later build item"
+            "description": "Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs)"
           },
           "settles": {
             "$ref": "#/$defs/settles"
