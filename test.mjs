@@ -107,6 +107,7 @@ const steps = [
   ["framework/platform boundary", "node", ["packages/naive/src/checks/check-boundary.mjs"]],
   ["sdlc catalog: decision classes, roles, clauses and task references", "node", ["packages/naive/src/checks/check-sdlc-catalog.ts"]],
   ["the type gate fails on what it must catch", "node", ["packages/naive/src/checks/check-types-test.ts"]],
+  ["recipe sandbox: the example recipe renders; clock, random, import, eval, loop, state, fs and env each fail closed; 1,000 calls of 40 signals in one child", "node", ["packages/naive/src/engine/recipes/sandbox-test.ts"]],
   ["detection arithmetic: Macmillan and Creelman worked examples, Wilson intervals, ROC area equals 2AFC, best criterion is an observed score", "node", ["packages/naive/src/engine/detection-test.ts"]],
   ["thresholds as detectors: shipped defaults hold today's constants, a venture's detector file moves the line, overrides keep precedence, yes_when below matches the gate", "node", ["packages/naive/src/engine/detectors-test.ts"]],
   ["founders before ventures: opaque ids, ideas, references, inspirations, _private/ secrets, only the founder confirms", "node", ["packages/naive/src/engine/founders-test.ts"]],
