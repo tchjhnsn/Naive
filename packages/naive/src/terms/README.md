@@ -12,7 +12,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 |---|---|
 | [`admit.ts`](./admit.ts) | Admit every term through the same pipeline (Torian, 2026-10-31. |
 | [`admitted.json`](./admitted.json) | The admitted terms, written by `admit.ts`. |
-| [`bypass-guard-test.ts`](./bypass-guard-test.ts) | Fails the suite when a symbolic check bypasses the EE-095 term engine and the Lean proofs. Plain checks, such as `check-traces.ts` (hash chains and links) and `check-write-scope.ts` (path prefixes) and `check-detectors.ts` (ledger chains, references and arithmetic), are registered with a reason. |
+| [`bypass-guard-test.ts`](./bypass-guard-test.ts) | Fails the suite when a symbolic check bypasses the EE-095 term engine and the Lean proofs. Plain checks, such as `check-traces.ts` (hash chains and links) and `check-write-scope.ts` (path prefixes) and `check-detectors.ts` (ledger chains, references and arithmetic) and `check-recipes.ts` (chains, references, budget counts and renders compared again), are registered with a reason. |
 | [`catalog-test.ts`](./catalog-test.ts) | Checks the catalog of ontologies (N-050). |
 | [`engine-test.ts`](./engine-test.ts) | Tests the term engine. |
 | [`engine.ts`](./engine.ts) | The term engine (EE-095; Torian, 2026-10-31). |

@@ -45,7 +45,7 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 - One change per experiment, so the log says what each change did.
 - Prefer less code: a strictly smaller recipe that is no worse is kept.
 - A recipe is pure: no import, no clock, no randomness, no file system, no network. It runs only in the sandbox (`packages/naive/src/engine/recipes/sandbox.ts`), whose lint refuses a subject id or signal address written as a literal. One recipe serves every subject.
-- Every heard signal gets exactly one reception. Calling a signal noise means the record is the same without it, and the sandbox and `check` hold you to that.
+- Every heard signal gets exactly one reception. Calling a signal noise means the record is the same without it. `node packages/naive/src/checks/check-recipes.ts` holds you to that across files (built): it renders the record again with each noise signal dropped and fails when the record changes. The training feedback of `naive recipes check` is not built (build plan item 5).
 - Any throw, timeout or invalid output fails the whole experiment. Never drop hard rows.
 - Forecast your honest probability. The score is a proper scoring rule, so hedging only costs you.
 - You never resolve an outcome, label your own work, write a plan, the log, a reception or a projected record. Only people and producers resolve outcomes, and only the projector writes projected records.
@@ -60,6 +60,7 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 | The record types: recipe, eval plan, experiment log, reception | built (`packages/naive/src/records/README.md`) |
 | The sandbox and its lint | built (`packages/naive/src/engine/recipes/README.md`) |
 | Eval sets, scoring, plans and the check command | not built (build plan item 5) |
+| The cross-file recipe check: recipe, plan, experiment log and receptions agree, and noise is noise by ablation | built (`packages/naive/src/checks/check-recipes.ts`, build plan item 11) |
 | The recipe write route with its base sha and verdict | not built (build plan item 6) |
 | Accept with the holdout check, and the forward monitor | not built (build plan item 8) |
 | Knob search with no model | not built (build plan item 10) |

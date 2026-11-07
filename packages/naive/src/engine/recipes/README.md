@@ -30,13 +30,13 @@ The hardening path is QuickJS compiled to wasm behind the same interface (not bu
 
 ## How it connects
 
-- Called by: nothing yet. The eval sets and scoring (item 5), the router's `onWrite` for recipe routes (item 6) and the signal pull rendering through recipes (item 9) will call it (not built).
+- Called by: `packages/naive/src/checks/check-recipes.ts` (build plan item 11), which lints each recipe, reads its exports and renders each record that has a reception file again, with and without each noise signal. The eval sets and scoring (item 5), the router's `onWrite` for recipe routes (item 6) and the signal pull rendering through recipes (item 9) will call it (not built).
 - Calls: Node's `node:child_process`, `node:vm` and `node:module` only. It imports nothing in the repository and spawns only `process.execPath`, never a command an environment variable names.
 - Records: none. It reads no venture file and writes nothing.
 
 ## Not built
 
-- `naive recipes init`, `plan`, `check` and `search`, and anything that writes eval plans, experiment logs or reception files, are not built: autoresearch build plan items 5 to 11. Their schemas exist (item 3, `packages/naive/src/records/recipe.schema.json`, `eval-plan.schema.json`, `experiment.schema.json` and `reception.schema.json`), and the data model's recipe record type covers this folder's fixture.
+- `naive recipes init`, `plan`, `check` and `search`, and anything that writes eval plans, experiment logs or reception files, are not built: autoresearch build plan items 5 to 10. The cross-file check of what exists, `packages/naive/src/checks/check-recipes.ts`, is built (item 11). Their schemas exist (item 3, `packages/naive/src/records/recipe.schema.json`, `eval-plan.schema.json`, `experiment.schema.json` and `reception.schema.json`), and the data model's recipe record type covers this folder's fixture.
 - Record and reception types generated from JSON Schema through `naive typegen`; the fixture and the example recipe in `packages/naive/src/records/examples/signals/` declare their own types.
 - Type stripping needs Node 22.13 or later. On an older Node every recipe fails closed with that reason.
 - QuickJS compiled to wasm as a second realm behind the same interface.
