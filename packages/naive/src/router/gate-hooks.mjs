@@ -5,27 +5,41 @@
 
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { confidenceCall, evaluate } from "../engine/gate.mjs";
+import { confidenceCall, evaluate, writerRule } from "../engine/gate.mjs";
 import { trialOf, writeHeld } from "../engine/gate-drafts.mjs";
 import { entries as provEntries } from "../core/provenance.mjs";
 import { checksFor, configFor } from "../engine/naive-config.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 
 /**
+ * One writer per file, checked on every write and append, local or in another source, before anything else is
+ * read or checked: a projection record only from the projector, and from the projector only projection records
+ * or a missing record a person owns (writerRule in packages/naive/src/engine/gate.mjs). A record in another source
+ * counts as existing, since only its connector could say otherwise. Returns the refusal as a router answer, or null.
+ * @param {{ dir: string, r: Record<string, any>, route: string, file: string, projector: boolean, remote?: boolean }} w
+ */
+export function ownerOfWrite({ dir, r, route, file, projector, remote = false }) {
+  const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)) });
+  return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, ...(v.fix ? { fix: v.fix } : {}) } : null;
+}
+
+/**
  * The gate's verdict on a local write, or null when it passes. A person is never held, only
- * refused. A naive.config.json that is not valid JSON fails closed: an agent's write is held.
- * @param {{ dir: string, r: Record<string, any>, route: string, requested: string, file: string, actor: string, actor_id?: string, provenance?: { confidence?: number | string | null }, gate?: { owner?: string } | null }} w
+ * refused. A naive.config.json that is not valid JSON fails closed: an agent's write is held. The
+ * projector's write to a projection record is never held either: no one but the projector could accept it.
+ * @param {{ dir: string, r: Record<string, any>, route: string, requested: string, file: string, actor: string, actor_id?: string, provenance?: { confidence?: number | string | null }, gate?: { owner?: string } | null, projector?: boolean }} w
  * @returns {{ then: string, rule: string, source: string, why?: string, owner?: string, matched?: any[], variants?: boolean, function?: string } | null}
  */
-export function gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance = {}, gate }) {
+export function gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance = {}, gate, projector = false }) {
+  const settled = projector && r.writer === "projection";
   let config;
   try { config = configFor(dir); }
-  catch (e) { return actor === "person" ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${e.message}: the gate fails closed, written as a draft for a person to accept` }; }
+  catch (e) { return actor === "person" || settled ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${e.message}: the gate fails closed, written as a draft for a person to accept` }; }
   const confidence = provenance.confidence === undefined || provenance.confidence === null || provenance.confidence === "" ? undefined : Number(provenance.confidence);
   const v = evaluate({ config, dir, route, table: r.route, requested, record: r.record, actor, role: actor_id, confidence: Number.isNaN(confidence) ? undefined : confidence,
-    exists: existsSync(ventureFile(dir, file)), decisionOwner: gate?.owner ?? undefined });
+    exists: existsSync(ventureFile(dir, file)), decisionOwner: gate?.owner ?? undefined, writer: r.writer, projector });
   if (v.then === "pass") return null;
-  if (actor === "person" && v.then !== "refuse") return null;
+  if ((actor === "person" || settled) && v.then !== "refuse") return null;
   return v;
 }
 

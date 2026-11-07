@@ -117,15 +117,40 @@ export function confidenceCall({ config, route, table, actor = "agent", role, co
 
 const SEVERITY = { pass: 0, draft: 1, owner: 2, refuse: 3 };
 
+/** The command a person runs to correct what a signal says. Named in the refusal; the command itself is not built. */
+export const EMIT_HINT = "naive signals emit <type> --subject <id> --supersedes <signal address>";
+
+/**
+ * One writer per file (signal library design, "Records people own and records the projector owns"), a rule the
+ * framework always applies, before any naive.config.json or package rule. A record type with writer projection in the
+ * data model is written only by the signal projector; every other actor, a person included, is refused and told to
+ * emit a superseding signal. The projector writes nothing else, except that it may create a record a person owns
+ * when it is missing (competitors/<id>.json from a signal's organization part) and never writes it again. Reads are
+ * not gated. Returns a refusal or null.
+ * @param {{ route: string, writer?: string, projector?: boolean, exists?: boolean }} q
+ * @returns {{ then: "refuse", rule: string, source: string, matched: string[], why: string, fix?: { command: string, built: boolean, then: string } } | null}
+ */
+export function writerRule({ route, writer, projector = false, exists = false }) {
+  if (writer === "projection" && !projector) return { then: "refuse", rule: "projector-only", source: "data model", matched: ["projector-only"],
+    why: `${route} is written only by the signal projector (writer projection in the data model): to correct what a signal says, emit a superseding signal with ${EMIT_HINT} (not built yet), and change anything else in the record a person owns beside it`,
+    fix: { command: EMIT_HINT, built: false, then: "the next signal pull renders the record again" } };
+  if (projector && writer !== "projection" && exists) return { then: "refuse", rule: "projector-only", source: "data model", matched: ["projector-only"],
+    why: `${route} is a record a person owns: the signal projector creates one only when it is missing and never writes it again` };
+  return null;
+}
+
 /**
  * The gate's verdict on one write. Input: config (resolved, from configFor), dir (for access),
  * route (concrete), table (its route-table pattern), record (type), actor (person or agent), role
  * (team-plan id), confidence (a score the write carries, or undefined), exists (the record exists
- * now), decisionOwner (the owner of the record's decision class, if any).
+ * now), decisionOwner (the owner of the record's decision class, if any), writer (the record type's writer in the
+ * data model) and projector (the call is the signal projector's; see writerRule).
  * Returns { then: pass | draft | owner | refuse, rule, source, owner, variants, why, matched }.
- * @param {{ config: *, dir?: string, route: string, table?: string, requested?: *, record?: string, actor?: string, role?: string, confidence?: number, exists?: boolean, decisionOwner?: string }} q
+ * @param {{ config: *, dir?: string, route: string, table?: string, requested?: *, record?: string, actor?: string, role?: string, confidence?: number, exists?: boolean, decisionOwner?: string, writer?: string, projector?: boolean }} q
  */
-export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner }) {
+export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner, writer, projector = false }) {
+  const owned = writerRule({ route, writer, projector, exists });
+  if (owned) return owned;
   const pins = pinsBlocking(config, record);
   if (pins.length) return { then: "refuse", rule: "pinned-version", source: "naive.config.json packages", matched: ["pinned-version"],
     why: pins.map((p) => `${p.package} is pinned to ${p.pinned} but ${p.installed ?? "nothing"} is installed`).join("; ") + ": change the pin or the install first" };

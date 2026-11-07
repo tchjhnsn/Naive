@@ -52,8 +52,8 @@ import { blocked as betaBlocked } from "../engine/beta-gate.mjs";
 import { readFlag as freshnessFlag } from "../engine/freshness.mjs";
 // Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
-import { actingCall, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
-import { checkPlan, gateWrite, heldDraft, ledgerHook } from "./gate-hooks.mjs";
+import { actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
+import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite } from "./gate-hooks.mjs";
 // Appends (packages/naive/src/router/appends.mjs): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.mjs";
@@ -186,9 +186,10 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Context hook: every call is timed and measured for agent vitals (packages/naive/src/core/instrumentation.mjs).
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
 // Writes hook (packages/naive/src/router/writes.mjs): adds what reads, layouts and writes answer.
-export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
+// The projector hook (packages/naive/src/router/acting.mjs): whether the call carries the projector's symbol is read here and passed on.
+export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around((c) => callInAction(c, isProjector(c)), b), ventureDir), ventureDir));
 /** @param {{ venture: string, route: string, action: string, input?: *, actor?: string, actor_id?: string, workspace?: string, via?: string, provenance?: { derived_from?: string[], decision?: string, note?: string, agent?: Record<string, any>, activity?: string, confidence?: number | string | null } }} args */
-async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }, projector = false) {
   if (actor === "public" && action !== "read") return { ok: false, error: `the public reader only reads; ${action} needs a person or an agent` };
   const requested = route;
   const { r, params, alias } = resolve(route);
@@ -346,6 +347,9 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "append") {
     forget(dir); // Caching hook (H-3): what this action memoized for the venture is read again after an append.
     const file = fileFor(r, params, dir);
+    // Gate group hook: one writer per file (writer projection in the data model).
+    const owned = ownerOfWrite({ dir, r, route, file, projector, remote });
+    if (owned) return { ...owned, ...deprecated };
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
     return { ...(await appendLine({ dir, r, id: params.id, route, requested, file, input, actor, actor_id, provenance, store, src, agent, remote })), ...deprecated };
   }
@@ -355,6 +359,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
+    // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
+    // nothing a person owns once it exists; refused here, before the schema, the gate or any source is touched.
+    const owned = ownerOfWrite({ dir, r, route, file, projector, remote });
+    if (owned) return { ...owned, ...deprecated };
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
     if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
@@ -391,7 +399,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const held = !remote && actor !== "person" ? holding(dir, file) : null;
     // The venture's own fail-closed routes (naive.config.json, the gate, EE-073) hold an agent's write too.
     // Gate group hook (X-1 to X-6, U-4): the venture's gate decides; a refusal stops the write here.
-    const configured = !remote ? gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate }) : null;
+    const configured = !remote ? gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate, projector }) : null;
     if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
     // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
     // approved it, is a draft whatever the decision's class.
@@ -409,7 +417,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const settles = isDecision && (unsettles || input?.status === "decided" || input?.approved_by != null || input?.provenance?.approved_by != null);
     // Known gap A: a decided decision names who decided it, whoever writes it; a person's write without one is refused.
     if (isDecision && actor === "person" && input?.status === "decided" && !input?.provenance?.approved_by) return { ok: false, error: `a decided decision names who decided it (provenance.approved_by); approve it with mentura decide ${input?.id ?? "<id>"} --by <name>` };
-    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person";
+    // The projector's write to a projection record is never a draft: no one but the projector could accept it.
+    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person" && !(projector && r.writer === "projection");
     const attributeWrites = [];
     if (split.length && !gatedDraft) {
       for (const a of split) {
