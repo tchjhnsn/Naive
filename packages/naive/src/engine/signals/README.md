@@ -17,7 +17,7 @@ This folder is private. Only its own files and its front door, the signal engine
 
 ## Run and test
 
-- `node packages/naive/src/engine/signals/render-test.ts` renders every worked case of the example signal types in `packages/naive/src/records/examples/signals/library/types/` to its expected records, and tests views, receive (salient at one listener and noise at another for the same signal), withdrawal, each reducer, the fixpoint (three rounds when a master record admits its signals), the raise after five rounds for a criterion that is not monotone, proposals and marks, determinism, the diff (a diff after its own commit writes nothing), and that `render.ts` reads no file, clock or randomness. `node test.mjs` runs it.
+- `node packages/naive/src/engine/signals/render-test.ts` renders every worked case of the example signal types in `packages/naive/src/records/examples/signals/library/types/` and of the competitors package's types in `packages/naive/library/packages/competitors/signals/types/` to its expected records, and tests views, receive (salient at one listener and noise at another for the same signal), withdrawal, each reducer, the fixpoint (three rounds when a master record admits its signals), the raise after five rounds for a criterion that is not monotone, proposals and marks, determinism, the diff (a diff after its own commit writes nothing), and that `render.ts` reads no file, clock or randomness. `node test.mjs` runs it.
 - `node scripts/dependency-rules-test.ts` shows that an import of this folder from anywhere else fails.
 
 ## How it connects
@@ -28,4 +28,4 @@ This folder is private. Only its own files and its front door, the signal engine
 
 ## Not built
 
-- Pull, routes and the CLI (build item 5), the projector-only rule in the gate (item 4), the `competitors` package (item 6) and `check-signals` (item 7).
+- Pull, routes and the CLI (build item 5) and `check-signals` (item 7).
