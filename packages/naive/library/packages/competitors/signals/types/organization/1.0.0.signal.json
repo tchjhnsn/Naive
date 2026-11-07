@@ -16,6 +16,7 @@
   "projects": [
     {
       "route": "competitors/[id]",
+      "subject_field": "id",
       "once": true,
       "fields": {
         "name": { "reducer": "first", "value": "props.name" },
@@ -32,7 +33,7 @@
         { "subject": "acme-robotics", "time": "2026-12-01", "props": { "name": "Acme Robotics Inc", "domain": "acme.example" } }
       ],
       "expect": {
-        "competitors/acme-robotics": { "name": "Acme Robotics", "domain": "acme.example" }
+        "competitors/acme-robotics": { "id": "acme-robotics", "name": "Acme Robotics", "domain": "acme.example" }
       },
       "note": "first takes the earliest standing value in (time, id) order, so the first name wins. The record is created once: a later render that finds it, written by a person or by this projection, leaves it alone."
     },
@@ -43,10 +44,10 @@
         { "subject": "globex", "time": "2026-11-03", "props": { "name": "Globex Corporation", "domain": "globex.example" } }
       ],
       "expect": {
-        "competitors/globex": { "name": "Globex", "domain": "globex.example" }
+        "competitors/globex": { "id": "globex", "name": "Globex", "domain": "globex.example" }
       },
       "note": "Each field folds on its own: a signal without a domain contributes nothing to domain, so the domain comes from the first report that has one."
     }
   ],
-  "note": "Open type in the competitors package (the implicit library naive). The rendered record does not name its subject yet: the render's subject_field is not merged, and the id field joins these cases when it is."
+  "note": "Open type in the competitors package (the implicit library naive)."
 }

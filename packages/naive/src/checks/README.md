@@ -25,7 +25,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-governance.mjs`](./check-governance.mjs) | Checks each venture's ownership-and-control records (EE-022). |
 | [`check-integrations.mjs`](./check-integrations.mjs) | Checks every layer's tooling/integrations.json for the rules one entry's schema cannot state. |
 | [`check-nextjs-status.mjs`](./check-nextjs-status.mjs) | Checks docs/design/naive-nextjs-status.json against the Next.js translation ledger and the code. |
-| [`check-nouns.mjs`](./check-nouns.mjs) | Checks the system's nouns (EE-014). |
+| [`check-nouns.mjs`](./check-nouns.mjs) | Checks the system's nouns (EE-014). With `--md` it writes the glossary in one write and exits only once it is flushed, because stdout to a pipe is asynchronous and an early exit cut the render that `test.mjs` compares with `ontology.md`. |
 | [`check-people.mjs`](./check-people.mjs) | Checks venture types and people (EE-082) in a workspace. |
 | [`check-private.mjs`](./check-private.mjs) | Private records, fields, and sensitive streams never reach a model (EE-073). |
 | [`check-provenance.mjs`](./check-provenance.mjs) | Checks each venture's provenance log (<venture>/provenance.jsonl, EE-031). |
@@ -34,6 +34,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-publication.mjs`](./check-publication.mjs) | Checks each venture's publication policy (governance/publication-policy.json, EE-025) and the handoffs that publish. |
 | [`check-ready.mjs`](./check-ready.mjs) | Checks that a handoff is ready to execute before anyone starts on it (EE-019). |
 | [`check-reasons.mjs`](./check-reasons.mjs) | The check for reasons with citations (packages/naive/src/engine/reasons.mjs). |
+| [`md-render-flush-test.ts`](./md-render-flush-test.ts) | Runs `check-nouns.mjs --md` and `check-data-model.mjs --md` eight at a time, some with the reader paused for a moment, and checks every output equals the committed render. |
 | [`check-record-paths-test.ts`](./check-record-paths-test.ts) | Tests the record types' resolver (packages/naive/src/records/index.mjs) and the check that every record path goes through it (packages/naive/src/checks/check-record-paths.ts). |
 | [`check-record-paths.ts`](./check-record-paths.ts) | The record types' paths go through one resolver (monorepo rebuild step 5a-1, design docs/design/MONOREPO_RECORDS_PACKAGE_2026-11-05.md in PR #243). It no longer compares the resolver with a Python copy of the mapping, because `validate.py` is gone. |
 | [`check-sdlc-catalog.ts`](./check-sdlc-catalog.ts) | Checks the SDLC catalog (packages/naive/src/functions/products/sdlc/catalog.json, R-26) for what its schema cannot state. |
@@ -50,7 +51,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-ventures.mjs`](./check-ventures.mjs) | Checks the rules across a workspace's ventures that one venture.json alone cannot (EE-011, EE-012). |
 | [`check-visibility.mjs`](./check-visibility.mjs) | The publish check for field visibility. |
 | [`check-where-used.mjs`](./check-where-used.mjs) | Checks each venture's where-used list (EE-042). |
-| [`competitors-package-test.ts`](./competitors-package-test.ts) | Tests the competitors package ([`packages/naive/library/packages/competitors/`](../../library/packages/competitors/README.md)) without the render: each listener hears a type it ships, each projection writes a record type it owns with fields that record's schema has, the person's master record is the only projection written once, and each worked case's signals and expected records are valid. |
+| [`competitors-package-test.ts`](./competitors-package-test.ts) | Tests the competitors package ([`packages/naive/library/packages/competitors/`](../../library/packages/competitors/README.md)): each listener hears a type it ships, each projection writes a record type it owns with fields that record's schema has and names its subject field, the person's master record is the only projection written once, and each worked case's signals and expected records are valid. |
 | [`docs-claims-test.mjs`](./docs-claims-test.mjs) | Cases for packages/naive/src/checks/check-docs-claims.mjs. |
 | [`lint-customers.mjs`](./lint-customers.mjs) | Customers lint. |
 | [`lint-finance.mjs`](./lint-finance.mjs) | Finance lint. |

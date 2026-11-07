@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "signal-type.schema.json",
   "title": "Signal type",
-  "description": "One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. Nothing renders projections yet: render, pull and check-signals are later build items.",
+  "description": "One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. packages/naive/src/engine/signals/render.ts renders projections and worked cases; pull and check-signals are later build items.",
   "type": "object",
   "required": [
     "id",
@@ -127,6 +127,11 @@
           "type": "string",
           "pattern": "^[a-z0-9][a-z0-9-]*(/([a-z0-9][a-z0-9-]*|\\[id\\]))*$",
           "description": "The record route it writes, where [id] is the signal's subject: competitors/[id]/signals"
+        },
+        "subject_field": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "The record field that holds the signal's subject, the [id] of the route (competitor in competitors/[id]/signals, id in competitors/[id]). Left out, the record does not name its subject"
         },
         "once": {
           "type": "boolean",

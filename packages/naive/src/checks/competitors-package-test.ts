@@ -1,10 +1,10 @@
 // Tests the competitors package (signal library build plan item 6; everything-ecosystem
-// docs/design/SIGNAL_LIBRARY_2026-11-06.md): its open signal types and listeners hold together without the render.
-// Each listener hears a type the package ships, each project listener's route is a projection of that type, every
-// worked case's props match the type and its parts, each projection writes a record type the package owns with fields
-// that record's schema has, the person's master record is the only projection written once, and each case's expected
-// record is a valid record once the render fills what it adds (the subject and each entry's signal). Rendering the
-// cases is the render's own test (engine/signals/render.ts, not merged yet) and check-signals (item 7, not built).
+// docs/design/SIGNAL_LIBRARY_2026-11-06.md): its open signal types and listeners hold together. Each listener hears a
+// type the package ships, each project listener's route is a projection of that type, every worked case's props match
+// the type and its parts, each projection writes a record type the package owns with fields that record's schema has
+// and names the field that holds its subject, the person's master record is the only projection written once, and each
+// case's expected record is a valid record once each appended entry names its signal. Rendering the cases through the
+// real render is in engine/signals/render-test.ts, since only that private folder may import render.ts.
 //
 //   node packages/naive/src/checks/competitors-package-test.ts
 
@@ -58,6 +58,7 @@ for (const t of types) {
     expect(`${t.id}: projects into ${p.route}, a record type the package owns`, !!rec && manifest.records.includes(rec.id), rec?.id ?? "no record type");
     if (!rec) continue;
     const props = (schemaOf(rec).properties ?? {}) as Obj;
+    expect(`${t.id}: ${p.route} names its subject in ${SUBJECT[rec.id]}`, p.subject_field === SUBJECT[rec.id], String(p.subject_field));
     expect(`${t.id}: every field it fills in ${p.route} is in ${rec.id}'s schema`, Object.keys(p.fields).every((f) => f in props), Object.keys(p.fields).join(", "));
     expect(`${t.id}: ${p.route} is written once exactly when a person owns it`, Boolean(p.once) === (rec.writer !== "projection"), `once ${p.once}, writer ${rec.writer ?? "any"}`);
   }
@@ -72,12 +73,13 @@ for (const t of types) {
       expect(`${t.id}/${c.id}: expects ${route}, which one of its projections writes`, !!pattern, route);
       const rec = pattern ? recordAt(pattern.route) : undefined;
       if (!pattern || !rec) continue;
-      expect(`${t.id}/${c.id}: the expected record holds only the fields the projection fills`, Object.keys(record).every((k) => k in pattern.fields), Object.keys(record).join(", "));
-      // What the render adds: the subject (subject_field, once it merges) and the address each appended entry names.
-      const subject = route.split("/")[1];
-      const filled: Obj = { [SUBJECT[rec.id]]: subject, ...Object.fromEntries(Object.entries(record as Obj).map(([k, x]) => [k, Array.isArray(x) ? x.map((e) => ({ ...(e as Obj), signal: ADDRESS })) : x])) };
+      const sf = pattern.subject_field;
+      expect(`${t.id}/${c.id}: the expected record holds its subject and only the fields the projection fills`,
+        !!sf && (record as Obj)[sf] === route.split("/")[1] && Object.keys(record).every((k) => k === sf || k in pattern.fields), Object.keys(record).join(", "));
+      // A case may leave out the address each appended entry names; the render fills it.
+      const filled: Obj = { ...Object.fromEntries(Object.entries(record as Obj).map(([k, x]) => [k, Array.isArray(x) ? x.map((e) => ({ ...(e as Obj), signal: ADDRESS })) : x])) };
       const bad = failures(filled, schemaOf(rec), rec.schema?.split("/").at(-1) as string);
-      expect(`${t.id}/${c.id}: the expected ${rec.id} is a valid record once the render fills its subject and signals`, !bad, bad);
+      expect(`${t.id}/${c.id}: the expected ${rec.id} is a valid record once each entry names its signal`, !bad, bad);
     }
   }
 }

@@ -20,6 +20,7 @@
   "projects": [
     {
       "route": "competitors/[id]/signals",
+      "subject_field": "competitor",
       "fields": {
         "funding": { "reducer": "append", "value": "props.round", "unique_by": ["props.round.series"] },
         "first_seen": { "reducer": "min", "value": "time" },
@@ -37,6 +38,7 @@
       ],
       "expect": {
         "competitors/acme-robotics/signals": {
+          "competitor": "acme-robotics",
           "first_seen": "2026-11-05",
           "last_seen": "2026-11-06",
           "funding": [{ "series": "seed", "amount": 3000000, "currency": "USD", "support": "supported" }]
@@ -52,6 +54,7 @@
       ],
       "expect": {
         "competitors/globex/signals": {
+          "competitor": "globex",
           "first_seen": "2026-03-01",
           "last_seen": "2026-09-15",
           "funding": [
@@ -63,5 +66,5 @@
       "note": "Signals arrive in any order; the fold reads them in (time, id) order, so the seed round comes first."
     }
   ],
-  "note": "Open type in the competitors package (the implicit library naive). The rendered record does not name its subject yet: the render's subject_field is not merged, and the competitor field joins these cases when it is."
+  "note": "Open type in the competitors package (the implicit library naive)."
 }

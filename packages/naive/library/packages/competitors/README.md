@@ -18,7 +18,7 @@ The package owns the `competitor` and `competitor-signals` record types. They mo
 | [`signals/types/competitor-funding/1.0.0.signal.json`](./signals/types/competitor-funding/1.0.0.signal.json) | `competitor-funding@1`: composes `organization@^1` at `org` and `funding-event@^1` at `round`. Appends one `funding` entry per series and folds `first_seen` (min of time) and `last_seen` (max of time). Fresh for 90 days. |
 | [`signals/types/product-launch/1.0.0.signal.json`](./signals/types/product-launch/1.0.0.signal.json) | `product-launch@1`: composes `organization@^1` at `org` and holds a product's name, market and url. Appends one `launches` entry per product name and folds `first_seen` and `last_seen`. Fresh for 60 days. |
 
-Each type carries worked `cases`: given signals and the record each projection should hold afterwards, by the design's fold semantics (append keeps one entry per `unique_by` key in time order, with its value from the earliest standing signal and a `support` of supported or withdrawn; min and max read standing signals only).
+Each projection names its `subject_field`: `id` in the master record and `competitor` in the signals record. Each type carries worked `cases`: given signals and the record each projection should hold afterwards, subject included, by the design's fold semantics (append keeps one entry per `unique_by` key in time order, with its value from the earliest standing signal and a `support` of supported or withdrawn; min and max read standing signals only).
 
 The default listeners:
 
@@ -34,7 +34,8 @@ A known competitor is a subject in the `competitors` collection. A venture turns
 
 ## Run and test
 
-- `node packages/naive/src/checks/competitors-package-test.ts` checks the package holds together without the render: each listener hears a type the package ships, each project listener routes to a projection of that type, each case's signals match the type and its parts, each projection writes a record type the package owns with fields that record's schema has, only the person's master record is written once, and each expected record is valid once the render fills its subject and each entry's signal. `node test.mjs` runs it.
+- `node packages/naive/src/checks/competitors-package-test.ts` checks the package holds together: each listener hears a type the package ships, each project listener routes to a projection of that type, each case's signals match the type and its parts, each projection writes a record type the package owns with fields that record's schema has and names its subject field, only the person's master record is written once, and each expected record holds its subject and is valid once each entry names its signal. `node test.mjs` runs it.
+- `node packages/naive/src/engine/signals/render-test.ts` renders every case here through the real render (`renderCase` in [`render.ts`](../../../src/engine/signals/render.ts)) to its expected records. The test sits in that folder because only its own files and its front door may import the render.
 - `node packages/naive/src/checks/check-data-model.mjs` checks the manifest, its ownership of the two record types and its listeners; `node packages/naive/src/records/validate.mjs` validates the signal types.
 
 ## How it connects
@@ -45,5 +46,4 @@ A known competitor is a subject in the `competitors` collection. A venture turns
 
 ## Not built
 
-- The render that folds signals into these records (`engine/signals/render.ts`), the pull from a library, `naive signals emit` and `check-signals` are not built. Rendering the cases is the render's own test.
-- `subject_field` on a projection is not built on main, so the cases' expected records leave out the subject key (`id` in the master record, `competitor` in the signals record); each type's `note` says so.
+- The signal engine that runs the render over a venture's signals and these listeners (`engine/signals.ts`), the pull from a library, `naive signals emit` and `check-signals` are not built.

@@ -16,6 +16,7 @@
   "projects": [
     {
       "route": "competitors/[id]",
+      "subject_field": "id",
       "once": true,
       "fields": {
         "name": { "reducer": "first", "value": "props.name" },
