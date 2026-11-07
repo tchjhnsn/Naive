@@ -3,7 +3,8 @@
 // points, the horizon, the read cut, the weights, min_gain and the budgets. The generator fills the version (1
 // unless given), the gap (the horizon unless given), the time it was made (now unless given) and the sha, the
 // address of every other field, and refuses a plan whose windows are not ordered and purged (windowProblems). The
-// draft is for <pattern>.plan.json. Freezing its eval set at _eval/<sha>/ is naive recipes plan, not built.
+// draft is for <pattern>.plan.json. naive recipes plan (packages/naive/src/engine/recipes/eval-set.ts) draws the windows,
+// calls this draft and freezes the eval set at <venture>/_eval/<sha>/.
 import { createHash } from "node:crypto";
 import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
 import { canonicalJson } from "../../core/signal-id.ts";

@@ -44,8 +44,7 @@ import { hasBlob, readBlob } from "../core/blobs.mjs";
 import { lintRecipe, recipeExports, runRecipes } from "../engine/recipes/sandbox.ts";
 import type { JsonObject } from "../engine/recipes/sandbox.ts";
 import { planSha, windowProblems } from "../engine/generators/eval-plan.ts";
-import { fieldOf, findSignal, libraries, mergeTypes, typesIn } from "../engine/signals.ts";
-import { resolveType, splitRange } from "../engine/signals/render.ts";
+import { fieldOf, findSignal, libraries, mergeTypes, resolveType, splitRange, typesIn } from "../engine/signals.ts";
 import type { EvalPlan, Experiment, Reception, Signal } from "../records/types/records.d.ts";
 
 export type Finding = { file: string; problem: string };
