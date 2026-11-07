@@ -14,7 +14,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-boundary.mjs`](./check-boundary.mjs) | The boundary between Naive and the apps that use it (EE-041, EE-118). |
 | [`check-brand.mjs`](./check-brand.mjs) | Checks each venture's brand (packages/naive/src/engine/brand.mjs). |
 | [`check-config.mjs`](./check-config.mjs) | Checks a venture's naive.config.json (P-2) and explains its gate. |
-| [`check-data-model.mjs`](./check-data-model.mjs) | Checks the data model (packages/naive/src/records/data-model.json), the layer manifests and the venture packages against the repository (EE-018, EE-071). Every file in an example venture must have a kind, and a record type is a log exactly when its form is `json-lines`. |
+| [`check-data-model.mjs`](./check-data-model.mjs) | Checks the data model (packages/naive/src/records/data-model.json), the layer manifests and the venture packages against the repository (EE-018, EE-071). Every file in an example venture must have a kind, and a record type is a log exactly when its form is `json-lines`. A record type without a generator fails with a hint to add one as `packages/naive/src/engine/generators/<id>.ts`. |
 | [`check-data-packages.mjs`](./check-data-packages.mjs) | Data packages and raw (EE-070). |
 | [`check-delegation.mjs`](./check-delegation.mjs) | Checks delegation. |
 | [`check-departments.mjs`](./check-departments.mjs) | Checks each venture's departments (EE-047). |
