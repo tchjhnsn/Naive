@@ -85,6 +85,39 @@ export type Trial = Base & {
   truth: "yes" | "no" | null;     // null until the call is resolved
 };
 
+/** What one signal says about itself (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): an element of
+ *  one signal type, immutable, dated and rated. A field is null when the signal does not hold it. */
+export type SignalFacts = {
+  addressed: boolean;             // its id is the first 24 hex characters of sha256 over the canonical JSON of every other field
+  type: string | null;            // its signal type as id@major.minor
+  parts: string[];                // the types of the parts it composes, as id@major
+  producer: string | null;        // who produced it
+  dated: boolean;                 // it says when the thing happened
+  rating: { reliability: string; credibility: number } | null;  // Admiralty code: reliability A to F, credibility 1 to 6
+  withdraws: number;              // how many of retracts and supersedes it carries
+};
+
+/** What one listener asks: the consumer it serves, the type range it hears, its criterion's bounds and what happens. */
+export type ListenerFacts = {
+  consumer: boolean;              // it names one consumer: a record route, a frame or a decision
+  hears: string | null;           // the type range it hears, as id@major
+  reliability: string | null;     // the worst source reliability it accepts; null accepts any
+  credibility: number | null;     // the worst information credibility it accepts; null accepts any
+  producers: string[];            // accepted producer prefixes; none listed accepts any producer
+  then: "project" | "propose" | "revalidate" | null;  // project is level and reads no clock; propose and revalidate are edge
+  maxAge: number | null;          // an age bound in days; null when it judges no age
+};
+
+/** One signal arriving at one listener: the signal's facts, the listener's, the signal's age where the listener
+ *  judges age, and how many of the listener's predicates fail on the signal, read with the venture's facts. Names
+ *  stay out of the facts. */
+export type Reception = Base & {
+  signal: SignalFacts;
+  listener: ListenerFacts;
+  age: number;                    // days from the signal's time to now
+  failed: number;                 // the listener's predicates that fail on this signal
+};
+
 const N = 20000;
 export function membershipCases(seed = 11): Membership[] {
   const r = rng(seed);
@@ -231,4 +264,44 @@ export function trialCases(seed = 37): Trial[] {
     const truth: "yes" | "no" | null = b(0.5) ? null : b() ? "yes" : "no";
     return { confirmed: b(0.9), label: ["hit", "miss", "false alarm", "trial", undefined][Math.floor(r() * 5)], score, criterion, call, truth };
   });
+}
+
+const SIGNAL_TYPES = ["competitor-funding@1.2", "competitor-launch@1.0", "market-report@2.1", "hire@1.0"];
+const PARTS = ["organization@1", "funding-event@1", "product@1"];
+const PRODUCERS = ["mentura/research", "mentura/watch", "local/person", "third-party/feed"];
+const LETTERS = "ABCDEF";
+
+/** Signals and listeners are drawn from pools, so one signal reaches many listeners and one listener hears many
+ *  signals; most are well formed, with one flaw drawn at random now and then, so each property fails on its own. */
+export function receptionCases(seed = 41): Reception[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const pick = <T>(xs: readonly T[]): T => xs[Math.floor(r() * xs.length)];
+  const signals: SignalFacts[] = Array.from({ length: 400 }, () => {
+    const type = b(0.97) ? pick(SIGNAL_TYPES) : b() ? null : "competitor-funding";
+    return {
+      addressed: b(0.97), type,
+      parts: type?.startsWith("competitor-") ? PARTS.filter(() => b(0.7)) : [],
+      producer: b(0.97) ? pick(PRODUCERS) : null, dated: b(0.97),
+      rating: b(0.03) ? null : b(0.97) ? { reliability: pick([...LETTERS]), credibility: 1 + Math.floor(r() * 6) } : { reliability: "G", credibility: Math.floor(r() * 8) },
+      withdraws: b(0.9) ? 0 : b(0.8) ? 1 : 2,
+    };
+  });
+  const listeners: ListenerFacts[] = Array.from({ length: 400 }, () => {
+    const then = b(0.97) ? pick(["project", "propose", "revalidate"] as const) : null;
+    return {
+      consumer: b(0.97),
+      hears: b(0.97) ? pick([...SIGNAL_TYPES.map((t) => t.split(".")[0]), ...PARTS]) : b() ? null : "competitor-funding",
+      reliability: b(0.5) ? null : b(0.97) ? pick([...LETTERS]) : "Z",
+      credibility: b(0.5) ? null : b(0.97) ? 1 + Math.floor(r() * 6) : 9,
+      producers: b(0.6) ? [] : [pick(["mentura/", "local/", "third-party/"])],
+      then,
+      maxAge: then === "project" ? (b(0.97) ? null : 30) : b(0.5) ? null : 7 + Math.floor(r() * 180),
+    };
+  });
+  return Array.from({ length: N }, () => ({
+    confirmed: b(0.9), label: ["signal", "noise", "salient", "listener", undefined][Math.floor(r() * 5)],
+    signal: pick(signals), listener: pick(listeners),
+    age: Math.floor(r() * 365), failed: b(0.7) ? 0 : 1 + Math.floor(r() * 3),
+  }));
 }

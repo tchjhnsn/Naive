@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Detector, Encounter, Hierarchy, LinkGraph, Membership, Relationship, Trial } from "./levels.ts";
+import type { Arrangement, Detector, Encounter, Hierarchy, LinkGraph, Membership, Reception, Relationship, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -362,4 +362,109 @@ export const miss = outcome("miss", "Miss", "yes", "no", "A resolved trial whose
 export const falseAlarm = outcome("false-alarm", "False alarm", "no", "yes", "A resolved trial whose call was yes and whose true answer was no.", ["hit", "miss", "correct-rejection"]);
 export const correctRejection = outcome("correct-rejection", "Correct rejection", "no", "no", "A resolved trial whose call was no and whose true answer was no. Noise in its standard sense is the no case; a call below the line is noise only once it resolves as a correct rejection.", ["hit", "miss", "false-alarm"]);
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection];
+// Signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md, build plan item 1). Every term here
+// is at the reception level: one signal arriving at one listener. Signal reads only the signal's facts and listener
+// only the listener's; salient reception and noise read the pair. The theorems are in packages/naive/lean/Naive/Signals.lean.
+// Signal type, signal library, projection, Admiralty rating and competitor are ontology nouns without a term of
+// their own: each is a definition, a source, a fold, a code or a party, not something a reception passes or fails.
+// Criterion is a listener's bounds and predicates here and a detector's line in Detection.lean; it has no term.
+const CLOUDEVENTS = "CloudEvents 1.0 (CNCF, 2019): id, source, type, time and data, with source named producer and data named props";
+const SHANNON = "Shannon, A Mathematical Theory of Communication (1948)";
+const STANAG = "NATO STANAG 2511, Intelligence Reports (Admiralty code): source reliability A to F, information credibility 1 to 6";
+const DOM_EVENTS = "W3C DOM Standard (WHATWG): an event listener has a type, a callback and options";
+const SIGNAL_DESIGN = "everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md";
+
+const ADMIRALTY_LETTERS = "ABCDEF";
+/** An Admiralty code: reliability one letter A to F, credibility a whole number 1 to 6. */
+const admiralty = (reliability: unknown, credibility: unknown): boolean =>
+  typeof reliability === "string" && reliability.length === 1 && ADMIRALTY_LETTERS.includes(reliability) &&
+  typeof credibility === "number" && Number.isInteger(credibility) && credibility >= 1 && credibility <= 6;
+/** id@major: the major of a type range or a part. */
+const major = (t: string): string => t.split(".")[0];
+/** The listener names the signal's type (by major) or the type of one of its parts. */
+const hearsIt = (f: Reception): boolean => f.listener.hears !== null && f.signal.type !== null &&
+  (major(f.signal.type) === f.listener.hears || f.signal.parts.includes(f.listener.hears));
+/** The rating is within the listener's bounds; a missing bound accepts any rating (A is best, 1 is best). */
+const inBounds = (f: Reception): boolean => f.signal.rating !== null &&
+  (f.listener.reliability === null || f.signal.rating.reliability <= f.listener.reliability) &&
+  (f.listener.credibility === null || f.signal.rating.credibility <= f.listener.credibility);
+/** The listener lists no producer prefixes, or the signal's producer starts with one of them. */
+const producerAccepted = (f: Reception): boolean => {
+  const producer = f.signal.producer;
+  return f.listener.producers.length === 0 || (producer !== null && f.listener.producers.some((p) => producer.startsWith(p)));
+};
+/** Only an edge listener judges age; a projecting listener reads no clock. */
+const fresh = (f: Reception): boolean => f.listener.then === "project" || f.listener.maxAge === null || f.age <= f.listener.maxAge;
+/** The listener's criterion holds on the signal: rating bounds, producer, age at an edge listener, then every predicate. */
+const criterionHolds = (f: Reception): boolean => inBounds(f) && producerAccepted(f) && fresh(f) && f.failed === 0;
+
+export const signal: Term<Reception> = {
+  id: "signal", form: "word", label: "Signal", level: "reception", kind: "act",
+  labels: sharedTerm("adapted", "standard"),
+  meaning: "An immutable, content-addressed, dated statement that something happened outside the venture, an element of one signal type, rated with the Admiralty code. It reads the same at every listener: whether it matters is the reception's question, never the signal's.",
+  props: [
+    { id: "S1", says: "content-addressed: its id is the hash of every other field", check: (f) => f.signal.addressed },
+    { id: "S2", says: "names one signal type as id@major.minor", check: (f) => f.signal.type !== null && /^[a-z0-9-]+@\d+\.\d+$/.test(f.signal.type) },
+    { id: "S3", says: "names its producer", check: (f) => f.signal.producer !== null },
+    { id: "S4", says: "dated: says when the thing happened", check: (f) => f.signal.dated },
+    { id: "S5", says: "rated with an Admiralty code: reliability A to F, credibility 1 to 6", check: (f) => f.signal.rating !== null && admiralty(f.signal.rating.reliability, f.signal.rating.credibility), uses: [admiralty] },
+    { id: "S6", says: "withdraws at most one signal: at most one of retracts or supersedes", check: (f) => f.signal.withdraws <= 1 },
+  ],
+  sources: [SHANNON, CLOUDEVENTS, STANAG, SIGNAL_DESIGN],
+  lean: ["withdraw_monotone", "live_shrinks"],
+  predicts: { listener: "overlap" },
+};
+
+export const listener: Term<Reception> = {
+  id: "listener", form: "word", label: "Listener", level: "reception", kind: "role",
+  labels: sharedTerm("adapted", "standard"),
+  meaning: "The edge between a signal type and one consumer (a record route, a frame or a decision): the type range it hears, the consumer's criterion, and what happens to a salient signal. A projecting listener reads no clock; only an edge listener, one that proposes or revalidates, judges age.",
+  props: [
+    { id: "L1", says: "names one consumer", check: (f) => f.listener.consumer },
+    { id: "L2", says: "names the type range it hears, as id@major", check: (f) => f.listener.hears !== null && /^[a-z0-9-]+@\d+$/.test(f.listener.hears) },
+    { id: "L3", says: "its rating bounds, where it has them, are Admiralty codes", check: (f) => admiralty(f.listener.reliability ?? "A", f.listener.credibility ?? 1), uses: [admiralty] },
+    { id: "L4", says: "says what happens: project, propose or revalidate", check: (f) => f.listener.then !== null },
+    { id: "L5", says: "reads no clock when it projects: only an edge listener has an age bound", check: (f) => f.listener.then !== "project" || f.listener.maxAge === null },
+  ],
+  sources: [DOM_EVENTS, SIGNAL_DESIGN],
+  lean: ["part_heard", "heard_iff", "noise_salient_partition"],
+  predicts: { signal: "overlap" },
+};
+
+export const reception: Term<Reception> = {
+  id: "reception", form: "word", label: "Reception", level: "reception", kind: "act",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "One signal arriving at one listener that hears it: the listener names the signal's type, or the type of one of its parts. Every reception is salient or noise for that listener's consumer, never both.",
+  props: [...signal.props, ...listener.props,
+    { id: "H1", says: "the listener hears the signal's type or the type of one of its parts", check: hearsIt, uses: [major] }],
+  sources: [SHANNON, "Green and Swets, Signal Detection Theory and Psychophysics (1966): the observer receives a stimulus and decides", SIGNAL_DESIGN],
+  lean: ["part_heard", "noise_salient_partition", "noise_salient_count"],
+  predicts: { signal: "is_a", listener: "is_a" },
+};
+
+export const salientReception: Term<Reception> = {
+  ...reception, id: "salient-reception", label: "Salient reception", form: "compound",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "A reception whose listener's criterion holds: the rating within the listener's bounds, an accepted producer, within an edge listener's age bound, and every predicate true on the venture's facts. The same signal may be noise at another listener.",
+  props: [...reception.props,
+    { id: "C1", says: "the rating is within the listener's bounds", check: inBounds },
+    { id: "C2", says: "the producer is one the listener accepts", check: producerAccepted },
+    { id: "C3", says: "within an edge listener's age bound; a projecting listener judges no age", check: fresh },
+    { id: "C4", says: "every predicate of the listener holds on the signal", check: (f) => f.failed === 0 }],
+  sources: [GREEN_SWETS, SIGNAL_DESIGN],
+  lean: ["noise_salient_partition", "noise_relative"],
+  predicts: { reception: "is_a", noise: "disjoint", signal: "is_a", listener: "is_a" },
+};
+
+export const noise: Term<Reception> = {
+  ...reception, id: "noise", label: "Noise", form: "word",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "A reception whose listener's criterion fails: a relation between one signal and one consumer, never a property of the signal, so the same signal can be noise at one listener and salient at another. In signal detection's standard sense noise is the no case of one question; here the question is the consumer's, and its criterion answers it at once, where a detector's no is noise only once it resolves as a correct rejection.",
+  props: [...reception.props,
+    { id: "N1", says: "the criterion fails: the rating is out of bounds, the producer is not accepted, an edge listener's age bound is passed, or a predicate fails", check: (f) => !criterionHolds(f), uses: [criterionHolds, inBounds, producerAccepted, fresh] }],
+  sources: [GREEN_SWETS, SIGNAL_DESIGN],
+  lean: ["noise_relative", "noise_undefinable", "noise_relative_facts", "noise_salient_partition"],
+  predicts: { reception: "is_a", "salient-reception": "disjoint", signal: "is_a", listener: "is_a" },
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise];
