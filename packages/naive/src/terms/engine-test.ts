@@ -1,13 +1,14 @@
 // Tests the term engine: it rejects bad tests (label-reading, vacuous, unconfirmed passing), relations are
 // total, freezing notices a change (to a check or a helper it lists), layer and area decide hand-built
-// arrangements, the detection terms decide hand-built trials and detectors, labels hold the cap, the adopted quote and one referent per proper name, and the admitted terms
+// arrangements, the detection terms decide hand-built trials and detectors, the signal terms decide hand-built
+// receptions and no property of a signal alone defines noise, labels hold the cap, the adopted quote and one referent per proper name, and the admitted terms
 // check against a fresh run.
 //
 //   node packages/naive/src/terms/engine-test.ts
 
 import { freeze, relation, rng, run, validTest, type Term } from "./engine.ts";
-import { arrangementCases, detectorCases, encounterCases, membershipCases, relationshipCases, trialCases, type Arrangement, type Detector, type Relationship, type Trial } from "./levels.ts";
-import { area, capShare, coach, correctRejection, detector, falseAlarm, friend, hit, labelProblems, layer, miss, TERMS, trial, type Labels } from "./terms.ts";
+import { arrangementCases, detectorCases, encounterCases, membershipCases, receptionCases, relationshipCases, trialCases, type Arrangement, type Detector, type Reception, type Relationship, type Trial } from "./levels.ts";
+import { area, capShare, coach, correctRejection, detector, falseAlarm, friend, hit, labelProblems, layer, listener, miss, noise, reception, salientReception, signal, TERMS, trial, type Labels } from "./terms.ts";
 import { admitAll } from "./admit.ts";
 
 let failed = 0;
@@ -49,11 +50,30 @@ const det: Detector = { confirmed: true, yesNo: true, sensorNamed: true, runsSen
 expect("a detector with an unsure band passes", run(detector, det).pass);
 expect("a detector that runs its sensor fails D3 only", JSON.stringify(run(detector, { ...det, runsSensor: true }).failed) === '["D3"]');
 expect("a detector with no base rate fails D6 only", JSON.stringify(run(detector, { ...det, baseRate: null }).failed) === '["D6"]');
+const funding: Reception["signal"] = { addressed: true, type: "competitor-funding@1.2", parts: ["organization@1", "funding-event@1"], producer: "mentura/research", dated: true, rating: { reliability: "B", credibility: 2 }, withdraws: 0 };
+const track: Reception["listener"] = { consumer: true, hears: "competitor-funding@1", reliability: null, credibility: null, producers: [], then: "project", maxAge: null };
+const at = (l: Partial<Reception["listener"]>, failed = 0, age = 3): Reception => ({ confirmed: true, signal: funding, listener: { ...track, ...l }, age, failed });
+expect("a funding signal at a listener that tracks competitors is a salient reception", run(salientReception, at({})).pass && !run(noise, at({})).pass);
+expect("the same signal is noise where a predicate fails (rounds of ten million or more), and salient fails on C4 only", run(noise, at({}, 1)).pass && JSON.stringify(run(salientReception, at({}, 1)).failed) === '["C4"]');
+expect("a listener for a part's type hears the composite (part_heard)", run(reception, at({ hears: "organization@1" })).pass);
+expect("a listener for another type does not hear it: neither salient nor noise", [salientReception, noise].every((t) => !run(t, at({ hears: "hire@1" })).pass) && run(signal, at({ hears: "hire@1" })).pass);
+expect("only an edge listener judges age: a stale signal is noise at propose, salient at project", run(noise, at({ then: "propose", maxAge: 30 }, 0, 90)).pass && run(salientReception, at({}, 0, 90)).pass);
+expect("a projecting listener with an age bound fails L5 only", JSON.stringify(run(listener, at({ maxAge: 30 })).failed) === '["L5"]');
+{ // The design's claim: no property over the signal's facts alone defines noise. Any such property gives one verdict
+  // to every reception of one signal, so a signal that is noise at one reception and salient at another refutes all.
+  const bySignal = new Map<string, Set<string>>();
+  for (const c of receptionCases()) {
+    const outcome = run(noise, c).pass ? "noise" : run(salientReception, c).pass ? "salient" : null;
+    if (outcome) { const k = JSON.stringify(c.signal); bySignal.set(k, (bySignal.get(k) ?? new Set()).add(outcome)); }
+  }
+  const both = [...bySignal.values()].filter((o) => o.size === 2).length;
+  expect("no property of a signal alone defines noise: some signals are noise at one reception and salient at another", both > 0, `${both} of ${bySignal.size} heard signals`);
+}
 const selfNamer: Term<Relationship> = { ...friend, id: "self-namer", label: "self-namer", props: [...friend.props, { id: "X2", says: "goodwill, if it calls itself by name", check: (f) => f.label !== "self-namer" || f.goodwill }] };
 expect("a test that reads its own label in rare cases is caught", validTest(selfNamer, cases).some((p) => /label changes a verdict/.test(p)));
 { const r = rng(11); const seen = new Set<number>(); for (let i = 0; i < 1_000_000; i++) seen.add(r());
   expect("the generator does not cycle within a million draws", seen.size > 999_000, `${seen.size} distinct`); }
-for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases], ["detector", detectorCases], ["trial", trialCases]] as const) {
+for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases], ["detector", detectorCases], ["trial", trialCases], ["reception", receptionCases]] as const) {
   const c = gen(); const distinct = new Set(c.map((x) => JSON.stringify(x))).size;
   expect(`${name} cases are mostly distinct (not repeats of a short cycle)`, distinct > c.length / 2, `${distinct} of ${c.length}`);
 }

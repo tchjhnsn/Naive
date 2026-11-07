@@ -1523,7 +1523,7 @@
     {
       "noun": "criterion",
       "level": "governance",
-      "meaning": "The line on a sensor's score scale at or above which a detector's call is yes; two lines make an unsure band. The optimal one rises with the noise base rate and the false alarm cost and falls with the miss cost (criterion_monotone in packages/naive/lean/Naive/Detection.lean)",
+      "meaning": "The line a consumer draws to sort what reaches it. On a detector, the line on a sensor's score scale at or above which the call is yes; two lines make an unsure band. The optimal one rises with the noise base rate and the false alarm cost and falls with the miss cost (criterion_monotone in packages/naive/lean/Naive/Detection.lean). On a listener, the consumer's own rating bounds and predicates over the venture's facts that sort a heard signal into salient or noise (noise_salient_partition in packages/naive/lean/Naive/Signals.lean)",
       "standard": "Green and Swets 1966",
       "status": "proposed",
       "function": null,
@@ -1631,6 +1631,105 @@
       "handoff_type": false,
       "broader": [
         "information artifact"
+      ]
+    },
+    {
+      "noun": "signal",
+      "level": "knowledge",
+      "meaning": "An immutable, content-addressed, dated statement that something happened outside the venture, an element of one signal type, rated with the Admiralty code. Noise is never a field of it: whether it matters is decided at each listener (noise_relative in packages/naive/lean/Naive/Signals.lean). Not the yes case of signal detection. Signal library design, 2026-11-06",
+      "standard": "Shannon 1948; CloudEvents 1.0",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ],
+      "term": "signal"
+    },
+    {
+      "noun": "signal type",
+      "level": "knowledge",
+      "meaning": "A typed, versioned definition of one kind of signal: its props as JSON Schema, the parts it composes, its projection into records and the default age bound for edge listeners (types/<id>/<version>.signal.json in a signal library)",
+      "standard": "CloudEvents 1.0 type; React component definition (convention)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
+    },
+    {
+      "noun": "signal library",
+      "level": "knowledge",
+      "meaning": "A source that publishes signal types and signals in the naive-signal-library@1 layout and is read in place, listed in knowledge/sources.json with carries signals; nothing in it is copied into the venture. The name is tentative",
+      "standard": "component library; package registry",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
+    },
+    {
+      "noun": "listener",
+      "level": "knowledge",
+      "meaning": "The edge between a signal type and one consumer (a record route, a frame or a decision): the type range it hears, the consumer's criterion, and what happens (project, propose or revalidate). A listener for a part's type hears every composite with that part (part_heard in packages/naive/lean/Naive/Signals.lean). Listeners merge from config, packages, frames and kits, so there is no subscription list",
+      "standard": "W3C DOM event listener",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ],
+      "term": "listener"
+    },
+    {
+      "noun": "noise",
+      "level": "knowledge",
+      "meaning": "A reception whose listener's criterion fails: a relation between one signal and one consumer, never a property of the signal, so the same signal can be salient at one listener and noise at another (noise_relative and noise_undefinable in packages/naive/lean/Naive/Signals.lean). In signal detection's standard sense noise is the no case of one question; a listener's criterion answers its consumer's question at once, where a detector's no is noise only once it resolves as a correct rejection",
+      "standard": "Green and Swets 1966",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "process"
+      ],
+      "term": "noise"
+    },
+    {
+      "noun": "projection",
+      "level": "knowledge",
+      "meaning": "The deterministic fold of a record from the signals salient for it, in (time, id) order with six fixed reducers. It reads no clock, writes through the router as the projector, and a second commit of the same render writes nothing (reconcile_idempotent in packages/naive/lean/Naive/Signals.lean)",
+      "standard": "event sourcing projection (Fowler; Young)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "process"
+      ]
+    },
+    {
+      "noun": "Admiralty rating",
+      "level": "knowledge",
+      "meaning": "How far a signal can be trusted: source reliability A (completely reliable) to F (cannot be judged) and information credibility 1 (confirmed) to 6 (cannot be judged), computed in code by the producer",
+      "standard": "NATO STANAG 2511 (Admiralty code)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "characteristic"
+      ]
+    },
+    {
+      "noun": "competitor",
+      "level": "purpose",
+      "meaning": "A company serving the same customers with an offering that can replace the venture's. Its master record (competitors/<id>.json) is a person's: a projection may create it once and writes only competitors/<id>/signals.json beside it",
+      "standard": "Porter 1980",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "party"
       ]
     }
   ]
