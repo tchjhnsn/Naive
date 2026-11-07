@@ -117,7 +117,7 @@ export function confidenceCall({ config, route, table, actor = "agent", role, co
 
 const SEVERITY = { pass: 0, draft: 1, owner: 2, refuse: 3 };
 
-/** The command a person runs to correct what a signal says. Named in the refusal; the command itself is not built. */
+/** The command a person runs to correct what a signal says, named in the refusal (packages/naive/src/router/orchestration/signals.ts emit). */
 export const EMIT_HINT = "naive signals emit <type> --subject <id> --supersedes <signal address>";
 
 /**
@@ -140,8 +140,8 @@ export function writerRule({ route, writer, projector = false, exists = false, a
     why: `${route} is written only by a person (writer person in the data model): an agent, a researcher included, may read it but never write it; a person writes it with mentura ${route} write --as person${acting ? ", with no MENTURA_ACTOR, MENTURA_MODEL or other MENTURA_ACTOR_ID in the environment saying an agent is acting" : ""}`,
     fix: { command: `mentura ${route} write --as person --input <file.json>`, built: true, then: "a person writes the whole text as { \"text\": \"...\" }" } };
   if (writer === "projection" && !projector) return { then: "refuse", rule: "projector-only", source: "data model", matched: ["projector-only"],
-    why: `${route} is written only by the signal projector (writer projection in the data model): to correct what a signal says, emit a superseding signal with ${EMIT_HINT} (not built yet), and change anything else in the record a person owns beside it`,
-    fix: { command: EMIT_HINT, built: false, then: "the next signal pull renders the record again" } };
+    why: `${route} is written only by the signal projector (writer projection in the data model): to correct what a signal says, emit a superseding signal with ${EMIT_HINT}, and change anything else in the record a person owns beside it`,
+    fix: { command: EMIT_HINT, built: true, then: "naive signals pull renders the record again" } };
   if (projector && writer !== "projection" && exists) return { then: "refuse", rule: "projector-only", source: "data model", matched: ["projector-only"],
     why: `${route} is a record a person owns: the signal projector creates one only when it is missing and never writes it again` };
   return null;

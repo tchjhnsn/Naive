@@ -16,7 +16,7 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 
 - It follows Naive's research skill (`packages/naive/src/interfaces/skills/research/SKILL.md`): read this program, change one recipe at a time, read the experiment log, and stop at the budget.
 - It reads the venture only as of the eval plan's read cut, and never sees the dev or holdout outcomes.
-- It works only the patterns the strategy function owns, listed below.
+- It works only the patterns listed below.
 
 ## What to research
 
@@ -30,7 +30,7 @@ Say here what matters most to you, what the researcher must never trade away, an
 
 ### competitors/[id]/signals
 
-What signals say about each competitor (`competitors/<id>/signals.json`, record type `competitor-signals`), projected from the competitor funding and product launch signal types. It settles its funding and launches by set overlap and its first and last seen dates exactly, over a 90 day horizon, and forecasts `p_raise_90d`, resolved by a competitor funding signal within 90 days.
+What signals say about each competitor (`competitors/<id>/signals.json`, record type `competitor-signals`), projected from the competitor funding and product launch signal types. The competitors package owns the record type (`packages/naive/library/packages/competitors/`); it names no function, and strategy researches it because market research is strategy's work. It settles its funding and launches by set overlap and its first and last seen dates exactly, over a 90 day horizon, and forecasts `p_raise_90d`, resolved by a competitor funding signal within 90 days.
 
 - Start from the plain fold of the signal types it hears.
 - Look for producers whose claims are later withdrawn, and for signals that arrive long after the event: lag and the producer's withdrawn share are factors the engine gives the recipe.

@@ -234,7 +234,7 @@
           }
         ]
       },
-      "description": "Signal listeners whose consumer is this frame (signal library design): adding a frame that listens is subscribing. A frame's listener proposes the frame's decisions or revalidates it, so it names no consumer and never projects. Nothing evaluates them yet"
+      "description": "Signal listeners whose consumer is this frame (signal library design): adding a frame that listens is subscribing. A frame's listener proposes the frame's decisions or revalidates it, so it names no consumer and never projects. packages/naive/src/engine/signals.ts merges them, with the frame as consumer; the pull proposes a decision named after the frame and the subject"
     },
     "cases": {
       "type": "array",

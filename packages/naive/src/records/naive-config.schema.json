@@ -395,7 +395,7 @@
           }
         ]
       },
-      "description": "The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. Nothing merges or evaluates them yet"
+      "description": "The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. packages/naive/src/engine/signals.ts merges them and naive signals pull evaluates them"
     },
     "listeners_off": {
       "type": "array",

@@ -130,6 +130,11 @@ function buildRoutes() {
     cmd("system/decision-index", "packages/naive/src/engine/decision-index.mjs", "The live decision index: every open decision scored by the docket, its structural impact (functions, records, linked decisions), its phase weight and requirement lift, and requirement violations flagged now; each run re-scores every active decision, so an update equals a rebuild, and appends rank history for what moved. Input value update (default), rebuild or read", { venture_arg: "id" }),
     // Freshness (Revalidating, V-1 to V-8): packages/naive/src/engine/freshness.mjs.
     cmd("system/freshness", "packages/naive/src/engine/freshness.mjs", "What is fresh, stale or expired, and which records are live holes: by time (freshness profiles, per phase too) and on demand (a dependency changed, a where-used parent drifted, a tag, path or package was revalidated)"),
+    // The signal pull (signal library design, build item 5): packages/naive/src/router/orchestration/signals.ts commits, as the
+    // signal projector, what packages/naive/src/engine/signals.ts decides.
+    cmd("system/signals", "packages/naive/src/router/orchestration/signals.ts", "Pull signals: render what new signals in the venture's libraries say into records through its listeners, write each new or changed record as the signal projector, verify an unchanged one, propose decisions and mark records stale; a pull after a pull writes nothing", { args: ["pull"] }),
+    cmd("system/signals/replay", "packages/naive/src/router/orchestration/signals.ts", "Render every projected record again from the signals it cites and report drift; writes nothing", { args: ["replay"] }),
+    cmd("system/signals/explain", "packages/naive/src/router/orchestration/signals.ts", "One signal at every listener: salient or noise, and every failed predicate; input value is the signal id", { value_flag: "--explain" }),
     cmd("system/revalidate", "packages/naive/src/engine/freshness.mjs", "Mark records stale on demand: input value tag:<route> (the record and what depends on it), path:<folder>, package:<name>, or pivot (the validation package); a plain folder is refused in favour of exact tags", { value_flag: "--revalidate" }),
   );
   out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (packages/naive/src/engine/caching.mjs).

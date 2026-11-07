@@ -21,7 +21,7 @@ export { mayReadItem, mayReadSome };
 // with `writer: "projection"` in the data model is written only by the projector, and the projector is code: an
 // agent whose role is `projector` and whose call carries this symbol. A symbol never survives JSON, so no CLI flag,
 // MCP tool, HTTP body or environment variable can claim it, and the role id `projector` is refused on any call that
-// does not carry it. Only the router's own code holds it (the signal pull will call asProjector; not built). Nothing
+// does not carry it. Only the router's own code holds it (the signal pull, router/orchestration/signals.ts, calls asProjector). Nothing
 // below the router imports this file, so engine code cannot reach it either.
 export const PROJECTOR = Symbol("naive.projector");
 export const PROJECTOR_ID = "projector";

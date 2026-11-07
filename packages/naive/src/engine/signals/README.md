@@ -6,7 +6,7 @@ Up: [engine](../README.md)
 
 The pure signal render: build plan item 3 of the signal library design (SIGNAL_LIBRARY_2026-11-06 in the design folder of the everything-ecosystem repository, "Noise belongs to the pair, not the signal" and "Derivation, deterministic and replayable"). It turns signals into records with no model, no I/O and no clock: every input is an argument, `now` included, and only edge listeners read `now`. The nouns are proposed, not admitted.
 
-This folder is private. Only its own files and its front door, the signal engine `engine/signals.ts` beside it (build item 5, not built), may import it. `scripts/dependency-rules.ts` fails on any other import, so pull, explain and replay all go through one module.
+This folder is private. Only its own files and its front door, the signal engine [`engine/signals.ts`](../signals.ts) beside it (build item 5), may import it. `scripts/dependency-rules.ts` fails on any other import, so pull, explain and replay all go through one module.
 
 ## Where things are
 
@@ -17,15 +17,15 @@ This folder is private. Only its own files and its front door, the signal engine
 
 ## Run and test
 
-- `node packages/naive/src/engine/signals/render-test.ts` renders every worked case of the example signal types in `packages/naive/src/records/examples/signals/library/types/` to its expected records, and tests views, receive (salient at one listener and noise at another for the same signal), withdrawal, each reducer, the fixpoint (three rounds when a master record admits its signals), the raise after five rounds for a criterion that is not monotone, proposals and marks, determinism, the diff (a diff after its own commit writes nothing), and that `render.ts` reads no file, clock or randomness. `node test.mjs` runs it.
+- `node packages/naive/src/engine/signals/render-test.ts` renders every worked case of the example signal types in `packages/naive/src/records/examples/signals/library/types/` and of the competitors package's types in `packages/naive/library/packages/competitors/signals/types/` to its expected records, and tests views, receive (salient at one listener and noise at another for the same signal), withdrawal, each reducer, the fixpoint (three rounds when a master record admits its signals), the raise after five rounds for a criterion that is not monotone, proposals and marks, determinism, the diff (a diff after its own commit writes nothing), and that `render.ts` reads no file, clock or randomness. `node test.mjs` runs it.
 - `node scripts/dependency-rules-test.ts` shows that an import of this folder from anywhere else fails.
 
 ## How it connects
 
-- Called by: nothing yet. The signal engine (`engine/signals.ts`, build item 5) will call it from pull, explain and replay (not built).
+- Called by: the signal engine [`engine/signals.ts`](../signals.ts), which re-exports `render`, `diff`, `fill` and `withdraw` and uses `receive`, `viewsOf` and `hears` for explain. Pull, explain and replay in [`router/orchestration/signals.ts`](../../router/orchestration/signals.ts) reach it only through that front door.
 - Calls: [`core/signal-id.ts`](../../core/signal-id.ts) for canonical JSON and the signal address, and the record types in [`records/types/records.d.ts`](../../records/types/records.d.ts).
 - Records: none. It reads and writes nothing; the caller passes signals, types, listeners, facts and current records, and commits what the diff says.
 
 ## Not built
 
-- Pull, routes and the CLI (build item 5), the projector-only rule in the gate (item 4), the `competitors` package (item 6) and `check-signals` (item 7).
+- `check-signals` (item 7) and kits' listeners (item 13). The projector-only rule (item 4), pull, routes and the CLI (item 5) and the `competitors` package (item 6) are built.

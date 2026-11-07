@@ -37,7 +37,26 @@
               "signals"
             ],
             "default": "records",
-            "description": "records (the default): the venture's records live there. signals: a signal library in the naive-signal-library@1 layout, read in place, whose signals reach records only through listeners (signal library design). Reading a paid library tells its publisher which signal types the venture hears"
+            "description": "records (the default): the venture's records live there. signals: a signal library in the naive-signal-library@1 layout, read in place, whose signals reach records only through listeners (signal library design). Reading a paid library tells its publisher which signal types the venture hears, so a signal library whose connector is not the filesystem needs confirmed_by"
+          },
+          "confirmed_by": {
+            "type": "object",
+            "required": [
+              "person",
+              "at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "person": {
+                "type": "string",
+                "minLength": 1
+              },
+              "at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "description": "The person who confirmed, by name, that the venture reads this signal library, and when. A source with carries signals whose connector is not the filesystem is not read without it, because reading it tells its publisher which signal types the venture hears (packages/naive/src/engine/signals.ts)"
           },
           "writes": {
             "enum": [

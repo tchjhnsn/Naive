@@ -1,0 +1,149 @@
+{
+  "name": "competitors",
+  "title": "Competitors",
+  "kind": "data",
+  "purpose": "Master data for competitors (Porter 1980): one competitors/<id>.json each, the person's record, and competitors/<id>/signals.json beside it, what signals say, written only by the signal projector. It needs no paid library: its signal types and listeners are open and its own, and a library such as Mentura's only feeds it more signals of the same types (Torian, 2026-11-07). Never complete. Gated by freshness.",
+  "required": [],
+  "optional": [],
+  "refs": [],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "purpose",
+  "records": [
+    "competitor",
+    "competitor-signals"
+  ],
+  "schemas": [
+    "packages/naive/src/records/competitor.schema.json",
+    "packages/naive/src/records/competitor-signals.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "packages/naive/src/checks/check-data-model.mjs"
+  ],
+  "listeners": [
+    {
+      "id": "name-competitors",
+      "hears": "organization@^1",
+      "consumer": {
+        "route": "competitors/[id]"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "B",
+          "credibility": 2
+        }
+      },
+      "then": "project",
+      "note": "A well-rated report about a company starts its master record, once, when it is missing; a person then owns it. It hears the org part of every competitor-funding and product-launch signal. A venture that reads a whole-market library and wants only the competitors it names turns it off with listeners_off in naive.config.json."
+    },
+    {
+      "id": "track-competitors",
+      "hears": "competitor-funding@^1",
+      "consumer": {
+        "route": "competitors/[id]/signals"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "C",
+          "credibility": 3
+        },
+        "predicates": [
+          {
+            "id": "known-competitor",
+            "field": "subject",
+            "op": "in",
+            "value": {
+              "ids": "competitors"
+            },
+            "why": "Only companies a person or a signal already made a competitor"
+          }
+        ]
+      },
+      "then": "project",
+      "note": "Records what the market did: each round once, with first_seen and last_seen."
+    },
+    {
+      "id": "track-launches",
+      "hears": "product-launch@^1",
+      "consumer": {
+        "route": "competitors/[id]/signals"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "C",
+          "credibility": 3
+        },
+        "predicates": [
+          {
+            "id": "known-competitor",
+            "field": "subject",
+            "op": "in",
+            "value": {
+              "ids": "competitors"
+            },
+            "why": "Only companies a person or a signal already made a competitor"
+          }
+        ]
+      },
+      "then": "project",
+      "note": "Records each launch once, with first_seen and last_seen."
+    },
+    {
+      "id": "rival-raised",
+      "hears": "competitor-funding@^1",
+      "consumer": {
+        "decision": "rival-raised"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "B",
+          "credibility": 2
+        },
+        "predicates": [
+          {
+            "id": "known-competitor",
+            "field": "subject",
+            "op": "in",
+            "value": {
+              "ids": "competitors"
+            },
+            "why": "A round by a company the venture competes with"
+          }
+        ]
+      },
+      "then": "propose",
+      "max_age": "14d",
+      "note": "Bears on when to raise and how to position, so it proposes a decision (rival-raised-<id>) for a person, and only for news under two weeks old."
+    },
+    {
+      "id": "launch-revalidates-stance",
+      "hears": "product-launch@^1",
+      "consumer": {
+        "route": "competitors/[id]"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "C",
+          "credibility": 3
+        },
+        "predicates": [
+          {
+            "id": "known-competitor",
+            "field": "subject",
+            "op": "in",
+            "value": {
+              "ids": "competitors"
+            },
+            "why": "A launch by a company the venture competes with"
+          }
+        ]
+      },
+      "then": "revalidate",
+      "note": "A launch may change how the venture stands toward the competitor, so it marks the person's master record stale for them to review. The type's max_age (60 days) applies."
+    }
+  ],
+  "use_model": [],
+  "complete": false
+}

@@ -51,6 +51,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-ventures.mjs`](./check-ventures.mjs) | Checks the rules across a workspace's ventures that one venture.json alone cannot (EE-011, EE-012). |
 | [`check-visibility.mjs`](./check-visibility.mjs) | The publish check for field visibility. |
 | [`check-where-used.mjs`](./check-where-used.mjs) | Checks each venture's where-used list (EE-042). |
+| [`competitors-package-test.ts`](./competitors-package-test.ts) | Tests the competitors package ([`packages/naive/library/packages/competitors/`](../../library/packages/competitors/README.md)): each listener hears a type it ships, each projection writes a record type it owns with fields that record's schema has and names its subject field, the person's master record is the only projection written once, and each worked case's signals and expected records are valid. |
 | [`docs-claims-test.mjs`](./docs-claims-test.mjs) | Cases for packages/naive/src/checks/check-docs-claims.mjs. |
 | [`lint-customers.mjs`](./lint-customers.mjs) | Customers lint. |
 | [`lint-finance.mjs`](./lint-finance.mjs) | Finance lint. |
