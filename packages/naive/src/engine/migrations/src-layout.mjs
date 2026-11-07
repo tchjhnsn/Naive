@@ -10,10 +10,10 @@
 // the src layout puts it (provenance.jsonl back to the top, foundation/ into src/strategy/), and profile.md
 // keeps its README.md. Files git tracks move with git mv. A venture already on the src layout is left alone.
 
-import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { FUNCTIONS, PACKAGE_FUNCTION, SRC, layoutOf, logical, logicalFiles, physical, srcPath } from "../../core/venture-paths.mjs";
+import { git } from "../../core/runtime.mjs";
 
 export const id = "src-layout";
 export const describe = "Moves a venture onto the src layout: each package folder into src/<function>/, everything else at the top beside src/ and public/ (EE-118 step 8)";
@@ -29,7 +29,7 @@ function prune(dir, sub) {
 export function apply(dir, ctx) {
   if (layoutOf(dir) === "src") return;
   const from = layoutOf(dir);
-  const tracked = (p) => spawnSync("git", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
+  const tracked = (p) => git("moving a tracked file with git mv", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
   // Where each file is now, by its logical path, read before venture.json changes the layout.
   const files = logicalFiles(dir).filter((l) => l !== "venture.json" && !l.startsWith(".naive/") && !l.startsWith(".git/"));
   const before = new Map(files.map((l) => [l, physical(dir, l)]));
@@ -58,7 +58,7 @@ export function apply(dir, ctx) {
   if (!ctx.dry) {
     for (const [was, to] of moves) {
       mkdirSync(dirname(join(dir, to)), { recursive: true });
-      if (!(tracked(was) && spawnSync("git", ["mv", was, to], { cwd: dir, stdio: "pipe" }).status === 0)) renameSync(join(dir, was), join(dir, to));
+      if (!(tracked(was) && git("moving a tracked file with git mv", ["mv", was, to], { cwd: dir, stdio: "pipe" }).status === 0)) renameSync(join(dir, was), join(dir, to));
     }
     for (const top of [...new Set(moves.map(([was]) => was.split("/")[0]))]) prune(dir, top);
     // A package folder with no files yet moves too, so the founder finds it where the src layout puts it.

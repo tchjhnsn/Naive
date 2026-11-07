@@ -26,6 +26,8 @@ Status:
 - **prose**: the shape is described only in Markdown.
 - **missing**: the record type has no definition yet.
 
+Hosted mode (`NAIVE_RUNTIME=hosted`, [`packages/naive/src/core/runtime.mjs`](../core/runtime.mjs)) changes these modules and nothing on a laptop. The judge in `caching.mjs` and `frames.mjs` asks the host's `judge` hook and refuses without one. `run-handoff.mjs` sends each bash done-criterion to the host's `sandbox` hook and refuses without one; it also exports `runHandoff(dir, id, opts)`, and without a git working copy its evidence names the package version (`naive-framework@<version>`). `activity.mjs` refuses to read a transcript folder outside the venture, such as `~/.claude/projects`. `venture-type.mjs` refuses to classify. Git goes through `git()` in core: `updateFramework` in `upgrades.mjs` and planning a port of a git repository in `port-venture.mjs` refuse without the host's `git` hook, and where git only adds something (a tracked move in `upgrades.mjs` and the layout migrations, first-seen dates in `time-to-ready.mjs`) a refused call acts as a folder with no git. `port-venture.mjs` ships its trace through the host's `trace` hook in place of `NAIVE_TRACE_CMD`.
+
 ## Instance level
 
 | Record | Where | Status | Notes |

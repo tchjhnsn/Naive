@@ -11,6 +11,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 | Path | Holds |
 |---|---|
 | [`agent-files-test.ts`](./agent-files-test.ts) | The agent filesystem over the router: ls, read, glob, grep, write, edit, a draft for an agent that decides a decision, and tool spans. |
+| [`hosted-runtime-test.ts`](./hosted-runtime-test.ts) | Hosted mode ([`packages/naive/src/core/runtime.mjs`](../../core/runtime.mjs)): each feature that reaches outside the tenant refuses with a message naming it and why, the host's hooks stand in, and without `NAIVE_RUNTIME` the laptop path still runs. |
 | [`gate-test.mjs`](./gate-test.mjs) | The write gate: `naive.config.json`, one gate per venture, who is acting. |
 | [`caching-test.mjs`](./caching-test.mjs) | Record and judgment caches, lifetimes, the per-action memo. |
 | [`freshness-test.mjs`](./freshness-test.mjs) | Revalidating records by time and on demand. |

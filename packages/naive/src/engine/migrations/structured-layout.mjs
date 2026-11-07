@@ -11,10 +11,10 @@
 // venture.json gains layout: structured. Its functions are left as they are; hats leave people/. Files git tracks move with
 // git mv. A structured venture is left alone.
 
-import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { CODEBASE, KBASE, TOP as TOP_FILES, layoutOf } from "../../core/venture-paths.mjs";
+import { git } from "../../core/runtime.mjs";
 
 export const id = "structured-layout";
 export const describe = "Moves a flat venture onto the structured layout: the knowledge base into k-base/, provenance, config, sources and releases into meta/, and profile.md to README.md (EE-086)";
@@ -24,14 +24,14 @@ const TOP = new Set([...TOP_FILES, ".git", ".naive", "node_modules", KBASE, "met
 export function apply(dir, ctx) {
   if (layoutOf(dir) === "structured") return;
   if (layoutOf(dir) === "src") { ctx.escalate("this venture is on the src layout (EE-118 step 8), which replaces the structured one, so nothing moved"); return; }
-  const tracked = (p) => spawnSync("git", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
+  const tracked = (p) => git("moving a tracked file with git mv", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
   const movedPaths = [], gone = new Set();
   const move = (from, to) => {
     if (!existsSync(join(dir, from))) return;
     if (existsSync(join(dir, to))) { ctx.escalate(`${to} already exists, so ${from} stayed where it is; move it yourself`); return; }
     if (!ctx.dry) {
       mkdirSync(dirname(join(dir, to)), { recursive: true });
-      if (!(tracked(from) && spawnSync("git", ["mv", from, to], { cwd: dir, stdio: "pipe" }).status === 0)) renameSync(join(dir, from), join(dir, to));
+      if (!(tracked(from) && git("moving a tracked file with git mv", ["mv", from, to], { cwd: dir, stdio: "pipe" }).status === 0)) renameSync(join(dir, from), join(dir, to));
     }
     movedPaths.push(`${from} -> ${to}`);
     gone.add(from);

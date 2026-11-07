@@ -38,6 +38,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, s
 import { dirname, join } from "node:path";
 import { entries as provEntries } from "../core/provenance.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -295,7 +296,7 @@ export function judgeCommand(cmd) {
  * @param {{ state?: unknown, model?: string, questions: Record<string, unknown>, packages?: string[] }} request
  * @param {{ cmd?: string | string[], life?: string | { stale?: number, revalidate?: number, expire?: number | null }, actor?: string, actor_id?: string, private?: boolean, packages?: string[], now?: number, allowStale?: boolean }} [opts]
  */
-export async function judge(dir, request, { cmd = process.env.NAIVE_JUDGE_CMD, life, actor, actor_id, private: priv = false, packages, now = Date.now(), allowStale = false } = {}) {
+export async function judge(dir, request, { cmd = envCommand("NAIVE_JUDGE_CMD"), life, actor, actor_id, private: priv = false, packages, now = Date.now(), allowStale = false } = {}) {
   if (!request || typeof request !== "object" || !request.questions || typeof request.questions !== "object") throw new Error("a judgment request has questions: { state, model, questions }");
   const cfg = configOf(dir);
   const identity = identityOf({ actor, actor_id });
@@ -311,11 +312,14 @@ export async function judge(dir, request, { cmd = process.env.NAIVE_JUDGE_CMD, l
   let model = request.model ?? null;
   const unanswered = [];
   if (ask.length) {
+    // Hosted, Naive spawns no command: the host's judge hook answers, or the judgment is refused.
+    const hook = hostHook("judge");
+    if (isHosted() && !hook) throw missingHook(`judging ${ask.length} uncached question(s)`, "judge");
     const argv = judgeCommand(cmd);
-    if (!argv) throw new Error(`${ask.length} question(s) are not cached and there is no judge: set NAIVE_JUDGE_CMD to a command that answers the Jev protocol`);
+    if (!hook && !argv) throw new Error(`${ask.length} question(s) are not cached and there is no judge: set NAIVE_JUDGE_CMD to a command that answers the Jev protocol`);
     const sub = { ...request, questions: Object.fromEntries(ask.map((k) => [k, request.questions[k]])) };
-    const p = spawnSync(argv[0], argv.slice(1), { input: JSON.stringify(sub), encoding: "utf8", maxBuffer: 1 << 26 });
-    if (p.error) throw new Error(`could not run the judge (${argv[0]}): ${p.error.message}`);
+    const p = hook ? await hook([], JSON.stringify(sub)) : spawnSync(argv[0], argv.slice(1), { input: JSON.stringify(sub), encoding: "utf8", maxBuffer: 1 << 26 });
+    if (p.error) throw new Error(`could not run the judge (${hook ? "the host's judge hook" : argv[0]}): ${p.error.message}`);
     if (p.status !== 0) throw new Error(`the judge stopped with status ${p.status}: ${(p.stderr || p.stdout).trim().slice(0, 500)}`);
     let out;
     try { out = JSON.parse(p.stdout); } catch { throw new Error(`the judge did not answer with JSON: ${p.stdout.trim().slice(0, 300)}`); }

@@ -14,8 +14,11 @@ import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { judgeCommand } from "../../engine/caching.mjs";
+import { envCommand, hostHook, isHosted, missingHook } from "../../core/runtime.mjs";
 import { factsOf, icpOf, request, score, PRESENCE } from "../../functions/marketing-and-sales/marketing/site/presence.mjs";
 
+// A host's hook stands in for a command (hosted only): the same arguments and input, the same answer.
+const runHook = async (hook, args, input) => { const r = await hook(args, input ?? ""); return { code: r.status, out: r.stdout, err: r.stderr }; };
 const run = (cmd, args, input) => new Promise((resolve) => {
   const p = spawn(cmd[0], [...cmd.slice(1), ...args], { stdio: ["pipe", "pipe", "pipe"] });
   let out = "", err = "";
@@ -30,17 +33,20 @@ const run = (cmd, args, input) => new Promise((resolve) => {
  */
 export async function scan(url, { venture = null, flags = {}, pages = 10, log = () => {} } = {}) {
   const t0 = Date.now();
-  const reader = judgeCommand(process.env.NAIVE_SITE_CMD);
-  if (!reader) throw new Error("no site reader: set NAIVE_SITE_CMD to the app's command that reads a site");
-  const r = await run(reader, [url, "--pages", String(pages)]);
+  const siteHook = hostHook("site");
+  if (isHosted() && !siteHook) throw missingHook("reading a site", "site");
+  const reader = judgeCommand(envCommand("NAIVE_SITE_CMD"));
+  if (!siteHook && !reader) throw new Error("no site reader: set NAIVE_SITE_CMD to the app's command that reads a site");
+  const r = siteHook ? await runHook(siteHook, [url, "--pages", String(pages)]) : await run(reader, [url, "--pages", String(pages)]);
   if (r.code !== 0) throw new Error(`could not read ${url}: ${r.err.trim() || `exit ${r.code}`}`);
   const site = JSON.parse(r.out);
   log(`read ${site.pages.filter((p) => !p.error).length} pages of ${site.site} via ${site.via} in ${Date.now() - t0} ms`);
   const icp = icpOf(venture, site);
   let answers = null;
-  const judge = judgeCommand(process.env.NAIVE_JUDGE_CMD);
-  if (judge) {
-    const j = await run(judge, [], JSON.stringify(request(site, icp)));
+  const judgeHook = hostHook("judge");
+  const judge = judgeCommand(envCommand("NAIVE_JUDGE_CMD"));
+  if (judgeHook || judge) {
+    const j = judgeHook ? await runHook(judgeHook, [], JSON.stringify(request(site, icp))) : await run(judge, [], JSON.stringify(request(site, icp)));
     if (j.code === 0) { const a = JSON.parse(j.out); answers = a.answers; log(`Jev answered ${Object.keys(answers).length} typed questions in ${a.ms} ms`); }
     else log(`Jev failed (${j.err.trim().slice(0, 200)}); judging by keywords instead`);
   } else log("no judge (NAIVE_JUDGE_CMD): judging by keywords, which is rougher");

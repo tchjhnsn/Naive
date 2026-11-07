@@ -50,8 +50,11 @@ import { createHash } from "node:crypto";
 import { agentFromEnv, record as prov } from "../../core/provenance.mjs";
 import { evaluate } from "./evals.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
+import { HostedRefusal, isHosted } from "../../core/runtime.mjs";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
+// The harness drives a local claude agent, the app's commands and a local board: a laptop tool.
+if (isHosted()) { console.error(new HostedRefusal("the discovery harness", "it runs the claude agent, NAIVE_*_CMD commands and git on this machine").message); process.exit(2); }
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);

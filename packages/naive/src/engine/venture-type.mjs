@@ -13,6 +13,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { envCommand, HostedRefusal, isHosted } from "../core/runtime.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 export const THRESHOLD = 0.5;
@@ -27,7 +28,7 @@ export function roles() {
 }
 
 /** The judge command, or null: MENTURA_TYPE_CMD, else NAIVE_JUDGE_CMD. */
-const typeCmd = () => process.env.MENTURA_TYPE_CMD || process.env.NAIVE_JUDGE_CMD || null;
+const typeCmd = () => envCommand("MENTURA_TYPE_CMD") || envCommand("NAIVE_JUDGE_CMD") || null;
 
 /** Whether a model can classify: a judge command is set. */
 export const canClassify = () => Boolean(typeCmd());
@@ -45,6 +46,7 @@ export function request(description) {
 
 /** Ranked types for a description, most likely first, with uncertain set when none reaches the threshold. */
 export function classify(description) {
+  if (isHosted()) throw new HostedRefusal("classifying a venture's type", "MENTURA_TYPE_CMD and NAIVE_JUDGE_CMD are ignored, and no host hook classifies a type; pick a type from the list");
   if (!typeCmd()) throw new Error("no judge: set MENTURA_TYPE_CMD or NAIVE_JUDGE_CMD, or pick a type from the list");
   const cmd = String(typeCmd()).trim().split(/\s+/);
   const p = spawnSync(cmd[0], cmd.slice(1), { input: JSON.stringify(request(description)), encoding: "utf8", env: process.env });

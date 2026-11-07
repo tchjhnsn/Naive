@@ -48,6 +48,7 @@ import { agentFromEnv, entries as provEntries, record as prov } from "../../core
 import { decisions as decisionsOf, propose } from "../../engine/decisions.mjs";
 import { loadPackages } from "../../engine/load-packages.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
+import { envCommand } from "../../core/runtime.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -721,7 +722,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       print(json ? p : [`${p.pending.length} judgments pending, ${Object.keys(p.computed).length} computed by code, ${p.withheld.length} withheld, ${p.skipped.length} skipped.`,
         ...p.pending.map((x) => `  ${x.placeholder}  ${x.kind}${x.waits_on.length ? `  waits on ${x.waits_on.join(", ")}` : ""}`), ...p.withheld.map((x) => `  withheld ${x.key}: ${x.why}`)].join("\n"));
     } else if (sub === "run") {
-      const ask = opt("answers") ? answersModel(resolvePath(opt("answers"))) : process.env.MENTURA_MODEL_CMD ? commandModel(process.env.MENTURA_MODEL_CMD) : null;
+      const ask = opt("answers") ? answersModel(resolvePath(opt("answers"))) : envCommand("MENTURA_MODEL_CMD") ? commandModel(String(envCommand("MENTURA_MODEL_CMD"))) : null;
       const stream = flag("stream");
       const r = await run(dir, pick(), { ask, speculate: flag("speculate"), fresh: flag("fresh"), call: await kitCall(), onEvent: stream ? (e) => console.log(JSON.stringify(e)) : undefined });
       if (!stream) print(json ? r : [

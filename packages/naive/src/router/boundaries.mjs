@@ -19,6 +19,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { git as runGit, refusedBy } from "../core/runtime.mjs";
 import { ROOT, dataModelFile, readDataModel, readSchema, schemaFile, schemaNameOf } from "../records/index.mjs";
 import { validateFile as checkFile } from "../records/validate.mjs";
 
@@ -69,11 +70,13 @@ export function ventureHealth(dir) {
     else if (typeof v.layers !== "object" || v.layers === null) problem = "has layers that are not an object";
   }
   if (!problem) return null;
-  const git = spawnSync("git", ["-C", dir, "ls-files", "--error-unmatch", "venture.json"], { encoding: "utf8" }).status === 0;
+  const tracked = runGit("restoring venture.json from git", ["-C", dir, "ls-files", "--error-unmatch", "venture.json"], { encoding: "utf8" });
+  const git = tracked.status === 0, refused = refusedBy(tracked);
   return {
     scope: "venture", file, problem: `venture.json ${problem}`,
     recovery: [
       ...(git ? [`Restore the last committed version: git -C ${dir} checkout -- venture.json`] : []),
+      ...(refused ? [refused.message] : []),
       `Fix it by hand: it must be a JSON object with ${VENTURE_SCHEMA().required.join(", ")}`,
       `Or rebuild a minimal one, keeping the broken file in _private/: node packages/naive/src/router/boundaries.mjs recover ${dir} --confirm recover`,
       `Then check it: node packages/naive/src/records/validate.mjs --schema venture.schema.json --file ${file}`,

@@ -13,11 +13,11 @@
 // list) while it compares and writes, so two processes cannot both pass the check. A lock older
 // than LOCK_STALE_MS is taken to be left by a process that died, and is removed.
 
-import { spawnSync } from "node:child_process";
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { blobSha, checkWrite, isText, matches, safePath } from "./contract.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "../../core/venture-paths.mjs";
+import { git as runGit } from "../../core/runtime.mjs";
 
 const SKIP = new Set(["node_modules"]);
 const LOCK_STALE_MS = 30_000;
@@ -56,7 +56,7 @@ export function connect({ id = "venture", root, writes = "direct", venture = fal
   const structured = venture && layoutOf(root) !== "flat"; // structured (EE-086) or src (EE-118 step 8)
   const file = (p) => (structured ? ventureFile(root, safePath(p)) : join(root, safePath(p)));
   const listed = () => structured ? logicalFiles(root).filter((r) => !r.split("/").some((s) => s.startsWith(".")) && !r.startsWith("_") && !r.startsWith("node_modules/")) : walk(root);
-  const git = (...args) => spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  const git = (...args) => runGit("reading a record's last commit", ["-C", root, ...args], { encoding: "utf8" });
   const lastCommit = (p, content) => {
     const tracked = git("ls-files", "-s", "--", p);
     if (tracked.status !== 0 || !tracked.stdout) return null;
