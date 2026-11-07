@@ -2341,7 +2341,7 @@
           "checked_by": null
         }
       ],
-      "note": "A frozen version of how one recipe is scored, <pattern>.plan.json beside it: as-of points per window (training, dev, holdout), horizon and gap, read cut, weights, min_gain and the budgets of dev evaluations and holdout checks, addressed by its sha. A person makes it; its eval set is frozen at _eval/<sha>/ beside it"
+      "note": "A frozen version of how one recipe is scored, <pattern>.plan.json beside it: as-of points per window (training, dev, holdout), horizon and gap, read cut, weights, min_gain and the budgets of dev evaluations and holdout checks, addressed by its sha. A person makes it with naive recipes plan, which freezes its eval set at <venture>/_eval/<sha>/"
     },
     {
       "id": "experiment",
@@ -2564,7 +2564,7 @@
     {"path": "instance/**/.naive/events.jsonl", "kind": "log", "reason": "Instrumentation events when instrumentation is on (packages/naive/src/core/instrumentation.mjs)"},
     {"path": "instance/**/.naive/blobs/**/*", "kind": "record", "reason": "The blob store: the bytes each provenance line names, under their SHA-256 (packages/naive/src/core/blobs.mjs). Content-addressed and never changed, so it is committed like a record; an as-of read (packages/naive/src/store/as-of.mjs) needs it and cannot rebuild it"},
     {"path": "instance/**/programs/*.md", "kind": "record", "reason": "A function's research program, programs/<function>.md: the person-edited instructions its researcher reads (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). Prose a person owns, written whole; the gate rule that refuses an agent's write to it is not built"},
-    {"path": "instance/**/_eval/**/*", "kind": "record", "reason": "A recipe's frozen eval set, _eval/<sha>/ beside its plan: the as-of points, the frozen signal index, each fact's versions and the settled outcomes. It cannot be rebuilt (a library that backfills later must not leak into it), so a host commits it whole; it never changes once frozen, so a base check can only pass. The router never serves it. Its files must not take a path a log record type names"},
+    {"path": "instance/**/_eval/**/*", "kind": "record", "reason": "A recipe's frozen eval set, <venture>/_eval/<sha>/eval-set.json, written by naive recipes plan (packages/naive/src/engine/recipes/eval-set.ts): the as-of points, the frozen signal index, each fact's versions and the settled outcomes. It cannot be rebuilt (a library that backfills later must not leak into it), so a host commits it whole; it never changes once frozen, so a base check can only pass. The router never serves it. Its files must not take a path a log record type names"},
     {"path": "instance/**/.naive/triggers.json", "kind": "record", "reason": "The trigger cursor and every run's state; not rebuildable, so kept whole"},
     {"path": "instance/**/.naive/beta.json", "kind": "record", "reason": "The plugin beta's unlock state per tester (packages/naive/src/engine/beta-gate.mjs)"},
     {"path": "instance/**/.naive/adapters.json", "kind": "record", "reason": "What the harness adapters wrote, so an upgrade never overwrites a file it did not write"},
