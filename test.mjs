@@ -46,6 +46,7 @@ const steps = [
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["packages/create-venture/test.mjs"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["packages/naive/src/interfaces/tests/setup-test.mjs"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.mjs"]],
+  ["detection ledger through the router: an accepted held draft is a false alarm, a reverted write a miss, the chain holds under parallel appends", "node", ["packages/naive/src/router/detection-ledger-test.ts"]],
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["packages/naive/src/interfaces/tests/brand-test.mjs"]],
   ["investors lint: raise, terms, unconfirmed update numbers", "node", ["packages/naive/src/interfaces/tests/lint-investors-test.mjs"]],
   ["product lint: ICP, feature jobs and pricing", "node", ["packages/naive/src/interfaces/tests/lint-product-test.mjs"]],

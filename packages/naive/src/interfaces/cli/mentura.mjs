@@ -43,6 +43,8 @@
 //          folder path (--venture studio/print); system/overview view shows the venture at a glance
 //          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
 //          [--confidence <n>]   a score computed before the write, read by the gate's confidence rules
+//          [--revert]   with --as person: this write restores the version before (provenance activity rollback)
+//          append (governance/detector-trial/<detector>) adds one hash-chained line: --input holds { line, base? }
 //          knowledge/catalog run builds the catalog over the venture's sources; knowledge/search run
 //          --value <query> finds items in any of them (EE-037)
 //          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;
@@ -428,6 +430,9 @@ if (["read", "view"].includes(action) && flag("hierarchy")) input = { ...(input 
 const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
 // Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
 if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
+// Detection ledger hook: --revert marks a person's write as restoring the version before (activity rollback), which
+// resolves the gate's no call on the write it reverts as a miss when the venture keeps the gate detector.
+if (flag("revert")) provenance.activity = "rollback";
 let r = await call({ venture, route: cmd, action, input, actor: ["person", "public"].includes(opt("as")) ? opt("as") : "agent", workspace, via: "cli", provenance });
 // Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
 if (r.ok && r.needs_input && !flag("json")) {

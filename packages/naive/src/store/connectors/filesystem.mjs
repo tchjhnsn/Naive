@@ -74,9 +74,11 @@ export function connect({ id = "venture", root, writes = "direct", venture = fal
     async read(p) {
       const f = file(p);
       if (!existsSync(f) || !statSync(f).isFile()) return null;
-      const content = readFileSync(f, "utf8");
+      // One read: the version is the hash of exactly the content returned, even while another process appends.
+      const bytes = readFileSync(f);
+      const content = bytes.toString("utf8");
       const commit = lastCommit(safePath(p), content);
-      return { path: safePath(p), content, version: blobSha(readFileSync(f)), ...(commit ? { commit } : {}) };
+      return { path: safePath(p), content, version: blobSha(bytes), ...(commit ? { commit } : {}) };
     },
     async version(p) {
       const f = file(p);

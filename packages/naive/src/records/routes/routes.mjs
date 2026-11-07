@@ -47,6 +47,10 @@ const needNowPriors = () => load(join(repo, "packages/naive/src/engine/need-now.
 // The template folders of the function modules, in the order departments.json lists the functions.
 const FUNCTION_TEMPLATES_OF = () => load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d) => `packages/naive/src/functions/${d.id}/templates`).filter((d) => existsSync(join(repo, d)));
 
+// Logs the router appends to, one hash-chained line per call (packages/naive/src/router/router.mjs append). Every other
+// log is written by its own module and only read through the router.
+const APPENDS = new Set(["detector-trial"]);
+
 /** The route table, generated from packages/naive/src/records/data-model.json, the kit manifests and packages/naive/src/engine/need-now.json. */
 // Caching hook (F-12): built once per action and shared.
 export function routes() { return memo("routes", buildRoutes); }
@@ -85,7 +89,7 @@ function buildRoutes() {
     if (collection) {
       out.push({ ...common, route: base, files: filesOf, collection: "list", actions: ["read", "view", "layout", ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
       out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item",
-        actions: ["read", "view", "layout", ...(writable ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
+        actions: ["read", "view", "layout", ...(writable ? ["write"] : []), ...(APPENDS.has(r.id) ? ["append"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     } else {
       out.push({ ...common, route: base, files: filesOf,
         actions: ["read", "view", "layout", ...(writable && !filesOf[0]?.includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
