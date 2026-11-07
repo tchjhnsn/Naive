@@ -84,6 +84,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-ventures.mjs": plain("venture ids, parents and links resolve, and no venture is its own ancestor"),
   "packages/naive/src/checks/check-visibility.mjs": plain("each public fact came through the visibility gate"),
   "packages/naive/src/checks/check-where-used.mjs": plain("each live child shows its parent's value"),
+  "packages/naive/src/checks/check-write-scope.ts": plain("each path the tests write lies under an allowed root (a path prefix)"),
+  "packages/naive/src/checks/check-write-scope-test.ts": plain("proves the write-scope check fails a write outside the venture"),
   "packages/naive/src/engine/gate-drafts.mjs": plain("stores held writes and their variants"),
   "packages/naive/src/interfaces/tests/gate-test.mjs": plain("tests the write gate"),
   "packages/naive/src/engine/gate.mjs": plain("the write gate: route rules, pins and role access decide what happens to a write, not a term"),
