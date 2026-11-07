@@ -8,12 +8,12 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../router/router.mjs";
-import { entries, record } from "../core/provenance.mjs";
-import { BLOBS, blobFile, blobHash, readBlob } from "../core/blobs.mjs";
-import { pathsAsOf, readAsOf } from "./as-of.mjs";
+import { call } from "../../router/router.mjs";
+import { entries, record } from "../../core/provenance.mjs";
+import { BLOBS, blobFile, blobHash, readBlob } from "../../core/blobs.mjs";
+import { pathsAsOf, readAsOf } from "../../store/as-of.mjs";
 
-const repo = new URL("../../../../", import.meta.url).pathname;
+const repo = new URL("../../../../../", import.meta.url).pathname;
 let failed = 0;
 const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "as-of-test-"));

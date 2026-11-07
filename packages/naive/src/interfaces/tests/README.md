@@ -10,6 +10,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 
 | Path | Holds |
 |---|---|
+| [`as-of-test.ts`](./as-of-test.ts) | The blob store and as-of reads ([`packages/naive/src/store/as-of.mjs`](../../store/as-of.mjs)): a record written through the router at known times read as of each, before the first, after a move and with a blob missing or damaged. It sits here and not in `store/` because it writes through the router, and store comes before router. |
 | [`agent-files-test.ts`](./agent-files-test.ts) | The agent filesystem over the router: ls, read, glob, grep, write, edit, a draft for an agent that decides a decision, and tool spans. |
 | [`hosted-runtime-test.ts`](./hosted-runtime-test.ts) | Hosted mode ([`packages/naive/src/core/runtime.mjs`](../../core/runtime.mjs)): each feature that reaches outside the tenant refuses with a message naming it and why, the host's hooks stand in, and without `NAIVE_RUNTIME` the laptop path still runs. |
 | [`gate-test.mjs`](./gate-test.mjs) | The write gate: `naive.config.json`, one gate per venture, who is acting. |

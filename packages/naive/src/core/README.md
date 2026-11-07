@@ -24,7 +24,7 @@ The old path `schema/venture-paths.mjs` re-exports `venture-paths.mjs` for one r
 ## Run and test
 
 - `node packages/naive/src/checks/check-provenance.mjs <dir>` checks a venture's provenance chain.
-- `node packages/naive/src/store/as-of-test.ts` tests the blob store and as-of reads through the router.
+- `node packages/naive/src/interfaces/tests/as-of-test.ts` tests the blob store and as-of reads through the router.
 - `node packages/naive/src/checks/check-traces.ts <dir>` checks a venture's trace files and the spans its provenance names.
 - `node packages/naive/src/interfaces/test.mjs` and `node packages/naive/src/interfaces/context-test.mjs` cover these modules through the router. `node test.mjs` runs both.
 
