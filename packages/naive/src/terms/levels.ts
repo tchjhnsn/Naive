@@ -63,6 +63,28 @@ export type LinkGraph = Base & {
   links: { type: string; target: Target; from: number; to: number }[];  // from an idea; to is -1 when the target names nothing
 };
 
+/** One detector record (docs/design/SIGNAL_DETECTION_2026-11-07.md): what it asks, what scores it, where its line
+ *  is, what each outcome costs and who settles the truth. Names stay out of the facts. */
+export type Detector = Base & {
+  yesNo: boolean;                 // the question it asks has a yes or no answer
+  sensorNamed: boolean;           // it names the sensor that scores the question
+  runsSensor: boolean;            // it runs that sensor itself instead of reading its score
+  criteria: number;               // how many lines it draws on the score scale: one, or two for an unsure band
+  onScale: boolean;               // its lines are on the sensor's score scale
+  costs: number;                  // how many of the four outcomes (hit, miss, false alarm, correct rejection) it gives a cost
+  baseRate: number | null;        // how often the answer is yes, stated or computed; null when it has none
+  resolverNamed: boolean;         // it names who settles the true answer
+};
+
+/** One call a detector made: the score, the criterion in force, the call, and the true answer once it is settled.
+ *  A field is null when the record does not hold it. */
+export type Trial = Base & {
+  score: number | null;
+  criterion: number | null;
+  call: "yes" | "no" | null;
+  truth: "yes" | "no" | null;     // null until the call is resolved
+};
+
 const N = 20000;
 export function membershipCases(seed = 11): Membership[] {
   const r = rng(seed);
@@ -180,5 +202,33 @@ export function linkCases(seed = 29): LinkGraph[] {
       }
     }
     return { confirmed: b(0.9), label: ["typed link", "edge", "relation", undefined][Math.floor(r() * 4)], ideas, scopes, links };
+  });
+}
+
+
+/** Most cases are well formed detectors with one or two flaws drawn at random, so each property fails on its own. */
+export function detectorCases(seed = 31): Detector[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => ({
+    confirmed: b(0.9), label: ["detector", "threshold", "gate", undefined][Math.floor(r() * 4)],
+    yesNo: b(0.85), sensorNamed: b(0.85), runsSensor: b(0.15),
+    criteria: b(0.8) ? 1 + Math.floor(r() * 2) : Math.floor(r() * 5), onScale: b(0.85),
+    costs: b(0.8) ? 4 : Math.floor(r() * 5), baseRate: b(0.1) ? null : b(0.9) ? r() : 1 + r(),
+    resolverNamed: b(0.85),
+  }));
+}
+
+/** Most calls follow their line; some do not, some miss a field, and about half are resolved. */
+export function trialCases(seed = 37): Trial[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => {
+    const score = b(0.95) ? Math.round(r() * 100) / 100 : null;
+    const criterion = b(0.95) ? Math.round(r() * 100) / 100 : null;
+    const follows: "yes" | "no" | null = score === null || criterion === null ? null : score >= criterion ? "yes" : "no";
+    const call: "yes" | "no" | null = b(0.85) && follows !== null ? follows : b(0.1) ? null : b() ? "yes" : "no";
+    const truth: "yes" | "no" | null = b(0.5) ? null : b() ? "yes" : "no";
+    return { confirmed: b(0.9), label: ["hit", "miss", "false alarm", "trial", undefined][Math.floor(r() * 5)], score, criterion, call, truth };
   });
 }

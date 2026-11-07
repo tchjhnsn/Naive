@@ -1,13 +1,13 @@
 // Tests the term engine: it rejects bad tests (label-reading, vacuous, unconfirmed passing), relations are
 // total, freezing notices a change (to a check or a helper it lists), layer and area decide hand-built
-// arrangements, labels hold the cap, the adopted quote and one referent per proper name, and the admitted terms
+// arrangements, the detection terms decide hand-built trials and detectors, labels hold the cap, the adopted quote and one referent per proper name, and the admitted terms
 // check against a fresh run.
 //
 //   node packages/naive/src/terms/engine-test.ts
 
 import { freeze, relation, rng, run, validTest, type Term } from "./engine.ts";
-import { arrangementCases, encounterCases, membershipCases, relationshipCases, type Arrangement, type Relationship } from "./levels.ts";
-import { area, capShare, coach, friend, labelProblems, layer, TERMS, type Labels } from "./terms.ts";
+import { arrangementCases, detectorCases, encounterCases, membershipCases, relationshipCases, trialCases, type Arrangement, type Detector, type Relationship, type Trial } from "./levels.ts";
+import { area, capShare, coach, correctRejection, detector, falseAlarm, friend, hit, labelProblems, layer, miss, TERMS, trial, type Labels } from "./terms.ts";
 import { admitAll } from "./admit.ts";
 
 let failed = 0;
@@ -40,11 +40,20 @@ expect("a stack where each part depends on the one beneath passes layer", run(la
 expect("a loop fails layer on no cycle (L2)", run(layer, arr(3, [[1, 0], [2, 1], [0, 2]])).failed.includes("L2"));
 expect("two parts that depend on nothing fail layer on one stack (L3) only", JSON.stringify(run(layer, arr(2, [])).failed) === '["L3"]');
 expect("a loop drawn by concern passes area", run(area, arr(3, [[1, 0], [2, 1], [0, 2]])).pass);
+const call = (score: number, criterion: number, callMade: Trial["call"], truth: Trial["truth"]): Trial => ({ confirmed: true, score, criterion, call: callMade, truth });
+expect("a yes at or above the line that resolves yes is a hit and a trial", run(hit, call(0.7, 0.7, "yes", "yes")).pass && run(trial, call(0.7, 0.7, "yes", "yes")).pass);
+expect("a call against its line is not a trial (T3)", JSON.stringify(run(trial, call(0.2, 0.7, "yes", null)).failed) === '["T3"]');
+expect("an unresolved call is a trial but no outcome", run(trial, call(0.2, 0.7, "no", null)).pass && [hit, miss, falseAlarm, correctRejection].every((t) => !run(t, call(0.2, 0.7, "no", null)).pass));
+expect("each resolved call is exactly one outcome", (["yes", "no"] as const).every((truth) => [call(0.9, 0.5, "yes", truth), call(0.1, 0.5, "no", truth)].every((c) => [hit, miss, falseAlarm, correctRejection].filter((t) => run(t, c).pass).length === 1)));
+const det: Detector = { confirmed: true, yesNo: true, sensorNamed: true, runsSensor: false, criteria: 2, onScale: true, costs: 4, baseRate: 0.1, resolverNamed: true };
+expect("a detector with an unsure band passes", run(detector, det).pass);
+expect("a detector that runs its sensor fails D3 only", JSON.stringify(run(detector, { ...det, runsSensor: true }).failed) === '["D3"]');
+expect("a detector with no base rate fails D6 only", JSON.stringify(run(detector, { ...det, baseRate: null }).failed) === '["D6"]');
 const selfNamer: Term<Relationship> = { ...friend, id: "self-namer", label: "self-namer", props: [...friend.props, { id: "X2", says: "goodwill, if it calls itself by name", check: (f) => f.label !== "self-namer" || f.goodwill }] };
 expect("a test that reads its own label in rare cases is caught", validTest(selfNamer, cases).some((p) => /label changes a verdict/.test(p)));
 { const r = rng(11); const seen = new Set<number>(); for (let i = 0; i < 1_000_000; i++) seen.add(r());
   expect("the generator does not cycle within a million draws", seen.size > 999_000, `${seen.size} distinct`); }
-for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases]] as const) {
+for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases], ["detector", detectorCases], ["trial", trialCases]] as const) {
   const c = gen(); const distinct = new Set(c.map((x) => JSON.stringify(x))).size;
   expect(`${name} cases are mostly distinct (not repeats of a short cycle)`, distinct > c.length / 2, `${distinct} of ${c.length}`);
 }

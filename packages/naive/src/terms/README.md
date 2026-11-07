@@ -21,7 +21,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`gen-concepts-test.ts`](./gen-concepts-test.ts) | Regenerates the Lean ontology concepts from small fixtures and checks what packages/naive/src/terms/gen-concepts.ts does. |
 | [`gen-concepts.ts`](./gen-concepts.ts) | Writes one Lean `Concept` per noun in packages/naive/src/terms/ontology.json to packages/naive/lean/Naive/Generated/Ontology.lean. |
 | [`lean-agreement-test.ts`](./lean-agreement-test.ts) | Fails the suite when the term engine and the Lean proofs disagree about which terms and theorems exist. |
-| [`levels.ts`](./levels.ts) | The levels terms are defined at, each with its facts and a seeded case generator. |
+| [`levels.ts`](./levels.ts) | The levels terms are defined at, each with its facts and a seeded case generator. The detector and trial levels hold the signal detection terms. |
 | [`ontology-catalog.json`](./ontology-catalog.json) | The catalog of ontologies, one scope per function (N-050). |
 | [`ontology-gate-test.ts`](./ontology-gate-test.ts) | Behavior of the membership gate. |
 | [`ontology-gate.ts`](./ontology-gate.ts) | The membership gate (the first gate of the handoff pipeline). |
@@ -32,7 +32,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`operating-rules.json`](./operating-rules.json) | Naive's default operating rules, which a venture can override. |
 | [`operating-rules.ts`](./operating-rules.ts) | Naive's operating rules, as a module a venture can override. |
 | [`relations.ts`](./relations.ts) | The typed relations an idea record may state (S2-PR9). |
-| [`terms.ts`](./terms.ts) | The admitted and proposed terms. |
+| [`terms.ts`](./terms.ts) | The admitted and proposed terms. The signal detection terms (detector, trial, hit, miss, false-alarm, correct-rejection) cite the theorems in [`Detection.lean`](../../lean/Naive/Detection.lean). |
 | [`upper-test.ts`](./upper-test.ts) | Checks the upper ontology (N-049) through the EE-095 term engine. |
 
 ## Run and test

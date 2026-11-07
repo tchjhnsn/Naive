@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Encounter, Hierarchy, LinkGraph, Membership, Relationship } from "./levels.ts";
+import type { Arrangement, Detector, Encounter, Hierarchy, LinkGraph, Membership, Relationship, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -307,4 +307,59 @@ export const typedLink: Term<LinkGraph> = {
   lean: ["idea_inverse_involutive", "idea_inverse_same_order", "idea_order_canonical"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink];
+// Signal detection (docs/design/SIGNAL_DETECTION_2026-11-07.md, build plan item 1). The theorems are in
+// packages/naive/lean/Naive/Detection.lean. Sensor, criterion, sensitivity, base rate and ROC curve are ontology nouns
+// without a term of their own: each is a quantity or a part of a detector, not something a record's facts pass or fail.
+const GREEN_SWETS = "Green and Swets, Signal Detection Theory and Psychophysics (1966)";
+const MACMILLAN = "Macmillan and Creelman, Detection Theory: A User's Guide, 2nd ed. (2004)";
+const DETECTION_DESIGN = "docs/design/SIGNAL_DETECTION_2026-11-07.md";
+
+export const detector: Term<Detector> = {
+  id: "detector", form: "word", label: "Detector", level: "detector", kind: "role",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "The record of one yes or no call on evidence: its question, the sensor that scores it, the criterion above which the call is yes, the cost of each of the four outcomes, the base rate and who resolves the true answer. It names its sensor and never runs it. Adapted from the observer of signal detection theory, whose decision stage turns a score into a call.",
+  props: [
+    { id: "D1", says: "asks a question with a yes or no answer", check: (f) => f.yesNo },
+    { id: "D2", says: "names the sensor that scores the question", check: (f) => f.sensorNamed },
+    { id: "D3", says: "never runs its sensor: it reads the score", check: (f) => !f.runsSensor },
+    { id: "D4", says: "one criterion, or two for an unsure band, on the sensor's score scale", check: (f) => (f.criteria === 1 || f.criteria === 2) && f.onScale },
+    { id: "D5", says: "a cost for each of the four outcomes", check: (f) => f.costs === 4 },
+    { id: "D6", says: "a base rate between 0 and 1", check: (f) => f.baseRate !== null && f.baseRate >= 0 && f.baseRate <= 1 },
+    { id: "D7", says: "names who resolves the true answer", check: (f) => f.resolverNamed },
+  ],
+  sources: [GREEN_SWETS, MACMILLAN, DETECTION_DESIGN],
+  lean: ["criterion_monotone", "best_criterion_observed"],
+};
+
+export const trial: Term<Trial> = {
+  id: "trial", form: "word", label: "Trial", level: "trial", kind: "act",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning: "One call a detector made and, later, its resolution: the score, the criterion in force and the call, which is yes exactly when the score is at or above the criterion. The true answer may still be unknown.",
+  props: [
+    { id: "T1", says: "holds the score", check: (f) => f.score !== null },
+    { id: "T2", says: "holds the criterion in force", check: (f) => f.criterion !== null },
+    { id: "T3", says: "the call is yes exactly when the score is at or above the criterion", check: (f) => f.score !== null && f.criterion !== null && f.call === (f.score >= f.criterion ? "yes" : "no") },
+  ],
+  sources: [GREEN_SWETS, "Fechner, Elemente der Psychophysik (1860): the trial as the unit of a psychophysical experiment", DETECTION_DESIGN],
+  lean: ["roc_monotone", "auc_eq_2afc"],
+};
+
+/** One of the four outcomes of a resolved trial: the trial's properties, the true answer and the call. */
+const outcome = (id: string, label: string, truth: "yes" | "no", call: "yes" | "no", meaning: string, others: string[]): Term<Trial> => ({
+  ...trial, id, label, form: /\s/.test(label) ? "compound" : "word",
+  labels: sharedTerm("adapted", "seminal"),
+  meaning,
+  props: [...trial.props,
+    truth === "yes" ? { id: "R1", says: "resolved: the true answer is yes", check: (f) => f.truth === "yes" } : { id: "R0", says: "resolved: the true answer is no", check: (f) => f.truth === "no" },
+    call === "yes" ? { id: "C1", says: "the call is yes", check: (f) => f.call === "yes" } : { id: "C0", says: "the call is no", check: (f) => f.call === "no" }],
+  sources: [GREEN_SWETS, MACMILLAN],
+  lean: [truth === "yes" ? "outcomes_partition_signal" : "outcomes_partition_noise", "roc_monotone"],
+  predicts: { trial: "is_a", ...Object.fromEntries(others.map((o) => [o, "disjoint" as const])) },
+});
+
+export const hit = outcome("hit", "Hit", "yes", "yes", "A resolved trial whose call was yes and whose true answer was yes.", ["miss", "false-alarm", "correct-rejection"]);
+export const miss = outcome("miss", "Miss", "yes", "no", "A resolved trial whose call was no and whose true answer was yes.", ["hit", "false-alarm", "correct-rejection"]);
+export const falseAlarm = outcome("false-alarm", "False alarm", "no", "yes", "A resolved trial whose call was yes and whose true answer was no.", ["hit", "miss", "correct-rejection"]);
+export const correctRejection = outcome("correct-rejection", "Correct rejection", "no", "no", "A resolved trial whose call was no and whose true answer was no. Noise in its standard sense is the no case; a call below the line is noise only once it resolves as a correct rejection.", ["hit", "miss", "false-alarm"]);
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection];
