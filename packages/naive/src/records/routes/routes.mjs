@@ -85,7 +85,10 @@ function buildRoutes() {
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
     const collection = filesOf.length >= 1 && filesOf.every((p) => (p.match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(p) && !p.includes("**"));
     const concrete = filesOf.every((f) => !f.includes("*"));
-    const writable = !!(r.schema && form === "json" && (collection || concrete));
+    // A JSON record with a schema is written whole and checked against it. Prose a person owns (writer person, a
+    // research program) is written whole as text; it has no schema, and only a person writes it (writerRule).
+    const prose = r.writer === "person" && (form === "prose" || form === "markdown");
+    const writable = !!(((r.schema && form === "json") || prose) && (collection || concrete));
     if (collection) {
       out.push({ ...common, route: base, files: filesOf, collection: "list", actions: ["read", "view", "layout", ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
       out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item",

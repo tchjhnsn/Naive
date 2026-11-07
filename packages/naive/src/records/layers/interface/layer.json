@@ -21,6 +21,10 @@
     {
       "id": "run-playbook",
       "path": "packages/naive/src/interfaces/skills/run-playbook/SKILL.md"
+    },
+    {
+      "id": "research",
+      "path": "packages/naive/src/interfaces/skills/research/SKILL.md"
     }
   ],
   "records": [

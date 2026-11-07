@@ -48,6 +48,7 @@ const steps = [
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.mjs"]],
   ["blob store and as-of reads: each write's blob, the content at t and nothing later, null before the first write, one blob for the same content", "node", ["packages/naive/src/interfaces/tests/as-of-test.ts"]],
   ["researcher read clamp: reads, lists, views and agent files as of the cut and nothing later, no late signal, no read without a cut, no live action, writes not clamped, nothing under _eval/", "node", ["packages/naive/src/interfaces/tests/reads-as-of-test.ts"]],
+  ["research programs: programs/<function>.md is a person's (an agent's write is refused, a researcher's included, through the router and the agent filesystem; a person's lands live with provenance), a researcher reads its own program live, and init and naive upgrade copy each listed function's starter only when it is missing", "node", ["packages/naive/src/interfaces/tests/research-programs-test.ts"]],
   ["detection ledger through the router: an accepted held draft is a false alarm, a reverted write a miss, the chain holds under parallel appends", "node", ["packages/naive/src/router/detection-ledger-test.ts"]],
   ["brand: tokens, voice, glossary, sitemap and assets", "node", ["packages/naive/src/interfaces/tests/brand-test.mjs"]],
   ["investors lint: raise, terms, unconfirmed update numbers", "node", ["packages/naive/src/interfaces/tests/lint-investors-test.mjs"]],
