@@ -1494,6 +1494,144 @@
         "F4",
         "F5"
       ]
+    },
+    {
+      "noun": "detector",
+      "level": "governance",
+      "meaning": "The record of one yes or no call on evidence: its question, sensor, criterion, the costs of the four outcomes, base rate and resolver (governance/detectors/<id>.json). It names its sensor and never runs it. Signal detection design, 2026-11-07",
+      "standard": "Green and Swets 1966 (the observer)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ],
+      "term": "detector"
+    },
+    {
+      "noun": "sensor",
+      "level": "governance",
+      "meaning": "What turns the world into a score for a detector: a check, the founder's own agent, or a person. A detector names it and never runs it",
+      "standard": "Green and Swets 1966 (the sensory process)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "capacity"
+      ]
+    },
+    {
+      "noun": "criterion",
+      "level": "governance",
+      "meaning": "The line on a sensor's score scale at or above which a detector's call is yes; two lines make an unsure band. The optimal one rises with the noise base rate and the false alarm cost and falls with the miss cost (criterion_monotone in packages/naive/lean/Naive/Detection.lean)",
+      "standard": "Green and Swets 1966",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
+    },
+    {
+      "noun": "sensitivity",
+      "level": "governance",
+      "meaning": "How well a sensor's scores separate yes cases from no cases, as ROC area or d'. Moving the criterion changes the calls, not the sensitivity",
+      "standard": "Green and Swets 1966; Macmillan and Creelman 2004",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
+    },
+    {
+      "noun": "trial",
+      "level": "governance",
+      "meaning": "One call a detector made and, later, its resolution: the score, the criterion in force and the call. A line in governance/detectors/<id>.trials.jsonl",
+      "standard": "psychophysics (Fechner 1860; Green and Swets 1966)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "process"
+      ],
+      "term": "trial"
+    },
+    {
+      "noun": "hit",
+      "level": "governance",
+      "meaning": "A resolved trial called yes whose true answer was yes",
+      "standard": "Green and Swets 1966",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "trial"
+      ],
+      "term": "hit"
+    },
+    {
+      "noun": "miss",
+      "level": "governance",
+      "meaning": "A resolved trial called no whose true answer was yes",
+      "standard": "Green and Swets 1966",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "trial"
+      ],
+      "term": "miss"
+    },
+    {
+      "noun": "false alarm",
+      "level": "governance",
+      "meaning": "A resolved trial called yes whose true answer was no",
+      "standard": "Green and Swets 1966",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "trial"
+      ],
+      "term": "false-alarm"
+    },
+    {
+      "noun": "correct rejection",
+      "level": "governance",
+      "meaning": "A resolved trial called no whose true answer was no. Noise keeps its standard meaning, the no case",
+      "standard": "Green and Swets 1966",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "trial"
+      ],
+      "term": "correct-rejection"
+    },
+    {
+      "noun": "base rate",
+      "level": "governance",
+      "meaning": "How often the true answer to a detector's question is yes, stated by a person or computed from resolved trials",
+      "standard": "Kahneman and Tversky 1973",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
+    },
+    {
+      "noun": "ROC curve",
+      "level": "governance",
+      "meaning": "Hit rate against false alarm rate as the criterion moves. Its area equals the two-alternative proportion correct on the same scores (auc_eq_2afc in packages/naive/lean/Naive/Detection.lean)",
+      "standard": "Peterson, Birdsall and Fox 1954",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
     }
   ]
 }

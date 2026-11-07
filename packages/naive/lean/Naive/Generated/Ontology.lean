@@ -482,4 +482,48 @@ def «founderAppointment» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»)),
   ("function strategy", fun f => Decidable.decide (f.department = Option.some Department.«strategy»))]⟩
 
+/-- [D] detector (proposed). The record of one yes or no call on evidence: its question, sensor, criterion, the costs of the four outcomes, base rate and resolver (governance/detectors/<id>.json). It names its sensor and never runs it. Signal detection design, 2026-11-07. Standard: Green and Swets 1966 (the observer). Fields: broader ["information artifact"]; handoff_type false; term "detector". -/
+def «detector» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] sensor (proposed). What turns the world into a score for a detector: a check, the founder's own agent, or a person. A detector names it and never runs it. Standard: Green and Swets 1966 (the sensory process). Fields: broader ["capacity"]; handoff_type false. -/
+def «sensor» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] criterion (proposed). The line on a sensor's score scale at or above which a detector's call is yes; two lines make an unsure band. The optimal one rises with the noise base rate and the false alarm cost and falls with the miss cost (criterion_monotone in packages/naive/lean/Naive/Detection.lean). Standard: Green and Swets 1966. Fields: broader ["information artifact"]; handoff_type false. -/
+def «criterion» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] sensitivity (proposed). How well a sensor's scores separate yes cases from no cases, as ROC area or d'. Moving the criterion changes the calls, not the sensitivity. Standard: Green and Swets 1966; Macmillan and Creelman 2004. Fields: broader ["information artifact"]; handoff_type false. -/
+def «sensitivity» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] trial (proposed). One call a detector made and, later, its resolution: the score, the criterion in force and the call. A line in governance/detectors/<id>.trials.jsonl. Standard: psychophysics (Fechner 1860; Green and Swets 1966). Fields: broader ["process"]; handoff_type false; term "trial". -/
+def «trial» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] hit (proposed). A resolved trial called yes whose true answer was yes. Standard: Green and Swets 1966. Fields: broader ["trial"]; handoff_type false; term "hit". -/
+def «hit» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] miss (proposed). A resolved trial called no whose true answer was yes. Standard: Green and Swets 1966. Fields: broader ["trial"]; handoff_type false; term "miss". -/
+def «miss» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] false alarm (proposed). A resolved trial called yes whose true answer was no. Standard: Green and Swets 1966. Fields: broader ["trial"]; handoff_type false; term "false-alarm". -/
+def «falseAlarm» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] correct rejection (proposed). A resolved trial called no whose true answer was no. Noise keeps its standard meaning, the no case. Standard: Green and Swets 1966. Fields: broader ["trial"]; handoff_type false; term "correct-rejection". -/
+def «correctRejection» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] base rate (proposed). How often the true answer to a detector's question is yes, stated by a person or computed from resolved trials. Standard: Kahneman and Tversky 1973. Fields: broader ["information artifact"]; handoff_type false. -/
+def «baseRate» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] ROC curve (proposed). Hit rate against false alarm rate as the criterion moves. Its area equals the two-alternative proportion correct on the same scores (auc_eq_2afc in packages/naive/lean/Naive/Detection.lean). Standard: Peterson, Birdsall and Fox 1954. Fields: broader ["information artifact"]; handoff_type false. -/
+def «rocCurve» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
 end Ontology

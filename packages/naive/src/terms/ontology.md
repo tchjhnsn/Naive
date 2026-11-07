@@ -135,6 +135,17 @@ The system is opinionated: it names one default for each choice, and every defau
 | brand guidelines | The rules for using the venture's visual and verbal identity, kept by the brand pillar | brand guidelines or brand book (common marketing usage) |  |  |  |
 | editorial guidelines | What content covers and how it is written, separate from brand voice; a style guide is one part | editorial guidelines and style guide (publishing usage) |  |  |  |
 | founder appointment | A package typed by the founder term (packages/naive/src/terms, EE-095). Its facts are that term's properties, and the membership gate runs those checks. Strategy holds the type while human capital is not an active function. | ours |  | strategy | yes |
+| detector | The record of one yes or no call on evidence: its question, sensor, criterion, the costs of the four outcomes, base rate and resolver (governance/detectors/<id>.json). It names its sensor and never runs it. Signal detection design, 2026-11-07 | Green and Swets 1966 (the observer) |  |  |  |
+| sensor | What turns the world into a score for a detector: a check, the founder's own agent, or a person. A detector names it and never runs it | Green and Swets 1966 (the sensory process) |  |  |  |
+| criterion | The line on a sensor's score scale at or above which a detector's call is yes; two lines make an unsure band. The optimal one rises with the noise base rate and the false alarm cost and falls with the miss cost (criterion_monotone in packages/naive/lean/Naive/Detection.lean) | Green and Swets 1966 |  |  |  |
+| sensitivity | How well a sensor's scores separate yes cases from no cases, as ROC area or d'. Moving the criterion changes the calls, not the sensitivity | Green and Swets 1966; Macmillan and Creelman 2004 |  |  |  |
+| trial | One call a detector made and, later, its resolution: the score, the criterion in force and the call. A line in governance/detectors/<id>.trials.jsonl | psychophysics (Fechner 1860; Green and Swets 1966) |  |  |  |
+| hit | A resolved trial called yes whose true answer was yes | Green and Swets 1966 |  |  |  |
+| miss | A resolved trial called no whose true answer was yes | Green and Swets 1966 |  |  |  |
+| false alarm | A resolved trial called yes whose true answer was no | Green and Swets 1966 |  |  |  |
+| correct rejection | A resolved trial called no whose true answer was no. Noise keeps its standard meaning, the no case | Green and Swets 1966 |  |  |  |
+| base rate | How often the true answer to a detector's question is yes, stated by a person or computed from resolved trials | Kahneman and Tversky 1973 |  |  |  |
+| ROC curve | Hit rate against false alarm rate as the criterion moves. Its area equals the two-alternative proportion correct on the same scores (auc_eq_2afc in packages/naive/lean/Naive/Detection.lean) | Peterson, Birdsall and Fox 1954 |  |  |  |
 
 ### Interface
 
