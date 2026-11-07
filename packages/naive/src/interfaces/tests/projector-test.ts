@@ -48,7 +48,7 @@ try {
   const masterFile = join(dir, "competitors/acme-robotics.json");
   const run = async (args: Args): Promise<Reply> => await call({ venture: "pj", workspace: ws, ...args } as Parameters<typeof call>[0]) as Reply;
   const write = (route: string, input: unknown, extra: Args = {}) => run({ route, action: "write", input, ...extra });
-  const refusedWithHint = (r: Reply): boolean => !r.ok && r.gate_rule === "projector-only" && r.refused_by === "data model" && (r.error ?? "").includes(EMIT_HINT) && r.fix?.built === false;
+  const refusedWithHint = (r: Reply): boolean => !r.ok && r.gate_rule === "projector-only" && r.refused_by === "data model" && (r.error ?? "").includes(EMIT_HINT) && r.fix?.built === true;
   const linesFor = (file: string) => (entries(dir) as { entity: string }[]).filter((e) => e.entity === file);
 
   expect("the route table carries writer projection on the projected type only",
@@ -58,7 +58,7 @@ try {
   // Everyone but the projector is refused, before anything is written or logged.
   const person = await write(SIGNALS, signals("2026-11-05"), { actor: "person" });
   expect("a person's write to competitors/<id>/signals.json is refused with the emit hint", refusedWithHint(person), show(person));
-  expect("the refusal names naive signals emit and says it is not built yet", /naive signals emit .*--supersedes/.test(person.error ?? "") && /not built yet/.test(person.error ?? ""), person.error);
+  expect("the refusal names naive signals emit, which is built", /naive signals emit .*--supersedes/.test(person.error ?? "") && !/not built/.test(person.error ?? ""), person.error);
   expect("nothing is written and nothing is logged", !existsSync(signalsFile) && linesFor("competitors/acme-robotics/signals.json").length === 0);
   const agent = await write(SIGNALS, signals("2026-11-05"));
   expect("an ordinary agent's write is refused the same way", refusedWithHint(agent), show(agent));

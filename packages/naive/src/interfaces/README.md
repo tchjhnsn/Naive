@@ -13,7 +13,7 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 | [`adapters/`](./adapters) | Harness adapters: Claude Code, Codex, Cursor. |
 | [`adapters.mjs`](./adapters.mjs) | Adapters (Z-4). |
 | [`api/`](./api) | The local HTTP API over the router. |
-| [`cli/`](./cli) | `naive.mjs` and `mentura.mjs`, the CLIs. `mentura <route> write --as person --revert` marks a write as restoring the version before (provenance activity `rollback`), which resolves the gate's no call on the reverted write as a miss when the venture keeps the gate detector. `naive trace append` and `naive trace show` run [`trace-cli.ts`](../engine/trace-cli.ts) on the venture's trace files (EE-121). |
+| [`cli/`](./cli) | `naive.mjs` and `mentura.mjs`, the CLIs. `mentura <route> write --as person --revert` marks a write as restoring the version before (provenance activity `rollback`), which resolves the gate's no call on the reverted write as a miss when the venture keeps the gate detector. `naive trace append` and `naive trace show` run [`trace-cli.ts`](../engine/trace-cli.ts) on the venture's trace files (EE-121). `naive signals emit|pull|explain|replay` run the signal library's [`orchestration/signals.ts`](../router/orchestration/signals.ts) on the venture (signal library build item 5). |
 | [`context-test.mjs`](./context-test.mjs) | Tests for context (packages/naive/src/router/context.mjs), instrumentation (packages/naive/src/core/instrumentation.mjs) and agent vitals (packages/naive/src/router/vitals.mjs). |
 | [`demo/`](./demo) | Demos: the decision harness and a live agent over MCP. |
 | [`dev/`](./dev) | `naive dev` setup and its test. |

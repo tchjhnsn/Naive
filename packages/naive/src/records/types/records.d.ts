@@ -1302,7 +1302,7 @@ export type Frame = {
     layer?: "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
     needed_in?: "discovery" | "validation" | "beachhead" | "scale" | "platform";
   }[];
-  /** Signal listeners whose consumer is this frame (signal library design): adding a frame that listens is subscribing. A frame's listener proposes the frame's decisions or revalidates it, so it names no consumer and never projects. Nothing evaluates them yet */
+  /** Signal listeners whose consumer is this frame (signal library design): adding a frame that listens is subscribing. A frame's listener proposes the frame's decisions or revalidates it, so it names no consumer and never projects. packages/naive/src/engine/signals.ts merges them, with the frame as consumer; the pull proposes a decision named after the frame and the subject */
   listens?: (Listener & {
     then?: "propose" | "revalidate";
     [key: string]: unknown;
@@ -1908,8 +1908,16 @@ export type KnowledgeSources = {
     id: string;
     /** An integration id with a connector: filesystem, github */
     connector: string;
-    /** records (the default): the venture's records live there. signals: a signal library in the naive-signal-library@1 layout, read in place, whose signals reach records only through listeners (signal library design). Reading a paid library tells its publisher which signal types the venture hears */
+    /** records (the default): the venture's records live there. signals: a signal library in the naive-signal-library@1 layout, read in place, whose signals reach records only through listeners (signal library design). Reading a paid library tells its publisher which signal types the venture hears, so a signal library whose connector is not the filesystem needs confirmed_by */
     carries?: "records" | "signals";
+    /** The person who confirmed, by name, that the venture reads this signal library, and when. A source with carries signals whose connector is not the filesystem is not read without it, because reading it tells its publisher which signal types the venture hears (packages/naive/src/engine/signals.ts) */
+    confirmed_by?: {
+      person: string;
+      /**
+       * @format date-time
+       */
+      at: string;
+    };
     /** How writes reach it; the connector's default when left out */
     writes?: "direct" | "pull-request" | "none";
     /** filesystem: the folder, relative to the venture folder or absolute. github: the folder inside the repository */
@@ -2038,7 +2046,7 @@ export type LifecyclePlaybook = {
   }[];
 };
 
-/** The edge between a signal type and one consumer (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): the type range it hears, the consumer's criterion, and what happens to a signal that meets it. Noise is not a property of a signal: it is the outcome of one signal at one listener, so the same signal can be salient at one consumer and noise at another. A listener is not a file of its own. Listeners merge, like triggers, from naive.config.json listeners (a same-id listener replaces any other), each installed package's listeners, each frame's listens and each listed kit's listeners; naive.config.json listeners_off turns one off. The types a pull reads are derived from the listeners, so there is no subscription list. packages/naive/src/engine/signals/render.ts evaluates listeners; merging them from the four places is a later build item. */
+/** The edge between a signal type and one consumer (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): the type range it hears, the consumer's criterion, and what happens to a signal that meets it. Noise is not a property of a signal: it is the outcome of one signal at one listener, so the same signal can be salient at one consumer and noise at another. A listener is not a file of its own. Listeners merge, like triggers, from naive.config.json listeners (a same-id listener replaces any other), each installed package's listeners, each frame's listens and each listed kit's listeners; naive.config.json listeners_off turns one off. The types a pull reads are derived from the listeners, so there is no subscription list. packages/naive/src/engine/signals/render.ts evaluates listeners and packages/naive/src/engine/signals.ts merges them from packages, frames and naive.config.json; kits' listeners are not built. */
 export type Listener = {
   /** Unique among the venture's listeners once merged; a same-id listener in naive.config.json replaces any other */
   id: string;
@@ -2449,7 +2457,7 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (packages/naive/src/router/orchestration/triggers.mjs) */
   triggers?: unknown[];
-  /** The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. Nothing merges or evaluates them yet */
+  /** The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. packages/naive/src/engine/signals.ts merges them and naive signals pull evaluates them */
   listeners?: (Listener & {
     consumer: unknown;
   })[];
@@ -3599,7 +3607,7 @@ export type SignalLog = {
   published: string;
 };
 
-/** One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. packages/naive/src/engine/signals/render.ts renders projections and worked cases; pull and check-signals are later build items. */
+/** One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. packages/naive/src/engine/signals/render.ts renders projections and worked cases; packages/naive/src/engine/signals.ts reads types from libraries and naive signals pull renders them into records; check-signals is not built. */
 export type SignalType = {
   $schema?: string;
   /** The type's id (competitor-funding); a signal names it as id@major.minor */
