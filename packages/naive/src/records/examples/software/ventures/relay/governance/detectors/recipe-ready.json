@@ -12,6 +12,13 @@
   "evidence": {
     "kind": "person",
     "sensor": "reviewer",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "decisions/[id]",
+        "note": "The reviewer's rating on each draft's publish decision"
+      }
+    ],
     "scale": {
       "min": 1,
       "max": 5,

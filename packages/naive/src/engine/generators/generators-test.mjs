@@ -46,7 +46,7 @@ t("reference: id is unique in the file", r.added === "minsky-1974-framework-2");
 t("reference: checked without a url is dropped", !("checked" in r.draft.references[1]));
 
 const det = detector.draft({ id: "recipe-ready", tier: "low", question: { verb: "publish", noun: "publication", asking_function: "marketing-and-sales" },
-  evidence: { kind: "person", sensor: "reviewer", scale: { min: 1, max: 5 } }, criterion: { yes: { value: 4, set_by: "founder" }, no: { value: 2, set_by: "founder" } },
+  evidence: { kind: "person", sensor: "reviewer", sources: [{ source: "venture", records: "decisions/[id]" }], scale: { min: 1, max: 5 } }, criterion: { yes: { value: 4, set_by: "founder" }, no: { value: 2, set_by: "founder" } },
   resolution: { resolver: { kind: "person", id: "founder" }, time_to_detect: "2w" } });
 t("detector: draft passes the schema", det.ok);
 t("detector: low tier costs a miss the same as a false alarm", det.ok && det.draft.costs?.miss === 1 && det.draft.costs.false_alarm === 1 && det.draft.costs.set_by === "tier");
@@ -63,6 +63,8 @@ t("detector: base rate comes from the ledger unless stated", det.ok && det.draft
 t("detector: a stated base rate with no one stating it fails the schema", !detector.draft({ ...det.draft, base_rate: { source: "stated", value: 0.3 } }).ok);
 t("detector: a criterion that names no one fails the schema", !validate("detector", { ...det.draft, criterion: { yes: { value: 4 } } }).ok);
 t("detector: no criterion is refused before the schema", !detector.draft({ ...det.draft, criterion: undefined }).ok);
+t("detector: evidence that names no source fails the schema", !validate("detector", { ...det.draft, evidence: { ...det.draft.evidence, sources: undefined } }).ok);
+t("detector: a source that names no records fails the schema", !validate("detector", { ...det.draft, evidence: { ...det.draft.evidence, sources: [{ source: "venture" }] } }).ok);
 
 const band = { yes: 4, no: 2 };
 t("detector-trial: the call follows the band", detectorTrial.call(4, band) === "yes" && detectorTrial.call(3, band) === "unsure" && detectorTrial.call(2, band) === "no" && detectorTrial.call(3, { yes: 4 }) === "no" && detectorTrial.call(3, { route: "person" }) === "unsure");

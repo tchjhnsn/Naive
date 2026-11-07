@@ -75,10 +75,11 @@
       "required": [
         "kind",
         "sensor",
-        "scale"
+        "scale",
+        "sources"
       ],
       "additionalProperties": false,
-      "description": "The sensor that turns the world into a score, and the scale of that score. A higher score means more evidence for yes.",
+      "description": "Where the signals come from, the sensor that turns them into a score, and the scale of that score. A higher score means more evidence for yes.",
       "properties": {
         "kind": {
           "enum": [
@@ -94,6 +95,34 @@
           "type": "string",
           "minLength": 1,
           "description": "What produces the score: a module path, a model step id, a role or a person, as the kind needs."
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Where the signals come from, so every score can be traced to the records it was read from. Signals reach Naive as records, so each entry names a source of the venture and the records read there.",
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "records"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "source": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "description": "A source id from the venture's knowledge/sources.json, or venture for the venture's own folder"
+              },
+              "records": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The route of the records read there, such as product/bugs or evidence/[id]"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
         },
         "scale": {
           "type": "object",

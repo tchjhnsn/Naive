@@ -861,12 +861,20 @@ export type Detector = {
     /** The question in a plain sentence. */
     text?: string;
   };
-  /** The sensor that turns the world into a score, and the scale of that score. A higher score means more evidence for yes. */
+  /** Where the signals come from, the sensor that turns them into a score, and the scale of that score. A higher score means more evidence for yes. */
   evidence: {
     /** check: a deterministic check computes the score. founder-agent: the founder's own agent gives a confidence with its answer. person: a person rates on a scale. accumulated: a statistic over past outcomes. sequential: evidence added up over time until it crosses a boundary, as the standing rule's SPRT does. */
     kind: "check" | "founder-agent" | "person" | "accumulated" | "sequential";
     /** What produces the score: a module path, a model step id, a role or a person, as the kind needs. */
     sensor: string;
+    /** Where the signals come from, so every score can be traced to the records it was read from. Signals reach Naive as records, so each entry names a source of the venture and the records read there. */
+    sources: {
+      /** A source id from the venture's knowledge/sources.json, or venture for the venture's own folder */
+      source: string;
+      /** The route of the records read there, such as product/bugs or evidence/[id] */
+      records: string;
+      note?: string;
+    }[];
     /** The range and meaning of the score. Leave out a bound the score has none on. */
     scale: {
       min?: number;
