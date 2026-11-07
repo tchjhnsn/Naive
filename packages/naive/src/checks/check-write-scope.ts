@@ -35,6 +35,7 @@ export const TESTS = [
   "packages/naive/src/engine/upgrades-test.mjs",
   "packages/naive/src/checks/traces-test.ts",
   "packages/naive/src/interfaces/tests/as-of-test.ts",
+  "packages/naive/src/interfaces/tests/reads-as-of-test.ts",
 ];
 
 // Paths outside the venture that today's code writes, relative to the repository, each with its reason.
