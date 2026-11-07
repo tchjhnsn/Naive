@@ -2331,7 +2331,7 @@
         {
           "field": "hears.signals",
           "to": "signal-type",
-          "checked_by": null
+          "checked_by": "packages/naive/src/checks/check-recipes.ts"
         }
       ],
       "note": "The code that makes every record at one projected route pattern: one pure TypeScript module, <pattern>.recipe.ts beside the records it makes, run only in the sandbox (packages/naive/src/engine/recipes/sandbox.ts). The source is TypeScript, so its form is typescript and its schema governs only what it exports (hears and knobs), as the sandbox reads them; packages/naive/src/records/validate.mjs never reads the file. A path segment [id] is literal: competitors/[id]/signals.recipe.ts makes every competitors/<id>/signals.json (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md)"
@@ -2372,7 +2372,7 @@
         {
           "field": "plan",
           "to": "eval-plan",
-          "checked_by": null
+          "checked_by": "packages/naive/src/checks/check-recipes.ts"
         },
         {
           "field": "candidate",
@@ -2382,7 +2382,7 @@
         {
           "field": "base",
           "to": "recipe",
-          "checked_by": null
+          "checked_by": "packages/naive/src/checks/check-recipes.ts"
         }
       ],
       "note": "A recipe's experiment log, <pattern>.experiments.jsonl beside it: one line per write of the recipe (keep, discard or fail, with the dev score and its standard error) and one per holdout check (pass or fail), hash-chained like provenance and written by the evaluator only. A plan's spent budget is counted from it"
@@ -2403,12 +2403,12 @@
         {
           "field": "receptions.signal",
           "to": "signal",
-          "checked_by": null
+          "checked_by": "packages/naive/src/checks/check-recipes.ts"
         },
         {
           "field": "recipe",
           "to": "recipe",
-          "checked_by": null
+          "checked_by": "packages/naive/src/checks/check-recipes.ts"
         }
       ],
       "note": "Every signal a recipe heard for one record, <record>.reception.json beside it: salient or noise, the reasons a noise reception failed, the signal's valid, transaction and withdrawal times, the engine's bitemporal factors and later a hindsight label (helpful, inert or harmful, with the recipe's sha). Only the projector writes it"
