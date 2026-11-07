@@ -3,7 +3,8 @@
 // to the app that hosts Naive, which registers it (registerConnector) and runs the same suite on it.
 //
 //   contract   the shared suite (suite.mjs) on the filesystem connector, in a plain folder and in
-//              a git repository, plus the venture-folder rules
+//              a git repository, plus the venture-folder rules and the lock file a write with
+//              base or append holds
 //   register   an app's connector, registered by absolute path, is in the registry and connects
 //
 // The router, catalog, source-of-truth matrix and attribute evals run routes through the router,
@@ -12,7 +13,7 @@
 //   node packages/naive/src/store/connectors/eval.mjs
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { contract, FIXTURE, harness, OUTSIDE } from "./suite.mjs";
 import { connect as fsConnect } from "./filesystem.mjs";
@@ -48,6 +49,25 @@ const gitT = await contract(h, "filesystem (git repository)", fsMake(true));
   write(d, { "venture.json": "{}", "purpose/telos.json": "{}", "_drafts/x.draft": "{}", "studio/venture.json": "{}", "studio/purpose/telos.json": "{}" });
   const v = fsConnect({ root: d, venture: true });
   expect("filesystem (venture folder): listing stops at a nested venture and skips private _ folders", JSON.stringify((await v.list()).map((x) => x.path)) === JSON.stringify(["purpose/telos.json", "venture.json"]));
+}
+
+{
+  // Compare on write in a folder: the lock file a base or append write holds.
+  const d = mkdtempSync(join(scratch, "lock-"));
+  write(d, { "log.jsonl": "a\n" });
+  const c = fsConnect({ root: d });
+  const lock = join(d, ".log.jsonl.lock");
+  writeFileSync(lock, "");
+  const old = new Date(Date.now() - 60_000);
+  utimesSync(lock, old, old);
+  const w = await c.write("log.jsonl", "b\n", { append: true, base: await c.version("log.jsonl") });
+  expect("filesystem (compare on write): a lock left by a process that died is removed and the write lands", w.version === await c.version("log.jsonl") && !existsSync(lock));
+  writeFileSync(lock, "");
+  expect("filesystem (compare on write): a write with base waits on a live lock and then gives up", await h.throws(() => c.write("log.jsonl", "c\n", { append: true, base: w.version }), /locked by another writer/));
+  expect("filesystem (compare on write): a write without base or append does not take the lock", (await c.write("other.md", "x\n")).version !== null);
+  rmSync(lock);
+  await c.write("log.jsonl", "c\n", { append: true, base: w.version });
+  expect("filesystem (compare on write): no lock file is left behind, and list never shows one", !readdirSync(d).some((f) => f.endsWith(".lock")) && !(await c.list()).some((x) => x.path.endsWith(".lock")));
 }
 
 {
