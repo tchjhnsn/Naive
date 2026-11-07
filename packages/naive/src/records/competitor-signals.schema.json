@@ -33,6 +33,12 @@
       },
       "description": "Funding rounds, one per round (fold append)"
     },
+    "p_raise_90d": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "A forecast: the probability the competitor announces a round within 90 days of the render. Settled by a competitor-funding signal arriving in that window (settles.forecasts in the data model) and scored by Brier"
+    },
     "launches": {
       "type": "array",
       "items": {

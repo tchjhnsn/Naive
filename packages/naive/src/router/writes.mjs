@@ -162,12 +162,13 @@ export async function around(inner, args) {
     if (out.ok) {
       const items = r.collection === "list" ? Object.fromEntries(Object.entries(out.sources ?? {}).map(([id, s]) => [id, fileOfAddress(s.address)]).filter(([, f]) => f))
         : out.source && fileOfAddress(out.source.address) ? { [params.id ?? r.record]: fileOfAddress(out.source.address) } : {};
-      // Metadata is built from the unprojected record, so a public reader gets none of it.
-      out = { ...out, params, ...(actor === "public" ? {} : { metadata: await metadataFor({ dir, r, route: concrete, params, result: out.result, items }) }) };
+      // Metadata is built from the unprojected record, so a public reader gets none of it. It is computed from the live
+      // provenance log, so an as-of read (packages/naive/src/router/reads-as-of.mjs) gets none of it either.
+      out = { ...out, params, ...(actor === "public" || out.as_of ? {} : { metadata: await metadataFor({ dir, r, route: concrete, params, result: out.result, items }) }) };
       out = filterRead(out, input?.where, r);
     }
     out.resolved_by = resolvedBy(out);
-    if (input?.hierarchy && actor !== "public") {
+    if (input?.hierarchy && actor !== "public" && !out.as_of) {
       const { layout } = await import("./router.mjs");
       const pkg = packageOfRecord(r.record);
       const lay = withParams(layout(r, dir), { dir, params, file: draftOf(concrete, venture, workspace)?.file, group: pkg ? groupLayout(pkg, dir) : null });

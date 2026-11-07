@@ -33,9 +33,16 @@ const SCHEMA: [RegExp, string][] = [
   [/^competitors\/[^/]+\/signals\.json$/, "competitor-signals.schema.json"],
   [/^naive\.config\.json$/, "naive-config.schema.json"],
   [/^knowledge\/sources\.json$/, "knowledge-sources.schema.json"],
+  // The autoresearch record types beside the signal examples; packages/naive/src/engine/generators/recipes-test.ts checks them in depth.
+  [/^competitors\/\[id\]\/signals\.plan\.json$/, "eval-plan.schema.json"],
+  [/^competitors\/\[id\]\/signals\.experiments\.jsonl$/, "experiment.schema.json"],
+  [/^competitors\/[^/]+\/signals\.reception\.json$/, "reception.schema.json"],
 ];
+// A recipe is TypeScript source: recipes-test.ts reads its exports in the sandbox and checks them against recipe.schema.json.
+const SOURCE = /^competitors\/\[id\]\/signals\.recipe\.ts$/;
 for (const f of files(ex)) {
   const rel = relative(ex, f), schema = SCHEMA.find(([re]) => re.test(rel))?.[1];
+  if (SOURCE.test(rel)) continue;
   if (!schema) { t(`${rel}: a record type covers it`, false); continue; }
   const ok = rel.endsWith(".jsonl")
     ? readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).every((l) => valid(schema, JSON.parse(l)))
