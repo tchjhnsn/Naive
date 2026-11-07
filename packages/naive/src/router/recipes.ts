@@ -45,6 +45,8 @@ export type RecipeCall = {
 /** A pattern as the eval plan schema has it: segments of lowercase words, or a literal [id]. */
 export const PATTERN = /^[a-z0-9][a-z0-9-]*(\/([a-z0-9][a-z0-9-]*|\[id\]))*$/;
 const SHA = /^[0-9a-f]{64}$/;
+/** The interfaces a provenance agent names (provenance-entry.schema.json); any other caller over the router is logged as router. */
+const VIAS: readonly string[] = ["cli", "mcp", "api", "router", "console"];
 /** Who writes the experiment log: the router's own code, never a caller. */
 export const EVALUATOR = Object.freeze({ kind: "agent", id: "evaluator", via: "router" });
 
@@ -140,7 +142,10 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
   const set = loadEvalSet(dir, plan.sha);
   if (!set) return { ok: false, error: `the eval set _eval/${plan.sha}/ is missing, so nothing can score this write` };
   const source = input.source, base = input.base as string | null, candidate = sha(source);
-  const agent = agentFromEnv(c.actor === "person" ? "person" : "agent", c.via ?? "router", { ...(c.actor_id && c.actor !== "person" ? { id: c.actor_id } : {}), ...c.provenance?.agent }) as Agent;
+  // The line's actor is shaped as a provenance agent, whose via is one of the router's interfaces: a call through
+  // agent-files or any other caller over the router is logged as via router.
+  const via = VIAS.includes(c.via ?? "") ? c.via as string : "router";
+  const agent = agentFromEnv(c.actor === "person" ? "person" : "agent", via, { ...(c.actor_id && c.actor !== "person" ? { id: c.actor_id } : {}), ...c.provenance?.agent }) as Agent;
 
   return locked(dir, pattern, async () => {
     const lines = logLines(dir, pattern);
@@ -158,6 +163,15 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
     return withSpan(dir, { name: `recipe experiment ${pattern}`, kind: "judgment", attributes }, async (ctx) => {
       const scored: Scored = await scoreExperiment(set, plan as EvalPlan, source, tip?.source ?? null);
       Object.assign(attributes, { "naive.outcome": scored.verdict, ...("dev" in scored ? { "naive.score": scored.dev.score, "naive.threshold": scored.dev.margin } : {}) });
+      const span = tracing(dir).on ? { trace_id: ctx.trace_id, span_id: ctx.span_id, ...(ctx.session !== ctx.trace_id ? { session: ctx.session } : {}) } : undefined;
+      const lineOf = (provenance: string | undefined) => Object.fromEntries(Object.entries({
+        kind: "experiment", id: sha(`${plan.sha} ${candidate} ${base ?? "null"}`).slice(0, 24), at: new Date().toISOString(), pattern, plan: plan.sha, candidate, base,
+        verdict: scored.verdict, kept_as: "kept_as" in scored ? scored.kept_as : undefined, dev: "dev" in scored ? scored.dev : undefined, training: "training" in scored ? scored.training : undefined,
+        reason: scored.reason, actor: agent, span, provenance,
+      }).filter(([, v]) => v !== undefined)) as unknown as Omit<Experiment, "prev" | "hash">;
+      // The line is checked before a keep lands, so nothing is written that the log cannot record.
+      const check = validateValue("experiment.schema.json", chainOnto("genesis", lineOf(scored.verdict === "keep" ? "0".repeat(64) : undefined)));
+      if (check.status !== 0) return { ok: false, error: `the experiment line would not match experiment.schema.json, so nothing was written: ${(check.stdout || check.stderr).trim()}` };
       let landed: { hash: string } | null = null;
       if (scored.verdict === "keep") {
         const note = `kept as ${scored.kept_as} under plan ${plan.sha}`;
@@ -173,13 +187,7 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
           landed = prov(dir, { entity: liveFile(pattern), route: c.route, activity: "write", agent, derived_from: [`${pattern}.plan.json`], note });
         }
       }
-      const span = tracing(dir).on ? { trace_id: ctx.trace_id, span_id: ctx.span_id, ...(ctx.session !== ctx.trace_id ? { session: ctx.session } : {}) } : undefined;
-      const line = appendExperiment(dir, pattern, c.route, Object.fromEntries(Object.entries({
-        kind: "experiment", id: sha(`${plan.sha} ${candidate} ${base ?? "null"}`).slice(0, 24), at: new Date().toISOString(), pattern, plan: plan.sha, candidate, base,
-        verdict: scored.verdict, kept_as: "kept_as" in scored ? scored.kept_as : undefined, dev: "dev" in scored ? scored.dev : undefined, training: "training" in scored ? scored.training : undefined,
-        reason: scored.reason, actor: agent, span, provenance: landed?.hash,
-      }).filter(([, v]) => v !== undefined)) as unknown as Omit<Experiment, "prev" | "hash">);
-      return answer(dir, line);
+      return answer(dir, appendExperiment(dir, pattern, c.route, lineOf(landed?.hash)));
     });
   });
 }

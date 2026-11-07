@@ -5,7 +5,10 @@
 // decision rights and provenance, and a gated agent write comes back as a draft for a person to accept. Each
 // operation is a tool span (execute_tool naive_<op>) when the venture has traces on, with the router's call span
 // under it. With reads_as_of in the context (a researcher must give one), every read, ls, glob and grep sees the venture
-// as of that time, and nothing under _eval/. Nothing here imports LangChain: an app wraps these as a deepagents backend.
+// as of that time, and nothing under _eval/. A recipe file, /<pattern>.recipe.ts, is the one file that is not a record
+// route: read gives the tip's TypeScript source, and write and edit go to recipes/<pattern> with { source, base }, so
+// the router scores every recipe write and holds an agent's keep as a draft (autoresearch build plan item 6). Nothing
+// here imports LangChain: an app wraps these as a deepagents backend.
 //
 //   node packages/naive/src/router/agent-files.ts <venture> ls [<path>] | read <path> | glob <pattern> | grep <pattern> [<path>]
 //   node packages/naive/src/router/agent-files.ts <venture> write <path> < record.json
@@ -20,7 +23,7 @@ import { withSpan } from "../core/instrumentation.mjs";
 export interface Context { venture: string, workspace?: string, actor_id?: string, via?: string, reads_as_of?: string }
 export interface FileInfo { path: string, is_dir: boolean, exists?: boolean }
 export interface GrepMatch { path: string, line: number, text: string }
-export interface WriteResult { ok: boolean, path: string, error?: string, draft?: boolean, written?: string, note?: string }
+export interface WriteResult { ok: boolean, path: string, error?: string, draft?: boolean, written?: string, note?: string, verdict?: unknown }
 export interface EditResult extends WriteResult { occurrences?: number }
 
 interface Route { route: string, kind: string, collection?: string, actions: string[] }
@@ -34,6 +37,29 @@ const singles = (): string[] => records().filter((r) => r.collection !== "list" 
 
 async function route(ctx: Context, path: string, action: string, input?: unknown): Promise<Reply> {
   return await call({ venture: ctx.venture, workspace: ctx.workspace, actor_id: ctx.actor_id, via: ctx.via ?? "agent-files", route: clean(path), action, input, ...(ctx.reads_as_of ? { reads_as_of: ctx.reads_as_of } : {}) }) as Reply;
+}
+
+/** The pattern of a recipe file path (/competitors/[id]/signals.recipe.ts gives competitors/[id]/signals), or null. */
+export const recipePattern = (path: string): string | null => clean(path).endsWith(".recipe.ts") ? clean(path).slice(0, -".recipe.ts".length) : null;
+
+interface RecipeRead { tip?: string | null, source?: string | null }
+interface RecipeKept { verdict?: unknown, kept_as?: string, written?: string | null, draft?: boolean, note?: string }
+
+/** The tip of a recipe, read through recipes/<pattern>: its sha and its source, or an error. */
+async function recipeTip(ctx: Context, pattern: string): Promise<{ ok: boolean, tip?: string | null, source?: string | null, error?: string }> {
+  const r = await route(ctx, `recipes/${pattern}`, "read");
+  if (!r.ok) return { ok: false, error: r.error ?? `cannot read recipes/${pattern}` };
+  const res = (r.result ?? {}) as RecipeRead;
+  return { ok: true, tip: res.tip ?? null, source: res.source ?? null };
+}
+
+/** Writes a recipe's source to recipes/<pattern> with its base: the router scores it inside the write. */
+async function writeRecipe(ctx: Context, path: string, pattern: string, source: string, base: string | null): Promise<WriteResult> {
+  const r = await route(ctx, `recipes/${pattern}`, "write", { source, base });
+  const verdict = (r as { verdict?: unknown }).verdict;
+  if (!r.ok) return { ok: false, path: slash(path), error: r.error ?? "not written", ...(verdict ? { verdict } : {}) };
+  const res = (r.result ?? {}) as RecipeKept;
+  return { ok: true, path: slash(path), written: res.written ?? undefined, draft: !!res.draft, verdict: res.verdict, note: `kept as ${res.kept_as ?? "better"} through recipes/${pattern}${res.note ? `: ${res.note}` : ""}` };
 }
 
 /** Runs one operation as a tool span when the venture keeps traces. */
@@ -89,6 +115,13 @@ export function ls(ctx: Context, path = "/"): Promise<FileInfo[]> {
 /** One record as text: JSON for a JSON record, the text itself otherwise. */
 export function readRaw(ctx: Context, path: string): Promise<{ ok: boolean, content?: string, error?: string, pending_draft?: string }> {
   return op(ctx, "read", path, async () => {
+    const pattern = recipePattern(path);
+    if (pattern) {
+      const t = await recipeTip(ctx, pattern);
+      if (!t.ok) return { ok: false, error: t.error };
+      if (t.source === null || t.source === undefined) return { ok: false, error: `${slash(path)}: no recipe yet` };
+      return { ok: true, content: t.source };
+    }
     const r = await route(ctx, path, "read");
     if (!r.ok) return { ok: false, error: r.error ?? `cannot read ${slash(path)}` };
     if (r.result === null || r.result === undefined) return { ok: false, error: `${slash(path)}: ${r.not_found?.note ?? "no record yet"}` };
@@ -105,9 +138,15 @@ export async function read(ctx: Context, path: string, offset = 0, limit = 2000)
   return lines.map((l, i) => `${String(offset + i + 1).padStart(6)}\t${l}`).join("\n");
 }
 
-/** Writes a record (its JSON) through the router: the schema, the gate and provenance decide what happens. */
+/** Writes a record (its JSON) through the router: the schema, the gate and provenance decide what happens. A recipe
+ *  file's source goes to recipes/<pattern>, edited from the tip as it is now, since a whole-file write starts from nothing. */
 export function write(ctx: Context, path: string, content: string): Promise<WriteResult> {
   return op(ctx, "write", path, async () => {
+    const pattern = recipePattern(path);
+    if (pattern) {
+      const t = await recipeTip(ctx, pattern);
+      return t.ok ? await writeRecipe(ctx, path, pattern, content, t.tip ?? null) : { ok: false, path: slash(path), error: t.error };
+    }
     let input: unknown;
     try { input = JSON.parse(content); } catch { return { ok: false, path: slash(path), error: `${slash(path)} is a record: write its JSON` }; }
     const r = await route(ctx, path, "write", input);
@@ -120,6 +159,17 @@ export function write(ctx: Context, path: string, content: string): Promise<Writ
 /** Replaces old with new in a record's JSON text (once, unless all), then writes it back through the router. */
 export function edit(ctx: Context, path: string, oldText: string, newText: string, all = false): Promise<EditResult> {
   return op(ctx, "edit", path, async () => {
+    const pattern = recipePattern(path);
+    if (pattern) {
+      // The base is the tip this edit read, so an edit of a tip that moved meanwhile is refused as stale.
+      const t = await recipeTip(ctx, pattern);
+      if (!t.ok || typeof t.source !== "string") return { ok: false, path: slash(path), error: t.error ?? `${slash(path)}: no recipe yet` };
+      const occurrences = t.source.split(oldText).length - 1;
+      if (!occurrences) return { ok: false, path: slash(path), error: `${slash(path)} does not contain the text to replace`, occurrences };
+      if (occurrences > 1 && !all) return { ok: false, path: slash(path), error: `${slash(path)} contains the text ${occurrences} times: give more context, or replace all`, occurrences };
+      const next = all ? t.source.split(oldText).join(newText) : t.source.replace(oldText, () => newText);
+      return { ...(await writeRecipe(ctx, path, pattern, next, t.tip ?? null)), occurrences };
+    }
     const r = await readRaw(ctx, path);
     if (!r.ok || r.content === undefined) return { ok: false, path: slash(path), error: r.error };
     const occurrences = r.content.split(oldText).length - 1;
