@@ -60,7 +60,7 @@ const ctx = (v: string) => ({ venture: v, workspace: ws });
   const trial = ledgerLines(dir)[0];
   expect("an agent's low-confidence write is held as before", held.ok && held.result?.draft === true, JSON.stringify(held));
   expect("the held write is a yes trial with the score, the criterion in force and the draft's provenance line",
-    trial?.kind === "trial" && trial.call === "yes" && trial.score === 0.4 && JSON.stringify(trial.criterion) === JSON.stringify({ yes: 0.7 }) && trial.provenance === held.result?.provenance, JSON.stringify(trial));
+    trial?.kind === "trial" && trial.call === "yes" && trial.score === 0.4 && JSON.stringify(trial.criterion) === JSON.stringify({ yes: 0.7, yes_when: "below" }) && trial.provenance === held.result?.provenance, JSON.stringify(trial));
   expect("the write answers which ledger line it appended", held.result?.detector?.appended === "trial" && held.result.detector.line === trial?.id, JSON.stringify(held.result?.detector));
   const side = JSON.parse(readFileSync(join(dir, "_drafts/validation__solution.json.draft.gate"), "utf8")) as { variants: { trial?: string }[] };
   expect("the held draft's sidecar names its trial", side.variants[0]?.trial === trial?.id, JSON.stringify(side));

@@ -5,7 +5,6 @@
 
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { confidenceCall, evaluate } from "../engine/gate.mjs";
 import { trialOf, writeHeld } from "../engine/gate-drafts.mjs";
 import { entries as provEntries } from "../core/provenance.mjs";
@@ -84,10 +83,9 @@ export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile,
   const confidence = provenance.confidence === undefined || provenance.confidence === null || provenance.confidence === "" ? undefined : Number(provenance.confidence);
   const c = confidenceCall({ config, route, table: r.route, actor, role: actor_id, confidence, exists: existsSync(ventureFile(dir, file)) });
   if (!c) return null;
-  // The criterion in force, as the ledger keeps it: the detector's lines as numbers, or route person.
-  const set = detector?.criterion ?? {};
-  const line = (x) => (typeof x === "number" ? x : x?.value);
-  const criterion = set.route === "person" ? { route: "person" } : Object.fromEntries([["yes", line(set.yes)], ["no", line(set.no)]].filter(([, v]) => typeof v === "number"));
+  // The criterion in force, as the ledger keeps it: the line the gate rule actually used (a rule's number,
+  // naive.config.json thresholds or the detector, as configFor resolved them), yes strictly below it, or route person.
+  const criterion = detector?.criterion?.route === "person" ? { route: "person" } : { yes: c.limit, yes_when: "below" };
   const id = randomUUID();
   return {
     held: draft && c.call === "yes" ? id : undefined,
