@@ -84,7 +84,7 @@ try {
   expect("a heavy requirement lifts a later-phase decision into the current phase", sc.weight.phase === 1 && sc.weight.lifted_by === "scale-to-millions", sc.weight);
   expect("an answer that breaks a later requirement is flagged now", sc.flags.length === 1 && sc.flags[0].requirement === "scale-to-millions" && sc.flags[0].holds_in === "scale", sc.flags);
   expect("the lifted, flagged decision now ranks first", idx.entries[0].id === "shop-scale", idx.entries.map((e) => e.id));
-  const s = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "decision-record.schema.json", "--file", join(v, "product/decisions/shop-scale.decision.json")], { encoding: "utf8" });
+  const s = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "decision-record.schema.json", "--file", join(v, "product/decisions/shop-scale.decision.json")], { encoding: "utf8" });
   expect("the requirements field matches the decision-record schema", s.status === 0, s.stdout + s.stderr);
 
   // --since counts events from a time.

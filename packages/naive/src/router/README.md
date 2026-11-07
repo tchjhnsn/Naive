@@ -35,3 +35,5 @@ The routes' actions, shared by the CLI, the MCP server and the HTTP API (EE-030)
 
 - Called by: [`interfaces`](../interfaces/README.md).
 - Calls: [`checks`](../checks/README.md), [`engine`](../engine/README.md), [`store`](../store/README.md), [`records`](../records/README.md).
+
+The router and `boundaries.mjs` validate each record before a write in process, with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md). No write starts a Python process.

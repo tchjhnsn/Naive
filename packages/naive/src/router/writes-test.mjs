@@ -197,7 +197,7 @@ expect("P-3: the manifest derives the packages in use when venture.json lists no
 expect("P-3: a solo founder owns every function", m0.functions.find((f) => f.function === "strategy")?.owner === "the founder", m0.functions);
 const vj = JSON.parse(readFileSync(join(acme, "venture.json"), "utf8"));
 writeFileSync(join(acme, "venture.json"), JSON.stringify({ ...vj, packages: ["foundation", "validation", "customers"], kits: [{ id: "interviews", extends: "validation" }], functions: { strategy: { owner: "Torian" } } }, null, 2));
-const valid = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "venture.schema.json", "--file", join(acme, "venture.json")], { encoding: "utf8" });
+const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "venture.schema.json", "--file", join(acme, "venture.json")], { encoding: "utf8" });
 expect("P-3: venture.json with packages, kits and functions matches its schema", valid.status === 0, valid.stdout + valid.stderr);
 const m1 = (await c("venture", "read")).result;
 expect("P-3: the venture route reads the manifest: declared packages, kits and owners", m1?.packages?.declared && m1.packages.list.map((p) => p.name).join() === "foundation,validation,customers" && m1.kits[0].extends === "validation" && m1.functions.find((f) => f.function === "strategy").owner === "Torian", m1);

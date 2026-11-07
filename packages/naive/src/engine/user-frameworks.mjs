@@ -11,14 +11,14 @@
 // so a venture uses a workspace framework the same way it uses a built-in one (resolveFramework). Publishing packs
 // the folder into .naive/publish/frameworks/<id>.json; where it goes is not decided yet, so only --dry-run runs.
 
-import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { check as checkFrameworks } from "./check-frameworks.mjs";
 import { findWorkspace } from "./workspace.mjs";
 import { leaks } from "./check-leaks.mjs";
 import { findSecrets } from "./redact.mjs";
 import { schemaFile } from "../records/index.mjs";
+import { validateFile } from "../records/validate.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -81,18 +81,19 @@ export function newFramework(id, from = process.cwd(), { title, owner } = {}) {
   return { dir, framework: fw };
 }
 
-// Schema and maps_to: python jsonschema when available, then check-frameworks over the workspace.
+// Schema and maps_to: validate.mjs, then check-frameworks over the workspace.
 export function checkUserFrameworks(id, from = process.cwd()) {
   const { workspace: ws, frameworks } = listFrameworks(from);
   const own = frameworks.filter((f) => f.source === "workspace" && (!id || f.id === id));
   const errors = [];
   if (id && !frameworks.some((f) => f.id === id)) errors.push(`no framework ${id}`);
   if (!ws || !own.length) return { checked: [], errors };
-  const schema = schemaFile("framework");
-  const py = `import json,sys\nfrom jsonschema import Draft202012Validator as V\ns=json.load(open(sys.argv[1]))\nfor p in sys.argv[2:]:\n  for e in V(s).iter_errors(json.load(open(p))): print(p+': '+e.message)`;
-  const r = spawnSync("python3", ["-I", "-c", py, schema, ...own.map((f) => join(f.dir, "framework.json"))], { encoding: "utf8" });
-  if (r.status === 0) errors.push(...r.stdout.split("\n").filter(Boolean).map((l) => l.replace(ws + "/", "")));
-  else errors.push(...own.flatMap((f) => basicSchema(f.framework).map((e) => `frameworks/${f.id}/framework.json: ${e}`)));
+  const name = basename(schemaFile("framework"));
+  for (const f of own) {
+    const r = validateFile(name, join(f.dir, "framework.json"));
+    if (r.status === 1) errors.push(...r.stdout.split("\n").filter(Boolean).map((l) => `frameworks/${f.id}/framework.json: ${l}`));
+    else if (r.status !== 0) errors.push(...basicSchema(f.framework).map((e) => `frameworks/${f.id}/framework.json: ${e}`));
+  }
   const ids = new Set(own.map((f) => f.id));
   errors.push(...checkFrameworks(ws).errors.filter((e) => [...ids].some((i) => e.startsWith(`frameworks/${i}`))));
   for (const f of own) {

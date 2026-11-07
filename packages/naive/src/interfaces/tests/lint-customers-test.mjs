@@ -215,7 +215,7 @@ function venture(layout = "flat") {
   write(v.dir, "naive.config.json", cfg);
   const scratch = join(v.root, "cfg.json");
   writeFileSync(scratch, JSON.stringify(cfg));
-  const valid = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "naive-config.schema.json", "--file", scratch], { encoding: "utf8" });
+  const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "naive-config.schema.json", "--file", scratch], { encoding: "utf8" });
   expect("customers_lint.rules.<id>.mode is valid in naive.config.json", valid.status === 0, valid.stdout + valid.stderr);
   v.drop();
 }

@@ -16,7 +16,7 @@ const repo = new URL("../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "roadmap-"));
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const valid = (schema, file) => spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const valid = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 // ---- roadmaps ----
 const brand = roadmapOf("brand");

@@ -34,3 +34,5 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 ## How it connects
 
 - Calls: [`router`](../router/router.mjs).
+
+`naive dev` checks each record as it is saved with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md), and `naive info` no longer reports a Python version, because nothing here needs one.

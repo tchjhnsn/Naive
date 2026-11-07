@@ -73,6 +73,7 @@ import { ventureFile } from "../../core/venture-paths.mjs";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.mjs";
 import { schemaNameOf } from "../../records/index.mjs";
 import { naiveScript } from "../../core/scripts.mjs";
+import { validateFile } from "../../records/validate.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -137,10 +138,9 @@ async function dev(dir) {
       if (!existsSync(ventureFile(dir, physicalPath))) return;
       const schema = await schemaFor(f);
       if (!schema) return;
-      const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schemaNameOf(schema), "--file", ventureFile(dir, physicalPath)], { encoding: "utf8" });
+      const v = validateFile(schemaNameOf(schema), ventureFile(dir, physicalPath));
       const out = (v.stdout + v.stderr).trim();
       if (v.status === 0) console.log(`  ✓ ${f}`);
-      else if (/needs jsonschema/.test(out)) console.log(`  - ${f} changed (install python3's jsonschema package to check it as you save)`);
       else console.log(`  ✗ ${f} does not match ${schema}\n${out.split("\n").map((l) => `      ${l}`).join("\n")}`);
     }, 150));
   });
@@ -177,7 +177,6 @@ function info(dir) {
     `Naive        ${version()} (${repo.replace(/\/$/, "")})`,
     `Node         ${process.version}`,
     `Platform     ${process.platform} ${process.arch}`,
-    `python3      ${spawnSync("python3", ["-c", "import jsonschema; print('jsonschema ' + __import__('importlib.metadata').metadata.version('jsonschema'))"], { encoding: "utf8" }).stdout.trim() || "jsonschema missing (needed by schema checks)"}`,
     `Venture      ${v ? `${v.name ?? v.id} (${v.phase}) at ${dir}` : "none here"}`,
     "Agents       " + agents.map(([name, f, ok]) => `${name}: ${dir && ok(read(ventureFile(dir, f))) ? "connected" : "not connected"}`).join(", "),
   ];

@@ -8,6 +8,7 @@ import { join, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { readDataModel, recordPath } from "../../records/index.mjs";
+import { validateFile } from "../../records/validate.mjs";
 
 export const repo = new URL("../../../../..", import.meta.url).pathname;
 const model = () => readDataModel();
@@ -28,7 +29,7 @@ export function questions(obj, prefix = "") {
 export function validate(id, record) {
   const r = recordType(id), dir = mkdtempSync(join(tmpdir(), "naive-gen-")), f = join(dir, `${id}.json`);
   writeFileSync(f, JSON.stringify(record, null, 2) + "\n");
-  const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", basename(r.schema), "--file", f], { encoding: "utf8" });
+  const v = validateFile(basename(r.schema), f);
   rmSync(dir, { recursive: true, force: true });
   return { ok: v.status === 0, errors: v.status === 0 ? [] : (v.stdout + v.stderr).trim().split("\n").filter((l) => !/checked against/.test(l)) };
 }

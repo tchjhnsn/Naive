@@ -28,7 +28,7 @@ sh png.sh packages/naive/test/verification/playbook-jtbd/out/chart.svg
 
 `render.mjs` and `png.sh` are the Pele renderer from the statechart skill's worked example (`pele@1.9.0`).
 
-Replay the rules on a fixture venture. Needs `python3` with `jsonschema`, because a router write validates the record.
+Replay the rules on a fixture venture.
 
 ```sh
 node packages/naive/test/verification/playbook-jtbd/replay.mjs

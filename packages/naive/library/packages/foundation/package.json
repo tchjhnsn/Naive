@@ -52,7 +52,7 @@
   ],
   "checks": [
     "packages/naive/src/checks/check-telos.mjs",
-    "packages/naive/src/records/validate.py",
+    "packages/naive/src/records/validate.mjs",
     "packages/naive/src/checks/check-validation.mjs",
     "packages/naive/src/engine/foundation.mjs",
     "packages/naive/src/checks/lint-foundation.mjs",

@@ -24,6 +24,7 @@ import { teamPlan } from "../engine/access.mjs";
 import { gateOf, repo, resolve, routes } from "../records/routes/routes.mjs";
 import { agentFromEnv, record } from "../core/provenance.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { validateFile } from "../records/validate.mjs";
 
 const FRAMEWORKS = ["idea-map"];
 
@@ -36,7 +37,7 @@ export function check(dir) {
   try { raw = rawConfig(dir); } catch (e) { return { errors: [e.message], warnings }; }
   const scratch = mkdtempSync(join(tmpdir(), "naive-config-"));
   writeFileSync(join(scratch, CONFIG), JSON.stringify(raw));
-  const v = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "naive-config.schema.json", "--file", join(scratch, CONFIG)], { encoding: "utf8" });
+  const v = validateFile("naive-config.schema.json", join(scratch, CONFIG));
   rmSync(scratch, { recursive: true, force: true });
   if (v.status !== 0) errors.push(`${CONFIG} does not match packages/naive/src/records/naive-config.schema.json:\n${(v.stdout + v.stderr).trim()}`);
   const config = configFor(dir);

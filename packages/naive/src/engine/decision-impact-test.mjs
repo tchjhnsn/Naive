@@ -49,7 +49,7 @@ try {
   expect("a follow-up decision is proposed for each affected function", fn("people").proposed_decisions[0] === follow?.id && fn("customers").proposed_decisions.length === 1 && fn("marketing").proposed_decisions.length === 0, im);
   expect("follow-ups are open, never decided", ["revise-people-after-shop-price-v1", "revise-customers-after-shop-price-v1"].every((id) => json(`${id.split("-")[1]}/decisions/${id}.decision.json`).status === "open"));
 
-  const s = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", "decision-impact.schema.json", "--file", join(v, "product/decisions/shop-price.impact.json")], { encoding: "utf8" });
+  const s = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "decision-impact.schema.json", "--file", join(v, "product/decisions/shop-price.impact.json")], { encoding: "utf8" });
   expect("the impact record matches packages/naive/src/records/decision-impact.schema.json", s.status === 0, s.stdout + s.stderr);
 
   const marks = () => json(".naive/stale.json").marks.length;

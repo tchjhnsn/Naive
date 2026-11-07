@@ -213,6 +213,72 @@ export class Validator {
   }
 }
 
+/** @type {Validator | null} */
+let shared = null;
+
+/**
+ * Sets the validator validateFile and validateValue use, and returns the one it replaces (null before the
+ * first check). A host with schemas of its own passes a Validator over a registry that adds them; a test
+ * passes one that cannot run, to prove a caller refuses rather than passes.
+ * @param {Validator | null} next null goes back to Naive's own schemas
+ * @returns {Validator | null}
+ */
+export function useValidator(next) {
+  const prev = shared;
+  shared = next;
+  return prev;
+}
+
+/**
+ * Validates one file against one schema, in this process: what `python3 validate.py --schema <name> --file <path>`
+ * did, with the same result shape as spawnSync so a caller swaps one line. status 0 valid, 1 invalid (stdout holds
+ * one "path: message" line per failure), 2 the checker failed (stderr says why). `def` checks one $defs entry.
+ * @param {string} name a schema file name, such as "venture.schema.json"
+ * @param {string} file the JSON file to check
+ * @param {{ def?: string }} [opts]
+ * @returns {{ status: number, stdout: string, stderr: string }}
+ */
+export function validateFile(name, file, { def } = {}) {
+  try {
+    shared ??= new Validator(registryOf());
+    const schema = shared.reg.get(name);
+    if (schema === undefined) return { status: 2, stdout: "", stderr: `no schema ${name}\n` };
+    /** @type {Schema} */
+    let target = schema;
+    if (def !== undefined) {
+      const defs = isObject(schema) && isObject(schema.$defs) ? schema.$defs : {};
+      if (!(def in defs)) return { status: 2, stdout: "", stderr: `${name} has no $defs entry ${def}\n` };
+      target = { $ref: `${name}#/$defs/${def}` };
+    }
+    /** @type {Json} */
+    let one;
+    try { one = JSON.parse(readFileSync(file, "utf8")); } catch (e) { return { status: 1, stdout: `(root): ${e instanceof Error ? e.message : String(e)}\n`, stderr: "" }; }
+    const errs = shared.validate(one, target, name);
+    return errs.length ? { status: 1, stdout: `${errs.map((e) => `${e.path}: ${e.message}`).join("\n")}\n`, stderr: "" } : { status: 0, stdout: "valid\n", stderr: "" };
+  } catch (e) {
+    return { status: 2, stdout: "", stderr: `${e instanceof Error ? e.message : String(e)}\n` };
+  }
+}
+
+/**
+ * Validates a value already in memory against one schema. Same result shape as validateFile.
+ * @param {string} name @param {unknown} value
+ * @returns {{ status: number, stdout: string, stderr: string }}
+ */
+export function validateValue(name, value) {
+  try {
+    shared ??= new Validator(registryOf());
+    const schema = shared.reg.get(name);
+    if (schema === undefined) return { status: 2, stdout: "", stderr: `no schema ${name}\n` };
+    /** @type {Json} */
+    const one = JSON.parse(JSON.stringify(value));
+    const errs = shared.validate(one, schema, name);
+    return errs.length ? { status: 1, stdout: `${errs.map((e) => `${e.path}: ${e.message}`).join("\n")}\n`, stderr: "" } : { status: 0, stdout: "valid\n", stderr: "" };
+  } catch (e) {
+    return { status: 2, stdout: "", stderr: `${e instanceof Error ? e.message : String(e)}\n` };
+  }
+}
+
 /** Every record file in the repository with the schema and form that govern it: the more specific glob wins,
  *  as in validate.py.
  *  @param {string} [root] @returns {{ file: string, schema: string, form: string }[]} */

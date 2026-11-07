@@ -16,11 +16,11 @@
 // disposition is read from the operating-rules module. The default is one retry by the lead,
 // then the founder. An operating-rules module that cannot be read is the same kind of tool error.
 
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recordGate } from "../core/provenance.mjs";
+import { validateFile } from "../records/validate.mjs";
 import { dispositionOf, operatingRulesFor, OperatingRulesError } from "./operating-rules.ts";
 import { run, type Base, type Term } from "./engine.ts";
 import { TERMS } from "./terms.ts";
@@ -241,9 +241,8 @@ function checkCapability(owner: string, cap: string, byName: Map<string, Noun>, 
 }
 
 function schemaProblems(file: string): string[] {
-  const script = fileURLToPath(new URL("../records/validate.py", import.meta.url));
-  const ran = spawnSync("python3", ["-I", script, "--schema", "handoff.schema.json", "--file", file], { encoding: "utf8" });
-  const text = `${ran.stdout ?? ""}\n${ran.stderr ?? ""}\n${ran.error?.message ?? ""}`.split("\n").map((l) => l.trim()).filter(Boolean);
+  const ran = validateFile("handoff.schema.json", file);
+  const text = `${ran.stdout}\n${ran.stderr}`.split("\n").map((line) => line.trim()).filter(Boolean);
   if (ran.status === 0) return [];
   // Exit 1 is the checker reporting that this package failed its schema. Every other exit is the tool.
   if (ran.status === 1) return text.length ? text : ["the package is not a valid handoff"];

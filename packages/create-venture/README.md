@@ -17,3 +17,5 @@ The generator for Naive (EE-118 step 2): `npx create-venture my-venture` makes a
 ## Run and test
 
 - `node packages/create-venture/test.mjs` tests the generator; `node test.mjs` runs it.
+
+Its `naive dev` test expects every record to be checked as it is saved, because the check runs in process through `validateFile` in [`packages/naive/src/records/validate.mjs`](../naive/src/records/README.md) and needs no Python.

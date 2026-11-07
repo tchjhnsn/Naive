@@ -71,3 +71,5 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 
 - Called by: `test.mjs`, the router's check actions and CI.
 - Calls: [`engine`](../engine/README.md), [`records`](../records/README.md), [`terms`](../terms/), [`core`](../core/README.md).
+
+`check-config.mjs` checks `naive.config.json` against its schema in process with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md), so no checker here needs Python. `premise-lint-test.mjs` proves a failed proposal is reported by preloading a validator that cannot run (`useValidator`).

@@ -35,3 +35,5 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 - `setup-test.mjs` points finance at rho with `NAIVE_SYNC_RHO` naming the stand-in `packages/naive/src/records/examples/money-sync/sync.ts`.
 - `setup-test.mjs` and `delegation-test.mjs` run create-venture from [`packages/create-venture/`](../../../../create-venture/index.mjs), where it moved from the interface folder in step 2 of the Naive layout (EE-118).
 - A test in `schema/` that does not import the router, the MCP server, the HTTP API or a module in [`packages/naive/src/router/orchestration/`](../../router/orchestration/README.md) stays next to its module, even when it starts the CLI as a child process.
+
+Tests that check a record against its schema run `node packages/naive/src/records/validate.mjs`, not Python.

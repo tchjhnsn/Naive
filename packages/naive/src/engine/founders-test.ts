@@ -20,7 +20,7 @@ const read = (f: string): Rec => JSON.parse(readFileSync(f, "utf8")) as Rec;
 // A missing validator is not an invalid record: say so once and stop, so a local run is not misread (review of #135, finding 5).
 const hasValidator = spawnSync("python3", ["-I", "-c", "import jsonschema, referencing"], { encoding: "utf8" }).status === 0;
 if (!hasValidator) { console.error("founders-test needs the jsonschema package for schema checks: pip install jsonschema"); process.exit(2); }
-const valid = (schema: string, f: string): boolean => spawnSync("python3", ["-I", join(repo, "packages/naive/src/records/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" }).status === 0;
+const valid = (schema: string, f: string): boolean => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", f], { encoding: "utf8" }).status === 0;
 const fails = (ws: string, re: RegExp): boolean => check(ws).some((p) => !p.startsWith("warn:") && re.test(p));
 
 const ws = mkdtempSync(join(tmpdir(), "founders-test-"));

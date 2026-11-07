@@ -20,6 +20,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFile
 import { basename, dirname, join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { ROOT, dataModelFile, readDataModel, readSchema, schemaFile, schemaNameOf } from "../records/index.mjs";
+import { validateFile as checkFile } from "../records/validate.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -53,7 +54,7 @@ export function minimalVenture(dir) {
 /**
  * The venture's global error (E-8, P-15): null when venture.json is sound, else what is wrong and
  * how to recover. Checks what the router needs before anything else runs: it parses, its required
- * fields are there, its id and phase are valid. The full schema check stays in packages/naive/src/records/validate.py.
+ * fields are there, its id and phase are valid. The full schema check stays in packages/naive/src/records/validate.mjs.
  */
 export function ventureHealth(dir) {
   const file = join(dir, "venture.json");
@@ -75,7 +76,7 @@ export function ventureHealth(dir) {
       ...(git ? [`Restore the last committed version: git -C ${dir} checkout -- venture.json`] : []),
       `Fix it by hand: it must be a JSON object with ${VENTURE_SCHEMA().required.join(", ")}`,
       `Or rebuild a minimal one, keeping the broken file in _private/: node packages/naive/src/router/boundaries.mjs recover ${dir} --confirm recover`,
-      `Then check it: python3 packages/naive/src/records/validate.py --schema venture.schema.json --file ${file}`,
+      `Then check it: node packages/naive/src/records/validate.mjs --schema venture.schema.json --file ${file}`,
     ],
     template: minimalVenture(dir),
   };
@@ -121,7 +122,7 @@ export function contain(items, parse, idOf = (x) => x.path) {
 }
 
 function validateFile(file, schema) {
-  const p = spawnSync("python3", [join(repo, "packages/naive/src/records/validate.py"), "--schema", schemaNameOf(schema), "--file", file], { encoding: "utf8" });
+  const p = checkFile(schemaNameOf(schema), file);
   return p.status === 0 ? null : (p.stdout + p.stderr).trim();
 }
 

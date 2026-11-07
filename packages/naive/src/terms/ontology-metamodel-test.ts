@@ -25,7 +25,7 @@ const expect = (name: string, ok: boolean, detail = "") => {
 };
 
 const run = (args: string[]) => new Promise<Ran>((resolve) => {
-  const child = spawn("python3", ["-I", join(root, "packages/naive/src/records/validate.py"), ...args], { cwd: root });
+  const child = spawn(process.execPath, [join(root, "packages/naive/src/records/validate.mjs"), ...args], { cwd: root });
   let out = "";
   child.stdout.on("data", (d: Buffer) => { out += d.toString(); });
   child.stderr.on("data", (d: Buffer) => { out += d.toString(); });
@@ -66,7 +66,7 @@ expect("a valid change line (amend, rename) is accepted", good.status === 0, goo
 expect("create, derive with its source is accepted", derive.status === 0, derive.out);
 expect("delete, merge with its successor is accepted", merge.status === 0, merge.out);
 expect("a change line with an unknown key is rejected, the key named", unknownKey.status === 1 && unknownKey.out.includes("'reason' was unexpected"), unknownKey.out);
-expect("a kind that is not of its verb is rejected", wrongKind.status === 1 && wrongKind.out.includes("'rename' is not one of ['originate', 'derive']"), wrongKind.out);
+expect("a kind that is not of its verb is rejected", wrongKind.status === 1 && /kind: "rename" is not one of \["originate","derive"\]/.test(wrongKind.out), wrongKind.out);
 expect("derive without a source is rejected", deriveNoSource.status === 1 && deriveNoSource.out.includes("'source' is a required property"), deriveNoSource.out);
 expect("a source on a line that is not derive is rejected", sourceOnAmend.status === 1, sourceOnAmend.out);
 expect("a change line without a tier is rejected", noTier.status === 1 && noTier.out.includes("'tier' is a required property"), noTier.out);
@@ -99,7 +99,7 @@ const [mergeNoSuccessor, successorOnRemove, replacedNotRetired, patternNoReplace
 
 expect("merge without a successor is rejected", mergeNoSuccessor.status === 1 && mergeNoSuccessor.out.includes("'successor' is a required property"), mergeNoSuccessor.out);
 expect("a successor on a line that is not merge is rejected", successorOnRemove.status === 1, successorOnRemove.out);
-expect("a noun with replaced_by that is not retired is rejected", replacedNotRetired.status === 1 && replacedNotRetired.out.includes("'retired' was expected"), replacedNotRetired.out);
+expect("a noun with replaced_by that is not retired is rejected", replacedNotRetired.status === 1 && replacedNotRetired.out.includes('"retired" was expected'), replacedNotRetired.out);
 expect("a noun with retired_pattern and no replaced_by is rejected", patternNoReplaced.status === 1 && patternNoReplaced.out.includes("'replaced_by' is a dependency of 'retired_pattern'"), patternNoReplaced.out);
 expect("a noun named by a single space is rejected", spaceNoun.status === 1 && spaceNoun.out.includes("does not match"), spaceNoun.out);
 expect("a noun name with trailing whitespace is rejected", paddedNoun.status === 1 && paddedNoun.out.includes("does not match"), paddedNoun.out);
