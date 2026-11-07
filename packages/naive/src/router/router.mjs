@@ -53,7 +53,9 @@ import { readFlag as freshnessFlag } from "../engine/freshness.mjs";
 // Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
 import { actingCall, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
-import { checkPlan, gateWrite, heldDraft } from "./gate-hooks.mjs";
+import { checkPlan, gateWrite, heldDraft, ledgerHook } from "./gate-hooks.mjs";
+// Appends (packages/naive/src/router/appends.mjs): one hash-chained line added to a log route, such as the detection ledger.
+import { appendLine } from "./appends.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.mjs";
 // Caching (packages/naive/src/engine/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.mjs";
@@ -201,11 +203,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
-  const act = action === "write" ? "write" : "read";
+  const act = action === "write" || action === "append" ? "write" : "read";
   // Gate group hook (F-5): a role that may read some items of a collection may read its list, filtered below.
   if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route) && !(act === "read" && r.collection === "list" && mayReadSome(dir, actor_id, route))) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
   // An activity a decision unlocks stays closed to agents until a person makes that decision (EE-058).
-  const lock = actor !== "person" && (action === "write" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
+  const lock = actor !== "person" && (action === "write" || action === "append" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
   if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
     fix: { who: "a person, not an agent", command: `mentura decide ${lock.id} --venture ${venture} --by <their name> [--answer "<their wording>"]`, then: "retry this call" } };
   // Beta gate hook (packages/naive/src/engine/beta-gate.mjs): with beta.enabled in naive.config.json, a locked capability's
@@ -239,7 +241,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
 
   // Storage: the connector for the source this record type lives in.
   let src, store, attrs = [];
-  if (r.kind === "record" && (action === "read" || action === "write")) {
+  if (r.kind === "record" && (action === "read" || action === "write" || action === "append")) {
     const context = { actor, ...(r.collection === "item" && (r.record === "product" || r.record === "account") ? { [r.record]: params.id } : {}) };
     try {
       src = sourceFor(dir, r.record, context); store = await connect(src, dir);
@@ -341,6 +343,13 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     return { ok, result: [...outs.map((o) => ({ check: o.check, passed: o.status === 0, ...(o.mode === "warn" ? { warn_only: true } : {}), output: (o.stdout + o.stderr).trim() })), ...plan.filter((p) => p.mode === "off").map((p) => ({ check: p.check, passed: null, off: true }))], ...(ok ? {} : { fix: fix(r) }), ...deprecated };
   }
 
+  if (action === "append") {
+    forget(dir); // Caching hook (H-3): what this action memoized for the venture is read again after an append.
+    const file = fileFor(r, params, dir);
+    const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
+    return { ...(await appendLine({ dir, r, id: params.id, route, requested, file, input, actor, actor_id, provenance, store, src, agent, remote })), ...deprecated };
+  }
+
   if (action === "write") {
     forget(dir); // Caching hook (H-3): a write never uses the cache, and what this action memoized for the venture is read again after it.
     if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
@@ -437,15 +446,20 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     }
 
     const draft = gatedDraft;
+    // Detection ledger hook (packages/naive/src/router/gate-hooks.mjs): only when the venture keeps the gate detector, the gate's
+    // confidence call becomes a trial, a person accepting a held draft resolves it as a false alarm, and a person's
+    // revert of an accepted write resolves it as a miss. Without the detector file it is null and nothing changes.
+    const ledger = ledgerHook({ dir, venture, workspace, r, route, file, draftFile: draftPath(file), actor, actor_id, via, provenance, draft });
     // Gate group hook (X-2): the held draft, the owner it was sent to and any variants kept side by side.
     let held2 = null;
-    if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent });
+    if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent, trial: ledger?.held });
     else {
       if (base !== null && readFileSync(ventureFile(dir, file), "utf8") !== base) return { ok: false, error: `${file} changed while this was being checked, so nothing was written: try again` };
       await store.write(file, recordText);
     }
     const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write", r.view_of ? { statements: statementsIn(input) } : {});
-    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut }, ...deprecated };
+    const detector = ledger ? await ledger.after(entry.hash) : null;
+    return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut, ...(detector ? { detector } : {}) }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }

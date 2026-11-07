@@ -45,12 +45,13 @@ export function sidecar(dir, draft) {
 
 /**
  * Stores a held write. dir: the venture; draft: _drafts/<file>.draft; file: the record's path; text:
- * the record; verdict: the gate's, or null when only a decision class held it; route; agent: who wrote it.
- * Returns { written, variant, variants, decision }.
+ * the record; verdict: the gate's, or null when only a decision class held it; route; agent: who wrote it;
+ * trial: the id of the gate's yes call in the detection ledger, when the venture keeps one, so accepting
+ * this variant can resolve that call. Returns { written, variant, variants, decision }.
  * @param {string} dir
- * @param {{ draft: string, file?: string, text?: string, verdict?: *, route?: string, agent?: { id?: string, kind?: string } }} held
+ * @param {{ draft: string, file?: string, text?: string, verdict?: *, route?: string, agent?: { id?: string, kind?: string }, trial?: string }} held
  */
-export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }) {
+export function writeHeld(dir, { draft, file, text, verdict, route, agent = {}, trial }) {
   const dest = ventureFile(dir, draft);
   mkdirSync(dirname(dest), { recursive: true });
   const at = new Date().toISOString();
@@ -62,7 +63,7 @@ export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }
     for (const v of meta?.variants ?? []) if (v.variant !== "a") rmSync(ventureFile(dir, variantPath(draft, v.variant)), { force: true });
     if (verdict && verdict.then !== "pass") {
       writeFileSync(ventureFile(dir, sidecarOf(draft)), JSON.stringify({ route, file, rule: verdict.rule, source: verdict.source, then: verdict.then,
-        ...(verdict.owner ? { owner: verdict.owner, function: verdict.function ?? null } : {}), variants: [{ variant: "a", file: draft, by, at, sha256: sha(text) }] }, null, 2) + "\n");
+        ...(verdict.owner ? { owner: verdict.owner, function: verdict.function ?? null } : {}), variants: [{ variant: "a", file: draft, by, at, sha256: sha(text), ...(trial ? { trial } : {}) }] }, null, 2) + "\n");
     } else rmSync(ventureFile(dir, sidecarOf(draft)), { force: true });
     return { written: draft, variant: "a" };
   }
@@ -74,7 +75,7 @@ export function writeHeld(dir, { draft, file, text, verdict, route, agent = {} }
   if (!next) throw new Error(`${route} already holds ${variants.length} drafts side by side; accept one first`);
   const vfile = variantPath(draft, next);
   writeFileSync(ventureFile(dir, vfile), text);
-  variants.push({ variant: next, file: vfile, by, at, sha256: sha(text) });
+  variants.push({ variant: next, file: vfile, by, at, sha256: sha(text), ...(trial ? { trial } : {}) });
   const dec = variantsDecision(file);
   const record = {
     id: dec.id,
@@ -103,6 +104,13 @@ export function pick(dir, draft, letter) {
   const v = vs.find((x) => x.variant === letter);
   if (!v) throw new Error(`no draft ${letter} of ${meta?.route ?? draft}${vs.length ? ` (there are ${vs.map((x) => x.variant).join(", ")})` : ""}`);
   return v.file;
+}
+
+/** The detection ledger trial behind one held variant (the file accepted, or variant a), or null. */
+export function trialOf(dir, draft, chosen = draft) {
+  const vs = sidecar(dir, draft)?.variants ?? [];
+  const v = vs.find((x) => x.file === chosen) ?? vs.find((x) => x.variant === "a");
+  return typeof v?.trial === "string" ? v.trial : null;
 }
 
 /**

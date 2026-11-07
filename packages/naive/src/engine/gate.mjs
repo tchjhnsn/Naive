@@ -90,6 +90,31 @@ export function rulesFor(config) {
   ];
 }
 
+/**
+ * The gate's confidence call on one write, for the detection ledger (docs/design/SIGNAL_DETECTION_2026-11-07.md): the
+ * question is "does this write need a person?". It is asked only when the write carries a score and a rule with
+ * confidence_below covers the write. yes: the score is below that rule's line, so the write is held. no: it is not.
+ * Returns { call, score, limit, rule } or null when no confidence rule asked. It decides nothing evaluate does not.
+ * @param {{ config: *, route: string, table?: string, actor?: string, role?: string, confidence?: number, exists?: boolean }} q
+ * @returns {{ call: "yes" | "no", score: number, limit: number, rule: string } | null}
+ */
+export function confidenceCall({ config, route, table, actor = "agent", role, confidence, exists }) {
+  if (typeof confidence !== "number" || Number.isNaN(confidence)) return null;
+  /** @type {{ call: "yes" | "no", score: number, limit: number, rule: string } | null} */
+  let asked = null;
+  for (const r of rulesFor(config)) {
+    const w = r.when ?? {};
+    if (w.confidence_below === undefined || !(r.actors ?? ["agent"]).includes(actor)) continue;
+    if (r.roles?.length && !r.roles.includes(role)) continue;
+    if (!r.routes.some((p) => matches(p, route, table))) continue;
+    if (w.exists !== undefined && w.exists !== !!exists) continue;
+    const limit = typeof w.confidence_below === "number" ? w.confidence_below : threshold(config, w.confidence_below, threshold(config, "confidence", 0.7));
+    if (confidence < limit) return { call: /** @type {"yes"} */ ("yes"), score: confidence, limit, rule: r.id };
+    asked ??= { call: /** @type {"no"} */ ("no"), score: confidence, limit, rule: r.id };
+  }
+  return asked;
+}
+
 const SEVERITY = { pass: 0, draft: 1, owner: 2, refuse: 3 };
 
 /**

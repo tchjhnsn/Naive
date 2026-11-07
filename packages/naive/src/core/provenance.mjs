@@ -89,7 +89,11 @@ export function stealDeadLock(lock) {
 
 /** One writer at a time for a package sidecar. The chain is read again inside the lock. */
 function withSidecarLock(packageFile, fn) {
-  const lock = `${gateSidecar(packageFile)}.lock`;
+  return withLockFile(`${gateSidecar(packageFile)}.lock`, fn);
+}
+
+/** One writer at a time for whatever the lock file guards: fn runs while this process holds it. */
+function withLockFile(lock, fn) {
   const start = Date.now();
   for (;;) {
     let fd;
@@ -175,15 +179,20 @@ export function actingAgent(by) {
  * @param {{ entity: string, route?: string, activity: string, agent?: Record<string, any>, derived_from?: string[], decision?: string, note?: string, sha256?: string, source?: *, statement?: string, statements?: string[] }} entry
  */
 export function record(dir, { entity, route, activity, agent, derived_from, decision, note, sha256, source, statement, statements }) {
-  const prior = entries(dir);
-  const prev = prior.length ? prior.at(-1).hash : "genesis";
-  // A write made inside a trace span names it (EE-121), so what changed points to the step that changed it.
-  const cur = currentSpan();
-  const span = cur ? { trace_id: cur.trace_id, span_id: cur.span_id, ...(cur.session && cur.session !== cur.trace_id ? { session: cur.session } : {}) } : undefined;
-  const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
-    derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, source, statement, statements, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
-  entry.hash = lineHash(prev, entry);
-  appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\n");
+  // The chain is read and extended inside a lock, so two processes writing at once cannot both chain onto one line.
+  const log = ventureFile(dir, LOG);
+  const entry = withLockFile(join(dirname(log), `.${basename(log)}.lock`), () => {
+    const prior = entries(dir);
+    const prev = prior.length ? prior.at(-1).hash : "genesis";
+    // A write made inside a trace span names it (EE-121), so what changed points to the step that changed it.
+    const cur = currentSpan();
+    const span = cur ? { trace_id: cur.trace_id, span_id: cur.span_id, ...(cur.session && cur.session !== cur.trace_id ? { session: cur.session } : {}) } : undefined;
+    const entry = Object.fromEntries(Object.entries({ at: new Date().toISOString(), entity, route, activity, agent,
+      derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, source, statement, statements, sha256: sha256 ?? contentHash(ventureFile(dir, entity)), prev }).filter(([, v]) => v !== undefined));
+    entry.hash = lineHash(prev, entry);
+    appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\n");
+    return entry;
+  });
   // Context hook: every provenance entry (write, draft, accept, confirm, decision) is an instrumentation event (P-4).
   emit(dir, { kind: "provenance", activity: entry.activity, entity: entry.entity, route: entry.route, decision: entry.decision, by: entry.agent?.kind, via: entry.agent?.via });
   fireTriggers(dir);
