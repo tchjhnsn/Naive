@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "eval-plan.schema.json",
+  "title": "Eval plan",
+  "description": "One frozen version of how a recipe is scored, at <pattern>.plan.json beside the recipe (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"The eval plan\"): the as-of points of each window, the horizon and the gap between windows, the read cut, the row weights, the margin a keep needs and the budgets. A person makes it (naive recipes plan, not built); its sha is on every experiment line, and its eval set is frozen at _eval/<sha>/ beside it, a folder the router never serves. The windows run training, a gap, dev, a gap, holdout, and the researcher sees the venture only as of read_cut. That the windows are ordered and purged is checked by the plan command, not by this schema.",
+  "type": "object",
+  "required": [
+    "pattern",
+    "version",
+    "sha",
+    "made",
+    "made_by",
+    "horizon",
+    "gap",
+    "read_cut",
+    "windows",
+    "weights",
+    "min_gain",
+    "budgets"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "pattern": {
+      "$ref": "#/$defs/pattern"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "1 for a recipe's first plan, one more for each plan after it"
+    },
+    "sha": {
+      "$ref": "#/$defs/sha",
+      "description": "The plan's address: sha256 of the canonical JSON (keys sorted at every level, no whitespace) of every other field, so an experiment line that names it names fixed windows, weights and budgets. Its eval set is _eval/<sha>/"
+    },
+    "previous": {
+      "$ref": "#/$defs/sha",
+      "description": "The plan this one follows. Its holdout must start after the previous plan's holdout ends, so a holdout point is never reused"
+    },
+    "made": {
+      "$ref": "#/$defs/time",
+      "description": "When the plan was made and its eval set frozen"
+    },
+    "made_by": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Plans are a person's: an agent never makes or edits one",
+      "properties": {
+        "kind": {
+          "const": "person"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "horizon": {
+      "$ref": "freshness-profiles.schema.json#/$defs/duration",
+      "description": "How long after an as-of point its outcome is settled: a prediction at t is scored against the settled record once t plus the horizon has passed"
+    },
+    "gap": {
+      "$ref": "freshness-profiles.schema.json#/$defs/duration",
+      "description": "The purge between training and dev, and between dev and holdout, at least the horizon, so no outcome a window is scored on is known inside the window before it"
+    },
+    "read_cut": {
+      "$ref": "#/$defs/time",
+      "description": "The researcher reads the venture as of this instant and no later (the reads_as_of clamp, build plan item 7, not built): after the last training outcome settles and before the first dev point"
+    },
+    "windows": {
+      "type": "object",
+      "required": [
+        "training",
+        "dev",
+        "holdout"
+      ],
+      "additionalProperties": false,
+      "description": "The as-of points of each window, in time order. Training gives full feedback, dev one aggregate per experiment, holdout one pass or fail bit per accept",
+      "properties": {
+        "training": {
+          "$ref": "#/$defs/points"
+        },
+        "dev": {
+          "$ref": "#/$defs/points"
+        },
+        "holdout": {
+          "$ref": "#/$defs/points"
+        }
+      }
+    },
+    "weights": {
+      "enum": [
+        "uniform",
+        "cited"
+      ],
+      "description": "How (record, as-of point) rows weigh in the settled loss. cited: a record weighs more when provenance and traces show the venture used it before the cut"
+    },
+    "min_gain": {
+      "type": "number",
+      "minimum": 0,
+      "description": "The least loss improvement on dev a keep needs. The margin used is the larger of this and twice the standard error from a block bootstrap seeded by the plan's sha"
+    },
+    "bootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "block",
+        "resamples"
+      ],
+      "description": "The block bootstrap behind the standard error; the scorer's defaults when left out",
+      "properties": {
+        "block": {
+          "$ref": "freshness-profiles.schema.json#/$defs/duration",
+          "description": "The length of a block of consecutive as-of points resampled together"
+        },
+        "resamples": {
+          "type": "integer",
+          "minimum": 100
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "required": [
+        "dev_evaluations",
+        "holdout_checks"
+      ],
+      "additionalProperties": false,
+      "description": "The fixed budget of the plan version, counted from the experiment log: a failed lint or training run is logged but not counted",
+      "properties": {
+        "dev_evaluations": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many experiments may be scored on dev under this plan"
+        },
+        "holdout_checks": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many accepts may check the holdout under this plan; each check answers one bit"
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Compute limits for each sandbox run (packages/naive/src/engine/recipes/sandbox.ts options). Exceeding one fails the experiment; it never changes a score",
+      "properties": {
+        "call_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "wall_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "memory_mb": {
+          "type": "integer",
+          "minimum": 16
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "A sha256 in lowercase hex"
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$",
+      "description": "A UTC timestamp"
+    },
+    "points": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/time"
+      }
+    },
+    "pattern": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*(/([a-z0-9][a-z0-9-]*|\\[id\\]))*$",
+      "description": "The projected route pattern the recipe makes, as its file path without .recipe.ts: competitors/[id]/signals, market/rounds"
+    }
+  }
+}
