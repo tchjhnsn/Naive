@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reception.schema.json",
+  "title": "Receptions",
+  "description": "Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"Noise stored beside the record\"). Only the projector writes it. Each heard signal is salient or noise for this record, with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. Nothing writes it yet: rendering through recipes is build plan item 9.",
+  "type": "object",
+  "required": [
+    "record",
+    "recipe",
+    "as_of",
+    "receptions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "record": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\.\\./)[^#]+\\.json$",
+      "description": "The record these receptions are for, as a logical path in the venture"
+    },
+    "recipe": {
+      "$ref": "eval-plan.schema.json#/$defs/sha",
+      "description": "sha256 of the recipe source that rendered the record"
+    },
+    "as_of": {
+      "$ref": "eval-plan.schema.json#/$defs/time",
+      "description": "The transaction time of the render: every signal observed at or before it was heard"
+    },
+    "receptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reception"
+      },
+      "description": "One per heard signal, in (time, id) order, none twice"
+    }
+  },
+  "$defs": {
+    "reception": {
+      "type": "object",
+      "required": [
+        "signal",
+        "kind",
+        "time",
+        "observed",
+        "withdrawn_at",
+        "factors"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "noise"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "failed"
+        ],
+        "not": {
+          "required": [
+            "fields"
+          ]
+        }
+      },
+      "else": {
+        "not": {
+          "required": [
+            "failed"
+          ]
+        }
+      },
+      "properties": {
+        "signal": {
+          "$ref": "signal.schema.json#/$defs/address"
+        },
+        "kind": {
+          "enum": [
+            "salient",
+            "noise"
+          ],
+          "description": "salient: the record depends on the signal. noise: the recipe makes a byte-identical record without it"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "On a salient reception, the record fields the signal fed"
+        },
+        "failed": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "why"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "predicate": {
+                "type": "string",
+                "description": "The test that failed, when the recipe names one (a listener predicate's id, a knob)"
+              },
+              "why": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "description": "On a noise reception, every reason the recipe gave"
+        },
+        "time": {
+          "$ref": "#/$defs/valid_time",
+          "description": "The signal's valid time"
+        },
+        "observed": {
+          "$ref": "#/$defs/transaction_time",
+          "description": "The signal's transaction time"
+        },
+        "withdrawn_at": {
+          "description": "When a later signal retracting or superseding it was observed, as known at the render; null while it stands",
+          "anyOf": [
+            {
+              "$ref": "eval-plan.schema.json#/$defs/time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "factors": {
+          "type": "object",
+          "required": [
+            "lag",
+            "age",
+            "producer_confirmed",
+            "producer_withdrawn",
+            "uptake"
+          ],
+          "additionalProperties": false,
+          "description": "Bitemporal factors the engine computes as of the render. Recipes read them and cannot define them",
+          "properties": {
+            "lag": {
+              "type": "number",
+              "description": "Seconds from valid time to transaction time"
+            },
+            "age": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Seconds from the signal's transaction time to the render"
+            },
+            "producer_confirmed": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "The share of the producer's earlier signals a second producer or a person confirmed, or null with none settled yet"
+            },
+            "producer_withdrawn": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "The share of the producer's earlier signals later retracted or superseded, or null with none settled yet"
+            },
+            "uptake": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "How often a person acted on what this record surfaced, from decisions and the traces of the runs behind them, or null with no history"
+            }
+          }
+        },
+        "hindsight": {
+          "type": "object",
+          "required": [
+            "label",
+            "recipe",
+            "at"
+          ],
+          "additionalProperties": false,
+          "description": "Set once observed plus the horizon has passed: the loss without the signal against the loss with it (monitor, not built)",
+          "properties": {
+            "label": {
+              "enum": [
+                "helpful",
+                "inert",
+                "harmful"
+              ]
+            },
+            "recipe": {
+              "$ref": "eval-plan.schema.json#/$defs/sha",
+              "description": "The recipe the comparison ran with"
+            },
+            "at": {
+              "$ref": "eval-plan.schema.json#/$defs/time"
+            },
+            "loss_with": {
+              "type": "number",
+              "minimum": 0
+            },
+            "loss_without": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "valid_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z)?$",
+      "description": "Valid time: when the thing happened, a date or a UTC timestamp. Projections fold signals in (time, id) order"
+    },
+    "transaction_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$",
+      "description": "Transaction time: when the producer recorded it, a UTC timestamp"
+    }
+  }
+}

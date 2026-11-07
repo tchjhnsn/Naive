@@ -36,7 +36,7 @@ The hardening path is QuickJS compiled to wasm behind the same interface (not bu
 
 ## Not built
 
-- `naive recipes init`, `plan`, `check` and `search`, the eval plans, experiment log and reception files are not built: autoresearch build plan items 5 to 11.
-- Record and reception types generated from JSON Schema through `naive typegen` (item 3 adds the schemas); the fixture declares its own types.
+- `naive recipes init`, `plan`, `check` and `search`, and anything that writes eval plans, experiment logs or reception files, are not built: autoresearch build plan items 5 to 11. Their schemas exist (item 3, `packages/naive/src/records/recipe.schema.json`, `eval-plan.schema.json`, `experiment.schema.json` and `reception.schema.json`), and the data model's recipe record type covers this folder's fixture.
+- Record and reception types generated from JSON Schema through `naive typegen`; the fixture and the example recipe in `packages/naive/src/records/examples/signals/` declare their own types.
 - Type stripping needs Node 22.13 or later. On an older Node every recipe fails closed with that reason.
 - QuickJS compiled to wasm as a second realm behind the same interface.

@@ -29,7 +29,9 @@
     "signal-type",
     "signal",
     "signal-log",
-    "signal-library"
+    "signal-library",
+    "recipe",
+    "reception"
   ],
   "reads": [
     "venture",

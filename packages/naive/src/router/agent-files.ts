@@ -4,7 +4,8 @@
 // through call(), so a read meets team plan access and confidentiality, a write meets the schema, the gate,
 // decision rights and provenance, and a gated agent write comes back as a draft for a person to accept. Each
 // operation is a tool span (execute_tool naive_<op>) when the venture has traces on, with the router's call span
-// under it. Nothing here imports LangChain: an app wraps these as a deepagents backend.
+// under it. With reads_as_of in the context (a researcher must give one), every read, ls, glob and grep sees the venture
+// as of that time, and nothing under _eval/. Nothing here imports LangChain: an app wraps these as a deepagents backend.
 //
 //   node packages/naive/src/router/agent-files.ts <venture> ls [<path>] | read <path> | glob <pattern> | grep <pattern> [<path>]
 //   node packages/naive/src/router/agent-files.ts <venture> write <path> < record.json
@@ -14,7 +15,9 @@ import { readFileSync } from "node:fs";
 import { call, glob as routeGlob, routes, ventureDir } from "./router.mjs";
 import { withSpan } from "../core/instrumentation.mjs";
 
-export interface Context { venture: string, workspace?: string, actor_id?: string, via?: string }
+/** reads_as_of: read the venture as it was at this time (packages/naive/src/router/reads-as-of.mjs). A researcher role
+ *  must pass it, and every operation then reads, lists and globs as of it. */
+export interface Context { venture: string, workspace?: string, actor_id?: string, via?: string, reads_as_of?: string }
 export interface FileInfo { path: string, is_dir: boolean, exists?: boolean }
 export interface GrepMatch { path: string, line: number, text: string }
 export interface WriteResult { ok: boolean, path: string, error?: string, draft?: boolean, written?: string, note?: string }
@@ -30,7 +33,7 @@ const heads = (): string[] => records().filter((r) => r.route.endsWith("/[id]"))
 const singles = (): string[] => records().filter((r) => r.collection !== "list" && !r.route.includes("[")).map((r) => r.route);
 
 async function route(ctx: Context, path: string, action: string, input?: unknown): Promise<Reply> {
-  return await call({ venture: ctx.venture, workspace: ctx.workspace, actor_id: ctx.actor_id, via: ctx.via ?? "agent-files", route: clean(path), action, input }) as Reply;
+  return await call({ venture: ctx.venture, workspace: ctx.workspace, actor_id: ctx.actor_id, via: ctx.via ?? "agent-files", route: clean(path), action, input, ...(ctx.reads_as_of ? { reads_as_of: ctx.reads_as_of } : {}) }) as Reply;
 }
 
 /** Runs one operation as a tool span when the venture keeps traces. */

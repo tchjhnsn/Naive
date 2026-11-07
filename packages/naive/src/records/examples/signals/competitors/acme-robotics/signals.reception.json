@@ -1,0 +1,27 @@
+{
+  "record": "competitors/acme-robotics/signals.json",
+  "recipe": "95394745f5433dd136a3deb9f3816fe6af9925ff4f5fae663c953bdce8aa93bc",
+  "as_of": "2026-11-06T12:00:00Z",
+  "receptions": [
+    {
+      "signal": "3a50ad6dfb3a46b0f160cc36",
+      "kind": "salient",
+      "fields": [
+        "funding",
+        "first_seen",
+        "last_seen",
+        "p_raise_90d"
+      ],
+      "time": "2026-11-05",
+      "observed": "2026-11-06T09:30:00Z",
+      "withdrawn_at": null,
+      "factors": {
+        "lag": 120600,
+        "age": 9000,
+        "producer_confirmed": null,
+        "producer_withdrawn": null,
+        "uptake": null
+      }
+    }
+  ]
+}

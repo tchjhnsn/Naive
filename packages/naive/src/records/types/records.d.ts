@@ -318,6 +318,8 @@ export type CompetitorSignals = {
   last_seen: string;
   /** Funding rounds, one per round (fold append) */
   funding?: CompetitorSignalsEntry[];
+  /** A forecast: the probability the competitor announces a round within 90 days of the render. Settled by a competitor-funding signal arriving in that window (settles.forecasts in the data model) and scored by Brier */
+  p_raise_90d?: number;
   /** Product launches, one per launch (fold append) */
   launches?: CompetitorSignalsEntry[];
   [key: string]: unknown;
@@ -394,11 +396,12 @@ export type DataModel = {
     schema: string | null;
     /** EE-099: the record generator beside the schema; it describes what to ask and drafts one record that passes the schema, and stores nothing itself */
     generator?: string;
-    /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only */
-    form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
+    /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it */
+    form?: "json" | "json-list" | "markdown" | "prose" | "json-lines" | "typescript";
     kind?: DataModelKind;
     /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs) */
     writer?: "any" | "projection";
+    settles?: DataModelSettles;
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;
     /** The decision class (packages/naive/template/governance/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032) */
@@ -429,6 +432,44 @@ export type DataModel = {
     [key: string]: unknown;
   }[];
   [key: string]: unknown;
+};
+
+/** How a projected record type is scored (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The metric"): only a type with writer projection may carry it. The prediction is the record a recipe renders as of t; the settled record is what people and producers established about valid times up to t once the horizon passed. Settled loss is the weighted mean over (record, as-of point) rows of each field's loss, and a forecast field is scored by Brier against whether its resolving event arrived within its window. A null record loses every field. packages/naive/src/checks/check-data-model.mjs checks that each field named is a top-level property of the type's schema. The scorers are build plan item 5, not built */
+export type DataModelSettles = {
+  /** How long after an as-of point its outcome settles */
+  horizon: FreshnessProfilesDuration;
+  /** The spacing of as-of points a plan draws */
+  cadence: FreshnessProfilesDuration;
+  /** A loss per scored field, keyed by the field's name */
+  loss: {
+    [key: string]: {
+      /** The closed catalog. exact: 0 when equal, else 1. set-jaccard: 1 minus the Jaccard index of two lists taken as sets (by each entry's signal when entries carry one). abs-scaled: the absolute difference over scale, capped at 1 */
+      fn: "exact" | "set-jaccard" | "abs-scaled";
+      /** abs-scaled only: the difference that costs a whole loss */
+      scale?: number;
+      /** The field's weight in the record's loss; 1 when left out */
+      weight?: number;
+    };
+  };
+  /** Forecast fields, each a probability from 0 to 1 in the record, keyed by the field's name. The forecast set is fixed, so a recipe that leaves one out still pays for every confirmed event */
+  forecasts?: {
+    [key: string]: {
+      /** What settles the forecast: a signal of one of these types about the subject from a producer a second producer confirmed, or from a person; or a person deciding or dismissing the decision the record proposed. An agent's write never resolves one */
+      resolved_by: {
+        signals: SignalTypeRange[];
+      } | {
+        decision: "decided-or-dismissed";
+      };
+      /** How long after the as-of point the resolving event may arrive */
+      window: FreshnessProfilesDuration;
+    };
+  };
+  /** The fewest scored rows each window needs before a plan may be made */
+  min_counts: {
+    training: number;
+    dev: number;
+    holdout: number;
+  };
 };
 
 /** What a host does with the file when it commits a venture's working copy. record (the default): written whole through the store. log: append-only, so a commit may only add lines at the end. derived: a cache Naive rebuilds, which a host may keep or drop */
@@ -985,6 +1026,71 @@ export type DetectorLine = {
   decision?: string;
 };
 
+/** One frozen version of how a recipe is scored, at <pattern>.plan.json beside the recipe (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The eval plan"): the as-of points of each window, the horizon and the gap between windows, the read cut, the row weights, the margin a keep needs and the budgets. A person makes it (naive recipes plan, not built); its sha is on every experiment line, and its eval set is frozen at _eval/<sha>/ beside it, a folder the router never serves. The windows run training, a gap, dev, a gap, holdout, and the researcher sees the venture only as of read_cut. That the windows are ordered and purged is checked by the plan command, not by this schema. */
+export type EvalPlan = {
+  $schema?: string;
+  pattern: EvalPlanPattern;
+  /** 1 for a recipe's first plan, one more for each plan after it */
+  version: number;
+  /** The plan's address: sha256 of the canonical JSON (keys sorted at every level, no whitespace) of every other field, so an experiment line that names it names fixed windows, weights and budgets. Its eval set is _eval/<sha>/ */
+  sha: EvalPlanSha;
+  /** The plan this one follows. Its holdout must start after the previous plan's holdout ends, so a holdout point is never reused */
+  previous?: EvalPlanSha;
+  /** When the plan was made and its eval set frozen */
+  made: EvalPlanTime;
+  /** Plans are a person's: an agent never makes or edits one */
+  made_by: {
+    kind: "person";
+    id: string;
+  };
+  /** How long after an as-of point its outcome is settled: a prediction at t is scored against the settled record once t plus the horizon has passed */
+  horizon: FreshnessProfilesDuration;
+  /** The purge between training and dev, and between dev and holdout, at least the horizon, so no outcome a window is scored on is known inside the window before it */
+  gap: FreshnessProfilesDuration;
+  /** The researcher reads the venture as of this instant and no later (the reads_as_of clamp, build plan item 7, not built): after the last training outcome settles and before the first dev point */
+  read_cut: EvalPlanTime;
+  /** The as-of points of each window, in time order. Training gives full feedback, dev one aggregate per experiment, holdout one pass or fail bit per accept */
+  windows: {
+    training: EvalPlanPoints;
+    dev: EvalPlanPoints;
+    holdout: EvalPlanPoints;
+  };
+  /** How (record, as-of point) rows weigh in the settled loss. cited: a record weighs more when provenance and traces show the venture used it before the cut */
+  weights: "uniform" | "cited";
+  /** The least loss improvement on dev a keep needs. The margin used is the larger of this and twice the standard error from a block bootstrap seeded by the plan's sha */
+  min_gain: number;
+  /** The block bootstrap behind the standard error; the scorer's defaults when left out */
+  bootstrap?: {
+    /** The length of a block of consecutive as-of points resampled together */
+    block: FreshnessProfilesDuration;
+    resamples: number;
+  };
+  /** The fixed budget of the plan version, counted from the experiment log: a failed lint or training run is logged but not counted */
+  budgets: {
+    /** How many experiments may be scored on dev under this plan */
+    dev_evaluations: number;
+    /** How many accepts may check the holdout under this plan; each check answers one bit */
+    holdout_checks: number;
+  };
+  /** Compute limits for each sandbox run (packages/naive/src/engine/recipes/sandbox.ts options). Exceeding one fails the experiment; it never changes a score */
+  limits?: {
+    call_ms?: number;
+    wall_ms?: number;
+    memory_mb?: number;
+  };
+};
+
+/** A sha256 in lowercase hex */
+export type EvalPlanSha = string;
+
+/** A UTC timestamp */
+export type EvalPlanTime = string;
+
+export type EvalPlanPoints = EvalPlanTime[];
+
+/** The projected route pattern the recipe makes, as its file path without .recipe.ts: competitors/[id]/signals, market/rounds */
+export type EvalPlanPattern = string;
+
 /** A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing packages/naive/test/evals/*.json files. */
 export type EvalSuite = {
   skill_name?: string;
@@ -1083,6 +1189,89 @@ export type Exit = {
     note?: string;
   }[];
 };
+
+/** One line of a recipe's experiment log, <pattern>.experiments.jsonl beside the recipe (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Keep and discard through the router"). An experiment line is one write of the recipe, scored inside the write: keep (it becomes the tip as a held draft), discard (refused with this verdict) or fail (lint, a throw, a timeout or invalid output; logged and not counted against the budget). A holdout line is one holdout check a person's accept ran: one pass or fail bit. The log is append-only and hash-chained like provenance, written by the evaluator only, so an agent cannot supply a score. The dev evaluations and holdout checks spent under a plan are counted from it. Nothing writes it yet: scoring and the router hook are build plan items 5 and 6. */
+export type Experiment = {
+  /** experiment: one write of the recipe, scored. holdout: one holdout check, run when a person accepts the tip */
+  kind: "experiment" | "holdout";
+  id: string;
+  at: EvalPlanTime;
+  pattern: EvalPlanPattern;
+  /** The sha of the eval plan in force */
+  plan: EvalPlanSha;
+  /** sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.mjs). On a holdout line, the tip that was checked */
+  candidate: EvalPlanSha;
+  /** The tip the candidate was edited from, or null for a recipe's first write. A write whose base is not the tip is refused before it is scored and logs no line */
+  base?: EvalPlanSha | null;
+  /** keep: beats the tip on dev by the margin, or is strictly smaller and no worse; it becomes the tip as a held draft. discard: refused with this verdict. fail: lint, a throw, a timeout or invalid output on training or dev; not counted against the budget */
+  verdict?: "keep" | "discard" | "fail";
+  /** On a keep: better (gain above the margin) or smaller (a strictly smaller source that is no worse) */
+  kept_as?: "better" | "smaller";
+  /** The one aggregate dev gives per experiment, scored against the tip on paired rows */
+  dev?: {
+    /** The candidate's settled loss on dev; lower is better */
+    score: number;
+    /** The standard error of the paired difference, from the block bootstrap seeded by the plan's sha */
+    stderr: number;
+    /** The tip's settled loss on the same rows, or null for a recipe's first write */
+    tip_score: number | null;
+    /** The gain a keep needed: the larger of min_gain and twice stderr */
+    margin: number;
+    /** The (record, as-of point) rows scored */
+    rows: number;
+  };
+  /** The training run's settled loss. Its per-row losses are shown by naive recipes check (not built), never logged here */
+  training?: {
+    score: number;
+    rows: number;
+  };
+  /** On a holdout line, the one bit the check answers */
+  result?: "pass" | "fail";
+  /** On a holdout line, true when the person accepted over a failed check (mentura accept --over-holdout, not built) */
+  over_holdout?: boolean;
+  /** Why, in words. Required on a fail: which lint rule, throw, timeout or output check */
+  reason?: string;
+  /** Who wrote the candidate (a person or an agent), or on a holdout line the person who accepted */
+  actor: ExperimentAgent;
+  /** The judgment span of the evaluation in the venture's traces (EE-121), which the draft's provenance line names too */
+  span?: ExperimentSpan;
+  /** On a keep, the hash of the held draft's provenance line */
+  provenance?: string;
+  prev: ExperimentPrev;
+  hash: ExperimentHash;
+};
+
+/** Who acted, shaped as a provenance line's agent (provenance-entry.schema.json) */
+export type ExperimentAgent = {
+  /** unverified: a door with no sign-in said a person acted; the id is a claimed name */
+  kind: "person" | "agent" | "unverified";
+  /** A person's name or handle, or an agent's role id from the team plan */
+  id?: string;
+  /** The account a door with sign-in checked for this person */
+  account?: string;
+  /** An AI agent's model */
+  model?: string;
+  /** A link or id for the session that acted */
+  session?: string;
+  /** The agent harness, such as Claude Code or Cursor, as it named itself */
+  harness?: string;
+  /** The interface the write came through */
+  via: "cli" | "mcp" | "api" | "router" | "console";
+};
+
+/** The trace span the write was made inside (traces/<session>.jsonl), so what changed points to the agent step that changed it */
+export type ExperimentSpan = {
+  trace_id: string;
+  span_id: string;
+  /** The trace file's session, when it differs from the trace id */
+  session?: string;
+};
+
+/** The previous line's hash, or genesis for the first line */
+export type ExperimentPrev = string;
+
+/** sha256 of prev followed by this line without its hash field, as JSON with sorted keys */
+export type ExperimentHash = string;
 
 /** The summary of what founders agreed with each other, at <venture>/governance/founder-agreement.json (EE-022), with the full text (or the signed document's location) in founder-agreement.md beside it. Equity and vesting live in ownership.json and are not repeated here. Required once two or more founders share ownership. */
 export type FounderAgreement = {
@@ -3452,6 +3641,86 @@ export type RawSource = {
    */
   fetched?: string;
 };
+
+/** Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Noise stored beside the record"). Only the projector writes it. Each heard signal is salient or noise for this record, with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. Nothing writes it yet: rendering through recipes is build plan item 9. */
+export type Reception = {
+  $schema?: string;
+  /** The record these receptions are for, as a logical path in the venture */
+  record: string;
+  /** sha256 of the recipe source that rendered the record */
+  recipe: EvalPlanSha;
+  /** The transaction time of the render: every signal observed at or before it was heard */
+  as_of: EvalPlanTime;
+  /** One per heard signal, in (time, id) order, none twice */
+  receptions: ReceptionReception[];
+};
+
+export type ReceptionReception = {
+  signal: SignalAddress;
+  /** salient: the record depends on the signal. noise: the recipe makes a byte-identical record without it */
+  kind: "salient" | "noise";
+  /** On a salient reception, the record fields the signal fed */
+  fields?: string[];
+  /** On a noise reception, every reason the recipe gave */
+  failed?: {
+    /** The test that failed, when the recipe names one (a listener predicate's id, a knob) */
+    predicate?: string;
+    why: string;
+  }[];
+  /** The signal's valid time */
+  time: ReceptionValidTime;
+  /** The signal's transaction time */
+  observed: ReceptionTransactionTime;
+  /** When a later signal retracting or superseding it was observed, as known at the render; null while it stands */
+  withdrawn_at: EvalPlanTime | null;
+  /** Bitemporal factors the engine computes as of the render. Recipes read them and cannot define them */
+  factors: {
+    /** Seconds from valid time to transaction time */
+    lag: number;
+    /** Seconds from the signal's transaction time to the render */
+    age: number;
+    /** The share of the producer's earlier signals a second producer or a person confirmed, or null with none settled yet */
+    producer_confirmed: number | null;
+    /** The share of the producer's earlier signals later retracted or superseded, or null with none settled yet */
+    producer_withdrawn: number | null;
+    /** How often a person acted on what this record surfaced, from decisions and the traces of the runs behind them, or null with no history */
+    uptake: number | null;
+  };
+  /** Set once observed plus the horizon has passed: the loss without the signal against the loss with it (monitor, not built) */
+  hindsight?: {
+    label: "helpful" | "inert" | "harmful";
+    /** The recipe the comparison ran with */
+    recipe: EvalPlanSha;
+    at: EvalPlanTime;
+    loss_with?: number;
+    loss_without?: number;
+  };
+};
+
+/** Valid time: when the thing happened, a date or a UTC timestamp. Projections fold signals in (time, id) order */
+export type ReceptionValidTime = string;
+
+/** Transaction time: when the producer recorded it, a UTC timestamp */
+export type ReceptionTransactionTime = string;
+
+/** What a recipe declares (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The recipe"). A recipe is one pure TypeScript module per projected route pattern, at <pattern>.recipe.ts beside the records it makes (competitors/[id]/signals.recipe.ts makes every competitor's competitors/<id>/signals.json). The file is source, not JSON, so the data model gives the record type the form typescript and this schema governs only the data the module exports, as packages/naive/src/engine/recipes/sandbox.ts recipeExports reads it: hears (the signal type ranges and named facts it reads) and knobs (numbers and short lists a knob search may step). The default export, render(input, knobs) returning { record, receptions }, is checked by the sandbox, not here. Nothing reads recipes from a venture yet: the routes, the gate rule and the pull are later build items. */
+export type Recipe = {
+  hears: {
+    /** The signal type ranges the recipe hears: every signal of these types about the subject, observed at or before asOf, reaches it, and it returns one reception for each */
+    signals: SignalTypeRange[];
+    /** Named facts, each a venture file and optionally one field in it (foundation/icp.json#markets), read as of asOf and passed in under its name */
+    facts?: {
+      [key: string]: string;
+    };
+  };
+  /** The recipe's tunable values. A knob search (naive recipes search, not built) steps each one; a model edit may add or remove them */
+  knobs: {
+    [key: string]: RecipeKnob;
+  };
+};
+
+/** A number, a short string (a rating floor such as B2), a boolean, or a short list of them */
+export type RecipeKnob = number | boolean | string | (number | boolean | string)[];
 
 /** A layer's references (EE-014): the sources behind its opinionated defaults and the alternatives it considered. One file per layer at <layer>/references/references.json. A URL is recorded when one exists and re-checked; the find-reference skill fills gaps from title, authors and year. */
 export type Reference = {

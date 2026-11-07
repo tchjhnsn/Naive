@@ -2264,7 +2264,141 @@
           "checked_by": null
         }
       ],
-      "note": "What signals say about one competitor, rendered by the signal projector from the signals salient for it. Only the projector writes it; a person corrects it by emitting a superseding signal"
+      "note": "What signals say about one competitor, rendered by the signal projector from the signals salient for it. Only the projector writes it; a person corrects it by emitting a superseding signal",
+      "settles": {
+        "horizon": "90d",
+        "cadence": "7d",
+        "loss": {
+          "funding": {
+            "fn": "set-jaccard"
+          },
+          "launches": {
+            "fn": "set-jaccard"
+          },
+          "first_seen": {
+            "fn": "exact",
+            "weight": 0.5
+          },
+          "last_seen": {
+            "fn": "exact",
+            "weight": 0.5
+          }
+        },
+        "forecasts": {
+          "p_raise_90d": {
+            "resolved_by": {
+              "signals": [
+                "competitor-funding@^1"
+              ]
+            },
+            "window": "90d"
+          }
+        },
+        "min_counts": {
+          "training": 20,
+          "dev": 10,
+          "holdout": 10
+        }
+      }
+    },
+    {
+      "id": "recipe",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "packages/naive/src/records/recipe.schema.json",
+      "generator": "packages/naive/src/engine/generators/recipe.ts",
+      "form": "typescript",
+      "kind": "record",
+      "paths": [
+        "instance/**/**/*.recipe.ts",
+        "packages/naive/src/records/examples/signals/**/*.recipe.ts",
+        "packages/naive/src/engine/recipes/fixtures/*.recipe.ts"
+      ],
+      "refs": [
+        {
+          "field": "hears.signals",
+          "to": "signal-type",
+          "checked_by": null
+        }
+      ],
+      "note": "The code that makes every record at one projected route pattern: one pure TypeScript module, <pattern>.recipe.ts beside the records it makes, run only in the sandbox (packages/naive/src/engine/recipes/sandbox.ts). The source is TypeScript, so its form is typescript and its schema governs only what it exports (hears and knobs), as the sandbox reads them; packages/naive/src/records/validate.mjs never reads the file. A path segment [id] is literal: competitors/[id]/signals.recipe.ts makes every competitors/<id>/signals.json (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md)"
+    },
+    {
+      "id": "eval-plan",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "packages/naive/src/records/eval-plan.schema.json",
+      "generator": "packages/naive/src/engine/generators/eval-plan.ts",
+      "kind": "record",
+      "paths": [
+        "instance/**/**/*.plan.json",
+        "packages/naive/src/records/examples/signals/**/*.plan.json"
+      ],
+      "refs": [
+        {
+          "field": "previous",
+          "to": "eval-plan",
+          "checked_by": null
+        }
+      ],
+      "note": "A frozen version of how one recipe is scored, <pattern>.plan.json beside it: as-of points per window (training, dev, holdout), horizon and gap, read cut, weights, min_gain and the budgets of dev evaluations and holdout checks, addressed by its sha. A person makes it; its eval set is frozen at _eval/<sha>/ beside it"
+    },
+    {
+      "id": "experiment",
+      "layer": "evidence",
+      "level": "venture",
+      "schema": "packages/naive/src/records/experiment.schema.json",
+      "generator": "packages/naive/src/engine/generators/experiment.ts",
+      "form": "json-lines",
+      "kind": "log",
+      "paths": [
+        "instance/**/**/*.experiments.jsonl",
+        "packages/naive/src/records/examples/signals/**/*.experiments.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "plan",
+          "to": "eval-plan",
+          "checked_by": null
+        },
+        {
+          "field": "candidate",
+          "to": "recipe",
+          "checked_by": null
+        },
+        {
+          "field": "base",
+          "to": "recipe",
+          "checked_by": null
+        }
+      ],
+      "note": "A recipe's experiment log, <pattern>.experiments.jsonl beside it: one line per write of the recipe (keep, discard or fail, with the dev score and its standard error) and one per holdout check (pass or fail), hash-chained like provenance and written by the evaluator only. A plan's spent budget is counted from it"
+    },
+    {
+      "id": "reception",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "packages/naive/src/records/reception.schema.json",
+      "generator": "packages/naive/src/engine/generators/reception.ts",
+      "kind": "record",
+      "writer": "projection",
+      "paths": [
+        "instance/**/**/*.reception.json",
+        "packages/naive/src/records/examples/signals/**/*.reception.json"
+      ],
+      "refs": [
+        {
+          "field": "receptions.signal",
+          "to": "signal",
+          "checked_by": null
+        },
+        {
+          "field": "recipe",
+          "to": "recipe",
+          "checked_by": null
+        }
+      ],
+      "note": "Every signal a recipe heard for one record, <record>.reception.json beside it: salient or noise, the reasons a noise reception failed, the signal's valid, transaction and withdrawal times, the engine's bitemporal factors and later a hindsight label (helpful, inert or harmful, with the recipe's sha). Only the projector writes it"
     }
   ],
   "ignore": [
@@ -2429,6 +2563,8 @@
     {"path": "instance/**/.naive/lint-findings.jsonl", "kind": "log", "reason": "Each publish lint run's findings (packages/naive/src/engine/publish-lint.mjs)"},
     {"path": "instance/**/.naive/events.jsonl", "kind": "log", "reason": "Instrumentation events when instrumentation is on (packages/naive/src/core/instrumentation.mjs)"},
     {"path": "instance/**/.naive/blobs/**/*", "kind": "record", "reason": "The blob store: the bytes each provenance line names, under their SHA-256 (packages/naive/src/core/blobs.mjs). Content-addressed and never changed, so it is committed like a record; an as-of read (packages/naive/src/store/as-of.mjs) needs it and cannot rebuild it"},
+    {"path": "instance/**/programs/*.md", "kind": "record", "reason": "A function's research program, programs/<function>.md: the person-edited instructions its researcher reads (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). Prose a person owns, written whole; the gate rule that refuses an agent's write to it is not built"},
+    {"path": "instance/**/_eval/**/*", "kind": "record", "reason": "A recipe's frozen eval set, _eval/<sha>/ beside its plan: the as-of points, the frozen signal index, each fact's versions and the settled outcomes. It cannot be rebuilt (a library that backfills later must not leak into it), so a host commits it whole; it never changes once frozen, so a base check can only pass. The router never serves it. Its files must not take a path a log record type names"},
     {"path": "instance/**/.naive/triggers.json", "kind": "record", "reason": "The trigger cursor and every run's state; not rebuildable, so kept whole"},
     {"path": "instance/**/.naive/beta.json", "kind": "record", "reason": "The plugin beta's unlock state per tester (packages/naive/src/engine/beta-gate.mjs)"},
     {"path": "instance/**/.naive/adapters.json", "kind": "record", "reason": "What the harness adapters wrote, so an upgrade never overwrites a file it did not write"},
