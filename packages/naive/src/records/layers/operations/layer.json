@@ -31,7 +31,8 @@
     "marketing-design-system",
     "public-assets",
     "activity",
-    "activity-summary"
+    "activity-summary",
+    "research-program"
   ],
   "reads": [
     "agent-capability",

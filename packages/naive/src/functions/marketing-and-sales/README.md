@@ -20,3 +20,4 @@ The marketing and sales function (APQC 3.0, Market and Sell Products and Service
 | [skills/publication-policy](./skills/publication-policy) | Skill: Help a venture decide where it publishes and who may publish what there: its channels (website, docs site, social, newsletter, app store, press, investor update, regulato |
 | [templates/marketing-brand.md](./templates/marketing-brand.md) | Template: brand |
 | [templates/public-assets.md](./templates/public-assets.md) | Template: public assets |
+| [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/marketing-and-sales.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |

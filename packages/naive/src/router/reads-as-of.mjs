@@ -10,6 +10,9 @@
 //     other action (layout, navigate, head, run, check, a command's view, package and venture routes) reads the
 //     venture live, so an as-of call is refused it.
 //   - Nothing under _eval/ is read or written by any agent, as-of or not: the eval set is the plan's, and a person's.
+//   - One read is live: a researcher's read (or view) of its own function's research program,
+//     operations/research-program/<function> (programs/<function>.md). The program is the person's instructions as
+//     they stand now and holds no outcome, and a cut in the past would hide the program the person just wrote.
 //   - A signal (record type signal) whose observed time is after the cut is left out, even when its file was
 //     written before it. A log written by append stores no blob, so an as-of read finds no version of it; the
 //     signal library's day index is such a log, and a pull applies the same cut when it reads it (not built).
@@ -33,11 +36,19 @@ export const isResearcher = (/** @type {unknown} */ role) => typeof role === "st
 export const inEval = (/** @type {unknown} */ path) => /(^|\/)_eval(\/|$)/.test(String(path ?? "").replace(/^[a-z0-9][a-z0-9-]*:\/\//, ""));
 
 /**
+ * Whether a call is a researcher reading its own function's research program, which reads live.
+ * @param {{ action?: string, actor_id?: string | null, route?: string }} a
+ */
+export const ownProgram = (a) => isResearcher(a.actor_id) && (a.action === "read" || a.action === "view")
+  && a.route === `operations/research-program/${String(a.actor_id).replace(/-researcher$/, "")}`;
+
+/**
  * The cut for one call, in milliseconds, or null when it reads live; or a refusal.
- * @param {{ action?: string, actor_id?: string | null, reads_as_of?: unknown }} a
+ * @param {{ action?: string, actor_id?: string | null, reads_as_of?: unknown, route?: string }} a
  * @returns {{ ok: true, cut: number | null } | { ok: false, error: string, fix?: Record<string, unknown> }}
  */
 export function cutFor(a) {
+  if (ownProgram(a)) return { ok: true, cut: null };
   const researcher = isResearcher(a.actor_id);
   const given = a.reads_as_of;
   if (given === undefined || given === null || given === "") {
@@ -53,7 +64,7 @@ export function cutFor(a) {
 
 /**
  * Refuses what an as-of call may not do, before anything reads the venture. Null when the call may go on.
- * @param {{ action?: string, actor_id?: string | null, reads_as_of?: unknown }} a
+ * @param {{ action?: string, actor_id?: string | null, reads_as_of?: unknown, route?: string }} a
  */
 export function refusal(a) {
   const c = cutFor(a);

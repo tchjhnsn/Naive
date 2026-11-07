@@ -76,6 +76,7 @@ import { brandLayout } from "../engine/brand.mjs";
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../engine/stale.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { isFunction, templateOf } from "../engine/research-programs.mjs";
 import { coreOf, statementsIn, withCore } from "../engine/venture-core.mjs";
 import { telosView } from "../../../../frameworks/telos/adapter.mjs";
 import { migrated, scale } from "../engine/canonical.mjs";
@@ -212,12 +213,14 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
   route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
+  // A research program's template is its own function's starter (packages/naive/src/functions/<function>/templates/research-program.md).
+  if (action === "template" && r.record === "research-program" && r.collection === "item" && isFunction(params.id)) return { ok: true, result: readFileSync(join(repo, templateOf(params.id)), "utf8"), ...deprecated };
   if (action === "template") return { ok: true, result: readFileSync(join(repo, r.template), "utf8"), ...deprecated };
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
   // As-of hook: the cut this read answers as of, or null for a live read (a refused cut never reaches here).
-  const asOf = cutFor({ action, actor_id, reads_as_of });
+  const asOf = cutFor({ action, actor_id, reads_as_of, route });
   const cut = asOf.ok ? asOf.cut : null;
   // No agent reads or writes the eval set (_eval/), as of a cut or not: it is the plan's, and a person's.
   if (actor !== "person" && r.kind === "record" && (r.collection === "item" || r.view_of ? [fileFor(r, params, dir)] : r.files).some(inEval)) return { ok: false, error: `${route} is in the eval set (_eval/), which no agent reads or writes` };
@@ -372,8 +375,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "append") {
     forget(dir); // Caching hook (H-3): what this action memoized for the venture is read again after an append.
     const file = fileFor(r, params, dir);
-    // Gate group hook: one writer per file (writer projection in the data model).
-    const owned = ownerOfWrite({ dir, r, route, file, projector, remote });
+    // Gate group hook: one writer per file (writer projection or person in the data model).
+    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
     if (owned) return { ...owned, ...deprecated };
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
     return { ...(await appendLine({ dir, r, id: params.id, route, requested, file, input, actor, actor_id, provenance, store, src, agent, remote })), ...deprecated };
@@ -381,13 +384,17 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
 
   if (action === "write") {
     forget(dir); // Caching hook (H-3): a write never uses the cache, and what this action memoized for the venture is read again after it.
-    if (!input || typeof input !== "object") return { ok: false, error: "write needs the record as input" };
+    // Prose a person owns (writer person: a research program) is written whole as text, not as a JSON record.
+    const prose = r.writer === "person" && (r.form === "prose" || r.form === "markdown");
+    if (!prose && (!input || typeof input !== "object")) return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
     // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
-    // nothing a person owns once it exists; refused here, before the schema, the gate or any source is touched.
-    const owned = ownerOfWrite({ dir, r, route, file, projector, remote });
+    // nothing a person owns once it exists; a person-only record (a research program) is a person's alone, so every
+    // agent is refused, a researcher included. Refused here, before the schema, the gate or any source is touched.
+    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
     if (owned) return { ...owned, ...deprecated };
+    if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
     if (["idea-dump", "raw-source", "raw-text"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
@@ -496,6 +503,25 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     return { ok: true, result: { written: draft ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut, ...(detector ? { detector } : {}) }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
+}
+
+// A person's write of prose they own (writer person in the data model: programs/<function>.md, a function's research
+// program; autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). ownerOfWrite has
+// already refused every agent. The input is the whole text, as { text } or a string. It is kept only in the venture's
+// own folder, meets the venture's gate (a refusal stops it; a person is never held), lands live, and its provenance
+// line keeps the bytes in the blob store, so an as-of read returns the program as it was.
+async function writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector }) {
+  if (remote) return { ok: false, error: `${route} is kept in the venture's own folder, but the source map puts it in ${src.id}` };
+  if (r.record === "research-program" && !isFunction(params.id)) return { ok: false, error: `${params.id} is not a function: a research program is programs/<function>.md for a function in packages/naive/src/functions/departments.json` };
+  const raw = typeof input === "string" ? input : input && typeof input === "object" && typeof input.text === "string" ? input.text : null;
+  if (raw === null || !raw.trim()) return { ok: false, error: `write ${route} with its whole text as input: { "text": "..." }` };
+  const gate = gateOf(r, dir);
+  const configured = gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate, projector });
+  if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
+  await store.write(file, raw.endsWith("\n") ? raw : `${raw}\n`);
+  const agent = agentFromEnv("person", via, { ...provenance.agent });
+  const entry = prov(dir, { entity: file, route, activity: provenance.activity ?? "write", agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note });
+  return { ok: true, result: { written: file, draft: false, gate: gate?.class ?? null, provenance: entry.hash, note: "written" } };
 }
 
 // Views (pages): Markdown for people. A generic renderer: objects become headings and lists,

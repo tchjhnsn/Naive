@@ -399,8 +399,8 @@ export type DataModel = {
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines" | "typescript";
     kind?: DataModelKind;
-    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs) */
-    writer?: "any" | "projection";
+    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live */
+    writer?: "any" | "projection" | "person";
     settles?: DataModelSettles;
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;

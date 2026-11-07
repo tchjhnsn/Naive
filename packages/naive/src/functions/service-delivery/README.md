@@ -11,3 +11,4 @@ The service delivery function (APQC 5.0, Deliver Services). Its governance side 
 | Path | Holds |
 |---|---|
 | [checklists/vault-and-tooling-consultancy-setup.md](./checklists/vault-and-tooling-consultancy-setup.md) | Vault + Tooling Consultancy Setup Checklist |
+| [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/service-delivery.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |

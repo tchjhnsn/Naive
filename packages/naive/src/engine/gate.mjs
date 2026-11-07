@@ -126,11 +126,19 @@ export const EMIT_HINT = "naive signals emit <type> --subject <id> --supersedes 
  * data model is written only by the signal projector; every other actor, a person included, is refused and told to
  * emit a superseding signal. The projector writes nothing else, except that it may create a record a person owns
  * when it is missing (competitors/<id>.json from a signal's organization part) and never writes it again. Reads are
- * not gated. Returns a refusal or null.
- * @param {{ route: string, writer?: string, projector?: boolean, exists?: boolean }} q
+ * not gated.
+ *
+ * A record type with writer person (a function's research program, programs/<function>.md; autoresearch design,
+ * everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md) is written only by a person: an agent, whatever its
+ * role (a <function>-researcher included), is refused, and so is a person's call made while the process says an agent
+ * is acting (acting, from actingAgent in packages/naive/src/core/provenance.mjs) and the projector. Returns a refusal or null.
+ * @param {{ route: string, writer?: string, projector?: boolean, exists?: boolean, actor?: string, acting?: boolean }} q
  * @returns {{ then: "refuse", rule: string, source: string, matched: string[], why: string, fix?: { command: string, built: boolean, then: string } } | null}
  */
-export function writerRule({ route, writer, projector = false, exists = false }) {
+export function writerRule({ route, writer, projector = false, exists = false, actor = "agent", acting = false }) {
+  if (writer === "person" && (projector || actor !== "person" || acting)) return { then: "refuse", rule: "person-only", source: "data model", matched: ["person-only"],
+    why: `${route} is written only by a person (writer person in the data model): an agent, a researcher included, may read it but never write it; a person writes it with mentura ${route} write --as person${acting ? ", with no MENTURA_ACTOR, MENTURA_MODEL or other MENTURA_ACTOR_ID in the environment saying an agent is acting" : ""}`,
+    fix: { command: `mentura ${route} write --as person --input <file.json>`, built: true, then: "a person writes the whole text as { \"text\": \"...\" }" } };
   if (writer === "projection" && !projector) return { then: "refuse", rule: "projector-only", source: "data model", matched: ["projector-only"],
     why: `${route} is written only by the signal projector (writer projection in the data model): to correct what a signal says, emit a superseding signal with ${EMIT_HINT}, and change anything else in the record a person owns beside it`,
     fix: { command: EMIT_HINT, built: true, then: "naive signals pull renders the record again" } };
@@ -149,7 +157,7 @@ export function writerRule({ route, writer, projector = false, exists = false })
  * @param {{ config: *, dir?: string, route: string, table?: string, requested?: *, record?: string, actor?: string, role?: string, confidence?: number, exists?: boolean, decisionOwner?: string, writer?: string, projector?: boolean }} q
  */
 export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner, writer, projector = false }) {
-  const owned = writerRule({ route, writer, projector, exists });
+  const owned = writerRule({ route, writer, projector, exists, actor });
   if (owned) return owned;
   const pins = pinsBlocking(config, record);
   if (pins.length) return { then: "refuse", rule: "pinned-version", source: "naive.config.json packages", matched: ["pinned-version"],
