@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "signal-type.schema.json",
+  "title": "Signal type",
+  "description": "One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. Nothing renders projections yet: render, pull and check-signals are later build items.",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "title",
+    "props",
+    "projects",
+    "cases"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "The type's id (competitor-funding); a signal names it as id@major.minor"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Semantic version. A new major may change props or projects in a way a listener of the old major would not expect"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string",
+      "description": "What a signal's subject names for this type, in words (the organization's slug)"
+    },
+    "props": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "object"
+        }
+      },
+      "description": "A JSON Schema for the type's own props. A composed part's props sit at the part's at key and are checked against the part type's props"
+    },
+    "composes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "at",
+          "type"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "The props key the part sits at (org)"
+          },
+          "type": {
+            "$ref": "#/$defs/range",
+            "description": "The part's type range (organization@^1)"
+          }
+        }
+      },
+      "description": "The parts it is built from, like a component's children: competitor-funding composes organization at org and funding-event at round. A shared part owns the shared fields"
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/projection"
+      },
+      "description": "How a salient signal of this type folds into records, as data. Empty for a type that only informs listeners that propose or revalidate"
+    },
+    "freshness": {
+      "type": "object",
+      "required": [
+        "max_age"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_age": {
+          "$ref": "freshness-profiles.schema.json#/$defs/duration",
+          "description": "The default age bound for edge listeners (propose, revalidate): an older signal is noise there. A listener's own max_age overrides it. Projection never reads the clock"
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/case"
+      },
+      "description": "Worked cases: signals given and the records the projection must render from them. The render tests run them (a later build item)"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "range": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*@(\\^|~)?(0|[1-9][0-9]*)(\\.(0|[1-9][0-9]*)){0,2}$",
+      "description": "A type id and a semver range of its versions: organization@^1, funding-event@~1.2, competitor-funding@1.0.0"
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^(id|type|producer|subject|time|observed|rating\\.reliability|rating\\.credibility|props(\\.[A-Za-z0-9_-]+)*)$",
+      "description": "A field of the view a projection or a criterion reads: an envelope field, or props and a dotted path inside them. For a part, props are the part's props"
+    },
+    "projection": {
+      "type": "object",
+      "required": [
+        "route",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "route": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*(/([a-z0-9][a-z0-9-]*|\\[id\\]))*$",
+          "description": "The record route it writes, where [id] is the signal's subject: competitors/[id]/signals"
+        },
+        "once": {
+          "type": "boolean",
+          "default": false,
+          "description": "Create the record only when it is missing and never write it again: a person's master record (competitors/[id]) that a projection may start but never overwrite"
+        },
+        "fields": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/fold"
+          },
+          "description": "Record field to the fold that fills it"
+        }
+      }
+    },
+    "fold": {
+      "type": "object",
+      "required": [
+        "reducer",
+        "value"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "reducer": {
+            "const": "append"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "unique_by"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "unique_by"
+          ]
+        }
+      },
+      "properties": {
+        "reducer": {
+          "enum": [
+            "set",
+            "first",
+            "max",
+            "min",
+            "union",
+            "append"
+          ],
+          "description": "set: the latest value in (time, id) order. first: the earliest. max and min: the largest and smallest. union: the set of every value, sorted. append: every value in order, one per unique_by key"
+        },
+        "value": {
+          "$ref": "#/$defs/path",
+          "description": "The view field the reducer folds: time, props.round"
+        },
+        "unique_by": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/path"
+          },
+          "description": "append only: the view fields that make an entry the same entry, so a round two producers report is listed once"
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "required": [
+        "id",
+        "given",
+        "expect"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "given": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "subject",
+              "time",
+              "props"
+            ],
+            "description": "A signal of this type, with any envelope field left out filled by the test (producer, observed, rating, cites, id)"
+          },
+          "description": "The signals, in any order"
+        },
+        "expect": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "description": "Record route with [id] filled (competitors/acme-robotics/signals) to the record the projection must render"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

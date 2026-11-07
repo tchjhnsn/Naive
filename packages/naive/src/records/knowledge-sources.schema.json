@@ -31,6 +31,14 @@
             "type": "string",
             "description": "An integration id with a connector: filesystem, github"
           },
+          "carries": {
+            "enum": [
+              "records",
+              "signals"
+            ],
+            "default": "records",
+            "description": "records (the default): the venture's records live there. signals: a signal library in the naive-signal-library@1 layout, read in place, whose signals reach records only through listeners (signal library design). Reading a paid library tells its publisher which signal types the venture hears"
+          },
           "writes": {
             "enum": [
               "direct",

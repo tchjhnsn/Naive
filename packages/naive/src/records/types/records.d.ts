@@ -307,6 +307,45 @@ export type Calendar = {
   created?: string;
 };
 
+/** What signals say about one competitor, at <venture>/competitors/<id>/signals.json, rendered by the signal projector from the signals salient for it (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). Only the projector writes it (writer projection in the data model); a person corrects what a signal says by emitting a superseding signal into the venture's local library, and corrects anything else in the master record competitors/<id>.json. Each field is filled by a fold a signal type's projects names, so a type may add fields. Every entry names the signal it came from and whether that signal still stands. Neither the projector nor the rule that refuses other writers is built yet. */
+export type CompetitorSignals = {
+  $schema?: string;
+  /** The competitor's id, the subject of the signals */
+  competitor: string;
+  /** The earliest valid time of a salient signal (fold min over time) */
+  first_seen: string;
+  /** The latest valid time of a salient signal (fold max over time) */
+  last_seen: string;
+  /** Funding rounds, one per round (fold append) */
+  funding?: CompetitorSignalsEntry[];
+  /** Product launches, one per launch (fold append) */
+  launches?: CompetitorSignalsEntry[];
+  [key: string]: unknown;
+};
+
+export type CompetitorSignalsEntry = {
+  /** The signal the entry came from */
+  signal: SignalAddress;
+  /** withdrawn once a later signal retracts or supersedes it */
+  support: "supported" | "withdrawn";
+  [key: string]: unknown;
+};
+
+/** A person's master record for one competitor, at <venture>/competitors/<id>.json: a company serving the same customers with an offering that can replace the venture's (Porter 1980). A person owns it. The signal projector may create it once when it is missing, from a signal's organization part, and never writes it again (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). What signals say about the competitor sits beside it in competitors/<id>/signals.json, which only the projector writes. Nothing projects yet: that is a later build item. */
+export type Competitor = {
+  $schema?: string;
+  /** The file name, and the subject of the signals about it */
+  id: string;
+  name: string;
+  /** The competitor's web domain */
+  domain?: string;
+  /** How the venture stands toward it, in a person's words */
+  stance?: string;
+  notes?: string;
+  /** The signal the projector created this record from, when a person did not write it first */
+  created_from?: SignalAddress;
+};
+
 /** The venture's canonical constraints, at <venture>/foundation/constraints.json: what it must not do, whatever framework states its goals. */
 export type Constraints = {
   venture?: string;
@@ -358,6 +397,8 @@ export type DataModel = {
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines";
     kind?: DataModelKind;
+    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the gate refuses every other actor, a later build item */
+    writer?: "any" | "projection";
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;
     /** The decision class (packages/naive/template/governance/decision-rights.json) a write of this record is. When the venture's decision rights put the class at escalate or recommend-approve, an agent's write through the router is held as a draft for a person to accept (EE-032) */
@@ -1261,6 +1302,11 @@ export type Frame = {
     layer?: "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
     needed_in?: "discovery" | "validation" | "beachhead" | "scale" | "platform";
   }[];
+  /** Signal listeners whose consumer is this frame (signal library design): adding a frame that listens is subscribing. A frame's listener proposes the frame's decisions or revalidates it, so it names no consumer and never projects. Nothing evaluates them yet */
+  listens?: (Listener & {
+    then?: "propose" | "revalidate";
+    [key: string]: unknown;
+  })[];
   /** Worked cases, to evaluate a model's judgments against */
   cases?: {
     id: string;
@@ -1862,6 +1908,8 @@ export type KnowledgeSources = {
     id: string;
     /** An integration id with a connector: filesystem, github */
     connector: string;
+    /** records (the default): the venture's records live there. signals: a signal library in the naive-signal-library@1 layout, read in place, whose signals reach records only through listeners (signal library design). Reading a paid library tells its publisher which signal types the venture hears */
+    carries?: "records" | "signals";
     /** How writes reach it; the connector's default when left out */
     writes?: "direct" | "pull-request" | "none";
     /** filesystem: the folder, relative to the venture folder or absolute. github: the folder inside the repository */
@@ -1988,6 +2036,61 @@ export type LifecyclePlaybook = {
       match: string;
     }[];
   }[];
+};
+
+/** The edge between a signal type and one consumer (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): the type range it hears, the consumer's criterion, and what happens to a signal that meets it. Noise is not a property of a signal: it is the outcome of one signal at one listener, so the same signal can be salient at one consumer and noise at another. A listener is not a file of its own. Listeners merge, like triggers, from naive.config.json listeners (a same-id listener replaces any other), each installed package's listeners, each frame's listens and each listed kit's listeners; naive.config.json listeners_off turns one off. The types a pull reads are derived from the listeners, so there is no subscription list. Nothing merges or evaluates listeners yet: that is a later build item. */
+export type Listener = {
+  /** Unique among the venture's listeners once merged; a same-id listener in naive.config.json replaces any other */
+  id: string;
+  /** The signal type range it hears (competitor-funding@^1). A listener for a part's type hears that part of every composite that has it */
+  hears: SignalTypeRange;
+  /** What the listener serves: a record route (then project, or revalidate), a frame or a decision (then propose). Required in naive.config.json and in packages; a frame's listener serves that frame and leaves it out */
+  consumer?: {
+    /** A record route, where [id] is the signal's subject: competitors/[id]/signals */
+    route: string;
+  } | {
+    /** A frame id */
+    frame: string;
+  } | {
+    /** The decision it proposes; the proposal's id is this id, a hyphen and the signal's subject */
+    decision: string;
+  };
+  criterion?: ListenerCriterion;
+  /** What a salient signal does. project: folds into the consumer route by the type's projects (level: it reads no clock, so no max_age). propose: proposes a decision. revalidate: marks the consumer stale. propose and revalidate are edge listeners and may judge a signal's age against now */
+  then: "project" | "propose" | "revalidate";
+  /** Edge listeners only: a signal older than this is noise here. Overrides the type's freshness.max_age */
+  max_age?: FreshnessProfilesDuration;
+  note?: string;
+};
+
+/** The consumer's own threshold, after signal detection theory (Green and Swets 1966). A signal is salient when it passes every part; otherwise it is noise at this listener, and every failed part is reported. Checked in this order: rating, producers, age (edge listeners only), then every predicate */
+export type ListenerCriterion = {
+  /** The worst rating accepted: a signal whose reliability letter or credibility number is past either bound is noise */
+  rating?: SignalRating;
+  /** Accepted producer prefixes; any producer when left out */
+  producers?: string[];
+  predicates?: ListenerPredicate[];
+};
+
+export type ListenerPredicate = {
+  /** Named in explain when it fails */
+  id: string;
+  /** The view field it tests: props.round.amount, subject */
+  field: SignalTypePath;
+  /** contains: the field is a list holding the value, or a string holding it. exists takes no value */
+  op: "eq" | "ne" | "lt" | "lte" | "gt" | "gte" | "in" | "not-in" | "contains" | "exists";
+  value?: ListenerOperand;
+  /** Why this consumer cares, in words, printed by explain */
+  why?: string;
+};
+
+/** A literal (a scalar, or a list of scalars for in and not-in); one field of one venture record read through the router ({ "read": "foundation/icp.json#markets" }); or the ids of projected records ({ "ids": "competitors" }). Every fact a predicate reads is cited in the write's derived_from */
+export type ListenerOperand = string | number | boolean | null | (string | number | boolean | null)[] | {
+  /** A venture file and one field in it: foundation/icp.json#markets */
+  read: string;
+} | {
+  /** A collection of projected records: competitors */
+  ids: string;
 };
 
 /** The venture's brand tokens, in the marketing package at marketing/brand.json: colors, typefaces with their licenses, the font each role uses, voice rules (the global stylesheet for words), the logo and marks, outside design systems by reference, and scopes where a route prefix overrides the venture brand (nearer context wins). Read by every agent's layout and every interface; checked by packages/naive/src/checks/check-brand.mjs. Translates Next.js global CSS, next/font and file-based icons (Y-3, Y-4, Y-5, T-1, T-2, P-24). Version 0.x, unevaluated. */
@@ -2346,6 +2449,12 @@ export type NaiveConfig = {
   };
   /** What starts the next step on an event (packages/naive/src/router/orchestration/triggers.mjs) */
   triggers?: unknown[];
+  /** The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. Nothing merges or evaluates them yet */
+  listeners?: (Listener & {
+    consumer: unknown;
+  })[];
+  /** Listener ids turned off, from any of the four places listeners come from */
+  listeners_off?: string[];
   /** Per-rule mode for the product lint (packages/naive/src/checks/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed. */
   product_lint?: {
     rules?: {
@@ -3463,6 +3572,167 @@ export type SdlcCatalog = {
     }[];
   }[];
 };
+
+/** library.json at the root of a signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a source that holds signal types and signals in the naive-signal-library@1 layout and is read in place. The layout: library.json; types/<id>/<version>.signal.json (the components); signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json (the elements, immutable); log/<type>/<yyyy-mm-dd>.jsonl (the append-only day index). library.json lists no types: they are whatever types/ holds. A venture lists a library as a source with carries signals in knowledge/sources.json. Naive's own packages are the implicit library naive (open types only), and a venture's raw/signals/ is its implicit local library (signals and log only); neither has a library.json. Nothing reads a library yet: the connector and the pull are later build items. */
+export type SignalLibrary = {
+  $schema?: string;
+  /** The library's id; naive and local are reserved for the implicit libraries */
+  id: string;
+  title: string;
+  /** Who publishes it */
+  publisher: string;
+  /** The layout contract the library keeps */
+  contract: "naive-signal-library@1";
+  /** An SPDX license id, or proprietary with the terms named in note */
+  license: string;
+  homepage?: string;
+  note?: string;
+};
+
+/** One line of a signal library's day index, log/<type>/<yyyy-mm-dd>.jsonl, where the day is the day the signal was published to the library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). Append-only: a library adds a line when it publishes a signal and never rewrites one, so a pull reads only the days after its cursor. A retraction is a new signal with its own line. */
+export type SignalLog = {
+  id: SignalAddress;
+  subject: string;
+  /** The signal's file, relative to the library root */
+  path: string;
+  /** When the library published it, a UTC timestamp on the line's day */
+  published: string;
+};
+
+/** One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. Nothing renders projections yet: render, pull and check-signals are later build items. */
+export type SignalType = {
+  $schema?: string;
+  /** The type's id (competitor-funding); a signal names it as id@major.minor */
+  id: string;
+  /** Semantic version. A new major may change props or projects in a way a listener of the old major would not expect */
+  version: string;
+  title: string;
+  description?: string;
+  /** What a signal's subject names for this type, in words (the organization's slug) */
+  subject?: string;
+  /** A JSON Schema for the type's own props. A composed part's props sit at the part's at key and are checked against the part type's props */
+  props: {
+    type: "object";
+    [key: string]: unknown;
+  };
+  /** The parts it is built from, like a component's children: competitor-funding composes organization at org and funding-event at round. A shared part owns the shared fields */
+  composes?: {
+    /** The props key the part sits at (org) */
+    at: string;
+    /** The part's type range (organization@^1) */
+    type: SignalTypeRange;
+  }[];
+  /** How a salient signal of this type folds into records, as data. Empty for a type that only informs listeners that propose or revalidate */
+  projects: SignalTypeProjection[];
+  freshness?: {
+    /** The default age bound for edge listeners (propose, revalidate): an older signal is noise there. A listener's own max_age overrides it. Projection never reads the clock */
+    max_age: FreshnessProfilesDuration;
+  };
+  /** Worked cases: signals given and the records the projection must render from them. The render tests run them (a later build item) */
+  cases: SignalTypeCase[];
+  note?: string;
+};
+
+/** A type id and a semver range of its versions: organization@^1, funding-event@~1.2, competitor-funding@1.0.0 */
+export type SignalTypeRange = string;
+
+/** A field of the view a projection or a criterion reads: an envelope field, or props and a dotted path inside them. For a part, props are the part's props */
+export type SignalTypePath = string;
+
+export type SignalTypeProjection = {
+  /** The record route it writes, where [id] is the signal's subject: competitors/[id]/signals */
+  route: string;
+  /** Create the record only when it is missing and never write it again: a person's master record (competitors/[id]) that a projection may start but never overwrite */
+  once?: boolean;
+  /** Record field to the fold that fills it */
+  fields: {
+    [key: string]: SignalTypeFold;
+  };
+};
+
+export type SignalTypeFold = {
+  /** set: the latest value in (time, id) order. first: the earliest. max and min: the largest and smallest. union: the set of every value, sorted. append: every value in order, one per unique_by key */
+  reducer: "set" | "first" | "max" | "min" | "union" | "append";
+  /** The view field the reducer folds: time, props.round */
+  value: SignalTypePath;
+  /** append only: the view fields that make an entry the same entry, so a round two producers report is listed once */
+  unique_by?: SignalTypePath[];
+};
+
+export type SignalTypeCase = {
+  id: string;
+  /** The signals, in any order */
+  given: {
+    subject: unknown;
+    time: unknown;
+    props: unknown;
+    [key: string]: unknown;
+  }[];
+  /** Record route with [id] filled (competitors/acme-robotics/signals) to the record the projection must render */
+  expect: {
+    [key: string]: {
+      [key: string]: unknown;
+    };
+  };
+  note?: string;
+};
+
+/** One signal, an element of one signal type: an immutable, dated, content-addressed and rated statement that something happened outside the venture (signal library design, everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). It sits in a signal library at signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, or in a venture's local library at raw/signals/signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, and is never edited. Names follow CloudEvents 1.0, except that the CloudEvents source is producer (Naive already uses source for a knowledge source) and data is props. The id is the first 24 hex characters of the sha256 of the canonical JSON of every other field (keys sorted at every level, no whitespace; packages/naive/src/core/signal-id.ts), so anyone can check offline that an address names fixed content. A correction is a new signal that retracts or supersedes an earlier one, never an edit. Nothing reads signals yet: the pull, render and replay are later build items. */
+export type Signal = {
+  /** The signal's address: the first 24 hex characters of the sha256 of the canonical JSON of every other field */
+  id: SignalAddress;
+  /** The signal type and the version it was written against, as id@major.minor (competitor-funding@1.0) */
+  type: string;
+  /** Who published it, as a path (a library's publishing edge, or local/<person> for a signal a person emitted into the venture's local library). A listener may accept only some producer prefixes, and a retraction counts only from the same producer or from a person in the local library */
+  producer: string;
+  /** What the signal is about, as a slug (acme-robotics). It names the folder the signal sits in and fills [id] in the routes the type projects to */
+  subject: string;
+  /** Valid time: when the thing happened, a date or a UTC timestamp. Projections fold signals in (time, id) order */
+  time: string;
+  /** Transaction time: when the producer recorded it, a UTC timestamp */
+  observed: string;
+  /** The data, checked against the type's props schema. A composed part's props sit at the key the type names for it (org, round) */
+  props: {
+    [key: string]: unknown;
+  };
+  rating: SignalRating;
+  /** Where the producer saw it. May be empty for a signal a person states from their own knowledge */
+  cites: SignalCitation[];
+  /** The address of an earlier signal this one withdraws. At most one of retracts and supersedes */
+  retracts?: SignalAddress;
+  /** The address of an earlier signal this one replaces with corrected props. At most one of retracts and supersedes */
+  supersedes?: SignalAddress;
+};
+
+/** A signal's id: 24 lowercase hex characters */
+export type SignalAddress = string;
+
+/** The NATO Admiralty code (STANAG 2511), computed in code by the producer */
+export type SignalRating = {
+  /** Source reliability: A completely reliable, B usually reliable, C fairly reliable, D not usually reliable, E unreliable, F reliability cannot be judged */
+  reliability: "A" | "B" | "C" | "D" | "E" | "F";
+  /** Information credibility: 1 confirmed by other sources, 2 probably true, 3 possibly true, 4 doubtful, 5 improbable, 6 truth cannot be judged */
+  credibility: number;
+};
+
+export type SignalCitation = {
+  /** A public page */
+  url?: string;
+  /** Anything else a person can find again: a filing number, a conversation, a document id */
+  ref?: string;
+  title?: string;
+  /**
+   * The day the producer read it
+   * @format date
+   */
+  accessed?: string;
+} & ({
+  /** A public page */
+  url: string;
+} | {
+  /** Anything else a person can find again: a filing number, a conversation, a document id */
+  ref: string;
+});
 
 /** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated. */
 export type SitePresence = {

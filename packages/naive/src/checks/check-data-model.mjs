@@ -6,7 +6,8 @@
 // every layer has a manifest at <layer>/layer.json; each record type is owned by exactly one
 // layer or one package; a layer that owns a record is of that record's layer; a package
 // declares use_model (an array, empty when it calls no model) and at most one skill;
-// layers and packages read and write only known types they do not own; every SKILL.md
+// layers and packages read and write only known types they do not own; a package's signal listeners pass the
+// listener schema and name their consumers; every SKILL.md
 // belongs to exactly one layer or package; a record type is a log exactly when its form is
 // json-lines, and every file in an example venture has a kind (record, log or derived), from its
 // record type or from the data model's files entries.
@@ -21,6 +22,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { globRegExp, pathKind, recordsIn } from "../records/index.mjs";
+import { validateValue } from "../records/validate.mjs";
 
 // EE_ROOT points the check at another copy of the repository (used by packages/naive/src/checks/test.mjs).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..", import.meta.url).pathname;
@@ -126,6 +128,16 @@ for (const p of packageFiles) {
   for (const c of k.checks ?? []) if (!existsSync(join(root, c))) errors.push(`${id}: check ${c} not found`);
   if (k.skill && !existsSync(join(root, k.skill.path))) errors.push(`${id}: skill ${k.skill.path} not found`);
   if (k.template_dir && !existsSync(join(root, k.template_dir))) errors.push(`${id}: template dir ${k.template_dir} not found`);
+  // A package's signal listeners (signal library design): each passes packages/naive/src/records/listener.schema.json,
+  // names its consumer, and has an id no other listener of the package has.
+  const listenerIds = new Set();
+  for (const l of k.listeners ?? []) {
+    const v = validateValue("listener.schema.json", l);
+    if (v.status !== 0) errors.push(`${id}: listener ${l?.id ?? "(no id)"}: ${(v.stdout + v.stderr).trim().split("\n").join("; ")}`);
+    if (l && typeof l === "object" && !("consumer" in l)) errors.push(`${id}: listener ${l.id}: a package's listener names its consumer`);
+    if (listenerIds.has(l?.id)) errors.push(`${id}: listener ${l.id} is defined twice`);
+    listenerIds.add(l?.id);
+  }
 }
 for (const t of types.keys()) if (!owner.has(t)) errors.push(`${t}: no layer or package owns this record type`);
 for (const k of kits.values()) for (const rel of ["reads", "writes"]) for (const t of k[rel] ?? []) {

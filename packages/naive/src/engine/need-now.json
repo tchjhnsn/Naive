@@ -940,6 +940,46 @@
       },
       "why": "The ledger beside a detector; it fills as calls are made and settled, so it is needed exactly when its detector is"
     },
+    "signal": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.4,
+        "platform": 0.4
+      },
+      "why": "A signal is emitted when something happens outside the venture that a listener should hear; a venture with no listeners needs none"
+    },
+    "signal-log": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.4,
+        "platform": 0.4
+      },
+      "why": "The day index of the local library; it fills as signals are emitted, so it is needed exactly when signals are"
+    },
+    "competitor": {
+      "base": {
+        "discovery": 0.4,
+        "validation": 0.6,
+        "beachhead": 0.6,
+        "scale": 0.5,
+        "platform": 0.4
+      },
+      "why": "Knowing who else serves the same customers shapes positioning and when to raise; most needed while the venture finds its market"
+    },
+    "competitor-signals": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.4,
+        "platform": 0.4
+      },
+      "why": "Written only by the signal projector beside a competitor; it fills when a listener hears signals about that competitor"
+    },
     "validation-interview": {
       "base": {
         "discovery": 0.7,

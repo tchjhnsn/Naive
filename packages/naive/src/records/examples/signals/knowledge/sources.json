@@ -1,0 +1,13 @@
+{
+  "sources": [
+    {
+      "id": "market-example",
+      "connector": "filesystem",
+      "root": "library",
+      "writes": "none",
+      "carries": "signals",
+      "note": "The example library, read in place."
+    }
+  ],
+  "records": {}
+}

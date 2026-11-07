@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "signal-library.schema.json",
+  "title": "Signal library",
+  "description": "library.json at the root of a signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a source that holds signal types and signals in the naive-signal-library@1 layout and is read in place. The layout: library.json; types/<id>/<version>.signal.json (the components); signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json (the elements, immutable); log/<type>/<yyyy-mm-dd>.jsonl (the append-only day index). library.json lists no types: they are whatever types/ holds. A venture lists a library as a source with carries signals in knowledge/sources.json. Naive's own packages are the implicit library naive (open types only), and a venture's raw/signals/ is its implicit local library (signals and log only); neither has a library.json. Nothing reads a library yet: the connector and the pull are later build items.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "publisher",
+    "contract",
+    "license"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "not": {
+        "enum": [
+          "naive",
+          "local"
+        ]
+      },
+      "description": "The library's id; naive and local are reserved for the implicit libraries"
+    },
+    "title": {
+      "type": "string"
+    },
+    "publisher": {
+      "type": "string",
+      "description": "Who publishes it"
+    },
+    "contract": {
+      "const": "naive-signal-library@1",
+      "description": "The layout contract the library keeps"
+    },
+    "license": {
+      "type": "string",
+      "description": "An SPDX license id, or proprietary with the terms named in note"
+    },
+    "homepage": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

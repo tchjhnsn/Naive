@@ -210,6 +210,32 @@
       },
       "description": "The decisions the frame proposes, each open for the founder to decide"
     },
+    "listens": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "listener.schema.json"
+          },
+          {
+            "properties": {
+              "then": {
+                "enum": [
+                  "propose",
+                  "revalidate"
+                ]
+              }
+            },
+            "not": {
+              "required": [
+                "consumer"
+              ]
+            }
+          }
+        ]
+      },
+      "description": "Signal listeners whose consumer is this frame (signal library design): adding a frame that listens is subscribing. A frame's listener proposes the frame's decisions or revalidates it, so it names no consumer and never projects. Nothing evaluates them yet"
+    },
     "cases": {
       "type": "array",
       "items": {

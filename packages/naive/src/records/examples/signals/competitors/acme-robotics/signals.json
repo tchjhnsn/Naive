@@ -1,0 +1,14 @@
+{
+  "competitor": "acme-robotics",
+  "first_seen": "2026-11-05",
+  "last_seen": "2026-11-05",
+  "funding": [
+    {
+      "series": "seed",
+      "amount": 3000000,
+      "currency": "USD",
+      "signal": "3a50ad6dfb3a46b0f160cc36",
+      "support": "supported"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "competitor.schema.json",
+  "title": "Competitor",
+  "description": "A person's master record for one competitor, at <venture>/competitors/<id>.json: a company serving the same customers with an offering that can replace the venture's (Porter 1980). A person owns it. The signal projector may create it once when it is missing, from a signal's organization part, and never writes it again (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). What signals say about the competitor sits beside it in competitors/<id>/signals.json, which only the projector writes. Nothing projects yet: that is a later build item.",
+  "type": "object",
+  "required": [
+    "id",
+    "name"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "The file name, and the subject of the signals about it"
+    },
+    "name": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-z0-9.-]+\\.[a-z]+$",
+      "description": "The competitor's web domain"
+    },
+    "stance": {
+      "type": "string",
+      "description": "How the venture stands toward it, in a person's words"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_from": {
+      "$ref": "signal.schema.json#/$defs/address",
+      "description": "The signal the projector created this record from, when a person did not write it first"
+    }
+  }
+}

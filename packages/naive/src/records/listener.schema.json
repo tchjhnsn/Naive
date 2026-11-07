@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "listener.schema.json",
+  "title": "Listener",
+  "description": "The edge between a signal type and one consumer (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): the type range it hears, the consumer's criterion, and what happens to a signal that meets it. Noise is not a property of a signal: it is the outcome of one signal at one listener, so the same signal can be salient at one consumer and noise at another. A listener is not a file of its own. Listeners merge, like triggers, from naive.config.json listeners (a same-id listener replaces any other), each installed package's listeners, each frame's listens and each listed kit's listeners; naive.config.json listeners_off turns one off. The types a pull reads are derived from the listeners, so there is no subscription list. Nothing merges or evaluates listeners yet: that is a later build item.",
+  "type": "object",
+  "required": [
+    "id",
+    "hears",
+    "then"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "then": {
+            "const": "project"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "max_age"
+          ]
+        },
+        "properties": {
+          "consumer": {
+            "required": [
+              "route"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Unique among the venture's listeners once merged; a same-id listener in naive.config.json replaces any other"
+    },
+    "hears": {
+      "$ref": "signal-type.schema.json#/$defs/range",
+      "description": "The signal type range it hears (competitor-funding@^1). A listener for a part's type hears that part of every composite that has it"
+    },
+    "consumer": {
+      "description": "What the listener serves: a record route (then project, or revalidate), a frame or a decision (then propose). Required in naive.config.json and in packages; a frame's listener serves that frame and leaves it out",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "route"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "route": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*(/([a-z0-9][a-z0-9-]*|\\[id\\]))*$",
+              "description": "A record route, where [id] is the signal's subject: competitors/[id]/signals"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "frame"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "frame": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "description": "A frame id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "decision"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "decision": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "description": "The decision it proposes; the proposal's id is this id, a hyphen and the signal's subject"
+            }
+          }
+        }
+      ]
+    },
+    "criterion": {
+      "$ref": "#/$defs/criterion"
+    },
+    "then": {
+      "enum": [
+        "project",
+        "propose",
+        "revalidate"
+      ],
+      "description": "What a salient signal does. project: folds into the consumer route by the type's projects (level: it reads no clock, so no max_age). propose: proposes a decision. revalidate: marks the consumer stale. propose and revalidate are edge listeners and may judge a signal's age against now"
+    },
+    "max_age": {
+      "$ref": "freshness-profiles.schema.json#/$defs/duration",
+      "description": "Edge listeners only: a signal older than this is noise here. Overrides the type's freshness.max_age"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The consumer's own threshold, after signal detection theory (Green and Swets 1966). A signal is salient when it passes every part; otherwise it is noise at this listener, and every failed part is reported. Checked in this order: rating, producers, age (edge listeners only), then every predicate",
+      "properties": {
+        "rating": {
+          "$ref": "signal.schema.json#/$defs/rating",
+          "description": "The worst rating accepted: a signal whose reliability letter or credibility number is past either bound is noise"
+        },
+        "producers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._/-]*$"
+          },
+          "description": "Accepted producer prefixes; any producer when left out"
+        },
+        "predicates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/predicate"
+          }
+        }
+      }
+    },
+    "predicate": {
+      "type": "object",
+      "required": [
+        "id",
+        "field",
+        "op"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "op": {
+            "const": "exists"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "value"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "value"
+        ]
+      },
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Named in explain when it fails"
+        },
+        "field": {
+          "$ref": "signal-type.schema.json#/$defs/path",
+          "description": "The view field it tests: props.round.amount, subject"
+        },
+        "op": {
+          "enum": [
+            "eq",
+            "ne",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            "in",
+            "not-in",
+            "contains",
+            "exists"
+          ],
+          "description": "contains: the field is a list holding the value, or a string holding it. exists takes no value"
+        },
+        "value": {
+          "$ref": "#/$defs/operand"
+        },
+        "why": {
+          "type": "string",
+          "description": "Why this consumer cares, in words, printed by explain"
+        }
+      }
+    },
+    "operand": {
+      "description": "A literal (a scalar, or a list of scalars for in and not-in); one field of one venture record read through the router ({ \"read\": \"foundation/icp.json#markets\" }); or the ids of projected records ({ \"ids\": \"competitors\" }). Every fact a predicate reads is cited in the write's derived_from",
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "read"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "read": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_./-]*\\.json#[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$",
+              "description": "A venture file and one field in it: foundation/icp.json#markets"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "ids"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ids": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "description": "A collection of projected records: competitors"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

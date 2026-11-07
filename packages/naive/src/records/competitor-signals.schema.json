@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "competitor-signals.schema.json",
+  "title": "Competitor signals",
+  "description": "What signals say about one competitor, at <venture>/competitors/<id>/signals.json, rendered by the signal projector from the signals salient for it (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). Only the projector writes it (writer projection in the data model); a person corrects what a signal says by emitting a superseding signal into the venture's local library, and corrects anything else in the master record competitors/<id>.json. Each field is filled by a fold a signal type's projects names, so a type may add fields. Every entry names the signal it came from and whether that signal still stands. Neither the projector nor the rule that refuses other writers is built yet.",
+  "type": "object",
+  "required": [
+    "competitor",
+    "first_seen",
+    "last_seen"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "competitor": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "The competitor's id, the subject of the signals"
+    },
+    "first_seen": {
+      "type": "string",
+      "description": "The earliest valid time of a salient signal (fold min over time)"
+    },
+    "last_seen": {
+      "type": "string",
+      "description": "The latest valid time of a salient signal (fold max over time)"
+    },
+    "funding": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entry"
+      },
+      "description": "Funding rounds, one per round (fold append)"
+    },
+    "launches": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entry"
+      },
+      "description": "Product launches, one per launch (fold append)"
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": [
+        "signal",
+        "support"
+      ],
+      "properties": {
+        "signal": {
+          "$ref": "signal.schema.json#/$defs/address",
+          "description": "The signal the entry came from"
+        },
+        "support": {
+          "enum": [
+            "supported",
+            "withdrawn"
+          ],
+          "description": "withdrawn once a later signal retracts or supersedes it"
+        }
+      }
+    }
+  }
+}

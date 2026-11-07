@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "signal-log.schema.json",
+  "title": "Signal log line",
+  "description": "One line of a signal library's day index, log/<type>/<yyyy-mm-dd>.jsonl, where the day is the day the signal was published to the library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). Append-only: a library adds a line when it publishes a signal and never rewrites one, so a pull reads only the days after its cursor. A retraction is a new signal with its own line.",
+  "type": "object",
+  "required": [
+    "id",
+    "subject",
+    "path",
+    "published"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "$ref": "signal.schema.json#/$defs/address"
+    },
+    "subject": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^signals/[a-z][a-z0-9-]*/[a-z0-9][a-z0-9-]*/[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9a-f]{24}\\.json$",
+      "description": "The signal's file, relative to the library root"
+    },
+    "published": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$",
+      "description": "When the library published it, a UTC timestamp on the line's day"
+    }
+  }
+}
