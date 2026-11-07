@@ -22,7 +22,7 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 | [`operator-console/`](./operator-console/README.md) | The operator console. |
 | [`plugin-mcp.json`](./plugin-mcp.json) | The Claude Code plugin's MCP server entry (EE-084). |
 | [`plugin-test.mjs`](./plugin-test.mjs) | The Claude Code plugin (EE-084). |
-| [`skills/`](./skills) | The skills the plugin ships: install, create, setup, choosing artifacts, run a playbook. |
+| [`skills/`](./skills) | The interface layer's skills: install, create, setup, choosing artifacts, run a playbook, and research, Naive's one generic research skill for every function's researcher (the autoresearch loop and its rules). The plugin ships create, setup and research. |
 | [`test.mjs`](./test.mjs) | Tests for the router and the three interfaces over it (EE-030). |
 | [`tests/`](./tests/README.md) | Tests that run a module in `packages/naive/src/engine/` through the router. |
 

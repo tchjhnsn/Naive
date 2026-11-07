@@ -29,3 +29,4 @@ One module per function of a venture, the 13 in [`departments.json`](./departmen
 
 - A venture's `venture.json` names its functions and their owners by these ids.
 - The data model's layers still own the record types (`../records/data-model.json`); a function module owns no record type.
+- Every module carries the function's autoresearch work: `templates/research-program.md`, a starter research program with one section per pattern the function owns (strategy's covers `competitors/[id]/signals`; the rest have none yet and say what to research and how). `../engine/research-programs.mjs` copies it into a venture's `programs/<function>.md` once, when the venture lists the function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it. The loop the function's researcher runs is the research skill, [`../interfaces/skills/research/SKILL.md`](../interfaces/skills/research/SKILL.md), the same for every function.

@@ -17,7 +17,8 @@
   ],
   "skills": [
     "./packages/naive/src/interfaces/skills/naive-create",
-    "./packages/naive/src/interfaces/skills/naive-setup"
+    "./packages/naive/src/interfaces/skills/naive-setup",
+    "./packages/naive/src/interfaces/skills/research"
   ],
   "mcpServers": "./packages/naive/src/interfaces/plugin-mcp.json"
 }

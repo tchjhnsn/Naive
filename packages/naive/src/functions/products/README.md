@@ -14,3 +14,4 @@ The products and services function (APQC 2.0, Develop and Manage Products and Se
 | [sdlc/README.md](./sdlc/README.md) | SDLC catalog |
 | [sdlc/catalog.json](./sdlc/catalog.json) | A record |
 | [skills/product-pillar](./skills/product-pillar) | Skill: Provide Product pillar context: teams, roles, Tier 1 + Tier 2 deliverables, cross-pillar overlap zones: when working on product-pillar work. |
+| [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/products.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |

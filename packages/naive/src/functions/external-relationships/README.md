@@ -11,3 +11,4 @@ The external relationships function (APQC 12.0, Manage External Relationships). 
 | Path | Holds |
 |---|---|
 | [skills/stakeholder-update](./skills/stakeholder-update) | Skill: Compose a stakeholder update tailored to audience + cadence. |
+| [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/external-relationships.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |

@@ -15,11 +15,13 @@ import { ventureFile } from "../core/venture-paths.mjs";
  * One writer per file, checked on every write and append, local or in another source, before anything else is
  * read or checked: a projection record only from the projector, and from the projector only projection records
  * or a missing record a person owns (writerRule in packages/naive/src/engine/gate.mjs). A record in another source
- * counts as existing, since only its connector could say otherwise. Returns the refusal as a router answer, or null.
- * @param {{ dir: string, r: Record<string, any>, route: string, file: string, projector: boolean, remote?: boolean }} w
+ * counts as existing, since only its connector could say otherwise. A record type with writer person (a research
+ * program) only from a person: actor is the call's actor and acting says the process names an agent as acting.
+ * Returns the refusal as a router answer, or null.
+ * @param {{ dir: string, r: Record<string, any>, route: string, file: string, projector: boolean, remote?: boolean, actor?: string, acting?: boolean }} w
  */
-export function ownerOfWrite({ dir, r, route, file, projector, remote = false }) {
-  const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)) });
+export function ownerOfWrite({ dir, r, route, file, projector, remote = false, actor = "agent", acting = false }) {
+  const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)), actor, acting });
   return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, ...(v.fix ? { fix: v.fix } : {}) } : null;
 }
 

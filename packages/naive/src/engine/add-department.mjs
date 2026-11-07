@@ -1,6 +1,7 @@
 // Imports one department into a venture (EE-047, EE-048): lists it in venture.json `departments`
 // and creates its folders, the operations side always and the governance side when the venture's
-// governance layer is on. Nothing else is created, so a venture holds only what it uses.
+// governance layer is on, and the function's starter research program at programs/<function>.md when the venture
+// has none (packages/naive/src/engine/research-programs.mjs). Nothing else is created, so a venture holds only what it uses.
 //
 //   node packages/naive/src/engine/add-department.mjs <venture dir> <department id> [--group]
 //
@@ -11,6 +12,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { catalog, foldersOf } from "./departments.mjs";
+import { seedPrograms } from "./research-programs.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 
 const args = process.argv.slice(2);
@@ -39,4 +41,6 @@ for (const layer of layersOn.filter((l) => !held.includes(l))) {
 }
 venture.departments = [...new Set([...(venture.departments ?? []), d.id])];
 writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
-console.log(made.length ? `added ${d.label}: ${made.join(", ")}` : `${d.label} is already in ${dir}`);
+// The function's starter research program (autoresearch design), copied only when programs/<function>.md is missing.
+const programs = seedPrograms(dir, { only: [d.id] }).map((x) => x.path);
+console.log(made.length || programs.length ? `added ${d.label}: ${[...made, ...programs].join(", ")}` : `${d.label} is already in ${dir}`);

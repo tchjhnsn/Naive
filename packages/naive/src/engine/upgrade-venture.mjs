@@ -16,7 +16,9 @@
 //   node packages/naive/src/engine/upgrade-venture.mjs --framework [<venture dir>]   update the installed framework first (git pull --ff-only)
 //
 // Files move with git mv when git tracks them. Provenance is appended, never rewritten. Old routes keep
-// resolving through packages/naive/src/router/route-aliases.json. --json prints the result as JSON.
+// resolving through packages/naive/src/router/route-aliases.json. Each function listed in venture.json departments gets
+// its starter research program at programs/<function>.md when that file is missing (packages/naive/src/engine/research-programs.mjs).
+// --json prints the result as JSON.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -87,9 +89,11 @@ try {
     if (json) { console.log(JSON.stringify(r, null, 2)); process.exit(0); }
     const moves = r.release.migrations.reduce((n, m) => n + m.moves.length, 0), rewrites = r.release.migrations.reduce((n, m) => n + m.rewrote.length, 0);
     const pinned = r.packages.filter((x) => !x.missing && x.from !== x.to);
-    if (!r.pending && !r.changed) console.log(`${id} is on Naive ${r.to}, every package pinned: nothing to upgrade.`);
+    if (!r.pending && !r.changed && !r.release.programs.length) console.log(`${id} is on Naive ${r.to}, every package pinned: nothing to upgrade.`);
+    else if (!r.pending && r.release.programs.length && !r.packages.some((x) => !x.missing && x.from !== x.to)) console.log(`${id} is on Naive ${r.to}, every package pinned: ${r.dry ? "would copy" : "copied"} ${r.release.programs.length} missing research programs.`);
     else console.log(`${r.dry ? "would upgrade" : "upgraded"} ${id} from Naive ${r.from} to ${r.to}: ${moves} files moved, ${rewrites} records rewritten, ${pinned.length} packages pinned, ${r.release.escalated.length} escalated for a decision.`);
     for (const m of r.release.migrations) if (m.moves.length || m.rewrote.length || m.notes.length) console.log(`migrate   ${m.id} (${m.version}): ${m.moves.length} moved, ${m.rewrote.length} rewritten${m.notes.length ? `; ${m.notes.join("; ")}` : ""}`);
+    for (const x of r.release.programs) console.log(`program   ${x.path} from ${x.template}`);
     for (const e of r.release.escalated) console.log(`escalate  ${e}`);
     for (const g of r.release.guides) console.log(`guide     ${g}`);
     if (r.release.guides.length) console.log(`Read the guides: node packages/naive/src/interfaces/cli/naive.mjs upgrade ${dirArg} --guide`);

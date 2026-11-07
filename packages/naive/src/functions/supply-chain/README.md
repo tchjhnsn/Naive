@@ -8,4 +8,6 @@ The supply chain function (APQC 4.0, Manage Supply Chain for Physical Products).
 
 ## Where things are
 
-Nothing yet. Naive ships no skill, template or framework for this function.
+| Path | Holds |
+|---|---|
+| [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/supply-chain.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
