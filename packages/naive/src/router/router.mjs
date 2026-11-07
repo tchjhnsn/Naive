@@ -53,6 +53,7 @@ import { readFlag as freshnessFlag } from "../engine/freshness.mjs";
 // Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
 import { actingCall, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
+import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from "./reads-as-of.mjs";
 import { checkPlan, gateWrite, heldDraft, ledgerHook } from "./gate-hooks.mjs";
 // Appends (packages/naive/src/router/appends.mjs): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.mjs";
@@ -186,9 +187,20 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Context hook: every call is timed and measured for agent vitals (packages/naive/src/core/instrumentation.mjs).
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
 // Writes hook (packages/naive/src/router/writes.mjs): adds what reads, layouts and writes answer.
-export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => around(callInAction, b), ventureDir), ventureDir));
-/** @param {{ venture: string, route: string, action: string, input?: *, actor?: string, actor_id?: string, workspace?: string, via?: string, provenance?: { derived_from?: string[], decision?: string, note?: string, agent?: Record<string, any>, activity?: string, confidence?: number | string | null } }} args */
-async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", provenance = {} }) {
+// As-of hook (packages/naive/src/router/reads-as-of.mjs): a researcher reads only as of its cut (reads_as_of, by default
+// MENTURA_READS_AS_OF), and an as-of call is refused every action that reads the venture live, before anything runs.
+export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => {
+  const c = { ...b, reads_as_of: b.reads_as_of ?? process.env.MENTURA_READS_AS_OF, actor_id: b.actor_id ?? process.env.MENTURA_ACTOR_ID };
+  const no = asOfRefusal(c);
+  if (no) return no;
+  const cut = cutFor(c);
+  let table = null;
+  try { table = resolve(c.route).r; } catch {}
+  if (cut.ok && cut.cut !== null && !table) return { ok: false, error: `${c.route} is a package, group or venture route, which reads the venture live, so a call that reads as of a cut may not take it` };
+  return around(callInAction, c);
+}, ventureDir), ventureDir));
+/** @param {{ venture: string, route: string, action: string, input?: *, actor?: string, actor_id?: string, workspace?: string, via?: string, reads_as_of?: string | number | null, provenance?: { derived_from?: string[], decision?: string, note?: string, agent?: Record<string, any>, activity?: string, confidence?: number | string | null } }} args */
+async function callInAction({ venture, route, action, input, actor = "agent", actor_id = process.env.MENTURA_ACTOR_ID, workspace, via = "router", reads_as_of = null, provenance = {} }) {
   if (actor === "public" && action !== "read") return { ok: false, error: `the public reader only reads; ${action} needs a person or an agent` };
   const requested = route;
   const { r, params, alias } = resolve(route);
@@ -203,6 +215,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
+  // As-of hook: the cut this read answers as of, or null for a live read (a refused cut never reaches here).
+  const asOf = cutFor({ action, actor_id, reads_as_of });
+  const cut = asOf.ok ? asOf.cut : null;
+  // No agent reads or writes the eval set (_eval/), as of a cut or not: it is the plan's, and a person's.
+  if (actor !== "person" && r.kind === "record" && (r.collection === "item" || r.view_of ? [fileFor(r, params, dir)] : r.files).some(inEval)) return { ok: false, error: `${route} is in the eval set (_eval/), which no agent reads or writes` };
   const act = action === "write" || action === "append" ? "write" : "read";
   // Gate group hook (F-5): a role that may read some items of a collection may read its list, filtered below.
   if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route) && !(act === "read" && r.collection === "list" && mayReadSome(dir, actor_id, route))) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
@@ -217,7 +234,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (beta) return { ok: false, error: beta.message, beta_locked: beta.capability, fix: { feedback: beta.needs, command: beta.needs.capability ? `naive beta feedback ${beta.needs.capability}` : null, then: "naive beta unlock, then retry this call" } };
 
   if (action === "view") {
-    const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance });
+    const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance, reads_as_of });
     return inner.ok ? { ok: true, result: render(route, inner), ...deprecated } : inner;
   }
 
@@ -244,9 +261,12 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (r.kind === "record" && (action === "read" || action === "write" || action === "append")) {
     const context = { actor, ...(r.collection === "item" && (r.record === "product" || r.record === "account") ? { [r.record]: params.id } : {}) };
     try {
-      src = sourceFor(dir, r.record, context); store = await connect(src, dir);
+      src = sourceFor(dir, r.record, context);
+      // As-of hook: a read as of a cut answers from the provenance log and the blob store, never the source itself.
+      const storeOf = async (s) => cut !== null && action === "read" ? asOfStore(dir, s, LOCAL, cut) : await connect(s, dir);
+      store = await storeOf(src);
       // Attributes mastered elsewhere (EE-042): read from and written to their own system of record.
-      attrs = r.files.every((f) => f.endsWith(".json")) ? await Promise.all(attributeSources(dir, r.record, context).map(async (a) => ({ ...a, store: await connect(a.source, dir) }))) : [];
+      attrs = r.files.every((f) => f.endsWith(".json")) ? await Promise.all(attributeSources(dir, r.record, context).map(async (a) => ({ ...a, store: await storeOf(a.source) }))) : [];
     } catch (e) { return { ok: false, error: String(e.message ?? e) }; }
   }
   const remote = src && src.id !== LOCAL;
@@ -261,27 +281,32 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       // a file named _* is never an item; routable: private _folders (P-22)
       const paths = patterns.some((g) => g.includes("*")) ? (await store.list()).map((x) => x.path).filter((f) => !/(^|\/)_[^/]*$/.test(f) && patterns.some((g) => glob(g).test(f) && routable(f, g))) : patterns;
       // Caching hook (F-2): each record is read once per action and shared.
-      items = (await Promise.all(paths.map((f) => memo(`read:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
+      items = (await Promise.all(paths.map((f) => memo(cut === null ? `read:${src.id}:${f}` : `read-as-of:${cut}:${src.id}:${f}`, () => store.read(f), { dir })))).filter(Boolean);
+      // No agent reads the eval set; as of a cut, no signal observed after it.
+      if (actor !== "person") items = items.filter((x) => !inEval(x.path));
+      if (cut !== null) items = items.filter((x) => observedBy(r.record, x, cut));
       // Gate group hook (F-5): access is checked again at the record; a list holds only the items the role may read.
       if (r.collection === "list" && actor_id) items = items.filter((x) => mayReadItem(dir, actor_id, route, itemId(r.files, x.path)));
       // Confidentiality (C2 and above): a record only its access list may know of is left out, as if absent.
       items = items.filter((x) => mayKnow(dir, x.path, { actor, id: actor === "person" ? process.env.MENTURA_PERSON ?? actor_id : actor_id }));
     } catch (e) { return { ok: false, error: `${src.id}: ${String(e.message ?? e)}` }; }
     const found = items.map((x) => x.path);
-    const draft = !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
+    const draft = cut === null && !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
     if (remote) {
       const prs = provEntries(dir).filter((e) => e.source?.pull_request && found.concat(patterns).some((f) => e.entity === address(src.id, f)));
       if (prs.length) loading.pending_pull_requests = prs.map((e) => ({ entity: e.entity, pull_request: e.source.pull_request, since: e.at }));
     }
     // Framework view hook: a migrated venture's telos is rendered from its canonical goals and exit criteria (frameworks/telos).
-    if (!found.length && r.record === "telos" && !remote && actor !== "public") {
+    if (!found.length && r.record === "telos" && !remote && actor !== "public" && cut === null) {
       const view = telosView(dir);
       if (view) return { ok: true, result: view, view: { framework: "telos", from: ["foundation/goals", "foundation/exit-criteria"] }, ...deprecated };
     }
+    // As-of hook: an as-of answer says the instant it is as of, and carries nothing computed from the live venture.
+    const asOfMark = cut === null ? {} : { as_of: { at: new Date(cut).toISOString(), role: actor_id ?? null } };
     const absent = () => {
       const pub = actor === "public";
-      return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, ...(remote ? { source: src.id } : {}), template: r.template, schema: r.schema, need_now: pub ? null : layout(r, dir).need_now ?? null, skills: fix(r).skills }, ...(pub ? {} : loading), ...deprecated };
+      return { ok: true, result: null, not_found: { note: r.collection === "list" ? `no ${r.record} records yet` : `no ${r.record} record yet`, ...(remote ? { source: src.id } : {}), template: r.template, schema: r.schema, need_now: pub || cut !== null ? null : layout(r, dir).need_now ?? null, skills: fix(r).skills }, ...(pub ? {} : loading), ...asOfMark, ...deprecated };
     };
     if (!found.length) return absent();
     const parse = (x) => r.view_of ? coreOf(JSON.parse(x.content)) : x.path.endsWith(".json") ? JSON.parse(x.content) : x.path.endsWith(".jsonl") ? x.content.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : x.content;
@@ -300,7 +325,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       if (attrs.length) x.attributes = cites;
     }
     // Freshness (V-5): a stale record is still read, flagged stale until it is redone (stale-while-revalidate).
-    const fresh = remote ? {} : await freshnessFlag(dir, found, r.collection === "list");
+    const fresh = remote || cut !== null ? {} : await freshnessFlag(dir, found, r.collection === "list");
     Object.assign(loading, fresh);
     const parseOne = parse;
     const merged = (x) => { const v = parseOne(x); return overlays.has(x.path) ? { ...v, ...overlays.get(x.path) } : v; };
@@ -324,15 +349,15 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
         const shown = values.filter(([, v]) => v && Object.keys(v).length);
         return { ok: true, result: Object.fromEntries(shown.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(shown.map(([x]) => [idOf(x.path), cite(x)])), ...deprecated };
       }
-      return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...deprecated };
+      return { ok: true, result: Object.fromEntries(values.map(([x, v]) => [idOf(x.path), v])), sources: Object.fromEntries(values.map(([x]) => [idOf(x.path), cite(x)])), ...(Object.keys(errors).length ? { errors } : {}), ...fresh, ...asOfMark, ...deprecated };
     }
     // A public reader learns nothing of an item with no public field, not even that its id exists.
     const hidden = (x) => { try { const v = parseWith(x); return !v || !Object.keys(v).length; } catch { return true; } };
     if (actor === "public" && r.collection === "item" && items.every(hidden)) return absent();
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
     // V-9 hook: a summary whose source changed since it was written is marked stale (packages/naive/src/engine/stale.mjs).
-    const stale = !remote && items.length === 1 ? staleOf(dir, found[0]) : null;
-    return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...(actor === "public" ? {} : { ...loading, ...(stale ? { stale } : {}) }), ...deprecated };
+    const stale = !remote && cut === null && items.length === 1 ? staleOf(dir, found[0]) : null;
+    return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...(actor === "public" ? {} : { ...loading, ...(stale ? { stale } : {}) }), ...asOfMark, ...deprecated };
   }
 
   if (action === "check") {
