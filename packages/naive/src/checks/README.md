@@ -18,6 +18,8 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-data-packages.mjs`](./check-data-packages.mjs) | Data packages and raw (EE-070). |
 | [`check-delegation.mjs`](./check-delegation.mjs) | Checks delegation. |
 | [`check-departments.mjs`](./check-departments.mjs) | Checks each venture's departments (EE-047). |
+| [`check-detectors.ts`](./check-detectors.ts) | Checks a venture's detectors (governance/detectors/<id>.json) and their detection ledgers, and reports for each one, Naive's shipped defaults included: hit and false alarm rates with Wilson intervals, d' and c, ROC area, the base rate, and the expected cost at the current line and the best observed line. It fails only on structure, never on a number. `--propose` files a criterion change as an open decision once, only with at least 30 resolved trials, a Wilson interval on the cost difference that excludes zero, and a tier that is not one_way_door. It never edits a detector. |
+| [`check-detectors-test.ts`](./check-detectors-test.ts) | Breaks each structural rule of check-detectors.ts on copies, shows numbers never fail it, and shows `--propose` files once and leaves a decided proposal alone. |
 | [`check-docs-claims.mjs`](./check-docs-claims.mjs) | Checks that the docs describe only what is built. |
 | [`check-execution.mjs`](./check-execution.mjs) | Checks a venture's handoffs (operations, EE-038) and evidence records against its decision rights (EE-017). |
 | [`check-governance.mjs`](./check-governance.mjs) | Checks each venture's ownership-and-control records (EE-022). |
