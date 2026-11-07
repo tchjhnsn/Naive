@@ -33,7 +33,7 @@ import { hears, isEdge, receive, resolveType, satisfies, splitRange, typeOfView,
 import type { Facts, Received, Reception, View } from "./signals/render.ts";
 import type { Listener, ListenerPredicate, Signal, SignalType } from "../records/types/records.d.ts";
 
-export { diff, fill, hears, render, renderCase, resolveType, satisfies, splitRange, typeOfView, viewsOf, withdraw } from "./signals/render.ts";
+export { diff, fill, hears, render, renderCase, resolveType, satisfies, splitRange, timeThenId, typeOfView, viewsOf, withdraw } from "./signals/render.ts";
 export type { Change, Facts, Mark, Proposal, Received, Reception, RenderInput, RenderResult, Rendered, View } from "./signals/render.ts";
 
 const repo = new URL("../../../../", import.meta.url).pathname;

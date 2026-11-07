@@ -1026,7 +1026,7 @@ export type DetectorLine = {
   decision?: string;
 };
 
-/** One frozen version of how a recipe is scored, at <pattern>.plan.json beside the recipe (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The eval plan"): the as-of points of each window, the horizon and the gap between windows, the read cut, the row weights, the margin a keep needs and the budgets. A person makes it (naive recipes plan, not built); its sha is on every experiment line, and its eval set is frozen at _eval/<sha>/ beside it, a folder the router never serves. The windows run training, a gap, dev, a gap, holdout, and the researcher sees the venture only as of read_cut. That the windows are ordered and purged is checked by the plan command, not by this schema. */
+/** One frozen version of how a recipe is scored, at <pattern>.plan.json beside the recipe (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The eval plan"): the as-of points of each window, the horizon and the gap between windows, the read cut, the row weights, the margin a keep needs and the budgets. A person makes it with naive recipes plan (packages/naive/src/engine/recipes/eval-set.ts); its sha is on every experiment line, and its eval set is frozen at <venture>/_eval/<sha>/, a folder no agent reads through the router. The windows run training, a gap, dev, a gap, holdout, and the researcher sees the venture only as of read_cut. That the windows are ordered and purged is checked by the plan command, not by this schema. */
 export type EvalPlan = {
   $schema?: string;
   pattern: EvalPlanPattern;
@@ -1220,7 +1220,7 @@ export type Experiment = {
     /** The (record, as-of point) rows scored */
     rows: number;
   };
-  /** The training run's settled loss. Its per-row losses are shown by naive recipes check (not built), never logged here */
+  /** The training run's settled loss. Its per-row losses are shown by naive recipes check, never logged here */
   training?: {
     score: number;
     rows: number;

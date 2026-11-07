@@ -233,7 +233,7 @@
         "rows"
       ],
       "additionalProperties": false,
-      "description": "The training run's settled loss. Its per-row losses are shown by naive recipes check (not built), never logged here",
+      "description": "The training run's settled loss. Its per-row losses are shown by naive recipes check, never logged here",
       "properties": {
         "score": {
           "type": "number",
