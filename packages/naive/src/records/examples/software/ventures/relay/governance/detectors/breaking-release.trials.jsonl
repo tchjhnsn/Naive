@@ -1,0 +1,1 @@
+{"kind":"trial","id":"t-1","detector":"breaking-release","at":"2026-11-04T16:00:00Z","score":0.92,"criterion":{"route":"person"},"call":"yes","note":"The founder shipped 0.7.0","prev":"genesis","hash":"213a5ceba2cd1a12ca1e6233616bc0c0d8c3de927604e6990cbac403426e796e"}

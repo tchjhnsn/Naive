@@ -1869,6 +1869,40 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "detector",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "packages/naive/src/records/detector.schema.json",
+      "generator": "packages/naive/src/engine/generators/detector.ts",
+      "paths": [
+        "instance/**/governance/detectors/*.json",
+        "packages/naive/src/records/examples/**/governance/detectors/*.json"
+      ],
+      "note": "One yes or no call made on evidence, after signal detection theory: its question, impact tier, the sensor that scores it, the criterion, the costs of the four outcomes (from the tier unless a person set others), the base rate and who resolves it. A one_way_door detector draws no line and sends every call to a person. Governance owns it because it says how decisions are made. A person accepts any change to its criterion (docs/design/SIGNAL_DETECTION_2026-11-07.md)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "detector-trial",
+      "layer": "governance",
+      "level": "venture",
+      "schema": "packages/naive/src/records/detector-trial.schema.json",
+      "generator": "packages/naive/src/engine/generators/detector-trial.ts",
+      "form": "json-lines",
+      "kind": "log",
+      "paths": [
+        "instance/**/governance/detectors/*.trials.jsonl",
+        "packages/naive/src/records/examples/**/governance/detectors/*.trials.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "detector",
+          "to": "detector",
+          "checked_by": null
+        }
+      ],
+      "note": "The detection ledger beside each detector: one append-only line per call (score, criterion in force, call) and one per resolution (hit, miss, false alarm or correct rejection), hash-chained like provenance. Rates, sensitivity and ROC area are computed from it"
+    },
+    {
       "id": "people",
       "layer": "operations",
       "level": "venture",

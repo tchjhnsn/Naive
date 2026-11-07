@@ -50,7 +50,7 @@ for (const r of model.records) {
   if (r.schema && !existsSync(records.recordPath(r.schema))) errors.push(`${r.id}: schema ${r.schema} not found`);
   // EE-099: a record generator beside each schema. gaps.json lists the types still without one; it only shrinks.
   if (r.generator && !existsSync(join(root, r.generator))) errors.push(`${r.id}: generator ${r.generator} not found`);
-  if (!r.generator && !GAPS.has(r.id)) errors.push(`${r.id}: names no record generator (EE-099): add packages/naive/src/engine/generators/${r.id}.mjs and the generator field`);
+  if (!r.generator && !GAPS.has(r.id)) errors.push(`${r.id}: names no record generator (EE-099): add packages/naive/src/engine/generators/${r.id}.ts and the generator field`);
   if (r.generator && GAPS.has(r.id)) errors.push(`${r.id}: has a generator, so remove it from packages/naive/src/engine/generators/gaps.json`);
   r.files = [...new Set(r.paths.flatMap(matches))];
   if (!r.files.length) warnings.push(`${r.id}: no records yet at ${r.paths.join(", ")}`);

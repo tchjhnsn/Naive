@@ -1,0 +1,374 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "detector.schema.json",
+  "title": "Detector",
+  "description": "One yes or no call that Naive makes on evidence, after signal detection theory (Green and Swets 1966), at <venture>/governance/detectors/<id>.json. It names the question, the sensor that scores the evidence, the criterion that turns a score into a call, its impact tier, the costs of the four outcomes, the base rate and who resolves each call. A detector names its sensor and never runs it. Every call is a trial in the detection ledger beside it (<id>.trials.jsonl, detector-trial.schema.json). Naive never moves a criterion by itself: a better one is proposed as an open decision and a person accepts it. Design: docs/design/SIGNAL_DETECTION_2026-11-07.md.",
+  "type": "object",
+  "required": [
+    "id",
+    "tier",
+    "question",
+    "evidence",
+    "criterion",
+    "base_rate",
+    "resolution"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The detector's id, the same as its file name without .json."
+    },
+    "title": {
+      "type": "string",
+      "description": "A short name for people."
+    },
+    "description": {
+      "type": "string"
+    },
+    "call_site": {
+      "type": "string",
+      "description": "Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.mjs confidence_below."
+    },
+    "tier": {
+      "enum": [
+        "low",
+        "costly",
+        "one_way_door"
+      ],
+      "description": "The impact tier of the question type, from operating-rules.json. It sets the default costs: low makes a miss and a false alarm cost the same, and costly makes a miss cost three times a false alarm. one_way_door has no criterion: every call goes to a person, the ledger still records each trial, and no criterion change is ever proposed."
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "verb",
+        "noun",
+        "asking_function"
+      ],
+      "additionalProperties": false,
+      "description": "The yes or no question, as a question type in operating-rules.json: a verb, a noun or a scoped noun, and the function that asks.",
+      "properties": {
+        "verb": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What is asked about the noun, such as accept or hold."
+        },
+        "noun": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A noun from the ontology, or a scoped noun name@function."
+        },
+        "asking_function": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The id of the function that asks, from packages/naive/src/functions/departments.json."
+        },
+        "text": {
+          "type": "string",
+          "description": "The question in a plain sentence."
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "kind",
+        "sensor",
+        "scale",
+        "sources"
+      ],
+      "additionalProperties": false,
+      "description": "Where the signals come from, the sensor that turns them into a score, and the scale of that score. A higher score means more evidence for yes.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "check",
+            "founder-agent",
+            "person",
+            "accumulated",
+            "sequential"
+          ],
+          "description": "check: a deterministic check computes the score. founder-agent: the founder's own agent gives a confidence with its answer. person: a person rates on a scale. accumulated: a statistic over past outcomes. sequential: evidence added up over time until it crosses a boundary, as the standing rule's SPRT does."
+        },
+        "sensor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What produces the score: a module path, a model step id, a role or a person, as the kind needs."
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Where the signals come from, so every score can be traced to the records it was read from. Signals reach Naive as records, so each entry names a source of the venture and the records read there.",
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "records"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "source": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "description": "A source id from the venture's knowledge/sources.json, or venture for the venture's own folder"
+              },
+              "records": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The route of the records read there, such as product/bugs or evidence/[id]"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "scale": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The range and meaning of the score. Leave out a bound the score has none on.",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "meaning": {
+              "type": "string",
+              "description": "What the score is, such as a confidence from 0 to 1 or a log likelihood ratio."
+            }
+          }
+        },
+        "calibrated": {
+          "type": "boolean",
+          "default": false,
+          "description": "True when the score is a likelihood ratio, so a criterion can be derived from the costs and the base rate by formula. A raw confidence from a model is not calibrated."
+        }
+      }
+    },
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where the line is drawn on the score scale, or route person when every call goes to a person. With yes alone, a score at or above it is a yes call and any other score is a no. With yes and no, a score at or above yes is yes, a score at or below no is no, and a score between them is unsure and goes to a person. no must be below yes.",
+      "properties": {
+        "yes": {
+          "$ref": "#/$defs/line"
+        },
+        "no": {
+          "$ref": "#/$defs/line"
+        },
+        "route": {
+          "const": "person",
+          "description": "Every call goes to a person and no line is drawn. A one_way_door detector has this and nothing else."
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "yes"
+          ],
+          "not": {
+            "required": [
+              "route"
+            ]
+          }
+        },
+        {
+          "required": [
+            "route"
+          ],
+          "maxProperties": 1
+        }
+      ]
+    },
+    "costs": {
+      "type": "object",
+      "required": [
+        "hit",
+        "miss",
+        "false_alarm",
+        "correct_rejection",
+        "set_by"
+      ],
+      "additionalProperties": false,
+      "description": "What each of the four outcomes is worth, as positive amounts on one scale: hit and correct_rejection are the value of a right call, miss and false_alarm the cost of a wrong one. By default they come from the tier: 1 for each at low, and at costly a miss costs 3 and the rest 1. A person may set others. A one_way_door detector has none.",
+      "properties": {
+        "hit": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The value of saying yes when the answer was yes."
+        },
+        "miss": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The cost of saying no when the answer was yes."
+        },
+        "false_alarm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The cost of saying yes when the answer was no."
+        },
+        "correct_rejection": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The value of saying no when the answer was no."
+        },
+        "set_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The person who set the costs, or tier when they are the tier's defaults."
+        },
+        "decision": {
+          "type": "string",
+          "description": "The decision that set the costs, if any."
+        }
+      }
+    },
+    "base_rate": {
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false,
+      "description": "How often the true answer is yes.",
+      "properties": {
+        "source": {
+          "enum": [
+            "stated",
+            "ledger"
+          ],
+          "description": "stated: a person stated it in value. ledger: it is computed from the resolved trials in the ledger each time it is needed."
+        },
+        "value": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1,
+          "description": "stated only: the proportion of calls whose true answer is yes."
+        },
+        "set_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "stated only: the person who stated it."
+        }
+      },
+      "if": {
+        "properties": {
+          "source": {
+            "const": "stated"
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "then": {
+        "required": [
+          "value",
+          "set_by"
+        ]
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "required": [
+        "resolver",
+        "time_to_detect"
+      ],
+      "additionalProperties": false,
+      "description": "Who settles whether a call was right, and how long to wait for it.",
+      "properties": {
+        "resolver": {
+          "type": "object",
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "person",
+                "record",
+                "producer"
+              ],
+              "description": "person: a person decides, by name or role. record: a later record settles it, such as an accepted draft or a reverted write. producer: the code or agent that produced the judged write reports the outcome."
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The person or role, the record type, or the producer."
+            }
+          }
+        },
+        "time_to_detect": {
+          "type": "string",
+          "pattern": "^[0-9]+(s|m|h|d|w)$",
+          "description": "A number followed by s, m, h, d or w. A call with no resolution after this long counts as unresolved, not as right."
+        }
+      }
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "line": {
+      "type": "object",
+      "required": [
+        "value",
+        "set_by"
+      ],
+      "additionalProperties": false,
+      "description": "One criterion on the score scale.",
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "The score at the line."
+        },
+        "set_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The person who set it, or derived when Naive derived it from the costs and the base rate and a person accepted it."
+        },
+        "decision": {
+          "type": "string",
+          "description": "The decision that set or accepted it, if any."
+        }
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "tier": {
+        "const": "one_way_door"
+      }
+    },
+    "required": [
+      "tier"
+    ]
+  },
+  "then": {
+    "properties": {
+      "criterion": {
+        "required": [
+          "route"
+        ]
+      },
+      "costs": false
+    }
+  },
+  "else": {
+    "required": [
+      "costs"
+    ],
+    "properties": {
+      "criterion": {
+        "required": [
+          "yes"
+        ]
+      }
+    }
+  }
+}

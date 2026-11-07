@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "detector-trial.schema.json",
+  "title": "Detector trial",
+  "description": "One line of a detection ledger (<venture>/governance/detectors/<id>.trials.jsonl). A trial line is one call: the score, the criterion in force and the call. A resolution line comes later, names the trial and says how it turned out: hit, miss, false alarm or correct rejection. The file is append-only: each line carries the hash of the line before, as the provenance log does, so an edited or deleted line breaks the chain. Silence is no data: a trial with no resolution is unresolved. Design: docs/design/SIGNAL_DETECTION_2026-11-07.md.",
+  "type": "object",
+  "required": [
+    "kind",
+    "id",
+    "detector",
+    "at",
+    "prev",
+    "hash"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "enum": [
+        "trial",
+        "resolution"
+      ],
+      "description": "trial: a call was made. resolution: a call was settled."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "description": "The line's id, unique in the file."
+    },
+    "detector": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The id of the detector the line belongs to."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the call was made or settled."
+    },
+    "score": {
+      "type": "number",
+      "description": "trial only: the sensor's score."
+    },
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "trial only: the criterion in force when the call was made, copied from the detector: its lines as numbers, or route person.",
+      "properties": {
+        "yes": {
+          "type": "number"
+        },
+        "no": {
+          "type": "number"
+        },
+        "route": {
+          "const": "person"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "yes"
+          ],
+          "not": {
+            "required": [
+              "route"
+            ]
+          }
+        },
+        {
+          "required": [
+            "route"
+          ],
+          "maxProperties": 1
+        }
+      ]
+    },
+    "call": {
+      "enum": [
+        "yes",
+        "no",
+        "unsure"
+      ],
+      "description": "trial only: the call. unsure: the score fell between the two lines and went to a person. Under route person, the call is the person's."
+    },
+    "provenance": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "trial only: the hash of the provenance.jsonl line of the write the call judged, when it judged a write."
+    },
+    "trial": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "description": "resolution only: the id of the trial it settles."
+    },
+    "outcome": {
+      "enum": [
+        "hit",
+        "miss",
+        "false-alarm",
+        "correct-rejection"
+      ],
+      "description": "resolution only: hit, yes and right. miss, no and wrong. false-alarm, yes and wrong. correct-rejection, no and right."
+    },
+    "signal": {
+      "enum": [
+        "override",
+        "correction"
+      ],
+      "description": "resolution only: the signal from operating-rules.json that settled it, when one did."
+    },
+    "by": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "resolution only: who settled it, as the detector's resolver names.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "person",
+            "record",
+            "producer"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The person, the record that settled it (a venture-relative path), or the producer."
+        }
+      }
+    },
+    "note": {
+      "type": "string"
+    },
+    "prev": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64}|genesis)$",
+      "description": "The previous line's hash, or genesis for the first line."
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 of prev followed by this line without its hash field, as JSON with sorted keys."
+    }
+  },
+  "if": {
+    "properties": {
+      "kind": {
+        "const": "trial"
+      }
+    },
+    "required": [
+      "kind"
+    ]
+  },
+  "then": {
+    "required": [
+      "score",
+      "criterion",
+      "call"
+    ],
+    "properties": {
+      "trial": false,
+      "outcome": false,
+      "signal": false,
+      "by": false
+    }
+  },
+  "else": {
+    "required": [
+      "trial",
+      "outcome",
+      "by"
+    ],
+    "properties": {
+      "score": false,
+      "criterion": false,
+      "call": false,
+      "provenance": false
+    }
+  }
+}
