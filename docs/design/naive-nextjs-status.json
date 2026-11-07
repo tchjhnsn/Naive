@@ -242,7 +242,7 @@
    "evidence": [
     "packages/create-venture/index.mjs",
     "packages/create-venture/test.mjs",
-    "packages/naive/src/records/validate.py"
+    "packages/naive/src/records/validate.mjs"
    ],
    "page": "get-started/install",
    "note": "Every record type has a schema and every write is checked. The editor map in .vscode/settings.json stands in for a $schema field, which the schemas' additionalProperties would refuse"

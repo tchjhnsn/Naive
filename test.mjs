@@ -17,9 +17,8 @@ const root = new URL(".", import.meta.url).pathname;
 
 /** @type {Array<[string, string, string[]]>} */
 const steps = [
-  ["schema records are valid", "python3", ["-I", "packages/naive/src/records/validate.py"]],
-  ["schema records are valid without Python (validate.mjs)", "node", ["packages/naive/src/records/validate.mjs"]],
-  ["validate.mjs agrees with validate.py: same verdicts and failing paths on every record and its mutants", "node", ["packages/naive/src/records/validate-test.ts"]],
+  ["schema records are valid (validate.mjs)", "node", ["packages/naive/src/records/validate.mjs"]],
+  ["validate.mjs agrees with Python's jsonschema: same verdicts and failing paths on every record and its mutants", "node", ["packages/naive/src/records/validate-test.ts"]],
   ["checker tests (with cases that must fail)", "node", ["packages/naive/src/checks/test.mjs"]],
   ["ventures: examples", "node", ["packages/naive/src/checks/check-ventures.mjs", "packages/naive/src/records/examples/workspace"]],
   ["nouns", "node", ["packages/naive/src/checks/check-nouns.mjs"]],
@@ -114,7 +113,7 @@ const steps = [
   ["ontology catalog: one name@function scope per function, imports acyclic (term layer, L2), every term defined or imported; a cycle is printed and a missing term is an open item for its owning scope", "node", ["packages/naive/src/terms/catalog-test.ts"]],
   ["record types match the schemas (regenerate with node packages/naive/src/records/record-types.ts)", "node", ["packages/naive/src/records/record-types.ts", "--check"]],
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["packages/naive/src/records/record-types-test.ts"]],
-  ["record paths: every schema and data-model path goes through packages/naive/src/records, and packages/naive/src/records/validate.py agrees with it", "node", ["packages/naive/src/checks/check-record-paths.ts"]],
+  ["record paths: every schema and data-model path goes through packages/naive/src/records", "node", ["packages/naive/src/checks/check-record-paths.ts"]],
   ["record paths: the resolver resolves every schema, and the check breaks on copies that bypass it", "node", ["packages/naive/src/checks/check-record-paths-test.ts"]],
   ["knowledge connectors: contract evals", "node", ["packages/naive/src/store/connectors/eval.mjs"]],
   ["knowledge connectors through the router: router, catalog, matrix and attribute evals", "node", ["packages/naive/src/interfaces/tests/connectors-router-test.mjs"]],

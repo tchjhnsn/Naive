@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ALLOW, check, disagreements, RESOLVER, scan, staleAllow } from "./check-record-paths.ts";
+import { ALLOW, check, RESOLVER, scan, staleAllow } from "./check-record-paths.ts";
 import {
   APP_DATA_MODEL, dataModelFile, listSchemas, readDataModel, readSchema, RECORDS, recordPath, recordRelative, recordsIn, ROOT, schemaFile, schemaName, schemaNameOf,
 } from "../records/index.mjs";
@@ -22,13 +22,12 @@ const test = (name: string, fn: () => void): void => {
   console.log(`ok ${name}`);
 };
 
-/** A small repository on disk with the real resolver and packages/naive/src/records/validate.py copied in, plus the given files. */
+/** A small repository on disk with the real resolver copied in, plus the given files. */
 let copies = 0;
 function repo(files: Record<string, string>): { dir: string; paths: string[] } {
   const dir = join(tmp, `r${++copies}`);
   const all: Record<string, string> = {
     [RESOLVER]: readFileSync(join(root, RESOLVER), "utf8"),
-    "packages/naive/src/records/validate.py": readFileSync(join(root, "packages/naive/src/records/validate.py"), "utf8"),
     ...files,
   };
   for (const [path, text] of Object.entries(all)) {
@@ -71,7 +70,7 @@ try {
     assert.equal(recordRelative("./schema/venture.schema.json"), "venture.schema.json");
   });
 
-  test("schemaNameOf gives the name packages/naive/src/records/validate.py takes, and keeps another folder's path whole", () => {
+  test("schemaNameOf gives the name packages/naive/src/records/validate.mjs takes, and keeps another folder's path whole", () => {
     assert.equal(schemaNameOf("packages/naive/src/records/venture.schema.json"), "venture.schema.json");
     assert.equal(schemaNameOf("app/schemas/claim.schema.json"), "app/schemas/claim.schema.json");
   });
@@ -143,33 +142,12 @@ try {
       "b/name.mjs": `spawnSync("python3", [validator, "--schema", "venture.schema.json", "--file", f]);`,
       "b/message.mjs": "return { error: `does not match packages/naive/src/records/venture.schema.json, so nothing was written` };",
       "b/comment.mjs": `// load(join(repo, "packages/naive/src/records/data-model.json"))\n/* join(root, "schema", schema) */\n * "schema/" + name`,
-      "b/script.mjs": `spawnSync("node", [join(root, "schema", script), dir]);\nconst v = join(repo, "packages/naive/src/records/validate.py");`,
+      "b/script.mjs": `spawnSync("node", [join(root, "schema", script), dir]);\nconst v = join(repo, "packages/naive/src/records/validate.mjs");`,
       "b/field.mjs": `expect(fix.schema === "packages/naive/src/records/validation-problem.schema.json");\nconst note = { path: "packages/naive/src/records/handoff.schema.json" };`,
       "b/allowed.mjs": `const model = load(join(repo, "packages/naive/src/records/data-model.json"));`,
       "docs/design/preserved/old.mjs": `const model = load(join(repo, "packages/naive/src/records/data-model.json"));`,
     });
     assert.deepEqual(scan(r.dir, r.paths, { "b/allowed.mjs": "a fixture" }), []);
-  });
-
-  test("a resolver and packages/naive/src/records/validate.py that disagree fail, on the folder and on the prefixes", () => {
-    const folder = repo({});
-    const py = join(folder.dir, "packages/naive/src/records/validate.py");
-    writeFileSync(py, readFileSync(py, "utf8").replace(/^RECORDS_FOLDER = "packages\/naive\/src\/records"$/m, `RECORDS_FOLDER = "schema"`));
-    assert.match(disagreements(folder.dir).join("\n"), /the folder differs/);
-
-    const prefixes = repo({});
-    const js = join(prefixes.dir, RESOLVER);
-    writeFileSync(js, readFileSync(js, "utf8").replace(`Object.freeze(["packages/naive/src/records/", "schema/"])`, `Object.freeze(["packages/naive/src/records/"])`));
-    assert.match(disagreements(prefixes.dir).join("\n"), /the stored prefixes differ/);
-
-    assert.deepEqual(disagreements(repo({}).dir), []);
-  });
-
-  test("a mapping the check cannot find fails loudly rather than passing", () => {
-    const r = repo({});
-    const py = join(r.dir, "packages/naive/src/records/validate.py");
-    writeFileSync(py, readFileSync(py, "utf8").replace(/^RECORDS_FOLDER = .*$/m, ""));
-    assert.throws(() => disagreements(r.dir), /cannot find RECORDS_FOLDER/);
   });
 
   test("an allowlist entry for a file that is gone fails, so the list holds only live reasons", () => {

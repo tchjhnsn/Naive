@@ -24,7 +24,7 @@ Only the technical processes carry activities and tasks so far. The management, 
 
 ## Checks
 
-- `python3 packages/naive/src/records/validate.py` validates `catalog.json` against `packages/naive/src/records/sdlc-catalog.schema.json`.
+- `node packages/naive/src/records/validate.mjs` validates `catalog.json` against `packages/naive/src/records/sdlc-catalog.schema.json`.
 - `node packages/naive/src/checks/check-sdlc-catalog.ts` checks what the schema can't: unique process ids, clauses that match their group, decision classes and roles that exist, a function that is one of the 13 departments, a MAD module on every technical process MAD routes, and unique task references.
 
 Nothing sends MAD a method-request yet: the `--phase` projection prints what one would carry, but turning a venture's phase into a request is not built.

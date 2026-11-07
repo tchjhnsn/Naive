@@ -2333,7 +2333,7 @@ export type OntologyCatalogScope = {
   imports: string[];
 };
 
-/** The metamodel (M2) of Naive's ontology (N-048, EE-113). packages/naive/src/terms/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (python3 packages/naive/src/records/validate.py --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
+/** The metamodel (M2) of Naive's ontology (N-048, EE-113). packages/naive/src/terms/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (node packages/naive/src/records/validate.mjs --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
 export type OntologyMetamodel = OntologyMetamodelOntology;
 
 /** The ontology document, packages/naive/src/terms/ontology.json. */

@@ -6,7 +6,7 @@
 //   warnings: a logged file that has changed since its last entry, or is gone, so its later
 //     history is only in git; a derived_from path (not a URL or a decision id) that is not in the
 //     venture folder; time going backwards.
-// The schema of each line is checked by packages/naive/src/records/validate.py.
+// The schema of each line is checked by packages/naive/src/records/validate.mjs.
 //
 //   node packages/naive/src/checks/check-provenance.mjs <workspace or venture dir>
 //   node packages/naive/src/checks/check-provenance.mjs --package <handoff.json>

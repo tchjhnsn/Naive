@@ -13,7 +13,7 @@
 //                         manifests name a schema) to the absolute file; a path under another folder
 //                         ("app/schemas/claim.schema.json") resolves from the repository root
 //   listSchemas()         every schema file name in RECORDS, sorted
-//   schemaNameOf(stored)  a stored path to the name packages/naive/src/records/validate.py --schema takes
+//   schemaNameOf(stored)  a stored path to the name packages/naive/src/records/validate.mjs --schema takes
 //   venturePaths(record)  a venture-level record type's paths relative to a venture folder (VENTURE_PREFIX)
 //   recordsIn(root)       the same functions for another copy of the repository, such as a test's temp copy
 //                         (the EE_ROOT pattern of packages/naive/src/checks/check-data-model.mjs)
@@ -78,7 +78,7 @@ export function recordRelative(stored) {
   return prefix ? p.slice(prefix.length) : null;
 }
 
-/** The name packages/naive/src/records/validate.py's --schema takes for a stored path: the path with the record-types prefix taken
+/** The name packages/naive/src/records/validate.mjs's --schema takes for a stored path: the path with the record-types prefix taken
  *  off ("packages/naive/src/records/venture.schema.json" to "venture.schema.json"), or the path unchanged when it names another folder. */
 export function schemaNameOf(stored) {
   return recordRelative(stored) ?? String(stored);
