@@ -290,12 +290,12 @@ export const onCycle = (f: LinkGraph): Record<string, number[]> => {
 export const typedLink: Term<LinkGraph> = {
   id: "typed-link", form: "compound", label: "Typed link", level: "link", kind: "role",
   labels: sharedTerm("adapted", "seminal"),
-  meaning: "A link from one record to another whose type names how they relate, drawn from a closed set of standard relations: between ideas, broader, narrower, related, part-of, derived-from, builds_on, supports and contradicts; from an idea to its scope, creates, amends, appends_to and derives_from (packages/naive/src/terms/relations.ts, each mapped to SKOS, PROV-O, DCMI Terms, AIF and IBIS). Whether a link is well typed depends on the whole graph, since an ordering relation must not close a cycle, so the test runs on the whole: every type is in the closed set for its target, no idea links to itself, every target exists (a scope the idea creates may be new), and no cycle runs through broader (narrower read backwards), part-of or builds_on.",
+  meaning: "A link from one record to another whose type names how they relate, drawn from a closed set of standard relations: between ideas, broader, narrower, related, part-of, derived-from, builds-on, supports and contradicts; from an idea to its scope, creates, amends, appends-to and derives-from (packages/naive/src/terms/relations.ts, each mapped to SKOS, PROV-O, DCMI Terms, AIF and IBIS). Whether a link is well typed depends on the whole graph, since an ordering relation must not close a cycle, so the test runs on the whole: every type is in the closed set for its target, no idea links to itself, every target exists (a scope the idea creates may be new), and no cycle runs through broader (narrower read backwards), part-of or builds_on.",
   props: [
     { id: "T1", says: "every link's type is in the closed set for its target: an idea relation to an idea, a scope attachment to a scope", check: (f) => f.links.every((l) => known(l.type, l.target)), uses: [known, relationTable] },
     { id: "T2", says: "no idea links to itself", check: (f) => f.links.every((l) => l.target !== "idea" || l.from !== l.to) },
     { id: "T3", says: "every link names a target that exists, except a scope the idea creates", check: (f) => f.links.every((l) => resolves(f, l)), uses: [resolves, mayBeNew] },
-    { id: "T4", says: "no cycle runs through broader (narrower read backwards), part-of or builds_on", check: (f) => Object.values(onCycle(f)).every((vs) => vs.length === 0), uses: [onCycle, relationTable] },
+    { id: "T4", says: "no cycle runs through broader (narrower read backwards), part-of or builds-on", check: (f) => Object.values(onCycle(f)).every((vs) => vs.length === 0), uses: [onCycle, relationTable] },
   ],
   sources: [
     "Trigg, A Network-Based Approach to Text Handling for the Online Scientific Community (1983): typed links",

@@ -15,7 +15,7 @@
 //
 // Dependencies come from Jev (one typed question per ordered pair of ideas) when the platform hands
 // over its answers; otherwise from Naive's convention of which records build on which. Every edge is
-// typed: a dependency is relation builds_on. An idea may also state typed relations of its own
+// typed: a dependency is relation builds-on. An idea may also state typed relations of its own
 // (relations: [{ relation, to }], as an idea record does), and those are checked through the EE-095
 // term engine (term typed-link, packages/naive/src/terms/relations.ts) before anything is built. A rejected
 // relation stops the build.
@@ -81,7 +81,7 @@ export function conventionEdges(ideas) {
   return edges;
 }
 
-// Keeps the graph a DAG: edges are added strongest first. A repeat of an edge already kept (a stated builds_on that
+// Keeps the graph a DAG: edges are added strongest first. A repeat of an edge already kept (a stated builds-on that
 // the convention or Jev also gives) adds nothing, and one that would close a cycle is dropped.
 function acyclic(ids, edges) {
   const out = new Map(ids.map((i) => [i, new Set()]));
@@ -101,7 +101,7 @@ const sha = (s) => createHash("sha256").update(s).digest("hex");
 
 const relationsOf = (i) => (Array.isArray(i.relations) ? i.relations : []);
 // A graph written before edges were typed has no relation on its edges: every one of them was a dependency.
-const dependency = (e) => (e.relation ?? "builds_on") === "builds_on";
+const dependency = (e) => (e.relation ?? "builds-on") === "builds-on";
 
 /** The scopes an idea can attach to: every scope in packages/naive/src/terms/ontology-catalog.json, and shared. */
 export const catalogScopes = () => [...load(join(repo, "packages/naive/src/terms/ontology-catalog.json")).scopes.map((s) => s.scope), "shared"];
@@ -152,7 +152,7 @@ export function build(ideas, { answers = null, phase = "discovery", venture, sou
   } else raw = conventionEdges(ideas);
   // A stated relation reads "to relates to from", the way a dependency does: the arrow points at the idea that states it.
   const stated = ideas.flatMap((i) => relationsOf(i).map((r) => ({ from: r.to, to: i.id, p: 1, by: "stated", relation: r.relation })));
-  const { edges: deps, dropped } = acyclic(ids, [...stated.filter(dependency), ...raw.map((e) => ({ ...e, relation: "builds_on" }))]);
+  const { edges: deps, dropped } = acyclic(ids, [...stated.filter(dependency), ...raw.map((e) => ({ ...e, relation: "builds-on" }))]);
   const edges = [...deps, ...stated.filter((e) => !dependency(e))];
   const parents = new Map(ids.map((i) => [i, deps.filter((e) => e.to === i).map((e) => e.from)]));
   const children = new Map(ids.map((i) => [i, deps.filter((e) => e.from === i).map((e) => e.to)]));

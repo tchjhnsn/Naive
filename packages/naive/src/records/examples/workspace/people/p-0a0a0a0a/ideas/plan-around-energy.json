@@ -5,6 +5,6 @@
   "source": "a note",
   "status": "open",
   "importance": "high",
-  "relations": [{ "relation": "builds_on", "to": "learn-energy-from-past-weeks" }],
-  "scope": { "scope": "naive@products", "via": "appends_to" }
+  "relations": [{ "relation": "builds-on", "to": "learn-energy-from-past-weeks" }],
+  "scope": { "scope": "naive@products", "via": "appends-to" }
 }

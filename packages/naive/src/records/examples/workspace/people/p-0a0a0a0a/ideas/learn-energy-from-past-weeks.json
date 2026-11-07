@@ -5,5 +5,5 @@
   "source": "a note",
   "status": "open",
   "importance": "medium",
-  "scope": { "scope": "naive@products", "via": "derives_from" }
+  "scope": { "scope": "naive@products", "via": "derives-from" }
 }
