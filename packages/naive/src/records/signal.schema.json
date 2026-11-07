@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "signal.schema.json",
+  "title": "Signal",
+  "description": "One signal, an element of one signal type: an immutable, dated, content-addressed and rated statement that something happened outside the venture (signal library design, everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). It sits in a signal library at signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, or in a venture's local library at raw/signals/signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json, and is never edited. Names follow CloudEvents 1.0, except that the CloudEvents source is producer (Naive already uses source for a knowledge source) and data is props. The id is the first 24 hex characters of the sha256 of the canonical JSON of every other field (keys sorted at every level, no whitespace; packages/naive/src/core/signal-id.ts), so anyone can check offline that an address names fixed content. A correction is a new signal that retracts or supersedes an earlier one, never an edit. Nothing reads signals yet: the pull, render and replay are later build items.",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "producer",
+    "subject",
+    "time",
+    "observed",
+    "props",
+    "rating",
+    "cites"
+  ],
+  "additionalProperties": false,
+  "not": {
+    "required": [
+      "retracts",
+      "supersedes"
+    ]
+  },
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/address",
+      "description": "The signal's address: the first 24 hex characters of the sha256 of the canonical JSON of every other field"
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*@(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "The signal type and the version it was written against, as id@major.minor (competitor-funding@1.0)"
+    },
+    "producer": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*(/[a-z0-9][a-z0-9._-]*)*$",
+      "description": "Who published it, as a path (a library's publishing edge, or local/<person> for a signal a person emitted into the venture's local library). A listener may accept only some producer prefixes, and a retraction counts only from the same producer or from a person in the local library"
+    },
+    "subject": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "What the signal is about, as a slug (acme-robotics). It names the folder the signal sits in and fills [id] in the routes the type projects to"
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z)?$",
+      "description": "Valid time: when the thing happened, a date or a UTC timestamp. Projections fold signals in (time, id) order"
+    },
+    "observed": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$",
+      "description": "Transaction time: when the producer recorded it, a UTC timestamp"
+    },
+    "props": {
+      "type": "object",
+      "description": "The data, checked against the type's props schema. A composed part's props sit at the key the type names for it (org, round)"
+    },
+    "rating": {
+      "$ref": "#/$defs/rating"
+    },
+    "cites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/citation"
+      },
+      "description": "Where the producer saw it. May be empty for a signal a person states from their own knowledge"
+    },
+    "retracts": {
+      "$ref": "#/$defs/address",
+      "description": "The address of an earlier signal this one withdraws. At most one of retracts and supersedes"
+    },
+    "supersedes": {
+      "$ref": "#/$defs/address",
+      "description": "The address of an earlier signal this one replaces with corrected props. At most one of retracts and supersedes"
+    }
+  },
+  "$defs": {
+    "address": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{24}$",
+      "description": "A signal's id: 24 lowercase hex characters"
+    },
+    "rating": {
+      "type": "object",
+      "required": [
+        "reliability",
+        "credibility"
+      ],
+      "additionalProperties": false,
+      "description": "The NATO Admiralty code (STANAG 2511), computed in code by the producer",
+      "properties": {
+        "reliability": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"
+          ],
+          "description": "Source reliability: A completely reliable, B usually reliable, C fairly reliable, D not usually reliable, E unreliable, F reliability cannot be judged"
+        },
+        "credibility": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "description": "Information credibility: 1 confirmed by other sources, 2 probably true, 3 possibly true, 4 doubtful, 5 improbable, 6 truth cannot be judged"
+        }
+      }
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "required": [
+            "ref"
+          ]
+        }
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^https?://",
+          "description": "A public page"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Anything else a person can find again: a filing number, a conversation, a document id"
+        },
+        "title": {
+          "type": "string"
+        },
+        "accessed": {
+          "type": "string",
+          "format": "date",
+          "description": "The day the producer read it"
+        }
+      }
+    }
+  }
+}

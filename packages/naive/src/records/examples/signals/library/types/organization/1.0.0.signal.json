@@ -1,0 +1,39 @@
+{
+  "id": "organization",
+  "version": "1.0.0",
+  "title": "Organization",
+  "description": "A company a signal is about. A part that composite types compose at org; a listener for organization@^1 hears the org part of every one of them.",
+  "subject": "The organization's slug",
+  "props": {
+    "type": "object",
+    "required": ["name"],
+    "additionalProperties": false,
+    "properties": {
+      "name": { "type": "string" },
+      "domain": { "type": "string" }
+    }
+  },
+  "projects": [
+    {
+      "route": "competitors/[id]",
+      "once": true,
+      "fields": {
+        "name": { "reducer": "first", "value": "props.name" },
+        "domain": { "reducer": "first", "value": "props.domain" }
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "creates-the-master-record-once",
+      "given": [
+        { "subject": "acme-robotics", "time": "2026-11-05", "props": { "name": "Acme Robotics", "domain": "acme.example" } },
+        { "subject": "acme-robotics", "time": "2026-12-01", "props": { "name": "Acme Robotics Inc", "domain": "acme.example" } }
+      ],
+      "expect": {
+        "competitors/acme-robotics": { "id": "acme-robotics", "name": "Acme Robotics", "domain": "acme.example" }
+      },
+      "note": "The first name wins, and a record a person already wrote is never touched."
+    }
+  ]
+}

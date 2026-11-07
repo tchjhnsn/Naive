@@ -1,0 +1,28 @@
+{
+  "id": "funding-event",
+  "version": "1.0.0",
+  "title": "Funding event",
+  "description": "A round of funding. A part that competitor-funding composes at round.",
+  "props": {
+    "type": "object",
+    "required": ["series", "amount", "currency"],
+    "additionalProperties": false,
+    "properties": {
+      "series": { "enum": ["pre-seed", "seed", "series-a", "series-b", "series-c", "later", "debt", "grant"] },
+      "amount": { "type": "number", "minimum": 0 },
+      "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+    }
+  },
+  "projects": [],
+  "freshness": { "max_age": "30d" },
+  "cases": [
+    {
+      "id": "informs-listeners-only",
+      "given": [
+        { "subject": "acme-robotics", "time": "2026-11-05", "props": { "series": "seed", "amount": 3000000, "currency": "USD" } }
+      ],
+      "expect": {},
+      "note": "It projects nothing by itself; composites and edge listeners use it."
+    }
+  ]
+}

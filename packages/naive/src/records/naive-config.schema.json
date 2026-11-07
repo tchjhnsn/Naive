@@ -381,6 +381,31 @@
       "type": "array",
       "description": "What starts the next step on an event (packages/naive/src/router/orchestration/triggers.mjs)"
     },
+    "listeners": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "listener.schema.json"
+          },
+          {
+            "required": [
+              "consumer"
+            ]
+          }
+        ]
+      },
+      "description": "The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. Nothing merges or evaluates them yet"
+    },
+    "listeners_off": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "description": "Listener ids turned off, from any of the four places listeners come from"
+    },
     "product_lint": {
       "type": "object",
       "additionalProperties": false,

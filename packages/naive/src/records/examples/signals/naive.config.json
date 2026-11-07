@@ -1,0 +1,45 @@
+{
+  "listeners": [
+    {
+      "id": "track-competitors",
+      "hears": "competitor-funding@^1",
+      "consumer": { "route": "competitors/[id]/signals" },
+      "criterion": {
+        "rating": { "reliability": "C", "credibility": 3 },
+        "predicates": [
+          { "id": "known-competitor", "field": "subject", "op": "in", "value": { "ids": "competitors" }, "why": "Only companies a person or a signal already made a competitor" }
+        ]
+      },
+      "then": "project",
+      "note": "Records what the market did."
+    },
+    {
+      "id": "rival-raised",
+      "hears": "competitor-funding@^1",
+      "consumer": { "decision": "rival-raised" },
+      "criterion": {
+        "rating": { "reliability": "B", "credibility": 2 },
+        "predicates": [
+          { "id": "in-our-markets", "field": "props.org.domain", "op": "exists" },
+          { "id": "same-currency", "field": "props.round.currency", "op": "in", "value": { "read": "foundation/icp.json#currencies" } }
+        ]
+      },
+      "then": "propose",
+      "max_age": "14d",
+      "note": "Bears on when to raise, so it proposes a decision."
+    },
+    {
+      "id": "large-rounds-in-market",
+      "hears": "funding-event@^1",
+      "consumer": { "route": "market/rounds" },
+      "criterion": {
+        "predicates": [
+          { "id": "ten-million-or-more", "field": "props.amount", "op": "gte", "value": 10000000, "why": "Only rounds that move the market" }
+        ]
+      },
+      "then": "revalidate",
+      "note": "Hears the round part of every competitor-funding signal; a three million seed round is noise here."
+    }
+  ],
+  "listeners_off": []
+}

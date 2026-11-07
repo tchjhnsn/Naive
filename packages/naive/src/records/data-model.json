@@ -2141,6 +2141,130 @@
         "docs/design/term-harvest/*.json"
       ],
       "note": "Public seed list of terms for the term-harvest skill to run through the term engine (Grokbot handoff, 2026-11-01); public terms only, never a founder glossary"
+    },
+    {
+      "id": "signal-type",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "packages/naive/src/records/signal-type.schema.json",
+      "generator": "packages/naive/src/engine/generators/signal-type.ts",
+      "paths": [
+        "packages/naive/library/packages/*/signals/types/*/*.signal.json",
+        "packages/naive/src/records/examples/signals/library/types/*/*.signal.json"
+      ],
+      "refs": [
+        {
+          "field": "composes.type",
+          "to": "signal-type",
+          "checked_by": null
+        }
+      ],
+      "note": "One kind of signal, the component of a signal library: props, the parts it composes, how it folds into records (projects, from six fixed reducers), a default age bound and worked cases. A library ships it at types/<id>/<version>.signal.json; a Naive package ships open types under signals/types/, as the implicit library naive (signal library design, everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md)"
+    },
+    {
+      "id": "signal",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "packages/naive/src/records/signal.schema.json",
+      "generator": "packages/naive/src/engine/generators/signal.ts",
+      "kind": "record",
+      "paths": [
+        "instance/**/raw/signals/signals/*/*/*.json",
+        "packages/naive/src/records/examples/signals/library/signals/*/*/*.json"
+      ],
+      "refs": [
+        {
+          "field": "type",
+          "to": "signal-type",
+          "checked_by": null
+        },
+        {
+          "field": "retracts",
+          "to": "signal",
+          "checked_by": null
+        },
+        {
+          "field": "supersedes",
+          "to": "signal",
+          "checked_by": null
+        }
+      ],
+      "note": "One immutable, dated, content-addressed and rated signal, at signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json in a library. A venture's local library is raw/signals/, so a signal a person emits sits at raw/signals/signals/...; it is written once and never edited, and a correction is a new signal that retracts or supersedes it (signal library design, everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md)"
+    },
+    {
+      "id": "signal-log",
+      "layer": "knowledge",
+      "level": "venture",
+      "schema": "packages/naive/src/records/signal-log.schema.json",
+      "generator": "packages/naive/src/engine/generators/signal-log.ts",
+      "form": "json-lines",
+      "kind": "log",
+      "paths": [
+        "instance/**/raw/signals/log/*/*.jsonl",
+        "packages/naive/src/records/examples/signals/library/log/*/*.jsonl"
+      ],
+      "refs": [
+        {
+          "field": "id",
+          "to": "signal",
+          "checked_by": null
+        }
+      ],
+      "note": "A signal library's append-only day index, log/<type>/<yyyy-mm-dd>.jsonl: one line per signal published that day, so a pull reads only the days after its cursor"
+    },
+    {
+      "id": "signal-library",
+      "layer": "knowledge",
+      "level": "method",
+      "schema": "packages/naive/src/records/signal-library.schema.json",
+      "generator": "packages/naive/src/engine/generators/signal-library.ts",
+      "paths": [
+        "packages/naive/src/records/examples/signals/library/library.json"
+      ],
+      "note": "library.json at a signal library's root: its id, title, publisher, license and the layout contract naive-signal-library@1. It lists no types. A library is read in place as a source with carries signals; it lives outside the venture, so only the example is in this repository"
+    },
+    {
+      "id": "competitor",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "packages/naive/src/records/competitor.schema.json",
+      "generator": "packages/naive/src/engine/generators/competitor.ts",
+      "paths": [
+        "instance/**/competitors/*.json",
+        "packages/naive/src/records/examples/signals/competitors/*.json"
+      ],
+      "note": "A person's master record for one competitor (Porter 1980). The signal projector may create it once from a signal's organization part and never writes it again"
+    },
+    {
+      "id": "competitor-signals",
+      "layer": "purpose",
+      "level": "venture",
+      "schema": "packages/naive/src/records/competitor-signals.schema.json",
+      "generator": "packages/naive/src/engine/generators/competitor-signals.ts",
+      "kind": "record",
+      "writer": "projection",
+      "paths": [
+        "instance/**/competitors/*/signals.json",
+        "packages/naive/src/records/examples/signals/competitors/*/signals.json"
+      ],
+      "refs": [
+        {
+          "field": "competitor",
+          "to": "competitor",
+          "checked_by": null
+        },
+        {
+          "field": "funding.signal",
+          "to": "signal",
+          "checked_by": null
+        },
+        {
+          "field": "launches.signal",
+          "to": "signal",
+          "checked_by": null
+        }
+      ],
+      "note": "What signals say about one competitor, rendered by the signal projector from the signals salient for it. Only the projector writes it; a person corrects it by emitting a superseding signal"
     }
   ],
   "ignore": [

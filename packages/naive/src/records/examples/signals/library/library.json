@@ -1,0 +1,8 @@
+{
+  "id": "market-example",
+  "title": "Example market signal library",
+  "publisher": "Naive examples",
+  "contract": "naive-signal-library@1",
+  "license": "CC0-1.0",
+  "note": "An example of the naive-signal-library@1 layout, with made-up companies. A real library lives outside the venture and is listed in knowledge/sources.json with carries signals."
+}

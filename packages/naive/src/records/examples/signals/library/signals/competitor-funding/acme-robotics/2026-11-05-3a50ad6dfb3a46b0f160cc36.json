@@ -1,0 +1,30 @@
+{
+  "id": "3a50ad6dfb3a46b0f160cc36",
+  "type": "competitor-funding@1.0",
+  "producer": "market-example/research",
+  "subject": "acme-robotics",
+  "time": "2026-11-05",
+  "observed": "2026-11-06T09:30:00Z",
+  "props": {
+    "org": {
+      "name": "Acme Robotics",
+      "domain": "acme.example"
+    },
+    "round": {
+      "series": "seed",
+      "amount": 3000000,
+      "currency": "USD"
+    }
+  },
+  "rating": {
+    "reliability": "B",
+    "credibility": 2
+  },
+  "cites": [
+    {
+      "url": "https://acme.example/news/seed",
+      "title": "Acme Robotics raises a seed round",
+      "accessed": "2026-11-06"
+    }
+  ]
+}

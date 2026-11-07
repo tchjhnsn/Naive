@@ -25,7 +25,11 @@
     "judgment",
     "systems-catalog",
     "glossary",
-    "term-list"
+    "term-list",
+    "signal-type",
+    "signal",
+    "signal-log",
+    "signal-library"
   ],
   "reads": [
     "venture",

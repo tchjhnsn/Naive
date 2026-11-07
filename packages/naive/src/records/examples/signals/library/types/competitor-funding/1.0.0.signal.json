@@ -1,0 +1,49 @@
+{
+  "id": "competitor-funding",
+  "version": "1.0.0",
+  "title": "Competitor funding",
+  "description": "A company raised a round of funding.",
+  "subject": "The organization's slug",
+  "props": {
+    "type": "object",
+    "required": ["org", "round"],
+    "additionalProperties": false,
+    "properties": {
+      "org": { "type": "object" },
+      "round": { "type": "object" }
+    }
+  },
+  "composes": [
+    { "at": "org", "type": "organization@^1" },
+    { "at": "round", "type": "funding-event@^1" }
+  ],
+  "projects": [
+    {
+      "route": "competitors/[id]/signals",
+      "fields": {
+        "funding": { "reducer": "append", "value": "props.round", "unique_by": ["props.round.series"] },
+        "first_seen": { "reducer": "min", "value": "time" },
+        "last_seen": { "reducer": "max", "value": "time" }
+      }
+    }
+  ],
+  "freshness": { "max_age": "90d" },
+  "cases": [
+    {
+      "id": "one-round-twice-reported",
+      "given": [
+        { "subject": "acme-robotics", "time": "2026-11-05", "props": { "org": { "name": "Acme Robotics", "domain": "acme.example" }, "round": { "series": "seed", "amount": 3000000, "currency": "USD" } } },
+        { "subject": "acme-robotics", "time": "2026-11-06", "props": { "org": { "name": "Acme Robotics" }, "round": { "series": "seed", "amount": 3000000, "currency": "USD" } } }
+      ],
+      "expect": {
+        "competitors/acme-robotics/signals": {
+          "competitor": "acme-robotics",
+          "first_seen": "2026-11-05",
+          "last_seen": "2026-11-06",
+          "funding": [{ "series": "seed", "amount": 3000000, "currency": "USD", "support": "supported" }]
+        }
+      },
+      "note": "Two producers report the same seed round: it is listed once. The test fills each entry's signal with the address of the first signal that reported it."
+    }
+  ]
+}
