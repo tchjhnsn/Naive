@@ -2525,6 +2525,11 @@ export type MoneySummary = {
 /** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.mjs <venture dir> checks it. */
 export type NaiveConfig = {
   $schema?: string;
+  /** Autoresearch over the venture's recipes (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). */
+  research?: {
+    /** The share of noise receptions surfaced anyway and marked as probes, so a recipe can be scored on signals the current one never surfaced (packages/naive/src/engine/recipes/probes.ts). 0 by default, because probes cost attention. Marking probes in reception files is build plan item 9 (not built). */
+    probe_rate?: number;
+  };
   /** Traces in the venture's files (EE-121): true writes one span per step of an agent run to traces/<session>.jsonl, hash-chained and linked from provenance. content keeps inputs and outputs too, redacted; off by default because a trace is internal. Off by default. */
   traces?: boolean | {
     spans?: boolean;
@@ -3642,7 +3647,7 @@ export type RawSource = {
   fetched?: string;
 };
 
-/** Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Noise stored beside the record"). Only the projector writes it. Each heard signal is salient or noise for this record, with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. Nothing writes it yet: rendering through recipes is build plan item 9. */
+/** Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Noise stored beside the record"). Only the projector writes it. Each heard signal is salient or noise for this record (a noise reception the venture probed is marked with its rate), with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. Nothing writes it yet: rendering through recipes is build plan item 9. */
 export type Reception = {
   $schema?: string;
   /** The record these receptions are for, as a logical path in the venture */
@@ -3667,6 +3672,11 @@ export type ReceptionReception = {
     predicate?: string;
     why: string;
   }[];
+  /** On a noise reception only: the signal was surfaced to a person anyway, drawn deterministically from the record's path and the signal's id below the probe rate, so its outcome can score a recipe that would surface it, weighted by one over the rate (packages/naive/src/engine/recipes/probes.ts) */
+  probe?: {
+    /** The probe rate it was drawn at (research.probe_rate in naive.config.json), which is the chance it was surfaced */
+    rate: number;
+  };
   /** The signal's valid time */
   time: ReceptionValidTime;
   /** The signal's transaction time */
@@ -3713,7 +3723,7 @@ export type Recipe = {
       [key: string]: string;
     };
   };
-  /** The recipe's tunable values. A knob search (naive recipes search, not built) steps each one; a model edit may add or remove them */
+  /** The recipe's tunable values. A knob search (naive recipes search) steps each number, boolean and rating floor; a model edit may add or remove them */
   knobs: {
     [key: string]: RecipeKnob;
   };

@@ -30,6 +30,13 @@ How a recipe is scored ("The metric", "The eval plan" and "Noise stored beside t
 
 `naive recipes check <pattern>` runs the venture's recipe on the plan's training rows in the sandbox, with the inputs a render would give it at each point: every heard signal about the subject observed by t, in (time, id) order, withdrawn as known at t, and the frozen facts. It prints each row's loss and field losses, the settled loss beside the plain fold's, and every noise disagreement; `--json` adds the settled and predicted records. It exits 1 on a failure or a disagreement.
 
+### Knobs and probes (build plan item 10)
+
+"With no model (graft: knob search)" and the optional probes in "Noise stored beside the record" in the design.
+
+- **Knobs.** `knobs.ts` reads the `export const knobs = { ... }` literal from a recipe's source (types stripped first, so positions hold): each knob written as a literal number, quoted string, boolean or list of them, with the span of its value. A knob written any other way is skipped with why, and a spread, a computed name or a shorthand refuses the whole literal. `setKnob` replaces one value and leaves every other byte as it was; a number is written to six significant digits. `stepsOf(value, factor)` gives one step each way: a number is multiplied and divided by the factor (2 unless a search says otherwise), an integer stays an integer and moves by at least 1, 0 steps to 1 and -1, and a fraction strictly between 0 and 1 stays within 0 and 1; a boolean has one step, the other value; an Admiralty rating floor steps one grade looser and one stricter on both scales (B2 to C3 and A1). Any other string, and a list, has no step. `naive recipes search <pattern>` writes the steps through the router (`packages/naive/src/router/orchestration/recipe-search.ts`), because a step is an experiment write.
+- **Probes.** `probes.ts` decides which noise a consumer surfaces anyway. `research.probe_rate` in `naive.config.json` (0 to 1, and 0 by default because probes cost attention) is the share; a signal is probed when the first 52 bits of sha256 of the record's path and the signal's id, as a share, fall below it, so the probed share does not move when the recipe changes, a higher rate probes every signal a lower one did, and two records that hear one signal draw apart. `markProbes` adds `probe: { rate }` to each probed noise reception, which `reception.schema.json` allows on noise only. A reception's propensity is 1 when salient, the rate when probed noise, and 0 otherwise. `ipwEstimate(logged, surfaces)` estimates a candidate recipe's mean outcome from what a current one logged: each surfaced signal with an outcome that the candidate also surfaces counts with weight one over its propensity (Horvitz and Thompson), beside the self-normalized mean and Kish's effective sample size, so a recipe that would surface what the current one calls noise is scored on the probes. The pull marking probes in reception files and the outcomes of probed signals (what a person made of each) are not built: build plan item 9 writes reception files.
+
 ## Where things are
 
 | Path | Holds |
@@ -43,12 +50,17 @@ How a recipe is scored ("The metric", "The eval plan" and "Noise stored beside t
 | [`cli.ts`](./cli.ts) | `naive recipes plan` and `naive recipes check`. |
 | [`scoring-test.ts`](./scoring-test.ts) | The pure tests: losses, Brier, the bootstrap and verdict, and outcomes only people and producers resolve. |
 | [`eval-set-test.ts`](./eval-set-test.ts) | The verifier on temporary ventures: windows purged, an agent's write resolves nothing, the verdict the same over two runs; plan refuses an agent; a throw and noise that is not each fail. |
+| [`knobs.ts`](./knobs.ts) | Pure. `knobsIn(source)`, `setKnob(source, name, value)`, `formatKnob` and `stepsOf(value, factor)`. |
+| [`probes.ts`](./probes.ts) | `probeRate(dir)` from `naive.config.json`, and pure: `draw`, `probed`, `markProbes`, `propensity` and `ipwEstimate`. |
+| [`knobs-test.ts`](./knobs-test.ts) | Reading knobs (types, comments, skipped and refused literals), rewriting one value byte for byte, and every kind of step. |
+| [`probes-test.ts`](./probes-test.ts) | The rate and its schema, the draw's share and stability, the mark and the reception schema, propensities, and the estimate recovering a known mean from a 20 percent probe while no probe scores nothing. |
 | [`fixtures/signals.recipe.ts`](./fixtures/signals.recipe.ts) | The design's example recipe, `competitors/[id]/signals`, with knobs. |
 
 ## Run and test
 
 - `node packages/naive/src/engine/recipes/scoring-test.ts` tests the losses, Brier, the seeded bootstrap and the verdict, and that only people and producers settle a claim. `node packages/naive/src/engine/recipes/eval-set-test.ts` plans on temporary ventures with two signal libraries and proves the item's verifier: the windows are purged (each training row settles from the signals observed by `read_cut` alone, and a short gap is refused), an agent's local signal changes no settled record or outcome while a person's does, and the dev verdict is identical over two runs and when the set is read again; it also shows a keep as better, a keep as smaller, a discard, a throw and a noise disagreement failing, and `naive recipes plan` refusing an agent. `node test.mjs` runs both.
 - `node packages/naive/src/engine/recipes/sandbox-test.ts` renders the example recipe; shows the clock, randomness, `new Function` and `eval`, static and dynamic imports, an endless loop (killed at the wall time, and by the per-call limit, also in a microtask), state between calls, the heap cap, the file system (`require`, `process`) and the environment (`process.env`, `Intl`) each fail closed; checks the lint and the reception coverage; and times 1,000 calls with 40 signals each in one child (about 1.5 to 3 seconds on Node 22.23). `node test.mjs` runs it.
+- `node packages/naive/src/engine/recipes/knobs-test.ts` and `node packages/naive/src/engine/recipes/probes-test.ts` test knobs and probes. The search is tested end to end by `node packages/naive/src/interfaces/tests/recipe-search-test.ts`. `node test.mjs` runs all three.
 
 ## How it connects
 
@@ -59,7 +71,7 @@ How a recipe is scored ("The metric", "The eval plan" and "Noise stored beside t
 
 ## Not built
 
-- `naive recipes init` and `search`, holdout checks, and anything that writes reception files are not built: autoresearch build plan items 7 to 10. The cross-file check of what exists, `packages/naive/src/checks/check-recipes.ts`, is built (item 11).
+- `naive recipes init`, holdout checks, and anything that writes reception files (so marking probes in them too) are not built: autoresearch build plan items 8 and 9. The cross-file check of what exists, `packages/naive/src/checks/check-recipes.ts`, is built (item 11).
 - Forecasts resolved by a person's decision have outcome null, a plan for a pattern without `[id]`, and libraries in connectors other than filesystem are not built. Their schemas exist (item 3, `packages/naive/src/records/recipe.schema.json`, `eval-plan.schema.json`, `experiment.schema.json` and `reception.schema.json`), and the data model's recipe record type covers this folder's fixture.
 - Record and reception types generated from JSON Schema through `naive typegen`; the fixture and the example recipe in `packages/naive/src/records/examples/signals/` declare their own types.
 - Type stripping needs Node 22.13 or later. On an older Node every recipe fails closed with that reason.

@@ -9,6 +9,19 @@
     "$schema": {
       "type": "string"
     },
+    "research": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Autoresearch over the venture's recipes (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md).",
+      "properties": {
+        "probe_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The share of noise receptions surfaced anyway and marked as probes, so a recipe can be scored on signals the current one never surfaced (packages/naive/src/engine/recipes/probes.ts). 0 by default, because probes cost attention. Marking probes in reception files is build plan item 9 (not built)."
+        }
+      }
+    },
     "traces": {
       "description": "Traces in the venture's files (EE-121): true writes one span per step of an agent run to traces/<session>.jsonl, hash-chained and linked from provenance. content keeps inputs and outputs too, redacted; off by default because a trace is internal. Off by default.",
       "oneOf": [
