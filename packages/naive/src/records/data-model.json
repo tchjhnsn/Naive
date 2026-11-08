@@ -1112,6 +1112,36 @@
       "note": "Execution folded into operations (EE-038)."
     },
     {
+      "id": "lead-plan",
+      "layer": "operations",
+      "function": null,
+      "level": "venture",
+      "schema": "packages/naive/src/records/lead-plan.schema.json",
+      "generator": "packages/naive/src/engine/generators/lead-plan.ts",
+      "paths": [
+        "instance/**/operations/leads/*.json",
+        "packages/naive/src/records/examples/**/operations/leads/*.json"
+      ],
+      "refs": [
+        {
+          "field": "lead",
+          "to": "role-template",
+          "checked_by": "packages/naive/src/checks/check-team.mjs"
+        },
+        {
+          "field": "measures",
+          "to": "telos",
+          "checked_by": "packages/naive/src/checks/check-team.mjs"
+        },
+        {
+          "field": "bets[].handoffs",
+          "to": "handoff",
+          "checked_by": "packages/naive/src/checks/check-team.mjs"
+        }
+      ],
+      "note": "One lead's plan (lead agents design, build plan item 3): its portfolio, the telos measures it is bound to, its bets citing measure and handoff ids, and its review cadence. A lead spans functions, so the type names none (function null). Route operations/lead/[id]; the file name avoids *.plan.json, which evidence/eval-plan matches"
+    },
+    {
       "id": "activity",
       "layer": "operations",
       "function": "service-delivery",
@@ -1955,6 +1985,9 @@
         "packages/naive/template/governance/roles/marketing-lead.json",
         "packages/naive/template/governance/roles/finance-lead.json",
         "packages/naive/template/governance/roles/finance-agent.json",
+        "packages/naive/template/governance/roles/growth-lead.json",
+        "packages/naive/template/governance/roles/product-lead.json",
+        "packages/naive/template/governance/roles/strategy-lead.json",
         "packages/naive/template/governance/roles/validation-lead.json",
         "packages/naive/template/governance/roles/people-lead.json",
         "packages/naive/template/governance/roles/counsel.json"

@@ -205,6 +205,18 @@ def «role» : Concept Placement := ⟨[
 def «teamPlan» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
+/-- [D] lead (proposed). A role over a portfolio of functions, bound to one or more telos measures, that plans and verifies the venture's cross-function work. It reads every record and writes only its lead plan, decisions and handoffs; work on a function's records goes to that function's agent through a handoff the lead requested and verifies, so the builder is never the verifier. It holds no one-way door and no never-redelegated class. A lead is not a function: the template ships four (growth-lead, product-lead, finance-lead, strategy-lead; lead agents design, 2026-11-08). Standard: portfolio management (PMI, The Standard for Portfolio Management); accountable role in RACI. Fields: broader ["role"]; handoff_type false. -/
+def «lead» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] portfolio (proposed). The functions, ids in departments.json, whose cross-function work one lead plans and verifies. The leads' portfolios cover every function exactly once (check-delegation.mjs). Never a venture's set of products, whose places are portfolio roles. Standard: portfolio (PMI, The Standard for Portfolio Management): components managed together to meet strategic objectives. Fields: broader ["relationship"]; handoff_type false. -/
+def «portfolio» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
+/-- [D] lead plan (proposed). One lead's plan at operations/leads/<lead>.json (route operations/lead/[id]): its portfolio, the telos measures it is accountable for, its bets in priority order, each citing measure ids and handoff ids, and its review cadence. A lead with no plan binding a measure is refused by check-team.mjs. Standard: portfolio roadmap (PMI); objectives and key results (Doerr 2018) in spirit, with telos measures as the objectives. Fields: broader ["information artifact"]; handoff_type false. -/
+def «leadPlan» : Concept Placement := ⟨[
+  ("level operations", fun f => Decidable.decide (f.level = Level.«operations»))]⟩
+
 /-- [D] human loop (new). The person who decides, reviews or does the part of a task that agents cannot, may not, or are not known to do; named for every such agent task. Standard: human-in-the-loop (common AI usage). Fields: broader ["role"]; handoff_type false. -/
 def «humanLoop» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩

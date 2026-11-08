@@ -1,0 +1,26 @@
+{
+  "id": "strategy-lead",
+  "name": "Strategy lead",
+  "function": "all",
+  "portfolio": [
+    "strategy",
+    "capabilities",
+    "human-capital",
+    "external-relationships"
+  ],
+  "default_measure_kinds": [
+    "primary",
+    "learning",
+    "impact"
+  ],
+  "description": "Plans and verifies cross-function work for strategy, capabilities, human capital and external relationships: the telos and focus against everything else, org design, and what investors hear. A lead reads every record and writes only its lead plan (operations/lead/strategy-lead), decisions and handoffs; it never writes a function's records (lead agents design, 2026-11-08).",
+  "grantable_classes": [
+    "accept-verified-work",
+    "defer-or-route",
+    "set-priorities"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "founder",
+  "skill": "packages/naive/src/functions/strategy/skills/telos/SKILL.md"
+}

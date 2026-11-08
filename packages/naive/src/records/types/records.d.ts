@@ -2354,6 +2354,34 @@ export type Layer = {
   name: string;
 };
 
+/** One lead's plan (lead agents design, "Who writes what"), at operations/leads/<lead>.json (route operations/lead/[id]); the file name avoids *.plan.json, which the evidence/eval-plan route matches. A lead is a role with a portfolio (packages/naive/template/governance/roles/<lead>.json). The plan names the lead, the functions of its portfolio it plans for, the telos measures it is bound to (foundation/telos measures[].id), its current bets, each citing measure ids and handoff ids, and how often it reviews them. A lead writes only this plan, decisions/* and operations/handoff/*; packages/naive/src/checks/check-team.mjs refuses a lead in a team plan with no plan binding a measure. */
+export type LeadPlan = {
+  /** The lead's role id, a role template with a portfolio; the file name without .json */
+  lead: string;
+  /** The functions this lead plans for, ids in packages/naive/src/functions/departments.json; within its role template's portfolio */
+  portfolio: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
+  /** The telos measure ids (foundation/telos measures[].id) this lead is accountable for. One accountable lead per measure (lead agents design, default 1) */
+  measures: string[];
+  /** What the lead is betting on now, in priority order; a lead granted set-priorities over its plan reorders them without a person (default 4) */
+  bets: {
+    id: string;
+    /** The bet in a sentence: what the lead expects the work to move */
+    statement: string;
+    /** The measure ids it serves, from the plan's measures */
+    measures: string[];
+    /** The handoff ids (operations/handoffs/<id>.json) that carry its work, one per function involved */
+    handoffs: string[];
+    status: "proposed" | "active" | "done" | "dropped";
+  }[];
+  /** How often the lead reviews its bets against its measures */
+  review_cadence: "weekly" | "fortnightly" | "monthly" | "quarterly";
+  /**
+   * The date of the next review
+   * @format date
+   */
+  next_review?: string;
+};
+
 /** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
 export type LifecyclePlaybook = {
   id: string;
@@ -3933,8 +3961,12 @@ export type RoleTemplate = {
   aliases?: string[];
   /** True for the founder only: the root of every delegation chain */
   chief_delegator?: boolean;
-  /** The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator only. packages/naive/src/checks/check-delegation.mjs fails on any other value */
+  /** The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator and for a lead (a role with a portfolio). packages/naive/src/checks/check-delegation.mjs fails on any other value */
   function: string;
+  /** A lead only (lead agents design, 2026-11-08): the functions, ids in packages/naive/src/functions/departments.json, whose cross-function work this lead plans and verifies. A role with a portfolio is a lead: its function is all, it may be granted no never-redelegated class and no one-way door, and the leads' portfolios cover every function exactly once (packages/naive/src/checks/check-delegation.mjs) */
+  portfolio?: string[];
+  /** A lead only: the telos measure kinds it is bound to by default (primary means the telos's primary measure). A venture binds the lead to concrete measure ids in its lead plan (operations/lead/[id]); the defaults only route a task whose measure no lead plan binds (packages/naive/src/engine/route-task.ts) */
+  default_measure_kinds?: ("primary" | "revenue" | "usage_or_adoption" | "cost_or_time_saved" | "compliance_met" | "learning" | "flow_and_lead_time" | "impact")[];
   description?: string;
   /** Decision classes (from decision-rights.json) this role may be granted; the chief delegator lists none, since it holds all */
   grantable_classes: string[];

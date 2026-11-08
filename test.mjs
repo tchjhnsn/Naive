@@ -128,6 +128,7 @@ const steps = [
   ["check-signals: Naive's packages and the example library (types, worked cases, signals, the day log, listeners)", "node", ["packages/naive/src/checks/check-signals.ts"]],
   ["check-signals breaks on copies: each rule of signal libraries, types and listeners", "node", ["packages/naive/src/checks/check-signals-test.ts"]],
   ["competitors package: its open signal types and listeners hold together, its projections write records it owns, and every worked case matches its type and its records", "node", ["packages/naive/src/checks/competitors-package-test.ts"]],
+  ["routing a classified task (lead agents rules 1 to 5): a one-way door or never-redelegated class to a person, one function to its agent, one portfolio to its lead, across portfolios to the lead accountable for the measure or else a person", "node", ["packages/naive/src/engine/route-task-test.ts"]],
   ["detection arithmetic: Macmillan and Creelman worked examples, Wilson intervals, ROC area equals 2AFC, best criterion is an observed score", "node", ["packages/naive/src/engine/detection-test.ts"]],
   ["thresholds as detectors: shipped defaults hold today's constants, a venture's detector file moves the line, overrides keep precedence, yes_when below matches the gate", "node", ["packages/naive/src/engine/detectors-test.ts"]],
   ["founders before ventures: opaque ids, ideas, references, inspirations, _private/ secrets, only the founder confirms", "node", ["packages/naive/src/engine/founders-test.ts"]],

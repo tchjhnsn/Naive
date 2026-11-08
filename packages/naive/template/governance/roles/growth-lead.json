@@ -1,0 +1,23 @@
+{
+  "id": "growth-lead",
+  "name": "Growth lead",
+  "function": "all",
+  "portfolio": [
+    "marketing-and-sales",
+    "customer-service"
+  ],
+  "default_measure_kinds": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "description": "Plans and verifies cross-function work for marketing and sales and customer service: promises made at sale against what products and service can deliver. A lead reads every record and writes only its lead plan (operations/lead/growth-lead), decisions and handoffs; it never writes a function's records (lead agents design, 2026-11-08).",
+  "grantable_classes": [
+    "accept-verified-work",
+    "defer-or-route",
+    "set-priorities"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "founder",
+  "skill": "packages/naive/library/packages/marketing/skill/SKILL.md"
+}
