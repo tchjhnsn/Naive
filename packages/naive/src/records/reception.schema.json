@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "reception.schema.json",
   "title": "Receptions",
-  "description": "Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"Noise stored beside the record\"). Only the projector writes it. Each heard signal is salient or noise for this record, with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. Nothing writes it yet: rendering through recipes is build plan item 9.",
+  "description": "Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"Noise stored beside the record\"). Only the projector writes it. Each heard signal is salient or noise for this record (a noise reception the venture probed is marked with its rate), with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. Nothing writes it yet: rendering through recipes is build plan item 9.",
   "type": "object",
   "required": [
     "record",
@@ -67,8 +67,17 @@
       },
       "else": {
         "not": {
-          "required": [
-            "failed"
+          "anyOf": [
+            {
+              "required": [
+                "failed"
+              ]
+            },
+            {
+              "required": [
+                "probe"
+              ]
+            }
           ]
         }
       },
@@ -111,6 +120,22 @@
             }
           },
           "description": "On a noise reception, every reason the recipe gave"
+        },
+        "probe": {
+          "type": "object",
+          "required": [
+            "rate"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "rate": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "description": "The probe rate it was drawn at (research.probe_rate in naive.config.json), which is the chance it was surfaced"
+            }
+          },
+          "description": "On a noise reception only: the signal was surfaced to a person anyway, drawn deterministically from the record's path and the signal's id below the probe rate, so its outcome can score a recipe that would surface it, weighted by one over the rate (packages/naive/src/engine/recipes/probes.ts)"
         },
         "time": {
           "$ref": "#/$defs/valid_time",

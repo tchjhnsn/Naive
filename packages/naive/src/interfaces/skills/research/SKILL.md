@@ -62,5 +62,6 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 | Eval sets, scoring, plans and the check command | built (`naive recipes`) |
 | The recipe write route with its base sha and verdict | built (`recipes/<pattern>`) |
 | Accept with the holdout check, and the forward monitor | not built (build plan item 8) |
-| Knob search with no model | not built (build plan item 10) |
+| Knob search with no model | built (`naive recipes search <pattern>`, `packages/naive/src/router/orchestration/recipe-search.ts`) |
+| Probes: a share of noise surfaced anyway and scored by inverse propensity | the draw, the mark and the estimate are built (`packages/naive/src/engine/recipes/probes.ts`); marking them in reception files is not built (build plan item 9) |
 | The unattended loop with spend limits | Mentura, not built |
