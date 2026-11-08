@@ -314,6 +314,12 @@ for (const [name, change, pattern] of /** @type {[string, (d: string) => void, R
   ["a json-lines record type that is not a log fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { delete m.records.find((r) => r.id === "provenance").kind; }), /provenance: kind record with form json-lines/],
   ["a log record type that is not json-lines fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "venture").kind = "log"; }), /venture: kind log with form json/],
   ["a files entry that disagrees with a record type's kind fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.files.push({ path: "instance/**/provenance.jsonl", kind: "record", reason: "test" }); }), /provenance.jsonl: the data model gives it more than one kind/],
+  ["a record type with an unknown function id fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "goal").function = "marketing"; }), /goal: function marketing is not an id in packages\/naive\/src\/functions\/departments.json/],
+  ["a record type that names no function fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { delete m.records.find((r) => r.id === "goal").function; }), /goal: names no function/],
+  ["a record type in another function's package folder fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "goal").function = "finance"; }), /goal: function finance, but its records sit in foundation\/, which strategy owns/],
+  ["a method record type under another function's folder fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "sdlc-catalog").function = null; }), /sdlc-catalog: lives under packages\/naive\/src\/functions\/products\/, so its function is products/],
+  ["a record type that disagrees with its owning package's function fails", (d) => edit(join(d, "packages/naive/library/packages/fund/package.json"), (p) => { p.department = "strategy"; }), /fund-thesis: function finance, but package fund that owns it is strategy/],
+  ["a data model schema whose function list drifts from departments.json fails", (d) => edit(join(d, "packages/naive/src/functions/departments.json"), (c) => { c.departments.find((x) => x.id === "it").id = "information-technology"; }), /function it is not an id in packages\/naive\/src\/functions\/departments.json/],
 ])) {
   const d = copy(`dm${++n}`);
   change(d);

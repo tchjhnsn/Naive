@@ -390,6 +390,8 @@ export type DataModel = {
     confidential?: boolean;
     /** The owning layer, or system for records every layer shares */
     layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
+    /** The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.mjs checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null */
+    function: "strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities" | null;
     /** method: this repo's own records; workspace: one per builder; venture: inside a venture folder */
     level: "method" | "workspace" | "venture";
     /** Path to the schema that governs it, or null when it has none yet */
@@ -3789,7 +3791,7 @@ export type RoleTemplate = {
   aliases?: string[];
   /** True for the founder only: the root of every delegation chain */
   chief_delegator?: boolean;
-  /** The function the role serves, such as product, engineering, marketing, or all */
+  /** The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator only. packages/naive/src/checks/check-delegation.mjs fails on any other value */
   function: string;
   description?: string;
   /** Decision classes (from decision-rights.json) this role may be granted; the chief delegator lists none, since it holds all */

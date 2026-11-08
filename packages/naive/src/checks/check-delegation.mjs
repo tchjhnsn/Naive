@@ -1,7 +1,8 @@
 // Checks delegation: who has handed which decision classes to whom, and who verifies whose work.
 // Rules:
 //   roles: each role template's verified_by is another known role (never itself); only the chief
-//     delegator, the root, has none; its grantable classes exist in decision rights.
+//     delegator, the root, has none; its grantable classes exist in decision rights; its function is an
+//     id in packages/naive/src/functions/departments.json, or all for the chief delegator alone.
 //   grants: from and to are known roles and differ; every class exists, is grantable to the grantee
 //     and is not a one-way door; an expired grant fails.
 //   chains: a grant from anyone but the root is backed by a live grant to its grantor that holds
@@ -37,6 +38,7 @@ try { d = readDelegation(file); } catch (e) { console.log(`FAIL  ${e.message}`);
 // A venture's own classes and roles overlay the template's, by id, as check-ready.mjs and router.mjs do.
 const classes = new Set(load(join(template, "decision-rights.json")).classes.map((c) => c.id));
 if (own("decision-rights.json")) for (const c of load(own("decision-rights.json")).classes) classes.add(c.id);
+const functions = new Set(load(join(root, "packages/naive/src/functions/departments.json")).departments.map((f) => f.id));
 const errors = [];
 // Every file in roles/ is one role template, except the indexes, which list roles in a roles array.
 // A template missing its id or verified_by is reported, never skipped.
@@ -57,6 +59,8 @@ for (const r of roles.values()) {
   else if (!independent(r.id, r.verified_by)) errors.push(`${at}: may not verify its own work`);
   for (const v of r.also_verified_by ?? []) if (!roles.has(v) || !independent(r.id, v)) errors.push(`${at}: also_verified_by ${v} is not another role`);
   for (const c of r.grantable_classes) if (!classes.has(c)) errors.push(`${at}: grantable class ${c} is not a decision class`);
+  if (r.function === "all") { if (!r.chief_delegator) errors.push(`${at}: function all is for the chief delegator only`); }
+  else if (!functions.has(r.function)) errors.push(`${at}: function ${r.function} is not an id in packages/naive/src/functions/departments.json`);
   if (!existsSync(join(root, r.skill))) errors.push(`${at}: skill ${r.skill} not found`);
 }
 const delegators = [...roles.values()].filter((r) => r.chief_delegator).map((r) => r.id);

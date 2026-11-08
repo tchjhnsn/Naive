@@ -1,7 +1,7 @@
 {
   "id": "counsel",
   "name": "Counsel",
-  "function": "legal",
+  "function": "risk-and-compliance",
   "description": "Drafts and reviews terms and public claims; outside counsel for regulated matters.",
   "grantable_classes": [],
   "default_tier": "frontier",

@@ -4,7 +4,7 @@
   "aliases": [
     "product-manager"
   ],
-  "function": "product",
+  "function": "products",
   "description": "Owns what the product is and for whom.",
   "grantable_classes": [
     "experience-design",

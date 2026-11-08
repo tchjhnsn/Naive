@@ -1,7 +1,7 @@
 {
   "id": "marketing-lead",
   "name": "Marketing lead",
-  "function": "marketing",
+  "function": "marketing-and-sales",
   "description": "Owns positioning, copy and what the venture says in public, short of commitments.",
   "grantable_classes": [
     "domain-fact"

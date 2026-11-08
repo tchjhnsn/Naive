@@ -11,7 +11,8 @@
 // belongs to exactly one layer or package; a record type is a log exactly when its form is
 // json-lines, and every file in an example venture has a kind (record, log or derived), from its
 // record type or from the data model's files entries; a typescript record type's paths end in .ts, and a
-// settles block sits only on a projected type and names only properties of its schema.
+// settles block sits only on a projected type and names only properties of its schema; every record type names its
+// function (a departments.json id, or null when shared), and that agrees with PACKAGE_FUNCTION and the owning package.
 //
 //   node packages/naive/src/checks/check-data-model.mjs          check, and list unchecked references
 //   node packages/naive/src/checks/check-data-model.mjs --md     print the layer relationships derived from the manifests
@@ -21,8 +22,8 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { globRegExp, pathKind, recordsIn } from "../records/index.mjs";
+import { PACKAGE_FUNCTION, ventureFile } from "../core/venture-paths.mjs";
+import { globRegExp, pathKind, recordsIn, venturePaths } from "../records/index.mjs";
 import { validateValue } from "../records/validate.mjs";
 
 // EE_ROOT points the check at another copy of the repository (used by packages/naive/src/checks/test.mjs).
@@ -156,6 +157,32 @@ for (const p of packageFiles) {
   }
 }
 for (const t of types.keys()) if (!owner.has(t)) errors.push(`${t}: no layer or package owns this record type`);
+
+// Functions. Every record type names its owning function, an id in packages/naive/src/functions/departments.json, or
+// null when several functions share it. The data model's schema lists the ids, so that list must match the catalog.
+// PACKAGE_FUNCTION (core/venture-paths.mjs, which the src layout reads and which sits below records, so it cannot read
+// the data model) must agree: a venture record type kept in a package folder a function owns names that function or
+// null, a method record type whose every path is under packages/naive/src/functions/<function>/ names that function,
+// and a record type a package owns names the package's function or null.
+const DEPARTMENTS = "packages/naive/src/functions/departments.json";
+const functionIds = new Set(existsSync(join(root, DEPARTMENTS)) ? load(DEPARTMENTS).departments.map((x) => x.id) : []);
+const schemaIds = records.readSchema("data-model").properties.records.items.properties.function?.enum?.filter((x) => x !== null) ?? [];
+for (const f of schemaIds) if (!functionIds.has(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function ${f} is not an id in ${DEPARTMENTS}`);
+for (const f of functionIds) if (!schemaIds.includes(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function lists no ${f}, an id in ${DEPARTMENTS}`);
+for (const [pkg, f] of Object.entries(PACKAGE_FUNCTION)) if (!functionIds.has(f)) errors.push(`PACKAGE_FUNCTION: ${pkg} names ${f}, which is not an id in ${DEPARTMENTS}`);
+for (const r of types.values()) {
+  if (!("function" in r)) { errors.push(`${r.id}: names no function; give an id in ${DEPARTMENTS}, or null when several functions share it`); continue; }
+  if (r.function !== null && !functionIds.has(r.function)) { errors.push(`${r.id}: function ${r.function} is not an id in ${DEPARTMENTS}`); continue; }
+  // The first venture path is where records are written; later ones are older places still read.
+  const folder = venturePaths(r)[0]?.split("/")[0], pf = folder && PACKAGE_FUNCTION[folder];
+  if (pf && r.function !== null && r.function !== pf) errors.push(`${r.id}: function ${r.function}, but its records sit in ${folder}/, which ${pf} owns (PACKAGE_FUNCTION); name ${pf}, or null when it is shared`);
+  const under = new Set(r.paths.map((p) => p.match(/^packages\/naive\/src\/functions\/([^/]+)\//)?.[1]));
+  const fn = under.size === 1 ? [...under][0] : undefined;
+  if (fn && functionIds.has(fn) && r.function !== fn) errors.push(`${r.id}: lives under packages/naive/src/functions/${fn}/, so its function is ${fn}, not ${r.function}`);
+  const k = kits.get(owner.get(r.id));
+  const kf = k && !String(k.path).endsWith("/layer.json") ? k.department ?? k.function : undefined;
+  if (kf && r.function !== null && r.function !== kf) errors.push(`${r.id}: function ${r.function}, but package ${k.name} that owns it is ${kf}`);
+}
 for (const k of kits.values()) for (const rel of ["reads", "writes"]) for (const t of k[rel] ?? []) {
   const id = k.name ?? k.kit;
   if (!types.has(t)) errors.push(`${id}: ${rel} unknown record type ${t}`);

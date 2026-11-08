@@ -10,7 +10,7 @@
     "name": { "type": "string" },
     "aliases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Other names for this role (such as cto for architect); the id is canonical and matches agent-roles.json and decision-rights.json"},
     "chief_delegator": { "type": "boolean", "description": "True for the founder only: the root of every delegation chain" },
-    "function": { "type": "string", "description": "The function the role serves, such as product, engineering, marketing, or all" },
+    "function": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator only. packages/naive/src/checks/check-delegation.mjs fails on any other value" },
     "description": { "type": "string" },
     "grantable_classes": {
       "type": "array",
