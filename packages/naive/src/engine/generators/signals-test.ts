@@ -33,6 +33,7 @@ const SCHEMA: [RegExp, string][] = [
   [/^competitors\/[^/]+\/signals\.json$/, "competitor-signals.schema.json"],
   [/^naive\.config\.json$/, "naive-config.schema.json"],
   [/^knowledge\/sources\.json$/, "knowledge-sources.schema.json"],
+  [/^foundation\/icp\/[^/]+\.json$/, "icp-profile.schema.json"],
   // The autoresearch record types beside the signal examples; packages/naive/src/engine/generators/recipes-test.ts checks them in depth.
   [/^competitors\/\[id\]\/signals\.plan\.json$/, "eval-plan.schema.json"],
   [/^competitors\/\[id\]\/signals\.experiments\.jsonl$/, "experiment.schema.json"],

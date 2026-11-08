@@ -3876,7 +3876,7 @@ export type SignalLog = {
   published: string;
 };
 
-/** One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. packages/naive/src/engine/signals/render.ts renders projections and worked cases; packages/naive/src/engine/signals.ts reads types from libraries and naive signals pull renders them into records; check-signals is not built. */
+/** One kind of signal, the component of the signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a typed, versioned definition with its props, the parts it composes, how it folds into records (projects, as data from six fixed reducers), a default age bound for edge listeners and worked cases. It sits at types/<id>/<version>.signal.json in a signal library, or under signals/types/ in a Naive package (the implicit library naive). A listener for a part's type hears every composite that has that part. A library ships only data: projects is never code. packages/naive/src/engine/signals/render.ts renders projections and worked cases; packages/naive/src/engine/signals.ts reads types from libraries and naive signals pull renders them into records; packages/naive/src/checks/check-signals.ts checks them. */
 export type SignalType = {
   $schema?: string;
   /** The type's id (competitor-funding); a signal names it as id@major.minor */
@@ -3905,7 +3905,7 @@ export type SignalType = {
     /** The default age bound for edge listeners (propose, revalidate): an older signal is noise there. A listener's own max_age overrides it. Projection never reads the clock */
     max_age: FreshnessProfilesDuration;
   };
-  /** Worked cases: signals given and the records the projection must render from them. The render tests run them (a later build item) */
+  /** Worked cases: signals given and the records the projection must render from them. packages/naive/src/checks/check-signals.ts renders each one through the real render and fails on a case that does not match */
   cases: SignalTypeCase[];
   note?: string;
 };
