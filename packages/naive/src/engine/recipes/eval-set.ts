@@ -10,9 +10,13 @@
 //   evaluate(source, set, windows, opts)     runs a recipe on the set's rows in the sandbox, with noise ablation
 //   checkRecipe(dir, pattern)                training feedback: per-row losses, settled and predicted, noise disagreements
 //   scoreExperiment(set, plan, candidate, tip)   the dev verdict: keep, discard or fail
+//   scoreHoldout(set, plan, candidate, live)     the one-bit holdout check a person's accept runs: pass or fail
+//   forwardSet(dir, pattern, plan, since, now, sources)   rows at points after since whose horizon passed by now
+//   scoreForward(set, plan, live, previous)      monitor's forward check: holds, or regressed against the previous recipe
 //
-// Plans are a person's. The router never serves _eval/. Its recipe write hook (router/recipes.ts) calls
-// loadPlan, loadEvalSet and scoreExperiment to score a recipe write against the tip.
+// Plans are a person's. The router never serves _eval/. Its recipe route (router/recipes.ts) calls loadPlan,
+// loadEvalSet and scoreExperiment to score a recipe write against the tip, scoreHoldout when a person accepts the
+// tip, and forwardSet and scoreForward when monitor runs (build plan item 8).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { actingAgent, agentFromEnv, entries, record } from "../../core/provenance.mjs";
@@ -32,7 +36,8 @@ import type { Outcomes, RowScore, Settles, Verdict } from "./scoring.ts";
 import type { EvalPlan, Signal, SignalType } from "../../records/types/records.d.ts";
 
 type Obj = Record<string, unknown>;
-export type Window = "training" | "dev" | "holdout";
+/** forward: points after the live recipe changed, scored by monitor once their horizon passed; never frozen. */
+export type Window = "training" | "dev" | "holdout" | "forward";
 /** One frozen (record, as-of point) row: the settled record, the plain fold and each forecast's outcome. */
 export type EvalRow = { key: string; subject: string; point: string; window: Window; weight: number; settled: Obj | null; baseline: Obj | null; outcomes: Outcomes };
 /** A fact's frozen versions: the content at each as-of point, as readAsOf gave it. */
@@ -121,6 +126,47 @@ function uses(dir: string, file: string, cut: number): number {
   return n;
 }
 
+/** The facts the recipes name (hears.facts), each read as readAsOf gives it at every point, newest version last. */
+async function freezeFacts(dir: string, sources: readonly string[], points: readonly string[]): Promise<Record<string, FrozenFact>> {
+  const facts: Record<string, FrozenFact> = {};
+  for (const source of sources) {
+    const ex = await recipeExports(source);
+    const named = ex.ok && isObj(ex.output.hears.facts) ? ex.output.hears.facts : {};
+    for (const [name, ref] of Object.entries(named)) {
+      if (typeof ref !== "string" || name in facts) continue;
+      const [file, field] = factPath(ref);
+      const versions = new Map<string, FrozenFact["versions"][number]>();
+      for (const p of points) {
+        const v = readAsOf(dir, file, p);
+        if (v && !versions.has(v.sha256)) versions.set(v.sha256, { at: v.at, sha256: v.sha256, value: readField(JSON.parse(v.content), field) ?? null });
+      }
+      facts[name] = { ref, versions: [...versions.values()].sort((a, b) => (a.at < b.at ? -1 : 1)) };
+    }
+  }
+  return facts;
+}
+
+/** One row per subject and point where the settled record or the plain fold is not null, with each forecast's outcome. */
+function rowsAt(index: readonly Known[], types: SignalType[], pattern: string, subjects: readonly string[], s: Settles, h: number, windows: readonly [Window, readonly string[]][], weightOf: ReadonlyMap<string, number>): EvalRow[] {
+  const rows: EvalRow[] = [];
+  for (const [window, points] of windows) {
+    for (const point of points) {
+      const t = Date.parse(point);
+      for (const subject of subjects) {
+        const settled = settledRecord(index, types, pattern, subject, t, h);
+        const baseline = baselineRecord(index, types, pattern, subject, t);
+        if (settled === null && baseline === null) continue;
+        const outcomes: Record<string, 0 | 1 | null> = {};
+        for (const [f, spec] of Object.entries(s.forecasts ?? {})) {
+          outcomes[f] = spec.resolved_by.signals?.length ? forecastOutcome(index, types, spec.resolved_by.signals, subject, t, durationMs(spec.window), h) : null;
+        }
+        rows.push({ key: `${subject}@${point}`, subject, point, window, weight: weightOf.get(subject) ?? 1, settled, baseline, outcomes });
+      }
+    }
+  }
+  return rows;
+}
+
 /**
  * A person's plan for the recipe at a pattern. It draws the windows from the signals about the pattern's subjects,
  * freezes the eval set (the as-of points, the index of every signal about those subjects observed by the time the
@@ -160,42 +206,13 @@ export async function planRecipe(dir: string, pattern: string, o: PlanOptions = 
   }
 
   // The facts the current recipe names, frozen at every as-of point.
-  const facts: Record<string, FrozenFact> = {};
-  if (existsSync(recipeFile(dir, pattern))) {
-    const ex = await recipeExports(readFileSync(recipeFile(dir, pattern), "utf8"));
-    const named = ex.ok && isObj(ex.output.hears.facts) ? ex.output.hears.facts : {};
-    for (const [name, ref] of Object.entries(named)) {
-      if (typeof ref !== "string") continue;
-      const [file, field] = factPath(ref);
-      const versions = new Map<string, FrozenFact["versions"][number]>();
-      for (const p of [...drawn.windows.training, ...drawn.windows.dev, ...drawn.windows.holdout]) {
-        const v = readAsOf(dir, file, p);
-        if (v && !versions.has(v.sha256)) versions.set(v.sha256, { at: v.at, sha256: v.sha256, value: readField(JSON.parse(v.content), field) ?? null });
-      }
-      facts[name] = { ref, versions: [...versions.values()].sort((a, b) => (a.at < b.at ? -1 : 1)) };
-    }
-  }
+  const facts = existsSync(recipeFile(dir, pattern)) ? await freezeFacts(dir, [readFileSync(recipeFile(dir, pattern), "utf8")], [...drawn.windows.training, ...drawn.windows.dev, ...drawn.windows.holdout]) : {};
 
   const weights = o.weights ?? "uniform", cut = Date.parse(drawn.read_cut);
   const weightOf = new Map(subjects.map((id) => [id, weights === "cited" ? 1 + Math.min(9, uses(dir, `${fill(pattern, id)}.json`, cut)) : 1]));
-  const rows: EvalRow[] = [];
-  const count: Record<Window, number> = { training: 0, dev: 0, holdout: 0 };
-  for (const window of ["training", "dev", "holdout"] as const) {
-    for (const point of drawn.windows[window]) {
-      const t = Date.parse(point);
-      for (const subject of subjects) {
-        const settled = settledRecord(index, types, pattern, subject, t, h);
-        const baseline = baselineRecord(index, types, pattern, subject, t);
-        if (settled === null && baseline === null) continue;
-        const outcomes: Record<string, 0 | 1 | null> = {};
-        for (const [f, spec] of Object.entries(s.forecasts ?? {})) {
-          outcomes[f] = spec.resolved_by.signals?.length ? forecastOutcome(index, types, spec.resolved_by.signals, subject, t, durationMs(spec.window), h) : null;
-        }
-        rows.push({ key: `${subject}@${point}`, subject, point, window, weight: weightOf.get(subject) ?? 1, settled, baseline, outcomes });
-        count[window]++;
-      }
-    }
-  }
+  const rows = rowsAt(index, types, pattern, subjects, s, h, [["training", drawn.windows.training], ["dev", drawn.windows.dev], ["holdout", drawn.windows.holdout]], weightOf);
+  const count: Record<Window, number> = { training: 0, dev: 0, holdout: 0, forward: 0 };
+  for (const r of rows) count[r.window]++;
   const short = (["training", "dev", "holdout"] as const).filter((w) => count[w] < s.min_counts[w]).map((w) => `${w} has ${count[w]} rows, fewer than min_counts ${s.min_counts[w]}`);
   if (short.length) return { ok: false, errors: short };
 
@@ -342,4 +359,80 @@ export async function scoreExperiment(set: EvalSet, plan: EvalPlan, candidate: s
   const v = verdict(toRows(dev), against, plan, size);
   if (v.dev.rows < 1) return { verdict: "fail", reason: "no dev row was scored" };
   return { ...v, dev: tip === null ? { ...v.dev, tip_score: null } : v.dev, training };
+}
+
+export type HoldoutResult = { result: "pass" | "fail"; rows: number };
+
+/**
+ * The holdout check a person's accept runs (one bit, the Ladder mechanism): the candidate against the live recipe
+ * on the holdout window's paired rows, or against the plain fold when nothing is live, judged as dev is (better by the
+ * margin, or smaller and no worse). Any run that fails, or no holdout row, is a fail. Only the bit leaves here, so a
+ * check leaks at most one bit about the holdout.
+ */
+export async function scoreHoldout(set: EvalSet, plan: EvalPlan, candidate: string, live: string | null): Promise<HoldoutResult> {
+  const c = await evaluate(candidate, set, plan, ["holdout"]);
+  if (failed(c)) return { result: "fail", rows: 0 };
+  let against: RowScore[];
+  let size = { candidate: 0, against: 0 };
+  if (live === null) against = c.rows.map((r) => ({ key: r.key, point: Date.parse(r.point), weight: r.weight, loss: baselineLoss(set, r) }));
+  else {
+    const l = await evaluate(live, set, plan, ["holdout"]);
+    if (failed(l)) return { result: "fail", rows: 0 };
+    against = toRows(l.rows);
+    size = { candidate: recipeSize(candidate), against: recipeSize(live) };
+  }
+  const v = verdict(toRows(c.rows), against, plan, size);
+  return { result: v.verdict === "keep" && v.dev.rows > 0 ? "pass" : "fail", rows: v.dev.rows };
+}
+
+/**
+ * The forward rows for monitor: every point on the record type's cadence after since whose horizon has passed by now,
+ * for every subject of the pattern, from every signal observed by now (live, not frozen: the plan never saw these
+ * points). Facts the recipes name are read as of each point. Rows weigh 1 each.
+ */
+export async function forwardSet(dir: string, pattern: string, plan: EvalPlan, since: number, now: number, sources: readonly string[]): Promise<{ ok: true; set: EvalSet; reason?: undefined } | { ok: false; reason: string }> {
+  const rt = recordTypeFor(pattern);
+  if (!rt) return { ok: false, reason: `no record type at ${pattern} declares settles in the data model` };
+  const s = rt.settles, h = durationMs(s.horizon), cadence = durationMs(s.cadence);
+  const { known: all, types } = await loadSignals(dir);
+  const projects = (sig: Signal) => { const [id, v] = splitRange(sig.type); return resolveType(types, id, v)?.projects.some((p) => p.route === pattern) ?? false; };
+  const seen = all.filter((k) => timeMs(k.signal.observed) <= now);
+  const subjects = [...new Set(seen.filter((k) => projects(k.signal)).map((k) => k.signal.subject))].sort();
+  const index = seen.filter((k) => subjects.includes(k.signal.subject));
+  const day = 86_400_000, points: string[] = [];
+  for (let t = Math.floor(since / day) * day + cadence; t + h <= now; t += cadence) points.push(iso(t));
+  const facts = await freezeFacts(dir, sources, points);
+  const rows = rowsAt(index, types, pattern, subjects, s, h, [["forward", points]], new Map());
+  return { ok: true, set: { plan: plan.sha, pattern, record_type: rt.id, schema: rt.schema, made: iso(now), settles: s, points: plan.windows, subjects, types, index, facts, rows } };
+}
+
+export type Forward =
+  | { status: "waiting"; rows: number; needs: number; reason: string }
+  | { status: "holds" | "regressed"; rows: number; live_score: number; previous_score: number; margin: number; reason: string }
+  | { status: "fail"; rows: number; reason: string };
+
+/**
+ * Monitor's forward check: the live recipe against the one live before it (or the plain fold) on the forward rows,
+ * judged by the plan's margin. regressed: the previous recipe beats the live one by more than the margin, which
+ * proposes a rollback. waiting: fewer forward rows than the holdout's min_counts have settled.
+ */
+export async function scoreForward(set: EvalSet, plan: EvalPlan, live: string, previous: string | null): Promise<Forward> {
+  const needs = set.settles.min_counts.holdout;
+  const rows = set.rows.filter((r) => r.window === "forward").length;
+  if (rows < needs) return { status: "waiting", rows, needs, reason: `${rows} forward rows have settled, fewer than ${needs}` };
+  const l = await evaluate(live, set, plan, ["forward"]);
+  if (failed(l)) return { status: "fail", rows, reason: `the live recipe did not run: ${l.reason}` };
+  let prev: RowScore[];
+  if (previous === null) prev = l.rows.map((r) => ({ key: r.key, point: Date.parse(r.point), weight: r.weight, loss: baselineLoss(set, r) }));
+  else {
+    const p = await evaluate(previous, set, plan, ["forward"]);
+    if (failed(p)) return { status: "fail", rows, reason: `the previous recipe did not run: ${p.reason}` };
+    prev = toRows(p.rows);
+  }
+  // The previous recipe as the candidate: it regressed when the previous one is better by the margin.
+  const v = verdict(prev, toRows(l.rows), plan, { candidate: 0, against: 0 });
+  const stats = { rows: v.dev.rows, live_score: v.dev.tip_score ?? 0, previous_score: v.dev.score, margin: v.dev.margin };
+  return v.verdict === "keep" && v.kept_as === "better"
+    ? { status: "regressed", ...stats, reason: `the ${previous === null ? "plain fold" : "previous recipe"} ${v.reason.replace(/^beats it/, "beats the live recipe")}` }
+    : { status: "holds", ...stats, reason: `the live recipe holds: the ${previous === null ? "plain fold" : "previous recipe"} ${v.reason.replace(/^beats it/, "beats it only")}` };
 }

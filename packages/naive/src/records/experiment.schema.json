@@ -254,7 +254,7 @@
     },
     "over_holdout": {
       "type": "boolean",
-      "description": "On a holdout line, true when the person accepted over a failed check (mentura accept --over-holdout, not built)"
+      "description": "On a holdout line, true when the person accepted over a failed check (mentura accept recipes/<pattern> --over-holdout)"
     },
     "reason": {
       "type": "string",

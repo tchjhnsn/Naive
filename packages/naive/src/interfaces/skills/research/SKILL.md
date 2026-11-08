@@ -38,7 +38,7 @@ The skill is Naive's file, not a venture record, so no route writes it: every re
 6. Make one change to the recipe and write it to `recipes/<pattern>` as `{source, base}`, where base is the sha of the tip you edited from (read `recipes/<pattern>` first; the answer names the tip). The router lints it, runs training, scores dev against the tip and logs the experiment line. A keep lands as a held draft that becomes the tip; a discard or fail is refused with its verdict; a stale base is refused with the current tip. Sending the same write again returns the logged line and spends nothing. Through agent-files, editing `/<pattern>.recipe.ts` does the same, with the tip you read as the base; no other route writes a recipe. The verdict is computed inside the write, so you never supply a score.
 7. Go back to step 3. Stop when the plan's dev budget is spent (counted from the log for this plan's sha), when the program says to stop, or when the person stops you. The unattended loop that stops itself at the budget is Mentura's (not built).
 
-A person accepts a kept recipe with `mentura accept`, which runs the one-bit holdout check (not built, build plan item 8). You never accept your own work.
+A person accepts a kept recipe with `mentura accept recipes/<pattern>`, which runs the one-bit holdout check: a pass writes it live, a fail leaves it a draft unless the person accepts over it, which is logged. You never accept your own work, and you never see a holdout score. After an accept, monitor compares the live recipe with the one before it on later points and proposes a rollback decision when it regressed.
 
 ## Rules
 
@@ -62,6 +62,6 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 | Eval sets, scoring, plans and the check command (`naive recipes plan`, `naive recipes check`) | built (build plan item 5) |
 | The cross-file recipe check: recipe, plan, experiment log and receptions agree, and noise is noise by ablation | built (`packages/naive/src/checks/check-recipes.ts`, build plan item 11) |
 | The recipe write route with its base sha and verdict | built (`recipes/<pattern>`, build plan item 6) |
-| Accept with the holdout check, and the forward monitor | not built (build plan item 8) |
+| Accept with the holdout check, and the forward monitor | built (`mentura accept recipes/<pattern>`, `mentura recipes/<pattern> monitor`, build plan item 8); running monitor on each pull is not built |
 | Knob search with no model | not built (build plan item 10) |
 | The unattended loop with spend limits | Mentura, not built |
