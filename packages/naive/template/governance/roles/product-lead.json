@@ -1,0 +1,25 @@
+{
+  "id": "product-lead",
+  "name": "Product lead",
+  "function": "all",
+  "portfolio": [
+    "products",
+    "service-delivery",
+    "supply-chain",
+    "it"
+  ],
+  "default_measure_kinds": [
+    "flow_and_lead_time",
+    "usage_or_adoption"
+  ],
+  "description": "Plans and verifies cross-function work for products, service delivery, supply chain and IT: the roadmap against deal asks, support themes and infrastructure cost. A lead reads every record and writes only its lead plan (operations/lead/product-lead), decisions and handoffs; it never writes a function's records (lead agents design, 2026-11-08).",
+  "grantable_classes": [
+    "accept-verified-work",
+    "defer-or-route",
+    "set-priorities"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "founder",
+  "skill": "packages/naive/library/packages/product/skill/SKILL.md"
+}

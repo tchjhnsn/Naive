@@ -265,7 +265,7 @@ const PACKAGE_ROUTE = {
   "decision-record": "decisions",
   "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
-  "spend-register": "finance/spend",
+  "spend-register": "finance/spend", "lead-plan": "operations/lead",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   connection: "it/connections",
   ...BRAND_ROUTES, // Brand hook: marketing/brand, public/assets, glossary (packages/naive/src/engine/brand.mjs).

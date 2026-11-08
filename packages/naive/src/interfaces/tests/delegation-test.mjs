@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Tests for delegation and the verification substrate on made-up ventures in a temp folder: the
 // template passes; a grant wider than its grantor's, a broken chain, a re-delegated money class, a
-// one-way door, an expired grant and a self-verifying role each fail; and verify.mjs keeps the
+// one-way door, an expired grant and a self-verifying role each fail; a lead outside its rules or a
+// portfolio gap or overlap fails; and verify.mjs keeps the
 // builder from verifying its own work. Never writes into the repo.
 
 import { spawnSync } from "node:child_process";
@@ -83,7 +84,31 @@ fails("a role whose function is not a departments.json id fails", (_, roles) => 
 fails("function all is for the chief delegator only", (_, roles) => {
   const p = join(roles, "builder.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, function: "all" }));
-}, /role\/builder: function all is for the chief delegator only/);
+}, /role\/builder: function all is for the chief delegator and for a lead/);
+
+// Leads (lead agents build item 3): a role with a portfolio may span functions, holds no one-way door or
+// never-redelegated class, and the four portfolios cover the 13 functions once each.
+const editRole = (roles, id, f) => { const p = join(roles, `${id}.json`), r = JSON.parse(readFileSync(p, "utf8")); f(r); writeFileSync(p, JSON.stringify(r)); };
+const lead = JSON.parse(readFileSync(join(template, "roles/growth-lead.json"), "utf8"));
+expect("a lead template has function all and a portfolio", lead.function === "all" && Array.isArray(lead.portfolio) && lead.portfolio.length > 0);
+fails("a lead whose function is not all fails", (_, roles) => editRole(roles, "growth-lead", (r) => { r.function = "marketing-and-sales"; }), /role\/growth-lead: has a portfolio, so it is a lead and its function is all/);
+fails("a portfolio function that is not a departments.json id fails", (_, roles) => editRole(roles, "growth-lead", (r) => { r.portfolio.push("sales"); }), /role\/growth-lead: portfolio function sales is not an id/);
+fails("a function in no lead's portfolio fails", (_, roles) => editRole(roles, "strategy-lead", (r) => { r.portfolio = r.portfolio.filter((f) => f !== "human-capital"); }), /portfolios: function human-capital is in no lead's portfolio/);
+fails("a function in two leads' portfolios fails", (_, roles) => editRole(roles, "finance-lead", (r) => { r.portfolio.push("human-capital"); }), /portfolios: function human-capital is in more than one lead's portfolio \(finance-lead, strategy-lead\)/);
+fails("a lead may not list a one-way door as grantable", (_, roles) => editRole(roles, "product-lead", (r) => { r.grantable_classes.push("production-ship"); }), /role\/product-lead: is a lead and lists production-ship, a one-way door/);
+fails("a lead grant of a one-way door fails", (d, roles) => {
+  editRole(roles, "product-lead", (r) => { r.grantable_classes.push("production-ship"); });
+  grant(d, "chief-of-staff-to-product-lead").classes.push("production-ship");
+}, /chief-of-staff-to-product-lead: production-ship is a one-way door/);
+fails("a lead may not list a never-redelegated class as grantable", (_, roles) => editRole(roles, "finance-lead", (r) => { r.grantable_classes.push("spend-register-upkeep"); }), /role\/finance-lead: is a lead and lists spend-register-upkeep, which is never re-delegated/);
+fails("a direct founder grant of a never-redelegated class to a lead fails", (d, roles) => {
+  editRole(roles, "finance-lead", (r) => { r.grantable_classes.push("spend-money"); });
+  d.grants.push({ id: "founder-to-finance-lead", from: "founder", to: "finance-lead", classes: ["spend-money"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
+}, /founder-to-finance-lead: spend-money is never re-delegated, and finance-lead is a lead/);
+fails("a lead granted set-priorities must list it as grantable", (d, roles) => {
+  editRole(roles, "growth-lead", (r) => { r.grantable_classes = r.grantable_classes.filter((c) => c !== "set-priorities"); });
+}, /chief-of-staff-to-growth-lead-priorities: set-priorities is not grantable to growth-lead/);
+expect("each lead's set-priorities is scoped to its own lead plan", ["growth-lead", "product-lead", "finance-lead", "strategy-lead"].every((id) => grant(base, `chief-of-staff-to-${id}-priorities`)?.scope === `operations/leads/${id}`));
 
 for (const scope of ["engineering/../finance/", "", "/", "./engineering/"]) fails(`scope ${JSON.stringify(scope)} is refused`, (d) => { grant(d, "architect-to-builder").scope = scope; }, /not "venture" or a plain path/);
 expect("the schema refuses a scope with ..", schemaCheck({ ...base, grants: [{ ...grant(base, "architect-to-builder"), scope: "engineering/../finance/" }] }).status !== 0);

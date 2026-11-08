@@ -1,17 +1,24 @@
 {
   "id": "finance-lead",
   "name": "Finance lead",
-  "function": "finance",
-  "description": "Keeps the spend register, runway and pricing records.",
+  "function": "all",
+  "portfolio": [
+    "finance",
+    "assets",
+    "risk-and-compliance"
+  ],
+  "default_measure_kinds": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "description": "Plans and verifies cross-function work for finance, assets and risk and compliance: runway against hiring, tooling and spend, and contracts against cost. Keeps no spend register itself; the finance agent does (founder-to-finance-agent). A lead reads every record and writes only its lead plan (operations/lead/finance-lead), decisions and handoffs; it never writes a function's records (lead agents design, 2026-11-08).",
   "grantable_classes": [
-    "spend-register-upkeep",
-    "cancel-or-downgrade"
+    "accept-verified-work",
+    "defer-or-route",
+    "set-priorities"
   ],
-  "default_tier": "workhorse",
-  "lint_suites": [
-    "finance/lint",
-    "money/lint"
-  ],
+  "default_tier": "frontier",
+  "lint_suites": [],
   "verified_by": "founder",
   "skill": "packages/naive/library/packages/finance/skill/SKILL.md"
 }

@@ -188,6 +188,22 @@
       ],
       "why": "Work handed to agents or people"
     },
+    "lead-plan": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.2,
+        "beachhead": 0.5,
+        "scale": 0.8,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "people>=3",
+          "at_least": 0.6
+        }
+      ],
+      "why": "A lead plans cross-function work once more than one function runs at once; until then the founder holds every seam"
+    },
     "evidence": {
       "base": {
         "discovery": 0.3,

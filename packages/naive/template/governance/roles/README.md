@@ -62,9 +62,22 @@ The roles folder is **selective, not exhaustive**. Most ICs and many specialist 
 
 ## Role template JSON and its function
 
-Each `<id>.json` here is a role template the delegation check reads (`packages/naive/src/records/role-template.schema.json`). Its `function` is an id in `packages/naive/src/functions/departments.json`, or `all` for the founder, the chief delegator, alone; `node packages/naive/src/checks/check-delegation.mjs` fails on any other value. Today: architect, builder and product-design-lead serve `products`; chief-of-staff serves `capabilities` (it runs the docket and handoffs, which is portfolio and project work); counsel serves `risk-and-compliance`; finance-lead and finance-agent serve `finance`; marketing-lead serves `marketing-and-sales`; people-lead serves `human-capital`; validation-lead serves `strategy`.
+Each `<id>.json` here is a role template the delegation check reads (`packages/naive/src/records/role-template.schema.json`). Its `function` is an id in `packages/naive/src/functions/departments.json`, or `all` for the founder, the chief delegator, and for a lead (a role with a `portfolio`); `node packages/naive/src/checks/check-delegation.mjs` fails on any other value. Today: architect, builder and product-design-lead serve `products`; chief-of-staff serves `capabilities` (it runs the docket and handoffs, which is portfolio and project work); counsel serves `risk-and-compliance`; finance-agent serves `finance`; growth-lead, product-lead, finance-lead and strategy-lead are leads with `all`; marketing-lead serves `marketing-and-sales`; people-lead serves `human-capital`; validation-lead serves `strategy`.
 
-`finance-agent.json` is the finance function's agent (EE-123), the only agent that writes the spend register (`finance/spend/[id]`). The founder grants it `spend-register-upkeep` and `cancel-or-downgrade` over `finance/` directly (`founder-to-finance-agent` in `../delegation.json`), since both are never re-delegated; that grant replaced `founder-to-finance-lead` (lead agents design, default 3). `finance-lead.json` keeps its id and its grantable classes until lead agents build item 3 makes it the cross-function lead.
+`finance-agent.json` is the finance function's agent (EE-123), the only agent that writes the spend register (`finance/spend/[id]`). The founder grants it `spend-register-upkeep` and `cancel-or-downgrade` over `finance/` directly (`founder-to-finance-agent` in `../delegation.json`), since both are never re-delegated; that grant replaced `founder-to-finance-lead` (lead agents design, default 3). `finance-lead.json` kept its id and became a cross-function lead in build item 3 (default 3), so a venture that installed it keeps its grant id; its spend work is the finance agent's.
+
+## Leads
+
+A lead is a role over a portfolio of functions (lead agents design, build item 3). Four templates ship, with `function: "all"`, a `portfolio` of `packages/naive/src/functions/departments.json` ids and `default_measure_kinds` (telos measure kinds, `primary` meaning the telos's primary measure). The four portfolios cover the 13 functions once each, which `check-delegation.mjs` enforces.
+
+| Lead | Portfolio | Default measure kinds |
+|---|---|---|
+| `growth-lead` | marketing-and-sales, customer-service | revenue, usage_or_adoption |
+| `product-lead` | products, service-delivery, supply-chain, it | flow_and_lead_time, usage_or_adoption |
+| `finance-lead` | finance, assets, risk-and-compliance | cost_or_time_saved, compliance_met |
+| `strategy-lead` | strategy, capabilities, human-capital, external-relationships | primary, learning, impact |
+
+human-capital sits with strategy-lead (default 2). Each lead may be granted `accept-verified-work`, `defer-or-route` and `set-priorities`, all from the chief of staff (`chief-of-staff-to-<lead>` and `chief-of-staff-to-<lead>-priorities` in `../delegation.json`), and is verified by the founder. A lead reads every record and writes only its lead plan (`operations/lead/<lead>`), `decisions/*` and `operations/handoff/*`; `check-team.mjs` refuses a lead in a team plan that writes more or is bound to no telos measure. Each lead's `skill` points at its main portfolio's existing skill; a lead skill of its own is not built.
 
 ## Per-role file structure
 

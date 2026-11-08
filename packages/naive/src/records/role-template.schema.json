@@ -10,7 +10,9 @@
     "name": { "type": "string" },
     "aliases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Other names for this role (such as cto for architect); the id is canonical and matches agent-roles.json and decision-rights.json"},
     "chief_delegator": { "type": "boolean", "description": "True for the founder only: the root of every delegation chain" },
-    "function": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator only. packages/naive/src/checks/check-delegation.mjs fails on any other value" },
+    "function": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator and for a lead (a role with a portfolio). packages/naive/src/checks/check-delegation.mjs fails on any other value" },
+    "portfolio": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 1, "uniqueItems": true, "description": "A lead only (lead agents design, 2026-11-08): the functions, ids in packages/naive/src/functions/departments.json, whose cross-function work this lead plans and verifies. A role with a portfolio is a lead: its function is all, it may be granted no never-redelegated class and no one-way door, and the leads' portfolios cover every function exactly once (packages/naive/src/checks/check-delegation.mjs)" },
+    "default_measure_kinds": { "type": "array", "items": { "enum": ["primary", "revenue", "usage_or_adoption", "cost_or_time_saved", "compliance_met", "learning", "flow_and_lead_time", "impact"] }, "minItems": 1, "uniqueItems": true, "description": "A lead only: the telos measure kinds it is bound to by default (primary means the telos's primary measure). A venture binds the lead to concrete measure ids in its lead plan (operations/lead/[id]); the defaults only route a task whose measure no lead plan binds (packages/naive/src/engine/route-task.ts)" },
     "description": { "type": "string" },
     "grantable_classes": {
       "type": "array",
@@ -24,5 +26,6 @@
     "also_verified_by": { "type": "array", "items": { "type": "string" }, "description": "Further verifiers for some work, such as the founder for spend" },
     "skill": { "type": "string", "description": "Path from the repository root to the role's skill" }
   },
+  "dependentRequired": { "portfolio": ["default_measure_kinds"], "default_measure_kinds": ["portfolio"] },
   "additionalProperties": false
 }

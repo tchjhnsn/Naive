@@ -20,6 +20,12 @@ export function telosExitCriteria(dir, phase) {
   return { file: f, record: t, criteria: p?.exit_criteria ?? [] };
 }
 
+/** An unmigrated telos's measures ({ id, kind, primary } as written), or [] with no telos. */
+export function telosMeasures(dir) {
+  const f = telosFile(dir);
+  return f ? load(ventureFile(dir, f)).measures ?? [] : [];
+}
+
 /** Telos -> canonical: { goals: [{file, rec}], exit: [{file, rec}] }. Pure.
  * @param {*} t @param {{ venture?: string }} [opts] */
 export function split(t, { venture } = {}) {

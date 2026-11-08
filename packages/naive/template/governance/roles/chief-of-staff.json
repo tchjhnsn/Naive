@@ -14,7 +14,8 @@
     "new-adr-within-strategy",
     "new-dependency-free",
     "domain-fact",
-    "spend-register-upkeep"
+    "spend-register-upkeep",
+    "set-priorities"
   ],
   "default_tier": "frontier",
   "lint_suites": [],

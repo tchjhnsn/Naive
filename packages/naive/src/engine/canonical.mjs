@@ -6,11 +6,12 @@
 //   goals(dir)             every canonical goal
 //   exitCriteria(dir, ph)  { file, criteria, source } for a phase: canonical, else the telos fallback
 //   scale(dir)             the venture's scale goal's value, else the ambition-tier fallback
+//   measures(dir)          every goal's measures, else the unmigrated telos's measures
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
-import { telosExitCriteria } from "../../../../frameworks/telos/adapter.mjs";
+import { telosExitCriteria, telosMeasures } from "../../../../frameworks/telos/adapter.mjs";
 import { ambitionOf } from "../../../../frameworks/ambition-tier/adapter.mjs";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -51,6 +52,10 @@ function criteriaFiles(dir) {
 export const canonicalHome = (dir, statement) => statement === "vision"
   ? { files: ["foundation/goals/telos.json"], attribute: "end_state" }
   : { files: criteriaFiles(dir), attribute: "criteria" };
+
+/** The venture's measures ({ id, statement, kind, primary }): every canonical goal's, else the unmigrated telos's.
+ *  telos-to-goals keeps measure ids, so a lead plan's measure ids hold across the migration. */
+export const measures = (dir) => migrated(dir) ? goals(dir).flatMap((g) => g.measures ?? []) : telosMeasures(dir);
 
 /** How far the venture means to go: its scale goal's value, else venture.json through the ambition-tier adapter. */
 export function scale(dir, v) {
