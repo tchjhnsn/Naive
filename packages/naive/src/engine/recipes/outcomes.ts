@@ -116,7 +116,7 @@ export type RecipeInput = { route: string; id: string; asOf: number; signals: Si
 
 /** What a recipe is given at point t: every heard signal about the subject observed by t (a retraction only withdraws
  *  and is not passed), in (time, id) order, with withdrawn as known at t, and the named facts as of t. */
-export function recipeInput(known: readonly Known[], ranges: readonly string[], pattern: string, subject: string, t: number, facts: Record<string, unknown> = {}): RecipeInput {
+export function recipeInput(known: readonly Pick<Known, "signal" | "library">[], ranges: readonly string[], pattern: string, subject: string, t: number, facts: Record<string, unknown> = {}): RecipeInput {
   const seen = known.filter((k) => k.signal.subject === subject && timeMs(k.signal.observed) <= t);
   const withdrawn = withdraw(seen.map((k) => ({ signal: k.signal, library: k.library }))).withdrawn;
   const signals = seen.filter((k) => !k.signal.retracts && inRanges(k.signal, ranges)).map((k) => k.signal).sort(timeThenId).map((s) => ({

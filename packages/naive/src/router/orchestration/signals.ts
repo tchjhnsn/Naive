@@ -8,6 +8,10 @@
 //             record through the router as the projector, with derived_from set to the cited signal addresses and
 //             fact files; verify an unchanged one (freshness), never rewrite it; propose through decisions.propose;
 //             mark through stale.mark; move the cursor only after the commit. A pull after a pull writes nothing.
+//             A pattern with a live recipe (<pattern>.recipe.ts, autoresearch design, everything-ecosystem
+//             docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, build plan item 9) renders through it in the sandbox
+//             instead of the plain fold, and its receptions go beside each record (<record>.reception.json); once a
+//             render's horizon has passed, a pull fills each reception's hindsight label.
 //   explain   one signal at every listener: salient or noise, and why
 //   replay    render every projected record again from what it cites and report drift; writes nothing
 //   emit      a person records a signal in the venture's local library (raw/signals/), its address computed
@@ -22,6 +26,7 @@
 // It calls no model and copies no library signal into the venture.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { readBlob } from "../../core/blobs.mjs";
 import { entries, record } from "../../core/provenance.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
 import { decisionFile, propose } from "../../engine/decisions.mjs";
@@ -29,7 +34,15 @@ import { verify } from "../../engine/freshness.mjs";
 import { mark } from "../../engine/stale.mjs";
 import { LOCAL, connect, sourcesOf } from "../../store/connectors/index.mjs";
 import * as S from "../../engine/signals.ts";
-import type { Change, Facts, Library, Merged, ProvLine, Pulled, Typed } from "../../engine/signals.ts";
+import type { Change, Facts, Library, Merged, ProvLine, Pulled, Rendered, Typed } from "../../engine/signals.ts";
+import { receptionPath } from "../../engine/generators/reception.ts";
+import { loadSignals } from "../../engine/recipes/eval-set.ts";
+import { factsAsOf, hindsightDoc, hindsightDue, liveRecipes, rangeIds, receptionsDoc, renderSubjects, sameReceptions, subjectIn } from "../../engine/recipes/render.ts";
+import type { LiveRecipe, SubjectRender } from "../../engine/recipes/render.ts";
+import { recipeExports } from "../../engine/recipes/sandbox.ts";
+import { durationMs } from "../../engine/recipes/scoring.ts";
+import type { Known } from "../../engine/recipes/outcomes.ts";
+import type { Reception as Receptions, SignalType } from "../../records/types/records.d.ts";
 import { asProjector } from "../acting.mjs";
 import { call } from "../router.mjs";
 
@@ -99,6 +112,136 @@ async function current(dir: string, v: Venture, routes: readonly string[]) {
   return { now, where, problems };
 }
 
+// ---- Recipes ----
+
+type Store = { read(_p: string): Promise<{ content: string; version: string } | null>; write(_p: string, _content: string, _opts?: { base?: string | null; append?: boolean }): Promise<unknown> };
+/** The venture's own store, through its connector, so a hosted venture's files are read and written the same way. */
+async function ventureStore(dir: string): Promise<Store> {
+  const venture = (sourcesOf(dir) as { sources: { id: string }[] }).sources.find((s) => s.id === LOCAL);
+  return await connect(venture, dir) as Store;
+}
+const readText = (store: Store) => async (p: string) => (await store.read(p))?.content ?? null;
+
+/** The facts a recipe names, each file#field read through the router as the projector, as of now. */
+async function recipeFacts(dir: string, v: Venture, recipe: LiveRecipe): Promise<{ values: Record<string, unknown>; problems: string[] }> {
+  const values: Record<string, unknown> = {};
+  const problems: string[] = [];
+  for (const [name, ref] of Object.entries(recipe.facts)) {
+    const [file, field = ""] = ref.split("#");
+    const route = S.routerRoute(file);
+    values[name] = null;
+    if (!route) { problems.push(`${recipe.file}: the fact ${name} reads ${file}, where no record type lives`); continue; }
+    const r = await projector(v, dir, route, "read");
+    if (!r.ok) { problems.push(`${recipe.file}: the fact ${name}: ${r.error}`); continue; }
+    values[name] = r.result === null || r.result === undefined ? null : S.fieldOf(r.result, field) ?? null;
+  }
+  return { values, problems };
+}
+
+type ByRecipe = { recipe: LiveRecipe; render: SubjectRender };
+type Through = { ok: true; records: Rendered[]; rendered: ByRecipe[]; noise: number; known: Known[]; types: SignalType[]; problems: string[]; error?: undefined } | { ok: false; error: string };
+
+/**
+ * The plain render's records with every route a live recipe owns replaced by what the recipe renders for each
+ * subject as of now. The listeners' render still runs whole, so proposals, marks and the ids other listeners read do
+ * not change; only the records at a recipe's pattern, and the receptions of the listeners that project there, are
+ * the recipe's. A recipe that renders null for a subject writes nothing for it.
+ */
+async function throughRecipes(dir: string, v: Venture, listeners: readonly Merged[], recipes: readonly LiveRecipe[], subjects: readonly string[], plain: { records: readonly Rendered[]; receptions: readonly { kind: string; listener: string }[] }, types: readonly Typed[], now: string): Promise<Through> {
+  const owned = (route: string) => recipes.some((r) => subjectIn(r.pattern, route) !== null);
+  const replaced = new Set(listeners.filter((l) => l.then === "project" && l.consumer && "route" in l.consumer && recipes.some((r) => l.consumer && "route" in l.consumer && r.pattern === l.consumer.route)).map((l) => l.id));
+  const plainNoise = plain.receptions.filter((x) => x.kind === "noise" && !replaced.has(x.listener)).length;
+  if (!recipes.length) return { ok: true, records: [...plain.records], rendered: [], noise: plainNoise, known: [], types: [], problems: [] };
+  const all = await loadSignals(dir);
+  const rendered: ByRecipe[] = [];
+  const problems: string[] = [];
+  for (const recipe of recipes) {
+    const f = await recipeFacts(dir, v, recipe);
+    problems.push(...f.problems);
+    const lint = await S.idsIn(dir, recipe.pattern.split("/[id]")[0]);
+    const r = await renderSubjects(recipe, subjects, all.known, f.values, Date.parse(now), lint);
+    if (!r.ok) return { ok: false, error: r.reason };
+    for (const x of r.rendered) rendered.push({ recipe, render: x });
+  }
+  const once = (pattern: string) => types.some((t) => t.projects.some((p) => p.route === pattern && p.once));
+  const records: Rendered[] = [...plain.records.filter((x) => !owned(x.route)), ...rendered.filter((x) => x.render.record !== null).map(({ recipe, render }) => ({
+    route: render.route, record: render.record as Record<string, unknown>, once: once(recipe.pattern),
+    cites: render.receptions.filter((x) => x.kind === "salient").map((x) => String(x.signal)).sort(), facts: Object.values(recipe.facts).sort(),
+  }))].sort((a, b) => (a.route < b.route ? -1 : a.route > b.route ? 1 : 0));
+  const noise = plainNoise + rendered.reduce((n, x) => n + x.render.receptions.filter((r) => r.kind === "noise").length, 0);
+  return { ok: true, records, rendered, noise, known: all.known, types: all.types, problems };
+}
+
+/** A file only the projector writes, through the venture's store, logged in provenance as the projector's. */
+async function writeProjected(dir: string, store: Store, file: string, value: unknown, base: string | null, entry: { route: string; derived_from?: string[]; note: string }) {
+  const text = JSON.stringify(value, null, 2) + "\n";
+  await store.write(file, text, { base });
+  record(dir, { entity: file, route: entry.route, activity: base === null ? "create" : "write", agent: { ...S.PROJECTOR_AGENT }, derived_from: entry.derived_from, note: entry.note, content: text });
+}
+
+/** Each recipe record's receptions beside it: written with a new or changed record, and with an unchanged one only
+ *  when what the receptions say changed. A record a person keeps gets none. */
+async function writeReceptions(dir: string, store: Store, t: Extract<Through, { ok: true }>, changes: readonly Change[], now: string): Promise<{ written: string[]; error?: string }> {
+  const written: string[] = [];
+  for (const { recipe, render } of t.rendered) {
+    const ch = changes.find((c) => c.route === render.route);
+    if (render.record === null || !ch || ch.kind === "kept") continue;
+    const recordFile = S.recordFile(render.route);
+    const file = receptionPath(recordFile);
+    const built = receptionsDoc({ record: recordFile, recipe: recipe.sha256, asOf: Date.parse(now), rendered: render, known: t.known, types: t.types, horizon: recipe.type.settles ? durationMs(recipe.type.settles.horizon) : null });
+    if (!built.ok) return { written, error: `${file}: ${built.errors.join("; ")}` };
+    const held = await store.read(file);
+    if (held && ch.kind === "unchanged") { try { if (sameReceptions(JSON.parse(held.content) as Receptions, built.doc)) continue; } catch { /* rewrite a file that is not JSON */ } }
+    await writeProjected(dir, store, file, built.doc, held?.version ?? null, { route: "knowledge/reception", derived_from: [recordFile], note: `signal pull: receptions of ${recipe.file} (${recipe.sha256.slice(0, 12)}) as of ${now}` });
+    written.push(file);
+  }
+  return { written };
+}
+
+/**
+ * Hindsight for every receptions file of a live recipe's pattern whose render's horizon has passed: the recipe that
+ * rendered it (the live one, or its source from the blob store) runs again at the render's as-of point with and
+ * without each signal, scored against the settled record. A file it cannot label is named in problems and left as it
+ * is. A record type with no settles has no horizon, so its receptions get no hindsight.
+ */
+async function fillHindsight(dir: string, store: Store, recipes: readonly LiveRecipe[], now: string, loaded: { known: Known[]; types: SignalType[] } | null): Promise<{ written: string[]; problems: string[] }> {
+  const written: string[] = [];
+  const problems: string[] = [];
+  let all = loaded;
+  for (const recipe of recipes) {
+    const settles = recipe.type.settles;
+    if (!settles) continue;
+    const h = durationMs(settles.horizon);
+    for (const id of await S.idsIn(dir, recipe.pattern.split("/[id]")[0])) {
+      const recordFile = S.recordFile(S.fill(recipe.pattern, id));
+      const file = receptionPath(recordFile);
+      const held = await store.read(file);
+      if (!held) continue;
+      let doc: Receptions;
+      try { doc = JSON.parse(held.content) as Receptions; } catch { problems.push(`${file} is not JSON: no hindsight`); continue; }
+      if (!hindsightDue(doc, h, Date.parse(now))) continue;
+      let source: string | null = null, ranges = recipe.ranges, facts = recipe.facts;
+      if (doc.recipe === recipe.sha256) source = recipe.source;
+      else {
+        source = (readBlob(dir, doc.recipe) as Buffer | null)?.toString("utf8") ?? null;
+        if (source !== null) {
+          const ex = await recipeExports(source);
+          if (!ex.ok) { problems.push(`${file}: the recipe ${doc.recipe} that rendered it does not run (${ex.reason}): no hindsight`); continue; }
+          ranges = ex.output.hears.signals as string[];
+          facts = Object.fromEntries(Object.entries(ex.output.hears.facts ?? {}).filter((e): e is [string, string] => typeof e[1] === "string"));
+        }
+      }
+      if (source === null) { problems.push(`${file}: the recipe ${doc.recipe} that rendered it is neither live nor in the blob store: no hindsight`); continue; }
+      all ??= await loadSignals(dir);
+      const hd = await hindsightDoc({ doc, source, ranges, pattern: recipe.pattern, subject: id, schema: recipe.type.schema, known: all.known, types: all.types, settles, facts: factsAsOf(dir, facts, Date.parse(doc.as_of)), now: Date.parse(now) });
+      if (!hd.ok) { problems.push(`${file}: no hindsight: ${hd.reason}`); continue; }
+      await writeProjected(dir, store, file, hd.doc, held.version, { route: "knowledge/reception", derived_from: [recordFile], note: `signal pull: hindsight for the receptions as of ${doc.as_of}` });
+      written.push(file);
+    }
+  }
+  return { written, problems };
+}
+
 export type PullResult = {
   ok: boolean;
   status: "pulled" | "nothing new" | "raised" | "failed";
@@ -108,6 +251,9 @@ export type PullResult = {
   kept: string[];
   proposed: string[];
   marked: string[];
+  /** Receptions files written beside recipe records, and those given hindsight labels. */
+  receptions: string[];
+  hindsight: string[];
   noise: number;
   problems: string[];
   error?: string;
@@ -118,12 +264,16 @@ export type PullResult = {
 export async function pull(dir: string, { now = iso(Date.now()) }: { now?: string } = {}): Promise<PullResult> {
   const c = await context(dir);
   const cursor = S.readCursor(dir);
-  const out: PullResult = { ok: true, status: "pulled", touched: {}, written: [], verified: [], kept: [], proposed: [], marked: [], noise: 0, problems: [...c.problems] };
+  const out: PullResult = { ok: true, status: "pulled", touched: {}, written: [], verified: [], kept: [], proposed: [], marked: [], receptions: [], hindsight: [], noise: 0, problems: [...c.problems] };
+  const store = await ventureStore(dir);
+  const live = await liveRecipes(readText(store));
+  if (live.failures.length) return { ...out, ok: false, status: "failed", error: `a live recipe cannot be read, so its pattern is not rendered: ${live.failures.join("; ")}` };
+  const heard = [...new Set([...c.heard, ...live.recipes.flatMap((r) => rangeIds(r.ranges))])].sort();
   // New log lines per library, and the signals they name.
   const counts: Record<string, Record<string, number>> = {};
   const fresh: Pulled[] = [];
   for (const lib of c.libs.filter((l) => l.store)) {
-    const n = await S.newLines(lib, c.heard, cursor.libraries[lib.id] ?? {});
+    const n = await S.newLines(lib, heard, cursor.libraries[lib.id] ?? {});
     counts[lib.id] = n.counts;
     out.problems.push(...n.problems);
     for (const line of n.lines) {
@@ -132,17 +282,18 @@ export async function pull(dir: string, { now = iso(Date.now()) }: { now?: strin
     }
   }
   const log = entries(dir) as ProvLine[];
-  const touched = S.touched({ fresh, log, since: cursor.provenance, collections: S.collectionsOf(c.listeners), facts: S.factRefs(c.listeners).map(S.factFile) });
+  const touched = S.touched({ fresh, log, since: cursor.provenance, collections: S.collectionsOf(c.listeners), facts: [...S.factRefs(c.listeners).map(S.factFile), ...live.recipes.flatMap((r) => Object.values(r.facts).map(S.factFile))] });
   out.touched = Object.fromEntries(touched);
   const next = { libraries: { ...cursor.libraries, ...counts }, provenance: log.at(-1)?.hash ?? null };
   const moved = JSON.stringify(next.libraries) !== JSON.stringify(cursor.libraries);
   if (!touched.size) {
     // Nothing to render. The cursor moves only when a library published lines no listener could use.
     if (moved) saveCursor(dir, { ...next, provenance: cursor.provenance, pulled_at: now });
-    return { ...out, status: "nothing new" };
+    const hs = await fillHindsight(dir, store, live.recipes, now, null);
+    return { ...out, hindsight: hs.written, problems: [...out.problems, ...hs.problems], status: "nothing new" };
   }
   const subjects = new Set(touched.keys());
-  const g = await gather(c.libs, c.heard, subjects, c.types, c.listeners);
+  const g = await gather(c.libs, heard, subjects, c.types, c.listeners);
   out.problems.push(...g.problems);
   const f = await factsOf(dir, c.v, c.listeners);
   out.problems.push(...f.problems);
@@ -150,10 +301,15 @@ export async function pull(dir: string, { now = iso(Date.now()) }: { now?: strin
   out.problems.push(...r.problems, ...r.withdrawal.refused.map((x) => `${x.signal} may not withdraw ${x.target}: ${x.why}`));
   out.noise = r.receptions.filter((x) => x.kind === "noise").length;
   if (r.status === "raised") return { ...out, ok: false, status: "raised", why: r.why };
-  const have = await current(dir, c.v, r.records.map((x) => x.route));
+  // Every pattern with a live recipe renders through it, before anything is written, so a recipe that fails writes nothing.
+  const t = await throughRecipes(dir, c.v, c.listeners, live.recipes, [...subjects], r, c.types, now);
+  if (!t.ok) return { ...out, ok: false, status: "failed", error: t.error };
+  out.problems.push(...t.problems);
+  out.noise = t.noise;
+  const have = await current(dir, c.v, t.records.map((x) => x.route));
   out.problems.push(...have.problems);
   const existing = new Set(r.proposals.filter((p) => decisionFile(dir, p.id)).map((p) => p.id));
-  const d = S.diff(r.records.filter((x) => have.where[x.route]), have.now, r.proposals, existing);
+  const d = S.diff(t.records.filter((x) => have.where[x.route]), have.now, r.proposals, existing);
   const bySignal = new Map(g.signals.map((s) => [s.signal.id, s]));
   const addresses = new Map(g.signals.map((s) => [s.signal.id, s.address]));
   const derived = (ch: Change) => [...ch.cites.map((id) => addresses.get(id) ?? id), ...ch.facts.filter((x) => !x.startsWith("ids:")).map(S.factFile)];
@@ -170,6 +326,9 @@ export async function pull(dir: string, { now = iso(Date.now()) }: { now?: strin
     if (!w.ok) return { ...out, ok: false, status: "failed", error: `${route}: ${w.error}` };
     out.written.push(file);
   }
+  const rw = await writeReceptions(dir, store, t, d.changes, now);
+  out.receptions = rw.written;
+  if (rw.error) return { ...out, ok: false, status: "failed", error: rw.error };
   for (const p of d.proposals) {
     const l = c.listeners.find((x) => x.id === p.listener);
     const res = propose(dir, { id: p.id, question: `Signal ${p.view.id} (${p.view.type}@${p.view.version} about ${p.view.subject}, ${p.view.time}) is salient at listener ${p.listener}${l?.note ? `: ${l.note}` : ""}. What does it change?`,
@@ -186,6 +345,9 @@ export async function pull(dir: string, { now = iso(Date.now()) }: { now?: strin
     mark(dir, [file], { source: bySignal.get(m.view.id)?.library ?? S.LOCAL_LIBRARY, paths: [addr], reads: addr, via: "signals" });
     out.marked.push(file);
   }
+  const hs = await fillHindsight(dir, store, live.recipes, now, live.recipes.length ? { known: t.known, types: t.types } : null);
+  out.hindsight = hs.written;
+  out.problems.push(...hs.problems);
   saveCursor(dir, { ...next, provenance: (entries(dir) as ProvLine[]).at(-1)?.hash ?? null, pulled_at: now });
   return out;
 }
@@ -219,15 +381,20 @@ export async function explainSignal(dir: string, id: string, { now = iso(Date.no
 /** Every projected record rendered again from what its subjects' signals say; drift is any that would change. */
 export async function replay(dir: string, { now = iso(Date.now()) }: { now?: string } = {}) {
   const c = await context(dir);
+  const live = await liveRecipes(readText(await ventureStore(dir)));
+  if (live.failures.length) return { ok: false, error: `a live recipe cannot be read: ${live.failures.join("; ")}`, problems: c.problems };
+  const heard = [...new Set([...c.heard, ...live.recipes.flatMap((x) => rangeIds(x.ranges))])].sort();
   const subjects = new Set(S.projectedSubjects(entries(dir) as ProvLine[]));
-  const g = await gather(c.libs, c.heard, subjects, c.types, c.listeners);
+  const g = await gather(c.libs, heard, subjects, c.types, c.listeners);
   const f = await factsOf(dir, c.v, c.listeners);
   const r = S.render({ signals: g.signals, types: c.types, listeners: c.listeners, facts: f.facts, now });
   if (r.status === "raised") return { ok: false, error: r.why, problems: [...c.problems, ...r.problems] };
-  const have = await current(dir, c.v, r.records.map((x) => x.route));
-  const d = S.diff(r.records.filter((x) => have.where[x.route]), have.now);
+  const t = await throughRecipes(dir, c.v, c.listeners, live.recipes, [...subjects], r, c.types, now);
+  if (!t.ok) return { ok: false, error: t.error, problems: c.problems };
+  const have = await current(dir, c.v, t.records.map((x) => x.route));
+  const d = S.diff(t.records.filter((x) => have.where[x.route]), have.now);
   const drift = d.changes.filter((x) => x.kind === "new" || x.kind === "changed").map((x) => ({ file: have.where[x.route].file, kind: x.kind, rendered: x.record, held: x.before ?? null }));
-  return { ok: true, result: { subjects: [...subjects], records: d.changes.length, drift }, problems: [...c.problems, ...g.problems, ...f.problems, ...have.problems, ...r.problems] };
+  return { ok: true, result: { subjects: [...subjects], records: d.changes.length, drift }, problems: [...c.problems, ...g.problems, ...f.problems, ...t.problems, ...have.problems, ...r.problems] };
 }
 
 export type EmitOptions = { props?: Record<string, unknown>; subject?: string; time?: string; rating?: string; by?: string; cites?: string[]; supersedes?: string; retracts?: string; now?: string };
@@ -282,6 +449,8 @@ function print(what: string, r: { ok: boolean; error?: string; result?: unknown;
     for (const f of p.verified) console.log(`  verified  ${f}`);
     for (const x of p.proposed) console.log(`  proposed  ${x}`);
     for (const f of p.marked) console.log(`  marked    ${f}`);
+    for (const f of p.receptions) console.log(`  received  ${f}`);
+    for (const f of p.hindsight) console.log(`  hindsight ${f}`);
   } else if (what === "explain" && r.ok) {
     const e = r.result as ReturnType<typeof S.explain>;
     console.log(`${e.signal} (${e.library})${e.withdrawn_by ? `, withdrawn by ${e.withdrawn_by}` : ""}`);

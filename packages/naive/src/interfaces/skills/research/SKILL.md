@@ -62,5 +62,6 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 | Eval sets, scoring, plans and the check command | not built (build plan item 5) |
 | The recipe write route with its base sha and verdict | not built (build plan item 6) |
 | Accept with the holdout check, and the forward monitor | not built (build plan item 8) |
+| The starter recipe (`naive recipes init`), the pull rendering through a live recipe, receptions beside each record and hindsight | built (`packages/naive/src/engine/recipes/render.ts`, build plan item 9) |
 | Knob search with no model | not built (build plan item 10) |
 | The unattended loop with spend limits | Mentura, not built |

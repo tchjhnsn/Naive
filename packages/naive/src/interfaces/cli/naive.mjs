@@ -60,10 +60,14 @@
 //   naive signals emit <type> --props '<json>' [--subject <id>] [--time <date>] [--rating B2] [--by <person>] [--cite <url>]
 //                     [--supersedes <signal id> | --retracts <signal id>]
 //                                                   record a signal in the venture's local library, raw/signals/, as a person
-//   naive signals pull [--now <iso>]                render what new signals say into records through the listeners, as the
-//                                                   signal projector; a pull after a pull writes nothing
+//   naive signals pull [--now <iso>]                render what new signals say into records through the listeners, or
+//                                                   through a pattern's live recipe in the sandbox, as the signal projector,
+//                                                   with receptions beside each recipe's record and hindsight once the
+//                                                   horizon passed; a pull after a pull writes nothing
 //   naive signals explain <signal id> [--now <iso>] the signal at every listener: salient or noise, and why
 //   naive signals replay                            render every projected record again from what it cites and report drift
+//   naive recipes init <pattern> --by <person>     a person writes the starter recipe, the plain fold from the signal
+//                                                   types' projects, at <pattern>.recipe.ts
 //   naive recipes plan <pattern> --by <person> [--weights uniform|cited] [--gap <duration>] [--min-gain <n>]
 //                                                   a person's eval plan: writes <pattern>.plan.json and freezes _eval/<sha>/
 //   naive recipes check <pattern> [--json]          training feedback: per-row losses, settled and predicted, noise disagreements
@@ -337,7 +341,8 @@ else if (cmd === "build" || cmd === "start") {
   if (!["emit", "pull", "explain", "replay"].includes(what)) { console.error("usage: naive signals emit <type> --props '<json>' | pull | explain <signal id> | replay [--venture <dir>]"); process.exit(2); }
   process.exit(run("packages/naive/src/router/orchestration/signals.ts", [here(), what, ...args]));
 } else if (cmd === "recipes") {
-  // Eval plans and training feedback for a venture's recipes (packages/naive/src/engine/recipes/cli.ts).
+  // Starter recipes, eval plans and training feedback for a venture's recipes (packages/naive/src/engine/recipes/cli.ts).
+  // That script reads --by, --weights, --gap, --min-gain and --json; the rest pass through.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/recipes/cli.ts", [here(), ...args]));
 } else if (cmd === "lint") {
