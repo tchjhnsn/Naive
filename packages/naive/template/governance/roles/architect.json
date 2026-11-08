@@ -4,7 +4,7 @@
   "aliases": [
     "cto"
   ],
-  "function": "engineering",
+  "function": "products",
   "description": "Owns structure, ADRs and reviews the builder's work.",
   "grantable_classes": [
     "new-structure",

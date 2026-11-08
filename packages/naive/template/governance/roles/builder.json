@@ -1,7 +1,7 @@
 {
   "id": "builder",
   "name": "Builder",
-  "function": "engineering",
+  "function": "products",
   "description": "Implements handoffs; proves done with conformance checks.",
   "grantable_classes": [
     "implementation-detail",

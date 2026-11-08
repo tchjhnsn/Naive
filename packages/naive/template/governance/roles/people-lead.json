@@ -1,7 +1,7 @@
 {
   "id": "people-lead",
   "name": "People lead",
-  "function": "people",
+  "function": "human-capital",
   "description": "Owns the team plan, roles and recruiting.",
   "grantable_classes": [
     "defer-or-route"

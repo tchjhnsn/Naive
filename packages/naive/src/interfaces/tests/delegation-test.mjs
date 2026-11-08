@@ -76,6 +76,14 @@ fails("only the chief delegator goes unverified", (_, roles) => {
   const p = join(roles, "counsel.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, verified_by: null }));
 }, /only the chief delegator/);
+fails("a role whose function is not a departments.json id fails", (_, roles) => {
+  const p = join(roles, "counsel.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  writeFileSync(p, JSON.stringify({ ...r, function: "legal" }));
+}, /role\/counsel: function legal is not an id in packages\/naive\/src\/functions\/departments.json/);
+fails("function all is for the chief delegator only", (_, roles) => {
+  const p = join(roles, "builder.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  writeFileSync(p, JSON.stringify({ ...r, function: "all" }));
+}, /role\/builder: function all is for the chief delegator only/);
 
 for (const scope of ["engineering/../finance/", "", "/", "./engineering/"]) fails(`scope ${JSON.stringify(scope)} is refused`, (d) => { grant(d, "architect-to-builder").scope = scope; }, /not "venture" or a plain path/);
 expect("the schema refuses a scope with ..", schemaCheck({ ...base, grants: [{ ...grant(base, "architect-to-builder"), scope: "engineering/../finance/" }] }).status !== 0);

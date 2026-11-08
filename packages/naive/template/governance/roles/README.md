@@ -60,6 +60,10 @@ The roles folder is **selective, not exhaustive**. Most ICs and many specialist 
 
 **Authoring wave:** 6 exec roles authored 2026-05-14. Functional stubs (HR, TA, FDE, department-head pattern) added 2026-08-10 with [[position-schema]]. Next priority remains CFO + General Counsel when Business scope expands beyond COO.
 
+## Role template JSON and its function
+
+Each `<id>.json` here is a role template the delegation check reads (`packages/naive/src/records/role-template.schema.json`). Its `function` is an id in `packages/naive/src/functions/departments.json`, or `all` for the founder, the chief delegator, alone; `node packages/naive/src/checks/check-delegation.mjs` fails on any other value. Today: architect, builder and product-design-lead serve `products`; chief-of-staff serves `capabilities` (it runs the docket and handoffs, which is portfolio and project work); counsel serves `risk-and-compliance`; finance-lead serves `finance`; marketing-lead serves `marketing-and-sales`; people-lead serves `human-capital`; validation-lead serves `strategy`.
+
 ## Per-role file structure
 
 Every per-role file follows the same shape:

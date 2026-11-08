@@ -1,6 +1,6 @@
 {
   "version": "0.5.0",
-  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder). Kinds (record, log, derived) tell a host how to commit each file in a venture: a record type's kind defaults to record, and files names the venture files no record type covers.",
+  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, the function that owns it (a packages/naive/src/functions/departments.json id, or null when several functions share it), its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder). Kinds (record, log, derived) tell a host how to commit each file in a venture: a record type's kind defaults to record, and files names the venture files no record type covers.",
   "layers": [
     "purpose",
     "knowledge",
@@ -13,6 +13,7 @@
     {
       "id": "workspace",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/workspace.schema.json",
       "paths": [
@@ -27,6 +28,7 @@
     {
       "id": "calendar",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/calendar.schema.json",
       "paths": [
@@ -38,6 +40,7 @@
     {
       "id": "workspace-founder",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/workspace-founder.schema.json",
       "paths": [
@@ -49,6 +52,7 @@
     {
       "id": "founder-idea",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/founder-idea.schema.json",
       "paths": [
@@ -62,6 +66,7 @@
     {
       "id": "founder-reference",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/founder-reference.schema.json",
       "paths": [
@@ -73,6 +78,7 @@
     {
       "id": "founder-inspiration",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/founder-inspiration.schema.json",
       "paths": [
@@ -84,6 +90,7 @@
     {
       "id": "founder-private",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/founder-private.schema.json",
       "paths": [
@@ -95,6 +102,7 @@
     {
       "id": "calendar-event",
       "layer": "system",
+      "function": null,
       "level": "workspace",
       "schema": "packages/naive/src/records/calendar-event.schema.json",
       "paths": [
@@ -113,6 +121,7 @@
     {
       "id": "venture",
       "layer": "system",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/venture.schema.json",
       "paths": [
@@ -170,6 +179,7 @@
     {
       "id": "venture-core",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/venture-core.schema.json",
       "view_of": "venture",
@@ -180,6 +190,7 @@
     {
       "id": "venture-profile",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": null,
       "form": "prose",
@@ -191,6 +202,7 @@
     {
       "id": "product",
       "layer": "purpose",
+      "function": "products",
       "level": "venture",
       "schema": "packages/naive/src/records/product.schema.json",
       "paths": [
@@ -220,6 +232,7 @@
     {
       "id": "account",
       "layer": "purpose",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/account.schema.json",
       "paths": [
@@ -238,6 +251,7 @@
     {
       "id": "telos",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/telos.schema.json",
       "paths": [
@@ -269,6 +283,7 @@
     {
       "id": "goal",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/goal.schema.json",
       "paths": [
@@ -281,6 +296,7 @@
     {
       "id": "requirement",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/requirement.schema.json",
       "paths": [
@@ -300,6 +316,7 @@
     {
       "id": "exit-criteria",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/exit-criteria.schema.json",
       "paths": [
@@ -324,6 +341,7 @@
     {
       "id": "constraints",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/constraints.schema.json",
       "paths": [
@@ -336,6 +354,7 @@
     {
       "id": "framework",
       "layer": "purpose",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/framework.schema.json",
       "paths": [
@@ -346,6 +365,7 @@
     {
       "id": "idea-dump",
       "layer": "purpose",
+      "function": null,
       "level": "venture",
       "schema": null,
       "form": "prose",
@@ -360,6 +380,7 @@
     {
       "id": "idea-map",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": null,
       "form": "markdown",
@@ -374,6 +395,7 @@
     {
       "id": "idea-graph",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/idea-graph.schema.json",
       "paths": [
@@ -387,6 +409,7 @@
     {
       "id": "validation-problem",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-problem.schema.json",
       "paths": [
@@ -408,6 +431,7 @@
     {
       "id": "validation-interview",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-interview.schema.json",
       "paths": [
@@ -436,6 +460,7 @@
     {
       "id": "validation-feedback",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-feedback.schema.json",
       "paths": [
@@ -454,6 +479,7 @@
     {
       "id": "validation-solution",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-solution.schema.json",
       "paths": [
@@ -474,6 +500,7 @@
     {
       "id": "validation-product-market-fit",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-product-market-fit.schema.json",
       "paths": [
@@ -494,6 +521,7 @@
     {
       "id": "validation-pricing",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-pricing.schema.json",
       "paths": [
@@ -514,6 +542,7 @@
     {
       "id": "validation-go-to-market",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-go-to-market.schema.json",
       "paths": [
@@ -534,6 +563,7 @@
     {
       "id": "validation-team",
       "layer": "purpose",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/validation-team.schema.json",
       "paths": [
@@ -554,6 +584,7 @@
     {
       "id": "validation-operations-readiness",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/validation-operations-readiness.schema.json",
       "paths": [
@@ -574,6 +605,7 @@
     {
       "id": "validation-weights",
       "layer": "purpose",
+      "function": "strategy",
       "level": "method",
       "schema": null,
       "form": "json",
@@ -585,6 +617,7 @@
     {
       "id": "anatomy-framework",
       "layer": "purpose",
+      "function": "products",
       "level": "method",
       "schema": null,
       "form": "json",
@@ -597,6 +630,7 @@
     {
       "id": "playbook",
       "layer": "purpose",
+      "function": "strategy",
       "level": "method",
       "schema": "packages/naive/src/records/playbook.schema.json",
       "paths": [
@@ -607,6 +641,7 @@
     {
       "id": "profile-attributes",
       "layer": "purpose",
+      "function": "strategy",
       "level": "method",
       "schema": "packages/naive/src/records/profile-attributes.schema.json",
       "paths": [
@@ -617,6 +652,7 @@
     {
       "id": "idea-map-conventions",
       "layer": "purpose",
+      "function": "strategy",
       "level": "method",
       "schema": null,
       "form": "json",
@@ -628,6 +664,7 @@
     {
       "id": "anatomy-answers",
       "layer": "purpose",
+      "function": "products",
       "level": "venture",
       "schema": null,
       "form": "json",
@@ -650,6 +687,7 @@
     {
       "id": "anatomy-input",
       "layer": "purpose",
+      "function": "products",
       "level": "venture",
       "schema": null,
       "form": "json",
@@ -662,6 +700,7 @@
     {
       "id": "decision",
       "layer": "knowledge",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/decision.schema.json",
       "paths": [
@@ -672,6 +711,7 @@
     {
       "id": "decision-record",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/decision-record.schema.json",
       "paths": [
@@ -683,6 +723,7 @@
     {
       "id": "decision-impact",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/decision-impact.schema.json",
       "paths": [
@@ -701,6 +742,7 @@
     {
       "id": "nextjs-status",
       "layer": "knowledge",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/nextjs-status.schema.json",
       "paths": [
@@ -711,6 +753,7 @@
     {
       "id": "design-document",
       "layer": "knowledge",
+      "function": null,
       "level": "method",
       "schema": null,
       "form": "markdown",
@@ -722,6 +765,7 @@
     {
       "id": "knowledge-sources",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/knowledge-sources.schema.json",
       "paths": [
@@ -745,6 +789,7 @@
     {
       "id": "where-used",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/where-used.schema.json",
       "paths": [
@@ -768,6 +813,7 @@
     {
       "id": "freshness-profiles",
       "layer": "knowledge",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/freshness-profiles.schema.json",
       "form": "json",
@@ -786,6 +832,7 @@
     {
       "id": "sdlc-catalog",
       "layer": "knowledge",
+      "function": "products",
       "level": "method",
       "schema": "packages/naive/src/records/sdlc-catalog.schema.json",
       "form": "json",
@@ -814,6 +861,7 @@
     {
       "id": "freshness-log",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/freshness-log.schema.json",
       "form": "json-lines",
@@ -834,6 +882,7 @@
     {
       "id": "department-catalog",
       "layer": "operations",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/department-catalog.schema.json",
       "paths": [
@@ -844,6 +893,7 @@
     {
       "id": "operating-rules",
       "layer": "operations",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/operating-rules.schema.json",
       "paths": [
@@ -861,6 +911,7 @@
     {
       "id": "department",
       "layer": "operations",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/department.schema.json",
       "paths": [
@@ -881,6 +932,7 @@
     {
       "id": "ontology",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/ontology-metamodel.schema.json",
       "form": "json",
@@ -892,6 +944,7 @@
     {
       "id": "ontology-catalog",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/ontology-catalog.schema.json",
       "form": "json",
@@ -903,6 +956,7 @@
     {
       "id": "golden-ruling",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/golden-ruling.schema.json",
       "form": "json",
@@ -915,6 +969,7 @@
     {
       "id": "reference",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/reference.schema.json",
       "generator": "packages/naive/src/engine/generators/reference.mjs",
@@ -927,6 +982,7 @@
     {
       "id": "integration",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/integration.schema.json",
       "form": "json-list",
@@ -945,6 +1001,7 @@
     {
       "id": "business-models",
       "layer": "system",
+      "function": "strategy",
       "level": "method",
       "schema": null,
       "form": "json",
@@ -956,6 +1013,7 @@
     {
       "id": "scaffold",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": null,
       "form": "json",
@@ -967,6 +1025,7 @@
     {
       "id": "data-model",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/data-model.schema.json",
       "paths": [
@@ -977,6 +1036,7 @@
     {
       "id": "kit-manifest",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/layer.schema.json",
       "paths": [
@@ -1009,6 +1069,7 @@
     {
       "id": "handoff",
       "layer": "operations",
+      "function": "service-delivery",
       "level": "venture",
       "schema": "packages/naive/src/records/handoff.schema.json",
       "paths": [
@@ -1052,6 +1113,7 @@
     {
       "id": "activity",
       "layer": "operations",
+      "function": "service-delivery",
       "level": "venture",
       "schema": "packages/naive/src/records/activity.schema.json",
       "paths": [
@@ -1063,6 +1125,7 @@
     {
       "id": "activity-summary",
       "layer": "operations",
+      "function": "service-delivery",
       "level": "venture",
       "schema": "packages/naive/src/records/activity-summary.schema.json",
       "paths": [
@@ -1074,6 +1137,7 @@
     {
       "id": "evidence",
       "layer": "evidence",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/evidence.schema.json",
       "paths": [
@@ -1097,6 +1161,7 @@
     {
       "id": "eval-suite",
       "layer": "evidence",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/eval-suite.schema.json",
       "paths": [
@@ -1106,6 +1171,7 @@
     {
       "id": "design-documents-registry",
       "layer": "evidence",
+      "function": "capabilities",
       "level": "method",
       "schema": null,
       "form": "json",
@@ -1124,6 +1190,7 @@
     {
       "id": "benchmark",
       "layer": "evidence",
+      "function": null,
       "level": "method",
       "schema": null,
       "form": "json",
@@ -1135,6 +1202,7 @@
     {
       "id": "decision-rights",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/decision-rights.schema.json",
       "paths": [
@@ -1159,6 +1227,7 @@
     {
       "id": "role",
       "layer": "governance",
+      "function": null,
       "level": "method",
       "schema": null,
       "form": "json",
@@ -1170,6 +1239,7 @@
     {
       "id": "pillar",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": null,
       "form": "prose",
@@ -1182,6 +1252,7 @@
     {
       "id": "ownership",
       "layer": "governance",
+      "function": "finance",
       "level": "venture",
       "schema": "packages/naive/src/records/ownership.schema.json",
       "paths": [
@@ -1206,6 +1277,7 @@
     {
       "id": "board",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/board.schema.json",
       "paths": [
@@ -1225,6 +1297,7 @@
     {
       "id": "founder-agreement",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/founder-agreement.schema.json",
       "paths": [
@@ -1249,6 +1322,7 @@
     {
       "id": "exit",
       "layer": "governance",
+      "function": "finance",
       "level": "venture",
       "schema": "packages/naive/src/records/exit.schema.json",
       "paths": [
@@ -1273,6 +1347,7 @@
     {
       "id": "publication-policy",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/publication-policy.schema.json",
       "paths": [
@@ -1297,6 +1372,7 @@
     {
       "id": "internal-terms",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/internal-terms.schema.json",
       "paths": [
@@ -1310,6 +1386,7 @@
     {
       "id": "publications",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/publications.schema.json",
       "paths": [
@@ -1321,6 +1398,7 @@
     {
       "id": "marketing-matrix",
       "layer": "operations",
+      "function": "marketing-and-sales",
       "level": "method",
       "schema": null,
       "form": "json",
@@ -1332,6 +1410,7 @@
     {
       "id": "site-presence",
       "layer": "operations",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/site-presence.schema.json",
       "paths": [
@@ -1343,6 +1422,7 @@
     {
       "id": "marketing-sitemap",
       "layer": "operations",
+      "function": "marketing-and-sales",
       "level": "venture",
       "schema": "packages/naive/src/records/marketing-sitemap.schema.json",
       "paths": [
@@ -1356,6 +1436,7 @@
     {
       "id": "marketing-content",
       "layer": "operations",
+      "function": "marketing-and-sales",
       "level": "venture",
       "schema": null,
       "form": "markdown",
@@ -1370,6 +1451,7 @@
     {
       "id": "need-now",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": null,
       "form": "json",
@@ -1388,6 +1470,7 @@
     {
       "id": "venture-packages",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": null,
       "form": "json",
@@ -1408,6 +1491,7 @@
     {
       "id": "frame",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/frame.schema.json",
       "form": "json",
@@ -1426,6 +1510,7 @@
     {
       "id": "venture-package",
       "layer": "system",
+      "function": null,
       "level": "venture",
       "schema": null,
       "form": "json",
@@ -1439,6 +1524,7 @@
     {
       "id": "release",
       "layer": "system",
+      "function": null,
       "level": "venture",
       "schema": null,
       "form": "json",
@@ -1451,6 +1537,7 @@
     {
       "id": "team-plan",
       "layer": "operations",
+      "function": "human-capital",
       "level": "venture",
       "schema": "packages/naive/src/records/team-plan.schema.json",
       "paths": [
@@ -1481,6 +1568,7 @@
     {
       "id": "agent-capability",
       "layer": "evidence",
+      "function": "human-capital",
       "level": "method",
       "schema": "packages/naive/src/records/agent-capability.schema.json",
       "paths": [
@@ -1503,6 +1591,7 @@
     {
       "id": "provenance",
       "layer": "system",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/provenance-entry.schema.json",
       "form": "json-lines",
@@ -1523,6 +1612,7 @@
     {
       "id": "trace-span",
       "layer": "system",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/trace-span.schema.json",
       "generator": "packages/naive/src/engine/generators/trace-span.mjs",
@@ -1544,6 +1634,7 @@
     {
       "id": "naive-config",
       "layer": "system",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/naive-config.schema.json",
       "paths": [
@@ -1573,6 +1664,7 @@
     {
       "id": "route-aliases",
       "layer": "interface",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/route-aliases.schema.json",
       "paths": [
@@ -1583,6 +1675,7 @@
     {
       "id": "adapter",
       "layer": "interface",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/adapter.schema.json",
       "paths": [
@@ -1593,6 +1686,7 @@
     {
       "id": "upgrade-registry",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/upgrade-registry.schema.json",
       "paths": [
@@ -1610,6 +1704,7 @@
     {
       "id": "kit",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/kit.schema.json",
       "paths": [],
@@ -1625,6 +1720,7 @@
     {
       "id": "icp",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/icp-profile.schema.json",
       "paths": [
@@ -1644,6 +1740,7 @@
     {
       "id": "alignment",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/alignment.schema.json",
       "paths": [
@@ -1658,6 +1755,7 @@
     {
       "id": "strategic-foundation",
       "layer": "purpose",
+      "function": "strategy",
       "level": "method",
       "schema": "packages/naive/src/records/strategic-foundation.schema.json",
       "paths": [
@@ -1675,6 +1773,7 @@
     {
       "id": "customer",
       "layer": "purpose",
+      "function": "marketing-and-sales",
       "level": "venture",
       "schema": "packages/naive/src/records/data-master.schema.json",
       "paths": [
@@ -1686,6 +1785,7 @@
     {
       "id": "investor",
       "layer": "purpose",
+      "function": "external-relationships",
       "level": "venture",
       "schema": "packages/naive/src/records/data-master.schema.json",
       "paths": [
@@ -1697,6 +1797,7 @@
     {
       "id": "money-account",
       "layer": "purpose",
+      "function": "finance",
       "level": "venture",
       "schema": "packages/naive/src/records/data-master.schema.json",
       "paths": [
@@ -1708,6 +1809,7 @@
     {
       "id": "money-summary",
       "layer": "purpose",
+      "function": "finance",
       "level": "venture",
       "schema": "packages/naive/src/records/money-summary.schema.json",
       "paths": [
@@ -1719,6 +1821,7 @@
     {
       "id": "data-stream",
       "layer": "purpose",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/stream.schema.json",
       "paths": [
@@ -1734,6 +1837,7 @@
     {
       "id": "raw-source",
       "layer": "purpose",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/raw-source.schema.json",
       "paths": [
@@ -1745,6 +1849,7 @@
     {
       "id": "artifact",
       "layer": "interface",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/artifact.schema.json",
       "paths": [
@@ -1756,6 +1861,7 @@
     {
       "id": "raw-text",
       "layer": "purpose",
+      "function": null,
       "level": "venture",
       "schema": null,
       "form": "markdown",
@@ -1768,6 +1874,7 @@
     {
       "id": "judgment",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/judgment.schema.json",
       "paths": [
@@ -1791,6 +1898,7 @@
     {
       "id": "venture-types",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/venture-types.schema.json",
       "paths": [
@@ -1801,6 +1909,7 @@
     {
       "id": "venture-role",
       "layer": "governance",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/venture-role.schema.json",
       "paths": [
@@ -1811,6 +1920,7 @@
     {
       "id": "role-template",
       "layer": "governance",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/role-template.schema.json",
       "paths": [
@@ -1842,6 +1952,7 @@
     {
       "id": "delegation",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/delegation.schema.json",
       "paths": [
@@ -1871,6 +1982,7 @@
     {
       "id": "detector",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/detector.schema.json",
       "generator": "packages/naive/src/engine/generators/detector.ts",
@@ -1885,6 +1997,7 @@
     {
       "id": "detector-trial",
       "layer": "governance",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/detector-trial.schema.json",
       "generator": "packages/naive/src/engine/generators/detector-trial.ts",
@@ -1906,6 +2019,7 @@
     {
       "id": "people",
       "layer": "operations",
+      "function": "human-capital",
       "level": "venture",
       "schema": "packages/naive/src/records/people.schema.json",
       "paths": [
@@ -1918,6 +2032,7 @@
     {
       "id": "founder",
       "layer": "operations",
+      "function": "human-capital",
       "level": "venture",
       "schema": "packages/naive/src/records/founder.schema.json",
       "paths": [
@@ -1929,6 +2044,7 @@
     {
       "id": "fund-thesis",
       "layer": "purpose",
+      "function": "finance",
       "level": "venture",
       "schema": "packages/naive/src/records/fund-thesis.schema.json",
       "paths": [
@@ -1940,6 +2056,7 @@
     {
       "id": "fund-terms",
       "layer": "purpose",
+      "function": "finance",
       "level": "venture",
       "schema": "packages/naive/src/records/fund-terms.schema.json",
       "paths": [
@@ -1951,6 +2068,7 @@
     {
       "id": "deal",
       "layer": "purpose",
+      "function": "marketing-and-sales",
       "level": "venture",
       "schema": "packages/naive/src/records/deal.schema.json",
       "paths": [
@@ -1962,6 +2080,7 @@
     {
       "id": "systems-catalog",
       "layer": "knowledge",
+      "function": "it",
       "level": "method",
       "schema": "packages/naive/src/records/systems-catalog.schema.json",
       "paths": [
@@ -1972,6 +2091,7 @@
     {
       "id": "glossary",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/glossary.schema.json",
       "generator": "packages/naive/src/engine/generators/glossary.mjs",
@@ -1992,6 +2112,7 @@
     {
       "id": "marketing-design-system",
       "layer": "operations",
+      "function": "marketing-and-sales",
       "level": "venture",
       "schema": "packages/naive/src/records/marketing-design-system.schema.json",
       "paths": [
@@ -2021,6 +2142,7 @@
     {
       "id": "marketing-brand",
       "layer": "operations",
+      "function": "marketing-and-sales",
       "level": "venture",
       "schema": "packages/naive/src/records/marketing-brand.schema.json",
       "paths": [
@@ -2045,6 +2167,7 @@
     {
       "id": "public-assets",
       "layer": "operations",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/public-assets.schema.json",
       "paths": [
@@ -2063,6 +2186,7 @@
     {
       "id": "bug",
       "layer": "evidence",
+      "function": "products",
       "level": "venture",
       "schema": "packages/naive/src/records/bug.schema.json",
       "generator": "packages/naive/src/engine/generators/bug.mjs",
@@ -2082,6 +2206,7 @@
     {
       "id": "telemetry-event",
       "layer": "evidence",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/telemetry.schema.json",
       "form": "json-lines",
@@ -2094,6 +2219,7 @@
     {
       "id": "beta-capabilities",
       "layer": "interface",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/beta-capabilities.schema.json",
       "paths": [
@@ -2104,6 +2230,7 @@
     {
       "id": "decision-roadmap",
       "layer": "system",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/decision-roadmap.schema.json",
       "form": "json",
@@ -2122,6 +2249,7 @@
     {
       "id": "lifecycle-playbook",
       "layer": "system",
+      "function": "products",
       "level": "method",
       "schema": "packages/naive/src/records/lifecycle-playbook.schema.json",
       "form": "json",
@@ -2134,6 +2262,7 @@
     {
       "id": "term-list",
       "layer": "knowledge",
+      "function": null,
       "level": "method",
       "schema": null,
       "form": "json",
@@ -2145,6 +2274,7 @@
     {
       "id": "signal-type",
       "layer": "knowledge",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/signal-type.schema.json",
       "generator": "packages/naive/src/engine/generators/signal-type.ts",
@@ -2164,6 +2294,7 @@
     {
       "id": "signal",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/signal.schema.json",
       "generator": "packages/naive/src/engine/generators/signal.ts",
@@ -2194,6 +2325,7 @@
     {
       "id": "signal-log",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/signal-log.schema.json",
       "generator": "packages/naive/src/engine/generators/signal-log.ts",
@@ -2215,6 +2347,7 @@
     {
       "id": "signal-library",
       "layer": "knowledge",
+      "function": null,
       "level": "method",
       "schema": "packages/naive/src/records/signal-library.schema.json",
       "generator": "packages/naive/src/engine/generators/signal-library.ts",
@@ -2226,6 +2359,7 @@
     {
       "id": "competitor",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/competitor.schema.json",
       "generator": "packages/naive/src/engine/generators/competitor.ts",
@@ -2238,6 +2372,7 @@
     {
       "id": "competitor-signals",
       "layer": "purpose",
+      "function": "strategy",
       "level": "venture",
       "schema": "packages/naive/src/records/competitor-signals.schema.json",
       "generator": "packages/naive/src/engine/generators/competitor-signals.ts",
@@ -2304,6 +2439,7 @@
     {
       "id": "research-program",
       "layer": "operations",
+      "function": null,
       "level": "venture",
       "schema": null,
       "generator": "packages/naive/src/engine/generators/research-program.ts",
@@ -2317,6 +2453,7 @@
     {
       "id": "recipe",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/recipe.schema.json",
       "generator": "packages/naive/src/engine/generators/recipe.ts",
@@ -2339,6 +2476,7 @@
     {
       "id": "eval-plan",
       "layer": "evidence",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/eval-plan.schema.json",
       "generator": "packages/naive/src/engine/generators/eval-plan.ts",
@@ -2359,6 +2497,7 @@
     {
       "id": "experiment",
       "layer": "evidence",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/experiment.schema.json",
       "generator": "packages/naive/src/engine/generators/experiment.ts",
@@ -2390,6 +2529,7 @@
     {
       "id": "reception",
       "layer": "knowledge",
+      "function": null,
       "level": "venture",
       "schema": "packages/naive/src/records/reception.schema.json",
       "generator": "packages/naive/src/engine/generators/reception.ts",

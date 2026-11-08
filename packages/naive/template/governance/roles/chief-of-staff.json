@@ -1,7 +1,7 @@
 {
   "id": "chief-of-staff",
   "name": "Chief of staff",
-  "function": "operations",
+  "function": "capabilities",
   "description": "Reads the docket, delegates within its grant, writes handoffs, escalates the rest to the founder.",
   "grantable_classes": [
     "defer-or-route",

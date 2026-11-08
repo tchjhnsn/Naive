@@ -187,6 +187,7 @@
         "required": [
           "id",
           "layer",
+          "function",
           "level",
           "schema",
           "paths"
@@ -211,6 +212,25 @@
               "evidence",
               "governance",
               "interface"
+            ]
+          },
+          "function": {
+            "description": "The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.mjs checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null",
+            "enum": [
+              "strategy",
+              "products",
+              "marketing-and-sales",
+              "supply-chain",
+              "service-delivery",
+              "customer-service",
+              "human-capital",
+              "it",
+              "finance",
+              "assets",
+              "risk-and-compliance",
+              "external-relationships",
+              "capabilities",
+              null
             ]
           },
           "level": {
