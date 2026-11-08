@@ -33,7 +33,7 @@ import { hears, isEdge, receive, resolveType, satisfies, splitRange, typeOfView,
 import type { Facts, Received, Reception, View } from "./signals/render.ts";
 import type { Listener, ListenerPredicate, Signal, SignalType } from "../records/types/records.d.ts";
 
-export { diff, fill, render, resolveType, satisfies, splitRange, timeThenId, withdraw } from "./signals/render.ts";
+export { diff, fill, hears, render, renderCase, resolveType, satisfies, splitRange, timeThenId, typeOfView, viewsOf, withdraw } from "./signals/render.ts";
 export type { Change, Facts, Mark, Proposal, Received, Reception, RenderInput, RenderResult, Rendered, View } from "./signals/render.ts";
 
 const repo = new URL("../../../../", import.meta.url).pathname;
@@ -207,7 +207,7 @@ const operands = (listeners: readonly Listener[]) => listeners.flatMap((l) => (l
 export const factRefs = (listeners: readonly Listener[]) => [...new Set(operands(listeners).flatMap((o) => (o && typeof o === "object" && !Array.isArray(o) && "read" in o ? [o.read] : [])))].sort();
 /** The collections whose ids the listeners read. */
 export const collectionsOf = (listeners: readonly Listener[]) => [...new Set(operands(listeners).flatMap((o) => (o && typeof o === "object" && !Array.isArray(o) && "ids" in o ? [o.ids] : [])))].sort();
-/** The file a fact reference reads: foundation/icp.json#currencies reads foundation/icp.json. */
+/** The file a fact reference reads: foundation/icp/shop-owners.json#not reads foundation/icp/shop-owners.json. */
 export const factFile = (ref: string) => ref.split("#")[0];
 /** One field of a record, by a dotted path; the whole record when the path is empty. */
 export function fieldOf(record: unknown, path: string): unknown {

@@ -64,14 +64,14 @@ How a recipe is scored ("The metric", "The eval plan" and "Noise stored beside t
 
 ## How it connects
 
-- The sandbox is called by `eval-set.ts`, and `scoreExperiment` by the router's recipe route ([`router/recipes.ts`](../../router/recipes.ts), build plan item 6), which scores every write to `recipes/<pattern>` inside the write. The signal pull rendering through recipes (item 9) will call the sandbox too (not built).
+- The sandbox is called by `eval-set.ts` and by `packages/naive/src/checks/check-recipes.ts` (build plan item 11), which lints each recipe, reads its exports and renders each record that has a reception file again, with and without each noise signal. `scoreExperiment` is called by the router's recipe route ([`router/recipes.ts`](../../router/recipes.ts), build plan item 6), which scores every write to `recipes/<pattern>` inside the write. The signal pull rendering through recipes (item 9) will call the sandbox too (not built).
 - The sandbox calls Node's `node:child_process`, `node:vm` and `node:module` only. It imports nothing in the repository and spawns only `process.execPath`, never a command an environment variable names.
 - `outcomes.ts` reaches the signal render through its front door, `engine/signals.ts`. `eval-set.ts` reads provenance and traces (`core/`), the data model and schemas (`records/`), facts as of a point (`store/as-of.mjs`) and the eval plan generator.
 - Records: `naive recipes plan` reads the venture's signal libraries, `provenance.jsonl`, `traces/` and the recipe, and writes `<pattern>.plan.json` and `_eval/<sha>/eval-set.json`. No agent reads `_eval/` through the router.
 
 ## Not built
 
-- `naive recipes init`, holdout checks, and anything that writes reception files (so marking probes in them too) are not built: autoresearch build plan items 8 and 9.
+- `naive recipes init`, holdout checks, and anything that writes reception files (so marking probes in them too) are not built: autoresearch build plan items 8 and 9. The cross-file check of what exists, `packages/naive/src/checks/check-recipes.ts`, is built (item 11).
 - Forecasts resolved by a person's decision have outcome null, a plan for a pattern without `[id]`, and libraries in connectors other than filesystem are not built. Their schemas exist (item 3, `packages/naive/src/records/recipe.schema.json`, `eval-plan.schema.json`, `experiment.schema.json` and `reception.schema.json`), and the data model's recipe record type covers this folder's fixture.
 - Record and reception types generated from JSON Schema through `naive typegen`; the fixture and the example recipe in `packages/naive/src/records/examples/signals/` declare their own types.
 - Type stripping needs Node 22.13 or later. On an older Node every recipe fails closed with that reason.

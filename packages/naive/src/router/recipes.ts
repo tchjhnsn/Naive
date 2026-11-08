@@ -1,8 +1,9 @@
 // Recipe writes through the router (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Keep and
 // discard through the router", build plan item 6). The route is recipes/<pattern> (recipes/competitors/[id]/signals).
 //
-//   read    { pattern, tip, source, live, draft, plan, spent }: the tip is the recipe a write edits from (the last kept
-//           candidate in the experiment log, else the live <pattern>.recipe.ts, else none), with its source and sha
+//   read    { pattern, tip, source, live, draft, plan, spent }: the tip is the recipe a write edits from (the last
+//           candidate in the experiment log that moved it, a keep or a person's discard, else the live
+//           <pattern>.recipe.ts, else none), with its source and sha
 //   write   { source, base }: one experiment. base is the tip's sha the source was edited from, or null for a recipe's
 //           first write. In order, under one lock per pattern:
 //             1. a retry (the same plan, candidate and base already logged) answers the logged line and spends nothing;
@@ -11,11 +12,13 @@
 //             3. the venture's gate is asked first, so a refusal spends nothing;
 //             4. the candidate is scored (engine/recipes/eval-set.ts scoreExperiment: lint, training, dev against the tip
 //                on paired rows, or against the plain fold for a first write), inside a judgment span when traces are on;
-//             5. a keep lands: an agent's is held as a draft by the gate (the evidence package's recipe-keeps-held rule)
-//                and becomes the tip, a person's is written live and removes a held draft of an earlier tip; a discard
-//                or a fail lands nothing;
-//             6. the experiment line is appended to <pattern>.experiments.jsonl, hash-chained, with the candidate stored
-//                by its sha in the blob store and the span named; a discard or fail answers ok false with its verdict.
+//             5. the line is checked against experiment.schema.json, then a keep lands: an agent's is held as a draft by
+//                the gate (the evidence package's recipe-keeps-held rule) and becomes the tip; a person's write that is
+//                not a fail is written live, a discard too, because a person decides, and removes a held draft of an
+//                earlier tip; an agent's discard and every fail land nothing;
+//             6. the experiment line is appended to <pattern>.experiments.jsonl, hash-chained, with the candidate (and a
+//                live tip that had no line yet) stored by its sha in the blob store and the span named; what landed
+//                nothing answers ok false with its verdict.
 //
 // The evaluator writes the log; no route appends to it, so an agent cannot supply a score. Accept with the holdout check
 // is build plan item 8 (not built).
@@ -62,9 +65,12 @@ export function logLines(dir: string, pattern: string): Experiment[] {
   return existsSync(f) ? readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l) as Experiment) : [];
 }
 
-/** The tip: the last kept candidate in the log (its source from the blob store), else the live recipe, else null. */
+/** Whether a logged experiment moved the tip: a keep, or a person's discard, which lands live because a person decides. */
+export const movesTip = (l: Experiment): boolean => l.kind === "experiment" && (l.verdict === "keep" || (l.verdict === "discard" && l.actor?.kind === "person"));
+
+/** The tip: the last candidate in the log that moved it (its source from the blob store), else the live recipe, else null. */
 export function tipOf(dir: string, pattern: string, lines: readonly Experiment[] = logLines(dir, pattern)): Tip | null {
-  const kept = lines.filter((l) => l.kind === "experiment" && l.verdict === "keep").at(-1);
+  const kept = lines.filter(movesTip).at(-1);
   if (kept) {
     const bytes = readBlob(dir, kept.candidate);
     if (!bytes) throw new Error(`the blob store has no source for the tip ${kept.candidate}`);
@@ -114,10 +120,12 @@ function appendExperiment(dir: string, pattern: string, route: string, line: Omi
 
 /** The answer for a logged line: a keep is ok, with where it landed; a discard or fail is refused with its verdict. */
 function answer(dir: string, line: Experiment, extra: Obj = {}): Answer {
-  if (line.verdict === "keep") {
+  if (movesTip(line)) {
     const landed = line.provenance ? (entries(dir) as { hash: string; entity: string; activity: string }[]).find((e) => e.hash === line.provenance) : undefined;
-    return { ok: true, result: { verdict: "keep", kept_as: line.kept_as, tip: line.candidate, written: landed?.entity ?? null, draft: landed?.activity === "draft",
-      dev: line.dev, training: line.training, reason: line.reason, line, note: landed?.activity === "draft" ? "kept: held as a draft that is now the tip, for a person to accept" : "kept: written live, and now the tip", ...extra } };
+    const note = line.verdict === "discard" ? "discarded on dev, but a person decides: written live, and now the tip"
+      : landed?.activity === "draft" ? "kept: held as a draft that is now the tip, for a person to accept" : "kept: written live, and now the tip";
+    return { ok: true, result: { verdict: line.verdict, kept_as: line.kept_as, tip: line.candidate, written: landed?.entity ?? null, draft: landed?.activity === "draft",
+      dev: line.dev, training: line.training, reason: line.reason, line, note, ...extra } };
   }
   return { ok: false, outcome: line.verdict, verdict: line.verdict, error: `${line.verdict === "discard" ? "discarded" : "failed"}: ${line.reason ?? "no reason given"}`, line, ...extra };
 }
@@ -159,6 +167,8 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
     const gate = gateWrite({ dir, r: c.r, route: c.route, requested: c.route, file: liveFile(pattern), actor: c.actor, actor_id: c.actor_id, provenance: c.provenance ?? {}, gate: null });
     if (gate?.then === "refuse") return { ok: false, error: gate.why, gate_rule: gate.rule, refused_by: gate.source };
     writeBlob(dir, source);
+    // A tip that is the live recipe before any experiment is stored too, so every base the log names has its source.
+    if (tip?.from === "live") writeBlob(dir, tip.source);
     const attributes: Obj = { "naive.question": `does this recipe beat the tip of ${pattern} on dev?`, "naive.route": c.route };
     return withSpan(dir, { name: `recipe experiment ${pattern}`, kind: "judgment", attributes }, async (ctx) => {
       const scored: Scored = await scoreExperiment(set, plan as EvalPlan, source, tip?.source ?? null);
@@ -170,11 +180,13 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
         reason: scored.reason, actor: agent, span, provenance,
       }).filter(([, v]) => v !== undefined)) as unknown as Omit<Experiment, "prev" | "hash">;
       // The line is checked before a keep lands, so nothing is written that the log cannot record.
-      const check = validateValue("experiment.schema.json", chainOnto("genesis", lineOf(scored.verdict === "keep" ? "0".repeat(64) : undefined)));
+      // A keep moves the tip, and so does a person's discard: a person's write lands live because a person decides.
+      const lands = scored.verdict === "keep" || (scored.verdict === "discard" && c.actor === "person");
+      const check = validateValue("experiment.schema.json", chainOnto("genesis", lineOf(lands ? "0".repeat(64) : undefined)));
       if (check.status !== 0) return { ok: false, error: `the experiment line would not match experiment.schema.json, so nothing was written: ${(check.stdout || check.stderr).trim()}` };
       let landed: { hash: string } | null = null;
-      if (scored.verdict === "keep") {
-        const note = `kept as ${scored.kept_as} under plan ${plan.sha}`;
+      if (lands) {
+        const note = "kept_as" in scored ? `kept as ${scored.kept_as} under plan ${plan.sha}` : `discarded on dev under plan ${plan.sha}, written live by a person`;
         if (c.actor !== "person" && gate) {
           const held = heldDraft(dir, { draft: draftFile(liveFile(pattern)), file: liveFile(pattern), text: source, verdict: gate, route: c.route, agent, trial: undefined });
           landed = prov(dir, { entity: held.written, route: c.route, activity: "draft", agent, derived_from: [`${pattern}.plan.json`], note });
