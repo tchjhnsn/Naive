@@ -69,6 +69,7 @@ const steps = [
   ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["packages/naive/src/interfaces/tests/structure-checks-test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["packages/naive/src/engine/frames-test.mjs"]],
   ["premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)", "node", ["packages/naive/src/checks/premise-lint-test.mjs"]],
+  ["connections check: the capability cluster catalog names no vendor and only known functions and gap kinds; a send, payment or signature names public-commitment, spend-money or legal-or-terms; a connection never claims a field the source map gives another source", "node", ["packages/naive/src/checks/check-connections-test.ts"]],
   ["detectors check: fails only on structure, never on a number; a criterion change is proposed once, with 30 resolved trials and an interval that excludes zero, never for a one way door", "node", ["packages/naive/src/checks/check-detectors-test.ts"]],
   ["frames: instance", "node", ["packages/naive/src/engine/frames.mjs", "check"]],
   ["decision roadmaps and lifecycle playbooks (no cycles, known frames, a decider per step, one-way doors the founder's; installs propose open; gate evidence from the playbook)", "node", ["packages/naive/src/engine/roadmap-test.mjs"]],

@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "connection.schema.json",
+  "title": "Connection",
+  "description": "One outside system a venture connects, at <venture>/it/connections/<id>.json, owned by the it function (lead agents design, \"Capability clusters and connections\"). Its fields are the eight-point connection contract of the whole-venture monorepo thesis: (1) the records and fields the outside system is authoritative for, (2) the sync direction, (3) the allowed reads and writes with least-privilege scopes, (4) the events it sends and how each is signed, (5) the stable external id with provenance and last-synced time, (6) the actions that need a person's approval, each naming its decision class, (7) idempotency, retries and reconciliation, and (8) the deletion, export and disconnect plan. It also says what goes stale, what blocks and what degrades when the connection fails, which a lead reads. A connection says what is allowed and what is authoritative; the app's connectors do the acting, and a connector being present is not permission to act. packages/naive/src/checks/check-connections.ts refuses a send, payment or signature action without its approval class and a claim of authority over a field another source owns in the source map.",
+  "type": "object",
+  "required": ["id", "cluster", "authoritative_for", "sync", "access", "events", "external_id", "actions", "idempotency", "exit", "failure"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The connection's id, the same as its file name without .json." },
+    "title": { "type": "string" },
+    "cluster": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The capability cluster it fills, an id in packages/naive/src/functions/it/capability-clusters.json." },
+    "system": { "type": "string", "minLength": 1, "description": "The outside system by the venture's own name for it. The venture's record may name a vendor; Naive's catalog never does." },
+    "integration": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Optional: the integration id (packages/naive/src/records/layers/*/tooling/integrations.json) this connection is an instance of." },
+    "source": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The source id in the venture's knowledge/sources.json that this connection feeds. Needed when authoritative_for names anything: the source map, not the connection, says which source masters a field." },
+    "status": { "enum": ["planned", "connected", "disconnected"], "default": "planned" },
+    "authoritative_for": {
+      "type": "array",
+      "description": "Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.mjs) to a rule whose system of record is this connection's source; everything else stays owned by the repository.",
+      "items": {
+        "type": "object",
+        "required": ["record", "attribute"],
+        "additionalProperties": false,
+        "properties": {
+          "record": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A venture record type id." },
+          "attribute": { "type": "string", "pattern": "^(\\*|[a-z_][a-z0-9_]*)$", "description": "\"*\" for the whole record, or one top-level field." },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "sync": {
+      "type": "object",
+      "description": "Contract 2: which way data moves. The default is tool to repo, references only.",
+      "required": ["direction"],
+      "additionalProperties": false,
+      "properties": {
+        "direction": { "enum": ["tool-to-repo", "repo-to-tool", "both"], "default": "tool-to-repo" },
+        "references_only": { "type": "boolean", "default": true, "description": "True when the repository keeps only references (ids, links) and never a copy of the outside system's data." }
+      }
+    },
+    "access": {
+      "type": "object",
+      "description": "Contract 3: the allowed reads and writes, each with the least-privilege scope it needs.",
+      "required": ["reads", "writes"],
+      "additionalProperties": false,
+      "properties": {
+        "reads": { "type": "array", "items": { "$ref": "#/$defs/grant" } },
+        "writes": { "type": "array", "items": { "$ref": "#/$defs/grant" } }
+      }
+    },
+    "events": {
+      "type": "array",
+      "description": "Contract 4: the events and triggers the outside system sends. Each is checked by its signature before it is read; an event is an observation and never becomes a venture record by itself.",
+      "items": {
+        "type": "object",
+        "required": ["name", "signature"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "signature": {
+            "type": "object",
+            "required": ["method", "secret"],
+            "additionalProperties": false,
+            "properties": {
+              "method": { "type": "string", "minLength": 1, "description": "How the signature is checked, such as hmac-sha256." },
+              "secret": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$", "description": "The environment variable holding the signing secret, never the secret." }
+            }
+          },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "external_id": {
+      "type": "object",
+      "description": "Contract 5: the outside system's stable id for what it holds, recorded with provenance, and when it last synced.",
+      "required": ["field", "provenance", "last_synced"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "type": "string", "minLength": 1, "description": "The outside system's stable id field." },
+        "provenance": { "const": true, "description": "Every value synced in names this connection in the venture's provenance log." },
+        "last_synced": { "type": ["string", "null"], "format": "date-time", "description": "When it last synced, or null before the first sync." }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "description": "Contract 6: what the connection may do in the outside system. A send names public-commitment, a payment spend-money and a signature legal-or-terms, so a person approves each before it happens (delegation already enforces those classes). Other actions may name a decision class from governance/decision-rights.json.",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "kind": { "enum": ["send", "payment", "signature", "create", "update", "delete", "other"] },
+          "approval": { "type": ["string", "null"], "description": "The decision class whose holder approves the action, an id in governance/decision-rights.json." },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "idempotency": {
+      "type": "object",
+      "description": "Contract 7: the idempotency key, retries and reconciliation.",
+      "required": ["key", "retries", "reconciliation"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1, "description": "How the idempotency key of a write is formed, so a retry returns the stored result." },
+        "retries": {
+          "type": "object",
+          "required": ["max"],
+          "additionalProperties": false,
+          "properties": { "max": { "type": "integer", "minimum": 0 }, "backoff": { "type": "string" } }
+        },
+        "reconciliation": {
+          "type": "object",
+          "required": ["cadence", "compares"],
+          "additionalProperties": false,
+          "properties": {
+            "cadence": { "enum": ["hourly", "daily", "weekly"], "default": "daily" },
+            "compares": { "type": "string", "minLength": 1, "description": "What the reconciliation compares between the outside system and the repository." }
+          }
+        }
+      }
+    },
+    "exit": {
+      "type": "object",
+      "description": "Contract 8: the deletion, export and disconnect plan.",
+      "required": ["deletion", "export", "disconnect"],
+      "additionalProperties": false,
+      "properties": {
+        "deletion": { "type": "string", "minLength": 1 },
+        "export": { "type": "string", "minLength": 1 },
+        "disconnect": { "type": "string", "minLength": 1 }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "description": "What happens when the connection fails, which the lead whose portfolio depends on the cluster reads.",
+      "required": ["stale", "blocks", "degrades"],
+      "additionalProperties": false,
+      "properties": {
+        "stale": { "type": "array", "items": { "type": "string" }, "description": "Records or fields that go stale." },
+        "blocks": { "type": "array", "items": { "type": "string" }, "description": "Work that cannot happen until it is back." },
+        "degrades": { "type": "array", "items": { "type": "string" }, "description": "Work that goes on in a lesser way." }
+      }
+    },
+    "note": { "type": "string" }
+  },
+  "$defs": {
+    "grant": {
+      "type": "object",
+      "required": ["what", "scope"],
+      "additionalProperties": false,
+      "properties": {
+        "what": { "type": "string", "minLength": 1 },
+        "scope": { "type": "string", "minLength": 1, "description": "The narrowest scope the outside system offers for it." }
+      }
+    }
+  }
+}

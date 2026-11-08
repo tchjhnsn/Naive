@@ -1,0 +1,31 @@
+{
+  "name": "it",
+  "title": "IT",
+  "kind": "data",
+  "purpose": "The outside systems a venture connects, one it/connections/<id>.json each under the thesis's connection contract, and the capability clusters they fill (lead agents design, build plan item 7). The it function owns it, so the it agent gets its first write routes. Never complete.",
+  "function": "it",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "knowledge-sources"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "operations",
+  "records": [
+    "connection",
+    "capability-cluster"
+  ],
+  "schemas": [
+    "packages/naive/src/records/connection.schema.json",
+    "packages/naive/src/records/capability-cluster.schema.json"
+  ],
+  "templates": [],
+  "checks": [
+    "packages/naive/src/checks/check-connections.ts"
+  ],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}
