@@ -21,6 +21,7 @@
 //   node packages/naive/src/checks/check-team.mjs <workspace or venture dir>
 
 import { ventureFile } from "../core/venture-paths.mjs";
+import { measures } from "../engine/canonical.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -75,8 +76,8 @@ for (const root of walk(dir)) {
   const persons = new Set(plan.roles.filter((r) => r.occupant === "person").map((r) => r.id));
   const leads = new Map([...templateRoles, ...rolesIn(ventureFile(root, "governance/roles"))].map((r) => [r.id, r]));
   for (const [id, r] of leads) if (!r.portfolio) leads.delete(id);
-  const telos = [ventureFile(root, "foundation/telos.json"), ventureFile(root, "purpose/telos.json")].find((p) => existsSync(p));
-  const measureIds = new Set(telos ? (load(telos).measures ?? []).map((m) => m.id) : []);
+  // Telos measures through the canonical core: the goals' measures, else the unmigrated telos's (telos-to-goals keeps the ids).
+  const measureIds = new Set(measures(root).map((m) => m.id));
   const leadsDir = ventureFile(root, "operations/leads");
   for (const f of existsSync(leadsDir) ? readdirSync(leadsDir).filter((f) => f.endsWith(".json")) : []) {
     const id = f.slice(0, -5);
@@ -109,7 +110,7 @@ for (const root of walk(dir)) {
         const pl = load(lp);
         if (pl.lead !== r.id) errors.push(`${lat}: names lead ${pl.lead}, not ${r.id}`);
         if (!pl.measures?.length) errors.push(`${lat}: ${r.id} is bound to no telos measure; a lead with no outcome has no basis for choosing between tasks`);
-        for (const m of pl.measures ?? []) if (!measureIds.has(m)) errors.push(`${lat}: measure ${m} is not a telos measure id${telos ? "" : " (the venture has no telos)"}`);
+        for (const m of pl.measures ?? []) if (!measureIds.has(m)) errors.push(`${lat}: measure ${m} is not a telos measure id${measureIds.size ? "" : " (the venture has no measures)"}`);
         for (const f of pl.portfolio ?? []) if (!lead.portfolio.includes(f)) errors.push(`${lat}: portfolio function ${f} is not in ${r.id}'s portfolio (${lead.portfolio.join(", ")})`);
         for (const b of pl.bets ?? []) {
           for (const m of b.measures ?? []) if (!(pl.measures ?? []).includes(m)) errors.push(`${lat}: bet ${b.id} serves measure ${m}, which the plan does not bind`);

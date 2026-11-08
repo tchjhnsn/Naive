@@ -231,10 +231,11 @@ teamBroken("a task citing an unknown capability fails", (d) => edit(planOf(d), (
 teamBroken("an open person role needed now with no recruiting entry fails", (d) => edit(planOf(d), (p) => { p.roles.push({ id: "sales-lead", name: "Sales lead", occupant: "person", needed_by: "discovery", status: "open" }); }), /needed now and open, but has no recruiting entry/);
 teamBroken("an agent in a person's registry role fails", (d) => edit(planOf(d), (p) => { p.roles[0].occupant = "agent"; }), /an agent cannot occupy it/);
 
-// check-team on leads (lead agents build item 3): a copy with a telos, a growth-lead plan and the lead in its team plan passes;
+// check-team on leads (lead agents build item 3): a copy with telos measures, a growth-lead plan and the lead in its team plan passes;
 // a lead that reaches a function's records, lists no write routes, or is bound to no telos measure fails.
 const withLead = (d) => {
-  writeFileSync(join(d, "foundation/telos.json"), JSON.stringify({ statement: "s", measures: [{ id: "paying-teams", statement: "Teams that pay", kind: "revenue", primary: true }, { id: "weekly-users", statement: "Weekly users", kind: "usage_or_adoption" }] }));
+  // relay is migrated (it has canonical goals), so its telos measures live on the venture goal (telos-to-goals keeps the ids).
+  writeFileSync(join(d, "foundation/goals/telos.json"), JSON.stringify({ id: "telos", statement: "s", kind: "venture", framework: "telos", measures: [{ id: "paying-teams", statement: "Teams that pay", kind: "revenue", primary: true }, { id: "weekly-users", statement: "Weekly users", kind: "usage_or_adoption" }] }));
   mkdirSync(join(d, "operations/leads"), { recursive: true });
   writeFileSync(join(d, "operations/leads/growth-lead.json"), JSON.stringify({ lead: "growth-lead", portfolio: ["marketing-and-sales", "customer-service"], measures: ["paying-teams"],
     bets: [{ id: "promise-check", statement: "Sales promises match what ships", measures: ["paying-teams"], handoffs: ["flag-fixes"], status: "active" }], review_cadence: "monthly" }));
@@ -248,6 +249,17 @@ const growth = (p) => p.roles.find((r) => r.id === "growth-lead");
   withLead(dir);
   const r = run("check-team.mjs", [dir]);
   expect("check-team passes a lead that writes only its plan, decisions and handoffs and is bound to a measure", r.status === 0);
+}
+{
+  const dir = join(tmp, `team${++n}`);
+  cpSync(venture, dir, { recursive: true });
+  withLead(dir);
+  // An unmigrated venture (no canonical goals) reads the measures from telos.json through the telos adapter.
+  const goal = JSON.parse(readFileSync(join(dir, "foundation/goals/telos.json"), "utf8"));
+  rmSync(join(dir, "foundation/goals"), { recursive: true });
+  writeFileSync(join(dir, "foundation/telos.json"), JSON.stringify({ statement: goal.statement, measures: goal.measures }));
+  const r = run("check-team.mjs", [dir]);
+  expect("check-team reads an unmigrated venture's measures from its telos", r.status === 0);
 }
 teamBroken("a lead with a function's write route fails", (d) => { withLead(d); edit(planOf(d), (p) => { growth(p).routes.write.push("marketing/**"); }); }, /growth-lead is a lead and lists write route marketing\/\*\*, which reaches marketing\//);
 teamBroken("a lead that may write another lead's plan fails", (d) => { withLead(d); edit(planOf(d), (p) => { growth(p).routes.write[0] = "operations/lead/*"; }); }, /lists write route operations\/lead\/\*, which reaches operations\/lead\/x/);
