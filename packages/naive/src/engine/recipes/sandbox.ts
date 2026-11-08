@@ -59,6 +59,11 @@ export interface SandboxOptions {
   validateRecord?: (_record: JsonObject | null, _input: unknown) => string | null;
 }
 
+/** The child's whole environment: only TZ=UTC. An app may add required keys to NodeJS.ProcessEnv (Next.js makes
+ *  NODE_ENV required), and then this literal would not type-check in the app that imports Naive. The child must not
+ *  get those keys, so the type is asserted through unknown instead of filling them in. */
+const SANDBOX_ENV = { TZ: "UTC" } as unknown as NodeJS.ProcessEnv;
+
 export const DEFAULTS = Object.freeze({ maxSourceBytes: 65536, callMs: 1000, wallMs: 60000, memoryMb: 128, maxOutputBytes: 64 * 1024 * 1024 });
 
 const fail = (reason: string): { ok: false; reason: string; output?: undefined } => ({ ok: false, reason });
@@ -424,7 +429,7 @@ function runChild(script: string, calls: ChildCall[], opts: SandboxOptions): Pro
   const callMs = opts.callMs ?? DEFAULTS.callMs, wallMs = opts.wallMs ?? DEFAULTS.wallMs;
   const memoryMb = opts.memoryMb ?? DEFAULTS.memoryMb, maxOut = opts.maxOutputBytes ?? DEFAULTS.maxOutputBytes;
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [...childArgs(memoryMb), "-e", code.output], { env: { TZ: "UTC" }, stdio: ["pipe", "pipe", "pipe"] });
+    const child = spawn(process.execPath, [...childArgs(memoryMb), "-e", code.output], { env: SANDBOX_ENV, stdio: ["pipe", "pipe", "pipe"] });
     const out: Buffer[] = [];
     let outBytes = 0, err = "", why: string | null = null;
     const stop = (reason: string): void => { if (why === null) why = reason; child.kill("SIGKILL"); };
