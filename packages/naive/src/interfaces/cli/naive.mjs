@@ -71,6 +71,9 @@
 //   naive recipes plan <pattern> --by <person> [--weights uniform|cited] [--gap <duration>] [--min-gain <n>]
 //                                                   a person's eval plan: writes <pattern>.plan.json and freezes _eval/<sha>/
 //   naive recipes check <pattern> [--json]          training feedback: per-row losses, settled and predicted, noise disagreements
+//   naive recipes search <pattern> [--factor 2] [--shrinks 2] [--max-writes 200] [--json]
+//                                                   knob descent with no model: each knob step an experiment write to
+//                                                   recipes/<pattern>, scored by the router; keeps are held as drafts
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -342,8 +345,10 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("packages/naive/src/router/orchestration/signals.ts", [here(), what, ...args]));
 } else if (cmd === "recipes") {
   // Starter recipes, eval plans and training feedback for a venture's recipes (packages/naive/src/engine/recipes/cli.ts).
-  // That script reads --by, --weights, --gap, --min-gain and --json; the rest pass through.
+  // That script reads --by, --weights, --gap, --min-gain and --json; the rest pass through. The knob search writes
+  // through the router (packages/naive/src/router/orchestration/recipe-search.ts).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  if (args[0] === "search") process.exit(run("packages/naive/src/router/orchestration/recipe-search.ts", [here(), ...args.slice(1)]));
   process.exit(run("packages/naive/src/engine/recipes/cli.ts", [here(), ...args]));
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));

@@ -19,7 +19,7 @@ const json = rest.includes("--json");
 const round = (x: number) => Math.round(x * 1e4) / 1e4;
 
 if (!dir || !pattern || (cmd !== "init" && cmd !== "plan" && cmd !== "check")) {
-  console.error("usage: naive recipes init <pattern> --by <person> | naive recipes plan <pattern> --by <person> [--weights uniform|cited] [--gap <duration>] [--min-gain <n>] | naive recipes check <pattern> [--json]");
+  console.error("usage: naive recipes init <pattern> --by <person> | naive recipes plan <pattern> --by <person> [--weights uniform|cited] [--gap <duration>] [--min-gain <n>] | naive recipes check <pattern> [--json] | naive recipes search <pattern> [--factor 2] [--shrinks 2] [--max-writes 200] [--json]");
   process.exit(2);
 }
 
