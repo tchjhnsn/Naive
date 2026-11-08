@@ -11,8 +11,8 @@
 //   checkRecipe(dir, pattern)                training feedback: per-row losses, settled and predicted, noise disagreements
 //   scoreExperiment(set, plan, candidate, tip)   the dev verdict: keep, discard or fail
 //
-// Plans are a person's. The router never serves _eval/ and never calls this file; the write hook that scores a
-// recipe write is build plan item 6 (not built).
+// Plans are a person's. The router never serves _eval/. Its recipe write hook (router/recipes.ts) calls
+// loadPlan, loadEvalSet and scoreExperiment to score a recipe write against the tip.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { actingAgent, agentFromEnv, entries, record } from "../../core/provenance.mjs";
@@ -246,7 +246,7 @@ function sandboxOptions(set: EvalSet, plan: Pick<EvalPlan, "limits">): SandboxOp
 
 /**
  * Runs a recipe on the set's rows in the given windows, each row as of its point, from the frozen index and facts.
- * Any lint failure, throw, timeout or invalid output fails the whole evaluation. With ablate, every signal the
+ * Its exports (hears and knobs) must match recipe.schema.json. Any lint failure, throw, timeout or invalid output fails the whole evaluation. With ablate, every signal the
  * recipe calls noise is taken out of the index and the row run again: a record that is not byte-identical is a
  * disagreement.
  */
@@ -254,6 +254,8 @@ export async function evaluate(source: string, set: EvalSet, plan: Pick<EvalPlan
   const opts = sandboxOptions(set, plan);
   const ex = await recipeExports(source, opts);
   if (!ex.ok) return { ok: false, reason: ex.reason };
+  const shape = validateValue("recipe.schema.json", ex.output);
+  if (shape.status !== 0) return { ok: false, reason: `the exports fail recipe.schema.json: ${(shape.stdout || shape.stderr).trim()}` };
   const ranges = ex.output.hears.signals as string[];
   const named = isObj(ex.output.hears.facts) ? Object.keys(ex.output.hears.facts) : [];
   const missing = named.filter((n) => !(n in set.facts) || (set.facts[n].ref !== (ex.output.hears.facts as JsonObject)[n]));

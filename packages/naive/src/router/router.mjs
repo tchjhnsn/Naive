@@ -103,6 +103,15 @@ const fileFor = (r, params, dir) => {
   }
   return cands[0];
 };
+// A recipe file (<pattern>.recipe.ts) is written only through recipes/<pattern> (packages/naive/src/router/recipes.ts),
+// which scores the write against the tip and holds an agent's keep as a draft. Any other route that would write one,
+// knowledge/recipe included, is refused with this answer, a person's call too (autoresearch build plan item 6).
+const isRecipeFile = (file) => typeof file === "string" && file.endsWith(".recipe.ts");
+const recipeRefusal = (route, file) => {
+  const pattern = isRecipeFile(file) ? file.slice(0, -".recipe.ts".length) : "<pattern>";
+  return { ok: false, error: `${route} does not write a recipe: write recipes/${pattern} with { source, base }, which scores it against the tip inside the write (read recipes/${pattern} for the tip's sha)`,
+    fix: { route: `recipes/${pattern}`, action: "write", input: "{ source, base }" } };
+};
 const draftPath = (file) => join("_drafts", `${file.replace(/\//g, "__")}.draft`);
 
 /** Where an agent's draft of a gated record waits: { dir, file, draft, gate } or null. */
@@ -211,7 +220,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   // session, its template and prefetched refs; head stops after the header (N-3, L-2, O-4).
   if (action === "navigate" || action === "head") return (await import("./context.mjs")).navigate({ ...(input ?? {}), venture, route: requested, workspace, actor, actor_id, via, header_only: action === "head" || !!input?.header_only });
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
-  route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  route = r.recipe ? `recipes/${params.pattern ?? ""}` : r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  if (!r.recipe && r.record === "recipe" && (action === "write" || action === "append")) return { ...recipeRefusal(route, r.collection === "item" ? fileFor(r, params, null) : null), ...deprecated };
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
   // A research program's template is its own function's starter (packages/naive/src/functions/<function>/templates/research-program.md).
   if (action === "template" && r.record === "research-program" && r.collection === "item" && isFunction(params.id)) return { ok: true, result: readFileSync(join(repo, templateOf(params.id)), "utf8"), ...deprecated };
@@ -236,6 +246,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   // NAIVE_BETA_TESTER, the same id as naive beta, never the acting role.
   const beta = betaBlocked(dir, requested, { table: r.route });
   if (beta) return { ok: false, error: beta.message, beta_locked: beta.capability, fix: { feedback: beta.needs, command: beta.needs.capability ? `naive beta feedback ${beta.needs.capability}` : null, then: "naive beta unlock, then retry this call" } };
+
+  // Recipe hook (autoresearch build plan item 6): recipes/<pattern> reads a recipe's tip and writes an experiment, scored
+  // inside the write (packages/naive/src/router/recipes.ts). It is imported only here, because it reaches the TypeScript
+  // scorer, and Node strips no types under node_modules, where an app that installs Naive keeps it.
+  if (r.recipe) return { ...(await (await import("./recipes.ts")).recipeAction({ dir, r, route, pattern: params.pattern, action, input, actor, actor_id, via, provenance })), ...deprecated };
 
   if (action === "view") {
     const inner = await call({ venture, route, action: r.kind === "command" ? "run" : "read", input, actor, actor_id, workspace, via, provenance, reads_as_of });
@@ -375,6 +390,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "append") {
     forget(dir); // Caching hook (H-3): what this action memoized for the venture is read again after an append.
     const file = fileFor(r, params, dir);
+    if (isRecipeFile(file)) return { ...recipeRefusal(route, file), ...deprecated };
     // Gate group hook: one writer per file (writer projection or person in the data model).
     const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
     if (owned) return { ...owned, ...deprecated };
@@ -389,6 +405,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (!prose && (!input || typeof input !== "object")) return { ok: false, error: "write needs the record as input" };
     if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
+    if (isRecipeFile(file)) return { ...recipeRefusal(route, file), ...deprecated };
     // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
     // nothing a person owns once it exists; a person-only record (a research program) is a person's alone, so every
     // agent is refused, a researcher included. Refused here, before the schema, the gate or any source is touched.

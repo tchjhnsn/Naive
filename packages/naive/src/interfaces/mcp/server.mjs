@@ -128,7 +128,7 @@ export async function handle(msg, notify = () => {}) {
       return reply({ resources: [
         { uri: "mentura://routes", name: "Route table", mimeType: "text/markdown" },
         ...ventures().map((v) => ({ uri: `mentura://${v.id}`, name: `${v.id}: overview`, mimeType: "text/markdown" })),
-        ...ventures().flatMap((v) => routes().filter((x) => x.kind === "record" && !x.route.endsWith("[id]")).map((x) => ({ uri: `mentura://${v.id}/${x.route}`, name: `${v.id}: ${x.route}`, mimeType: "application/json" }))),
+        ...ventures().flatMap((v) => routes().filter((x) => x.kind === "record" && !x.route.endsWith("]")).map((x) => ({ uri: `mentura://${v.id}/${x.route}`, name: `${v.id}: ${x.route}`, mimeType: "application/json" }))),
       ] });
     case "resources/read": {
       const uri = params.uri ?? "";

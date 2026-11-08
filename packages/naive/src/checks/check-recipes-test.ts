@@ -5,7 +5,8 @@
 //   node packages/naive/src/checks/check-recipes-test.ts
 
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkRecipes, EXAMPLE } from "./check-recipes.ts";
@@ -72,6 +73,14 @@ try {
   // The log.
   await expect("an edited log line breaks the chain", (d) => put(d, LOG, read(d, LOG).replace('"score":0.33', '"score":0.29')), /breaks the hash chain/);
   await expect("an experiment from a stale base fails", (d) => { const ls = lines(d); ls[1] = { ...ls[1], base: ls[1].candidate }; putLog(d, ls); }, /line 2 was edited from .*but the tip was/);
+  await expect("a log that starts from a recipe kept in the blob store passes", (d) => {
+    const before = "// the recipe before the log\n" + read(d, RECIPE);
+    const s = createHash("sha256").update(before).digest("hex");
+    mkdirSync(join(d, ".naive/blobs", s.slice(0, 2)), { recursive: true });
+    writeFileSync(join(d, ".naive/blobs", s.slice(0, 2), s), before);
+    const ls = lines(d); ls[0] = { ...ls[0], base: s }; putLog(d, ls);
+  }, null);
+  await expect("a log that starts from a recipe with no stored source fails", (d) => { const ls = lines(d); ls[0] = { ...ls[0], base: "0".repeat(64) }; putLog(d, ls); }, /line 1 was edited from 0{64}, but the tip was none/);
   await expect("a holdout check of something that is not the tip fails", (d) => { const ls = lines(d); ls[2] = { ...ls[2], candidate: ls[1].candidate }; putLog(d, ls); }, /line 3 checks .* on holdout, but the tip was/);
   await expect("a line naming an unknown plan fails", (d) => { const ls = lines(d); ls[1] = { ...ls[1], plan: "0".repeat(64) }; putLog(d, ls); }, /neither the plan beside it nor its previous one/);
   await expect("dev evaluations over the plan's budget fail", (d) => { const p = json<EvalPlan>(d, PLAN); putPlan(d, { ...p, budgets: { ...p.budgets, dev_evaluations: 1 } }); }, /2 dev evaluations under plan .* over its budget of 1/);

@@ -47,6 +47,9 @@ const needNowPriors = () => load(join(repo, "packages/naive/src/engine/need-now.
 // The template folders of the function modules, in the order departments.json lists the functions.
 const FUNCTION_TEMPLATES_OF = () => load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d) => `packages/naive/src/functions/${d.id}/templates`).filter((d) => existsSync(join(repo, d)));
 
+/** The first segment of a recipe route: recipes/<pattern>. */
+export const RECIPES = "recipes";
+
 // Logs the router appends to, one hash-chained line per call (packages/naive/src/router/router.mjs append). Every other
 // log is written by its own module and only read through the router.
 const APPENDS = new Set(["detector-trial"]);
@@ -98,6 +101,15 @@ function buildRoutes() {
         actions: ["read", "view", "layout", ...(writable && !filesOf[0]?.includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     }
   }
+  // Recipe writes (autoresearch build plan item 6, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md,
+  // "Keep and discard through the router"): recipes/<pattern> reads a recipe's tip and writes one experiment, scored inside
+  // the write by packages/naive/src/router/recipes.ts. The pattern is the rest of the route, slashes and a literal [id]
+  // included (recipes/competitors/[id]/signals), so the route ends in a catch-all segment and names no files of its own.
+  const recipe = model.records.find((x) => x.id === "recipe");
+  if (recipe) out.push({ kind: "record", record: "recipe", layer: recipe.layer, kit: owner.get("recipe")?.name ?? null, package: null, kit_path: owner.get("recipe")?.path ?? null,
+    schema: recipe.schema, form: recipe.form ?? "typescript", checks: [], template: null, decision_class: null, groups: [], recipe: true, route: `${RECIPES}/[...pattern]`, files: [],
+    note: "One recipe's experiments (autoresearch build plan item 6): read gives the tip (the source a write edits from and its sha), the live recipe and the dev evaluations spent under the plan; write takes { source, base } and scores it inside the write. A keep is held as a draft for an agent (the evidence package's gate rule) and lands live for a person; a discard or fail is refused with its verdict; a retry returns the logged line and spends nothing",
+    actions: ["read", "write", "layout"] });
   const cmd = (route, script, note, extra = {}) => ({ route, kind: "command", actions: ["run", "view", "layout"], script, groups: [], note, ...extra });
   out.push(
     cmd("system/package", "packages/naive/src/router/orchestration/venture-package.mjs", "The venture package (EE-067, EE-069): the core packages open now and the handoffs, each record confirmed, to review or to write, what moves on its own and what waits, and what completion unlocks; --write renders the view and records a version. Assumes a solo founder or small founding team in Discovery and Validation; agents are a package enhancement"),
@@ -170,6 +182,11 @@ export function resolve(route) {
   const concrete = alias ? alias.to + route.slice(alias.from.length) : route;
   const exact = rs.find((r) => r.route === concrete);
   if (exact) return { r: exact, params: {}, alias };
+  // A catch-all segment takes the rest of the route, slashes included: recipes/competitors/[id]/signals.
+  for (const r of rs.filter((x) => x.route.endsWith("/[...pattern]"))) {
+    const head = r.route.slice(0, -"/[...pattern]".length);
+    if (concrete.startsWith(`${head}/`) && concrete.length > head.length + 1) return { r, params: { pattern: concrete.slice(head.length + 1) }, alias };
+  }
   for (const r of rs.filter((x) => x.route.endsWith("/[id]"))) {
     const head = r.route.slice(0, -"/[id]".length);
     if (concrete.startsWith(`${head}/`) && !concrete.slice(head.length + 1).includes("/")) return { r, params: { id: concrete.slice(head.length + 1) }, alias };
