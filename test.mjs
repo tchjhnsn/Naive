@@ -120,6 +120,7 @@ const steps = [
   ["recipe search: a fixture venture improves with no model; every knob step an agent's experiment write, held as a draft, none scored twice; stops at the budget", "node", ["packages/naive/src/interfaces/tests/recipe-search-test.ts"]],
   ["one writer per file: only the signal projector writes a projection record; a person is refused with the emit hint; the person's master record stays theirs", "node", ["packages/naive/src/interfaces/tests/projector-test.ts"]],
   ["the signal pull end to end: two ventures, one shared library, local corrections; a second pull writes nothing", "node", ["packages/naive/src/interfaces/tests/signals-pull-test.ts"]],
+  ["rendering through recipes end to end: two ventures, naive recipes init and the example recipe, receptions beside each record, hindsight past the horizon; a second pull writes nothing", "node", ["packages/naive/src/interfaces/tests/recipe-render-test.ts"]],
   ["check-signals: Naive's packages and the example library (types, worked cases, signals, the day log, listeners)", "node", ["packages/naive/src/checks/check-signals.ts"]],
   ["check-signals breaks on copies: each rule of signal libraries, types and listeners", "node", ["packages/naive/src/checks/check-signals-test.ts"]],
   ["competitors package: its open signal types and listeners hold together, its projections write records it owns, and every worked case matches its type and its records", "node", ["packages/naive/src/checks/competitors-package-test.ts"]],

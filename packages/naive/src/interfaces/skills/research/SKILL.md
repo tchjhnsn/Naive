@@ -63,6 +63,7 @@ A person accepts a kept recipe with `mentura accept`, which runs the one-bit hol
 | The cross-file recipe check: recipe, plan, experiment log and receptions agree, and noise is noise by ablation | built (`packages/naive/src/checks/check-recipes.ts`, build plan item 11) |
 | The recipe write route with its base sha and verdict | built (`recipes/<pattern>`, build plan item 6) |
 | Accept with the holdout check, and the forward monitor | not built (build plan item 8) |
+| The starter recipe (`naive recipes init`), the pull rendering through a live recipe, receptions beside each record and hindsight | built (`packages/naive/src/engine/recipes/render.ts`, build plan item 9) |
 | Knob search with no model | built (`naive recipes search <pattern>`, `packages/naive/src/router/orchestration/recipe-search.ts`) |
-| Probes: a share of noise surfaced anyway and scored by inverse propensity | the draw, the mark and the estimate are built (`packages/naive/src/engine/recipes/probes.ts`); marking them in reception files is not built (build plan item 9) |
+| Probes: a share of noise surfaced anyway and scored by inverse propensity | the draw, the mark and the estimate are built (`packages/naive/src/engine/recipes/probes.ts`); the pull does not mark them in the reception files it writes yet |
 | The unattended loop with spend limits | Mentura, not built |
