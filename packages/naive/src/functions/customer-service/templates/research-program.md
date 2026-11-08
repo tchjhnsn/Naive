@@ -21,9 +21,15 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals in support channels and feedback predict a customer who leaves or a problem many share.
+- Whether help-center searches with no result on a topic come before a spike in contacts on it, and by how many days.
+- Whether Customer Effort Score predicts renewal or repeat purchase better than CSAT or NPS for this venture.
+- Which contact reasons have the highest 7 day repeat rate, and whether fixing their articles lowers it.
+- Whether contacts an agent answers differ from a person's in reopen rate and satisfaction, by contact type.
+- Whether a refund resolved in the first contact lowers later chargebacks and cancellations.
+- Signals to watch: contacts per active customer by reason, refunds and chargebacks, cancellation reasons, public reviews, error-rate alarms, legal or safety words in a contact (escalated to a person at once), and backlog age against target.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.

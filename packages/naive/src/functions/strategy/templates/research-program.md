@@ -23,6 +23,11 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 - Which competitor and market signals change a decision the venture owes, and how soon after they are observed.
 - Which producers are reliable for this market, and how long their claims take to be confirmed or withdrawn.
 - Whether a competitor is likely to raise in the next 90 days, as a forecast a person or a producer later resolves.
+- How well the founder's stated probabilities on what would have to be true match what happened, scored by Brier over resolved assumptions.
+- Which internal signals (interview conversion, deposits, activation) predict a missed kill criterion at least 30 days before its date.
+- Which external signals together come before a competitor enters the venture's segment, with what lag and false alarm rate.
+- Whether a growing gap between intended and realized allocation predicts a later change of direction, and how early.
+- Signals to watch: kill criteria against their dates, runway and default alive status, goal measure trajectories, the age of open decisions, win-loss and churn reasons, and competitors' pricing, hiring and regulatory changes.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 

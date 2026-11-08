@@ -21,9 +21,14 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals about the venture's own processes predict work that stalls, repeats or loses quality.
+- At what repetition count writing a procedure for an agent-run process pays back in fewer failed runs and lower cost per run.
+- Whether checklists used as done-criteria reduce reverted held drafts, and whether the benefit drops past nine items.
+- Which indicator best predicts a stalled handoff: queue age, functions crossed, or open decisions it depends on.
+- How fast knowledge records go stale by type, and whether the freshness profile's horizons match.
+- Signals to watch: the same handoff kind created three or more times, handoffs reopened or failing done-criteria on the first run, queue length per role, held drafts accepted or reverted, stale and orphaned records, new terms not in the glossary, and agent run cost per process.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
