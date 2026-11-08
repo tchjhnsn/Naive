@@ -21,9 +21,14 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals about candidates and roles predict a hire who stays and does well, without profiling any person on traits they did not choose to share.
+- For agent roles, which measures (review rejections, rework, founder overrides) predict that a role should move to a person within a quarter.
+- Whether the queue of work waiting for review predicts founder overload better than reported hours.
+- How often capability register entries older than six months are wrong when checked again, and what interval keeps errors low.
+- Which contractor pattern (hours per week, months engaged, share of core work) predicts a later need to reclassify.
+- Signals to watch: capability register changes, agent task failures per role, founder hours on work the team plan gives agents, how long each role stays open, offer decline reasons, departures, employment law changes and market pay data.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.

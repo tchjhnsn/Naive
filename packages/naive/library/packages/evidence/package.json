@@ -12,6 +12,9 @@
   "schemas": [],
   "templates": [],
   "checks": [],
+  "gate_rules": [
+    { "id": "recipe-keeps-held", "routes": ["recipes/**"], "actors": ["agent"], "then": "draft", "note": "An agent's kept recipe is held as a draft that becomes the tip; a person accepts it (mentura accept with the holdout check, build plan item 8, not built). A discard or fail is refused before the gate is asked" }
+  ],
   "skill": null,
   "use_model": []
 }

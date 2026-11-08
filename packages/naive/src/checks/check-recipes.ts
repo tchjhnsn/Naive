@@ -12,7 +12,8 @@
 //                fields, and its windows are ordered and purged (windowProblems)
 //   log          every line passes experiment.schema.json and names the pattern; the hash chain holds; every line
 //                names the plan's sha or its previous one; each experiment was edited from the tip as it stood (a stale
-//                base is refused before it is logged, so none may be in the log); a holdout check checks the tip; the
+//                base is refused before it is logged, so none may be in the log; the first may start from nothing or
+//                from a recipe that was live before the log, whose source the router keeps in the blob store); a holdout check checks the tip; the
 //                dev evaluations (keep and discard; a fail is not counted) and holdout checks of the current plan stay
 //                within its budgets; once something went live (a person's write, or an accepted holdout check), the
 //                live recipe is the last one that did
@@ -191,7 +192,7 @@ export async function checkRecipes(rootGiven: string): Promise<Report> {
         try { lines.push(JSON.parse(l) as Experiment); } catch { fail(logFile, `line ${i + 1} is not JSON`); }
       });
       const plans = new Set([plan?.sha, (plan as { previous?: string } | null)?.previous].filter((x): x is string => !!x));
-      let prev = "genesis", tip: string | null = null, dev = 0, holdouts = 0;
+      let prev = "genesis", tip: string | null = null, dev = 0, holdouts = 0, started = false;
       lines.forEach((x, i) => {
         const at = `line ${i + 1}`;
         const bad = schemaProblem("experiment.schema.json", x);
@@ -208,6 +209,9 @@ export async function checkRecipes(rootGiven: string): Promise<Report> {
           if (x.result === "pass" || x.over_holdout) wentLive = x.candidate;
           return;
         }
+        // The log's first experiment may start from a recipe that was live before it, which the router stores by sha.
+        if (tip === null && !started && x.base && hasBlob(root, x.base)) { tip = x.base; known.add(x.base); }
+        started = true;
         if ((x.base ?? null) !== tip) fail(logFile, `${at} was edited from ${x.base ?? "nothing"}, but the tip was ${tip ?? "none"}: a write from a stale base is refused before it is scored, so it is never logged`);
         if (x.verdict !== "fail" && current) dev++;
         const person = x.actor?.kind === "person";

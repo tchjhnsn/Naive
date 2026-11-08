@@ -21,9 +21,14 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which public signals (filings, rules, cases) change an obligation the venture has, and how soon.
+- Which internal write patterns predict a later legal-or-terms escalation, so the gate can hold the draft earlier with fewer false alarms, scored by the detector ledger's hit and false alarm rates.
+- How well quantified risk ranges match 12 months of outcomes, compared with ordinal scores.
+- What lead time between an obligation's alert and its due date keeps deadlines from being missed without alert fatigue.
+- Which contract clauses (auto-renewal, liability caps, exclusivity) most often become a cost or a dispute.
+- Signals to watch: an agent trying to accept terms, equity grants with no 83(b) record by day 20, new contributors with no IP assignment, integrations that touch personal data, public statements about fundraising, revenue or user counts crossing statutory thresholds, regulator actions in the sector, and expiry dates.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.

@@ -146,7 +146,7 @@ export async function around(inner, args) {
   if (!res.r && actor === "public") return { ok: false, error: `the public reader reads only record routes; ${route} is a package, group or venture route` };
   if (!res.r) return (await specialCall(args)) ?? inner(args);
   const r = res.r, params = res.params;
-  const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  const concrete = r.recipe ? `recipes/${params.pattern}` : r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   const before = action === "write" && dir && r.kind === "record" ? await snapshot(dir) : null;
   let out;
   try { out = await inner(args); }

@@ -21,9 +21,14 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals about investors, partners and the press predict a conversation worth having now.
+- Whether monthly investor updates with asks shorten the next raise compared with irregular updates.
+- Which update fields (metric changes, lowlights, asks) predict replies and introductions.
+- How many months of runway at the start of a raise predicts one that closes without a bridge.
+- Which public regulatory signals come before a rule that affects the venture, and how long before.
+- Signals to watch: runway below a set number of months, days since the last investor update, public drafts by agents (the publication policy), investor and fund activity at the venture's stage, competitor funding (`competitor-signals`), journalists covering the topic, and media mentions.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
