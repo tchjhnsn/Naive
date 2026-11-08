@@ -48,6 +48,8 @@
 //          [--confidence <n>]   a score computed before the write, read by the gate's confidence rules
 //          [--revert]   with --as person: this write restores the version before (provenance activity rollback)
 //          append (governance/detector-trial/<detector>) adds one hash-chained line: --input holds { line, base? }
+//          claim (operations/handoff/<id>) takes a ready, unclaimed handoff for the acting role (MENTURA_ACTOR_ID), once;
+//          claimed_by is MENTURA_SESSION, else the role
 //          knowledge/catalog run builds the catalog over the venture's sources; knowledge/search run
 //          --value <query> finds items in any of them (EE-037)
 //          purpose/validation/assess run lists what is missing and asks to fill it in or run as is;

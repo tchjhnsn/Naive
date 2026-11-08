@@ -75,6 +75,9 @@ const lost = scripts.filter((s) => !existsSync(s.path));
 item("every script a criterion runs exists", !lost.length, lost.map((s) => `${s.d}: ${s.path.slice(root.length)}`).join(", "));
 const badReview = h.done_criteria.filter((d) => d.kind === "review" && !reviewIsIndependent(d, h.role, roles));
 item("every review names a reviewer other than the holder", !badReview.length, badReview.map((d) => d.id).join(", "));
+// The handoff claim (docs/design/LEAD_AGENTS_2026-11-08.md): the requester verifies, so a review is the requester's.
+const notRequester = h.requested_by ? h.done_criteria.filter((d) => d.kind === "review" && d.reviewer !== h.requested_by) : [];
+if (h.requested_by) item(`every review is judged by its requester ${h.requested_by}`, !notRequester.length, notRequester.map((d) => `${d.id} names ${d.reviewer ?? "nobody"}`).join(", "));
 
 for (const i of items) console.log(`${i.ok ? "pass" : "FAIL"}  ${i.name}${!i.ok && i.why ? `: ${i.why}` : ""}`);
 const ready = items.every((i) => i.ok);
