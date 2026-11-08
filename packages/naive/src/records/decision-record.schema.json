@@ -59,6 +59,21 @@
       ],
       "description": "The layer it belongs to; defaults to the decided record's layer"
     },
+    "assigned_to": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The role the decision is put to, by id, such as the lead whose portfolio spans a seam (a detector's assign_to). It says who is asked, not who decides: only a person settles a decision."
+    },
+    "detector_trial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detector", "trial"],
+      "description": "The detection ledger trial this decision settles, when a detector's yes call opened it (packages/naive/src/router/orchestration/seams.ts). Deciding it (acted on) resolves the trial as a hit; withdrawing it, or deciding it with an answer that starts with Dismiss, resolves it as a false alarm. Deferred or open, it stays unresolved.",
+      "properties": {
+        "detector": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The detector id, governance/detectors/<id>.json" },
+        "trial": { "type": "string", "minLength": 1, "description": "The trial line's id in governance/detectors/<detector>.trials.jsonl" }
+      }
+    },
     "class": {
       "type": "string",
       "description": "The decision class (governance/decision-rights.json) this decision belongs to. A delegation grant can let a role merge decisions of a class (may_merge); a one-way-door class is never delegated, and with no class only the founder merges"
