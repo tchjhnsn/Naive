@@ -1,6 +1,6 @@
 // Tests recipe writes through the router (packages/naive/src/router/recipes.ts), the verifier of autoresearch build plan
 // item 6: an agent's keep lands as a held draft that becomes the tip, a discard is refused, and a retry spends nothing.
-// Also: a stale base is refused and logs nothing, a fail is logged and not counted, a person's keep lands live, the gate
+// Also: a stale base is refused and logs nothing, a fail is logged and not counted, a person's write lands live even when discarded, the gate
 // refuses before anything is spent, the budget stops writes, the evaluator alone writes the log, and the keep's line and
 // draft name one judgment span. A recipe file cannot be written around the route: agent-files' write and edit of
 // /<pattern>.recipe.ts go to recipes/<pattern> and are scored (a keep is held), and knowledge/recipe refuses a write,
@@ -17,6 +17,7 @@ import { signalId } from "../../core/signal-id.ts";
 import { record } from "../../core/provenance.mjs";
 import { planRecipe } from "../../engine/recipes/eval-set.ts";
 import { call, resolve } from "../../router/router.mjs";
+import { checkRecipes } from "../../checks/check-recipes.ts";
 import { edit as fileEdit, readRaw as fileRead, write as fileWrite } from "../../router/agent-files.ts";
 
 let failed = 0;
@@ -86,12 +87,12 @@ try {
   mkdirSync(join(dir, "competitors/[id]"), { recursive: true });
   writeFileSync(join(dir, `${PATTERN}.recipe.ts`), example);
   record(dir, { entity: `${PATTERN}.recipe.ts`, activity: "create", agent: { kind: "person", via: "cli", id: "founder" } });
-  const plan = await planRecipe(dir, PATTERN, { by: "founder", made: "2026-06-01T00:00:00Z", budgets: { dev_evaluations: 5, holdout_checks: 1 } });
+  const plan = await planRecipe(dir, PATTERN, { by: "founder", made: "2026-06-01T00:00:00Z", budgets: { dev_evaluations: 6, holdout_checks: 1 } });
   if (!plan.ok) throw new Error(`no plan: ${plan.errors.join("; ")}`);
   cut = plan.plan.read_cut;
   const live = sha(example);
   const r0 = await read();
-  expect("read: the tip is the live recipe, with its source and the budget", r0.ok && r0.result.tip === live && r0.result.source === example && r0.result.draft === false && r0.result.spent.dev_evaluations === 0 && r0.result.spent.of === 5, r0);
+  expect("read: the tip is the live recipe, with its source and the budget", r0.ok && r0.result.tip === live && r0.result.source === example && r0.result.draft === false && r0.result.spent.dev_evaluations === 0 && r0.result.spent.of === 6, r0);
   const missingBase = await call({ venture: "lab", workspace: tmp, route: ROUTE, action: "write", input: { source: tuned } });
   expect("refused: a write that names no base", !missingBase.ok && /names its base/.test(String(missingBase.error)), missingBase);
 
@@ -173,15 +174,23 @@ try {
   const worse = await fileEdit(ctx, FILE, "raise_per_month: 0.06", "raise_per_month: 0.02");
   expect("agent files: an edit that scores worse is refused with its verdict and logged against the draft tip", !worse.ok && worse.verdict === "discard"
     && lines().length === 7 && lines()[6].base === sha(leaner) && readFileSync(draft, "utf8") === leaner && (await read()).result.spent.dev_evaluations === 5, worse);
+  // A person's write lands live even when it scores worse, because a person decides, and it removes the held draft.
+  const overruled = await call({ venture: "lab", workspace: tmp, route: ROUTE, action: "write", input: { source: example, base: sha(leaner) }, actor: "person", via: "cli" });
+  expect("person: a write that scores worse is logged as a discard and still written live, removing the held draft", overruled.ok && overruled.result.verdict === "discard" && overruled.result.draft === false
+    && readFileSync(join(dir, `${PATTERN}.recipe.ts`), "utf8") === example && !existsSync(draft) && lines().length === 8 && lines()[7].verdict === "discard" && (await read()).result.tip === live, overruled);
+
   // The budget stops writes.
-  const over = await agentWrite(tuned, sha(leaner));
-  expect("budget: a write once the plan's dev evaluations are spent is refused and logs nothing", !over.ok && /spent its 5 dev evaluations/.test(String(over.error)) && lines().length === 7, over);
+  const over = await agentWrite(tunedSmaller, live);
+  expect("budget: a write once the plan's dev evaluations are spent is refused and logs nothing", !over.ok && /spent its 6 dev evaluations/.test(String(over.error)) && lines().length === 8, over);
 
   // Nobody but the evaluator writes the log through the router.
   const forged = await call({ venture: "lab", workspace: tmp, route: "evidence/experiment", action: "write", input: lines()[0], actor: "person" });
   expect("log: the experiment log route takes no write", !forged.ok && /has no action write/.test(String(forged.error)), forged);
   const chain = lines();
   expect("log: every line chains onto the one before", chain.every((l, i) => l.prev === (i === 0 ? "genesis" : chain[i - 1].hash)));
+  expect("log: the live recipe the first line was edited from is in the blob store", existsSync(join(dir, ".naive/blobs", live.slice(0, 2), live)));
+  const checked = await checkRecipes(dir);
+  expect("check-recipes: the recipe, plan and log the route wrote agree", checked.recipes === 1 && checked.findings.length === 0, checked.findings);
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }
