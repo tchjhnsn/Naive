@@ -560,6 +560,18 @@
       ]
     },
     {
+      "noun": "handoff claim",
+      "level": "operations",
+      "meaning": "The one exclusive taking of a ready handoff by a run in the role it names, through the router's claim action on operations/handoff/<id>: it sets claimed_by to the run id and status to in-progress in one write, a second claim is refused, and afterwards only the claimant writes progress and evidence and only the requester (requested_by) writes the verification and acceptance",
+      "standard": "claim (work-item claiming in task queues and issue trackers; compare-and-swap ownership)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "process"
+      ]
+    },
+    {
       "noun": "done-criterion",
       "level": "operations",
       "meaning": "One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role)",

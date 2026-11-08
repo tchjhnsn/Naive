@@ -57,6 +57,7 @@ import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from ".
 import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite } from "./gate-hooks.mjs";
 // Appends (packages/naive/src/router/appends.mjs): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.mjs";
+import { claimHandoff, handoffWriteRule } from "./handoff-claim.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.mjs";
 // Caching (packages/naive/src/engine/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.mjs";
@@ -234,11 +235,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const cut = asOf.ok ? asOf.cut : null;
   // No agent reads or writes the eval set (_eval/), as of a cut or not: it is the plan's, and a person's.
   if (actor !== "person" && r.kind === "record" && (r.collection === "item" || r.view_of ? [fileFor(r, params, dir)] : r.files).some(inEval)) return { ok: false, error: `${route} is in the eval set (_eval/), which no agent reads or writes` };
-  const act = action === "write" || action === "append" ? "write" : "read";
+  const act = action === "write" || action === "append" || action === "claim" ? "write" : "read";
   // Gate group hook (F-5): a role that may read some items of a collection may read its list, filtered below.
   if (!allowed(dir, actor_id, act, requested) && !allowed(dir, actor_id, act, route) && !(act === "read" && r.collection === "list" && mayReadSome(dir, actor_id, route))) return { ok: false, error: `${actor_id} may not ${act} ${route} (team plan routes)` };
   // An activity a decision unlocks stays closed to agents until a person makes that decision (EE-058).
-  const lock = actor !== "person" && (action === "write" || action === "append" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
+  const lock = actor !== "person" && (action === "write" || action === "append" || action === "claim" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
   if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
     fix: { who: "a person, not an agent", command: `mentura decide ${lock.id} --venture ${venture} --by <their name> [--answer "<their wording>"]`, then: "retry this call" } };
   // Beta gate hook (packages/naive/src/engine/beta-gate.mjs): with beta.enabled in naive.config.json, a locked capability's
@@ -277,7 +278,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
 
   // Storage: the connector for the source this record type lives in.
   let src, store, attrs = [];
-  if (r.kind === "record" && (action === "read" || action === "write" || action === "append")) {
+  if (r.kind === "record" && (action === "read" || action === "write" || action === "append" || action === "claim")) {
     const context = { actor, ...(r.collection === "item" && (r.record === "product" || r.record === "account") ? { [r.record]: params.id } : {}) };
     try {
       src = sourceFor(dir, r.record, context);
@@ -398,6 +399,16 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     return { ...(await appendLine({ dir, r, id: params.id, route, requested, file, input, actor, actor_id, provenance, store, src, agent, remote })), ...deprecated };
   }
 
+  if (action === "claim") {
+    forget(dir); // Caching hook (H-3): what this action memoized for the venture is read again after a claim.
+    // Handoff claim (packages/naive/src/router/handoff-claim.mjs): ready, unclaimed and addressed to the acting role, or refused.
+    const file = fileFor(r, params, dir);
+    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
+    if (owned) return { ...owned, ...deprecated };
+    const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
+    return { ...(await claimHandoff({ dir, r, id: params.id, route, requested, file, actor, actor_id, provenance, store, src, agent, remote })), ...deprecated };
+  }
+
   if (action === "write") {
     forget(dir); // Caching hook (H-3): a write never uses the cache, and what this action memoized for the venture is read again after it.
     // Prose a person owns (writer person: a research program) is written whole as text, not as a JSON record.
@@ -411,6 +422,16 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // agent is refused, a researcher included. Refused here, before the schema, the gate or any source is touched.
     const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
     if (owned) return { ...owned, ...deprecated };
+    // Handoff claim hook (packages/naive/src/router/handoff-claim.mjs): a handoff that names its requester is edited by
+    // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
+    // verification and acceptance. claimBase is the version that rule read, which the write below names.
+    let claimBase;
+    if (r.record === "handoff" && input && typeof input === "object") {
+      const person = actor === "person" && !actingAgent(provenance.agent?.id);
+      const rule = await handoffWriteRule({ store, file, input, person, actorId: actor_id, agent: agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent }) });
+      if (!rule.ok) return { ...rule, ...deprecated };
+      claimBase = rule.base;
+    }
     if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
@@ -513,7 +534,14 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (draft) held2 = heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent, trial: ledger?.held });
     else {
       if (base !== null && readFileSync(ventureFile(dir, file), "utf8") !== base) return { ok: false, error: `${file} changed while this was being checked, so nothing was written: try again` };
-      await store.write(file, recordText);
+      if (claimBase === undefined) await store.write(file, recordText);
+      else {
+        try { await store.write(file, recordText, { base: claimBase }); }
+        catch (e) {
+          if (/** @type {{ code?: string }} */ (e)?.code === "version-conflict") return { ok: false, error: `${file} changed while this was being checked, so nothing was written: read it again and retry` };
+          throw e;
+        }
+      }
     }
     const entry = log(draft ? held2.written : file, draft ? "draft" : provenance.activity ?? "write", r.view_of ? { statements: statementsIn(input) } : {});
     const detector = ledger ? await ledger.after(entry.hash) : null;

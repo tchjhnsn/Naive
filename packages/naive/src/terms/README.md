@@ -26,7 +26,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`ontology-gate-test.ts`](./ontology-gate-test.ts) | Behavior of the membership gate. |
 | [`ontology-gate.ts`](./ontology-gate.ts) | The membership gate (the first gate of the handoff pipeline). |
 | [`ontology-metamodel-test.ts`](./ontology-metamodel-test.ts) | Behavior of the ontology metamodel (N-048). |
-| [`ontology.json`](./ontology.json) | The canonical nouns (EE-014). |
+| [`ontology.json`](./ontology.json) | The canonical nouns (EE-014). The lead agents design proposes `handoff claim` (a kind of process, status proposed). |
 | [`ontology.md`](./ontology.md) | The readable form of `ontology.json`. |
 | [`operating-rules-test.ts`](./operating-rules-test.ts) | The operating-rules module. |
 | [`operating-rules.json`](./operating-rules.json) | Naive's default operating rules, which a venture can override. |

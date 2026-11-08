@@ -8,7 +8,8 @@
 // least one conformance and one self-proof criterion (EE-006), stays within max_attempts
 // or is escalated, has passed its readiness check before going in progress (EE-019), and is escalated with an open question when its status says so. A done
 // handoff has a PR and passing evidence for every done-criterion; a review passes only from
-// its named reviewer, who is never the holder's role. Every evidence file's
+// its named reviewer, who is never the holder's role. A handoff that names its requester (requested_by) has
+// every review judged by that requester, and only the requester verifies it. Every evidence file's
 // passed flag matches its results.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -60,6 +61,11 @@ for (const f of jsonIn(join(ventureFile(dir, "operations/handoffs")))) {
   if (!kinds.has("conformance")) errors.push(`${at}: no conformance criterion`);
   if (!kinds.has("self-proof")) errors.push(`${at}: no self-proof criterion (EE-006)`);
   for (const d of h.done_criteria) if (d.kind === "review" && !reviewIsIndependent(d, h.role, roles)) errors.push(`${at}/${d.id}: review needs a reviewer role other than the holder's`);
+  // The handoff claim: the requester verifies, so every review is the requester's, and so is the verification.
+  if (h.requested_by) for (const d of h.done_criteria) if (d.kind === "review" && d.reviewer !== h.requested_by) errors.push(`${at}/${d.id}: review is judged by the requester ${h.requested_by}, not ${d.reviewer ?? "nobody named"}`);
+  if (h.verification && h.requested_by && h.verification.by !== h.requested_by) errors.push(`${at}: verified by ${h.verification.by}, but only its requester ${h.requested_by} verifies it`);
+  if (h.verification?.outcome === "rework" && !h.verification.reason) errors.push(`${at}: sent back for rework with no reason`);
+  if (h.verification?.outcome === "accepted" && h.status !== "done") errors.push(`${at}: accepted but ${h.status}`);
   if (h.attempts > h.max_attempts) errors.push(`${at}: ${h.attempts} attempts exceed max_attempts ${h.max_attempts}`);
   if (h.attempts === h.max_attempts && !["done", "escalated"].includes(h.status)) errors.push(`${at}: attempts used up, so it is done or escalated`);
   const open = (h.escalations ?? []).filter((e) => !e.answer);
