@@ -84,7 +84,9 @@ function buildRoutes() {
     const form = r.form ?? "json";
     const groups = PHASES.map((p) => p.id).filter((p) => (N.records[r.id]?.base?.[p] ?? 0) >= N.suggest).map((p) => `(${p})`);
     const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/naive/library/packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
-      decision_class: r.decision_class ?? null, groups, note: r.note ?? "", ...(r.view_of ? { view_of: r.view_of } : {}), ...(r.writer && r.writer !== "any" ? { writer: r.writer } : {}) };
+      decision_class: r.decision_class ?? null, groups, note: r.note ?? "", ...(r.view_of ? { view_of: r.view_of } : {}), ...(r.writer && r.writer !== "any" ? { writer: r.writer } : {}),
+      // writer function: the route carries the record type's function, so the gate knows the one agent role, <function>-agent, that may write it.
+      ...(r.writer === "function" ? { function: r.function } : {}) };
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
     const collection = filesOf.length >= 1 && filesOf.every((p) => (p.match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(p) && !p.includes("**"));
     const concrete = filesOf.every((f) => !f.includes("*"));
@@ -260,6 +262,7 @@ const PACKAGE_ROUTE = {
   "decision-record": "decisions",
   "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
+  "spend-register": "finance/spend",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   ...BRAND_ROUTES, // Brand hook: marketing/brand, public/assets, glossary (packages/naive/src/engine/brand.mjs).
 };

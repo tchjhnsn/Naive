@@ -770,7 +770,8 @@
       "schema": "packages/naive/src/records/knowledge-sources.schema.json",
       "paths": [
         "instance/**/knowledge/sources.json",
-        "packages/naive/src/records/examples/**/knowledge/sources.json"
+        "packages/naive/src/records/examples/**/knowledge/sources.json",
+        "packages/naive/template/knowledge/sources.json"
       ],
       "refs": [
         {
@@ -1819,6 +1820,28 @@
       "note": "Cash, monthly flows and runway from the money source's last sync; versioned, and the only money record a model sees (EE-070)"
     },
     {
+      "id": "spend-register",
+      "layer": "purpose",
+      "function": "finance",
+      "level": "venture",
+      "schema": "packages/naive/src/records/spend-register.schema.json",
+      "generator": "packages/naive/src/engine/generators/spend-register.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/finance/spend/*.json",
+        "packages/naive/src/records/examples/**/finance/spend/*.json"
+      ],
+      "refs": [
+        {
+          "field": "account",
+          "to": "money-account",
+          "checked_by": null
+        }
+      ],
+      "note": "One line of the spend register, one paid service per record (lead agents design, build plan item 2). Only the finance agent (finance-agent) or a person writes it (writer function). The access matrix is the source map's spend-register rules: the bank statement sync masters amount, currency and dates, finance owns status, IT's tool record masters approval (packages/naive/template/knowledge/sources.json)",
+      "decision_class": "spend-register-upkeep"
+    },
+    {
       "id": "data-stream",
       "layer": "purpose",
       "function": null,
@@ -1931,6 +1954,7 @@
         "packages/naive/template/governance/roles/builder.json",
         "packages/naive/template/governance/roles/marketing-lead.json",
         "packages/naive/template/governance/roles/finance-lead.json",
+        "packages/naive/template/governance/roles/finance-agent.json",
         "packages/naive/template/governance/roles/validation-lead.json",
         "packages/naive/template/governance/roles/people-lead.json",
         "packages/naive/template/governance/roles/counsel.json"

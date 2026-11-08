@@ -2,7 +2,7 @@
   "register": "delegation",
   "updated": "2026-10-29",
   "template": true,
-  "note": "Default delegation. The founder grants the chief of staff the operations classes, which it may pass on; strategy, experience design, public commitments and money are granted directly and never passed on; one-way doors stay with the founder. A venture customizes this in <venture>/governance/delegation.json.",
+  "note": "Default delegation. The founder grants the chief of staff the operations classes, which it may pass on; strategy, experience design, public commitments and money are granted directly and never passed on (the spend register's upkeep and cancel-or-downgrade go straight to the finance agent, founder-to-finance-agent); one-way doors stay with the founder. A venture customizes this in <venture>/governance/delegation.json.",
   "root": "founder",
   "never_redelegated": ["strategy-or-constitution", "experience-design", "public-commitment", "spend-money", "cancel-or-downgrade", "move-payment-method", "spend-register-upkeep"],
   "one_way_doors": ["irreversible-data-change", "ownership-or-control", "legal-or-terms", "continue-or-stop", "change-direction", "contradicts-ledger", "production-ship"],
@@ -28,9 +28,9 @@
       "expires": null
     },
     {
-      "id": "founder-to-finance-lead",
+      "id": "founder-to-finance-agent",
       "from": "founder",
-      "to": "finance-lead",
+      "to": "finance-agent",
       "classes": ["spend-register-upkeep", "cancel-or-downgrade"],
       "scope": "finance/",
       "may_redelegate": false,

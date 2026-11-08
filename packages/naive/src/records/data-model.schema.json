@@ -271,9 +271,10 @@
             "enum": [
               "any",
               "projection",
-              "person"
+              "person",
+              "function"
             ],
-            "description": "Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live"
+            "description": "Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function"
           },
           "settles": {
             "$ref": "#/$defs/settles"

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "spend-register.schema.json",
+  "title": "Spend register line",
+  "description": "One line of the spend register (lead agents design, \"The spend register and the access matrix\"): one paid service or recurring charge per record, at finance/spend/<id>.json (route finance/spend/[id]). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). Where each field is mastered is the access matrix: the source map's rules for spend-register (packages/naive/template/knowledge/sources.json), where the bank statement sync is the system of record for amount, currency and dates, finance owns status, and IT's tool record is the system of record for approval. The paying account is named by reference to a money record, never by a card or account number.",
+  "type": "object",
+  "required": ["id", "vendor", "purpose", "amount", "currency", "cadence", "account", "function", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The line's id, the file name without .json" },
+    "vendor": { "type": "string", "minLength": 1, "description": "Who is paid" },
+    "purpose": { "type": "string", "minLength": 1, "description": "What the venture pays for, in a sentence" },
+    "amount": { "type": "number", "minimum": 0, "description": "The charge per cadence period, in currency. Mastered by the bank statement sync in the access matrix" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code, such as USD" },
+    "cadence": { "enum": ["one-time", "monthly", "quarterly", "annual", "usage"], "description": "How often it is charged; usage is metered" },
+    "renewal_date": { "type": ["string", "null"], "format": "date", "description": "The next renewal or charge date, or null for a one-time charge" },
+    "last_charged": { "type": ["string", "null"], "format": "date", "description": "The date of the last charge the bank statement shows" },
+    "account": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The paying account by reference: the id of a money record (money/<id>.json). Never a card or account number; an id must start with a letter, so a bare number is refused" },
+    "function": {
+      "enum": ["strategy", "products", "marketing-and-sales", "supply-chain", "service-delivery", "customer-service", "human-capital", "it", "finance", "assets", "risk-and-compliance", "external-relationships", "capabilities"],
+      "description": "The function that uses it: an id in packages/naive/src/functions/departments.json"
+    },
+    "cluster": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The capability cluster it belongs to, by id. The cluster catalog is lead agents build item 7, not built, so the id is not checked yet" },
+    "connection": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The connection record it pays for, by id. The connection record type is lead agents build item 7, not built, so the id is not checked yet" },
+    "approval": { "type": "string", "minLength": 1, "description": "The id of IT's tool record that approved the tool. IT's record is the system of record for approval in the access matrix; the register cites it and never copies it. IT tool records have no record type yet" },
+    "status": { "enum": ["active", "cancel-requested", "cancelled"], "description": "Finance owns it. cancel-requested waits on a cancel-or-downgrade decision" },
+    "note": { "type": "string" }
+  }
+}

@@ -16,12 +16,13 @@ import { ventureFile } from "../core/venture-paths.mjs";
  * read or checked: a projection record only from the projector, and from the projector only projection records
  * or a missing record a person owns (writerRule in packages/naive/src/engine/gate.mjs). A record in another source
  * counts as existing, since only its connector could say otherwise. A record type with writer person (a research
- * program) only from a person: actor is the call's actor and acting says the process names an agent as acting.
+ * program) only from a person: actor is the call's actor and acting says the process names an agent as acting. A
+ * record type with writer function (the spend register) only from <function>-agent or a person: role is the acting role.
  * Returns the refusal as a router answer, or null.
- * @param {{ dir: string, r: Record<string, any>, route: string, file: string, projector: boolean, remote?: boolean, actor?: string, acting?: boolean }} w
+ * @param {{ dir: string, r: Record<string, any>, route: string, file: string, projector: boolean, remote?: boolean, actor?: string, acting?: boolean, role?: string }} w
  */
-export function ownerOfWrite({ dir, r, route, file, projector, remote = false, actor = "agent", acting = false }) {
-  const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)), actor, acting });
+export function ownerOfWrite({ dir, r, route, file, projector, remote = false, actor = "agent", acting = false, role }) {
+  const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)), actor, acting, role, fn: r.function });
   return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, ...(v.fix ? { fix: v.fix } : {}) } : null;
 }
 
@@ -39,7 +40,7 @@ export function gateWrite({ dir, r, route, requested, file, actor, actor_id, pro
   catch (e) { return actor === "person" || settled ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${e.message}: the gate fails closed, written as a draft for a person to accept` }; }
   const confidence = provenance.confidence === undefined || provenance.confidence === null || provenance.confidence === "" ? undefined : Number(provenance.confidence);
   const v = evaluate({ config, dir, route, table: r.route, requested, record: r.record, actor, role: actor_id, confidence: Number.isNaN(confidence) ? undefined : confidence,
-    exists: existsSync(ventureFile(dir, file)), decisionOwner: gate?.owner ?? undefined, writer: r.writer, projector });
+    exists: existsSync(ventureFile(dir, file)), decisionOwner: gate?.owner ?? undefined, writer: r.writer, writerFunction: r.function, projector });
   if (v.then === "pass") return null;
   if ((actor === "person" || settled) && v.then !== "refuse") return null;
   return v;

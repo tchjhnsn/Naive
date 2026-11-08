@@ -88,6 +88,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | evidence grade | How much a validation record's cited evidence can be trusted: high, moderate, low or very low, from the kind of signal, the audience, the sample, the specificity and the age; a claim with no evidence is very low | GRADE certainty of evidence | grade-handbook, fitzpatrick-2013-mom-test |  |  |
 | need-now score | The probability that a venture needs a record type in its current phase and the next, from priors raised or lowered by facts about the venture; records below 0.5 are held back unless the builder asks, so builders don't overbuild (EE-028) | ours; just-in-time (lean manufacturing) and YAGNI (extreme programming) in spirit |  |  |  |
 | competitor | A company serving the same customers with an offering that can replace the venture's. Its master record (competitors/<id>.json) is a person's: a projection may create it once and writes only competitors/<id>/signals.json beside it | Porter 1980 |  |  |  |
+| spend register | The list of what the venture pays for, one line per paid service: vendor, purpose, amount, currency, cadence, renewal date, the paying account by reference, the function that uses it and its status (active, cancel-requested, cancelled). The finance function owns it and only its agent or a person writes it (finance/spend/[id]; lead agents design, 2026-11-08) | SaaS spend management; the subsidiary ledger of recurring vendor charges (accounts payable) |  | finance |  |
 
 ### Knowledge
 
@@ -104,6 +105,7 @@ The system is opinionated: it names one default for each choice, and every defau
 | Admiralty rating | How far a signal can be trusted: source reliability A (completely reliable) to F (cannot be judged) and information credibility 1 (confirmed) to 6 (cannot be judged), computed in code by the producer | NATO STANAG 2511 (Admiralty code) |  |  |  |
 | recipe | The pure code that makes every record at one route pattern (<pattern>.recipe.ts beside the records) from the signals heard and the facts known as of a time; a kind of projection. It runs only in Naive's sandbox, and its records are written only by the projector. Autoresearch design, 2026-11-06 | training recipe (Karpathy 2019); dbt model |  |  |  |
 | hindsight label | A signal's helpful, inert or harmful effect on one record, found once the horizon has passed by comparing the loss without the signal to the loss with it. A signal the check accepts as noise is always inert (noise_inert in packages/naive/lean/Naive/Recipes.lean) | leave-one-out influence (Cook 1977) |  |  |  |
+| access matrix | The source map's rules (EE-042) filled in for one shared record field by field: for each field, the system of record it is read from and written to, and the role that owns it. The spend register's is the first: the bank statement sync masters amounts and dates, finance owns status, IT's tool record masters approval | access matrix (Lampson 1971), with fields as the objects; data ownership matrix in master data management (DAMA-DMBOK 2017) |  |  |  |
 
 ### Operations
 

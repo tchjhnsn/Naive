@@ -56,6 +56,8 @@ venture-template/
 
 `detectors/<id>.json` holds one detector record (`packages/naive/src/records/detector.schema.json`) for each yes or no threshold Naive already had, with today's constant as its line, `set_by: "default"`. A call site reads its line through `packages/naive/src/engine/detectors.mjs`: the venture's own `governance/detectors/<id>.json` first, then the default here, then the constant in the code. A venture moves a line by keeping its own copy with the person who set it. `init-venture.mjs` does not copy these files, so a venture without its own copy follows Naive's default.
 
+`delegation.json` is the default delegation that `node packages/naive/src/checks/check-delegation.mjs` checks. The spend register's classes, `spend-register-upkeep` and `cancel-or-downgrade`, go from the founder straight to the finance agent (`founder-to-finance-agent`, scope `finance/`), because both are never re-delegated (lead agents design, build item 2).
+
 | Detector | Line | yes when | Read at |
 |---|---|---|---|
 | `gate-confidence` | 0.7 | below (strict) | the gate's `confidence_below`, through `configFor` in `naive-config.mjs`; `naive.config.json` `thresholds.confidence` and a number in the rule still win |

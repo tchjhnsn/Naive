@@ -62,7 +62,9 @@ The roles folder is **selective, not exhaustive**. Most ICs and many specialist 
 
 ## Role template JSON and its function
 
-Each `<id>.json` here is a role template the delegation check reads (`packages/naive/src/records/role-template.schema.json`). Its `function` is an id in `packages/naive/src/functions/departments.json`, or `all` for the founder, the chief delegator, alone; `node packages/naive/src/checks/check-delegation.mjs` fails on any other value. Today: architect, builder and product-design-lead serve `products`; chief-of-staff serves `capabilities` (it runs the docket and handoffs, which is portfolio and project work); counsel serves `risk-and-compliance`; finance-lead serves `finance`; marketing-lead serves `marketing-and-sales`; people-lead serves `human-capital`; validation-lead serves `strategy`.
+Each `<id>.json` here is a role template the delegation check reads (`packages/naive/src/records/role-template.schema.json`). Its `function` is an id in `packages/naive/src/functions/departments.json`, or `all` for the founder, the chief delegator, alone; `node packages/naive/src/checks/check-delegation.mjs` fails on any other value. Today: architect, builder and product-design-lead serve `products`; chief-of-staff serves `capabilities` (it runs the docket and handoffs, which is portfolio and project work); counsel serves `risk-and-compliance`; finance-lead and finance-agent serve `finance`; marketing-lead serves `marketing-and-sales`; people-lead serves `human-capital`; validation-lead serves `strategy`.
+
+`finance-agent.json` is the finance function's agent (EE-123), the only agent that writes the spend register (`finance/spend/[id]`). The founder grants it `spend-register-upkeep` and `cancel-or-downgrade` over `finance/` directly (`founder-to-finance-agent` in `../delegation.json`), since both are never re-delegated; that grant replaced `founder-to-finance-lead` (lead agents design, default 3). `finance-lead.json` keeps its id and its grantable classes until lead agents build item 3 makes it the cross-function lead.
 
 ## Per-role file structure
 

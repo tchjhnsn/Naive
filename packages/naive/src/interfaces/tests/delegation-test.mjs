@@ -56,8 +56,8 @@ fails("a role template missing verified_by is reported, not dropped", (_, roles)
 }, /role\/counsel: has no verified_by/);
 fails("may_merge beyond the grantor's fails", (d) => { grant(d, "architect-to-builder").may_merge = true; }, /architect-to-builder: exceeds/);
 fails("a money class is never re-delegated", (d) => {
-  grant(d, "founder-to-finance-lead").may_redelegate = true;
-  d.grants.push({ id: "money-on", from: "finance-lead", to: "chief-of-staff", classes: ["spend-register-upkeep"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
+  grant(d, "founder-to-finance-agent").may_redelegate = true;
+  d.grants.push({ id: "money-on", from: "finance-agent", to: "chief-of-staff", classes: ["spend-register-upkeep"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
 }, /money-on: .*never re-delegated/);
 fails("a one-way door is never delegated", (d) => grant(d, "founder-to-chief-of-staff").classes.push("change-direction"), /one-way door/);
 fails("an expired grant fails", (d) => { grant(d, "founder-to-product-design-lead").expires = "2026-10-01"; }, /expired/);
@@ -109,8 +109,8 @@ expect("a record extending the template passes", venture(extending).ok);
 expect("a record naming the template's path before EE-118 step 8 still resolves", venture((d) => { extending(d); d.extends = "governance/venture-template/delegation.json"; }).ok);
 fails("a class the template never re-delegates stays so through extends", (d) => {
   extending(d);
-  grant(d, "founder-to-finance-lead").may_redelegate = true;
-  d.grants.push({ id: "money-on", from: "finance-lead", to: "chief-of-staff", classes: ["spend-register-upkeep"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
+  grant(d, "founder-to-finance-agent").may_redelegate = true;
+  d.grants.push({ id: "money-on", from: "finance-agent", to: "chief-of-staff", classes: ["spend-register-upkeep"], scope: "finance/", may_redelegate: false, may_merge: false, expires: null });
 }, /money-on: .*never re-delegated/);
 fails("a one-way door in the template stays one through extends", (d) => { extending(d); grant(d, "founder-to-chief-of-staff").classes.push("contradicts-ledger"); }, /one-way door/);
 fails("an extends that does not exist is refused", (d) => { d.extends = "packages/naive/template/governance/gone.json"; }, /does not exist/);

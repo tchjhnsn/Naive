@@ -392,7 +392,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const file = fileFor(r, params, dir);
     if (isRecipeFile(file)) return { ...recipeRefusal(route, file), ...deprecated };
     // Gate group hook: one writer per file (writer projection or person in the data model).
-    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
+    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
     if (owned) return { ...owned, ...deprecated };
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
     return { ...(await appendLine({ dir, r, id: params.id, route, requested, file, input, actor, actor_id, provenance, store, src, agent, remote })), ...deprecated };
@@ -409,7 +409,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
     // nothing a person owns once it exists; a person-only record (a research program) is a person's alone, so every
     // agent is refused, a researcher included. Refused here, before the schema, the gate or any source is touched.
-    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
+    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
     if (owned) return { ...owned, ...deprecated };
     if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
