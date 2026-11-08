@@ -21,9 +21,16 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals about suppliers, lead times and prices predict a late or short delivery.
+- Whether store sell-through over the last 4 weeks predicts the next 8 weeks of demand better than pre-order counts. An inventory position record type (weeks of supply and sell-through per SKU) is not built, so there is no pattern for it yet.
+- Whether a supplier's quote response time and completeness predict its later on-time-in-full rate. Shipment and supplier scorecard record types are not built either.
+- At what first-article defect rate later returns for defects exceed what the venture tolerates.
+- With what lag and size tariff or freight index changes reach the venture's landed cost.
+- Signals to watch: supplier lead time changes and missed order acknowledgments, end-of-life notices, freight indexes, tariff and duty changes, inspection failures per lot, returns tagged as defects, carrier on-time and pick error rates, and exchange rates on supplier currencies.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+
+The first patterns for this function would be inventory position, shipments and the supplier scorecard. Their record types are not built, so they are research questions above until they are.

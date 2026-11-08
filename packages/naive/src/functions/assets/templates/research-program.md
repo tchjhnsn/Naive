@@ -21,9 +21,14 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals about equipment, property and leases predict a cost or a renewal the venture must decide on.
+- Whether desk or coworking use over 8 weeks predicts that a renewed space commitment ends up under half used.
+- Whether repair frequency and condition predict the next equipment failure better than age alone.
+- How long after a headcount plan change a space or equipment need actually arrives.
+- How close the realized total cost of ownership comes to the cost modeled in build, buy or lease decisions.
+- Signals to watch: lease and contract notice dates, the headcount plan against seats, space use, equipment failures and repair costs, warranty expiries, departed people still holding assets, and local rents.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
