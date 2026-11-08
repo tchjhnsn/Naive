@@ -3647,7 +3647,7 @@ export type RawSource = {
   fetched?: string;
 };
 
-/** Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Noise stored beside the record"). Only the projector writes it. Each heard signal is salient or noise for this record (a noise reception the venture probed is marked with its rate), with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. Nothing writes it yet: rendering through recipes is build plan item 9. */
+/** Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Noise stored beside the record"). Only the projector writes it. Each heard signal is salient or noise for this record (a noise reception the venture probed is marked with its rate), with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. The signal pull writes it beside each record a live recipe renders (build plan item 9). */
 export type Reception = {
   $schema?: string;
   /** The record these receptions are for, as a logical path in the venture */
@@ -3693,10 +3693,10 @@ export type ReceptionReception = {
     producer_confirmed: number | null;
     /** The share of the producer's earlier signals later retracted or superseded, or null with none settled yet */
     producer_withdrawn: number | null;
-    /** How often a person acted on what this record surfaced, from decisions and the traces of the runs behind them, or null with no history */
+    /** How often a person acted on what this record surfaced, from decisions and the traces of the runs behind them, or null with no history (computing it is not built, so it is null) */
     uptake: number | null;
   };
-  /** Set once observed plus the horizon has passed: the loss without the signal against the loss with it (monitor, not built) */
+  /** Set by a signal pull once the render's as-of point plus the record type's horizon has passed: the loss without the signal against the loss with it, each against the settled record at that point */
   hindsight?: {
     label: "helpful" | "inert" | "harmful";
     /** The recipe the comparison ran with */

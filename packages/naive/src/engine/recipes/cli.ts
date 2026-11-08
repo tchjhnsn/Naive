@@ -1,23 +1,34 @@
-// naive recipes plan and check (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The eval
-// plan", build plan item 5).
+// naive recipes init, plan and check (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The
+// recipe" and "The eval plan", build plan items 9 and 5).
 //
+//   node packages/naive/src/engine/recipes/cli.ts <venture dir> init <pattern> --by <person> [--json]
 //   node packages/naive/src/engine/recipes/cli.ts <venture dir> plan <pattern> --by <person> [--weights uniform|cited] [--gap <duration>] [--min-gain <n>] [--json]
 //   node packages/naive/src/engine/recipes/cli.ts <venture dir> check <pattern> [--json]
 //
-// plan is a person's: it refuses when an agent is acting (MENTURA_ACTOR, MENTURA_MODEL or a MENTURA_ACTOR_ID other
+// init is a person's: it writes <pattern>.recipe.ts once, the plain fold from the signal types' projects, and refuses
+// an agent (packages/naive/src/engine/recipes/starter.ts). plan is a person's: it refuses when an agent is acting (MENTURA_ACTOR, MENTURA_MODEL or a MENTURA_ACTOR_ID other
 // than --by). It writes <pattern>.plan.json and freezes the eval set at <venture>/_eval/<sha>/. check runs the
 // recipe on the plan's training rows and prints each row's loss and field losses, the settled loss beside the plain
 // fold's, and every noise disagreement. Exit codes: 0 done, 1 refused or failed, 2 usage.
 import { checkRecipe, planRecipe } from "./eval-set.ts";
+import { initRecipe } from "./starter.ts";
 
 const [dir, cmd, pattern, ...rest] = process.argv.slice(2);
 const opt = (name: string): string | undefined => { const i = rest.indexOf(`--${name}`); return i >= 0 ? rest[i + 1] : undefined; };
 const json = rest.includes("--json");
 const round = (x: number) => Math.round(x * 1e4) / 1e4;
 
-if (!dir || !pattern || (cmd !== "plan" && cmd !== "check")) {
-  console.error("usage: naive recipes plan <pattern> --by <person> [--weights uniform|cited] [--gap <duration>] [--min-gain <n>] | naive recipes check <pattern> [--json] | naive recipes search <pattern> [--factor 2] [--shrinks 2] [--max-writes 200] [--json]");
+if (!dir || !pattern || (cmd !== "init" && cmd !== "plan" && cmd !== "check")) {
+  console.error("usage: naive recipes init <pattern> --by <person> | naive recipes plan <pattern> --by <person> [--weights uniform|cited] [--gap <duration>] [--min-gain <n>] | naive recipes check <pattern> [--json] | naive recipes search <pattern> [--factor 2] [--shrinks 2] [--max-writes 200] [--json]");
   process.exit(2);
+}
+
+if (cmd === "init") {
+  const r = await initRecipe(dir, pattern, { by: opt("by") });
+  if (json) console.log(JSON.stringify(r, null, 2));
+  else if (r.ok) console.log(`wrote ${r.file} (${r.sha256}): the plain fold of ${r.hears.join(", ")}; the next naive signals pull renders ${pattern} through it`);
+  else for (const e of r.errors) console.error(`refused: ${e}`);
+  process.exit(r.ok ? 0 : 1);
 }
 
 if (cmd === "plan") {

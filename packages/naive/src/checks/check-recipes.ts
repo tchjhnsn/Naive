@@ -25,9 +25,10 @@
 //
 // A plan or log with no recipe beside it fails. Nothing here scores a recipe: settled loss, dev verdicts and the
 // holdout check are build plan items 5 and 8, so the check trusts the scores the log holds and checks only what does
-// not depend on them. The recipe input it builds (route, id, asOf, the heard signals in (time, id) order with
-// withdrawn as of the render, and named facts read live) is the check's own until rendering through recipes (build
-// plan item 9) gives one to share.
+// not depend on them. It renders again with the input the signal pull and the scorer give a recipe (recipeInput in
+// packages/naive/src/engine/recipes/outcomes.ts): every heard signal about the subject observed by the render, in
+// (time, id) order, withdrawn as known then, and the named facts, here read live. A reception file must then name
+// exactly the signals that input holds.
 //
 //   node packages/naive/src/checks/check-recipes.ts [<venture dir> ...] [--json]
 //
@@ -43,7 +44,9 @@ import { canonicalJson } from "../core/signal-id.ts";
 import { lineHash } from "../core/provenance.mjs";
 import { hasBlob, readBlob } from "../core/blobs.mjs";
 import { lintRecipe, recipeExports, runRecipes } from "../engine/recipes/sandbox.ts";
-import type { JsonObject } from "../engine/recipes/sandbox.ts";
+import { loadSignals } from "../engine/recipes/eval-set.ts";
+import { recipeInput } from "../engine/recipes/outcomes.ts";
+import type { Known } from "../engine/recipes/outcomes.ts";
 import { planSha, windowProblems } from "../engine/generators/eval-plan.ts";
 import { fieldOf, findSignal, libraries, mergeTypes, resolveType, splitRange, typesIn } from "../engine/signals.ts";
 import type { EvalPlan, Experiment, Reception, Signal } from "../records/types/records.d.ts";
@@ -114,6 +117,8 @@ export async function checkRecipes(rootGiven: string): Promise<Report> {
   const merged = mergeTypes(typed.map((t) => t.types));
   for (const p of [...typed.flatMap((t) => t.problems), ...merged.problems]) notes.push(p);
   const types = merged.types;
+  // Every signal the libraries hold, read once and only when some record has receptions to render again.
+  let index: Known[] | null = null;
   const recordTypes = model.records.map((r) => ({ r, res: venturePaths(r).map((v: string) => globRegExp(v)) }));
 
   for (const file of recipes) {
@@ -228,28 +233,38 @@ export async function checkRecipes(rootGiven: string): Promise<Report> {
       if (!known.has(rec.recipe)) { fail(rf, `was rendered by recipe ${rec.recipe}, which neither the live recipe nor ${logFile} knows`); continue; }
       const src = rec.recipe === live ? source : hasBlob(root, rec.recipe) ? readBlob(root, rec.recipe)?.toString("utf8") ?? null : null;
       const asOf = Date.parse(rec.as_of);
-      const views: JsonObject[] = [];
       let missing = false;
       for (const x of rec.receptions) {
         const found = await findSignal(libs, x.signal, types);
         if (!found.signal) { fail(rf, `names signal ${x.signal}: ${found.problem ?? "not found"}`); missing = true; continue; }
         const s = found.signal.signal as Signal;
         if (Date.parse(s.observed) > asOf) fail(rf, `heard signal ${s.id}, observed ${s.observed}, after the render as of ${rec.as_of}`);
-        const withdrawn = x.withdrawn_at !== null && x.withdrawn_at !== undefined && Date.parse(x.withdrawn_at) <= asOf;
-        views.push({ id: s.id, type: s.type, producer: s.producer, subject: s.subject, time: Date.parse(s.time), observed: Date.parse(s.observed), rating: s.rating as unknown as JsonObject, props: s.props as JsonObject, withdrawn });
       }
       if (missing) continue;
       if (src === null) { notes.push(`${rf}: rendered by ${rec.recipe}, whose source is neither live nor in the blob store, so it is not rendered again`); continue; }
-      views.sort((a, b) => (Number(a.time) - Number(b.time)) || (String(a.id) < String(b.id) ? -1 : String(a.id) > String(b.id) ? 1 : 0));
-      const facts: JsonObject = {};
-      for (const [name, ref] of Object.entries(hears.facts ?? {})) {
+      // The recipe that rendered it says what it hears: the live one, or the one from the blob store.
+      let heard = hears;
+      if (src !== source) {
+        const ex = await recipeExports(src, guard);
+        if (!ex.ok) { fail(rf, `the recipe that rendered it does not run now: ${ex.reason}`); continue; }
+        heard = ex.output.hears as typeof hears;
+      }
+      const facts: Record<string, unknown> = {};
+      for (const [name, ref] of Object.entries(heard.facts ?? {})) {
         const [f, field] = String(ref).split("#");
         const value = existsSync(join(root, f)) ? readJson(join(root, f)) : null;
-        facts[name] = (field && value !== null ? fieldOf(value, field) : value) as JsonObject;
+        facts[name] = (field && value !== null ? fieldOf(value, field) : value) ?? null;
       }
-      const base = { route: pattern, id: idOf(pattern, recordFile), asOf, signals: views, ...(Object.keys(facts).length ? { facts } : {}) };
+      const subject = idOf(pattern, recordFile) ?? "";
+      if (index === null) { const ls = await loadSignals(root); index = ls.known; }
+      const idx = index;
+      const input = (known: readonly Known[]) => recipeInput(known, heard.signals ?? [], pattern, subject, asOf, facts);
+      const base = input(idx);
+      const given = new Set(base.signals.map((v) => v.id)), named = new Set(rec.receptions.map((x) => x.signal));
+      for (const id of given) if (!named.has(id)) fail(rf, `the render as of ${rec.as_of} heard signal ${id}, which has no reception: every heard signal gets exactly one`);
+      for (const id of named) if (!given.has(id)) fail(rf, `names signal ${id}, which the recipe does not hear about ${subject} as of ${rec.as_of}`);
       const noise = rec.receptions.filter((x) => x.kind === "noise").map((x) => x.signal);
-      const calls = [{ input: base, knobs: null }, ...noise.map((id) => ({ input: { ...base, signals: views.filter((v) => v.id !== id) }, knobs: null }))];
+      const calls = [{ input: base, knobs: null }, ...noise.map((id) => ({ input: input(idx.filter((k) => k.signal.id !== id)), knobs: null }))];
       const runs = await runRecipes(src, calls, guard);
       const full = runs[0];
       if (!full?.ok) { fail(rf, `the recipe that rendered it fails in the sandbox now: ${full?.reason ?? "no result"}`); continue; }
