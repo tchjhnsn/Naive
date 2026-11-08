@@ -181,6 +181,10 @@ def «tier» : Concept Placement := ⟨[
 def «handoff» : Concept Placement := ⟨[
   ("level operations", fun f => Decidable.decide (f.level = Level.«operations»))]⟩
 
+/-- [D] handoff claim (proposed). The one exclusive taking of a ready handoff by a run in the role it names, through the router's claim action on operations/handoff/<id>: it sets claimed_by to the run id and status to in-progress in one write, a second claim is refused, and afterwards only the claimant writes progress and evidence and only the requester (requested_by) writes the verification and acceptance. Standard: claim (work-item claiming in task queues and issue trackers; compare-and-swap ownership). Fields: broader ["process"]; handoff_type false. -/
+def «handoffClaim» : Concept Placement := ⟨[
+  ("level operations", fun f => Decidable.decide (f.level = Level.«operations»))]⟩
+
 /-- [D] done-criterion (new). One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role). Standard: definition of done (Scrum). Fields: broader ["information artifact"]; handoff_type false. -/
 def «doneCriterion» : Concept Placement := ⟨[
   ("level operations", fun f => Decidable.decide (f.level = Level.«operations»))]⟩

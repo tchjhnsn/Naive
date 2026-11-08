@@ -1810,8 +1810,23 @@ export type Handoff = {
     items: number;
     [key: string]: unknown;
   };
-  /** Session or run id of the holder */
+  /** Run or session id of the holder, or its role when the run carried no id. Set by the router's claim action (operations/handoff/<id> claim), which takes a ready, unclaimed handoff addressed to the acting role, once */
   claimed_by?: string;
+  /** Optional: the lead role or person that wrote the handoff and verifies it. When set, the router lets only the requester edit it before a claim, only the claimant write progress and evidence after one, and only the requester write the verification and acceptance; every review criterion's reviewer is this requester (check-ready.mjs, check-execution.mjs) */
+  requested_by?: string;
+  /** Optional: the requester's verification of done work, after rerunning the conformance criteria and judging the review criterion. Written only by the requester when requested_by is set */
+  verification?: {
+    /** The requester (requested_by) */
+    by: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** accepted: the done work is accepted and the handoff stays done. rework: sent back with a reason, status ready and unclaimed, for another attempt */
+    outcome: "accepted" | "rework";
+    /** Why it was sent back, required for rework */
+    reason?: string;
+  };
   /** Session that wrote the handoff */
   session_id?: string;
   /** Session that assigned it, for lineage */

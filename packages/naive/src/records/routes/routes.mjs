@@ -53,6 +53,9 @@ export const RECIPES = "recipes";
 // Logs the router appends to, one hash-chained line per call (packages/naive/src/router/router.mjs append). Every other
 // log is written by its own module and only read through the router.
 const APPENDS = new Set(["detector-trial"]);
+// Records the router claims for the acting role, once (packages/naive/src/router/handoff-claim.mjs, the handoff claim of
+// docs/design/LEAD_AGENTS_2026-11-08.md).
+const CLAIMS = new Set(["handoff"]);
 
 /** The route table, generated from packages/naive/src/records/data-model.json, the kit manifests and packages/naive/src/engine/need-now.json. */
 // Caching hook (F-12): built once per action and shared.
@@ -97,7 +100,7 @@ function buildRoutes() {
     if (collection) {
       out.push({ ...common, route: base, files: filesOf, collection: "list", actions: ["read", "view", "layout", ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
       out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item",
-        actions: ["read", "view", "layout", ...(writable ? ["write"] : []), ...(APPENDS.has(r.id) ? ["append"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
+        actions: ["read", "view", "layout", ...(writable ? ["write"] : []), ...(APPENDS.has(r.id) ? ["append"] : []), ...(CLAIMS.has(r.id) ? ["claim"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     } else {
       out.push({ ...common, route: base, files: filesOf,
         actions: ["read", "view", "layout", ...(writable && !filesOf[0]?.includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
