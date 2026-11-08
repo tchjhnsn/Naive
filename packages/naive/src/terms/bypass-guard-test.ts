@@ -49,6 +49,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-boundary.mjs": plain("path text: no code names a module of an app that uses Naive, and registered connectors work offline"),
   "packages/naive/src/checks/check-brand.mjs": plain("brand records: colors, licensed typefaces, marks and voice rules against fixed lists"),
   "packages/naive/src/checks/check-config.mjs": plain("naive.config.json: shape, route patterns that match the route table, and pins"),
+  "packages/naive/src/checks/check-connections.ts": plain("the capability cluster catalog and connection records: schema shape, unique ids, references to departments, gap kinds, clusters, integrations and decision classes, a fixed map from action kind to approval class, and source map resolution by resolve.mjs; it does not decide what a thing is"),
+  "packages/naive/src/checks/check-connections-test.ts": plain("proves the connections check breaks on each rule on copies"),
   "packages/naive/src/checks/check-data-model.mjs": plain("every JSON file maps to a declared record type by path; record types are schema types, not glossary terms"),
   "packages/naive/src/checks/check-data-packages.mjs": plain("data package layout, append-only streams and immutable raw sources"),
   "packages/naive/src/checks/check-delegation.mjs": plain("grant chains, scopes and expiry between roles named in templates"),

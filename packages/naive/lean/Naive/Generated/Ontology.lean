@@ -17,7 +17,7 @@ inductive Level | «evidence» | «function» | «governance» | «interface» |
   deriving DecidableEq, Repr
 
 /-- [D] The functions (ids in packages/naive/src/functions/departments.json) that own a noun. -/
-inductive Department | «finance» | «marketingAndSales» | «products» | «strategy»
+inductive Department | «finance» | «it» | «marketingAndSales» | «products» | «strategy»
   deriving DecidableEq, Repr
 
 /-- [D] Where a thing sits: its level, and the function that owns it (none when shared). No label field. -/
@@ -248,6 +248,15 @@ def «customWorkbench» : Concept Placement := ⟨[
 /-- [D] integration (kept). A tool or service one layer uses, listed in <layer>/tooling/integrations.json (Obsidian for knowledge, Linear for operations, GitHub checks for evidence). A workbench reaches integrations; it is not one. Standard: systems integration. Fields: broader ["information artifact"]; handoff_type false. -/
 def «integration» : Concept Placement := ⟨[
   ("level system", fun f => Decidable.decide (f.level = Level.«system»))]⟩
+
+/-- [D] capability cluster (proposed). One group of capabilities that GitHub plus Naive cannot provide for a venture, served by one outside tool however many functions depend on it (one tool per cluster, not one per function). Naive's catalog, packages/naive/src/functions/it/capability-clusters.json, lists six from the whole-venture monorepo thesis, each with the functions that depend on it and the gap kinds that justify an outside tool (regulated authority, a network or money rail, a runtime, a UI preference); it names no vendor. Standard: business capability (business architecture, TOGAF capability-based planning). Fields: broader ["information artifact"]; handoff_type false. -/
+def «capabilityCluster» : Concept Placement := ⟨[
+  ("level system", fun f => Decidable.decide (f.level = Level.«system»))]⟩
+
+/-- [D] connection (proposed). One outside system a venture connects, as a record at it/connections/<id>.json that the it function owns, under the thesis's eight-point connection contract: the records and fields it is authoritative for (as source map rules), sync direction, scoped reads and writes, signed events, a stable external id with provenance and last-synced time, the approval class of every send (public-commitment), payment (spend-money) and signature (legal-or-terms), idempotency and reconciliation, and the exit plan; plus what goes stale, blocks or degrades when it fails. It says what is allowed and authoritative; an app's connectors act. Standard: integration contract (enterprise application integration; data contract). Fields: broader ["information artifact"]; handoff_type false. -/
+def «connection» : Concept Placement := ⟨[
+  ("level operations", fun f => Decidable.decide (f.level = Level.«operations»)),
+  ("function it", fun f => Decidable.decide (f.department = Option.some Department.«it»))]⟩
 
 /-- [D] kit (kept). Mentura's word (EE-071): an enhanced package that adds automations, agent workflows, richer skills and connectors, at platform/kits/<name>/kit.json. A kit names the one package it extends and never replaces it, so the package works without the kit. The framework does not use kit for its own manifests (was the layer bundle at <layer>/kit.json). Standard: product bundling (Adams and Yellen 1976), kept for the platform. Fields: broader ["information artifact"]; handoff_type false. -/
 def «kit» : Concept Placement := ⟨[

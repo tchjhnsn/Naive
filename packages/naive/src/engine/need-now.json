@@ -980,6 +980,16 @@
       },
       "why": "Written only by the signal projector beside a competitor; it fills when a listener hears signals about that competitor"
     },
+    "connection": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.3,
+        "beachhead": 0.5,
+        "scale": 0.7,
+        "platform": 0.8
+      },
+      "why": "One per outside system the venture connects; needed from the first tool that holds records or acts for the venture (the thesis's pilot order starts with runtime and data, then product email)"
+    },
     "research-program": {
       "base": {
         "discovery": 0.05,
