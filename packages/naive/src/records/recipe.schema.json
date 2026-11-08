@@ -41,7 +41,7 @@
       "additionalProperties": {
         "$ref": "#/$defs/knob"
       },
-      "description": "The recipe's tunable values. A knob search (naive recipes search, not built) steps each one; a model edit may add or remove them"
+      "description": "The recipe's tunable values. A knob search (naive recipes search) steps each number, boolean and rating floor; a model edit may add or remove them"
     }
   },
   "$defs": {
