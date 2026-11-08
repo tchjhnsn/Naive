@@ -4,7 +4,8 @@
 // which hears only signals rated B2 or better. Each pull renders the pattern through the venture's recipe in the
 // sandbox and writes <record>.reception.json beside the record, so one rumour is salient at gamma and noise at
 // delta. A pull after a pull writes nothing, not a byte. Once the horizon has passed, a pull labels each reception
-// helpful, inert or harmful against the settled record, and a pull after that writes nothing either. A recipe that
+// helpful, inert or harmful against the settled record, check-recipes agrees with every file the pulls wrote, and a
+// pull after that writes nothing either. A recipe that
 // throws fails the pull before anything is written. Every venture lives in a temporary workspace.
 //
 //   node packages/naive/src/interfaces/tests/recipe-render-test.ts
@@ -19,6 +20,7 @@ import { loadSignals } from "../../engine/recipes/eval-set.ts";
 import { baselineRecord } from "../../engine/recipes/outcomes.ts";
 import type { Known } from "../../engine/recipes/outcomes.ts";
 import { producerShares } from "../../engine/recipes/render.ts";
+import { checkRecipes } from "../../checks/check-recipes.ts";
 import { signalId, canonicalJson } from "../../core/signal-id.ts";
 import { hasBlob } from "../../core/blobs.mjs";
 import { entries } from "../../core/provenance.mjs";
@@ -155,6 +157,8 @@ try {
   const d3 = await pull(delta, { now: LATER });
   const dH = read(receptionFile(delta)) as Reception;
   expect("at delta the rumour it called noise is inert, and the seed round helpful", d3.ok && label(dH, RUMOUR)?.label === "inert" && label(dH, ORIGINAL)?.label === "helpful", show(dH.receptions.map((r) => r.hindsight)));
+  const cg = await checkRecipes(gamma), cd = await checkRecipes(delta);
+  expect("check-recipes agrees with what the pulls wrote at both ventures: each record renders again, and noise is noise", cg.recipes === 1 && cg.findings.length === 0 && cd.recipes === 1 && cd.findings.length === 0, show([cg.findings, cd.findings]));
   const gSnap2 = snapshot(gamma);
   const g4 = await pull(gamma, { now: LATER });
   expect("a pull after hindsight writes nothing", g4.status === "nothing new" && g4.hindsight.length === 0 && sameFiles(gSnap2, snapshot(gamma)), show(g4));

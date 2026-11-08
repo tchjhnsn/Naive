@@ -98,6 +98,12 @@ try {
     const r = json<Reception>(d, RECEPTION);
     put(d, RECEPTION, { ...r, receptions: [...r.receptions, { signal: id, kind: "noise", failed: [{ predicate: "min_rating", why: "rated below B2" }], time: "2026-11-04", observed: "2026-11-05T09:00:00Z", withdrawn_at: null, factors: { lag: 0, age: 0, producer_confirmed: null, producer_withdrawn: null, uptake: null } }] });
   }, null);
+  await expect("a heard signal with no reception fails: the render's input is the shared recipe input", (d) => {
+    const { id: _i, ...body } = json<Record<string, unknown>>(d, "library/signals/competitor-funding/acme-robotics/2026-11-05-3a50ad6dfb3a46b0f160cc36.json");
+    const more = { ...body, time: "2026-11-04", observed: "2026-11-05T09:00:00Z", producer: "market-example/rumours" };
+    const id = signalId(more);
+    put(d, `library/signals/competitor-funding/acme-robotics/2026-11-04-${id}.json`, { id, ...more });
+  }, /heard signal [0-9a-f]{24}, which has no reception/);
   await expect("noise the record depends on fails", (d) => {
     const r = json<Reception>(d, RECEPTION);
     const { fields: _f, ...x } = r.receptions[0] as Reception["receptions"][number] & { fields?: string[] };
