@@ -3,7 +3,7 @@
 // (finance-agent) or a person: writer function in the data model, checked by writerRule before the team plan, so a
 // role the team plan gives finance/** is refused too. The template's source map holds the register's access matrix
 // field by field, and check-sources.mjs refuses a rule that ties with it.
-// The finance agent holds spend-register-upkeep and cancel-or-downgrade straight from the founder. Every venture
+// A connection (it/connections/[id]) follows the same rule for it-agent. The finance agent holds spend-register-upkeep and cancel-or-downgrade straight from the founder. Every venture
 // lives in a temporary workspace.
 //
 //   node packages/naive/src/interfaces/tests/spend-register-test.ts
@@ -74,7 +74,7 @@ try {
   mkdirSync(join(dir, "people"), { recursive: true });
   writeFileSync(join(dir, "people/team-plan.json"), JSON.stringify({ roles: [
     { id: "finance-agent", name: "Finance agent", occupant: "agent", needed_by: "discovery", status: "filled", why: "finance", routes: { write: ["decisions/*", "finance/spend/*"] } },
-    { id: "it-agent", name: "IT agent", occupant: "agent", needed_by: "discovery", status: "filled", why: "it", routes: { write: ["finance/**"] } },
+    { id: "it-agent", name: "IT agent", occupant: "agent", needed_by: "discovery", status: "filled", why: "it", routes: { write: ["finance/**", "it/connections/*"] } },
   ] }, null, 2));
   const wide = await ask({ route: "finance/spend/figma", action: "write", input: line(), actor_id: "it-agent" });
   expect("a role whose team-plan routes reach finance/** is still refused", !wide.ok && wide.gate_rule === "function-only" && !existsSync(file), JSON.stringify(wide));
@@ -89,6 +89,21 @@ try {
   expect("a person's write lands live", person.ok && load(file).status === "cancel-requested", JSON.stringify(person));
   const read = await ask({ route: "finance/spend/figma", actor_id: "it-agent" });
   expect("any role still reads a line", read.ok && JSON.stringify(read.result).includes("Figma"), JSON.stringify(read).slice(0, 300));
+
+  // The same rule on the it function's connections (lead agents build item 7): only it-agent or a person writes one.
+  const connection = { id: "mailer", title: "Product email", cluster: "messaging-delivery", system: "the venture's email provider", integration: "filesystem", source: "mail-sync", status: "planned",
+    authoritative_for: [{ record: "customer", attribute: "email" }], sync: { direction: "tool-to-repo", references_only: true },
+    access: { reads: [{ what: "delivery status", scope: "messages:read" }], writes: [{ what: "send a message", scope: "messages:send" }] },
+    events: [{ name: "delivered", signature: { method: "hmac-sha256", secret: "MAILER_WEBHOOK_SECRET" } }],
+    external_id: { field: "message_id", provenance: true, last_synced: null }, actions: [{ id: "send-update", kind: "send", approval: "public-commitment" }],
+    idempotency: { key: "venture id, route and record version", retries: { max: 3, backoff: "exponential" }, reconciliation: { cadence: "daily", compares: "messages sent against the outbox" } },
+    exit: { deletion: "delete contacts on request", export: "export contacts as CSV", disconnect: "revoke the key" },
+    failure: { stale: ["customers/<id>.json email"], blocks: ["sending product email"], degrades: ["delivery status"] } };
+  const conn = join(dir, "it/connections/mailer.json");
+  const byFinance = await ask({ route: "it/connections/mailer", action: "write", input: connection, actor_id: "marketing-and-sales-agent" });
+  expect("a connection write by marketing-and-sales-agent, a role the team plan does not list, is refused (connection is writer function, function it)", !byFinance.ok && byFinance.gate_rule === "function-only" && !existsSync(conn), JSON.stringify(byFinance));
+  const byIt = await ask({ route: "it/connections/mailer", action: "write", input: connection, actor_id: "it-agent" });
+  expect("a connection write by it-agent passes", byIt.ok && existsSync(conn), JSON.stringify(byIt));
 
   // The access matrix: the template's source map, field by field.
   const map = load(join(repo, "packages/naive/template/knowledge/sources.json"));

@@ -122,6 +122,10 @@
       "version": "0.1.0",
       "channel": "stable"
     },
+    "it": {
+      "version": "0.1.0",
+      "channel": "stable"
+    },
     "raw": {
       "version": "0.3.0",
       "channel": "stable"

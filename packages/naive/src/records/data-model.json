@@ -2113,6 +2113,61 @@
       "note": "The systems of record create-venture offers per function (EE-083)"
     },
     {
+      "id": "capability-cluster",
+      "layer": "operations",
+      "function": "it",
+      "level": "method",
+      "schema": "packages/naive/src/records/capability-cluster.schema.json",
+      "generator": "packages/naive/src/engine/generators/capability-cluster.ts",
+      "paths": [
+        "packages/naive/src/functions/it/capability-clusters.json"
+      ],
+      "refs": [
+        {
+          "field": "clusters[].functions",
+          "to": "department-catalog",
+          "checked_by": "packages/naive/src/checks/check-connections.ts"
+        }
+      ],
+      "note": "The capability clusters of the whole-venture monorepo thesis: one outside tool per cluster, not one per function. Each names the functions that depend on it and the gap kinds that justify an outside tool (regulated authority, a network or money rail, a runtime, a UI preference). It names no vendor (lead agents design, build plan item 7)"
+    },
+    {
+      "id": "connection",
+      "layer": "operations",
+      "function": "it",
+      "level": "venture",
+      "schema": "packages/naive/src/records/connection.schema.json",
+      "generator": "packages/naive/src/engine/generators/connection.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/it/connections/*.json",
+        "packages/naive/src/records/examples/**/it/connections/*.json"
+      ],
+      "refs": [
+        {
+          "field": "cluster",
+          "to": "capability-cluster",
+          "checked_by": "packages/naive/src/checks/check-connections.ts"
+        },
+        {
+          "field": "integration",
+          "to": "integration",
+          "checked_by": "packages/naive/src/checks/check-connections.ts"
+        },
+        {
+          "field": "authoritative_for",
+          "to": "knowledge-sources",
+          "checked_by": "packages/naive/src/checks/check-connections.ts"
+        },
+        {
+          "field": "actions[].approval",
+          "to": "decision-rights",
+          "checked_by": "packages/naive/src/checks/check-connections.ts"
+        }
+      ],
+      "note": "One outside system a venture connects, under the thesis's eight-point connection contract: authoritative records and fields as source map rules, sync direction, scoped reads and writes, signed events, the external id with provenance and last-synced time, actions with their approval class, idempotency and reconciliation, and the exit plan, plus what goes stale, blocks or degrades when it fails. Owned by the it function. It says what is allowed and authoritative; the app's connectors act (lead agents design, build plan item 7)"
+    },
+    {
       "id": "glossary",
       "layer": "knowledge",
       "function": null,

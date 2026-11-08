@@ -307,6 +307,31 @@ export type Calendar = {
   created?: string;
 };
 
+/** The catalog of capability clusters Naive ships at packages/naive/src/functions/it/capability-clusters.json (lead agents design, "Capability clusters and connections", from the whole-venture monorepo thesis). The thesis asks, for each function, what an outside tool gives that GitHub plus Naive cannot, and groups the answers into clusters with one outside tool per cluster, not one per function. Each cluster names the functions (packages/naive/src/functions/departments.json ids) that depend on it and the gap kinds that justify an outside tool. It names no vendor: every object here allows only the properties listed, so a vendor, tool or product field fails the schema. A venture's connection record (connection.schema.json) names its cluster and its own system. */
+export type CapabilityCluster = {
+  version: string;
+  note?: string;
+  /** Why GitHub plus Naive is not enough, strongest reason first. */
+  gap_kinds: {
+    id: "regulated-authority" | "network-or-money-rail" | "runtime" | "ui-preference";
+    means: string;
+    /** True for the one reason that alone rarely justifies a connection (a UI preference). */
+    weakest?: boolean;
+  }[];
+  clusters: {
+    id: string;
+    title: string;
+    /** The functions that depend on the cluster, ids in packages/naive/src/functions/departments.json (packages/naive/src/checks/check-connections.ts checks them). */
+    functions: string[];
+    /** The gap kinds that justify an outside tool for this cluster, ids from gap_kinds. */
+    gaps: ("regulated-authority" | "network-or-money-rail" | "runtime" | "ui-preference")[];
+    /** What the outside tool gives that GitHub plus Naive cannot, in the thesis's words where it has them. */
+    why: string;
+    /** The thesis's own list of who depends on the cluster, kept as written (it names uses, such as payroll or product email, that are not function ids). */
+    thesis?: string;
+  }[];
+};
+
 /** What signals say about one competitor, at <venture>/competitors/<id>/signals.json, rendered by the signal projector from the signals salient for it (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). Only the projector writes it (writer projection in the data model); a person corrects what a signal says by emitting a superseding signal into the venture's local library, and corrects anything else in the master record competitors/<id>.json. Each field is filled by a fold a signal type's projects names, so a type may add fields. Every entry names the signal it came from and whether that signal still stands. Neither the projector nor the rule that refuses other writers is built yet. */
 export type CompetitorSignals = {
   $schema?: string;
@@ -346,6 +371,108 @@ export type Competitor = {
   notes?: string;
   /** The signal the projector created this record from, when a person did not write it first */
   created_from?: SignalAddress;
+};
+
+/** One outside system a venture connects, at <venture>/it/connections/<id>.json, owned by the it function (lead agents design, "Capability clusters and connections"). Its fields are the eight-point connection contract of the whole-venture monorepo thesis: (1) the records and fields the outside system is authoritative for, (2) the sync direction, (3) the allowed reads and writes with least-privilege scopes, (4) the events it sends and how each is signed, (5) the stable external id with provenance and last-synced time, (6) the actions that need a person's approval, each naming its decision class, (7) idempotency, retries and reconciliation, and (8) the deletion, export and disconnect plan. It also says what goes stale, what blocks and what degrades when the connection fails, which a lead reads. A connection says what is allowed and what is authoritative; the app's connectors do the acting, and a connector being present is not permission to act. packages/naive/src/checks/check-connections.ts refuses a send, payment or signature action without its approval class and a claim of authority over a field another source owns in the source map. */
+export type Connection = {
+  /** The connection's id, the same as its file name without .json. */
+  id: string;
+  title?: string;
+  /** The capability cluster it fills, an id in packages/naive/src/functions/it/capability-clusters.json. */
+  cluster: string;
+  /** The outside system by the venture's own name for it. The venture's record may name a vendor; Naive's catalog never does. */
+  system?: string;
+  /** Optional: the integration id (packages/naive/src/records/layers/*\/tooling/integrations.json) this connection is an instance of. */
+  integration?: string;
+  /** The source id in the venture's knowledge/sources.json that this connection feeds. Needed when authoritative_for names anything: the source map, not the connection, says which source masters a field. */
+  source?: string;
+  status?: "planned" | "connected" | "disconnected";
+  /** Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.mjs) to a rule whose system of record is this connection's source; everything else stays owned by the repository. */
+  authoritative_for: {
+    /** A venture record type id. */
+    record: string;
+    /** "*" for the whole record, or one top-level field. */
+    attribute: string;
+    note?: string;
+  }[];
+  /** Contract 2: which way data moves. The default is tool to repo, references only. */
+  sync: {
+    direction: "tool-to-repo" | "repo-to-tool" | "both";
+    /** True when the repository keeps only references (ids, links) and never a copy of the outside system's data. */
+    references_only?: boolean;
+  };
+  /** Contract 3: the allowed reads and writes, each with the least-privilege scope it needs. */
+  access: {
+    reads: ConnectionGrant[];
+    writes: ConnectionGrant[];
+  };
+  /** Contract 4: the events and triggers the outside system sends. Each is checked by its signature before it is read; an event is an observation and never becomes a venture record by itself. */
+  events: {
+    name: string;
+    signature: {
+      /** How the signature is checked, such as hmac-sha256. */
+      method: string;
+      /** The environment variable holding the signing secret, never the secret. */
+      secret: string;
+    };
+    note?: string;
+  }[];
+  /** Contract 5: the outside system's stable id for what it holds, recorded with provenance, and when it last synced. */
+  external_id: {
+    /** The outside system's stable id field. */
+    field: string;
+    /** Every value synced in names this connection in the venture's provenance log. */
+    provenance: true;
+    /**
+     * When it last synced, or null before the first sync.
+     * @format date-time
+     */
+    last_synced: string | null;
+  };
+  /** Contract 6: what the connection may do in the outside system. A send names public-commitment, a payment spend-money and a signature legal-or-terms, so a person approves each before it happens (delegation already enforces those classes). Other actions may name a decision class from governance/decision-rights.json. */
+  actions: {
+    id: string;
+    kind: "send" | "payment" | "signature" | "create" | "update" | "delete" | "other";
+    /** The decision class whose holder approves the action, an id in governance/decision-rights.json. */
+    approval?: string | null;
+    note?: string;
+  }[];
+  /** Contract 7: the idempotency key, retries and reconciliation. */
+  idempotency: {
+    /** How the idempotency key of a write is formed, so a retry returns the stored result. */
+    key: string;
+    retries: {
+      max: number;
+      backoff?: string;
+    };
+    reconciliation: {
+      cadence: "hourly" | "daily" | "weekly";
+      /** What the reconciliation compares between the outside system and the repository. */
+      compares: string;
+    };
+  };
+  /** Contract 8: the deletion, export and disconnect plan. */
+  exit: {
+    deletion: string;
+    export: string;
+    disconnect: string;
+  };
+  /** What happens when the connection fails, which the lead whose portfolio depends on the cluster reads. */
+  failure: {
+    /** Records or fields that go stale. */
+    stale: string[];
+    /** Work that cannot happen until it is back. */
+    blocks: string[];
+    /** Work that goes on in a lesser way. */
+    degrades: string[];
+  };
+  note?: string;
+};
+
+export type ConnectionGrant = {
+  what: string;
+  /** The narrowest scope the outside system offers for it. */
+  scope: string;
 };
 
 /** The venture's canonical constraints, at <venture>/foundation/constraints.json: what it must not do, whatever framework states its goals. */

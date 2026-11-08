@@ -1,0 +1,60 @@
+{
+  "version": "0.1.0",
+  "note": "The six capability clusters of the whole-venture monorepo thesis (Grokbot, 2026-11-08), as Naive data (lead agents design, build plan item 7). One outside tool per cluster, not one per function. A cluster names no vendor: vendor research in the thesis is blocked, and a venture's connection record (it/connections/<id>.json) names its own system. Checked by packages/naive/src/checks/check-connections.ts.",
+  "gap_kinds": [
+    { "id": "regulated-authority", "means": "Law or regulation gives the authority to someone outside the repository: a signature that binds, privileged storage, tax filing, data-subject rights, securities rules" },
+    { "id": "network-or-money-rail", "means": "Reaching a network or moving money needs a rail the repository cannot be: bank and payment rails, email delivery with consent and unsubscribe" },
+    { "id": "runtime", "means": "Something has to run and hold state outside Git: hosting, databases, an identity provider, secrets, access-controlled private data" },
+    { "id": "ui-preference", "means": "People would rather work in a tool's interface than in files; the weakest reason, and alone it rarely justifies a connection", "weakest": true }
+  ],
+  "clusters": [
+    {
+      "id": "identity-and-secrets",
+      "title": "Identity and secrets",
+      "functions": ["it", "human-capital", "products"],
+      "gaps": ["runtime"],
+      "why": "GitHub gives the org, teams and CODEOWNERS; an identity provider and a secrets store have to run outside Git so that accounts, access and credentials work at runtime",
+      "thesis": "it, human-capital, every product"
+    },
+    {
+      "id": "messaging-delivery",
+      "title": "Messaging delivery",
+      "functions": ["marketing-and-sales", "customer-service", "products"],
+      "gaps": ["network-or-money-rail"],
+      "why": "Templates live in Git; delivery, consent and unsubscribe need a delivery network",
+      "thesis": "marketing-and-sales, customer-service, product email"
+    },
+    {
+      "id": "money-and-books",
+      "title": "Money and books",
+      "functions": ["finance", "human-capital"],
+      "gaps": ["network-or-money-rail", "regulated-authority"],
+      "why": "Models and budgets live in Git; bank and payment rails, payroll remittance, tax filing and securities rules for crowdfunding sit outside it",
+      "thesis": "finance, human-capital payroll, crowdfunding"
+    },
+    {
+      "id": "runtime-and-data",
+      "title": "Runtime and data",
+      "functions": ["products"],
+      "gaps": ["runtime"],
+      "why": "Code and config live in Git; hosting, databases and telemetry run outside it, and private profile data must not sit in every clone",
+      "thesis": "products, platforms, private profile data"
+    },
+    {
+      "id": "signatures-and-privileged-records",
+      "title": "Signatures and privileged records",
+      "functions": ["risk-and-compliance", "external-relationships", "human-capital"],
+      "gaps": ["regulated-authority"],
+      "why": "Templates and the request log live in Git; a binding e-signature, privileged storage and data-subject requests need an authority outside it",
+      "thesis": "risk-and-compliance, external-relationships, human-capital"
+    },
+    {
+      "id": "private-contact-records",
+      "title": "Private contact records",
+      "functions": ["marketing-and-sales", "customer-service", "external-relationships", "human-capital"],
+      "gaps": ["runtime", "ui-preference"],
+      "why": "A few deals or contacts can live in issues or YAML; contact privacy, private inbound threads, candidate data and data-room access control need an access-controlled store, and volume work wants a tool's interface",
+      "thesis": "sales, support, investors, candidates"
+    }
+  ]
+}

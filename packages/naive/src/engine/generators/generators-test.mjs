@@ -10,6 +10,8 @@ import * as reference from "./reference.mjs";
 import * as traceSpan from "./trace-span.mjs";
 import * as detector from "./detector.ts";
 import * as detectorTrial from "./detector-trial.ts";
+import * as connection from "./connection.ts";
+import * as capabilityCluster from "./capability-cluster.ts";
 
 let fails = 0;
 const t = (name, ok) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}`); if (!ok) fails++; };
@@ -18,7 +20,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -81,6 +83,20 @@ t("detector-trial: a resolution passes the schema", rs.ok && rs.draft.kind === "
 t("detector-trial: a resolution with no one settling it is refused", !detectorTrial.draft({ detector: "recipe-ready", trial: "t-1", outcome: "hit" }).ok);
 t("detector-trial: a trial line may not carry an outcome", tr.ok && !validate("detector-trial", { ...tr.draft, outcome: "hit" }).ok);
 t("detector-trial: a resolution line may not carry a score", rs.ok && !validate("detector-trial", { ...rs.draft, score: 1 }).ok);
+
+const conn = connection.draft({ id: "Product Email", cluster: "messaging-delivery", access: { reads: [], writes: [{ what: "send", scope: "messages:send" }] },
+  external_id: { field: "message_id" }, actions: [{ id: "send-update", kind: "send" }, { id: "pay", kind: "payment" }, { id: "sign", kind: "signature", approval: "spend-money" }, { id: "add", kind: "create" }],
+  idempotency: { key: "route and version", retries: { max: 3 }, reconciliation: { compares: "sent against the outbox" } },
+  exit: { deletion: "d", export: "e", disconnect: "x" }, failure: { stale: [], blocks: ["sending"], degrades: [] } });
+t("connection: draft passes the schema with the thesis's defaults", conn.ok && conn.route === "it/connections/product-email" && conn.draft.sync.direction === "tool-to-repo"
+  && conn.draft.sync.references_only === true && conn.draft.external_id.provenance === true && conn.draft.external_id.last_synced === null && conn.draft.idempotency.reconciliation.cadence === "daily" && conn.draft.status === "planned");
+t("connection: a send and a payment with no approval get public-commitment and spend-money", conn.ok && conn.draft.actions[0].approval === "public-commitment" && conn.draft.actions[1].approval === "spend-money");
+t("connection: an approval a person gave is never changed, and other actions get none", conn.ok && conn.draft.actions[2].approval === "spend-money" && !("approval" in conn.draft.actions[3]));
+t("connection: no exit plan is refused before the schema", !connection.draft({ ...conn.draft, exit: undefined }).ok);
+const cc = capabilityCluster.draft({ title: "Physical logistics", functions: ["supply-chain"], gaps: ["network-or-money-rail"], why: "carriers and customs" });
+t("capability-cluster: a new cluster is added to the catalog and passes the schema", cc.ok && cc.added === "physical-logistics" && cc.draft.clusters.length === 7);
+t("capability-cluster: a cluster already in the catalog is refused", !capabilityCluster.draft({ title: "Messaging delivery", functions: ["products"], gaps: ["runtime"], why: "x" }).ok);
+t("capability-cluster: a vendor field fails the schema", cc.ok && !validate("capability-cluster", { ...cc.draft, clusters: [{ ...cc.draft.clusters[0], vendor: "Acme" }] }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

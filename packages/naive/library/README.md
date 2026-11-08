@@ -18,4 +18,6 @@ Data packages hold master data a venture keeps without end, such as customers, i
 
 The finance package owns the spend register (`spend-register`, `finance/spend/[id]`, lead agents build item 2): one paid service per record, written only by the finance agent or a person. Its manifest gives the package a layer (`purpose`), as every package that owns a record type has.
 
+The it package ([`packages/naive/library/packages/it/`](./packages/it/package.json)) is a data package the it function owns (lead agents build plan item 7): it owns the `connection` record type (`it/connections/<id>.json`, route `it/connections/[id]`) and the capability cluster catalog, and gives the it function its first write routes.
+
 The foundation package lists `packages/naive/src/records/validate.mjs` among its checks: records are validated in JavaScript, with no Python.

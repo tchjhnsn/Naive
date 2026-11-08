@@ -82,6 +82,7 @@ export const PACKAGE_FUNCTION = Object.freeze({
   finance: "finance", fund: "finance", money: "finance",
   legal: "risk-and-compliance", counsel: "risk-and-compliance",
   relationships: "external-relationships", investor: "external-relationships", investors: "external-relationships", partner: "external-relationships",
+  it: "it",
 });
 export const CODEBASE = "codebase";
 

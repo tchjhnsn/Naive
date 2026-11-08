@@ -267,5 +267,6 @@ const PACKAGE_ROUTE = {
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
   "spend-register": "finance/spend",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
+  connection: "it/connections",
   ...BRAND_ROUTES, // Brand hook: marketing/brand, public/assets, glossary (packages/naive/src/engine/brand.mjs).
 };
