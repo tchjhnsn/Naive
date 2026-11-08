@@ -90,7 +90,8 @@ try {
     const { dev: _d, kept_as: _k, ...body } = ls[1];
     putLog(d, [...ls, { ...body, id: "e3", at: "2026-11-07T16:10:00.000Z", base: ls[0].candidate, verdict: "fail", reason: "the training run threw" } as Experiment]);
   }, null);
-  await expect("holdout checks over the plan's budget fail", (d) => { const p = json<EvalPlan>(d, PLAN); putPlan(d, { ...p, budgets: { ...p.budgets, holdout_checks: 1 } }); const ls = lines(d); putLog(d, [...ls, { ...ls[2], id: "h2" }]); }, /2 holdout checks under plan .* over its budget of 1/);
+  await expect("holdout checks over the plan's budget fail", (d) => { const p = json<EvalPlan>(d, PLAN); putPlan(d, { ...p, budgets: { ...p.budgets, holdout_checks: 1 } }); const ls = lines(d); putLog(d, [...ls, { ...ls[2], id: "h2", candidate: "0".repeat(64) }]); }, /2 holdout checks under plan .* over its budget of 1/);
+  await expect("a second line for a tip already checked spends no second check", (d) => { const p = json<EvalPlan>(d, PLAN); putPlan(d, { ...p, budgets: { ...p.budgets, holdout_checks: 1 } }); const ls = lines(d); putLog(d, [...ls, { ...ls[2], id: "h2" }]); }, null);
   await expect("a live recipe changed outside the router fails", (d) => put(d, RECIPE, `${read(d, RECIPE)}// edited by hand\n`), /the live recipe was changed outside the router/);
 
   // Receptions.

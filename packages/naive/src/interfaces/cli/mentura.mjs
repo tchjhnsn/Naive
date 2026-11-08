@@ -18,6 +18,9 @@
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route;
 //                                                   [--pick <letter>] [--by <name>] accepts one of drafts kept side by side
+//   mentura accept recipes/<pattern> --venture <id> [--by <name>] [--over-holdout]
+//                                                   a person accepts the held recipe tip: the one-bit holdout check runs,
+//                                                   and the tip goes live on a pass, or over a failed check with --over-holdout
 //   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
 //          [--reason "<claim>" | --against "<claim>" | --context "<claim>"] [--cite <ref> [--locator <where>]] ...
 //                                                   reasons with citations, frozen with each cited file's sha256 at approval
@@ -213,6 +216,13 @@ if (cmd === "accept") {
   // person merges) remains the gate that holds; this makes the person's step explicit.
   const venture = opt("venture"), rt = action;
   if (!venture || !rt) usage();
+  // A recipe's held tip is accepted only through its route, which runs the holdout check (autoresearch build plan item 8).
+  if (rt.startsWith("recipes/")) {
+    const a = await call({ venture, route: rt, action: "accept", input: { over_holdout: flag("over-holdout") }, actor: "person", actor_id: opt("by"), workspace, via: "cli" });
+    if (!a.ok) { console.error(`not accepted: ${a.error}`); process.exit(1); }
+    out(`accepted: ${a.result.written} (holdout ${a.result.result}${a.result.over_holdout ? ", accepted over it" : ""})`);
+    process.exit(0);
+  }
   const d = draftOf(rt, venture, workspace);
   // Any held draft can be accepted: one gated by its decision class, held by an open decision, or held by
   // the venture's naive.config.json gate.

@@ -20,17 +20,28 @@
 //                live tip that had no line yet) stored by its sha in the blob store and the span named; what landed
 //                nothing answers ok false with its verdict.
 //
-// The evaluator writes the log; no route appends to it, so an agent cannot supply a score. Accept with the holdout check
-// is build plan item 8 (not built).
+//   accept  { over_holdout? }: a person promotes the held tip (build plan item 8, "mentura accept recipes/<pattern>").
+//           It refuses an agent, a tip that is live already and a spent holdout budget (distinct tips checked under
+//           the plan). It runs the one-bit holdout check (scoreHoldout: the tip against the live recipe on the holdout
+//           window) and appends a holdout line. pass: the tip is written live and its draft removed. fail: refused,
+//           the draft stays, unless over_holdout, which writes it live and logs over_holdout true. Accepting a tip
+//           already checked under the plan reuses that line's bit and runs no new check.
+//   monitor  the forward check (scoreForward): since the live recipe last changed (an accept or a person's write),
+//           points whose horizon has passed are scored against the recipe live before it. A regression proposes one
+//           open rollback decision (agent recipe-monitor); nothing rolls back on its own, and a rerun files nothing new.
+//
+// The evaluator writes the log; no route appends to it, so an agent cannot supply a score.
 import { createHash } from "node:crypto";
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { readBlob, writeBlob } from "../core/blobs.mjs";
 import { tracing, withSpan } from "../core/instrumentation.mjs";
-import { agentFromEnv, entries, record as prov } from "../core/provenance.mjs";
+import { actingAgent, agentFromEnv, entries, record as prov } from "../core/provenance.mjs";
+import { now } from "../engine/clock.mjs";
+import { decisionFile, propose } from "../engine/decisions.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { validateValue } from "../records/validate.mjs";
-import { loadEvalSet, loadPlan, scoreExperiment } from "../engine/recipes/eval-set.ts";
+import { forwardSet, loadEvalSet, loadPlan, scoreExperiment, scoreForward, scoreHoldout } from "../engine/recipes/eval-set.ts";
 import type { Scored } from "../engine/recipes/eval-set.ts";
 import { chainOnto } from "../engine/generators/experiment.ts";
 import { gateWrite, heldDraft } from "./gate-hooks.mjs";
@@ -84,6 +95,22 @@ export function tipOf(dir: string, pattern: string, lines: readonly Experiment[]
 
 /** Dev evaluations spent under a plan: its keep and discard lines. A fail is logged and not counted. */
 export const spentUnder = (lines: readonly Experiment[], plan: string) => lines.filter((l) => l.kind === "experiment" && l.plan === plan && (l.verdict === "keep" || l.verdict === "discard")).length;
+
+/** Holdout checks spent under a plan: the distinct tips its holdout lines checked. An override reuses its tip's check. */
+export const holdoutsUnder = (lines: readonly Experiment[], plan: string) => new Set(lines.filter((l) => l.kind === "holdout" && l.plan === plan).map((l) => l.candidate)).size;
+
+/** Every time the live recipe changed, oldest first: a recipe live before the log (the first experiment's stored base),
+ *  then each person's write that is not a fail and each holdout line that passed or was accepted over. */
+export function liveHistory(dir: string, lines: readonly Experiment[]): { sha: string; at: string | null }[] {
+  const out: { sha: string; at: string | null }[] = [];
+  const first = lines.find((l) => l.kind === "experiment");
+  if (first?.base) out.push({ sha: first.base, at: null });
+  for (const l of lines) {
+    const went = l.kind === "holdout" ? l.result === "pass" || l.over_holdout === true : l.actor?.kind === "person" && l.verdict !== "fail";
+    if (went) out.push({ sha: l.candidate, at: l.at });
+  }
+  return out;
+}
 
 /** Runs fn holding the pattern's lock, so a base check, a score and an append are one step. A lock older than ten
  *  minutes is taken as left by a process that died. */
@@ -142,6 +169,8 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
     return { ok: true, result: { pattern, tip: tip?.sha ?? null, source: tip?.source ?? null, live, draft: !!tip && tip.sha !== live, plan: plan?.sha ?? null,
       spent: plan ? { dev_evaluations: spentUnder(lines, plan.sha), of: plan.budgets.dev_evaluations } : null, experiments: lines.length } };
   }
+  if (c.action === "accept") return accept(c, pattern);
+  if (c.action === "monitor") return monitor(c, pattern);
   if (c.action !== "write") return { ok: false, error: `recipes/${pattern} has no action ${c.action}` };
   const input = c.input as { source?: unknown; base?: unknown } | null;
   if (!input || typeof input !== "object" || typeof input.source !== "string" || !input.source.trim()) return { ok: false, error: "a recipe write is { source, base }: the recipe's TypeScript source, and the tip's sha it was edited from (null for a first write)" };
@@ -202,4 +231,78 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
       return answer(dir, appendExperiment(dir, pattern, c.route, lineOf(landed?.hash)));
     });
   });
+}
+
+/** A person accepts the held tip: the one-bit holdout check, then the tip goes live on a pass or over a failed check. */
+async function accept(c: RecipeCall, pattern: string): Promise<Answer> {
+  const { dir } = c;
+  const acting = actingAgent((c.actor_id ?? c.provenance?.agent?.id) as string | undefined);
+  if (c.actor !== "person" || acting) return { ok: false, error: `only a person accepts a recipe${acting ? ` (an agent, ${acting}, is acting)` : ""}: an agent never accepts its own work` };
+  const over = !!(c.input as { over_holdout?: unknown } | null)?.over_holdout;
+  const plan = loadPlan(dir, pattern);
+  if (!plan) return { ok: false, error: `no eval plan at ${pattern}.plan.json, so no holdout can be checked` };
+  const set = loadEvalSet(dir, plan.sha);
+  if (!set) return { ok: false, error: `the eval set _eval/${plan.sha}/ is missing, so no holdout can be checked` };
+  const via = VIAS.includes(c.via ?? "") ? c.via as string : "router";
+  const person = agentFromEnv("person", via, { ...(c.actor_id ? { id: c.actor_id } : {}), ...c.provenance?.agent }) as Agent;
+  return locked(dir, pattern, async () => {
+    const lines = logLines(dir, pattern), tip = tipOf(dir, pattern, lines);
+    const liveAt = ventureFile(dir, liveFile(pattern));
+    const liveSource = existsSync(liveAt) ? readFileSync(liveAt, "utf8") : null;
+    if (!tip || tip.sha === (liveSource === null ? null : sha(liveSource))) return { ok: false, error: `nothing to accept at recipes/${pattern}: the tip is live already` };
+    const prior = lines.filter((l) => l.kind === "holdout" && l.plan === plan.sha && l.candidate === tip.sha).at(-1);
+    let result: "pass" | "fail";
+    if (prior) result = prior.result as "pass" | "fail";
+    else {
+      if (holdoutsUnder(lines, plan.sha) >= plan.budgets.holdout_checks) return { ok: false, error: `the plan ${plan.sha} has spent its ${plan.budgets.holdout_checks} holdout checks: a person makes the next plan with naive recipes plan ${pattern} --by <person>` };
+      result = (await scoreHoldout(set, plan as EvalPlan, tip.source, liveSource)).result;
+    }
+    // A failed check reused without an override answers the same bit, logs nothing and spends nothing.
+    if (prior && result === "fail" && !over) return { ok: false, result: "fail", retried: true, error: `the holdout check of ${tip.sha} failed under plan ${plan.sha}; accept over it with --over-holdout, which is logged` };
+    const lands = result === "pass" || over;
+    let landed: { hash: string } | null = null;
+    const line = { kind: "holdout", id: sha(`holdout ${plan.sha} ${tip.sha} ${lines.length}`).slice(0, 24), at: now().toISOString(), pattern, plan: plan.sha, candidate: tip.sha,
+      result, over_holdout: result === "fail" && over, actor: person } as unknown as Omit<Experiment, "prev" | "hash">;
+    const check = validateValue("experiment.schema.json", chainOnto("genesis", { ...line, ...(lands ? { provenance: "0".repeat(64) } : {}) }));
+    if (check.status !== 0) return { ok: false, error: `the holdout line would not match experiment.schema.json, so nothing was written: ${(check.stdout || check.stderr).trim()}` };
+    if (lands) {
+      mkdirSync(dirname(liveAt), { recursive: true });
+      writeFileSync(liveAt, tip.source);
+      for (const f of [draftFile(liveFile(pattern)), `${draftFile(liveFile(pattern))}.gate`]) rmSync(ventureFile(dir, f), { force: true });
+      landed = prov(dir, { entity: liveFile(pattern), route: c.route, activity: "accept", agent: person, derived_from: [`${pattern}.plan.json`, draftFile(liveFile(pattern))],
+        note: result === "pass" ? `accepted ${tip.sha}: the holdout check passed` : `accepted ${tip.sha} over a failed holdout check` });
+    }
+    const logged = appendExperiment(dir, pattern, c.route, landed ? { ...line, provenance: landed.hash } as Omit<Experiment, "prev" | "hash"> : line);
+    if (!lands) return { ok: false, result: "fail", line: logged, error: `the holdout check of ${tip.sha} failed: the draft stays; accept over it with --over-holdout, which is logged` };
+    return { ok: true, result: { result, over_holdout: result === "fail", written: liveFile(pattern), tip: tip.sha, line: logged,
+      note: result === "pass" ? "the holdout check passed: the tip is live" : "accepted over a failed holdout check: the tip is live, and the override is logged" } };
+  });
+}
+
+/** The forward check after the live recipe changed; a regression proposes one open rollback decision. */
+async function monitor(c: RecipeCall, pattern: string): Promise<Answer> {
+  const { dir } = c;
+  const plan = loadPlan(dir, pattern);
+  if (!plan) return { ok: false, error: `no eval plan at ${pattern}.plan.json, so there is no margin to judge by` };
+  const lines = logLines(dir, pattern), history = liveHistory(dir, lines);
+  const current = history.at(-1), previous = history.at(-2) ?? null;
+  if (!current?.at) return { ok: true, result: { status: "idle", note: `the live recipe at ${pattern} has not changed through the log, so there is nothing to monitor` } };
+  const liveAt = ventureFile(dir, liveFile(pattern));
+  if (!existsSync(liveAt) || sha(readFileSync(liveAt)) !== current.sha) return { ok: false, error: `the live recipe at ${pattern} is not ${current.sha}, the last that went live in the log: it was changed outside the router` };
+  const liveSource = readFileSync(liveAt, "utf8");
+  const prevSource = previous ? readBlob(dir, previous.sha)?.toString("utf8") ?? null : null;
+  if (previous && prevSource === null) return { ok: false, error: `the blob store has no source for ${previous.sha}, the recipe live before ${current.sha}` };
+  const fs = await forwardSet(dir, pattern, plan as EvalPlan, Date.parse(current.at), now().getTime(), [liveSource, ...(prevSource ? [prevSource] : [])]);
+  if (!fs.ok) return { ok: false, error: fs.reason };
+  const f = await scoreForward(fs.set, plan as EvalPlan, liveSource, prevSource);
+  const base = { pattern, live: current.sha, previous: previous?.sha ?? null, since: current.at, ...f };
+  if (f.status !== "regressed") return { ok: true, result: base };
+  const id = `recipe-rollback-${sha(`${pattern} ${current.sha} ${previous?.sha ?? "plain fold"}`).slice(0, 12)}`;
+  if (decisionFile(dir, id)) return { ok: true, result: { ...base, decision: id, kept: true, note: "the rollback decision is filed already" } };
+  const back = previous ? `the recipe live before it (${previous.sha.slice(0, 12)})` : "the plain fold";
+  const p = propose(dir, { id, question: `The recipe at ${pattern} (${current.sha.slice(0, 12)}, live since ${current.at}) scores worse on forward points than ${back}: ${f.reason}. Roll back to it?`,
+    note: `Proposed by recipes/${pattern} monitor (autoresearch build plan item 8) over ${f.rows} forward rows. Nothing rolls back on its own: a person decides, and a rollback is a person's write to recipes/${pattern}.` },
+    { agentId: "recipe-monitor", via: "router" });
+  if (!p.ok) return { ok: false, error: `the rollback decision was not proposed: ${p.error}` };
+  return { ok: true, result: { ...base, decision: id, proposed: true, note: "regressed: a rollback decision is proposed for a person" } };
 }

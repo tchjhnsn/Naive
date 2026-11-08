@@ -14,8 +14,8 @@
 //                names the plan's sha or its previous one; each experiment was edited from the tip as it stood (a stale
 //                base is refused before it is logged, so none may be in the log; the first may start from nothing or
 //                from a recipe that was live before the log, whose source the router keeps in the blob store); a holdout check checks the tip; the
-//                dev evaluations (keep and discard; a fail is not counted) and holdout checks of the current plan stay
-//                within its budgets; once something went live (a person's write, or an accepted holdout check), the
+//                dev evaluations (keep and discard; a fail is not counted) and holdout checks of the current plan (the
+//                distinct tips checked; accepting over a logged failure reuses its check) stay within its budgets; once something went live (a person's write, or an accepted holdout check), the
 //                live recipe is the last one that did
 //   receptions   each passes reception.schema.json and names its record; it names a recipe the log or the live file
 //                knows; every signal it names is in a library the venture reads and was observed by the render; and,
@@ -192,7 +192,8 @@ export async function checkRecipes(rootGiven: string): Promise<Report> {
         try { lines.push(JSON.parse(l) as Experiment); } catch { fail(logFile, `line ${i + 1} is not JSON`); }
       });
       const plans = new Set([plan?.sha, (plan as { previous?: string } | null)?.previous].filter((x): x is string => !!x));
-      let prev = "genesis", tip: string | null = null, dev = 0, holdouts = 0, started = false;
+      let prev = "genesis", tip: string | null = null, dev = 0, started = false;
+      const checked = new Set<string>();
       lines.forEach((x, i) => {
         const at = `line ${i + 1}`;
         const bad = schemaProblem("experiment.schema.json", x);
@@ -205,7 +206,8 @@ export async function checkRecipes(rootGiven: string): Promise<Report> {
         const current = x.plan === plan?.sha;
         if (x.kind === "holdout") {
           if (x.candidate !== tip) fail(logFile, `${at} checks ${x.candidate} on holdout, but the tip was ${tip ?? "none"}: a holdout check checks the tip a person accepts`);
-          if (current) holdouts++;
+          // A check is one tip under one plan: accepting over a logged failure reuses its bit and spends no check.
+          if (current) checked.add(x.candidate);
           if (x.result === "pass" || x.over_holdout) wentLive = x.candidate;
           return;
         }
@@ -219,6 +221,7 @@ export async function checkRecipes(rootGiven: string): Promise<Report> {
         if (person && x.verdict !== "fail") wentLive = x.candidate;
       });
       if (plan && dev > plan.budgets.dev_evaluations) fail(logFile, `${dev} dev evaluations under plan ${plan.sha}, over its budget of ${plan.budgets.dev_evaluations}`);
+      const holdouts = checked.size;
       if (plan && holdouts > plan.budgets.holdout_checks) fail(logFile, `${holdouts} holdout checks under plan ${plan.sha}, over its budget of ${plan.budgets.holdout_checks}`);
       if (wentLive && wentLive !== live) fail(file, `its sha is ${live}, but the last recipe that went live in ${logFile} is ${wentLive}: the live recipe was changed outside the router`);
     }

@@ -10,8 +10,8 @@
 //   node packages/naive/src/router/orchestration/recipe-search.ts <venture dir> <pattern> [--factor 2] [--shrinks 2] [--max-writes 200] [--json]
 //
 // It writes as the agent knob-search (via cli), so a keep is held as a draft for a person to accept like any agent's
-// keep (the evidence package's recipe-keeps-held rule), and the holdout check runs then (accept is build plan item 8,
-// not built). It never supplies a score: the router scores every write. A candidate this plan's log has already scored
+// keep (the evidence package's recipe-keeps-held rule), and the holdout check runs when that person accepts it
+// (mentura accept recipes/<pattern>, build plan item 8). It never supplies a score: the router scores every write. A candidate this plan's log has already scored
 // is not written again, so a search spends nothing going back to a value it left. It calls no model.
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";

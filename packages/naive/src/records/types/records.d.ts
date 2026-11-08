@@ -1227,7 +1227,7 @@ export type Experiment = {
   };
   /** On a holdout line, the one bit the check answers */
   result?: "pass" | "fail";
-  /** On a holdout line, true when the person accepted over a failed check (mentura accept --over-holdout, not built) */
+  /** On a holdout line, true when the person accepted over a failed check (mentura accept recipes/<pattern> --over-holdout) */
   over_holdout?: boolean;
   /** Why, in words. Required on a fail: which lint rule, throw, timeout or output check */
   reason?: string;
