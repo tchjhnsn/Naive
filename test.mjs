@@ -117,6 +117,8 @@ const steps = [
   ["check-recipes breaks on copies: lint, exports, heard types, facts, projected pattern, plan sha and windows, the log's chain, bases, holdout of the tip, budgets, the live recipe, renders again and noise by ablation", "node", ["packages/naive/src/checks/check-recipes-test.ts"]],
   ["one writer per file: only the signal projector writes a projection record; a person is refused with the emit hint; the person's master record stays theirs", "node", ["packages/naive/src/interfaces/tests/projector-test.ts"]],
   ["the signal pull end to end: two ventures, one shared library, local corrections; a second pull writes nothing", "node", ["packages/naive/src/interfaces/tests/signals-pull-test.ts"]],
+  ["check-signals: Naive's packages and the example library (types, worked cases, signals, the day log, listeners)", "node", ["packages/naive/src/checks/check-signals.ts"]],
+  ["check-signals breaks on copies: each rule of signal libraries, types and listeners", "node", ["packages/naive/src/checks/check-signals-test.ts"]],
   ["competitors package: its open signal types and listeners hold together, its projections write records it owns, and every worked case matches its type and its records", "node", ["packages/naive/src/checks/competitors-package-test.ts"]],
   ["detection arithmetic: Macmillan and Creelman worked examples, Wilson intervals, ROC area equals 2AFC, best criterion is an observed score", "node", ["packages/naive/src/engine/detection-test.ts"]],
   ["thresholds as detectors: shipped defaults hold today's constants, a venture's detector file moves the line, overrides keep precedence, yes_when below matches the gate", "node", ["packages/naive/src/engine/detectors-test.ts"]],

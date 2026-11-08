@@ -78,6 +78,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-record-paths.ts": plain("code reads schema files and the data model through packages/naive/src/records; it matches path text"),
   "packages/naive/src/engine/check-roadmap.mjs": plain("roadmap steps form no cycle and name known frames and roles"),
   "packages/naive/src/checks/check-sdlc-catalog.ts": plain("catalog ids, decision classes and task references are unique and known"),
+  "packages/naive/src/checks/check-signals-test.ts": plain("proves the signals check breaks on each rule on copies"),
+  "packages/naive/src/checks/check-signals.ts": plain("signal types, signals and listeners: schema shape, one owner and one reducer per field, worked cases render, content hashes and paths, withdrawal rights, log completeness and listener references"),
   "packages/naive/src/checks/check-sources.mjs": plain("the source map names known connectors and write modes"),
   "packages/naive/src/checks/check-team.mjs": plain("team plan tasks cite known capabilities and keep escalate classes with a person"),
   "packages/naive/src/checks/check-telos.mjs": plain("every exit criterion traces to a known measure"),

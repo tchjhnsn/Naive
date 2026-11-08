@@ -76,14 +76,14 @@ t("a signal whose type is not in the catalog has only its whole view", viewsOf(m
 
 const [whole, , round] = views;
 const track = listener("track-competitors"), rival = listener("rival-raised"), large = listener("large-rounds-in-market");
-const facts = { read: { "foundation/icp.json#currencies": ["USD", "EUR"] }, ids: { competitors: ["acme-robotics"] } };
+const facts = { read: { "foundation/icp/shop-owners.json#not": ["Globex Distribution"] }, ids: { competitors: ["acme-robotics"] } };
 const now = "2026-11-10T00:00:00Z";
 const r1 = receive(whole, track, facts);
 t("salient at track-competitors once the subject is a competitor, citing the ids it read", r1.kind === "salient" && canonicalJson(r1.facts) === '["ids:competitors"]', r1);
 const r0 = receive(whole, track, { ids: { competitors: [] } });
 t("noise at track-competitors before it is, naming the failed predicate", r0.kind === "noise" && r0.failed.map((f) => f.predicate).join() === "known-competitor", r0);
 const r2 = receive(whole, rival, facts, now, type("competitor-funding"));
-t("salient at rival-raised within its age bound, citing the fact it read", r2.kind === "salient" && canonicalJson(r2.facts) === '["foundation/icp.json#currencies"]', r2);
+t("salient at rival-raised within its age bound, citing the fact it read", r2.kind === "salient" && canonicalJson(r2.facts) === '["foundation/icp/shop-owners.json#not"]', r2);
 const r3 = receive(whole, rival, facts, "2026-12-31T00:00:00Z", type("competitor-funding"));
 t("noise at rival-raised once older than its max_age", r3.kind === "noise" && r3.failed.some((f) => f.predicate === "max_age"), r3);
 const r4 = receive(round, large, facts, now, type("funding-event"));
@@ -91,7 +91,7 @@ t("the round part is heard at large-rounds-in-market, and a three million round 
 t("noise belongs to the pair: one signal is salient at one listener and noise at another", r1.kind === "salient" && r4.kind === "noise" && r4.view.id === r1.view.id);
 const weak = { ...whole, rating: { reliability: "D" as const, credibility: 4 }, producer: "elsewhere/x" };
 const r5 = receive(weak, { ...rival, criterion: { ...rival.criterion, producers: ["market-example/"] } }, { read: {} }, now, type("competitor-funding"));
-t("every failure is reported, in order: rating, producers, then each predicate", r5.kind === "noise" && r5.failed.map((f) => f.predicate).join() === "rating,rating,producers,same-currency", r5);
+t("every failure is reported, in order: rating, producers, then each predicate", r5.kind === "noise" && r5.failed.map((f) => f.predicate).join() === "rating,rating,producers,not-out-of-scope", r5);
 t("a fact not given fails its predicate, it is never assumed", r5.kind === "noise" && r5.failed.at(-1)?.why.includes("was not given") === true);
 let threw = false;
 try { receive(whole, rival, facts, undefined, type("competitor-funding")); } catch { threw = true; }
@@ -152,7 +152,7 @@ t("the edge listener proposes once, with an id from the decision and the subject
 t("a three million round marks nothing stale at large-rounds-in-market", out.status === "rendered" && out.marks.length === 0);
 const big = make({ ...sig, subject: "globex", props: { org: { name: "Globex" }, round: { series: "series-b", amount: 40000000, currency: "USD" } } });
 const out2 = render({ ...input, signals: [local(sig), local(big)] });
-t("a forty million round marks market/rounds stale", out2.status === "rendered" && out2.marks.map((m) => m.route).join() === "market/rounds");
+t("a forty million round marks that competitor's master record stale", out2.status === "rendered" && out2.marks.map((m) => m.route).join() === "competitors/globex");
 t("render is deterministic whatever the order signals arrive in", canonicalJson(render({ ...input, signals: [local(big), local(sig)] })) === canonicalJson(out2));
 t("receptions explain every listener: salient or noise at each, with the failed predicate", out.status === "rendered" && out.receptions.some((r) => r.listener === "large-rounds-in-market" && r.kind === "noise"));
 const flip: Listener = { id: "flip", hears: "organization@^1", consumer: { route: "competitors/[id]" }, then: "project", criterion: { predicates: [{ id: "new-only", field: "subject", op: "not-in", value: { ids: "competitors" } }] } };

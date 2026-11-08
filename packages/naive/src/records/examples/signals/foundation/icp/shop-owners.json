@@ -1,0 +1,7 @@
+{
+  "id": "shop-owners",
+  "who": "Owners of small machine shops who want a robot arm they can set up without an integrator",
+  "primary": true,
+  "customer": "b2b",
+  "not": ["Globex Distribution"]
+}
