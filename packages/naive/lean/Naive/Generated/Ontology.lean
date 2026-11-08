@@ -499,6 +499,10 @@ def «founderAppointment» : Concept Placement := ⟨[
 def «detector» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
+/-- [D] seam (proposed). Where two functions' records should agree and can drift, such as IT's connection records against the spend register (tools against spend). Each seam is a detector whose sensor is a small check over both functions' records (packages/naive/src/checks/check-seams.ts); a yes call opens a decision put to the lead whose portfolio spans the seam, and acting on it resolves the trial as a hit, dismissing it as a false alarm. Lead agents design, 2026-11-08. Standard: interface (systems engineering interface management, ISO/IEC/IEEE 15288); interface control between subsystems. Fields: broader ["relationship"]; handoff_type false. -/
+def «seam» : Concept Placement := ⟨[
+  ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
+
 /-- [D] sensor (proposed). What turns the world into a score for a detector: a check, the founder's own agent, or a person. A detector names it and never runs it. Standard: Green and Swets 1966 (the sensory process). Fields: broader ["capacity"]; handoff_type false. -/
 def «sensor» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩

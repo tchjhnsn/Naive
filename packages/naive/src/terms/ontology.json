@@ -1545,6 +1545,18 @@
       "term": "detector"
     },
     {
+      "noun": "seam",
+      "level": "governance",
+      "meaning": "Where two functions' records should agree and can drift, such as IT's connection records against the spend register (tools against spend). Each seam is a detector whose sensor is a small check over both functions' records (packages/naive/src/checks/check-seams.ts); a yes call opens a decision put to the lead whose portfolio spans the seam, and acting on it resolves the trial as a hit, dismissing it as a false alarm. Lead agents design, 2026-11-08",
+      "standard": "interface (systems engineering interface management, ISO/IEC/IEEE 15288); interface control between subsystems",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "relationship"
+      ]
+    },
+    {
       "noun": "sensor",
       "level": "governance",
       "meaning": "What turns the world into a score for a detector: a check, the founder's own agent, or a person. A detector names it and never runs it",

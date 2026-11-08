@@ -68,6 +68,9 @@ venture-template/
 | `noul-judgment` | yes 0.7, no 0.3 | at or above | not read yet (`operating-rules.json` `jev` is record-only) |
 | `standing-earn-low`, `standing-earn-costly` | 0.8, 0.9 | at or above | not read yet (`operating-rules.json` `questions.standing` is not enforced) |
 | `standing-loss` | log 19 | at or above | not read yet (`operating-rules.json` `questions.loss` is not enforced) |
+| `seam-tools-spend` | 1 | at or above | `packages/naive/src/router/orchestration/seams.ts`, once per connection or spend line; a new detector (lead agents build item 6), not a threshold Naive had, tier costly, `assign_to: "finance-lead"` |
+
+Seam detectors (lead agents design, "Seam detectors") are detectors whose sensor is a check over two functions' records, with `assign_to` naming the lead a yes call's decision is put to. Only tools against spend is built; the others wait on records that do not exist yet (`node packages/naive/src/checks/check-seams.ts` lists them).
 
 Model steps have no detector here: each step's line is its own `threshold` in the step record, and a step's question is its own, so one detector cannot stand for them.
 
