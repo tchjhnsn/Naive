@@ -164,6 +164,10 @@ const lines = ledger("route", clear);
   ok(errorsOf(d).some((e) => /sensor packages\/naive\/src\/engine\/no-such-module.mjs is not a file/.test(e)), "a check sensor naming a missing module fails");
   put(d, `${DET}/route.json`, detector("route", { evidence: { ...detector("route").evidence, kind: "person", sensor: "nobody-here" } }));
   ok(errorsOf(d).some((e) => /sensor nobody-here is not a role/.test(e)), "a person sensor that is no role fails");
+  put(d, `${DET}/route.json`, detector("route", { assign_to: "no-such-lead" }));
+  ok(errorsOf(d).some((e) => /assign_to no-such-lead is not a role/.test(e)), "an assign_to that is no role, role template or named person fails");
+  put(d, `${DET}/route.json`, detector("route", { assign_to: "finance-lead" }));
+  ok(errorsOf(d).length === 0, "an assign_to naming a role template (finance-lead) passes");
 }
 {
   const d = copy("orphan-ledger");

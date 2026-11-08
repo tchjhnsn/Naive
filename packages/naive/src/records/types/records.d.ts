@@ -664,6 +664,15 @@ export type DecisionRecord = {
   statement?: string;
   /** The layer it belongs to; defaults to the decided record's layer */
   layer?: "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface" | "system";
+  /** The role the decision is put to, by id, such as the lead whose portfolio spans a seam (a detector's assign_to). It says who is asked, not who decides: only a person settles a decision. */
+  assigned_to?: string;
+  /** The detection ledger trial this decision settles, when a detector's yes call opened it (packages/naive/src/router/orchestration/seams.ts). Deciding it (acted on) resolves the trial as a hit; withdrawing it, or deciding it with an answer that starts with Dismiss, resolves it as a false alarm. Deferred or open, it stays unresolved. */
+  detector_trial?: {
+    /** The detector id, governance/detectors/<id>.json */
+    detector: string;
+    /** The trial line's id in governance/detectors/<detector>.trials.jsonl */
+    trial: string;
+  };
   /** The decision class (governance/decision-rights.json) this decision belongs to. A delegation grant can let a role merge decisions of a class (may_merge); a one-way-door class is never delegated, and with no class only the founder merges */
   class?: string;
   /** The decision this one depends on. Defaults to foundation for a foundation record, else venture. */
@@ -1061,6 +1070,8 @@ export type Detector = {
   description?: string;
   /** Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.mjs confidence_below. */
   call_site?: string;
+  /** Optional: the role a yes call is put to as an open decision, by id: a role in the roles registers or a role template (governance/roles/<id>.json). A seam detector names the lead whose portfolio spans the seam, such as finance-lead for tools against spend. It changes who is asked, not who decides: only a person settles the decision, and settling it resolves the call's trial. */
+  assign_to?: string;
   /** The impact tier of the question type, from operating-rules.json. It sets the default costs: low makes a miss and a false alarm cost the same, and costly makes a miss cost three times a false alarm. one_way_door has no criterion: every call goes to a person, the ledger still records each trial, and no criterion change is ever proposed. */
   tier: "low" | "costly" | "one_way_door";
   /** The yes or no question, as a question type in operating-rules.json: a verb, a noun or a scoped noun, and the function that asks. */

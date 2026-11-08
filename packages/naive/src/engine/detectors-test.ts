@@ -44,13 +44,15 @@ const today: [string, number, number?][] = [
   ["standing-earn-low", rules.questions.standing.low],
   ["standing-earn-costly", rules.questions.standing.costly],
   ["standing-loss", Math.log(19)],
+  // Not a constant moved out of code: the tools against spend seam (lead agents item 6) is new, and its line is one disagreement.
+  ["seam-tools-spend", 1],
 ];
 for (const [id, yes, no] of today) {
   const c = criterionFor(undefined, id);
   expect(`(b) the shipped ${id} holds today's line ${yes}${no === undefined ? "" : ` and ${no}`}`, c?.from === "default" && c.criterion.yes === yes && c.criterion.no === no, JSON.stringify(c));
 }
 const shipped = readdirSync(TEMPLATE).filter((f) => f.endsWith(".json")).map((f) => load(join(TEMPLATE, f)) as { id: string; tier: "low" | "costly"; costs: unknown; criterion: Record<string, { set_by: string }> });
-expect("every shipped detector is one of today's thresholds", shipped.length === today.length && shipped.every((d) => today.some(([id]) => id === d.id)), shipped.map((d) => d.id).join(", "));
+expect("every shipped detector is listed here with its line", shipped.length === today.length && shipped.every((d) => today.some(([id]) => id === d.id)), shipped.map((d) => d.id).join(", "));
 expect("every shipped line is set_by default and its costs are its tier's", shipped.every((d) => Object.values(d.criterion).every((l) => l.set_by === "default") && JSON.stringify(d.costs) === JSON.stringify(TIER_COSTS[d.tier])));
 const validate = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs")], { encoding: "utf8" });
 expect("the shipped detectors pass the schema", validate.status === 0 && !/template\/governance\/detectors/.test(validate.stdout + validate.stderr), validate.stdout + validate.stderr);

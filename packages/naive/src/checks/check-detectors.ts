@@ -23,6 +23,8 @@
 //     founder or person the venture names; a record resolver must be a record type in the data model, or draft
 //     (the gate's held drafts); a check sensor that names a module path must name a file in Naive or the venture.
 //     A producer resolver and the sensors of the other kinds are free text and are not checked;
+//   - an assign_to (the role a yes call's decision is put to, as seam detectors name a lead) that is not a role in
+//     the registers, a person the venture names, or a role template (governance/roles/<id>.json, the venture's or Naive's);
 //   - a ledger line that is not JSON or does not match detector-trial.schema.json, a broken hash chain, an id used
 //     twice, a line naming another detector, a resolution of a trial no earlier line is, a trial resolved twice, an
 //     outcome the call cannot have (a yes call resolves as a hit or a false alarm, a no call as a miss or a correct
@@ -151,6 +153,11 @@ function detectorErrors(dir: string, d: Detector, where: string, known: { roles:
   const r = d.resolution?.resolver;
   if (r?.kind === "person" && !known.roles.has(r.id)) errors.push(`${where}: resolver ${r.id} is not a role in the roles registers or a person the venture names`);
   if (r?.kind === "record" && !known.records.has(r.id) && !NON_MODEL_RECORDS.has(r.id)) errors.push(`${where}: resolver record ${r.id} is not a record type in the data model`);
+  // assign_to (seam detectors): a role in the registers, a person the venture names, or a role template, the venture's or Naive's.
+  const assign = d.assign_to;
+  if (assign && !known.roles.has(assign) && !existsSync(ventureFile(dir, `governance/roles/${assign}.json`)) && !existsSync(join(ROOT, "packages/naive/template/governance/roles", `${assign}.json`))) {
+    errors.push(`${where}: assign_to ${assign} is not a role in the roles registers, a role template or a person the venture names`);
+  }
   const sensor = d.evidence?.sensor ?? "";
   if (d.evidence?.kind === "person" && !known.roles.has(sensor)) errors.push(`${where}: sensor ${sensor} is not a role in the roles registers or a person the venture names`);
   const path = sensor.split(/\s/)[0];
@@ -289,7 +296,7 @@ export function checkVenture(dir: string): Report {
   const shippedIds = existsSync(TEMPLATE) ? readdirSync(TEMPLATE).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : [];
   const defaults = shippedIds.filter((id) => !ownIds.includes(id));
   const known = { roles: rolesKnown(dir), sources: sourcesKnown(dir), records: new Set<string>(readDataModel().records.map((r: { id: string }) => r.id)) };
-  checked.push("evidence sources against venture and knowledge/sources.json", "person resolvers and person sensors against the roles registers and the founders the venture names", "record resolvers against the data model (and draft)", "check sensors that name a module path against the files of Naive and the venture", "not checked: producer resolvers and the sensors of founder-agent, accumulated and sequential detectors, which are free text");
+  checked.push("evidence sources against venture and knowledge/sources.json", "person resolvers and person sensors against the roles registers and the founders the venture names", "record resolvers against the data model (and draft)", "check sensors that name a module path against the files of Naive and the venture", "assign_to against the roles registers, the founders the venture names and the role templates", "not checked: producer resolvers and the sensors of founder-agent, accumulated and sequential detectors, which are free text");
   const venture = (() => { try { const v = readJson(join(dir, "venture.json")); return isObj(v) && typeof v.id === "string" ? v.id : dir; } catch { return dir; } })();
 
   for (const id of [...ownIds, ...defaults].sort()) {

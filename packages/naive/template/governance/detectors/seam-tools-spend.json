@@ -1,0 +1,60 @@
+{
+  "id": "seam-tools-spend",
+  "title": "Tools against spend",
+  "description": "A seam between the it and finance functions (lead agents design, \"Seam detectors\"): IT's connection records and the spend register should agree about every paid tool. For each connection and each spend line the sensor counts the ways they disagree: a connected connection that no active spend line pays for, an active spend line that cites a connection that does not exist or is disconnected, and an active spend line whose approval cites no connection record. A yes call opens a decision for the finance lead; acting on it resolves the call as a hit, dismissing it as a false alarm.",
+  "call_site": "packages/naive/src/router/orchestration/seams.ts run, one call per connection or spend line with a disagreement",
+  "assign_to": "finance-lead",
+  "tier": "costly",
+  "question": {
+    "verb": "raise",
+    "noun": "seam",
+    "asking_function": "finance",
+    "text": "Do IT's connection records and the spend register disagree about this tool?"
+  },
+  "evidence": {
+    "kind": "check",
+    "sensor": "packages/naive/src/checks/check-seams.ts toolsAgainstSpend",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "it/connections/[id]",
+        "note": "Each connection's id and status"
+      },
+      {
+        "source": "venture",
+        "records": "finance/spend/[id]",
+        "note": "Each spend line's status, connection and approval"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "max": 2,
+      "meaning": "How many ways one connection or spend line disagrees with the other function's records",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 1,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 3,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "record",
+      "id": "decision-record"
+    },
+    "time_to_detect": "2w"
+  },
+  "note": "Costly: a missed seam is a tool paid for without approval or a charge nobody owns, which costs more than a lead's glance at a false alarm. A subject that checks clean makes no trial, so the ledger holds yes calls only until a person reports a missed drift, which is not built."
+}

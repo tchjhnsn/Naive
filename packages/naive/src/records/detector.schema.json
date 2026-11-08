@@ -31,6 +31,11 @@
       "type": "string",
       "description": "Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.mjs confidence_below."
     },
+    "assign_to": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Optional: the role a yes call is put to as an open decision, by id: a role in the roles registers or a role template (governance/roles/<id>.json). A seam detector names the lead whose portfolio spans the seam, such as finance-lead for tools against spend. It changes who is asked, not who decides: only a person settles the decision, and settling it resolves the call's trial."
+    },
     "tier": {
       "enum": [
         "low",
