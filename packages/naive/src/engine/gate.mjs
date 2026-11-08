@@ -131,11 +131,24 @@ export const EMIT_HINT = "naive signals emit <type> --subject <id> --supersedes 
  * A record type with writer person (a function's research program, programs/<function>.md; autoresearch design,
  * everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md) is written only by a person: an agent, whatever its
  * role (a <function>-researcher included), is refused, and so is a person's call made while the process says an agent
- * is acting (acting, from actingAgent in packages/naive/src/core/provenance.mjs) and the projector. Returns a refusal or null.
- * @param {{ route: string, writer?: string, projector?: boolean, exists?: boolean, actor?: string, acting?: boolean }} q
+ * is acting (acting, from actingAgent in packages/naive/src/core/provenance.mjs) and the projector.
+ *
+ * A record type with writer function (the spend register; docs/design/LEAD_AGENTS_2026-11-08.md) is written only by
+ * its function's agent, the team-plan role <fn>-agent (EE-123; fn is the record type's function in the data model),
+ * or by a person. An agent acting in any other role, or in none, is refused before the team plan is read, so a role
+ * the team plan does not list cannot reach it either; so is the projector. A person's call made while the process
+ * says an agent is acting counts as the agent's. Returns a refusal or null.
+ * @param {{ route: string, writer?: string, projector?: boolean, exists?: boolean, actor?: string, acting?: boolean, role?: string, fn?: string | null }} q
  * @returns {{ then: "refuse", rule: string, source: string, matched: string[], why: string, fix?: { command: string, built: boolean, then: string } } | null}
  */
-export function writerRule({ route, writer, projector = false, exists = false, actor = "agent", acting = false }) {
+export function writerRule({ route, writer, projector = false, exists = false, actor = "agent", acting = false, role, fn }) {
+  if (writer === "function") {
+    const own = `${fn}-agent`;
+    const person = actor === "person" && !acting;
+    if (projector || !fn || (!person && role !== own)) return { then: "refuse", rule: "function-only", source: "data model", matched: ["function-only"],
+      why: `${route} is written only by the ${fn ?? "(no function)"} function's agent, the role ${own}, or a person (writer function in the data model): ${projector ? "the signal projector" : role ? `the role ${role}` : "an agent acting in no role"} may read it but never write it; hand the change to ${own} through a handoff, or a person writes it` };
+    return null;
+  }
   if (writer === "person" && (projector || actor !== "person" || acting)) return { then: "refuse", rule: "person-only", source: "data model", matched: ["person-only"],
     why: `${route} is written only by a person (writer person in the data model): an agent, a researcher included, may read it but never write it; a person writes it with mentura ${route} write --as person${acting ? ", with no MENTURA_ACTOR, MENTURA_MODEL or other MENTURA_ACTOR_ID in the environment saying an agent is acting" : ""}`,
     fix: { command: `mentura ${route} write --as person --input <file.json>`, built: true, then: "a person writes the whole text as { \"text\": \"...\" }" } };
@@ -152,12 +165,13 @@ export function writerRule({ route, writer, projector = false, exists = false, a
  * route (concrete), table (its route-table pattern), record (type), actor (person or agent), role
  * (team-plan id), confidence (a score the write carries, or undefined), exists (the record exists
  * now), decisionOwner (the owner of the record's decision class, if any), writer (the record type's writer in the
- * data model) and projector (the call is the signal projector's; see writerRule).
+ * data model), writerFunction (the record type's function, for writer function) and projector (the call is the signal
+ * projector's; see writerRule).
  * Returns { then: pass | draft | owner | refuse, rule, source, owner, variants, why, matched }.
- * @param {{ config: *, dir?: string, route: string, table?: string, requested?: *, record?: string, actor?: string, role?: string, confidence?: number, exists?: boolean, decisionOwner?: string, writer?: string, projector?: boolean }} q
+ * @param {{ config: *, dir?: string, route: string, table?: string, requested?: *, record?: string, actor?: string, role?: string, confidence?: number, exists?: boolean, decisionOwner?: string, writer?: string, writerFunction?: string | null, projector?: boolean }} q
  */
-export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner, writer, projector = false }) {
-  const owned = writerRule({ route, writer, projector, exists, actor });
+export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner, writer, writerFunction, projector = false }) {
+  const owned = writerRule({ route, writer, projector, exists, actor, role, fn: writerFunction });
   if (owned) return owned;
   const pins = pinsBlocking(config, record);
   if (pins.length) return { then: "refuse", rule: "pinned-version", source: "naive.config.json packages", matched: ["pinned-version"],

@@ -528,8 +528,8 @@ export type DataModel = {
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines" | "typescript";
     kind?: DataModelKind;
-    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live */
-    writer?: "any" | "projection" | "person";
+    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function */
+    writer?: "any" | "projection" | "person" | "function";
     settles?: DataModelSettles;
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
     view_of?: string;
@@ -4246,6 +4246,45 @@ export type SitePresence = {
     [key: string]: unknown;
   }[];
   [key: string]: unknown;
+};
+
+/** One line of the spend register (lead agents design, "The spend register and the access matrix"): one paid service or recurring charge per record, at finance/spend/<id>.json (route finance/spend/[id]). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). Where each field is mastered is the access matrix: the source map's rules for spend-register (packages/naive/template/knowledge/sources.json), where the bank statement sync is the system of record for amount, currency and dates, finance owns status, and IT's tool record is the system of record for approval. The paying account is named by reference to a money record, never by a card or account number. */
+export type SpendRegister = {
+  /** The line's id, the file name without .json */
+  id: string;
+  /** Who is paid */
+  vendor: string;
+  /** What the venture pays for, in a sentence */
+  purpose: string;
+  /** The charge per cadence period, in currency. Mastered by the bank statement sync in the access matrix */
+  amount: number;
+  /** ISO 4217 code, such as USD */
+  currency: string;
+  /** How often it is charged; usage is metered */
+  cadence: "one-time" | "monthly" | "quarterly" | "annual" | "usage";
+  /**
+   * The next renewal or charge date, or null for a one-time charge
+   * @format date
+   */
+  renewal_date?: string | null;
+  /**
+   * The date of the last charge the bank statement shows
+   * @format date
+   */
+  last_charged?: string | null;
+  /** The paying account by reference: the id of a money record (money/<id>.json). Never a card or account number; an id must start with a letter, so a bare number is refused */
+  account: string;
+  /** The function that uses it: an id in packages/naive/src/functions/departments.json */
+  function: "strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities";
+  /** The capability cluster it belongs to, by id. The cluster catalog is lead agents build item 7, not built, so the id is not checked yet */
+  cluster?: string;
+  /** The connection record it pays for, by id. The connection record type is lead agents build item 7, not built, so the id is not checked yet */
+  connection?: string;
+  /** The id of IT's tool record that approved the tool. IT's record is the system of record for approval in the access matrix; the register cites it and never copies it. IT tool records have no record type yet */
+  approval?: string;
+  /** Finance owns it. cancel-requested waits on a cancel-or-downgrade decision */
+  status: "active" | "cancel-requested" | "cancelled";
+  note?: string;
 };
 
 /** The framework's map of strategic foundation (EE-051): per question of the Five Ws and How plus whether, the record attributes that answer it. */

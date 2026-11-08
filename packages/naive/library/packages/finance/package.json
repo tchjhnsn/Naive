@@ -40,7 +40,13 @@
   "gates": [
     "a person has confirmed every required record and every record this package reads"
   ],
-  "schemas": [],
+  "layer": "purpose",
+  "records": [
+    "spend-register"
+  ],
+  "schemas": [
+    "packages/naive/src/records/spend-register.schema.json"
+  ],
   "templates": [],
   "checks": [
     "packages/naive/src/checks/lint-finance.mjs"

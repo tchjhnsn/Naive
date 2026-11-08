@@ -1,0 +1,17 @@
+{
+  "id": "finance-agent",
+  "name": "Finance agent",
+  "function": "finance",
+  "description": "The finance function's agent (EE-123): the only agent that writes the spend register (finance/spend/[id]). It records statements against spend lines, tags charges and flags anomalies, and recommends cancelling or downgrading a service for the founder to approve.",
+  "grantable_classes": [
+    "spend-register-upkeep",
+    "cancel-or-downgrade"
+  ],
+  "default_tier": "workhorse",
+  "lint_suites": [
+    "finance/lint",
+    "money/lint"
+  ],
+  "verified_by": "founder",
+  "skill": "packages/naive/library/packages/finance/skill/SKILL.md"
+}

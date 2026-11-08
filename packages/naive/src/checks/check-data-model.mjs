@@ -12,7 +12,8 @@
 // json-lines, and every file in an example venture has a kind (record, log or derived), from its
 // record type or from the data model's files entries; a typescript record type's paths end in .ts, and a
 // settles block sits only on a projected type and names only properties of its schema; every record type names its
-// function (a departments.json id, or null when shared), and that agrees with PACKAGE_FUNCTION and the owning package.
+// function (a departments.json id, or null when shared), and that agrees with PACKAGE_FUNCTION and the owning package; a
+// record type with writer function names a function.
 //
 //   node packages/naive/src/checks/check-data-model.mjs          check, and list unchecked references
 //   node packages/naive/src/checks/check-data-model.mjs --md     print the layer relationships derived from the manifests
@@ -173,6 +174,8 @@ for (const [pkg, f] of Object.entries(PACKAGE_FUNCTION)) if (!functionIds.has(f)
 for (const r of types.values()) {
   if (!("function" in r)) { errors.push(`${r.id}: names no function; give an id in ${DEPARTMENTS}, or null when several functions share it`); continue; }
   if (r.function !== null && !functionIds.has(r.function)) { errors.push(`${r.id}: function ${r.function} is not an id in ${DEPARTMENTS}`); continue; }
+  // writer function: only <function>-agent or a person writes it (writerRule in packages/naive/src/engine/gate.mjs), so it needs a function.
+  if (r.writer === "function" && r.function === null) errors.push(`${r.id}: writer function needs a function, since only <function>-agent or a person writes it`);
   // The first venture path is where records are written; later ones are older places still read.
   const folder = venturePaths(r)[0]?.split("/")[0], pf = folder && PACKAGE_FUNCTION[folder];
   if (pf && r.function !== null && r.function !== pf) errors.push(`${r.id}: function ${r.function}, but its records sit in ${folder}/, which ${pf} owns (PACKAGE_FUNCTION); name ${pf}, or null when it is shared`);

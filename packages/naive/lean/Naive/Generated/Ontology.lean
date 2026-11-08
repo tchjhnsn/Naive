@@ -603,6 +603,15 @@ def «settledRecord» : Concept Placement := ⟨[
 def «hindsightLabel» : Concept Placement := ⟨[
   ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
 
+/-- [D] spend register (proposed). The list of what the venture pays for, one line per paid service: vendor, purpose, amount, currency, cadence, renewal date, the paying account by reference, the function that uses it and its status (active, cancel-requested, cancelled). The finance function owns it and only its agent or a person writes it (finance/spend/[id]; lead agents design, 2026-11-08). Standard: SaaS spend management; the subsidiary ledger of recurring vendor charges (accounts payable). Fields: broader ["information artifact"]; handoff_type false. -/
+def «spendRegister» : Concept Placement := ⟨[
+  ("level purpose", fun f => Decidable.decide (f.level = Level.«purpose»)),
+  ("function finance", fun f => Decidable.decide (f.department = Option.some Department.«finance»))]⟩
+
+/-- [D] access matrix (proposed). The source map's rules (EE-042) filled in for one shared record field by field: for each field, the system of record it is read from and written to, and the role that owns it. The spend register's is the first: the bank statement sync masters amounts and dates, finance owns status, IT's tool record masters approval. Standard: access matrix (Lampson 1971), with fields as the objects; data ownership matrix in master data management (DAMA-DMBOK 2017). Fields: broader ["information artifact"]; handoff_type false. -/
+def «accessMatrix» : Concept Placement := ⟨[
+  ("level knowledge", fun f => Decidable.decide (f.level = Level.«knowledge»))]⟩
+
 /-- [D] research program (proposed). A function's person-edited instructions for its researcher (programs/<function>.md), one section per route pattern; the gate refuses an agent's write to it. Standard: program.md (autoresearch); research programme (Lakatos 1970). Fields: broader ["information artifact"]; handoff_type false. -/
 def «researchProgram» : Concept Placement := ⟨[
   ("level operations", fun f => Decidable.decide (f.level = Level.«operations»))]⟩

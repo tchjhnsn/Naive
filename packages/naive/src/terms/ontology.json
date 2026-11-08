@@ -1868,6 +1868,30 @@
       ]
     },
     {
+      "noun": "spend register",
+      "level": "purpose",
+      "meaning": "The list of what the venture pays for, one line per paid service: vendor, purpose, amount, currency, cadence, renewal date, the paying account by reference, the function that uses it and its status (active, cancel-requested, cancelled). The finance function owns it and only its agent or a person writes it (finance/spend/[id]; lead agents design, 2026-11-08)",
+      "standard": "SaaS spend management; the subsidiary ledger of recurring vendor charges (accounts payable)",
+      "status": "proposed",
+      "function": "finance",
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
+    },
+    {
+      "noun": "access matrix",
+      "level": "knowledge",
+      "meaning": "The source map's rules (EE-042) filled in for one shared record field by field: for each field, the system of record it is read from and written to, and the role that owns it. The spend register's is the first: the bank statement sync masters amounts and dates, finance owns status, IT's tool record masters approval",
+      "standard": "access matrix (Lampson 1971), with fields as the objects; data ownership matrix in master data management (DAMA-DMBOK 2017)",
+      "status": "proposed",
+      "function": null,
+      "handoff_type": false,
+      "broader": [
+        "information artifact"
+      ]
+    },
+    {
       "noun": "research program",
       "level": "operations",
       "meaning": "A function's person-edited instructions for its researcher (programs/<function>.md), one section per route pattern; the gate refuses an agent's write to it",

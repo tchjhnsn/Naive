@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "id": "bank-statement-sync",
+      "connector": "filesystem",
+      "root": "sync/bank-statement",
+      "writes": "none",
+      "note": "The bank statement sync: the system of record for what a spend line costs and when it is charged. A stand-in folder until the venture's app registers its bank connector (registerConnector) and names it here; Naive never writes it"
+    },
+    {
+      "id": "it-tools",
+      "connector": "filesystem",
+      "root": "sync/it-tools",
+      "writes": "none",
+      "note": "IT's tool records: the system of record for whether a tool is approved. IT tool records have no record type yet (lead agents build item 7); until then a stand-in folder the it function keeps"
+    }
+  ],
+  "records": {},
+  "rules": [
+    { "record": "spend-register", "attribute": "*", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "venture", "owner": "finance-agent", "note": "A spend line lives in the venture folder and the finance function owns it; only finance-agent or a person writes it (writer function)" },
+    { "record": "spend-register", "attribute": "status", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "venture", "owner": "finance-agent", "note": "Finance owns status: active, cancel-requested or cancelled" },
+    { "record": "spend-register", "attribute": "amount", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "bank-statement-sync", "owner": "finance-agent", "note": "The bank statement is the system of record for the amount" },
+    { "record": "spend-register", "attribute": "currency", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "bank-statement-sync", "owner": "finance-agent", "note": "The currency comes with the amount" },
+    { "record": "spend-register", "attribute": "last_charged", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "bank-statement-sync", "owner": "finance-agent", "note": "The bank statement is the system of record for charge dates" },
+    { "record": "spend-register", "attribute": "renewal_date", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "bank-statement-sync", "owner": "finance-agent", "note": "The bank statement is the system of record for renewal dates" },
+    { "record": "spend-register", "attribute": "approval", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "it-tools", "owner": "it-agent", "note": "IT's tool record is the system of record for approval; the register cites it by id and never copies it" }
+  ],
+  "note": "The template's source-of-truth matrix (EE-042). Its rules are the access matrix for the spend register, field by field (lead agents design, \"The spend register and the access matrix\"). A venture copies it to knowledge/sources.json and points each source at its own connector; packages/naive/src/checks/check-sources.mjs refuses two rules that tie."
+}

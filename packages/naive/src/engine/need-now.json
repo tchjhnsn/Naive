@@ -824,6 +824,16 @@
       ],
       "why": "Written by the money source's sync; cash and runway once money moves"
     },
+    "spend-register": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.4,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "One line per paid service once the venture pays for tools, so finance can see renewals and IT's tools can be checked against spend"
+    },
     "marketing-brand": {
       "base": {
         "discovery": 0.2,

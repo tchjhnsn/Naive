@@ -319,6 +319,7 @@ for (const [name, change, pattern] of /** @type {[string, (d: string) => void, R
   ["a record type in another function's package folder fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "goal").function = "finance"; }), /goal: function finance, but its records sit in foundation\/, which strategy owns/],
   ["a method record type under another function's folder fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "sdlc-catalog").function = null; }), /sdlc-catalog: lives under packages\/naive\/src\/functions\/products\/, so its function is products/],
   ["a record type that disagrees with its owning package's function fails", (d) => edit(join(d, "packages/naive/library/packages/fund/package.json"), (p) => { p.department = "strategy"; }), /fund-thesis: function finance, but package fund that owns it is strategy/],
+  ["a record type with writer function and no function fails", (d) => edit(recordsIn(d).dataModelFile(), (m) => { m.records.find((r) => r.id === "spend-register").function = null; }), /spend-register: writer function needs a function/],
   ["a data model schema whose function list drifts from departments.json fails", (d) => edit(join(d, "packages/naive/src/functions/departments.json"), (c) => { c.departments.find((x) => x.id === "it").id = "information-technology"; }), /function it is not an id in packages\/naive\/src\/functions\/departments.json/],
 ])) {
   const d = copy(`dm${++n}`);
