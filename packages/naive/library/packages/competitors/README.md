@@ -46,4 +46,4 @@ A known competitor is a subject in the `competitors` collection. A venture turns
 
 ## Not built
 
-- The signal engine that runs the render over a venture's signals and these listeners (`engine/signals.ts`), the pull from a library, `naive signals emit` and `check-signals` are not built.
+- Kits' listeners are not built. The signal engine (`engine/signals.ts`), the pull from a library and `naive signals emit` (build item 5) and `check-signals` (item 7) are built: `node packages/naive/src/checks/check-signals.ts` checks these types, their worked cases and listeners.
