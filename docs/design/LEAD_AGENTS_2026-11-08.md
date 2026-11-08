@@ -7,7 +7,7 @@ ai-model: claude-opus-5.5
 authority: advisory
 status: DRAFT
 tags: [naive, lead-agents, functions, handoffs, delegation, connections, mentura-boundary]
-description: "Lead agents over the 13 functions: four lead roles bound to telos measures that read every record, write only their plan, decisions and handoffs, and verify the cross-function work they hand to function agents. Folds in the capability gaps and the connection contract from the Grokbot whole-venture monorepo thesis."
+description: "Lead agents over the 13 functions: four lead roles bound to telos measures that read every record, write only their plan, decisions and handoffs, and verify the cross-function work they hand to function agents. Folds in the capability gaps and the connection contract from the whole-venture monorepo thesis."
 ---
 
 # Lead agents
@@ -16,11 +16,11 @@ Designed, not built. Nothing in this note exists in Naive or Mentura yet, unless
 
 ## The ask
 
-Torian approved building lead agents on 2026-11-08, and asked that the capability gaps from the Grokbot whole-venture monorepo thesis be folded in. Those two things are decided. Everything else in this note is proposed: the lead ids, their portfolios, the write rules, the routing rule, the record types and the build order. Open questions are marked **Open** where they arise and collected at the end.
+Torian approved building lead agents on 2026-11-08, and asked that the capability gaps from the whole-venture monorepo thesis be folded in. Those two things are decided. Everything else in this note is proposed: the lead ids, their portfolios, the write rules, the routing rule, the record types and the build order. Open questions are marked **Open** where they arise and collected at the end.
 
 ## The design in one paragraph
 
-Naive has 13 functions (`packages/naive/src/functions/departments.json`), and Mentura builds one function agent per function (EE-123, everything-ecosystem `platform/agents/function-spec.ts`). A function agent has sole write reach over its function's records. That works for a task inside one function. It does not work for a task that crosses functions, such as "can we afford the second hire before launch", which touches human capital, finance, products and strategy. Today nobody owns that seam. This design adds four **lead roles** (growth-lead, strategy-lead, finance-lead, product-lead). Each is bound to one or more telos measures and has a portfolio of functions. A lead reads every record and writes only three things: its own plan, decisions under `decisions/*`, and handoffs. It never writes a function's records. Work on those records goes to the function agent through a handoff, and the lead that asked for the work verifies it, so the builder is never the verifier. Grokbot, Mentura's always-on top-level agent, routes each task: one function goes straight to that function's agent, more than one goes to a lead. Each lead also knows which outside systems its functions depend on, grouped by the thesis's six capability clusters, and every such connection is a Naive record that follows the thesis's connection contract. Naive stays tool-agnostic: the cluster and connection records are Naive record types, and the connectors that act on them are Mentura's.
+Naive has 13 functions (`packages/naive/src/functions/departments.json`), and Mentura builds one function agent per function (EE-123, everything-ecosystem `platform/agents/function-spec.ts`). A function agent has sole write reach over its function's records. That works for a task inside one function. It does not work for a task that crosses functions, such as "can we afford the second hire before launch", which touches human capital, finance, products and strategy. Today nobody owns that seam. This design adds four **lead roles** (growth-lead, strategy-lead, finance-lead, product-lead). Each is bound to one or more telos measures and has a portfolio of functions. A lead reads every record and writes only three things: its own plan, decisions under `decisions/*`, and handoffs. It never writes a function's records. Work on those records goes to the function agent through a handoff, and the lead that asked for the work verifies it, so the builder is never the verifier. Routing is model- and harness-agnostic: any model, or a person, labels the functions a task touches, and code in Naive picks the target. One function goes straight to that function's agent, more than one goes to a lead. Each lead also knows which outside systems its functions depend on, grouped by the thesis's six capability clusters, and every such connection is a Naive record that follows the thesis's connection contract. Naive stays tool-agnostic: the cluster and connection records are Naive record types, and the connectors that act on them are Mentura's.
 
 ## What exists today
 
@@ -35,7 +35,7 @@ Naive has 13 functions (`packages/naive/src/functions/departments.json`), and Me
 | Builder is not verifier | `packages/naive/src/checks/verify.mjs` | `independent(builder, verifier)` and `reviewIsIndependent` already enforce it for review criteria |
 | Decision index | `packages/naive/src/engine/decision-index.mjs` | Ranks open decisions; a lead's proposals land here |
 | Detectors | `governance/detector/[id]`, `governance/detector-trial/[id]` | The record shape for a yes or no call and its ledger (SIGNAL_DETECTION_2026-11-07.md) |
-| Function agents | everything-ecosystem `platform/agents/` | `functionAgent(id)` derives the role `<function>-agent` and its write routes from Naive's data; the MCP shim gives Grokbot one `agent_<function>` tool per staffed function |
+| Function agents | everything-ecosystem `platform/agents/` | `functionAgent(id)` derives the role `<function>-agent` and its write routes from Naive's data; the MCP shim gives any MCP harness one `agent_<function>` tool per staffed function |
 | Integrations and systems | `packages/naive/src/records/integration.schema.json`, `packages/naive/src/engine/systems-catalog.json` | Tools per layer and systems of record per function. The systems catalog also keys a function id `legal` that `departments.json` does not list |
 
 The spend register is named by two decision classes (`spend-register-upkeep`, `cancel-or-downgrade`) and by the `finance-lead` role, but it has no record type.
@@ -84,7 +84,7 @@ A person accepts held drafts, writes the team plan, and holds every one-way door
 ```mermaid
 flowchart LR
   P["Founder or a person"]
-  G["Grokbot (Mentura)"]
+  G["Any harness and model<br/>(Claude Code, Cursor, Codex, Mentura, a trigger)"]
   L["Lead agent<br/>growth, strategy, finance, product"]
   F["Function agent<br/>one per function"]
   subgraph R["Venture records (Naive router: schema, gate, access, provenance)"]
@@ -120,13 +120,13 @@ This matches the function research. Strategy's note says almost all of its analy
 
 ### Routing a task
 
-Grokbot is Mentura's interface and stays Mentura's. The rule it applies is data in Naive, so any harness routes the same way. Code decides and a model only classifies: a model labels which functions a task touches, and a deterministic rule picks the target.
+Routing assumes no particular model or harness. The rule is code in Naive (`packages/naive/src/engine/route-task.ts`), so Claude Code, Cursor, Codex, Mentura's own interface or a trigger all route the same way, whatever model they run. Code decides and a model only classifies: a model (or a person) labels which functions a task touches, and a deterministic rule picks the target. Swapping the model changes only the labels, never the rule.
 
 1. A model labels the task with the functions it touches and, if it can, the telos measure it serves.
 2. If the task names a one-way door or a never-redelegated class, it goes to a person. No agent takes it.
 3. One function: the task goes straight to that function's agent (`agent_<function>`), as it does today.
 4. More than one function, all in one lead's portfolio: that lead.
-5. Functions across portfolios: the lead accountable for the measure the task serves. With no measure named, the chief of staff role decides (`defer-or-route`), which today means a person or Grokbot acting as chief of staff.
+5. Functions across portfolios: the lead accountable for the measure the task serves. With no measure named, the chief of staff role decides (`defer-or-route`), which today means a person.
 6. The lead writes a plan entry and one handoff per function involved. Each handoff names the function agent's role, the decision classes it may use, done criteria, and a review criterion whose reviewer is the requesting lead.
 7. `check-ready.mjs` passes and is recorded, so the handoff is `ready`.
 8. The function agent claims it (item 5), works it, writes evidence and sets it `done`.
@@ -134,15 +134,15 @@ Grokbot is Mentura's interface and stays Mentura's. The rule it applies is data 
 
 A direct single-function run has no lead, so no lead verifies it. Its gated writes are held for a person as they are today, and its ungated writes pass on conformance alone.
 
-**Open:** who verifies a direct single-function run that asked for review. The proposal is the person who asked, through Grokbot; the alternative is the lead whose portfolio holds the function.
+**Open:** who verifies a direct single-function run that asked for review. The proposal is the person who asked, through whatever harness they used; the alternative is the lead whose portfolio holds the function.
 
-**Open:** whether Grokbot acts in the chief-of-staff role when it routes, or is only a harness that hands the choice to a person when rule 5 has no measure.
+**Decided (2026-11-08):** no harness acts in the chief-of-staff role when it routes. A harness is only an interface, so when rule 5 has no measure the task goes to a person.
 
 ```mermaid
 stateDiagram-v2
   direction TB
   [*] --> Intake
-  state "Grokbot (Mentura)" as GB {
+  state "Any harness, any model" as GB {
     Intake: task arrives
     Classify: model labels functions and measure
     Route: code applies the routing rule
@@ -279,7 +279,7 @@ The plan, in order, one item per pull request. Items 1 to 3 and 5 to 7 are in Na
 | 1 | Function on record types; role ids match | Naive | A `function` field on each record entry in `packages/naive/src/records/data-model.json` (a `departments.json` id or `shared`); role template `function` values become `departments.json` ids or `all`; the systems catalog's `legal` key becomes `risk-and-compliance`; a check that every one resolves | the new check breaks on copies; `check-data-model.mjs`, `record-types.ts --check`, `check-delegation.mjs` pass |
 | 2 | Spend register and access matrix | Naive | `spend-register.schema.json`, the data model entry, the `finance/spend-register` route, the template's source map rules per field, and the `founder-to-finance-agent` grant | a write by any role but `finance-agent` is refused; `check-sources.mjs` refuses a tie on a register field |
 | 3 | Lead role templates and team-plan entries | Naive | Four lead templates with `portfolio` and default measure kinds, the `lead-plan` schema and `operations/lead/[id]` route, grants from the chief of staff, the routing rule as data, and `check-team.mjs` rules: a lead writes only its plan, `decisions/*` and handoffs, and is bound to a telos measure | `check-team.mjs` refuses a lead with a function's write route or no measure; `check-delegation.mjs` refuses a lead grant of a one-way door |
-| 4 | `leadAgent(id)` | everything-ecosystem | `platform/agents/lead-spec.ts` derives a lead from Naive's templates (no list of leads in Mentura), its run reads every record and writes handoffs, and the MCP shim adds `lead_<id>` tools and applies the routing rule for Grokbot | an offline run with a scripted model writes a plan entry and handoffs and no function record; a single-function task routes to `agent_<function>` |
+| 4 | `leadAgent(id)` | everything-ecosystem | `platform/agents/lead-spec.ts` derives a lead from Naive's templates (no list of leads in Mentura), its run reads every record and writes handoffs, and the MCP shim adds `lead_<id>` tools and applies the routing rule for any MCP harness | an offline run with a scripted model writes a plan entry and handoffs and no function record; a single-function task routes to `agent_<function>` |
 | 5 | Handoff claim | Naive | The `claim` action, `requested_by`, and the router rules for who writes progress, evidence and verification | two claims race and one wins; a lead cannot accept a handoff it did not request; a claimant cannot verify its own work |
 | 6 | Seam detectors | Naive | Detector records for the seams whose records exist, their check sensors, and the decision a yes call opens for the right lead | each seam fires on a drifted copy and stays quiet on a clean one; a dismissed decision resolves a false alarm |
 | 7 | Capability clusters and connections | Naive | The `capability-cluster` catalog from the thesis, the `connection` schema with the eight contract fields, the `it` package, and a check that every send, payment or signature action names its approval class | the check refuses a connection whose send action has no approval class, or that copies a field another source owns |
@@ -293,10 +293,10 @@ Each item also proposes its new nouns (lead, portfolio, lead plan, seam, capabil
 3. Whether the lead keeps the existing id `finance-lead` (and that role's spend work moves to the finance agent) or the leads take distinct ids.
 4. Whether leads also get `set-priorities` within their portfolio.
 5. Who verifies a direct single-function run that asked for review: the person who asked, or the lead whose portfolio holds the function.
-6. Whether Grokbot acts in the chief-of-staff role when it routes, or hands a cross-portfolio task with no measure to a person.
+6. Decided 2026-11-08: no harness acts as chief of staff; a cross-portfolio task with no measure goes to a person.
 7. Whether the spend register is one file or one record per line.
 8. Which seams item 6 builds first, given that deal promises, approved claims and IT tool records have no record type yet.
 9. Whether `connection` is a new record type or an extension of `integration.schema.json`.
 10. Whether the it function gets an `it` package for connections and tool records, and what else it should own.
-11. Whether the routing rule's code (not only its data) moves into Naive, so every harness and not only Grokbot routes the same way.
+11. Whether the routing rule's code (not only its data) moves into Naive, so every harness routes the same way. Built: `route-task.ts` (#54).
 12. How a lead runs several handoffs while the venture lock allows one run at a time, until shared appends are built.
