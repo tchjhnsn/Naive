@@ -21,9 +21,15 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals about engagements predict one that slips, grows or ends early.
+- Whether change requests in the first fifth of an engagement predict a final overrun above 15 percent.
+- Whether client response time in the first two weeks predicts a slipped final milestone.
+- Whether fixed-fee engagements earn more margin than time-and-materials ones for the same offer, once rework is counted.
+- After how many repeats of a request type a written runbook pays back the time spent writing it.
+- Whether handoffs agents do under a runbook need more or fewer rework cycles than a person's, by task type.
+- Signals to watch: pipeline hours against capacity by skill, burn against budget, overdue milestones, client sentiment, time from delivery to acceptance, invoice disputes, and renewal or expansion asks.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.

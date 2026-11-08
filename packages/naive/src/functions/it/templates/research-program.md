@@ -21,9 +21,14 @@ Only a person edits this file. Naive refuses every agent's write to it, the rese
 ## What to research
 
 - Which signals about accounts, integrations and access predict an outage, a breach or a tool the venture no longer uses.
+- Which ratio of granted to used scopes per agent credential predicts a later scope incident, and the smallest scope set that keeps task success unchanged.
+- Whether the lag between a team plan change and the matching access change predicts access incidents, and what lag is safe.
+- Which inactivity window (14, 30 or 60 days) best predicts that a software seat stays unused.
+- For a small team, whether change fail rate or error budget burn warns earlier of an outage customers see.
+- Signals to watch: new OAuth grants and API keys, credentials near expiry, agent actions denied by scope, accounts without MFA, leavers not revoked after 24 hours, vendor advisories and known exploited vulnerabilities, and vendor breaches or terms changes.
 
 Say here what matters most to you, what the researcher must never trade away, and when to stop early.
 
 ## Patterns
 
-None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (such as `market/rounds`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
+None yet. No record this function owns is projected from signals today, so there is no recipe to improve. When one is, add a section here named for its route pattern (as strategy's program has for `competitors/[id]/signals`), saying what the record is for, what a better recipe would do, and anything the researcher must not change.
