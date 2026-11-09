@@ -1,0 +1,54 @@
+{
+  "id": "triage-accept",
+  "title": "Accept Jev's label on a raw entry",
+  "description": "Raw triage files a label on a raw idea or reference when Jev's probability is at or above the line, or at or below one minus it. A label between the two is held for the founder (docs/design/RAW_TRIAGE_2026-11-09.md).",
+  "call_site": "packages/naive/src/engine/triage.ts decide, line",
+  "tier": "low",
+  "question": {
+    "verb": "accept",
+    "noun": "label",
+    "asking_function": "strategy",
+    "text": "Is Jev's label on this raw entry right?"
+  },
+  "evidence": {
+    "kind": "founder-agent",
+    "sensor": "Jev (TypeSafe System 1), the client the platform injects",
+    "sources": [
+      {
+        "source": "venture",
+        "records": "raw/triage/[id]",
+        "note": "labels[].p on each triage record"
+      }
+    ],
+    "scale": {
+      "min": 0,
+      "max": 1,
+      "meaning": "Jev's probability for the label, 0 to 1",
+      "yes_when": "above"
+    }
+  },
+  "criterion": {
+    "yes": {
+      "value": 0.95,
+      "set_by": "default"
+    }
+  },
+  "costs": {
+    "hit": 1,
+    "miss": 1,
+    "false_alarm": 1,
+    "correct_rejection": 1,
+    "set_by": "tier"
+  },
+  "base_rate": {
+    "source": "ledger"
+  },
+  "resolution": {
+    "resolver": {
+      "kind": "person",
+      "id": "founder"
+    },
+    "time_to_detect": "2w"
+  },
+  "note": "A held label the founder answers as Jev guessed is a false alarm; a filed label the founder changes is a miss."
+}

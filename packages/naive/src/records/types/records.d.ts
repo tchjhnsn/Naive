@@ -4528,6 +4528,45 @@ export type TraceSpan = {
   hash: string;
 };
 
+/** One triage run over one raw entry (raw capture and triage design, docs/design/RAW_TRIAGE_2026-11-09.md), at raw/triage/<id>.json (route raw/triage/[id]). It keeps every question Jev (TypeSafe System 1) was asked, its answer as a probability, the model, the line the run used, what was filed and what was held for a person. Code decides from the answers (packages/naive/src/engine/triage.ts); no answer is ever a decision on its own. Written once per run and never edited: a person's correction resolves a trial of the triage-accept detector instead. */
+export type Triage = {
+  /** The run's id, the file name without .json */
+  id: string;
+  /** The raw entry triaged, as a venture path: raw/dump/<id>.md or raw/sources/<id>/text.md */
+  entry: string;
+  /**
+   * When the run decided
+   * @format date-time
+   */
+  at?: string;
+  /** The model that answered, as Jev reports it, or null when Jev was not reached and every label was held */
+  model: string | null;
+  /** The triage-accept line the run used: a label is sure at or above it, or at or below one minus it */
+  line: number;
+  /** One entry per question asked */
+  labels: {
+    /** The question's key in the Jev request, such as kind:idea, venture:f1:acme-labs or function:f1:finance */
+    key: string;
+    /** The System 1 primitive asked */
+    kind: "noul" | "score";
+    /** The answer: a Noul's probability of yes, or a Score; null when not answered */
+    p: number | null;
+    /** Whether the answer cleared the line. A Score is never a filing decision, so it is always true */
+    sure: boolean;
+    /** A person's answer, when one was given for a held label */
+    person?: number | boolean | null;
+  }[];
+  /** What the run wrote, as venture paths (an idea, a reference) */
+  filed?: string[];
+  /** The keys of labels held for a person */
+  held?: string[];
+  /** Whether the routed work goes to a person because the entry may be a one-way door */
+  to_person?: boolean;
+  /** filed: every label was sure. held: waiting on a person. answered: a person answered the held labels and the run filed */
+  status: "filed" | "held" | "answered";
+  note?: string;
+};
+
 /** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). packages/naive/src/router/orchestration/triggers.mjs runs them. */
 export type Trigger = {
   id: string;

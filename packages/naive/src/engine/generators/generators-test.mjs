@@ -13,6 +13,8 @@ import * as detectorTrial from "./detector-trial.ts";
 import * as connection from "./connection.ts";
 import * as capabilityCluster from "./capability-cluster.ts";
 import * as leadPlan from "./lead-plan.ts";
+import * as rawDump from "./raw-dump.ts";
+import * as triage from "./triage.ts";
 
 let fails = 0;
 const t = (name, ok) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}`); if (!ok) fails++; };
@@ -21,7 +23,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -97,6 +99,11 @@ t("connection: no exit plan is refused before the schema", !connection.draft({ .
 const lp = leadPlan.draft({ lead: "growth-lead", measures: ["paying-teams"] });
 t("lead-plan: draft takes the portfolio from the role template, no bets and a monthly review", lp.ok && lp.route === "operations/lead/growth-lead"
   && lp.draft.portfolio.join() === "marketing-and-sales,customer-service" && lp.draft.bets.length === 0 && lp.draft.review_cadence === "monthly");
+const rd = rawDump.draft({ text: "Weekend lists differ.", captured: "2026-11-09T00:30:00Z", suffix: "k4p2", channel: "naive capture" });
+t("raw-dump: draft keeps the text verbatim under frontmatter, at raw/dump/<capture id>.md", rd.ok && rd.file === "raw/dump/20261109-003000-k4p2.md" && rd.draft.text.endsWith("\n\nWeekend lists differ.\n"));
+t("raw-dump: an empty capture is refused", !rawDump.draft({ text: "  " }).ok);
+const tri = triage.draft({ id: "r1", entry: "raw/dump/r1.md", model: "jev-latest", line: 0.95, labels: [{ key: "kind:idea", kind: "noul", p: 0.98 }, { key: "door:one-way", kind: "noul", p: 0.03 }, { key: "function:f1:it", kind: "noul", p: 0.6 }, { key: "urgency", kind: "score", p: 0.5 }] });
+t("triage: sure at or above the line or at or below one minus it, a score always sure, the rest held", tri.ok && tri.draft.held.join() === "function:f1:it" && tri.draft.status === "held" && tri.route === "raw/triage/r1");
 t("lead-plan: a role with no portfolio is refused", !leadPlan.draft({ lead: "builder", measures: ["paying-teams"] }).ok);
 t("lead-plan: a plan bound to no measure is refused", !leadPlan.draft({ lead: "growth-lead", measures: [] }).ok);
 const cc = capabilityCluster.draft({ title: "Physical logistics", functions: ["supply-chain"], gaps: ["network-or-money-rail"], why: "carriers and customs" });

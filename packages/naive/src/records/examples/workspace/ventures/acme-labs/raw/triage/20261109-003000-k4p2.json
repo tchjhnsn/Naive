@@ -1,0 +1,21 @@
+{
+  "id": "20261109-003000-k4p2",
+  "entry": "raw/dump/20261109-003000-k4p2.md",
+  "at": "2026-11-09T00:30:20Z",
+  "model": "jev-latest",
+  "line": 0.95,
+  "labels": [
+    { "key": "kind:idea", "kind": "noul", "p": 0.98, "sure": true },
+    { "key": "kind:reference", "kind": "noul", "p": 0.97, "sure": true },
+    { "key": "venture:f1:acme-labs", "kind": "noul", "p": 0.99, "sure": true },
+    { "key": "function:f1:products", "kind": "noul", "p": 0.96, "sure": true },
+    { "key": "function:f1:supply-chain", "kind": "noul", "p": 0.81, "sure": false, "person": true },
+    { "key": "door:one-way", "kind": "noul", "p": 0.02, "sure": true },
+    { "key": "urgency", "kind": "score", "p": 0.4, "sure": true }
+  ],
+  "filed": [],
+  "held": ["function:f1:supply-chain"],
+  "to_person": false,
+  "status": "held",
+  "note": "An example run: one function label fell between the lines, so the run waits for the founder."
+}

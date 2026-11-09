@@ -2,7 +2,7 @@
   "name": "raw",
   "title": "Raw",
   "kind": "raw",
-  "purpose": "Immutable captures and founder-supplied sources. dump/ holds captures. sources/[id]/ holds source.json and text.md. original.* stays out of git (EE-070).",
+  "purpose": "Immutable captures and founder-supplied sources. dump/ holds captures, one file each. sources/[id]/ holds source.json and text.md. triage/ holds one record per triage run over an entry. original.* stays out of git (EE-070).",
   "required": [],
   "optional": [],
   "refs": [],
@@ -10,10 +10,12 @@
     "immutable: append a capture, never edit one"
   ],
   "layer": "purpose",
-  "records": ["raw-source", "raw-text"],
-  "schemas": ["packages/naive/src/records/raw-source.schema.json"],
+  "records": ["raw-source", "raw-text", "raw-dump", "triage"],
+  "schemas": ["packages/naive/src/records/raw-source.schema.json", "packages/naive/src/records/triage.schema.json"],
   "templates": [],
-  "checks": ["packages/naive/src/checks/check-data-packages.mjs"],
+  "checks": [
+    "packages/naive/src/checks/check-data-packages.mjs"
+  ],
   "skill": null,
   "use_model": []
 }

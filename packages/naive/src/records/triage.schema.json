@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "triage.schema.json",
+  "title": "Triage run",
+  "description": "One triage run over one raw entry (raw capture and triage design, docs/design/RAW_TRIAGE_2026-11-09.md), at raw/triage/<id>.json (route raw/triage/[id]). It keeps every question Jev (TypeSafe System 1) was asked, its answer as a probability, the model, the line the run used, what was filed and what was held for a person. Code decides from the answers (packages/naive/src/engine/triage.ts); no answer is ever a decision on its own. Written once per run and never edited: a person's correction resolves a trial of the triage-accept detector instead.",
+  "type": "object",
+  "required": ["id", "entry", "model", "line", "labels", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The run's id, the file name without .json" },
+    "entry": { "type": "string", "pattern": "^raw/(dump/[a-z0-9][a-z0-9-]*\\.md|sources/[a-z0-9][a-z0-9-]*/text\\.md)$", "description": "The raw entry triaged, as a venture path: raw/dump/<id>.md or raw/sources/<id>/text.md" },
+    "at": { "type": "string", "format": "date-time", "description": "When the run decided" },
+    "model": { "type": ["string", "null"], "description": "The model that answered, as Jev reports it, or null when Jev was not reached and every label was held" },
+    "line": { "type": "number", "minimum": 0.5, "maximum": 1, "description": "The triage-accept line the run used: a label is sure at or above it, or at or below one minus it" },
+    "labels": {
+      "type": "array",
+      "description": "One entry per question asked",
+      "items": {
+        "type": "object",
+        "required": ["key", "kind", "p", "sure"],
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string", "minLength": 1, "description": "The question's key in the Jev request, such as kind:idea, venture:f1:acme-labs or function:f1:finance" },
+          "kind": { "enum": ["noul", "score"], "description": "The System 1 primitive asked" },
+          "p": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "The answer: a Noul's probability of yes, or a Score; null when not answered" },
+          "sure": { "type": "boolean", "description": "Whether the answer cleared the line. A Score is never a filing decision, so it is always true" },
+          "person": { "type": ["number", "boolean", "null"], "description": "A person's answer, when one was given for a held label" }
+        }
+      }
+    },
+    "filed": {
+      "type": "array",
+      "description": "What the run wrote, as venture paths (an idea, a reference)",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "held": {
+      "type": "array",
+      "description": "The keys of labels held for a person",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "to_person": { "type": "boolean", "description": "Whether the routed work goes to a person because the entry may be a one-way door" },
+    "status": { "enum": ["filed", "held", "answered"], "description": "filed: every label was sure. held: waiting on a person. answered: a person answered the held labels and the run filed" },
+    "note": { "type": "string" }
+  }
+}
