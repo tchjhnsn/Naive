@@ -70,10 +70,12 @@
       "level": "workspace",
       "schema": "packages/naive/src/records/founder-reference.schema.json",
       "paths": [
+        "instance/people/*/references/*.json",
+        "packages/naive/src/records/examples/workspace/people/*/references/*.json",
         "instance/founders/*/references/*.json",
         "packages/naive/src/records/examples/workspace/founders/*/references/*.json"
       ],
-      "note": "A work that forms the founder (book, podcast, film, essay), CSL-JSON field names, stored once at founder scope and cited by id"
+      "note": "A work that forms the founder (book, podcast, film, essay), CSL-JSON field names, stored once at founder scope and cited by id, at people/<person-id>/references/ (raw triage files one there) or founders/<handle>/references/ until the founders folder moves"
     },
     {
       "id": "founder-inspiration",

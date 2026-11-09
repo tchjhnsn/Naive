@@ -1,14 +1,14 @@
 {
   "id": "triage-accept",
   "title": "Accept Jev's label on a raw entry",
-  "description": "Raw triage files a label on a raw idea or reference when Jev's probability is at or above the line, or at or below one minus it. A label between the two is held for the founder (docs/design/RAW_TRIAGE_2026-11-09.md).",
+  "description": "Raw triage files a label on a raw idea or reference when Jev's certainty in it, max(p, 1 - p), is at or above the line, which is the same as p at or above the line or at or below one minus it. A label below the line is held for the founder: as at the gate, yes means the label needs a person (docs/design/RAW_TRIAGE_2026-11-09.md).",
   "call_site": "packages/naive/src/engine/triage.ts decide, line",
   "tier": "low",
   "question": {
-    "verb": "accept",
+    "verb": "hold",
     "noun": "label",
     "asking_function": "strategy",
-    "text": "Is Jev's label on this raw entry right?"
+    "text": "Does Jev's label on this raw entry need the founder?"
   },
   "evidence": {
     "kind": "founder-agent",
@@ -17,14 +17,14 @@
       {
         "source": "venture",
         "records": "raw/triage/[id]",
-        "note": "labels[].p on each triage record"
+        "note": "labels[].p on each triage record; the score is max(p, 1 - p)"
       }
     ],
     "scale": {
-      "min": 0,
+      "min": 0.5,
       "max": 1,
-      "meaning": "Jev's probability for the label, 0 to 1",
-      "yes_when": "above"
+      "meaning": "Jev's certainty in the label, max(p, 1 - p), 0.5 to 1",
+      "yes_when": "below"
     }
   },
   "criterion": {
