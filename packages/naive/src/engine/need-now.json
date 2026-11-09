@@ -729,6 +729,26 @@
       },
       "why": "The text of a raw source, beside source.json (EE-070)."
     },
+    "raw-dump": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "One capture in the founder's own words. Held until the founder captures something (docs/design/RAW_TRIAGE_2026-11-09.md)."
+    },
+    "triage": {
+      "base": {
+        "discovery": 0.3,
+        "validation": 0.3,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "One triage run over a raw entry. Written by triage, never asked for (docs/design/RAW_TRIAGE_2026-11-09.md)."
+    },
     "judgment": {
       "base": {
         "discovery": 0.05,

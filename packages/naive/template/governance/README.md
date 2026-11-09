@@ -56,6 +56,8 @@ venture-template/
 
 `detectors/<id>.json` holds one detector record (`packages/naive/src/records/detector.schema.json`) for each yes or no threshold Naive already had, with today's constant as its line, `set_by: "default"`. A call site reads its line through `packages/naive/src/engine/detectors.mjs`: the venture's own `governance/detectors/<id>.json` first, then the default here, then the constant in the code. A venture moves a line by keeping its own copy with the person who set it. `init-venture.mjs` does not copy these files, so a venture without its own copy follows Naive's default.
 
+`detectors/triage-accept.json` is new with raw triage (build item 1, `docs/design/RAW_TRIAGE_2026-11-09.md`) rather than a moved constant: the line Jev's labels on a raw entry clear, 0.95 like `feedback-accept`. A label at or above it, or at or below one minus it, files; one between is held for the founder.
+
 `delegation.json` is the default delegation that `node packages/naive/src/checks/check-delegation.mjs` checks. The spend register's classes, `spend-register-upkeep` and `cancel-or-downgrade`, go from the founder straight to the finance agent (`founder-to-finance-agent`, scope `finance/`), because both are never re-delegated (lead agents design, build item 2). The chief of staff grants each lead (growth-lead, product-lead, finance-lead, strategy-lead) `accept-verified-work` and `defer-or-route` over the venture, and `set-priorities` over its own lead plan only (scope `operations/leads/<lead>`), a two-way door; for that the founder's grant to the chief of staff now includes `set-priorities` (lead agents build item 3, defaults 3 and 4). No lead holds a one-way door or a never-redelegated class.
 
 | Detector | Line | yes when | Read at |

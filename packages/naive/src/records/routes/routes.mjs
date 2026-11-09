@@ -264,7 +264,7 @@ const PACKAGE_ROUTE = {
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
   "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs",
-  customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources",
+  customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources", triage: "raw/triage",
   "spend-register": "finance/spend", "lead-plan": "operations/lead",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   connection: "it/connections",

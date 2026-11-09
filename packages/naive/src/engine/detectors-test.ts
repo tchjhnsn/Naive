@@ -46,6 +46,8 @@ const today: [string, number, number?][] = [
   ["standing-loss", Math.log(19)],
   // Not a constant moved out of code: the tools against spend seam (lead agents item 6) is new, and its line is one disagreement.
   ["seam-tools-spend", 1],
+  // New with raw triage (docs/design/RAW_TRIAGE_2026-11-09.md): the line Jev's labels clear, as feedback-accept's.
+  ["triage-accept", 0.95],
 ];
 for (const [id, yes, no] of today) {
   const c = criterionFor(undefined, id);

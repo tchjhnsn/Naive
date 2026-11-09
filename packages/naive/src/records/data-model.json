@@ -1925,6 +1925,34 @@
       "note": "The text of a raw source. original.* stays out of git (EE-070)."
     },
     {
+      "id": "raw-dump",
+      "layer": "purpose",
+      "function": null,
+      "level": "venture",
+      "schema": null,
+      "generator": "packages/naive/src/engine/generators/raw-dump.ts",
+      "form": "markdown",
+      "writer": "person",
+      "paths": [
+        "instance/**/raw/dump/*.md",
+        "packages/naive/src/records/examples/**/raw/dump/*.md"
+      ],
+      "note": "One capture in the founder's own words, verbatim, one file per capture (raw capture and triage design, docs/design/RAW_TRIAGE_2026-11-09.md). Raw is immutable: a new capture is a new file, and an agent never rewrites one (EE-070). The single raw/dump.md of idea-dump stays readable"
+    },
+    {
+      "id": "triage",
+      "layer": "purpose",
+      "function": null,
+      "level": "venture",
+      "schema": "packages/naive/src/records/triage.schema.json",
+      "generator": "packages/naive/src/engine/generators/triage.ts",
+      "paths": [
+        "instance/**/raw/triage/*.json",
+        "packages/naive/src/records/examples/**/raw/triage/*.json"
+      ],
+      "note": "One triage run over one raw entry: every Jev question, its probability, the model, the line and what was filed or held (raw capture and triage design, docs/design/RAW_TRIAGE_2026-11-09.md). Written once per run; a correction resolves a trial of the triage-accept detector"
+    },
+    {
       "id": "judgment",
       "layer": "knowledge",
       "function": null,
