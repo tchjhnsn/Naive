@@ -93,7 +93,7 @@ export function crossRead(workspace, fromVenture, toVenture, path) {
 // --- capture: split, score, route ---
 
 const STOP = new Set("a an and are as at be but by for from has have i in is it its of on or our so that the their them they this to was we were what when which who will with you your not can do just about into more".split(" "));
-const terms = (t) => new Set(String(t).toLowerCase().match(/[a-z][a-z0-9'-]{2,}/g)?.filter((w) => !STOP.has(w)) ?? []);
+export const terms = (t) => new Set(String(t).toLowerCase().match(/[a-z][a-z0-9'-]{2,}/g)?.filter((w) => !STOP.has(w)) ?? []);
 const strings = (o) => typeof o === "string" ? [o] : Array.isArray(o) ? o.flatMap(strings) : o && typeof o === "object" ? Object.values(o).flatMap(strings) : [];
 
 /** The words a venture is about: its name and its foundation (problem, ICP, telos). */
