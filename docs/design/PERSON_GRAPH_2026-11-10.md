@@ -71,13 +71,17 @@ flowchart LR
 people/<person-id>/
   person.json            opaque id, handle, account id; no real name (EE-114)
   telos/<version>.json   the person's stated telos, each revision dated, never edited in place
-  intents/<id>.json      an end in the person's words, why it is held, serves: one or more parents
-  projects/<id>.json     an intent pursued over time, with the person's own appraisal
+  intents/<id>.json      an end in the person's words; why it is held (desire, will, duty, sacred, plus
+                         free words); serves: one or more parents
+  projects/<id>.json     an intent pursued over time; appraisal fields stated by the person (meaning,
+                         manageability, connection to others); a biography is a project with sections
   choices/<id>.json      a means committed to, checkable later
   entries/<id>.json      the journal; an imported entry keeps source and date; never grantable
-  reflections/<id>.json  an entry read against an intent, closed by an insight; never grantable
+  reflections/<id>.json  an entry read against an intent; its insight is a field, in the person's words; never grantable
   facts/ beliefs/ values/ places/ named/   the rest of the stated graph
-  edges.jsonl            typed, dated, append-only: serves, shared-with, attached-to, about
+  edges.jsonl            typed, dated, append-only: serves (intent to intent or telos), serves_means
+                         (choice to intent), shared_with, attached_to (entry to project), about (entry to
+                         named person or place), read_against (reflection to intent)
   grants/<id>.json       grantee, scope, purpose, expires, set_by the person
   ideas/ references/ inspirations/         as today (EE-114); already filled by raw triage
   _private/              as today: real name, secrets; never reaches a route or a model (EE-094, EE-073)
@@ -85,7 +89,9 @@ people/<person-id>/
 
 Every node keeps `source` (stated, imported, or proposed with the proposer named) and `confirmed_by`. A model never writes a node or an edge directly: it proposes through the same hold gate raw triage uses (RAW_TRIAGE_2026-11-09.md), and the person's answer is a resolved detector trial, so "stated, never inferred" is measured, not hoped for.
 
-A shared intent is not a group object. It is two or more people's own intents joined by a `shared-with` edge that exists only when each person has stated their side, so the political is found in the edges, never assumed.
+A shared intent is not a group object. It is two or more people's own intents joined by a `shared_with` edge that exists only when each person has stated their side, so the political is found in the edges, never assumed. A joint commitment that no one can leave alone (a vow or a contract, after Gilbert) is a separate, stronger kind, and whether it belongs in Reflect or Polity is open.
+
+Not yet placed: habit (hexis, repeated choices that form character) may be its own node or a stated grouping of choices. Vouched claims (W3C Verifiable Credentials, such as a degree or a residence) stay apart from stated facts, likely in a later `credentials/`.
 
 ## Grants and linking
 
@@ -117,7 +123,7 @@ Either way the records keep one shape, the router keeps one grant check, and Nai
 
 One item per pull request, none built:
 
-1. Run the new nouns through the EE-095 term engine and the ontology gate: telos, intent, choice, entry, reflection, insight, grant, named person, shared intent. Project already exists as a word and needs a scoped meaning.
+1. Run the new nouns through the EE-095 term engine and the ontology gate: telos, intent, choice, habit, entry, reflection, insight, grant, named person, shared intent, joint commitment, and the six edge names. Project already exists as a word and needs a scoped meaning.
 2. Naive record types and data-model paths for each node folder, `edges.jsonl` and grants, with a `check-person-graph` checker: every edge names nodes that exist, is typed and dated, a shared intent has every side stated, and no grant scope reaches `entries/`, `reflections/` or `_private/`.
 3. The grant check in the router for reads of `people/**` by anyone but the person, with route tests.
 4. Mentura's identity connector and the source map rule `people/** -> identity`.
