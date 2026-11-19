@@ -957,6 +957,19 @@
       "note": "The catalog of ontologies (N-050): every name@function scope with its version, owner, status and imports, one per function. Acyclic imports and defined-or-imported terms are checked by packages/naive/src/terms/catalog-test.ts"
     },
     {
+      "id": "standard",
+      "layer": "system",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/standard.schema.json",
+      "generator": "packages/naive/src/engine/generators/standard.ts",
+      "form": "json",
+      "paths": [
+        "packages/naive/src/terms/standards/*.json"
+      ],
+      "note": "One outside standard per file (EE-124): what we take from it, its status (adopted, mapped, considered, rejected), the nouns and record types that use it and the gaps found in it. Names, users and status are checked by packages/naive/src/terms/standards-test.ts"
+    },
+    {
       "id": "golden-ruling",
       "layer": "system",
       "function": null,

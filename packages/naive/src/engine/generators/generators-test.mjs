@@ -12,6 +12,7 @@ import * as detector from "./detector.ts";
 import * as detectorTrial from "./detector-trial.ts";
 import * as connection from "./connection.ts";
 import * as capabilityCluster from "./capability-cluster.ts";
+import * as standard from "./standard.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
@@ -110,6 +111,10 @@ const cc = capabilityCluster.draft({ title: "Physical logistics", functions: ["s
 t("capability-cluster: a new cluster is added to the catalog and passes the schema", cc.ok && cc.added === "physical-logistics" && cc.draft.clusters.length === 7);
 t("capability-cluster: a cluster already in the catalog is refused", !capabilityCluster.draft({ title: "Messaging delivery", functions: ["products"], gaps: ["runtime"], why: "x" }).ok);
 t("capability-cluster: a vendor field fails the schema", cc.ok && !validate("capability-cluster", { ...cc.draft, clusters: [{ ...cc.draft.clusters[0], vendor: "Acme" }] }).ok);
+const st = standard.draft({ name: "Unified Modeling Language", issuer: "Object Management Group", url: "https://www.omg.org/spec/UML", status: "considered", copyright: "open", uses: "Class and state diagrams.", checked: "2026-11-19" });
+t("standard: a new standard is drafted as its own file and passes the schema", st.ok && st.file === "packages/naive/src/terms/standards/unified-modeling-language.json" && st.draft.checked === "2026-11-19" && st.draft.gaps.length === 0);
+t("standard: a standard already in the catalog is refused", !standard.draft({ id: "bfo", name: "BFO", issuer: "ISO", url: "https://basic-formal-ontology.org/", status: "adopted", copyright: "restricted", uses: "x", checked: "2026-11-19" }).ok);
+t("standard: an unconfirmed standard with no note is refused", !standard.draft({ name: "Some standard", issuer: "X", url: "https://example.org/", status: "considered", copyright: "open", uses: "x" }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

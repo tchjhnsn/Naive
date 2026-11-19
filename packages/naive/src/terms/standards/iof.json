@@ -1,0 +1,18 @@
+{
+  "id": "iof",
+  "name": "Industrial Ontologies Foundry Core and Supply Chain Reference Ontology",
+  "issuer": "Industrial Ontologies Foundry (OAGi)",
+  "url": "https://spec.industrialontologies.org/portal/release/202401/supplychain.html",
+  "status": "considered",
+  "checked": "2026-11-19",
+  "copyright": "open",
+  "uses": "Supply chain roles built on BFO, such as supply chain agent role and supply chain node role, for in-house and supplied parts.",
+  "used_by": {
+    "nouns": [],
+    "record_types": []
+  },
+  "gaps": [
+    "It does not join venture records such as products and decisions to the supply chain roles."
+  ],
+  "note": "Planned for the physical systems framework and the SpaceX case."
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "standard.schema.json",
+  "title": "Standard",
+  "description": "One outside standard the Everything Ecosystem uses, maps to, has considered or has rejected, one file per standard at packages/naive/src/terms/standards/<id>.json (EE-124). It says what we take from the standard, which of our nouns and record types use it, and the gaps we found in it. That the id matches the file name, that every noun and record type it names exists, and that an adopted or mapped standard names at least one user are checked by node packages/naive/src/terms/standards-test.ts, not here. A citation of a specific source (a book, paper or page) stays a reference record (reference.schema.json); a standard is the thing many references and nouns rest on.",
+  "type": "object",
+  "required": ["id", "name", "issuer", "url", "status", "checked", "copyright", "uses", "used_by", "gaps"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "description": "The file name without .json.", "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "issuer": { "description": "Who publishes it: ISO, W3C, OMG, a foundry or a project.", "type": "string", "minLength": 1 },
+    "identifier": { "description": "Its formal number, such as ISO/IEC 21838-2:2021, when it has one.", "type": "string", "minLength": 1 },
+    "version": { "description": "The version we checked against.", "type": "string", "minLength": 1 },
+    "url": { "type": "string", "pattern": "^https://" },
+    "status": {
+      "description": "adopted: we use its terms as our own. mapped: our terms map onto it, but we keep our own names. considered: we plan to use it or looked at it, and nothing uses it yet. rejected: looked at and not used; say why in note.",
+      "enum": ["adopted", "mapped", "considered", "rejected"]
+    },
+    "checked": {
+      "description": "The date a person or agent last opened the url and confirmed the standard says what this record claims, or null when it was written from memory and is not yet confirmed.",
+      "anyOf": [{ "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }, { "type": "null" }]
+    },
+    "copyright": {
+      "description": "open: its text may be quoted. restricted: cite clause numbers and names and paraphrase, never copy its text (ISO standards).",
+      "enum": ["open", "restricted"]
+    },
+    "uses": { "description": "What we take from it, in a sentence or two.", "type": "string", "minLength": 1 },
+    "used_by": {
+      "type": "object",
+      "required": ["nouns", "record_types"],
+      "additionalProperties": false,
+      "properties": {
+        "nouns": { "description": "Nouns in packages/naive/src/terms/ontology.json that rest on it.", "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "record_types": { "description": "Record type ids in packages/naive/src/records/data-model.json that rest on it.", "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } }
+      }
+    },
+    "gaps": { "description": "What the standard does not cover that we need, each in a sentence. Empty when we found none.", "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "note": { "type": "string", "minLength": 1 }
+  }
+}

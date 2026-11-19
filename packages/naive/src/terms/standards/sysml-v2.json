@@ -1,0 +1,19 @@
+{
+  "id": "sysml-v2",
+  "name": "Systems Modeling Language version 2 and its API and Services",
+  "issuer": "Object Management Group",
+  "version": "SysML 2.0, API and Services 1.0 (adopted 2025)",
+  "url": "https://www.omg.org/spec/SysML/2.0",
+  "status": "considered",
+  "checked": "2026-11-19",
+  "copyright": "open",
+  "uses": "System models of physical things as a graph of part definitions and usages, with a REST API to query and update a model. The planned backbone of the physical systems framework.",
+  "used_by": {
+    "nouns": [],
+    "record_types": []
+  },
+  "gaps": [
+    "It models a system but not the venture that makes it, sells it or decides about it."
+  ],
+  "note": "Copyright is open for the specification documents as OMG publishes them; check the license before copying text."
+}
