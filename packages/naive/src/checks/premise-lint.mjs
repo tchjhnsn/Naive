@@ -69,10 +69,10 @@ export function graph(dir, { includeDrafts = false } = {}) {
   const byRel = new Map();
   for (const x of canonical(dir)) byRel.set(x.rel, x);
   if (includeDrafts) for (const x of drafts(dir)) if (/^foundation\//.test(x.rel)) byRel.set(x.rel, x); // a draft stands for the record it would become
-  const g = { goals: [], measures: new Map(), requirements: [], criteria: [], constraints: [], decisions: [], functions: [] };
+  const g = { goals: [], measures: new Map(), requirements: [], deleted: [], criteria: [], constraints: [], decisions: [], functions: [] };
   for (const { rel, rec, draft } of byRel.values()) {
     if (rel.startsWith("foundation/goals/")) { g.goals.push({ ...rec, _rel: rel, _draft: draft }); for (const m of rec.measures ?? []) g.measures.set(`${rec.id}/${m.id}`, { ...m, goal: rec.id }); }
-    else if (rel.startsWith("foundation/requirements/")) g.requirements.push({ ...rec, _rel: rel, _draft: draft });
+    else if (rel.startsWith("foundation/requirements/")) (rec.status === "deleted" ? g.deleted : g.requirements).push({ ...rec, _rel: rel, _draft: draft }); // a deleted requirement is no premise
     else if (rel.startsWith("foundation/exit-criteria/")) for (const c of rec.criteria ?? []) g.criteria.push({ ...c, phase: rec.phase, _rel: rel, _draft: draft });
     else if (rel === "foundation/constraints.json") for (const c of rec.must_not ?? []) g.constraints.push({ ...c, _rel: rel, _draft: draft });
   }
@@ -144,13 +144,17 @@ export function cells(g) {
     if (!parents.length) cell("requirement", r, "derives_from", "orphan", { expected: "goal or measure" });
     const missing = parents.filter((d) => !resolves(d));
     if (missing.length && missing.length === parents.length) cell("requirement", r, "derives_from", "orphan", { expected: "goal or measure" }, missing);
-    else for (const d of missing) cell("requirement", r, "derives_from", "dependency", { detail: `derives from ${d}, which is no goal, measure or requirement` }, [d]);
+    else for (const d of missing) {
+      const gone = g.deleted.find((x) => x.id === d);
+      cell("requirement", r, "derives_from", "dependency", { detail: gone ? `derives from ${d}, which ${gone.deleted?.by ?? "someone"} deleted: ${gone.deleted?.why ?? ""}`.trim() : `derives from ${d}, which is no goal, measure or requirement` }, [d]);
+    }
     if (missing.length === parents.length && parents.length) cell("requirement", r, "statement", "unsupported-premise", { claim: r.statement }, parents);
     for (const d of parents) if (!goalOf(d) && !g.requirements.some((x) => x.id === d) && measuresNamed(d).length > 1) cell("requirement", r, `derives_from.${d}`, "conflict", { detail: ambiguity(routeOf.requirement(r), "derives from", d) }, [d]);
     if (!r.verified_by) cell("requirement", r, "verified_by", "unmeasurable", { detail: "It has no verified_by: no check, evidence or person." });
     else if (!r.verified_by.ref) cell("requirement", r, "verified_by", "unmeasurable", { detail: `verified_by is a ${r.verified_by.kind} with no ref.` });
     else if (r.verified_by.kind === "person") cell("requirement", r, "verified_by", "unmeasurable", { detail: `Only ${r.verified_by.ref}'s judgment verifies it; what would ${r.verified_by.ref} look at?` }, [r.verified_by.ref]);
     if (r.verified_by?.kind === "person" && !r.verified_by.ref) cell("requirement", r, "verified_by", "no-owner");
+    if (!r.owner) cell("requirement", r, "owner", "no-owner");
     if (!r.must_hold_by) cell("requirement", r, "must_hold_by", "unmeasurable", { detail: "It has no must_hold_by, so no phase gate checks it." });
     // A weight-3 requirement constraining a function no goal names.
     if (r.weight === 3) for (const f of r.constrains ?? []) if (!hasWord(goalText, f)) cell("requirement", r, `constrains.${f}`, "conflict", { detail: `${routeOf.requirement(r)} has weight 3 and constrains ${f}, but no goal names ${f}.` }, [f]);

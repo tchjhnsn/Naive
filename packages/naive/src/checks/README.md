@@ -72,7 +72,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`lint-product.mjs`](./lint-product.mjs) | Product alignment lint. |
 | [`lint-validation.mjs`](./lint-validation.mjs) | Validation alignment lint. |
 | [`premise-lint-test.mjs`](./premise-lint-test.mjs) | Tests the premise-attack linter. |
-| [`premise-lint.mjs`](./premise-lint.mjs) | Premise-attack linter (Torian, 2026-10-30). |
+| [`premise-lint.mjs`](./premise-lint.mjs) | Premise-attack linter (Torian, 2026-10-30). Asks who owns a requirement with no owner, skips a deleted requirement, and names who deleted one that another derives from. |
 | [`test.mjs`](./test.mjs) | Tests for the schema's checkers. |
 | [`verify.mjs`](./verify.mjs) | The verification substrate. |
 
