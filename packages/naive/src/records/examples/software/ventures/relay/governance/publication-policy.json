@@ -24,6 +24,8 @@
       "rules": [
         {
           "content": "documentation pages",
+          "role": "maintainer",
+          "end": "help teams install and use the CLI without asking",
           "from_layers": [
             "operations"
           ],

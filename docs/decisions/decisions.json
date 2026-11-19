@@ -1716,6 +1716,30 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-129",
+      "date": "2026-11-19",
+      "status": "proposed",
+      "decision": "Each content rule in a venture's publication policy may say who the venture speaks as on that channel (role, such as founder, company or maintainer) and what publishing that content there is for (end). Both fields are optional. check-publication.mjs warns, and does not fail, when a rule has no end, so a policy written before this decision still passes. role names a voice, not a role id: drafters and approvers keep naming roles from the role registry. The fields come from Aristotle's circumstances of action (Nicomachean Ethics III.1, 1111a3: who acts, and for what end), which Reflect's presentation gate adopted first.",
+      "why": "Torian, 2026-11-19: Reflect's presentation gate is the personal form of Naive's publication gate. Reflect added who acts and for what end to each of its rules (tchjhnsn/reflect docs/design/REFLECT_FRAMEWORK_2026-11-19.md, step 6), and the same fields are proposed here. Where content lands already decides its guidelines (EE-025); the voice it speaks in and what it is for decide whether an approver should let it out, and an approver can judge that only when the policy says it. A warning, not a failure, keeps every existing policy valid while the decision is proposed.",
+      "related": [
+        "EE-025"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/publication-policy.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-publication.mjs",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
