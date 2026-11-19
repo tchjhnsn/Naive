@@ -6,6 +6,8 @@ Up: [src](../README.md)
 
 The EE-095 term engine: every term is admitted through one pipeline with a valid test, cross-runs and the Lean theorems it names. Also the ontology (the canonical nouns), the catalog of ontologies and Naive's operating rules. Nothing symbolic bypasses it (`bypass-guard-test.ts`).
 
+The ontology has seven top categories, each mapped to a BFO class: information artifact, party, capacity, process, characteristic, material object and place. A product is a role (a capacity) that a thing bears, so one thing can be a product and a supply at once; what kind of thing bears it (software, a material object, a service) picks the framework that builds it. No noun sits under material object or place yet, and role records (who bears which role, in what context, for how long) are not built.
+
 ## Where things are
 
 | Path | Holds |
