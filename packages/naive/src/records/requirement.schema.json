@@ -2,14 +2,31 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "requirement.schema.json",
   "title": "Requirement",
-  "description": "A canonical requirement, at <venture>/foundation/requirements/<id>.json: something that must hold, derived from goals or their measures, by a phase, constraining named functions and verified by a check, evidence or a person. Read by validation and the decision index; framework-neutral.",
+  "description": "A canonical requirement, at <venture>/foundation/requirements/<id>.json: something that must hold, derived from goals or their measures, by a phase, constraining named functions and verified by a check, evidence or a person, owned by one named person. A requirement is never removed: deleting one sets status deleted and records who deleted it, when and why, so the deletion can be traced and the requirement added back. Read by validation, premise lint and the decision index; framework-neutral.",
   "type": "object",
   "required": ["id", "statement", "derives_from"],
   "additionalProperties": false,
+  "if": { "properties": { "status": { "const": "deleted" } }, "required": ["status"] },
+  "then": { "required": ["deleted"] },
+  "else": { "not": { "required": ["deleted"] } },
   "properties": {
     "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
     "venture": { "type": "string" },
     "statement": { "type": "string" },
+    "owner": { "type": "string", "minLength": 1, "description": "The one person who answers for this requirement and decides when it changes or goes: a person's name, never a team or function" },
+    "status": { "enum": ["active", "deleted"], "description": "active when missing. A deleted requirement stays as a record and no longer constrains anything" },
+    "deleted": {
+      "type": "object",
+      "required": ["by", "at", "why"],
+      "additionalProperties": false,
+      "description": "Who deleted the requirement, when and why. Present exactly when status is deleted",
+      "properties": {
+        "by": { "type": "string", "minLength": 1, "description": "The person who deleted it" },
+        "at": { "type": "string", "format": "date-time" },
+        "why": { "type": "string", "minLength": 1 },
+        "decision": { "type": "string", "description": "The decision that deleted it, when one did" }
+      }
+    },
     "derives_from": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Goal ids or measure ids (goal/measure or a bare measure id)" },
     "must_hold_by": { "enum": ["discovery", "validation", "beachhead", "scale", "platform"] },
     "constrains": { "type": "array", "items": { "type": "string" }, "description": "Function ids from venture.json functions" },

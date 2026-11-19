@@ -70,7 +70,7 @@ const reqWeight = (r) => Math.max(0, Math.min(1, typeof r?.weight === "number" ?
 export function weigh(d, raw, phase, reqs) {
   const why = [];
   let pw = phaseWeight(d.needed_in, phase);
-  const links = (raw.requirements ?? []).map((l) => ({ ...l, requirement: reqs.get(l.id) })).filter((l) => l.requirement);
+  const links = (raw.requirements ?? []).map((l) => ({ ...l, requirement: reqs.get(l.id) })).filter((l) => l.requirement && l.requirement.status !== "deleted");
   const pin = links.filter((l) => l.relation !== "violates" && reqWeight(l.requirement) >= HEAVY_REQUIREMENT).sort((a, b) => reqWeight(b.requirement) - reqWeight(a.requirement))[0];
   let lifted_by = null;
   if (pw < 1 && pin) { pw = 1; lifted_by = pin.id; why.push(`requirement ${pin.id} pins it to this phase`); }
@@ -88,6 +88,7 @@ export function violations(raw, reqs) {
   for (const l of raw.requirements ?? []) {
     const r = reqs.get(l.id);
     if (!r) { out.push({ requirement: l.id, why: `names requirement ${l.id}, which does not exist` }); continue; }
+    if (r.status === "deleted") { out.push({ requirement: r.id, why: `names requirement ${r.id}, which ${r.deleted?.by ?? "someone"} deleted at ${r.deleted?.at ?? "an unknown time"}: ${r.deleted?.why ?? ""}`.trim() }); continue; }
     if (l.relation === "violates") { out.push({ requirement: r.id, why: `violates ${r.id}: ${r.statement ?? ""}`.trim(), holds_in: r.phase ?? null }); continue; }
     const answer = typeof raw.answer === "string" ? raw.answer : null;
     if (answer && r.check?.answer_must_match && !new RegExp(r.check.answer_must_match, "i").test(answer)) out.push({ requirement: r.id, why: `its answer does not meet ${r.id}: ${r.statement ?? ""}`.trim(), holds_in: r.phase ?? null });

@@ -20,7 +20,8 @@ const collection = (dir, rel) => { const d = ventureFile(dir, rel); return exist
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 
 export const goals = (dir) => collection(dir, "foundation/goals").map((x) => x.rec);
-export const requirements = (dir) => collection(dir, "foundation/requirements").map((x) => x.rec);
+/** Requirements in force: a deleted requirement stays as a record but constrains nothing. */
+export const requirements = (dir) => collection(dir, "foundation/requirements").map((x) => x.rec).filter((r) => r.status !== "deleted");
 export const exitCriteriaFile = (phase) => `foundation/exit-criteria/${phase}.json`;
 /** True once the venture has canonical goals or exit criteria (it ran telos-to-goals, or started canonical). */
 export const migrated = (dir) => collection(dir, "foundation/goals").length > 0 || collection(dir, "foundation/exit-criteria").length > 0;
