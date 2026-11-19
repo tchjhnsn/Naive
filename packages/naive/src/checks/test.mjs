@@ -143,6 +143,8 @@ pubBroken("a publishing handoff on an unknown channel fails", (d) => publishing(
 pubBroken("content the channel has no rule for fails", (d) => publishing(d, { publication: { channel: "website", content: "memes" } }), /no rule for "memes"/);
 pubBroken("a publishing handoff with no policy fails", (d) => { rmSync(policyOf(d)); publishing(d, {}); }, /no governance\/publication-policy.json/);
 expect("a publishing handoff naming a known channel and rule passes", (() => { const d = join(tmp, `p${++n}`); cpSync(tandem, d, { recursive: true }); publishing(d, { publication: { channel: "website", content: "product pages" } }); return run("check-publication.mjs", [d]).status === 0; })());
+expect("check-publication: the examples say what every rule is for", !/\(end\)/.test(run("check-publication.mjs", [join(root, "packages/naive/src/records/examples/workspace")]).stderr));
+expect("check-publication: a rule with no end warns and still passes (EE-129)", (() => { const d = join(tmp, `p${++n}`); cpSync(tandem, d, { recursive: true }); edit(policyOf(d), (p) => { delete p.channels[0].rules[0].end; }); const r = run("check-publication.mjs", [d]); return r.status === 0 && /warning: .*website "product pages": says nothing of what publishing it is for \(end\)/.test(r.stderr); })());
 
 // check-validation: evidence grades (EE-026), adapted from GRADE.
 {

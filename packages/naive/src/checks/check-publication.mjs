@@ -10,6 +10,8 @@
 //     delegated replies go to known roles or teams that include a person, never to agents alone.
 //   rights: drafters and approvers are known roles or teams; no agent approves, and a team
 //     approves only if a person is among its members; every rule has a person approving.
+//   circumstances (EE-129): a rule says what publishing it is for (end) or draws a warning; who the
+//     venture speaks as (role) is optional and not checked.
 //   handoffs: a handoff that publishes (public-commitment in its decision classes or its
 //     escalations) names a channel and a content rule the policy holds; a venture with such a
 //     handoff and no policy fails.
@@ -87,6 +89,7 @@ for (const root of walk(dir)) {
         if (teams.has(id) && !teams.get(id).members.some(person)) errors.push(`${rule}: team ${id} has no person, so it cannot approve`);
       }
       if (!r.approvers.some((id) => person(id) || teams.get(id)?.members.some(person))) errors.push(`${rule}: no person approves`);
+      if (!r.end?.trim()) warnings.push(`${rule}: says nothing of what publishing it is for (end), so an approver cannot weigh it against its end`);
       for (const l of r.from_layers ?? []) if (v.layers && v.layers[l] === false) warnings.push(`${rule}: publishes from ${l}, which this venture has turned off`);
     }
   }

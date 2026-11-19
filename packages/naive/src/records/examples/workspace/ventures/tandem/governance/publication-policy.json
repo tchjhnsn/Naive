@@ -56,6 +56,8 @@
       "rules": [
         {
           "content": "product pages",
+          "role": "company",
+          "end": "help prospective customers decide whether Tandem fits them",
           "from_layers": [
             "purpose",
             "knowledge"
@@ -69,6 +71,8 @@
         },
         {
           "content": "funding announcement",
+          "role": "founders",
+          "end": "tell customers and the market that Tandem is funded to keep building",
           "from_layers": [
             "governance"
           ],
@@ -104,6 +108,8 @@
       "rules": [
         {
           "content": "newsletter post",
+          "role": "founder",
+          "end": "keep customers and followers close to what Tandem learns and ships",
           "from_layers": [
             "purpose",
             "knowledge",
@@ -146,6 +152,8 @@
       "rules": [
         {
           "content": "monthly update",
+          "role": "founders",
+          "end": "keep holders with information rights informed of progress, risks and asks",
           "from_layers": [
             "evidence",
             "governance"
