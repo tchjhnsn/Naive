@@ -32,6 +32,8 @@ const BFO_LABELS = new Map([
   [`${OBO}BFO_0000015`, "process"],
   [`${OBO}BFO_0000017`, "realizable entity"],
   [`${OBO}BFO_0000019`, "quality"],
+  [`${OBO}BFO_0000029`, "site"],
+  [`${OBO}BFO_0000030`, "object"],
   [`${OBO}BFO_0000031`, "generically dependent continuant"],
 ]);
 

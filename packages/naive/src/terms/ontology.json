@@ -21,7 +21,7 @@
     },
     {
       "name": "party",
-      "meaning": "A person, group, organization or venture: something that persists through time, keeps its identity, and bears functions and roles",
+      "meaning": "A person, group, organization or venture: something that persists through time, keeps its identity, bears functions and roles, and can hold decision rights. BFO files people and organizations under object too; Naive keeps them apart from material objects because only a party can decide or be bound",
       "bfo": {
         "class": "independent continuant",
         "iri": "http://purl.obolibrary.org/obo/BFO_0000004"
@@ -29,7 +29,7 @@
     },
     {
       "name": "capacity",
-      "meaning": "Something a party has whether or not it is exercising it at the moment, realized in what the party does: a business function, a role, a right",
+      "meaning": "Something a party or a thing has whether or not it is realized at the moment, realized in what it does or what it is used for: a business function, a role, a right. One bearer can hold many at once and gain or lose them, so a rocket can be a product a venture sells and a supply to another of its products",
       "bfo": {
         "class": "realizable entity",
         "iri": "http://purl.obolibrary.org/obo/BFO_0000017"
@@ -37,7 +37,7 @@
     },
     {
       "name": "process",
-      "meaning": "Something that happens over time, to or in a venture, with a beginning and an end: an act, an event, a change",
+      "meaning": "Something that happens over time, with a beginning and an end, to or in a venture, a party or a thing: an act, an event, a change, a test, a launch",
       "bfo": {
         "class": "process",
         "iri": "http://purl.obolibrary.org/obo/BFO_0000015"
@@ -45,10 +45,26 @@
     },
     {
       "name": "characteristic",
-      "meaning": "A trait of a venture, product or record that one value from a fixed list names, such as its phase, ambition or legal form",
+      "meaning": "A trait of a venture, a thing or a record that a value names: one value from a fixed list, such as its phase, ambition or legal form, or a measured value with its unit, such as a mass in kilograms",
       "bfo": {
         "class": "quality",
         "iri": "http://purl.obolibrary.org/obo/BFO_0000019"
+      }
+    },
+    {
+      "name": "material object",
+      "meaning": "A physical thing that is not a party: a vehicle, part, device, satellite, building or batch of goods. It has mass, takes up space, obeys physics and can be tested, so the physical systems framework governs it. What it is for (a product, a supply, a tool) is a role it bears, not its kind",
+      "bfo": {
+        "class": "object",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000030"
+      }
+    },
+    {
+      "name": "place",
+      "meaning": "Where a party or a thing is: a site, facility, launch pad, orbit, region or address. A place persists while what is at it changes. An address written down is an information artifact about a place",
+      "bfo": {
+        "class": "site",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000029"
       }
     }
   ],
@@ -379,13 +395,13 @@
     {
       "noun": "product",
       "level": "purpose",
-      "meaning": "One thing a venture offers, stored as a card in products/",
-      "standard": "common usage",
+      "meaning": "A role: something a venture offers, borne by a thing whose kind picks the framework that builds it (software, a material object such as a rocket, or a service). The same thing can bear other roles at once. Its record is a product card in products/",
+      "standard": "BFO role (ISO/IEC 21838-2); common usage",
       "status": "kept",
       "function": null,
       "handoff_type": false,
       "broader": [
-        "information artifact"
+        "capacity"
       ]
     },
     {
