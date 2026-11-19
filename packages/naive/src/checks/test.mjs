@@ -54,6 +54,16 @@ broken("evidence whose passed flag lies fails", "check-execution.mjs", (d) => {
   const e = JSON.parse(readFileSync(handoff(d, "docs-refresh"), "utf8")).evidence[0];
   edit(join(d, "operations/handoffs", e), (x) => { x.passed = true; });
 }, /results disagree/);
+const measuredEvidence = (d) => join(d, "evidence/results/flag-fixes-20261101090000.json");
+const measure = (value, limit) => (x) => { x.conditions = [{ quantity: "ambient temperature", value: 21, unit: "Cel" }]; x.results[0].measured = [{ quantity: "p95 latency", value, unit: "ms", limit }]; };
+broken("a result that passes with a measured value outside its limit fails", "check-execution.mjs", (d) => edit(measuredEvidence(d), measure(250, { max: 200 })), /p95 latency 250 ms is outside its limit - to 200/);
+broken("a measured limit whose min is above its max fails", "check-execution.mjs", (d) => edit(measuredEvidence(d), measure(150, { min: 300, max: 200 })), /min is above its max/);
+{
+  const dir = join(tmp, `v${++n}`);
+  cpSync(venture, dir, { recursive: true });
+  edit(measuredEvidence(dir), measure(150, { max: 200 }));
+  expect("a measured value inside its limit, with conditions, passes", run("check-execution.mjs", [dir]).status === 0);
+}
 broken("loosening a class without a decision fails", "check-execution.mjs", (d) => edit(join(d, "governance/decision-rights.json"), (r) => { r.classes = [{ id: "public-commitment", owner: "founder", level: "decide" }]; }), /loosens escalate to decide/);
 
 // check-ready: a fresh draft built from a done handoff passes; each gap makes it fail.

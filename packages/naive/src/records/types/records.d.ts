@@ -1256,7 +1256,7 @@ export type EvalSuite = {
   }[];
 };
 
-/** The result of one run of a check or eval, stored at <venture>/evidence/results/<id>.json (EE-017). It names what was checked, at which version, each assertion's outcome and the output that shows it. Results are append-only: a new run writes a new file. Handoffs point at results to prove their done-criteria. */
+/** The result of one run of a check or eval, stored at <venture>/evidence/results/<id>.json (EE-017). It names what was checked, at which version, each assertion's outcome and the output that shows it. Results are append-only: a new run writes a new file. Handoffs point at results to prove their done-criteria. A test of a physical thing names the unit tested (subject.article), the conditions it ran under and each measured value with its unit, so a static fire or a load test is evidence like a passing suite. */
 export type Evidence = {
   id: string;
   subject: {
@@ -1264,9 +1264,13 @@ export type Evidence = {
     id: string;
     /** Commit, tag or version the run checked */
     version?: string;
+    /** The unit tested, by serial or unit id, when the subject is a material object built in units (a booster, an engine, a batch) */
+    article?: string;
   };
   /** Path to the eval suite, when the run came from one */
   suite?: string;
+  /** The conditions the run happened under, each a measured value with its unit (ambient temperature, chamber pressure, wind) */
+  conditions?: EvidenceMeasurement[];
   /**
    * @format date-time
    */
@@ -1286,9 +1290,24 @@ export type Evidence = {
     artifact?: string;
     /** For review results: the role that judged it, which must be the criterion's reviewer and not the handoff's holder */
     by?: string;
+    /** The values this result measured. A result cannot pass with a value outside its limit (packages/naive/src/checks/check-execution.mjs) */
+    measured?: EvidenceMeasurement[];
   }[];
   /** True only when every result passed */
   passed: boolean;
+};
+
+export type EvidenceMeasurement = {
+  /** What was measured: thrust, burn duration, mass */
+  quantity: string;
+  value: number;
+  /** A case-sensitive UCUM code (Unified Code for Units of Measure): kN, s, kg, Cel, kPa. Use 1 for a count or a ratio */
+  unit: string;
+  /** The range the value had to fall in, in the same unit, both ends included */
+  limit?: {
+    min?: number;
+    max?: number;
+  };
 };
 
 /** A phase's canonical exit criteria, at <venture>/foundation/exit-criteria/<phase>.json: what must be true to leave the phase, each serving a goal measure. The lifecycle gate (packages/naive/src/engine/lifecycle.mjs) reads these; a criterion is met when a person says so. */
