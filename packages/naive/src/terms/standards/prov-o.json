@@ -1,0 +1,23 @@
+{
+  "id": "prov-o",
+  "name": "PROV-O: the PROV Ontology",
+  "issuer": "W3C",
+  "identifier": "W3C Recommendation, 30 April 2013",
+  "url": "https://www.w3.org/TR/prov-o/",
+  "status": "mapped",
+  "checked": "2026-11-19",
+  "copyright": "open",
+  "uses": "Entity, activity and agent for who or what produced a record. Naive's provenance and provenance log follow PROV-DM.",
+  "used_by": {
+    "nouns": [
+      "provenance",
+      "provenance log"
+    ],
+    "record_types": [
+      "provenance"
+    ]
+  },
+  "gaps": [
+    "PROV-O has no hash chain, so it cannot show that a log was not edited after the fact."
+  ]
+}

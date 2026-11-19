@@ -1,0 +1,16 @@
+{
+  "id": "gufo",
+  "name": "gUFO, the gentle Unified Foundational Ontology",
+  "issuer": "NEMO, Federal University of Espirito Santo",
+  "url": "https://nemo-ufes.github.io/gufo/",
+  "status": "considered",
+  "checked": "2026-11-19",
+  "copyright": "open",
+  "uses": "Relators: a relationship that is itself a thing, such as a supply or resale agreement between two parties. Roles are anti-rigid, so a thing can gain and lose them.",
+  "used_by": {
+    "nouns": [],
+    "record_types": []
+  },
+  "gaps": [],
+  "note": "Planned for supply and resale relationships."
+}

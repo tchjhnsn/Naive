@@ -1,0 +1,18 @@
+{
+  "id": "iso-iec-21838-1",
+  "name": "Top-level ontologies, Part 1: Requirements",
+  "issuer": "ISO/IEC JTC 1/SC 32",
+  "identifier": "ISO/IEC 21838-1:2021",
+  "version": "2021",
+  "url": "https://www.iso.org/standard/71954.html",
+  "status": "considered",
+  "checked": null,
+  "copyright": "restricted",
+  "uses": "What makes an ontology top-level: domain neutral, with the most general categories that domain ontologies specialize. It names the layer Naive's five top categories sit on, and Part 2 is BFO.",
+  "used_by": {
+    "nouns": [],
+    "record_types": []
+  },
+  "gaps": [],
+  "note": "Not confirmed at its url from this session; the identifier is cited from BFO's documentation, which names ISO/IEC 21838-2 as Part 2 of this series. The ISO text is restricted."
+}

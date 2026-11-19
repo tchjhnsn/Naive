@@ -1,0 +1,20 @@
+{
+  "id": "schema-org",
+  "name": "Schema.org",
+  "issuer": "Schema.org Community Group (W3C)",
+  "url": "https://schema.org/Role",
+  "status": "mapped",
+  "checked": "2026-11-19",
+  "copyright": "open",
+  "uses": "Role: a role attached to a relationship, with roleName, startDate and endDate, so one thing can hold many roles over time. The shape for role records. Customer is mapped for the marketing sense of customer.",
+  "used_by": {
+    "nouns": [
+      "customer@marketing-and-sales"
+    ],
+    "record_types": []
+  },
+  "gaps": [
+    "Role carries no reason for a change of role, so the decision behind it is not recorded."
+  ],
+  "note": "Role records are designed, not built (Everything Ecosystem redesign, 2026-11-19)."
+}

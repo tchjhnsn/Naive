@@ -4330,6 +4330,37 @@ export type SpendRegister = {
   note?: string;
 };
 
+/** One outside standard the Everything Ecosystem uses, maps to, has considered or has rejected, one file per standard at packages/naive/src/terms/standards/<id>.json (EE-124). It says what we take from the standard, which of our nouns and record types use it, and the gaps we found in it. That the id matches the file name, that every noun and record type it names exists, and that an adopted or mapped standard names at least one user are checked by node packages/naive/src/terms/standards-test.ts, not here. A citation of a specific source (a book, paper or page) stays a reference record (reference.schema.json); a standard is the thing many references and nouns rest on. */
+export type Standard = {
+  /** The file name without .json. */
+  id: string;
+  name: string;
+  /** Who publishes it: ISO, W3C, OMG, a foundry or a project. */
+  issuer: string;
+  /** Its formal number, such as ISO/IEC 21838-2:2021, when it has one. */
+  identifier?: string;
+  /** The version we checked against. */
+  version?: string;
+  url: string;
+  /** adopted: we use its terms as our own. mapped: our terms map onto it, but we keep our own names. considered: we plan to use it or looked at it, and nothing uses it yet. rejected: looked at and not used; say why in note. */
+  status: "adopted" | "mapped" | "considered" | "rejected";
+  /** The date a person or agent last opened the url and confirmed the standard says what this record claims, or null when it was written from memory and is not yet confirmed. */
+  checked: string | null;
+  /** open: its text may be quoted. restricted: cite clause numbers and names and paraphrase, never copy its text (ISO standards). */
+  copyright: "open" | "restricted";
+  /** What we take from it, in a sentence or two. */
+  uses: string;
+  used_by: {
+    /** Nouns in packages/naive/src/terms/ontology.json that rest on it. */
+    nouns: string[];
+    /** Record type ids in packages/naive/src/records/data-model.json that rest on it. */
+    record_types: string[];
+  };
+  /** What the standard does not cover that we need, each in a sentence. Empty when we found none. */
+  gaps: string[];
+  note?: string;
+};
+
 /** The framework's map of strategic foundation (EE-051): per question of the Five Ws and How plus whether, the record attributes that answer it. */
 export type StrategicFoundation = {
   version: string;

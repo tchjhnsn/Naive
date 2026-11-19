@@ -1,0 +1,16 @@
+{
+  "id": "gs1",
+  "name": "GS1 standards",
+  "issuer": "GS1",
+  "url": "https://www.gs1.org/standards",
+  "status": "considered",
+  "checked": null,
+  "copyright": "open",
+  "uses": "Party roles in trade, such as manufacturer, brand owner and reseller, and item identifiers, for goods made by one company and resold by another.",
+  "used_by": {
+    "nouns": [],
+    "record_types": []
+  },
+  "gaps": [],
+  "note": "Written from memory: the site refused an automated request on 2026-11-19, so nothing here is confirmed. For retail, later."
+}
