@@ -46,7 +46,19 @@
     "assignment": {
       "type": "string",
       "pattern": "^(A-[0-9]{3}|none)$",
-      "description": "Optional: the build-method assignment the work runs under, such as a MAD A-NNN, or none. MAD is a separate product, so Mentura records the reference and does not check it (EE-019, EE-038)"
+      "description": "Optional, from MAD before its restart: a build-method assignment such as A-NNN, or none. It is not checked; a handoff names the method it runs under with method (EE-128)"
+    },
+    "method": {
+      "type": "object",
+      "description": "The method the work runs under, named in the framework that owns it (EE-128). For software work that is MAD: the project's MAD record, the part of the project the work touches and the templates that govern it. packages/naive/src/checks/check-ready.mjs checks the names resolve in that record (packages/naive/src/checks/method-contract.mjs); Naive reads the record as data and imports nothing from MAD",
+      "required": ["framework", "record", "part"],
+      "additionalProperties": false,
+      "properties": {
+        "framework": { "enum": ["mad"], "description": "The member framework that owns the method. Only MAD has a contract today" },
+        "record": { "type": "string", "minLength": 1, "description": "Path to the framework's record, relative to the venture, such as repo/.mad/record.json" },
+        "part": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$", "description": "The part of the project in the record that the work touches; project is the whole" },
+        "templates": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*@\\d+\\.\\d+\\.\\d+$" }, "description": "The templates, as <id>@<version>, the work follows; each must be adopted for the part or for the whole project" }
+      }
     },
     "inputs": {
       "type": "array",
