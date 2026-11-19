@@ -14,6 +14,7 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { checkMethod } from "./method-contract.mjs";
 import { reviewIsIndependent } from "./verify.mjs";
 
 const [dir, id] = process.argv.slice(2);
@@ -43,8 +44,9 @@ const logs = [join(root, "docs/decisions/decisions.json"), join(ventureFile(dir,
 const decisions = new Map(logs.map((d) => [d.id, d]));
 const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || ["withdrawn", "superseded"].includes(decisions.get(d).status));
 item("every governing decision exists and is in force or proposed", !badDecisions.length, badDecisions.join(", "));
-// A method assignment (such as a MAD A-NNN) belongs to the build method a venture uses, which is
-// not part of Mentura (EE-038); a handoff may cite one, and this does not check it.
+// The method the work runs under, in the framework that owns it (EE-128): its record, part and templates resolve.
+// An old assignment (MAD A-NNN, before MAD's restart) is not checked.
+if (h.method) { const p = checkMethod(dir, h.method); item(`its method resolves in ${h.method.framework} (${h.method.record}, part ${h.method.part})`, !p.length, p.join("; ")); }
 const missingInputs = (h.inputs ?? []).filter((p) => !existsSync(join(root, p)));
 item("every input it needs exists", !missingInputs.length, missingInputs.join(", "));
 

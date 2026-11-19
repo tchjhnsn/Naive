@@ -72,6 +72,16 @@ draft("a brief with a TBD is not ready", (d) => writeFileSync(briefOf(d), readFi
 draft("an unknown product is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.products = ["nope"]; }), /FAIL {2}every product it serves exists: nope/);
 draft("an unknown decision is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.governed_by = ["EE-999"]; }), /FAIL {2}every governing decision exists.*EE-999/);
 draft("a criterion calling a missing script is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.done_criteria[0].check = "node purpose/nope.mjs"; }), /FAIL {2}every script a criterion runs exists/);
+// The venture-to-software contract (EE-128): a handoff's method names a MAD record, a part and templates that resolve.
+const madRecord = (d, adopted) => { mkdirSync(join(d, "repo/.mad"), { recursive: true }); writeFileSync(join(d, "repo/.mad/record.json"), JSON.stringify({ mad_record: "0.1.0", project: { name: "relay", domain: "software" }, parts: [{ id: "project", name: "Relay" }, { id: "cli", name: "CLI" }], decisions: [], adopted })); };
+const tdd = [{ layer: "software-engineering", part: "cli", templates: ["tdd@0.1.0"] }];
+const method = (d, m) => edit(handoff(d, "flag-fixes"), (h) => { h.method = { framework: "mad", record: "repo/.mad/record.json", ...m }; });
+draft("a method that resolves in the MAD record is ready", (d) => { madRecord(d, tdd); method(d, { part: "cli", templates: ["tdd@0.1.0"] }); });
+draft("a method naming a part the MAD record lacks is not ready", (d) => { madRecord(d, tdd); method(d, { part: "api" }); }, /FAIL {2}its method resolves in mad.*part api is not a part/);
+draft("a method naming a template not adopted for the part is not ready", (d) => { madRecord(d, tdd); method(d, { part: "cli", templates: ["spec-driven@0.1.0"] }); }, /template spec-driven@0\.1\.0 is not adopted for part cli/);
+draft("a part with no method chosen in MAD is not ready", (d) => { madRecord(d, []); method(d, { part: "cli" }); }, /no template is adopted for part cli/);
+draft("a method record outside the venture is not ready", (d) => { madRecord(d, tdd); method(d, { record: "../elsewhere/record.json", part: "cli" }); }, /is outside the venture/);
+draft("a missing method record is not ready", (d) => method(d, { part: "cli" }), /repo\/\.mad\/record\.json does not exist/);
 broken("in progress without a readiness check fails", "check-execution.mjs", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.status = "in-progress"; h.attempts = 1; }), /without a recorded readiness check/);
 
 // check-governance and payouts, on broken copies of the venture-backed example.

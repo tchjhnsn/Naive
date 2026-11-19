@@ -1916,8 +1916,19 @@ export type Handoff = {
   products?: string[];
   /** Decision ids this executes (EE-NNN, G-NNN, D-NNN or an ADR path) */
   governed_by?: string[];
-  /** Optional: the build-method assignment the work runs under, such as a MAD A-NNN, or none. MAD is a separate product, so Mentura records the reference and does not check it (EE-019, EE-038) */
+  /** Optional, from MAD before its restart: a build-method assignment such as A-NNN, or none. It is not checked; a handoff names the method it runs under with method (EE-128) */
   assignment?: string;
+  /** The method the work runs under, named in the framework that owns it (EE-128). For software work that is MAD: the project's MAD record, the part of the project the work touches and the templates that govern it. packages/naive/src/checks/check-ready.mjs checks the names resolve in that record (packages/naive/src/checks/method-contract.mjs); Naive reads the record as data and imports nothing from MAD */
+  method?: {
+    /** The member framework that owns the method. Only MAD has a contract today */
+    framework: "mad";
+    /** Path to the framework's record, relative to the venture, such as repo/.mad/record.json */
+    record: string;
+    /** The part of the project in the record that the work touches; project is the whole */
+    part: string;
+    /** The templates, as <id>@<version>, the work follows; each must be adopted for the part or for the whole project */
+    templates?: string[];
+  };
   /** Files the work needs before it can start, from the repo root; check-ready.mjs makes sure they exist */
   inputs?: string[];
   /** Role id from the roles register that holds it (builder, architect and so on) */
