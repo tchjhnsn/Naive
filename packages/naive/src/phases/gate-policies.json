@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0",
+  "note": "How strict each phase gate is (EE-156). Each gate item names what proves it and how its strength is measured on the evidence levels (adapted from GRADE: very low, low, moderate, high). A policy sets, per item, the minimum level and the boundary: fail-closed refuses the phase change, fail-open lets it pass and names the shortfall as an open risk. Three presets rank from lenient to strict; a venture picks one, and may tune items, under phase_gates in naive.config.json. Every threshold here is an unvalidated prior, ours.",
+  "levels": ["very low", "low", "moderate", "high"],
+  "count_levels": { "low": 1, "moderate": 5, "high": 10 },
+  "count_note": "Counted evidence (interviews) maps to a level by these minimum counts: about ten interviews is Blank's customer discovery guidance; five is the grader's minimum sample.",
+  "phases": {
+    "discovery": {
+      "items": [
+        { "id": "customer", "label": "A named customer", "ask": "Who has the problem, specifically enough to find more of them?", "record": "icp", "measure": { "kind": "count", "of": "interviews-with-primary-icp" }, "requires": ["who", "where_to_find"] },
+        { "id": "problem", "label": "A real problem", "ask": "Is the problem frequent or painful enough that people already try to solve it?", "record": "validation-problem", "measure": { "kind": "grade" }, "requires": ["statement", "segment"] },
+        { "id": "alternatives", "label": "Current alternatives", "ask": "How do they cope today, and why does that fall short?", "record": "validation-solution", "measure": { "kind": "count", "of": "interviews-with-current-solutions" }, "requires": ["alternatives"] },
+        { "id": "solution-fit", "label": "A solution that fits", "ask": "Does a solution fit the problem well enough to test it with those people?", "record": "validation-solution", "measure": { "kind": "grade" }, "requires": ["statement", "difference"] },
+        { "id": "channel", "label": "A way to reach them", "ask": "Has at least one channel produced conversations with them?", "record": "validation-go-to-market", "measure": { "kind": "grade" }, "requires": ["channels"] },
+        { "id": "economic-signal", "label": "An economic signal", "ask": "Who would pay, and is there a sign that a budget exists?", "record": "validation-pricing", "measure": { "kind": "grade" }, "requires": ["buyer"] },
+        { "id": "validation-plan", "label": "A validation plan", "ask": "Which assumptions are still open, and how will each be tested?", "record": "validation-plan", "measure": { "kind": "coverage" }, "requires": ["assumptions"] },
+        { "id": "decision", "label": "A decision", "ask": "Has a person weighed the evidence and chosen to go on?", "record": null, "measure": { "kind": "authority" }, "requires": [] }
+      ],
+      "presets": {
+        "lenient": {
+          "customer": { "min": "low", "boundary": "fail-closed" },
+          "problem": { "min": "low", "boundary": "fail-closed" },
+          "alternatives": { "min": "very low", "boundary": "fail-open" },
+          "solution-fit": { "min": "very low", "boundary": "fail-open" },
+          "channel": { "min": "very low", "boundary": "fail-open" },
+          "economic-signal": { "min": "very low", "boundary": "fail-open" },
+          "validation-plan": { "min": "very low", "boundary": "fail-open" },
+          "decision": { "min": "high", "boundary": "fail-closed" }
+        },
+        "standard": {
+          "customer": { "min": "moderate", "boundary": "fail-closed" },
+          "problem": { "min": "moderate", "boundary": "fail-closed" },
+          "alternatives": { "min": "low", "boundary": "fail-closed" },
+          "solution-fit": { "min": "low", "boundary": "fail-open" },
+          "channel": { "min": "low", "boundary": "fail-open" },
+          "economic-signal": { "min": "low", "boundary": "fail-open" },
+          "validation-plan": { "min": "low", "boundary": "fail-closed" },
+          "decision": { "min": "high", "boundary": "fail-closed" }
+        },
+        "strict": {
+          "customer": { "min": "high", "boundary": "fail-closed" },
+          "problem": { "min": "high", "boundary": "fail-closed" },
+          "alternatives": { "min": "moderate", "boundary": "fail-closed" },
+          "solution-fit": { "min": "moderate", "boundary": "fail-closed" },
+          "channel": { "min": "moderate", "boundary": "fail-closed" },
+          "economic-signal": { "min": "moderate", "boundary": "fail-closed" },
+          "validation-plan": { "min": "high", "boundary": "fail-closed" },
+          "decision": { "min": "high", "boundary": "fail-closed" }
+        }
+      }
+    }
+  }
+}
