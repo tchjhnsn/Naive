@@ -90,7 +90,10 @@ function wanted(dir: string, reg: Registry, cfg: NaiveConfig) {
 }
 
 async function loadMigration(m: Migration): Promise<LoadedMigration> {
-  const mod: { apply?: LoadedMigration["apply"], describe?: string } = await import(pathToFileURL(abs(m.module)).href);
+  // A migration named by its .ts source runs from the compiled .mjs beside it where the source is not shipped (the built package).
+  const file = abs(m.module);
+  const path = file.endsWith(".ts") && !existsSync(file) ? file.replace(/\.ts$/, ".mjs") : file;
+  const mod: { apply?: LoadedMigration["apply"], describe?: string } = await import(pathToFileURL(path).href);
   if (typeof mod.apply !== "function") throw new Error(`${m.module} exports no apply(dir, ctx)`);
   return { ...m, describe: mod.describe ?? m.id, apply: mod.apply };
 }
