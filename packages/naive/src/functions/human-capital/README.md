@@ -13,8 +13,8 @@ The human capital (hr) function (APQC 7.0, Develop and Manage Human Capital). It
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The human capital agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn who works on the venture |
-| [workflows/quarterly-team-review.json](./workflows/quarterly-team-review.json) | Workflow: review the team plan each quarter |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn who works on the venture, and propose the team plan to the founder as a decision (only a person writes the plan) |
+| [workflows/quarterly-team-review.json](./workflows/quarterly-team-review.json) | Workflow: review the team plan each quarter, and propose any change to the founder as a decision |
 | [FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md](./FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md) | Operating model campaign (stub) |
 | [capabilities/agent-capabilities.json](./capabilities/agent-capabilities.json) | A record |
 | [skills/agent-capabilities](./skills/agent-capabilities) | Skill: Keep the agent capability register current: what agents can, cannot, may not, or are not yet known to do, task by task, with sources and dates. |

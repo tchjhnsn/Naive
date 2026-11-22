@@ -11,7 +11,6 @@
   "phases": [
     {
       "phase": "discovery",
-      "gate": "Problem-solution fit",
       "evidence": []
     },
     {
@@ -27,17 +26,14 @@
     },
     {
       "phase": "beachhead",
-      "gate": "Repeatability",
       "evidence": []
     },
     {
       "phase": "scale",
-      "gate": "Market leadership with healthy margins",
       "evidence": []
     },
     {
       "phase": "platform",
-      "gate": "Others build on it",
       "evidence": []
     }
   ]

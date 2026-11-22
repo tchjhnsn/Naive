@@ -2676,7 +2676,7 @@ export type Lease = {
   note?: string;
 };
 
-/** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
+/** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and their gates are fixed in the phase modules (packages/naive/src/phases/<id>/phase.json); a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
 export type LifecyclePlaybook = {
   id: string;
   title: string;
@@ -2688,8 +2688,8 @@ export type LifecyclePlaybook = {
   roadmaps?: string[];
   phases: {
     phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
-    /** What clears the phase under this playbook */
-    gate: string;
+    /** The gate's name under this playbook, only when it differs from the phase module's gate (packages/naive/src/phases/<phase>/phase.json gate.name); absent, the phase module's name stands */
+    gate?: string;
     /** Decision ids that must be decided before the gate passes */
     gating_decisions?: string[];
     evidence: {
@@ -3821,6 +3821,49 @@ export type People = {
    * @format date
    */
   updated?: string;
+};
+
+/** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.mjs, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.mjs derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
+export type PhaseModule = {
+  /** The phase (EE-012), the same as the folder's name. */
+  id: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+  /** The phase's place in the lifecycle, from 1 (discovery) to 5 (platform). */
+  step: number;
+  name: string;
+  /** The question the phase answers. */
+  question: string;
+  /** What limits the venture most in this phase. Discovery has none, because no product is ranked before the core product exists. */
+  binding_constraint?: string;
+  /** Source ids in packages/naive/src/records/layers/purpose/references/references.json. */
+  references: string[];
+  /** The stage gate at the end of the phase: its name, the questions a person answers at the gate, and the exit evidence the gate requires whatever lifecycle playbook the venture follows. A playbook may rename the gate and add the evidence its own ordering needs. */
+  gate: {
+    /** The gate's name, such as Problem-solution fit. */
+    name: string;
+    /** The questions the gate asks, each answered from the evidence. */
+    asks: string[];
+    evidence: {
+      id: string;
+      statement: string;
+      /** The venture record type (an id in data-model.json) the evidence is kept in. */
+      source: string;
+    }[];
+  };
+  /** The function workflows active in the phase, as <function>/<workflow> (packages/naive/src/functions/<function>/workflows/<workflow>.json). */
+  workflows: string[];
+  /** How much each function's open decisions count when decisions are ranked across functions in this phase. One entry per departments.json id, summing to 1. */
+  weights: {
+    /** 0.x while the weights are unvalidated priors. */
+    version: string;
+    note: string;
+    functions: {
+      [key: string]: {
+        weight: number;
+        why: string;
+      };
+    };
+  };
+  note?: string;
 };
 
 /** A step-by-step guide a venture function runs, in conversation with the founder (a template is the empty shape of one record; a playbook is the order of the work). Each step says what the agent is trying to learn, how to hold the conversation, which records it writes and when the step is done. An agent proposes; the founder confirms what is written. */
@@ -5295,7 +5338,7 @@ export type Telos = {
     path: "acquisition" | "ipo" | "secondary-sale" | "merger" | "management-buyout" | "wind-down" | "hold";
     why?: string;
   };
-  /** Per phase, what must be true to leave it; refines that phase's generic gate in packages/naive/src/functions/products/frameworks/product-anatomy/phases.json for this venture */
+  /** Per phase, what must be true to leave it; refines that phase's generic gate in its phase module (packages/naive/src/phases/<phase>/phase.json) for this venture */
   phases?: {
     phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
     exit_criteria: {
@@ -5919,7 +5962,7 @@ export type Venture = {
   };
   /** The id of the venture that holds this one; null at the top of a workspace. */
   parent: string | null;
-  /** How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: packages/naive/src/functions/products/frameworks/product-anatomy/phases.json. */
+  /** How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: the phase modules, packages/naive/src/phases/<phase>/phase.json. */
   phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
   /** The venture's IANA time zone, when it differs from its workspace's (packages/naive/src/engine/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's */
   timeZone?: string;

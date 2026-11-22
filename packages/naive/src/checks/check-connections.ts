@@ -19,10 +19,16 @@
 //     source: the rule resolve.mjs picks for it must exist, must not tie, and must name the connection's source as its
 //     system of record. A connection points at the source map; it never overrides it.
 // It does not connect to anything: the app's connectors act, and a connector being present is not permission to act.
+//
+// It reads files through VentureFs (EE-125). Findings exit 1; a folder that does not exist, or a departments.json that
+// cannot be read, exits 2.
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { Effect } from "effect";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { CannotRun } from "../core/effect/errors.mjs";
+import { readJson, VentureFs } from "../core/effect/fs.mjs";
+import { describe, runMain, runSync } from "../core/effect/run.mjs";
 import { validateValue } from "../records/validate.mjs";
 import type { CapabilityCluster, Connection } from "../records/types/records.d.ts";
 import { LOCAL, MAP } from "../store/connectors/index.mjs";
@@ -35,53 +41,68 @@ export const CATALOG = "packages/naive/src/functions/it/capability-clusters.json
 const DEPARTMENTS = "packages/naive/src/functions/departments.json";
 const CONNECTIONS = "it/connections";
 
-const readJson = (f: string): unknown => JSON.parse(readFileSync(f, "utf8"));
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const schemaErrors = (schema: string, value: unknown): string[] => {
   const v = validateValue(schema, value);
   return v.status === 0 ? [] : (v.stdout + v.stderr).trim().split("\n").filter((l: string) => l && !/checked against/.test(l));
 };
+const ids = (v: unknown, key: string): string[] =>
+  isObject(v) && Array.isArray(v[key]) ? v[key].flatMap((x: unknown) => (isObject(x) && typeof x.id === "string" ? [x.id] : [])) : [];
 
-const errors: string[] = [];
+/** What a connection is checked against from the repository: the catalog's cluster ids and every layer's integration ids. */
+export type Known = { clusters: Set<string>; integrations: Set<string> };
 
-// The catalog.
-const departments = new Set((readJson(join(root, DEPARTMENTS)) as { departments: { id: string }[] }).departments.map((d) => d.id));
-const clusters = new Set<string>();
-if (!existsSync(join(root, CATALOG))) errors.push(`${CATALOG}: missing`);
-else {
-  const raw = readJson(join(root, CATALOG));
-  const bad = schemaErrors("capability-cluster.schema.json", raw);
-  for (const e of bad) errors.push(`${CATALOG}: ${e}`);
-  if (!bad.length) {
-    const cat = raw as CapabilityCluster;
-    const kinds = new Set<string>();
-    for (const g of cat.gap_kinds) { if (kinds.has(g.id)) errors.push(`${CATALOG}: gap kind ${g.id} is listed twice`); kinds.add(g.id); }
-    for (const c of cat.clusters) {
-      if (clusters.has(c.id)) errors.push(`${CATALOG}: cluster ${c.id} is listed twice`);
-      clusters.add(c.id);
-      for (const f of c.functions) if (!departments.has(f)) errors.push(`${CATALOG}: cluster ${c.id} names function ${f}, which is not an id in ${DEPARTMENTS}`);
-      for (const g of c.gaps) if (!kinds.has(g)) errors.push(`${CATALOG}: cluster ${c.id} names gap ${g}, which is not one of its gap_kinds`);
+/** Reads and checks the catalog, and gathers the integration ids every layer lists. */
+export const readCatalog = Effect.gen(function* () {
+  const fs = yield* VentureFs;
+  const errors: string[] = [];
+  const deps = yield* readJson(join(root, DEPARTMENTS)).pipe(Effect.mapError((e) => new CannotRun({ message: describe(e), cause: e })));
+  const departments = new Set(ids(deps, "departments"));
+  const clusters = new Set<string>();
+  if (!(yield* fs.exists(join(root, CATALOG)))) errors.push(`${CATALOG}: missing`);
+  else {
+    const raw = yield* readJson(join(root, CATALOG));
+    const bad = schemaErrors("capability-cluster.schema.json", raw);
+    for (const e of bad) errors.push(`${CATALOG}: ${e}`);
+    if (!bad.length) {
+      const cat = raw as CapabilityCluster;
+      const kinds = new Set<string>();
+      for (const g of cat.gap_kinds) { if (kinds.has(g.id)) errors.push(`${CATALOG}: gap kind ${g.id} is listed twice`); kinds.add(g.id); }
+      for (const c of cat.clusters) {
+        if (clusters.has(c.id)) errors.push(`${CATALOG}: cluster ${c.id} is listed twice`);
+        clusters.add(c.id);
+        for (const f of c.functions) if (!departments.has(f)) errors.push(`${CATALOG}: cluster ${c.id} names function ${f}, which is not an id in ${DEPARTMENTS}`);
+        for (const g of c.gaps) if (!kinds.has(g)) errors.push(`${CATALOG}: cluster ${c.id} names gap ${g}, which is not one of its gap_kinds`);
+      }
     }
   }
-}
+  // The integration ids every layer lists.
+  const LAYERS = join(root, "packages/naive/src/records/layers");
+  const integrations = new Set<string>();
+  for (const l of yield* fs.list(LAYERS)) {
+    const f = join(LAYERS, l, "tooling/integrations.json");
+    if (!(yield* fs.exists(f))) continue;
+    const list = yield* readJson(f);
+    for (const i of Array.isArray(list) ? list : []) if (isObject(i) && typeof i.id === "string") integrations.add(i.id);
+  }
+  return { errors, known: { clusters, integrations } satisfies Known };
+});
 
-// The integration ids every layer lists.
-const LAYERS = join(root, "packages/naive/src/records/layers");
-const integrations = new Set<string>(existsSync(LAYERS) ? readdirSync(LAYERS).flatMap((l) => {
-  const f = join(LAYERS, l, "tooling/integrations.json");
-  return existsSync(f) ? (readJson(f) as { id: string }[]).map((i) => i.id) : [];
-}) : []);
+let cached: Known | undefined;
+/** The repository's catalog facts, read once on first use, for a caller that passes none. */
+const knownFacts = (): Known => (cached ??= runSync(readCatalog).known);
 
 /** The decision classes a venture defines: its own governance/decision-rights.json, else Naive's template. */
-function classesOf(v: string): Set<string> {
+const classesOf = (v: string) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
   const own = ventureFile(v, "governance/decision-rights.json");
-  const f = existsSync(own) ? own : join(root, "packages/naive/template/governance/decision-rights.json");
-  const d = readJson(f);
-  return new Set(isObject(d) && Array.isArray(d.classes) ? d.classes.flatMap((c: unknown) => (isObject(c) && typeof c.id === "string" ? [c.id] : [])) : []);
-}
+  const f = (yield* fs.exists(own)) ? own : join(root, "packages/naive/template/governance/decision-rights.json");
+  return new Set(ids(yield* readJson(f), "classes"));
+});
 
 /** The problems with one connection, read against its venture's source map and decision classes. */
-export function connectionErrors(c: Connection, map: unknown, classes: Set<string>): string[] {
+export function connectionErrors(c: Connection, map: unknown, classes: Set<string>, known: Known = knownFacts()): string[] {
+  const { clusters, integrations } = known;
   const out: string[] = [];
   if (clusters.size && !clusters.has(c.cluster)) out.push(`cluster ${c.cluster} is not in ${CATALOG}`);
   if (c.integration && !integrations.has(c.integration)) out.push(`integration ${c.integration} is not an integration id in any layer's tooling/integrations.json`);
@@ -92,7 +113,7 @@ export function connectionErrors(c: Connection, map: unknown, classes: Set<strin
     if (a.approval && !classes.has(a.approval)) out.push(`action ${a.id}: approval ${a.approval} is not a decision class in governance/decision-rights.json`);
   }
   if (c.authoritative_for.length) {
-    const sources = new Set(isObject(map) && Array.isArray(map.sources) ? map.sources.flatMap((s: unknown) => (isObject(s) && typeof s.id === "string" ? [s.id] : [])) : []);
+    const sources = new Set(ids(map, "sources"));
     if (!c.source) out.push(`claims authority over ${c.authoritative_for.length} record field(s) but names no source; name the ${MAP} source it feeds`);
     else if (c.source === LOCAL || !sources.has(c.source)) out.push(`source ${c.source} is not a source in ${MAP}`);
     for (const x of c.authoritative_for) {
@@ -106,35 +127,54 @@ export function connectionErrors(c: Connection, map: unknown, classes: Set<strin
   return out;
 }
 
-const walk = (d: string): string[] => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);
-const sub = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
-  e.isDirectory() && e.name !== "node_modules" && !e.name.startsWith(".") ? walk(join(d, e.name)) : []);
+/** Every venture folder at or under d (a folder with a venture.json), skipping node_modules and dot folders. */
+const walk = (d: string): Effect.Effect<string[], never, "naive/VentureFs"> => Effect.gen(function* () {
+  const fs = yield* VentureFs;
+  const out: string[] = (yield* fs.exists(join(d, "venture.json"))) ? [d] : [];
+  const names = yield* fs.list(d).pipe(Effect.orElseSucceed((): string[] => []));
+  for (const name of names) {
+    if (name === "node_modules" || name.startsWith(".") || !(yield* fs.isDirectory(join(d, name)))) continue;
+    out.push(...(yield* walk(join(d, name))));
+  }
+  return out;
+});
 
-let ventures = 0, connections = 0;
-const dir = process.argv[2];
-if (dir) {
-  if (!existsSync(dir)) { console.error(`no such folder: ${dir}`); process.exit(2); }
-  for (const v of walk(dir)) {
-    ventures++;
-    const folder = ventureFile(v, CONNECTIONS);
-    if (!existsSync(folder)) continue;
-    const id = (() => { try { const j = readJson(join(v, "venture.json")); return isObject(j) && typeof j.id === "string" ? j.id : v; } catch { return v; } })();
-    const mapFile = ventureFile(v, MAP);
-    const map = existsSync(mapFile) ? readJson(mapFile) : { sources: [], records: {} };
-    const classes = classesOf(v);
-    for (const name of readdirSync(folder).filter((f) => f.endsWith(".json")).sort()) {
-      connections++;
-      const where = `${id}: ${CONNECTIONS}/${name}`;
-      let raw: unknown;
-      try { raw = readJson(join(folder, name)); } catch { errors.push(`${where}: not JSON`); continue; }
-      const bad = schemaErrors("connection.schema.json", raw);
-      if (bad.length) { for (const e of bad) errors.push(`${where}: ${e}`); continue; }
-      const c = raw as Connection;
-      if (`${c.id}.json` !== name) errors.push(`${where}: id ${c.id} is not its file name`);
-      for (const e of connectionErrors(c, map, classes)) errors.push(`${where}: ${e}`);
+/** Checks the catalog and, when dir is given, every connection in every venture under it. */
+export const checkConnections = (dir: string | undefined) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
+  const { errors, known } = yield* readCatalog;
+  let ventures = 0, connections = 0;
+  if (dir) {
+    if (!(yield* fs.exists(dir))) return yield* Effect.fail(new CannotRun({ message: `no such folder: ${dir}` }));
+    for (const v of yield* walk(dir)) {
+      ventures++;
+      const folder = ventureFile(v, CONNECTIONS);
+      if (!(yield* fs.exists(folder))) continue;
+      const j = yield* readJson(join(v, "venture.json")).pipe(Effect.orElseSucceed((): unknown => null));
+      const id = isObject(j) && typeof j.id === "string" ? j.id : v;
+      const mapFile = ventureFile(v, MAP);
+      const map = (yield* fs.exists(mapFile)) ? yield* readJson(mapFile) : { sources: [], records: {} };
+      const classes = yield* classesOf(v);
+      for (const name of (yield* fs.list(folder)).filter((f) => f.endsWith(".json"))) {
+        connections++;
+        const where = `${id}: ${CONNECTIONS}/${name}`;
+        const raw = yield* readJson(join(folder, name)).pipe(Effect.option);
+        if (raw._tag === "None") { errors.push(`${where}: not JSON`); continue; }
+        const bad = schemaErrors("connection.schema.json", raw.value);
+        if (bad.length) { for (const e of bad) errors.push(`${where}: ${e}`); continue; }
+        const c = raw.value as Connection;
+        if (`${c.id}.json` !== name) errors.push(`${where}: id ${c.id} is not its file name`);
+        for (const e of connectionErrors(c, map, classes, known)) errors.push(`${where}: ${e}`);
+      }
     }
   }
-}
+  return { errors, clusters: known.clusters.size, ventures, connections };
+});
 
-if (errors.length) { for (const e of errors) console.error(`FAIL  ${e}`); process.exit(1); }
-console.log(`${clusters.size} capability clusters${dir ? `, ${connections} connections in ${ventures} ventures` : ""}: every action that sends, pays or signs names its approval class, and no connection claims a field another source owns.`);
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const dir = process.argv[2];
+  await runMain(Effect.map(checkConnections(dir), ({ errors, clusters, ventures, connections }) => {
+    if (errors.length) { for (const e of errors) console.error(`FAIL  ${e}`); process.exitCode = 1; return; }
+    console.log(`${clusters} capability clusters${dir ? `, ${connections} connections in ${ventures} ventures` : ""}: every action that sends, pays or signs names its approval class, and no connection claims a field another source owns.`);
+  }));
+}

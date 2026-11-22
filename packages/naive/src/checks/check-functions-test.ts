@@ -28,6 +28,7 @@ const cases: [string, (d: string) => void, RegExp][] = [
   ["a one-way door that is not escalate fails", (d) => edit(d, `${FIN}/decisions.json`, (j) => { const row = j.rows.find((r) => r.class === "ownership-or-control"); if (row) row.level = "decide"; }), /ownership-or-control is a one-way door or never redelegated/],
   ["a class decision-rights does not have fails", (d) => edit(d, `${FIN}/decisions.json`, (j) => { j.rows.push({ class: "made-up", level: "decide", examples: ["x"] }); }), /made-up is not in decision-rights/],
   ["a step that writes outside the function's reach fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].writes = ["foundation/problem"]; }), /outside the function's write reach/],
+  ["a step that writes the team plan fails, whoever owns its record type", (d) => edit(d, "packages/naive/src/functions/human-capital/workflows/intake.json", (j) => { j.steps[0].writes = ["people/team-plan"]; }), /writes people\/team-plan, outside the function's write reach/],
   ["a step that raises a class with no row fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].raises = ["production-ship"]; }), /raises production-ship, which decisions.json has no row for/],
   ["a step that loads a missing skill fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].skill = "no-such-skill"; }), /skills\/ does not have/],
   ["an intake that is not a workflow fails", (d) => edit(d, `${FIN}/function.json`, (j) => { j.intake = "missing"; }), /intake missing is not a workflow/],

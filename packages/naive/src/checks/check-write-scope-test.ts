@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 const repo = fileURLToPath(new URL("../../../..", import.meta.url));
 const TEST = "packages/naive/src/interfaces/tests/agent-files-test.ts";
 const PROVENANCE = "packages/naive/src/core/provenance.mjs";
-const LINE = 'appendFileSync(ventureFile(dir, LOG), JSON.stringify(entry) + "\\n");';
+const LINE = 'yield* fs.append(log, JSON.stringify(entry) + "\\n");';
 
 function copy(): string {
   const dir = mkdtempSync(join(tmpdir(), "write-scope-test-"));
@@ -48,7 +48,7 @@ try {
   dirs.push(broken);
   const source = readFileSync(join(broken, PROVENANCE), "utf8");
   assert.ok(source.includes(LINE), `${PROVENANCE} no longer holds the line this test breaks`);
-  writeFileSync(join(broken, PROVENANCE), source.replace(LINE, `${LINE}\n  appendFileSync(new URL("../../../../stray-provenance.jsonl", import.meta.url), "x\\n");`));
+  writeFileSync(join(broken, PROVENANCE), source.replace(LINE, `${LINE}\n    yield* fs.append(new URL("../../../../stray-provenance.jsonl", import.meta.url).pathname, "x\\n");`));
   test("a copy whose provenance code also writes beside the repository fails, and names the path", () => {
     const r = check(broken, TEST);
     assert.equal(r.status, 1, r.out);

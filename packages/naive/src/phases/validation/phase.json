@@ -1,0 +1,104 @@
+{
+  "id": "validation",
+  "step": 2,
+  "name": "Validation",
+  "question": "Will people adopt this solution and keep using it?",
+  "binding_constraint": "proof that a niche wants the thing badly, and keeps using it",
+  "references": [
+    "blank-2005-four-steps",
+    "moore-1991-crossing-the-chasm",
+    "andreessen-2007-only-thing-that-matters",
+    "dixon-2010-thin-edge-of-the-wedge"
+  ],
+  "gate": {
+    "name": "Product-market fit: retention holds",
+    "asks": [
+      "Do people in the niche adopt the solution without being pushed?",
+      "Do the people who start using it keep using it?",
+      "Will they pay, or show another cost that proves they want it?"
+    ],
+    "evidence": [
+      {
+        "id": "solution",
+        "statement": "A solution record tested with the niche",
+        "source": "validation-solution"
+      },
+      {
+        "id": "product-market-fit",
+        "statement": "A product-market fit record whose evidence shows the niche keeps using the product",
+        "source": "validation-product-market-fit"
+      },
+      {
+        "id": "pricing",
+        "statement": "A pricing record with what people paid or committed",
+        "source": "validation-pricing"
+      }
+    ]
+  },
+  "workflows": [
+    "products/weekly-product-review",
+    "marketing-and-sales/weekly-pipeline-review",
+    "customer-service/intake",
+    "customer-service/weekly-contact-review",
+    "finance/intake",
+    "strategy/strategy-review"
+  ],
+  "weights": {
+    "version": "0.1.0",
+    "note": "Unvalidated priors, ours: how much each function's open decisions count when decisions are ranked across functions in this phase. They sum to 1. The decision queue ranks with them (packages/naive/src/engine/decision-queue.mjs, EE-127).",
+    "functions": {
+      "strategy": {
+        "weight": 0.12,
+        "why": "Keeps the niche narrow while the evidence comes in"
+      },
+      "products": {
+        "weight": 0.28,
+        "why": "The product is what adoption and retention are measured on"
+      },
+      "marketing-and-sales": {
+        "weight": 0.18,
+        "why": "Reaching the niche and finding out whether it pays"
+      },
+      "supply-chain": {
+        "weight": 0.01,
+        "why": "Nothing is bought at volume yet"
+      },
+      "service-delivery": {
+        "weight": 0.04,
+        "why": "Delivery is hands-on and small"
+      },
+      "customer-service": {
+        "weight": 0.1,
+        "why": "Early users' feedback and problems are the retention signal"
+      },
+      "human-capital": {
+        "weight": 0.03,
+        "why": "Hiring waits for proof"
+      },
+      "it": {
+        "weight": 0.03,
+        "why": "Instrumentation for usage and retention"
+      },
+      "finance": {
+        "weight": 0.08,
+        "why": "Runway against the time the proof takes"
+      },
+      "assets": {
+        "weight": 0.01,
+        "why": "Little is owned"
+      },
+      "risk-and-compliance": {
+        "weight": 0.04,
+        "why": "Terms and privacy for the first real users"
+      },
+      "external-relationships": {
+        "weight": 0.05,
+        "why": "Early backers follow the evidence"
+      },
+      "capabilities": {
+        "weight": 0.03,
+        "why": "Learning loops on interviews and feedback"
+      }
+    }
+  }
+}
