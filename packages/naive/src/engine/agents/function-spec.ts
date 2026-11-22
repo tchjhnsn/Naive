@@ -4,7 +4,8 @@
 //
 //   departments.json                       the id, label, APQC category, governance and operations sides
 //   data-model.json (function field)       the record types the function owns, so the write reach it should get
-//   routes() (records/routes)              the write routes of those record types
+//   routes() (records/routes)              the write routes of those record types (functionWrites in ./reach.mjs,
+//                                          the same list the router enforces)
 //   PACKAGE_FUNCTION (core/venture-paths)  the record packages the function owns, which the researcher reads
 //   PLANS (engine/access)                  the team-plan files, so no derived reach ever includes the team plan
 //   functions/<fn>/                        the function's module: agent.md (its instructions), function.json (purpose and
@@ -38,6 +39,7 @@ import { PACKAGE_FUNCTION } from "../../core/venture-paths.mjs";
 import { readDataModel, venturePaths } from "../../records/index.mjs";
 import { PLANS, routeGlob } from "../access.mjs";
 import { routes } from "../../records/routes/routes.mjs";
+import { functionWrites } from "./reach.mjs";
 // Paths inside this copy of Naive, as everything-ecosystem's naivePath gave them for the installed package.
 const naiveRoot = new URL("../../../../../", import.meta.url).pathname;
 export const naivePath = (rel: string): string => join(naiveRoot, rel);
@@ -137,7 +139,7 @@ export function functionAgent(id: string): FunctionAgentSpec {
   const packages = Object.entries(PACKAGE_FUNCTION as Record<string, string>).filter(([, f]) => f === id).map(([p]) => p).sort();
   const module = naivePath(`${MODULES}/${id}`);
   const skills = skillsUnder(module);
-  const writes = ["decisions/*", ...ownedRoutes(id)];
+  const writes = functionWrites(id);
   const file = (rel: string): string | null => (existsSync(join(module, rel)) ? join(module, rel) : null);
   const manifest = file("function.json") ? JSON.parse(readFileSync(join(module, "function.json"), "utf8")) as { purpose?: string, intake?: string } : {};
   const wdir = join(module, "workflows");
@@ -196,20 +198,6 @@ function skillName(file: string, folder: string): string {
   if (name !== folder) throw new Error(`${file}: its frontmatter name (${name ?? "none"}) must be its folder's name, ${folder}`);
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name) || name.length > 64) throw new Error(`${file}: a skill name is lowercase letters, digits and single hyphens, at most 64 characters`);
   return name;
-}
-
-/**
- * The write routes a function owns: every route with a write action whose record type the data model gives this
- * function, [id] as *, minus any route whose files include a team-plan file (PLANS). The record type's function, not
- * the folder its file sits in, decides: finance owns governance/ownership although governance/ is no finance package,
- * and service-delivery does not own the lead plans although they sit under operations/.
- */
-function ownedRoutes(id: string): string[] {
-  const model = readDataModel() as { records: { id: string, function?: string | null }[] };
-  const mine = new Set(model.records.filter((r) => r.function === id).map((r) => r.id));
-  const owned = (routes() as Route[]).filter((r) => r.actions?.includes("write") && r.files?.length && r.record && mine.has(r.record)
-    && !r.files.some((f) => PLANS.includes(f)));
-  return [...new Set(owned.map((r) => r.route.replace("[id]", "*")))].sort();
 }
 
 // ---- Function researchers (autoresearch build plan item 13) ----

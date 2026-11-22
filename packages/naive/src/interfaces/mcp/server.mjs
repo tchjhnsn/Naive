@@ -62,6 +62,13 @@ export const TOOLS = [
   { name: "mentura_run", description: "Run a command route for a venture: system/need-now (what to work on now), system/time-to-ready, purpose/validation/assess (what the problem's evidence is strong enough for), governance/payouts, knowledge/catalog (index every source the venture keeps records in), knowledge/search (find items in any of them). A result with needs_input lists what is missing: ask the person whether to fill it in or run as is, and only then call again with as_is.", inputSchema: { type: "object", properties: { venture, route, value: { type: ["number", "string"], description: "governance/payouts: a sale value; knowledge/search: the query" },
     as_is: { type: "boolean", description: "purpose/validation/assess: run even though the record is incomplete. Set it only after the person chose to run as is" },
     agent_id: { type: "string", description: "Your role in the team plan" } }, required: ["venture", "route"] } },
+  // Agents (EE-124, packages/naive/src/engine/agents/): any MCP client staffs a function agent or lead from these, with no harness plugin.
+  { name: "mentura_agent_brief", description: "How to act as one of Naive's agents: for <function>-agent, the function agent spec with the full text of its agent.md, its workflows and decision matrix; for a lead id (such as finance-lead), the lead spec and its skill. env is what to act under (MENTURA_ACTOR_ID), team_plan_entry is what a person adds so a venture staffs the role, and with a venture, staffed says whether it is. Paths are relative to the Naive root. An unknown role is an error naming every role.", inputSchema: { type: "object", properties: {
+    role: { type: "string", description: "A function agent's role, such as finance-agent, or a lead id, such as finance-lead" }, venture }, required: ["role"] } },
+  { name: "mentura_route_task", description: "Who takes a classified task: a function agent, a lead or a person (Naive's routing rule). A one-way door or a never-redelegated class goes to a person, one function to its agent, functions in one lead's portfolio to that lead, and functions across portfolios to the lead whose plan binds the measure. The answer has to, role, tool, staffed (and the team-plan entry a person adds when not) and why. Then call mentura_agent_brief for the role.", inputSchema: { type: "object", properties: {
+    functions: { type: "array", items: { type: "string" }, description: "The functions the task touches, such as [\"finance\", \"risk-and-compliance\"]" },
+    measure: { type: "string", description: "The telos measure the task serves, when there is one" },
+    classes: { type: "array", items: { type: "string" }, description: "The decision classes the task needs, such as spend-money" }, venture }, required: ["functions"] } },
 ];
 
 let client = null; // the harness, as it named itself at initialize
@@ -117,6 +124,21 @@ export async function handle(msg, notify = () => {}) {
         case "mentura_run": r = progress && a.route !== "system/overview" && a.route !== "system/robots"
           ? await runStreaming({ venture: a.venture, route: a.route, input: { value: a.value, as_is: a.as_is }, actor_id: a.agent_id }, progress)
           : await call({ venture: a.venture, route: a.route, action: "run", actor_id: a.agent_id, input: a.value !== undefined || a.as_is ? { ...(a.value !== undefined ? { value: a.value } : {}), ...(a.as_is ? { as_is: true } : {}) } : undefined }); break;
+        // The agent specs are TypeScript; Node strips their types here as it does for the router's recipes.ts.
+        case "mentura_agent_brief": {
+          const dir = a.venture ? ventureDir(a.venture) : null;
+          if (a.venture && !dir) { r = { ok: false, error: `no venture ${a.venture}` }; break; }
+          const b = (await import("../../engine/agents/brief.ts")).agentBrief(String(a.role ?? ""), dir);
+          r = b instanceof Error ? { ok: false, error: b.message } : { ok: true, result: b };
+          break;
+        }
+        case "mentura_route_task": {
+          const dir = a.venture ? ventureDir(a.venture) : null;
+          if (a.venture && !dir) { r = { ok: false, error: `no venture ${a.venture}` }; break; }
+          if (!Array.isArray(a.functions) || !a.functions.length) { r = { ok: false, error: "functions is a list of at least one function id" }; break; }
+          r = { ok: true, result: (await import("../../engine/agents/lead-spec.ts")).routeFor({ functions: a.functions, measure: a.measure ?? null, classes: a.classes ?? [] }, dir) };
+          break;
+        }
         default: return fail(-32602, `unknown tool ${params.name}`);
       }
       if (r.ok && r.needs_input) return reply({ content: [{ type: "text", text: `Ask the person before running. ${r.needs_input.ask}\n${JSON.stringify(r.needs_input, null, 2)}` }], isError: false });

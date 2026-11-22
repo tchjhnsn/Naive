@@ -108,6 +108,22 @@
       ],
       "why": "Once someone is asked to pay"
     },
+    "validation-plan": {
+      "base": {
+        "discovery": 0.8,
+        "validation": 0.7,
+        "beachhead": 0.3,
+        "scale": 0.1,
+        "platform": 0.1
+      },
+      "when": [
+        {
+          "if": "ambition:hobby",
+          "at_most": 0.3
+        }
+      ],
+      "why": "The discovery gate asks which assumptions are still open and how each will be tested (EE-156)"
+    },
     "validation-go-to-market": {
       "base": {
         "discovery": 0.3,
