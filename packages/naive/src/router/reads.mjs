@@ -22,8 +22,8 @@
 
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { entries } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { entries } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);

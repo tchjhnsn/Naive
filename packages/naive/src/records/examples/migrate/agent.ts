@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// A stand-in for the migrate agent in tests (MENTURA_AGENT_CMD="node packages/naive/src/records/examples/migrate/agent.mjs"):
+// A stand-in for the migrate agent in tests (MENTURA_AGENT_CMD="node packages/naive/src/records/examples/migrate/agent.ts"):
 // reads the prompt on stdin and answers the way claude -p --output-format json does, with one product
 // record from the source's notes/plan.md and everything else left behind.
 let prompt = "";

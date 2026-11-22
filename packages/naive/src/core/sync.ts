@@ -9,11 +9,11 @@
 // The command is run as `<command> --venture <dir>`. It writes into the venture (a money source writes
 // money/_summary.json and its streams) and exits 0. Its last stdout line may be JSON saying what it did:
 //   { "address": "sandbox", "fixture": true, "said": "from a saved answer (a fixture, not a live account)" }
-// Hosted (packages/naive/src/core/runtime.mjs), the variable is ignored and every system stays pointed.
-// Imports runtime.mjs only.
+// Hosted (packages/naive/src/core/runtime.ts), the variable is ignored and every system stays pointed.
+// Imports runtime.ts only.
 
 import { spawnSync } from "node:child_process";
-import { isHosted } from "./runtime.mjs";
+import { isHosted } from "./runtime.ts";
 
 /** The environment variable that names a system's sync command. @param {string} system */
 export const syncVariable = (system) => `NAIVE_SYNC_${String(system).toUpperCase().replace(/[^A-Z0-9]+/g, "_")}`;

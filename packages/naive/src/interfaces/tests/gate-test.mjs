@@ -16,7 +16,7 @@ import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-c
 import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.mjs";
 import { inbox, variantsDecision } from "../../engine/gate-drafts.mjs";
 import { decisions } from "../../engine/decisions.mjs";
-import { entries } from "../../core/provenance.mjs";
+import { entries } from "../../core/provenance.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -39,7 +39,7 @@ const setConfig = (c) => writeFileSync(cfgFile, json(c));
 const write = (route, input, extra = {}) => call({ venture: "gt", route, action: "write", input, workspace: ws, ...extra });
 const solution = (statement) => ({ venture: "gt", statement, alternatives: ["a receptionist"], evidence: [] });
 const product = (id, name) => ({ id, name, description: `${name}, for testing the gate` });
-const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 // P-2: naive.config.json overrides the defaults.
 {

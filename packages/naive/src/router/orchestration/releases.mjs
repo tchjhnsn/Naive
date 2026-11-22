@@ -38,14 +38,14 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSy
 import { tmpdir } from "node:os";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { call, glob, routes } from "../router.mjs";
-import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.mjs";
-import { attributeSources, connect } from "../../store/connectors/index.mjs";
+import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.ts";
+import { attributeSources, connect } from "../../store/connectors/index.ts";
 import { FRAME, confirmedIn } from "../../engine/foundation.mjs";
 import { HOME, packages } from "../../engine/packages.mjs";
 import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "../../engine/release-read.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
-import { schemaNameOf } from "../../records/index.mjs";
-import { validateFile } from "../../records/validate.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { schemaNameOf } from "../../records/index.ts";
+import { validateFile } from "../../records/validate.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

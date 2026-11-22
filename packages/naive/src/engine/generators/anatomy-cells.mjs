@@ -4,8 +4,8 @@
 // matrix is whole from the start, and filling it moves cells from unknown to estimated or known.
 // A .mjs file, not .ts, because init-venture.mjs imports it and runs under node_modules when Naive is installed, where
 // Node does not strip types.
-import { readDataModel, readSchema } from "../../records/index.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { readDataModel, readSchema } from "../../records/index.ts";
+import { validateValue } from "../../records/validate.ts";
 
 /** @typedef {{ status: "known" | "estimated" | "unknown", [field: string]: unknown }} Cell */
 

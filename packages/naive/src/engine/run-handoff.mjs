@@ -9,14 +9,14 @@
 // the handoff's `evidence`; nothing else in the handoff changes, so its status stays the
 // holder's call (and check-execution.ts holds them to it).
 //
-// Hosted (NAIVE_RUNTIME=hosted, packages/naive/src/core/runtime.mjs), Naive never runs a tenant's shell on the
+// Hosted (NAIVE_RUNTIME=hosted, packages/naive/src/core/runtime.ts), Naive never runs a tenant's shell on the
 // host: each check goes to the host's sandbox hook, and with none registered the run is refused.
 
 import { execSync, spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { HostedRefusal, git, hostHook, isHosted, missingHook } from "../core/runtime.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { HostedRefusal, git, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const trim = (s) => s.trim().split("\n").slice(-12).join("\n");

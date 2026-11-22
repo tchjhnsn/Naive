@@ -35,12 +35,12 @@ import { createHash } from "node:crypto";
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve as resolvePath } from "node:path";
-import { agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.mjs";
-import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "../records/routes/routes.mjs";
-import { connect, LOCAL, sourcesOf } from "../store/connectors/index.mjs";
+import { agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
+import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "../records/routes/routes.ts";
+import { connect, LOCAL, sourcesOf } from "../store/connectors/index.ts";
 import { decisions as decisionMatrix, PHASES } from "./decisions.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateFile } from "../records/validate.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));

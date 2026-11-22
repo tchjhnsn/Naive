@@ -78,7 +78,7 @@ export class HostedRefusal extends Error {
 export function missingHook(feature, hook, why) {
   const env = HOOKS[hook];
   const reason = why ?? (env ? `${env} is ignored` : `it would reach outside the tenant`);
-  return new HostedRefusal(feature, `${reason}, and the host registered no ${hook} hook (registerHook("${hook}", fn) in packages/naive/src/core/runtime.mjs)`);
+  return new HostedRefusal(feature, `${reason}, and the host registered no ${hook} hook (registerHook("${hook}", fn) in packages/naive/src/core/runtime.ts)`);
 }
 
 /**

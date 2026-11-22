@@ -90,7 +90,7 @@ writeFileSync(join(dir, "naive.config.json"), "{}\n");
 
 // S-8 and C-5: judgments, through a stand-in judge that logs every question it is asked
 const judgeLog = join(ws, "asked.log");
-const judgeScript = join(ws, "judge.mjs");
+const judgeScript = join(ws, "judge.ts");
 writeFileSync(judgeScript, `import { appendFileSync } from "node:fs";
 let s = ""; for await (const c of process.stdin) s += c;
 const req = JSON.parse(s);

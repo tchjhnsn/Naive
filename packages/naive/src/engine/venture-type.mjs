@@ -13,7 +13,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { envCommand, HostedRefusal, isHosted } from "../core/runtime.mjs";
+import { envCommand, HostedRefusal, isHosted } from "../core/runtime.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 export const THRESHOLD = 0.5;

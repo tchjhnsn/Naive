@@ -10,7 +10,7 @@ import { dirname, join } from "node:path";
 import { call, capture, groups, judge, routes } from "../router/router.mjs";
 import { handle, TOOLS } from "./mcp/server.mjs";
 import { route as http } from "./api/server.mjs";
-import { entries } from "../core/provenance.mjs";
+import { entries } from "../core/provenance.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const ws = join(mkdtempSync(join(tmpdir(), "mentura-test-")), "workspace");

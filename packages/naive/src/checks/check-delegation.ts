@@ -20,9 +20,9 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { grantBacked, liveGrant, readDelegation } from "../core/venture-paths.mjs";
+import { grantBacked, liveGrant, readDelegation } from "../core/venture-paths.ts";
 import { independent } from "./verify.ts";
-import { readSchema } from "../records/index.mjs";
+import { readSchema } from "../records/index.ts";
 import type { Delegation, DecisionRights, DepartmentCatalog, RoleTemplate } from "../records/types/records.d.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;

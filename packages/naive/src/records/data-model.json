@@ -1,6 +1,6 @@
 {
   "version": "0.5.0",
-  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, the function that owns it (a packages/naive/src/functions/departments.json id, or null when several functions share it), its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.ts fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder). Kinds (record, log, derived) tell a host how to commit each file in a venture: a record type's kind defaults to record, and files names the venture files no record type covers.",
+  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, the function that owns it (a packages/naive/src/functions/departments.json id, or null when several functions share it), its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.ts fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.ts reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder). Kinds (record, log, derived) tell a host how to commit each file in a venture: a record type's kind defaults to record, and files names the venture files no record type covers.",
   "layers": [
     "purpose",
     "knowledge",
@@ -276,7 +276,7 @@
         {
           "field": "phases.phase",
           "to": "anatomy-framework",
-          "checked_by": "packages/naive/src/records/validate.mjs"
+          "checked_by": "packages/naive/src/records/validate.ts"
         }
       ],
       "note": "The end the venture exists to reach: statement, end state, measures, owner outcome, exit criteria per phase (EE-023). Since foundation 0.5.0 a framework for thinking (frameworks/telos): the telos-to-goals migration splits it into canonical goals and exit criteria and archives it; the route still reads, rendered from them",
@@ -334,7 +334,7 @@
         {
           "field": "phase",
           "to": "anatomy-framework",
-          "checked_by": "packages/naive/src/records/validate.mjs"
+          "checked_by": "packages/naive/src/records/validate.ts"
         }
       ],
       "note": "A phase's canonical exit criteria, each serving a goal measure; the lifecycle gate reads these (packages/naive/src/engine/lifecycle.mjs)",
@@ -3136,7 +3136,7 @@
           "checked_by": "packages/naive/src/checks/check-recipes.ts"
         }
       ],
-      "note": "The code that makes every record at one projected route pattern: one pure TypeScript module, <pattern>.recipe.ts beside the records it makes, run only in the sandbox (packages/naive/src/engine/recipes/sandbox.ts). The source is TypeScript, so its form is typescript and its schema governs only what it exports (hears and knobs), as the sandbox reads them; packages/naive/src/records/validate.mjs never reads the file. A path segment [id] is literal: competitors/[id]/signals.recipe.ts makes every competitors/<id>/signals.json (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md)"
+      "note": "The code that makes every record at one projected route pattern: one pure TypeScript module, <pattern>.recipe.ts beside the records it makes, run only in the sandbox (packages/naive/src/engine/recipes/sandbox.ts). The source is TypeScript, so its form is typescript and its schema governs only what it exports (hears and knobs), as the sandbox reads them; packages/naive/src/records/validate.ts never reads the file. A path segment [id] is literal: competitors/[id]/signals.recipe.ts makes every competitors/<id>/signals.json (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md)"
     },
     {
       "id": "eval-plan",
@@ -3379,8 +3379,8 @@
     {"path": "instance/**/.naive/decision-index-history.jsonl", "kind": "log", "reason": "Rank history of the decision index, one line per re-score"},
     {"path": "instance/**/.naive/trigger-errors.jsonl", "kind": "log", "reason": "Failed trigger runs, one line each (packages/naive/src/router/orchestration/triggers.mjs)"},
     {"path": "instance/**/.naive/lint-findings.jsonl", "kind": "log", "reason": "Each publish lint run's findings (packages/naive/src/engine/publish-lint.mjs)"},
-    {"path": "instance/**/.naive/events.jsonl", "kind": "log", "reason": "Instrumentation events when instrumentation is on (packages/naive/src/core/instrumentation.mjs)"},
-    {"path": "instance/**/.naive/blobs/**/*", "kind": "record", "reason": "The blob store: the bytes each provenance line names, under their SHA-256 (packages/naive/src/core/blobs.mjs). Content-addressed and never changed, so it is committed like a record; an as-of read (packages/naive/src/store/as-of.mjs) needs it and cannot rebuild it"},
+    {"path": "instance/**/.naive/events.jsonl", "kind": "log", "reason": "Instrumentation events when instrumentation is on (packages/naive/src/core/instrumentation.ts)"},
+    {"path": "instance/**/.naive/blobs/**/*", "kind": "record", "reason": "The blob store: the bytes each provenance line names, under their SHA-256 (packages/naive/src/core/blobs.ts). Content-addressed and never changed, so it is committed like a record; an as-of read (packages/naive/src/store/as-of.ts) needs it and cannot rebuild it"},
     {"path": "instance/**/_eval/**/*", "kind": "record", "reason": "A recipe's frozen eval set, <venture>/_eval/<sha>/eval-set.json, written by naive recipes plan (packages/naive/src/engine/recipes/eval-set.ts): the as-of points, the frozen signal index, each fact's versions and the settled outcomes. It cannot be rebuilt (a library that backfills later must not leak into it), so a host commits it whole; it never changes once frozen, so a base check can only pass. The router never serves it. Its files must not take a path a log record type names"},
     {"path": "instance/**/.naive/triggers.json", "kind": "record", "reason": "The trigger cursor and every run's state; not rebuildable, so kept whole"},
     {"path": "instance/**/.naive/beta.json", "kind": "record", "reason": "The plugin beta's unlock state per tester (packages/naive/src/engine/beta-gate.mjs)"},

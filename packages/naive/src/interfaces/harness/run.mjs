@@ -47,10 +47,10 @@ import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, 
 import { GRAPH, build as buildGraph, request as graphRequest } from "../../functions/strategy/frameworks/idea-map/graph.mjs";
 import { understood } from "../../functions/strategy/frameworks/idea-map/route.mjs";
 import { createHash } from "node:crypto";
-import { agentFromEnv, record as prov } from "../../core/provenance.mjs";
+import { agentFromEnv, record as prov } from "../../core/provenance.ts";
 import { evaluate } from "./evals.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
-import { HostedRefusal, isHosted } from "../../core/runtime.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { HostedRefusal, isHosted } from "../../core/runtime.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 // The harness drives a local claude agent, the app's commands and a local board: a laptop tool.

@@ -20,7 +20,7 @@
 //
 //   node packages/naive/src/checks/check-team.ts <workspace or venture dir>
 
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { measures } from "../engine/canonical.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -37,7 +37,7 @@ const registry = new Map(load<{ roles: { id: string, occupant?: string }[] }>(jo
 const template = load<DecisionRights>(join(repo, "packages/naive/template/governance/decision-rights.json"));
 const caps = load<AgentCapability>(join(repo, "packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json"));
 const errors: string[] = [], warnings: string[] = [], recruitNow: string[] = [];
-const { routes, glob: routeGlob } = await import("../records/routes/routes.mjs");
+const { routes, glob: routeGlob } = await import("../records/routes/routes.ts");
 const routeList: string[] = routes().map((r: { route: string }) => r.route.replace("[id]", "x"));
 // A glob with no wildcard may name one item of a collection, such as operations/lead/growth-lead.
 const items: RegExp[] = routes().filter((r: { route: string }) => r.route.includes("[id]")).map((r: { route: string }) => new RegExp(`^${r.route.replace(/[.+^${}()|\\]/g, "\\$&").replace("[id]", "[a-z0-9-]+")}$`));

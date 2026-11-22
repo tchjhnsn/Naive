@@ -9,8 +9,8 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { emit, sessions, span, spans, withSpan } from "../core/instrumentation.mjs";
-import { entries, record } from "../core/provenance.mjs";
+import { emit, sessions, span, spans, withSpan } from "../core/instrumentation.ts";
+import { entries, record } from "../core/provenance.ts";
 import { checkVenture } from "./check-traces.ts";
 import { append, tree } from "../engine/trace-cli.ts";
 

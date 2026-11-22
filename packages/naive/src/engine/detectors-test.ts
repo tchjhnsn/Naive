@@ -56,7 +56,7 @@ for (const [id, yes, no] of today) {
 const shipped = readdirSync(TEMPLATE).filter((f) => f.endsWith(".json")).map((f) => load(join(TEMPLATE, f)) as { id: string; tier: "low" | "costly"; costs: unknown; criterion: Record<string, { set_by: string }> });
 expect("every shipped detector is listed here with its line", shipped.length === today.length && shipped.every((d) => today.some(([id]) => id === d.id)), shipped.map((d) => d.id).join(", "));
 expect("every shipped line is set_by default and its costs are its tier's", shipped.every((d) => Object.values(d.criterion).every((l) => l.set_by === "default") && JSON.stringify(d.costs) === JSON.stringify(TIER_COSTS[d.tier])));
-const validate = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs")], { encoding: "utf8" });
+const validate = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts")], { encoding: "utf8" });
 expect("the shipped detectors pass the schema", validate.status === 0 && !/template\/governance\/detectors/.test(validate.stdout + validate.stderr), validate.stdout + validate.stderr);
 const bare = join(ws, "bare");
 mkdirSync(bare);

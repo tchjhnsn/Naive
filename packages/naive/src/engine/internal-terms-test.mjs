@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { leaks } from "./check-leaks.mjs";
-import { readSchema } from "../records/index.mjs";
+import { readSchema } from "../records/index.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;

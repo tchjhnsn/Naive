@@ -32,7 +32,7 @@ import { join, relative, resolve } from "node:path";
 import { check, CONTENT, frontmatter } from "../../../engine/check-public.mjs";
 import { leaks } from "../../../engine/check-leaks.mjs";
 import { visibilityOf } from "../../../engine/visibility.mjs";
-import { ventureFile } from "../../../core/venture-paths.mjs";
+import { ventureFile } from "../../../core/venture-paths.ts";
 import { configFor } from "../../../engine/naive-config.mjs";
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");

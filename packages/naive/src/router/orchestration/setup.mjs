@@ -12,8 +12,8 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { sync, syncCommand } from "../../core/sync.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { sync, syncCommand } from "../../core/sync.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -45,7 +45,7 @@ export async function state(dir) {
     later: docket.filter((d) => d.render !== "now" && d.status !== "decided").length,
     goal: goal ? { status: goal.status, answer: goal.answer ?? null, relayed: relayed(goal) } : null,
     steps, done: Object.values(steps).every(Boolean), counts: { settled, of: now.length },
-    // The systems the app named a sync command for (packages/naive/src/core/sync.mjs): pointing at one syncs it.
+    // The systems the app named a sync command for (packages/naive/src/core/sync.ts): pointing at one syncs it.
     syncs: Object.keys(catalog.systems).filter((s) => syncCommand(s)),
   };
 }

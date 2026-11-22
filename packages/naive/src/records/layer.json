@@ -44,7 +44,7 @@
   "writes": [],
   "checks": [
     "test.mjs",
-    "packages/naive/src/records/validate.mjs",
+    "packages/naive/src/records/validate.ts",
     "packages/naive/src/checks/check-data-model.ts",
     "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/checks/check-nouns.ts",

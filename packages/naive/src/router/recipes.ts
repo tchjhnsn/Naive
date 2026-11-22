@@ -34,13 +34,13 @@
 import { createHash } from "node:crypto";
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { readBlob, writeBlob } from "../core/blobs.mjs";
-import { tracing, withSpan } from "../core/instrumentation.mjs";
-import { actingAgent, agentFromEnv, entries, record as prov } from "../core/provenance.mjs";
+import { readBlob, writeBlob } from "../core/blobs.ts";
+import { tracing, withSpan } from "../core/instrumentation.ts";
+import { actingAgent, agentFromEnv, entries, record as prov } from "../core/provenance.ts";
 import { now } from "../engine/clock.mjs";
 import { decisionFile, propose } from "../engine/decisions.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateValue } from "../records/validate.ts";
 import { forwardSet, loadEvalSet, loadPlan, scoreExperiment, scoreForward, scoreHoldout } from "../engine/recipes/eval-set.ts";
 import type { Scored } from "../engine/recipes/eval-set.ts";
 import { chainOnto } from "../engine/generators/experiment.ts";

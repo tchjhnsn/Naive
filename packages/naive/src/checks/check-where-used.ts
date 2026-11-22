@@ -8,9 +8,9 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { connect, sourceFor, sourcesOf } from "../store/connectors/index.mjs";
-import { resolve } from "../records/routes/routes.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { connect, sourceFor, sourcesOf } from "../store/connectors/index.ts";
+import { resolve } from "../records/routes/routes.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 import type { WhereUsed } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];

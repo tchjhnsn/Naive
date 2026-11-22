@@ -17,8 +17,8 @@ const root = new URL(".", import.meta.url).pathname;
 
 /** @type {Array<[string, string, string[]]>} */
 const steps = [
-  ["schema records are valid (validate.mjs)", "node", ["packages/naive/src/records/validate.mjs"]],
-  ["validate.mjs agrees with Python's jsonschema: same verdicts and failing paths on every record and its mutants", "node", ["packages/naive/src/records/validate-test.ts"]],
+  ["schema records are valid (validate.ts)", "node", ["packages/naive/src/records/validate.ts"]],
+  ["validate.ts agrees with Python's jsonschema: same verdicts and failing paths on every record and its mutants", "node", ["packages/naive/src/records/validate-test.ts"]],
   ["checker tests (with cases that must fail)", "node", ["packages/naive/src/checks/test.ts"]],
   ["ventures: examples", "node", ["packages/naive/src/checks/check-ventures.ts", "packages/naive/src/records/examples/workspace"]],
   ["nouns", "node", ["packages/naive/src/checks/check-nouns.ts"]],
@@ -163,7 +163,7 @@ const steps = [
   ["record paths: every schema and data-model path goes through packages/naive/src/records", "node", ["packages/naive/src/checks/check-record-paths.ts"]],
   ["record paths: the resolver resolves every schema, and the check breaks on copies that bypass it", "node", ["packages/naive/src/checks/check-record-paths-test.ts"]],
   ["Markdown renders reach a reader that waits, whole: check-nouns --md and check-data-model --md flush stdout before they exit", "node", ["packages/naive/src/checks/md-render-flush-test.ts"]],
-  ["knowledge connectors: contract evals", "node", ["packages/naive/src/store/connectors/eval.mjs"]],
+  ["knowledge connectors: contract evals", "node", ["packages/naive/src/store/connectors/eval.ts"]],
   ["knowledge connectors in Effect: the Effect versions on an in-memory VentureFs (EE-125)", "node", ["packages/naive/src/store/connectors/effects-test.ts"]],
   ["knowledge connectors through the router: router, catalog, matrix and attribute evals", "node", ["packages/naive/src/interfaces/tests/connectors-router-test.mjs"]],
   ["validation lint: claims, shelf life, agent grades, Discovery-grade decisions", "node", ["packages/naive/src/interfaces/tests/lint-validation-test.mjs"]],

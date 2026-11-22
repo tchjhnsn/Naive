@@ -35,10 +35,10 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { PACKAGE_FUNCTION } from "../../core/venture-paths.mjs";
-import { readDataModel, venturePaths } from "../../records/index.mjs";
+import { PACKAGE_FUNCTION } from "../../core/venture-paths.ts";
+import { readDataModel, venturePaths } from "../../records/index.ts";
 import { PLANS, routeGlob } from "../access.mjs";
-import { routes } from "../../records/routes/routes.mjs";
+import { routes } from "../../records/routes/routes.ts";
 import { functionWrites } from "./reach.mjs";
 // Paths inside this copy of Naive, as everything-ecosystem's naivePath gave them for the installed package.
 const naiveRoot = new URL("../../../../../", import.meta.url).pathname;

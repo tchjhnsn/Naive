@@ -64,16 +64,16 @@ test("acyclic: a known cycle that is gone must leave the list", () => {
 
 test("leaf: a leaf folder that imports another unit fails, naming the import", () => {
   const r = repo({
-    "packages/naive/src/records/index.mjs": `import { x } from "../core/x.mjs";\nimport "./part.mjs";\nimport "node:fs";`,
+    "packages/naive/src/records/index.ts": `import { x } from "../core/x.mjs";\nimport "./part.mjs";\nimport "node:fs";`,
     "packages/naive/src/records/part.mjs": "export {};",
     "packages/naive/src/core/x.mjs": "export const x = 1;",
   });
   const found = checkLeaves(r.dir, { "packages/naive/src/records": "imports nothing" }, r.paths).map((f) => f.detail);
-  assert.deepEqual(found, ["packages/naive/src/records/index.mjs imports packages/naive/src/core/x.mjs, but packages/naive/src/records imports nothing outside itself (imports nothing)"]);
+  assert.deepEqual(found, ["packages/naive/src/records/index.ts imports packages/naive/src/core/x.mjs, but packages/naive/src/records imports nothing outside itself (imports nothing)"]);
 });
 
 test("leaf: a leaf folder that imports only itself and Node passes; one with no code must leave the list", () => {
-  const r = repo({ "packages/naive/src/records/index.mjs": `import "./part.mjs";\nimport { join } from "node:path";`, "packages/naive/src/records/part.mjs": "export {};" });
+  const r = repo({ "packages/naive/src/records/index.ts": `import "./part.mjs";\nimport { join } from "node:path";`, "packages/naive/src/records/part.mjs": "export {};" });
   assert.deepEqual(checkLeaves(r.dir, { "packages/naive/src/records": "imports nothing" }, r.paths), []);
   assert.match(checkLeaves(r.dir, { "packages/gone": "imports nothing" }, r.paths)[0].detail, /packages\/gone holds no code/);
 });

@@ -13,7 +13,7 @@
 //          what is fresh, stale, expired or a live hole; --freeze writes the static shell
 
 import { resolve } from "node:path";
-import { agentFromEnv } from "../../core/provenance.mjs";
+import { agentFromEnv } from "../../core/provenance.ts";
 import { ventureDir } from "../../router/router.mjs";
 import { freeze, freshness, phase, revalidate, verify } from "../../engine/freshness.mjs";
 

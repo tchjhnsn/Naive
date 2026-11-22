@@ -19,7 +19,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { decisions } from "./decisions.mjs";
 import { HOME, PACKAGES, TITLES } from "./packages.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const titleOf = (t) => ({ icp: "ICP", "venture-core": "Core product" })[t] ?? TITLES[t] ?? t.replace(/^validation-/, "").replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());

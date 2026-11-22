@@ -17,7 +17,7 @@
 // and the provenance log says unverified; --account names the account that door checked.
 // --source says where a function keeps its truth (packages/naive/src/engine/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
-// --source finance=rho. A system whose sync command the app names (NAIVE_SYNC_<SYSTEM>, packages/naive/src/core/sync.mjs)
+// --source finance=rho. A system whose sync command the app names (NAIVE_SYNC_<SYSTEM>, packages/naive/src/core/sync.ts)
 // is synced at setup and recorded as connected; any other system is recorded as pointed.
 //
 // --yes takes the recommended defaults: a software startup, you as its solo founder wearing every hat,
@@ -49,7 +49,7 @@ const PHASES = Object.keys(PHASE_LAYERS);
 const LAYERS = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
 // The legal forms venture.json accepts, from its schema, so the question can only offer valid answers. The schema is
 // found through the framework's record types resolver, which knows where the record types sit in that version.
-const { readSchema } = await import(join(framework, "packages/naive/src/records/index.mjs"));
+const { readSchema } = await import(join(framework, "packages/naive/src/records/index.ts"));
 const FORMS = readSchema("venture").properties.form.properties.legal_form.enum;
 
 const argv = process.argv.slice(2);
@@ -244,11 +244,11 @@ if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.rol
 // The org chart (EE-086): each function's owner. Hats are read from here, never stored twice.
 if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
 writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
-// Where each logical file sits in this venture's layout (packages/naive/src/core/venture-paths.mjs).
-const { ventureFile: vf, physical } = await import(join(framework, "packages/naive/src/core/venture-paths.mjs"));
+// Where each logical file sits in this venture's layout (packages/naive/src/core/venture-paths.ts).
+const { ventureFile: vf, physical } = await import(join(framework, "packages/naive/src/core/venture-paths.ts"));
 
 // people/: the roster and one file per founder, the venture.json of human capital (EE-082).
-const { agentFromEnv, record } = await import(join(framework, "packages/naive/src/core/provenance.mjs"));
+const { agentFromEnv, record } = await import(join(framework, "packages/naive/src/core/provenance.ts"));
 const today = new Date().toISOString().slice(0, 10);
 mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const door = opt("door") ?? "cli";
@@ -269,8 +269,8 @@ if (answers.dump) {
 }
 
 // knowledge/sources.json: each function's systems of record, as pointers (EE-083). A system whose sync command
-// the app names (packages/naive/src/core/sync.mjs) is synced now; an older framework without that module syncs nothing.
-const syncModule = join(framework, "packages/naive/src/core/sync.mjs");
+// the app names (packages/naive/src/core/sync.ts) is synced now; an older framework without that module syncs nothing.
+const syncModule = join(framework, "packages/naive/src/core/sync.ts");
 const { sync } = existsSync(syncModule) ? await import(syncModule) : { sync: () => ({ ran: false }) };
 const syncNotes = [];
 for (const f of Object.values(functions)) for (const s of f.systems) {

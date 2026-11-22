@@ -14,7 +14,7 @@
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { catalog } from "./departments.mjs";
 
 const root = new URL("../../../..", import.meta.url).pathname;

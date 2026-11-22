@@ -10,7 +10,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 export const CONTENT = "operations/marketing/content";
 const RUN = 10;

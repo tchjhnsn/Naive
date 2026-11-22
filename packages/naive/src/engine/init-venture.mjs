@@ -19,7 +19,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { KBASE, ventureFile } from "../core/venture-paths.mjs";
+import { KBASE, ventureFile } from "../core/venture-paths.ts";
 import { primaryAnatomy } from "./generators/anatomy-cells.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));

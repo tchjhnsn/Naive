@@ -8,7 +8,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const sha = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
 const ventures = (d) => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);

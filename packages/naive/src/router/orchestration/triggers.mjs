@@ -20,13 +20,13 @@
 
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { entries } from "../../core/provenance.mjs";
+import { entries } from "../../core/provenance.ts";
 import { call, glob } from "../router.mjs";
 import { decisions, propose } from "../../engine/decisions.mjs";
 import { kit } from "../../engine/kits.mjs";
 import { CONFIG, readConfig, writeConfig } from "../../engine/naive-config.mjs";
 import { packages } from "../../engine/packages.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 export const STATE = ".naive/triggers.json";
 export const ERRORS = ".naive/trigger-errors.jsonl";

@@ -36,7 +36,7 @@ A known competitor is a subject in the `competitors` collection. A venture turns
 
 - `node packages/naive/src/checks/competitors-package-test.ts` checks the package holds together: each listener hears a type the package ships, each project listener routes to a projection of that type, each case's signals match the type and its parts, each projection writes a record type the package owns with fields that record's schema has and names its subject field, only the person's master record is written once, and each expected record holds its subject and is valid once each entry names its signal. `node test.mjs` runs it.
 - `node packages/naive/src/engine/signals/render-test.ts` renders every case here through the real render (`renderCase` in [`render.ts`](../../../src/engine/signals/render.ts)) to its expected records. The test sits in that folder because only its own files and its front door may import the render.
-- `node packages/naive/src/checks/check-data-model.ts` checks the manifest, its ownership of the two record types and its listeners; `node packages/naive/src/records/validate.mjs` validates the signal types.
+- `node packages/naive/src/checks/check-data-model.ts` checks the manifest, its ownership of the two record types and its listeners; `node packages/naive/src/records/validate.ts` validates the signal types.
 
 ## How it connects
 

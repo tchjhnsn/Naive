@@ -131,7 +131,7 @@ export const EMIT_HINT = "naive signals emit <type> --subject <id> --supersedes 
  * A record type with writer person (a function's research program, programs/<function>.md; autoresearch design,
  * everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md) is written only by a person: an agent, whatever its
  * role (a <function>-researcher included), is refused, and so is a person's call made while the process says an agent
- * is acting (acting, from actingAgent in packages/naive/src/core/provenance.mjs) and the projector.
+ * is acting (acting, from actingAgent in packages/naive/src/core/provenance.ts) and the projector.
  *
  * A record type with writer function (the spend register; docs/design/LEAD_AGENTS_2026-11-08.md) is written only by
  * its function's agent, the team-plan role <fn>-agent (EE-123; fn is the record type's function in the data model),

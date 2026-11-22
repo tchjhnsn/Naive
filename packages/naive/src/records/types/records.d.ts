@@ -464,7 +464,7 @@ export type Connection = {
   /** The source id in the venture's knowledge/sources.json that this connection feeds. Needed when authoritative_for names anything: the source map, not the connection, says which source masters a field. */
   source?: string;
   status?: "planned" | "connected" | "disconnected";
-  /** Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.mjs) to a rule whose system of record is this connection's source; everything else stays owned by the repository. */
+  /** Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.ts) to a rule whose system of record is this connection's source; everything else stays owned by the repository. */
   authoritative_for: {
     /** A venture record type id. */
     record: string;
@@ -594,7 +594,7 @@ export type DataModel = {
     confidential?: boolean;
     /** The owning layer, or system for records every layer shares */
     layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
-    /** The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null */
+    /** The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.ts) names that function or null */
     function: "strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities" | null;
     /** method: this repo's own records; workspace: one per builder; venture: inside a venture folder */
     level: "method" | "workspace" | "venture";
@@ -602,7 +602,7 @@ export type DataModel = {
     schema: string | null;
     /** EE-099: the record generator beside the schema; it describes what to ask and drafts one record that passes the schema, and stores nothing itself */
     generator?: string;
-    /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it */
+    /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.ts does not read it */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines" | "typescript";
     kind?: DataModelKind;
     /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function */
@@ -625,7 +625,7 @@ export type DataModel = {
     }[];
     note?: string;
   }[];
-  /** Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.mjs pathKind reads them together with the record types */
+  /** Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.ts pathKind reads them together with the record types */
   files?: {
     /** A glob inside any venture folder, written with the instance/**\/ prefix venture-level record paths carry */
     path: string;
@@ -1475,7 +1475,7 @@ export type Experiment = {
   pattern: EvalPlanPattern;
   /** The sha of the eval plan in force */
   plan: EvalPlanSha;
-  /** sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.mjs). On a holdout line, the tip that was checked */
+  /** sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.ts). On a holdout line, the tip that was checked */
   candidate: EvalPlanSha;
   /** The tip the candidate was edited from, or null for a recipe's first write. A write whose base is not the tip is refused before it is scored and logs no line */
   base?: EvalPlanSha | null;
@@ -2526,9 +2526,9 @@ export type Integration = {
   /** Path to the skill, MCP config or script that wires it in, when one exists */
   adapter?: string;
   links?: string[];
-  /** Knowledge layer only: the module that implements the connector contract (packages/naive/src/store/connectors/contract.mjs) for this integration, so a venture's knowledge/sources.json can keep records in it (EE-037) */
+  /** Knowledge layer only: the module that implements the connector contract (packages/naive/src/store/connectors/contract.ts) for this integration, so a venture's knowledge/sources.json can keep records in it (EE-037) */
   connector?: {
-    /** Path from the repository root; it exports connect(options). Naive ships only connectors that work offline and name no vendor (packages/naive/src/store/connectors/); an app that hosts Naive registers any other with registerConnector in packages/naive/src/store/connectors/index.mjs (EE-041) */
+    /** Path from the repository root; it exports connect(options). Naive ships only connectors that work offline and name no vendor (packages/naive/src/store/connectors/); an app that hosts Naive registers any other with registerConnector in packages/naive/src/store/connectors/index.ts (EE-041) */
     module: string;
     /** The write modes it supports; the first is its default */
     writes: ("direct" | "pull-request" | "none")[];
@@ -3541,7 +3541,7 @@ export type OntologyCatalogScope = {
   imports: string[];
 };
 
-/** The metamodel (M2) of Naive's ontology (N-048, EE-113). packages/naive/src/terms/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (node packages/naive/src/records/validate.mjs --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
+/** The metamodel (M2) of Naive's ontology (N-048, EE-113). packages/naive/src/terms/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (node packages/naive/src/records/validate.ts --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
 export type OntologyMetamodel = OntologyMetamodelOntology;
 
 /** The ontology document, packages/naive/src/terms/ontology.json. */

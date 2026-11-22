@@ -9,7 +9,7 @@
 //
 // Like Web Vitals, each is assessed at the 75th percentile and checked against a threshold (C-15),
 // so vitals are checked, not only measured. Calls and judgments come from the events log that
-// instrumentation writes (packages/naive/src/core/instrumentation.mjs); decisions come from provenance.jsonl, so
+// instrumentation writes (packages/naive/src/core/instrumentation.ts); decisions come from provenance.jsonl, so
 // decision latency is measured even with instrumentation off. Thresholds are the defaults below,
 // overridden by "vitals" in the venture's naive.config.json.
 //
@@ -19,9 +19,9 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { events } from "../core/instrumentation.mjs";
-import { entries } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { events } from "../core/instrumentation.ts";
+import { entries } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 
 export const THRESHOLDS = { calls_per_task: 25, tokens_per_call: 6000, time_to_useful_ms: 10000, decision_hours: 72 };
 const DECISION = /(^|\/)decisions\/[^/]+\.decision\.json$/;

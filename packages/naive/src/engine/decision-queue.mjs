@@ -19,9 +19,9 @@ import { Effect } from "effect";
 import { join } from "node:path";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runSync } from "../core/effect/run.ts";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { readDataModel } from "../records/index.ts";
 import { recordOf } from "./decisions.mjs";
 
 /** The owner of a decision no rule assigns. */

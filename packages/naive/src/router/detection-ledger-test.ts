@@ -10,8 +10,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "./router.mjs";
 import { appendTrial, ledgerPath, read, resolveTrial, verify } from "./detection-ledger.mjs";
-import { entries } from "../core/provenance.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { entries } from "../core/provenance.ts";
+import { validateValue } from "../records/validate.ts";
 
 const repo = new URL("../../../../", import.meta.url).pathname;
 let failed = 0;

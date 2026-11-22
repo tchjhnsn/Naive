@@ -6,7 +6,7 @@
 // leak into the answer. It answers null when:
 //   - no line for the path is at or before t (the record did not exist yet, as far as the log knows);
 //   - that line has no blob: it was written before the blob store existed (nothing is backfilled), or by a
-//     caller that stores none (a log route's append, a publish; packages/naive/src/core/provenance.mjs record);
+//     caller that stores none (a log route's append, a publish; packages/naive/src/core/provenance.ts record);
 //   - a move line at or before t moved the path away and nothing wrote it again.
 // Draft lines are skipped: a held draft is not the record until a person accepts it, and a draft pull request to
 // another source is not in that source until it is merged.
@@ -16,8 +16,8 @@
 // A .mjs file, not .ts, because the router will read through it (the researcher's read clamp, build plan item 7),
 // and Node does not strip types under node_modules, where an app that installs Naive keeps it.
 
-import { entries } from "../core/provenance.mjs";
-import { hasBlob, readBlob } from "../core/blobs.mjs";
+import { entries } from "../core/provenance.ts";
+import { hasBlob, readBlob } from "../core/blobs.ts";
 
 /** @typedef {{ at: string, entity: string, route?: string, activity: string, sha256: string, derived_from?: string[] }} Line */
 

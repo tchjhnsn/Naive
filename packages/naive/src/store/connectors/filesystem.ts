@@ -19,12 +19,12 @@
 
 import { basename, dirname, join } from "node:path";
 import { Effect } from "effect";
-import { blobSha, checkWriteEffect, isText, matches, safePathEffect } from "./contract.mjs";
+import { blobSha, checkWriteEffect, isText, matches, safePathEffect } from "./contract.ts";
 import { Refused } from "../../core/effect/errors.ts";
 import { VentureFs } from "../../core/effect/fs.ts";
 import { runPromise, runSync } from "../../core/effect/run.ts";
-import { layoutOf, logicalFiles, ventureFile } from "../../core/venture-paths.mjs";
-import { git as runGit } from "../../core/runtime.mjs";
+import { layoutOf, logicalFiles, ventureFile } from "../../core/venture-paths.ts";
+import { git as runGit } from "../../core/runtime.ts";
 
 /** @typedef {import("../../core/effect/errors.ts").NaiveError} NaiveError */
 /** @typedef {{ path: string, version: string }} Listed */

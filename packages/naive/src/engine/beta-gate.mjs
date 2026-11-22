@@ -20,7 +20,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join } from "node:path";
 import { namedPerson, rawConfig } from "./naive-config.mjs";
 import { patternRe } from "./gate.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { route as routeFeedback } from "./feedback-route.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

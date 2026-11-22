@@ -20,7 +20,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { adapt, adapters, byName, refresh, skillsFor } from "../engine/adapters.mjs";
 
 export { adapt, adapters, refresh, skillsFor, STATE } from "../engine/adapters.mjs";

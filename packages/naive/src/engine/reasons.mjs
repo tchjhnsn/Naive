@@ -10,7 +10,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 /** The venture file a citation names, when it is a local file; else null (an evidence id, a cell, a decision). */
 function localFile(dir, ref) {

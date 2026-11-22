@@ -9,8 +9,8 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, statSync, symlinkSync, writeFileSync, renameSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { entries } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { entries } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;

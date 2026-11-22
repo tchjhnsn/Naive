@@ -18,7 +18,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { filesOf, statement } from "./foundation.mjs";
-import { readDataModel, venturePaths } from "../records/index.mjs";
+import { readDataModel, venturePaths } from "../records/index.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 /** @param {string} f */

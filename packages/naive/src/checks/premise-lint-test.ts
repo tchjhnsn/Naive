@@ -148,7 +148,7 @@ ok(premiseFiles(d5).length === 2 && JSON.parse(readFileSync(openFile, "utf8")).q
 // A failed proposal prints why and exits non-zero.
 const d6 = fresh("Grow a good business.");
 const preload = join(d6, "no-validator.mjs");
-writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.mjs", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
+writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.ts", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
 const bad = spawnSync(process.execPath, ["--import", pathToFileURL(preload).href, linterPath, d6, "--propose"], { encoding: "utf8" });
 ok(bad.status === 1 && /could not propose .*no schema decision-record\.schema\.json/s.test(bad.stderr), "a failed proposal prints the failure and exits non-zero");
 

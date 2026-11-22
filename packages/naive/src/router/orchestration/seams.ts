@@ -22,8 +22,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { entries } from "../../core/provenance.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { entries } from "../../core/provenance.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 import { decisionFile, decisionFiles } from "../../engine/decisions.mjs";
 import { criterionFor, detectorFor } from "../../engine/detectors.mjs";
 import { call as callAt } from "../../engine/generators/detector-trial.ts";

@@ -44,10 +44,10 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { call, draftOf, gateOf, glob, layout as routerLayout, resolve, routes, ventureDir } from "./router.mjs";
-import { entries as provEntries } from "../core/provenance.mjs";
-import { tokens } from "../core/instrumentation.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { entries as provEntries } from "../core/provenance.ts";
+import { tokens } from "../core/instrumentation.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { readDataModel } from "../records/index.ts";
 
 const here = dirname(new URL(import.meta.url).pathname);
 const repoRoot = join(here, "../../../..");

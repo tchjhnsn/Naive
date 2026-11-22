@@ -7,7 +7,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { validateValue } from "../../records/validate.mjs";
+import { validateValue } from "../../records/validate.ts";
 import { draw, ipwEstimate, markProbes, probeRate, probed, propensity } from "./probes.ts";
 import type { Logged } from "./probes.ts";
 

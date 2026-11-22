@@ -1,7 +1,7 @@
 // Moves a venture onto the src layout (EE-118 step 8): each package folder a function owns goes to
 // src/<function>/<package>/, and everything else stays at the top beside src/ and public/. Only the files
 // move: every record keeps its logical path (foundation/problem.json stays foundation/problem.json to the
-// router, the provenance log and every citation), because packages/naive/src/core/venture-paths.mjs
+// router, the provenance log and every citation), because packages/naive/src/core/venture-paths.ts
 // resolves it into src/<function>/ once venture.json says the layout is src. So the old routes and paths
 // keep working with no alias table: a route names a logical path, never a folder on disk.
 //
@@ -12,8 +12,8 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { FUNCTIONS, PACKAGE_FUNCTION, SRC, layoutOf, logical, logicalFiles, physical, srcPath } from "../../core/venture-paths.mjs";
-import { git } from "../../core/runtime.mjs";
+import { FUNCTIONS, PACKAGE_FUNCTION, SRC, layoutOf, logical, logicalFiles, physical, srcPath } from "../../core/venture-paths.ts";
+import { git } from "../../core/runtime.ts";
 
 export const id = "src-layout";
 export const describe = "Moves a venture onto the src layout: each package folder into src/<function>/, everything else at the top beside src/ and public/ (EE-118 step 8)";

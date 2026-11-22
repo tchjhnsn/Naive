@@ -18,9 +18,9 @@ import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { humanText, transcriptFiles } from "./transcripts.mjs";
 import { addDays, localDate, daysBetween, zoneOf } from "./clock.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { findWorkspace } from "./workspace.mjs";
-import { HostedRefusal, isHosted } from "../core/runtime.mjs";
+import { HostedRefusal, isHosted } from "../core/runtime.ts";
 
 export const GAP_MINUTES = 10;
 export const NUDGE_DAYS = 7;

@@ -26,7 +26,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 export const ASSUMPTIONS = [
   { id: "exists", says: "the problem is real", field: "statement", test: "Find people already paying for or building a workaround (search, forums, competitors' customers)" },

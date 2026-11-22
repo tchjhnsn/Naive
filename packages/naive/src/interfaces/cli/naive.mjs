@@ -85,12 +85,12 @@ import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:
 import { createServer } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
-import { logical } from "../../core/venture-paths.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { logical } from "../../core/venture-paths.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.mjs";
-import { schemaNameOf } from "../../records/index.mjs";
-import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.mjs";
-import { validateFile } from "../../records/validate.mjs";
+import { schemaNameOf } from "../../records/index.ts";
+import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
+import { validateFile } from "../../records/validate.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
@@ -146,7 +146,7 @@ async function dev(dir) {
   const pending = new Map();
   watch(dir, { recursive: true }, (_, raw) => {
     if (!raw || !raw.endsWith(".json") || raw.startsWith("node_modules") || raw.startsWith(".naive")) return;
-    // The record's logical path (packages/naive/src/core/venture-paths.mjs): knowledge/foundation/icp.json is foundation/icp.json.
+    // The record's logical path (packages/naive/src/core/venture-paths.ts): knowledge/foundation/icp.json is foundation/icp.json.
     const physicalPath = raw, f = logical(dir, raw);
     if (f.startsWith("_private")) return;
     clearTimeout(pending.get(f));
@@ -265,7 +265,7 @@ else if (cmd === "build" || cmd === "start") {
     for (const n of notes) console.log(`${dry ? "would: " : ""}${n}`);
     for (const e of escalated) console.log(`decide: ${e}`);
     if (!dry && notes.length) {
-      const { agentFromEnv, record } = await import("../../core/provenance.mjs");
+      const { agentFromEnv, record } = await import("../../core/provenance.ts");
       record(dir, { entity: "venture.json", activity: "write", agent: agentFromEnv("person", "cli"), note: `moved onto the ${layout} layout: ${LAYOUTS[layout][1]}` });
     }
     process.exit(0);

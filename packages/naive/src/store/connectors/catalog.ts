@@ -4,8 +4,8 @@
 // of words in it. It keeps no content: the words are a sorted set, not the text, and reading an
 // item always goes back to its source. A rebuild reads only items whose version changed.
 //
-//   node packages/naive/src/store/connectors/catalog.mjs <venture dir> [--json]             build or refresh
-//   node packages/naive/src/store/connectors/catalog.mjs <venture dir> --search <q> [--json] [--live]
+//   node packages/naive/src/store/connectors/catalog.ts <venture dir> [--json]             build or refresh
+//   node packages/naive/src/store/connectors/catalog.ts <venture dir> --search <q> [--json] [--live]
 //          search the catalog (built first if there is none); --live asks each source instead
 //
 // The catalog is written to <venture>/_catalog/catalog.json. It is derived, so a venture may
@@ -16,12 +16,12 @@
 // with Promise methods, so their calls are wrapped with Effect.tryPromise.
 
 import { Effect } from "effect";
-import { address, isText, words } from "./contract.mjs";
-import { connectAllEffect } from "./index.mjs";
+import { address, isText, words } from "./contract.ts";
+import { connectAllEffect } from "./index.ts";
 import { CannotRun } from "../../core/effect/errors.ts";
 import { VentureFs, readJson } from "../../core/effect/fs.ts";
 import { runMain, runPromise, runSync } from "../../core/effect/run.ts";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 /** @typedef {import("../../core/effect/errors.ts").NaiveError} NaiveError */
 /** @typedef {{ address: string, source: string, path: string, version: string, route: string | null, record: string | null, title: string, terms: string[] }} CatalogItem */
@@ -54,7 +54,7 @@ let table = null;
 /** @param {string} path @returns {Effect.Effect<{ route: string | null, record: string | null }>} */
 const routeOf = (path) => Effect.gen(function* () {
   if (!table) {
-    const { routes, glob } = yield* Effect.promise(() => import("../../records/routes/routes.mjs"));
+    const { routes, glob } = yield* Effect.promise(() => import("../../records/routes/routes.ts"));
     table = routes().filter((/** @type {{ kind: string, collection: string }} */ r) => r.kind === "record" && r.collection !== "list").map((/** @type {{ route: string, record: string, collection: string, files: string[] }} */ r) => ({ r, res: r.files.map((g) => glob(g)) }));
   }
   for (const { r, res } of table ?? []) {
@@ -149,7 +149,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir] = process.argv.slice(2).filter((a, i, all) => !a.startsWith("--") && all[i - 1] !== "--search");
   const i = process.argv.indexOf("--search");
   const json = process.argv.includes("--json");
-  if (!dir) { console.error("usage: node packages/naive/src/store/connectors/catalog.mjs <venture dir> [--search <q>] [--live] [--json]"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/store/connectors/catalog.ts <venture dir> [--search <q>] [--live] [--json]"); process.exit(2); }
   await runMain(Effect.gen(function* () {
     if (i >= 0) {
       const q = process.argv[i + 1] ?? "";

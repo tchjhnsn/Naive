@@ -4,18 +4,18 @@
 // allowed routes. It moved here from packages/naive/src/router/router.mjs, which re-exports all of it, so that
 // schema/ and knowledge/ can read the route table without importing the router (the router imports
 // them). It imports only Node built-ins and packages/naive/src/core; the command routes the function modules
-// add are data in ./commands.mjs.
+// add are data in ./commands.ts.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { memo } from "../../core/action-scope.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { memo } from "../../core/action-scope.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 import {
   BRAND_ROUTES, brandCommands, cacheRoutes, customersLintCommands, financeCommands, foundationLintCommands,
   investorsLintCommands, legalCommands, moneyCommands, peopleLintCommands, productCommands, validationCommands,
-} from "./commands.mjs";
-import { readDataModel, venturePaths } from "../index.mjs";
+} from "./commands.ts";
+import { readDataModel, venturePaths } from "../index.ts";
 
 export const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 export const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -151,11 +151,11 @@ function buildRoutes() {
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
     // Context hook (packages/naive/src/router/vitals.mjs, packages/naive/src/router/context.mjs): agent vitals and the context budget (N-6, C-15, N-13).
     cmd("system/vitals", "packages/naive/src/router/vitals.mjs", "Agent vitals (N-6): calls per task, tokens of context per call, time to a useful answer and time from a decision opening to a person deciding it, at the 75th percentile, each checked against its threshold (C-15). Reads the events log that instrumentation writes"),
-    // Traces (EE-121): packages/naive/src/core/instrumentation.mjs writes them, packages/naive/src/engine/trace-cli.ts reads them.
+    // Traces (EE-121): packages/naive/src/core/instrumentation.ts writes them, packages/naive/src/engine/trace-cli.ts reads them.
     cmd("system/traces", "packages/naive/src/engine/trace-cli.ts", "The venture's trace sessions in traces/, one span per step of an agent run after the OpenTelemetry GenAI conventions, hash-chained and linked from provenance; read offline. naive trace show <session> prints one as a tree", { args: ["show"], actions: ["run", "layout"] }),
     cmd("system/context", "packages/naive/src/router/context.mjs", "The context budget (N-13): what every route sends an agent, in tokens, against its budget, with the largest part and where to move it (S-14, F-6)", { args: ["budget"] }),
-    cmd("knowledge/catalog", "packages/naive/src/store/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
-    cmd("knowledge/search", "packages/naive/src/store/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
+    cmd("knowledge/catalog", "packages/naive/src/store/connectors/catalog.ts", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
+    cmd("knowledge/search", "packages/naive/src/store/connectors/catalog.ts", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
     // The live decision index: packages/naive/src/engine/decision-index.mjs, a cache in .naive/ updated from provenance.
     cmd("system/decision-index", "packages/naive/src/engine/decision-index.mjs", "The live decision index: every open decision scored by the docket, its structural impact (functions, records, linked decisions), its phase weight and requirement lift, and requirement violations flagged now; each run re-scores every active decision, so an update equals a rebuild, and appends rank history for what moved; adds the decision queue across functions (by_function, themes, queue: the score weighted by the function's weight in the phase, one item per theme, with its lead). Input value update (default), rebuild or read", { venture_arg: "id" }),
     // Gate strength (EE-156): packages/naive/src/engine/phase-gate.mjs, policies in packages/naive/src/phases/gate-policies.json.

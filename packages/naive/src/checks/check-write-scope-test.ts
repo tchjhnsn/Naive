@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 
 const repo = fileURLToPath(new URL("../../../..", import.meta.url));
 const TEST = "packages/naive/src/interfaces/tests/agent-files-test.ts";
-const PROVENANCE = "packages/naive/src/core/provenance.mjs";
+const PROVENANCE = "packages/naive/src/core/provenance.ts";
 const LINE = 'yield* fs.append(log, JSON.stringify(entry) + "\\n");';
 
 function copy(): string {

@@ -19,10 +19,10 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { decisionFile, propose, recordOf } from "./decisions.mjs";
 import { HOME } from "./packages.mjs";
-import { entries as provenance } from "../core/provenance.mjs";
+import { entries as provenance } from "../core/provenance.ts";
 import { mark, notify } from "./stale.mjs";
-import { layoutOf, logicalFiles, ventureFile } from "../core/venture-paths.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { layoutOf, logicalFiles, ventureFile } from "../core/venture-paths.ts";
+import { readDataModel } from "../records/index.ts";
 
 const MODEL = readDataModel();
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

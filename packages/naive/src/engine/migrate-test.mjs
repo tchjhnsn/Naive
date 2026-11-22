@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Tests for naive migrate (EE-076), with a stand-in agent (packages/naive/src/records/examples/migrate/agent.mjs): the
+// Tests for naive migrate (EE-076), with a stand-in agent (packages/naive/src/records/examples/migrate/agent.ts): the
 // agent's records become a plan and one open decision per function; nothing is written until a
 // person decides; then records go through the router's schema with provenance; the project is never
 // written to; secrets are never opened; and a failing agent says why.
@@ -9,8 +9,8 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { entries } from "../core/provenance.mjs";
-import { naiveScript } from "../core/scripts.mjs";
+import { entries } from "../core/provenance.ts";
+import { naiveScript } from "../core/scripts.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -28,7 +28,7 @@ const fingerprint = () => createHash("sha256").update(JSON.stringify(readdirSync
   .map((f) => [f, statSync(join(src, f)).isFile() ? readFileSync(join(src, f)).toString("hex") : "dir"]))).digest("hex");
 const before = fingerprint();
 
-const env = { ...process.env, MENTURA_WORKSPACE: ws, MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.mjs")}` };
+const env = { ...process.env, MENTURA_WORKSPACE: ws, MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.ts")}` };
 const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { env, encoding: "utf8" });
 const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { env, encoding: "utf8" });
 const init = (id) => spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, "ventures", id), id], { encoding: "utf8" }).status === 0;

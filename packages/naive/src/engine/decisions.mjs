@@ -28,17 +28,17 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
-import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.mjs";
-import { glob as routeFileGlob, routes } from "../records/routes/routes.mjs";
+import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.ts";
+import { glob as routeFileGlob, routes } from "../records/routes/routes.ts";
 // Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.mjs).
 import { memo } from "./caching.mjs";
 import { roles as ventureRoles } from "./venture-type.mjs";
 import { impact } from "./impact.mjs";
 import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
-import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../core/venture-paths.mjs";
-import { readDataModel, schemaNameOf, venturePaths } from "../records/index.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../core/venture-paths.ts";
+import { readDataModel, schemaNameOf, venturePaths } from "../records/index.ts";
+import { validateFile } from "../records/validate.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -290,7 +290,7 @@ const validate = (d, schema = "decision-record.schema.json") => {
   const v = runValidator(d, schema);
   return v.status === 0 ? null : (v.stdout + v.stderr).trim();
 };
-/** The schema errors of a record, one per line, or null when the validator could not run: validate.mjs
+/** The schema errors of a record, one per line, or null when the validator could not run: validate.ts
  *  reports schema errors to stdout and exits 1, and anything else is a failure to check. */
 const schemaErrors = (d, schema) => {
   const v = runValidator(d, schema);

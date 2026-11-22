@@ -13,8 +13,8 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.mjs";
-import { routes } from "../../records/routes/routes.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { routes } from "../../records/routes/routes.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 let failed = 0;

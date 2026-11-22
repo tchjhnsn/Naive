@@ -6,8 +6,8 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { routes } from "../records/routes/routes.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { routes } from "../records/routes/routes.ts";
 import type { Finding } from "./lint-money.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

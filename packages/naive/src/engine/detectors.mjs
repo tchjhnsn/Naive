@@ -15,7 +15,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 export const DETECTORS = "governance/detectors";
 export const TEMPLATE = new URL("../../template/governance/detectors/", import.meta.url).pathname;

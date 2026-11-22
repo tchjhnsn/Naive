@@ -22,9 +22,9 @@ import type { Known } from "../../engine/recipes/outcomes.ts";
 import { producerShares } from "../../engine/recipes/render.ts";
 import { checkRecipes } from "../../checks/check-recipes.ts";
 import { signalId, canonicalJson } from "../../core/signal-id.ts";
-import { hasBlob } from "../../core/blobs.mjs";
-import { entries } from "../../core/provenance.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { hasBlob } from "../../core/blobs.ts";
+import { entries } from "../../core/provenance.ts";
+import { validateValue } from "../../records/validate.ts";
 import type { Reception, Signal } from "../../records/types/records.d.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;

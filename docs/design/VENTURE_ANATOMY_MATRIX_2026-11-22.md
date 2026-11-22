@@ -75,7 +75,7 @@ The confidence share is known plus estimated cells over all cells.
 
 ### Bitemporal time travel
 
-Time travel follows SQL:2011 (sql-2011-temporal). Application time says when a value was true in the world: `valid_from` and `valid_to` on each cell, a closed-open period. System time says when the venture knew it: every write through the router appends a provenance line and stores the bytes in the blob store, and `readAsOf` in `packages/naive/src/store/as-of.mjs` returns a record as it was at a transaction time. The two axes are independent: "what did we believe on 1 November about the market as it stood on 1 October" is `--as-of 2026-11-01 --valid-at 2026-10-01`.
+Time travel follows SQL:2011 (sql-2011-temporal). Application time says when a value was true in the world: `valid_from` and `valid_to` on each cell, a closed-open period. System time says when the venture knew it: every write through the router appends a provenance line and stores the bytes in the blob store, and `readAsOf` in `packages/naive/src/store/as-of.ts` returns a record as it was at a transaction time. The two axes are independent: "what did we believe on 1 November about the market as it stood on 1 October" is `--as-of 2026-11-01 --valid-at 2026-10-01`.
 
 ### Calibration
 
@@ -132,7 +132,7 @@ classDiagram
 sequenceDiagram
   participant P as person or agent
   participant VA as venture-anatomy.ts
-  participant AO as as-of.mjs
+  participant AO as as-of.ts
   participant PL as provenance.jsonl
   participant BS as blob store
   P->>VA: ventureAnatomy(dir, asOf t, validAt d)

@@ -1,8 +1,8 @@
 // Validates records against their JSON Schemas in JavaScript, with no Python and no dependency:
 //
-//   node packages/naive/src/records/validate.mjs
-//   node packages/naive/src/records/validate.mjs --schema <name>.schema.json --file <path>
-//   node packages/naive/src/records/validate.mjs --schema <name>.schema.json --def <name> --file <path>
+//   node packages/naive/src/records/validate.ts
+//   node packages/naive/src/records/validate.ts --schema <name>.schema.json --file <path>
+//   node packages/naive/src/records/validate.ts --schema <name>.schema.json --def <name> --file <path>
 //
 // Exit 0: valid. Exit 1: a record failed. Exit 2: the checker itself failed, so a caller must not record
 // that as a reject.
@@ -20,7 +20,7 @@ import * as fs from "node:fs";
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
-import { ROOT, RECORDS, recordPath, recordRelative } from "./index.mjs";
+import { ROOT, RECORDS, recordPath, recordRelative } from "./index.ts";
 
 /** @typedef {{ [key: string]: Json }} JsonObject */
 /** @typedef {Json[]} JsonArray */
@@ -145,7 +145,7 @@ export class Validator {
     const fail = (message) => { out.push({ path: where, message }); };
     if (s === true) return;
     if (s === false) { fail(`False schema does not allow ${show(v)}`); return; }
-    for (const k of Object.keys(s)) if (!APPLIED.has(k) && !ANNOTATIONS.has(k)) throw new Error(`schema keyword ${k} is not supported by validate.mjs`);
+    for (const k of Object.keys(s)) if (!APPLIED.has(k) && !ANNOTATIONS.has(k)) throw new Error(`schema keyword ${k} is not supported by validate.ts`);
     /** @param {Json | undefined} x @returns {Schema} */
     const sub = (x) => (typeof x === "boolean" || isObject(x) ? x : true);
 
@@ -228,7 +228,7 @@ export function useValidator(next) {
 }
 
 /**
- * Validates one file against one schema, in this process: what `node validate.mjs --schema <name> --file <path>`
+ * Validates one file against one schema, in this process: what `node validate.ts --schema <name> --file <path>`
  * does, with the same result shape as spawnSync so a caller swaps one line. status 0 valid, 1 invalid (stdout holds
  * one "path: message" line per failure), 2 the checker failed (stderr says why). `def` checks one $defs entry.
  * @param {string} name a schema file name, such as "venture.schema.json"
@@ -309,7 +309,7 @@ function main(argv) {
   /** @param {string} n */
   const opt = (n) => { const i = argv.indexOf(n); return i < 0 ? undefined : argv[i + 1]; };
   if ((argv.includes("--schema") || argv.includes("--def")) && !argv.includes("--file")) {
-    process.stderr.write("usage: node packages/naive/src/records/validate.mjs --schema <name>.schema.json [--def <name>] --file <path>\n");
+    process.stderr.write("usage: node packages/naive/src/records/validate.ts --schema <name>.schema.json [--def <name>] --file <path>\n");
     return 2;
   }
   const reg = registryOf(), v = new Validator(reg);

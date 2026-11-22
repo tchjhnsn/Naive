@@ -14,8 +14,8 @@ import type { AnatomyCellEnumCell, AnatomyCellNumberCell, IndustryAnatomy, Marke
 import { runSync } from "../core/effect/run.ts";
 import { gradeItem } from "./evidence-grade.mjs";
 import { phaseGate, POLICIES } from "./phase-gate.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateFile, validateValue } from "../records/validate.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateFile, validateValue } from "../records/validate.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail?: unknown): void => {

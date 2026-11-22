@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// A stand-in for Jev in tests (MENTURA_TYPE_CMD="node packages/naive/src/records/examples/venture-type/jev.mjs"): reads the
+// A stand-in for Jev in tests (MENTURA_TYPE_CMD="node packages/naive/src/records/examples/venture-type/jev.ts"): reads the
 // typed request on stdin and answers each type:<id> question yes when the description uses one of that
 // type's examples, so the classifier's ranking and its uncertain path can be tested offline.
 import { readFileSync } from "node:fs";

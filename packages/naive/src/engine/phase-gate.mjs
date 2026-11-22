@@ -26,9 +26,9 @@ import { Effect } from "effect";
 import { join } from "node:path";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runSync } from "../core/effect/run.ts";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { ROOT } from "../phases/phases.mjs";
-import { readDataModel, venturePaths } from "../records/index.mjs";
+import { readDataModel, venturePaths } from "../records/index.ts";
 import { gradeRecord, LEVELS } from "./evidence-grade.mjs";
 import { CONFIG } from "./naive-config.mjs";
 

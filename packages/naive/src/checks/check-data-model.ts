@@ -23,9 +23,9 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
-import { PACKAGE_FUNCTION, ventureFile } from "../core/venture-paths.mjs";
-import { globRegExp, pathKind, recordsIn, venturePaths } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { PACKAGE_FUNCTION, ventureFile } from "../core/venture-paths.ts";
+import { globRegExp, pathKind, recordsIn, venturePaths } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 import type { DataModel, DecisionRights, DepartmentCatalog, Layer } from "../records/types/records.d.ts";
 
 /** A record type with the repository files its paths match, which this check adds. */
@@ -82,7 +82,7 @@ for (const r of types.values()) for (const ref of r.refs ?? []) {
 }
 // Kinds (hosted working copy design, section 2): an append-only record type is a log, and a log is append-only.
 for (const r of types.values()) if ((r.form === "json-lines") !== (r.kind === "log")) errors.push(`${r.id}: kind ${r.kind ?? "record"} with form ${r.form ?? "json"}; a record type is a log exactly when its form is json-lines`);
-// A typescript record (a recipe) is a .ts file. Its schema governs what the module exports, so validate.mjs never reads it.
+// A typescript record (a recipe) is a .ts file. Its schema governs what the module exports, so validate.ts never reads it.
 for (const r of types.values()) if (r.form === "typescript" && r.paths.some((p) => !p.endsWith(".ts"))) errors.push(`${r.id}: form typescript, so every path ends in .ts`);
 // settles (autoresearch design, "The metric"): only a projected type is scored, and each field it scores or forecasts
 // is a top-level property of its schema, scored one way only; a forecast field is a number (a probability).

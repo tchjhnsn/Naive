@@ -9,14 +9,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.mjs";
 import { install } from "./roadmaps.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { advance, lifecycle, meet, playbookOf, playbooks } from "./lifecycle.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "roadmap-"));
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const valid = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const valid = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 // ---- roadmaps ----
 const brand = roadmapOf("brand");

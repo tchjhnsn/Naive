@@ -26,11 +26,11 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { agentFromEnv, record } from "../core/provenance.mjs";
+import { agentFromEnv, record } from "../core/provenance.ts";
 import { phase as changePhase } from "./freshness.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { exitCriteria } from "./canonical.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { validateFile } from "../records/validate.ts";
 import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";
 import { meter, phaseGate } from "./phase-gate.mjs";

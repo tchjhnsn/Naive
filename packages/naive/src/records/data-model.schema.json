@@ -215,7 +215,7 @@
             ]
           },
           "function": {
-            "description": "The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null",
+            "description": "The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.ts) names that function or null",
             "enum": [
               "strategy",
               "products",
@@ -262,7 +262,7 @@
               "json-lines",
               "typescript"
             ],
-            "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it"
+            "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.ts does not read it"
           },
           "kind": {
             "$ref": "#/$defs/kind"
@@ -334,7 +334,7 @@
     },
     "files": {
       "type": "array",
-      "description": "Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.mjs pathKind reads them together with the record types",
+      "description": "Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.ts pathKind reads them together with the record types",
       "items": {
         "type": "object",
         "required": [

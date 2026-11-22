@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { itemStrength, levelFromCount, meter, phaseGate, policyFor, strictness } from "./phase-gate.mjs";
 import { advance, lifecycle } from "./lifecycle.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail?: unknown): void => {

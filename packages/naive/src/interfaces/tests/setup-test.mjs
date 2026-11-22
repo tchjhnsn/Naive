@@ -5,12 +5,12 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "setup-skill-test-"));
 const dir = join(base, "acme");
-// finance=rho syncs through the app's command (packages/naive/src/core/sync.mjs); the test names a stand-in.
+// finance=rho syncs through the app's command (packages/naive/src/core/sync.ts); the test names a stand-in.
 const env = { ...process.env, HOME: base, NAIVE_SYNC_RHO: `node ${join(repo, "packages/naive/src/records/examples/money-sync/sync.ts")}` };
 for (const k of ["MENTURA_WORKSPACE", "TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
 const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });

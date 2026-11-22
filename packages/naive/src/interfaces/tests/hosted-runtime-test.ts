@@ -1,4 +1,4 @@
-// Tests hosted mode (packages/naive/src/core/runtime.mjs): under NAIVE_RUNTIME=hosted each feature that reaches
+// Tests hosted mode (packages/naive/src/core/runtime.ts): under NAIVE_RUNTIME=hosted each feature that reaches
 // outside the tenant refuses with a message naming the feature and why, environment commands are ignored, and
 // a host's registered hooks (judge, site, sandbox, git) stand in. Without NAIVE_RUNTIME the laptop path still runs.
 //
@@ -9,9 +9,9 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { HostedRefusal, clearHooks, envCommand, git, hostHook, registerHook } from "../../core/runtime.mjs";
-import { syncCommand } from "../../core/sync.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { HostedRefusal, clearHooks, envCommand, git, hostHook, registerHook } from "../../core/runtime.ts";
+import { syncCommand } from "../../core/sync.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 import { activity } from "../../engine/activity.mjs";
 import { judge } from "../../engine/caching.mjs";
 import { planOne } from "../../engine/port-venture.mjs";
@@ -20,7 +20,7 @@ import { updateFramework } from "../../engine/upgrades.mjs";
 import { canClassify, classify } from "../../engine/venture-type.mjs";
 import { ventureHealth } from "../../router/boundaries.mjs";
 import { runAgent } from "../../router/orchestration/migrate-venture.mjs";
-import { connect } from "../../store/connectors/filesystem.mjs";
+import { connect } from "../../store/connectors/filesystem.ts";
 import { scan } from "../harness/site.mjs";
 
 const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
@@ -38,7 +38,7 @@ if (init.status !== 0) throw new Error(init.stderr);
 const handoffs = ventureFile(dir, "operations/handoffs");
 mkdirSync(handoffs, { recursive: true });
 writeFileSync(join(handoffs, "h1.json"), JSON.stringify({ id: "h1", done_criteria: [{ id: "c1", kind: "conformance", check: "true" }] }, null, 2) + "\n");
-const judgeScript = join(ws, "judge.mjs");
+const judgeScript = join(ws, "judge.ts");
 writeFileSync(judgeScript, "let s='';process.stdin.on('data',(d)=>s+=d).on('end',()=>{const r=JSON.parse(s);console.log(JSON.stringify({model:'cmd',answers:Object.fromEntries(Object.keys(r.questions).map((k)=>[k,'from the command']))}));});\n");
 process.env.NAIVE_JUDGE_CMD = `node ${judgeScript}`;
 process.env.NAIVE_SYNC_RHO = "echo synced";

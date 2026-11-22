@@ -11,7 +11,7 @@ import { DUMP, MAP, parse } from "../../functions/strategy/frameworks/idea-map/i
 import { GRAPH } from "../../functions/strategy/frameworks/idea-map/graph.mjs";
 import { ideasOf } from "../../functions/strategy/frameworks/idea-map/route.mjs";
 import { createHash } from "node:crypto";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const norm = (s) => s.replace(/\s+/g, " ").trim();

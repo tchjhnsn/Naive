@@ -31,7 +31,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allowsCopy, factsOf, registerOf, REGISTER } from "./assets.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 export const BRAND = "marketing/brand.json";
 export const SITEMAPS = ["marketing/sitemap.json", "operations/marketing/sitemap.json"];
@@ -39,12 +39,12 @@ const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 export const brandOf = (dir) => dir && existsSync(ventureFile(dir, BRAND)) ? load(ventureFile(dir, BRAND)) : null;
 
 // ---------------------------------------------------------------------------------------------
-// Router hooks. The route table (packages/naive/src/records/routes/routes.mjs) lists these command routes from packages/naive/src/records/routes/commands.mjs, re-exported here; this module never imports the router.
+// Router hooks. The route table (packages/naive/src/records/routes/routes.ts) lists these command routes from packages/naive/src/records/routes/commands.ts, re-exported here; this module never imports the router.
 
 /** Where the new record types route (package folder layout, EE-070). */
-export { BRAND_ROUTES } from "../records/routes/commands.mjs";
+export { BRAND_ROUTES } from "../records/routes/commands.ts";
 
-export { brandCommands } from "../records/routes/commands.mjs";
+export { brandCommands } from "../records/routes/commands.ts";
 
 /** What a layout adds for an agent: the brand and voice at this route, and the terms its package sees. */
 export function brandLayout(dir, route) {

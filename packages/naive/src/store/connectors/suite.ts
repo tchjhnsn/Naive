@@ -1,5 +1,5 @@
 // The connector contract suite (EE-037), shared by every connector's evals: the framework's
-// (packages/naive/src/store/connectors/eval.mjs) and the platform's (platform/connectors/eval.mjs). A connector
+// (packages/naive/src/store/connectors/eval.ts) and the platform's (platform/connectors/eval.mjs). A connector
 // written anywhere proves itself against this one suite (EE-041).
 //
 //   const h = harness("name");          expect, throws, gitHash, write, scratch, finish
@@ -10,7 +10,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
-import { blobSha, conformance } from "./contract.mjs";
+import { blobSha, conformance } from "./contract.ts";
 
 export function harness(name) {
   let failed = 0, passed = 0, skipped = 0;
@@ -82,7 +82,7 @@ export async function contract({ expect, throws, gitHash }, name, make) {
 }
 
 // ---- Compare on write --------------------------------------------------------------------------
-// Every connector that writes direct proves `base` and `append` (contract.mjs): a stale base is
+// Every connector that writes direct proves `base` and `append` (contract.ts): a stale base is
 // refused with the current version, and an append over a log that moved is refused, so a hash
 // chain built by appends stays whole. A host relies on these to commit a working copy safely.
 

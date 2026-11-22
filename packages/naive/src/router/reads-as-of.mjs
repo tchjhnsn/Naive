@@ -1,7 +1,7 @@
 // The researcher's read clamp (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The eval plan"
 // and "program.md per function", build plan item 7). A role named <function>-researcher reads the venture only as
 // it was at a cut, its reads_as_of: each record from the blob store as of that instant (readAsOf in
-// packages/naive/src/store/as-of.mjs), every list as of it (pathsAsOf), and no signal observed after it. It never
+// packages/naive/src/store/as-of.ts), every list as of it (pathsAsOf), and no signal observed after it. It never
 // reads the live files. Any caller may pass reads_as_of to read the same as-of view; a researcher must.
 //
 //   - A researcher's read with no cut is refused, never served live. The cut is the earliest read_cut among the
@@ -20,8 +20,8 @@
 // A .mjs file, not .ts, because router.mjs imports it, and Node does not strip types under node_modules, where an
 // app that installs Naive keeps it.
 
-import { pathsAsOf, readAsOf } from "../store/as-of.mjs";
-import { address } from "../store/connectors/contract.mjs";
+import { pathsAsOf, readAsOf } from "../store/as-of.ts";
+import { address } from "../store/connectors/contract.ts";
 
 /** A researcher role: <function>-researcher. */
 export const RESEARCHER = /^[a-z0-9][a-z0-9-]*-researcher$/;

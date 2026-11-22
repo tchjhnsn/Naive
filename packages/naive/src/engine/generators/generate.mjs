@@ -7,8 +7,8 @@ import { readFileSync, existsSync, mkdtempSync, writeFileSync, rmSync } from "no
 import { join, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
-import { readDataModel, recordPath } from "../../records/index.mjs";
-import { validateFile } from "../../records/validate.mjs";
+import { readDataModel, recordPath } from "../../records/index.ts";
+import { validateFile } from "../../records/validate.ts";
 
 export const repo = new URL("../../../../..", import.meta.url).pathname;
 const model = () => readDataModel();
@@ -25,7 +25,7 @@ export function questions(obj, prefix = "") {
   })).sort((a, b) => Number(b.required) - Number(a.required));
 }
 
-// Validate with the same validator the write chain uses (packages/naive/src/records/validate.mjs), on a scratch copy.
+// Validate with the same validator the write chain uses (packages/naive/src/records/validate.ts), on a scratch copy.
 export function validate(id, record) {
   const r = recordType(id), dir = mkdtempSync(join(tmpdir(), "naive-gen-")), f = join(dir, `${id}.json`);
   writeFileSync(f, JSON.stringify(record, null, 2) + "\n");

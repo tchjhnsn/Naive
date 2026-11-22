@@ -9,12 +9,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { addEvent, events, fromICS, toICS } from "./calendar.mjs";
 import { due, inDays, localDate, overdue, toInstant, zoneOf } from "./clock.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const naive = join(repo, "packages/naive/src/interfaces/cli/naive.mjs");
 const base = mkdtempSync(join(tmpdir(), "workspace-init-"));
-const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, XDG_CONFIG_HOME: join(base, ".config"), MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.mjs")}`, CREATE_VENTURE_PROMPTS: "" });
+const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, XDG_CONFIG_HOME: join(base, ".config"), MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.ts")}`, CREATE_VENTURE_PROMPTS: "" });
 delete env.MENTURA_WORKSPACE;
 const sh = (args, opts = {}) => spawnSync("node", [naive, ...args], { cwd: base, env, encoding: "utf8", ...opts });
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -22,7 +22,7 @@ let failed = 0;
 const t = async (name, fn) => { try { await fn(); console.log(`ok    ${name}`); } catch (e) { failed++; console.log(`FAIL  ${name}\n      ${e.message}`); } };
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
 const FLAGS = ["--skip-install", "--no-git", "--layout", "flat"];
-const validate = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const validate = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 await t("init refuses without a venture to create, port or migrate", () => {
   const r = sh(["workspace", "init", "empty"]);

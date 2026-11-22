@@ -2,7 +2,7 @@
 // file system, which works offline and names no vendor; a connector that reaches a vendor belongs
 // to the app that hosts Naive, which registers it (registerConnector) and runs the same suite on it.
 //
-//   contract   the shared suite (suite.mjs) on the filesystem connector, in a plain folder and in
+//   contract   the shared suite (suite.ts) on the filesystem connector, in a plain folder and in
 //              a git repository, plus the venture-folder rules and the lock file a write with
 //              base or append holds
 //   register   an app's connector, registered by absolute path, is in the registry and connects
@@ -10,14 +10,14 @@
 // The router, catalog, source-of-truth matrix and attribute evals run routes through the router,
 // so they are in packages/naive/src/interfaces/tests/connectors-router-test.mjs (router inversion, step 4).
 //
-//   node packages/naive/src/store/connectors/eval.mjs
+//   node packages/naive/src/store/connectors/eval.ts
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { contract, FIXTURE, harness, OUTSIDE } from "./suite.mjs";
-import { connect as fsConnect } from "./filesystem.mjs";
-import { connect, registerConnector, registry } from "./index.mjs";
+import { contract, FIXTURE, harness, OUTSIDE } from "./suite.ts";
+import { connect as fsConnect } from "./filesystem.ts";
+import { connect, registerConnector, registry } from "./index.ts";
 
 const h = harness("connectors");
 const { expect, write, scratch, finish } = h;
@@ -74,7 +74,7 @@ const gitT = await contract(h, "filesystem (git repository)", fsMake(true));
   // An app registers its own connector; here a stand-in that wraps the filesystem connector.
   const d = mkdtempSync(join(scratch, "app-"));
   const mod = join(d, "stand-in.mjs");
-  writeFileSync(mod, `export { connect } from ${JSON.stringify(new URL("./filesystem.mjs", import.meta.url).pathname)};\n`);
+  writeFileSync(mod, `export { connect } from ${JSON.stringify(new URL("./filesystem.ts", import.meta.url).pathname)};\n`);
   let refused = false;
   try { registerConnector("app-store", { module: "stand-in.mjs", writes: ["direct"] }); } catch { refused = true; }
   expect("register: a relative module path is refused", refused);

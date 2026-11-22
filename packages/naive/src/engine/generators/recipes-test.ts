@@ -8,10 +8,10 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { validateFile, validateValue } from "../../records/validate.mjs";
-import { pathKind, readDataModel } from "../../records/index.mjs";
+import { validateFile, validateValue } from "../../records/validate.ts";
+import { pathKind, readDataModel } from "../../records/index.ts";
 import { canonicalJson } from "../../core/signal-id.ts";
-import { lineHash } from "../../core/provenance.mjs";
+import { lineHash } from "../../core/provenance.ts";
 import { recipeExports, runRecipe } from "../recipes/sandbox.ts";
 import * as recipe from "./recipe.ts";
 import * as evalPlan from "./eval-plan.ts";

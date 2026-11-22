@@ -6,7 +6,7 @@
 // it onto the ledger's last line. Appending through the router is not built yet.
 import { randomUUID } from "node:crypto";
 import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
-import { lineHash } from "../../core/provenance.mjs";
+import { lineHash } from "../../core/provenance.ts";
 import type { DetectorTrial } from "../../records/types/records.d.ts";
 
 export const record = "detector-trial";

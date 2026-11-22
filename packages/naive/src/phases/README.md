@@ -40,7 +40,7 @@ flowchart LR
 
 ## How it connects
 
-- Called by: [`lifecycle.mjs`](../engine/lifecycle.mjs), [`need-now.mjs`](../engine/need-now.mjs), [`anatomy.mjs`](../functions/products/frameworks/product-anatomy/anatomy.mjs) and [`check-phases.ts`](../checks/check-phases.ts). [`routes.mjs`](../records/routes/routes.mjs) reads the `phase.json` files as data, because the records unit comes before this one.
+- Called by: [`lifecycle.mjs`](../engine/lifecycle.mjs), [`need-now.mjs`](../engine/need-now.mjs), [`anatomy.mjs`](../functions/products/frameworks/product-anatomy/anatomy.mjs) and [`check-phases.ts`](../checks/check-phases.ts). [`routes.ts`](../records/routes/routes.ts) reads the `phase.json` files as data, because the records unit comes before this one.
 - Calls: [`core/effect`](../core/effect/README.md) only. It checks each file's shape itself, so it never depends on the record validator, which a host or a test may replace.
 
 ## Not built

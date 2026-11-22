@@ -7,7 +7,7 @@
 // the router hook that append it are build plan items 5 and 6, not built.
 import { randomUUID } from "node:crypto";
 import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
-import { lineHash } from "../../core/provenance.mjs";
+import { lineHash } from "../../core/provenance.ts";
 import type { Experiment } from "../../records/types/records.d.ts";
 
 export const record = "experiment";

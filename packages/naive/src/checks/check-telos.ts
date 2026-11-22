@@ -14,7 +14,7 @@
 //
 //   node packages/naive/src/checks/check-telos.ts <workspace or venture dir>
 
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { scale } from "../engine/canonical.mjs";
 import { telosFile, telosView } from "../../../../frameworks/telos/adapter.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";

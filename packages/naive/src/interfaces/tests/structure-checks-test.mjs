@@ -9,9 +9,9 @@ import { join } from "node:path";
 import { context } from "../../engine/upgrades.mjs";
 import * as telosToGoals from "../../engine/migrations/telos-to-goals.mjs";
 import * as structured from "../../engine/migrations/structured-layout.mjs";
-import { physical } from "../../core/venture-paths.mjs";
+import { physical } from "../../core/venture-paths.ts";
 import { call } from "../../router/router.mjs";
-import { naiveScript } from "../../core/scripts.mjs";
+import { naiveScript } from "../../core/scripts.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "structure-checks-"));

@@ -24,7 +24,7 @@ import { MATRIX } from "../../functions/marketing-and-sales/marketing/site/prese
 import { plan } from "../../functions/marketing-and-sales/marketing/site/plan.mjs";
 import { write as writePackage, OUT as PACKAGE } from "../../engine/packages.mjs";
 import { venturePackage } from "../../router/orchestration/venture-package.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));

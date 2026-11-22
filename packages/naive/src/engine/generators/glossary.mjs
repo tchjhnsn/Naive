@@ -3,7 +3,7 @@
 // Every new term also runs the term engine (glossary skill); this generator only shapes the record.
 // The draft goes to: mentura glossary/<package> write --venture <id> --input -
 import { cli, drop, questions, readJson, schemaOf, validate } from "./generate.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 export const record = "glossary";
 export const describe = () => ({ record, ask: [{ field: "package", required: true, type: "string", says: schemaOf(record).properties.package.description },

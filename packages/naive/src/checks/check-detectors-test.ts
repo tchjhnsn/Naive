@@ -9,7 +9,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { lineHash } from "../core/provenance.mjs";
+import { lineHash } from "../core/provenance.ts";
 import { approve } from "../engine/decisions.mjs";
 import { checkVenture, compare, proposeCriteria, proposalId, yesAt } from "./check-detectors.ts";
 import type { Detector } from "../records/types/records.d.ts";

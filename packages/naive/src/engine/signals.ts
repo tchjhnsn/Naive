@@ -21,12 +21,12 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { canonicalJson, idHolds, signalId } from "../core/signal-id.ts";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { globRegExp } from "../records/index.mjs";
-import { routes } from "../records/routes/routes.mjs";
-import { Validator, registryOf, validateValue } from "../records/validate.mjs";
-import { address, safePath } from "../store/connectors/contract.mjs";
-import { LOCAL, connect, sourcesOf } from "../store/connectors/index.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { globRegExp } from "../records/index.ts";
+import { routes } from "../records/routes/routes.ts";
+import { Validator, registryOf, validateValue } from "../records/validate.ts";
+import { address, safePath } from "../store/connectors/contract.ts";
+import { LOCAL, connect, sourcesOf } from "../store/connectors/index.ts";
 import { frames } from "./frames.mjs";
 import { namedPerson, packageDefs, readConfig } from "./naive-config.mjs";
 import { hears, isEdge, receive, resolveType, satisfies, splitRange, typeOfView, viewsOf, withdraw } from "./signals/render.ts";

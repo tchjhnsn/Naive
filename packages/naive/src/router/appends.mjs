@@ -1,6 +1,6 @@
 // The router's append action: one line added to the end of a log route, such as the detection ledger
 // (governance/detector-trial/<detector>, docs/design/SIGNAL_DETECTION_2026-11-07.md). Only the routes the route table
-// gives an append action take one (APPENDS in packages/naive/src/records/routes/routes.mjs).
+// gives an append action take one (APPENDS in packages/naive/src/records/routes/routes.ts).
 //
 //   input   { line, base? }   line: the line without prev and hash; base: the log's version the caller read,
 //                             or null for a log it believes is new
@@ -15,10 +15,10 @@
 // appended line is a provenance entry. It never calls a model.
 
 import { createHash } from "node:crypto";
-import { lineHash, record as prov } from "../core/provenance.mjs";
-import { address } from "../store/connectors/contract.mjs";
-import { schemaNameOf } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { lineHash, record as prov } from "../core/provenance.ts";
+import { address } from "../store/connectors/contract.ts";
+import { schemaNameOf } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 import { gateWrite } from "./gate-hooks.mjs";
 
 const RETRIES = 200;

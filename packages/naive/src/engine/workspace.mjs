@@ -18,11 +18,11 @@
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { systemZone, validZone } from "./clock.mjs";
 import { initCalendar } from "./calendar.mjs";
 import { goals } from "./canonical.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { validateFile } from "../records/validate.ts";
 
 export const WORKSPACE_FILE = "naive-workspace.json";
 const DEFAULTS = { cross_venture_reads: true, route_threshold: 0.8 };

@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile, spawnSync } from "node:child_process";
 import { RELATIONS, namesBetween } from "../../../../terms/relations.ts";
-import { readSchema } from "../../../../records/index.mjs";
+import { readSchema } from "../../../../records/index.ts";
 
 // Tests start in order and may await a child process, so the command runs overlap; results print in order.
 let failed = 0;

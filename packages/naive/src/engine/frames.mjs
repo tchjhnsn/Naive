@@ -23,8 +23,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

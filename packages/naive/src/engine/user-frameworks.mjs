@@ -17,8 +17,8 @@ import { check as checkFrameworks } from "./check-frameworks.mjs";
 import { findWorkspace } from "./workspace.mjs";
 import { leaks } from "./check-leaks.mjs";
 import { findSecrets } from "./redact.mjs";
-import { schemaFile } from "../records/index.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { schemaFile } from "../records/index.ts";
+import { validateFile } from "../records/validate.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -81,7 +81,7 @@ export function newFramework(id, from = process.cwd(), { title, owner } = {}) {
   return { dir, framework: fw };
 }
 
-// Schema and maps_to: validate.mjs, then check-frameworks over the workspace.
+// Schema and maps_to: validate.ts, then check-frameworks over the workspace.
 export function checkUserFrameworks(id, from = process.cwd()) {
   const { workspace: ws, frameworks } = listFrameworks(from);
   const own = frameworks.filter((f) => f.source === "workspace" && (!id || f.id === id));

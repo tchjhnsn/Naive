@@ -27,9 +27,9 @@ import { Effect } from "effect";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { describe, runMain } from "../core/effect/run.ts";
-import { recordsIn } from "../records/index.mjs";
-import { routes } from "../records/routes/routes.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { recordsIn } from "../records/index.ts";
+import { routes } from "../records/routes/routes.ts";
+import { validateValue } from "../records/validate.ts";
 
 const args = process.argv.slice(2);
 const flag = (f: string) => args.includes(f);

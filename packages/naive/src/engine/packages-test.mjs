@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { packages, request, situation, write, PACKAGES, HOME } from "./packages.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { readDataModel } from "../records/index.ts";
 
 const MODEL = readDataModel();
 let failed = 0;

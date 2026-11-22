@@ -3,7 +3,7 @@
 // takes the phases, each with its gate items and presets, and checks what the schema cannot: every item's record is a
 // record type in the data model (or null for a person's act), and every preset gives every item of its phase a
 // minimum level and boundary and names no other. strictness scores a preset from 0 to 100.
-import { readDataModel } from "../../records/index.mjs";
+import { readDataModel } from "../../records/index.ts";
 import { cli, describeFrom, validate } from "./function-common.ts";
 import type { PhaseGatePolicies } from "../../records/types/records.d.ts";
 

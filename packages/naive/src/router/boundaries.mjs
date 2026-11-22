@@ -18,10 +18,10 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { git as runGit, refusedBy } from "../core/runtime.mjs";
-import { ROOT, dataModelFile, readDataModel, readSchema, schemaFile, schemaNameOf } from "../records/index.mjs";
-import { validateFile as checkFile } from "../records/validate.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { git as runGit, refusedBy } from "../core/runtime.ts";
+import { ROOT, dataModelFile, readDataModel, readSchema, schemaFile, schemaNameOf } from "../records/index.ts";
+import { validateFile as checkFile } from "../records/validate.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -55,7 +55,7 @@ export function minimalVenture(dir) {
 /**
  * The venture's global error (E-8, P-15): null when venture.json is sound, else what is wrong and
  * how to recover. Checks what the router needs before anything else runs: it parses, its required
- * fields are there, its id and phase are valid. The full schema check stays in packages/naive/src/records/validate.mjs.
+ * fields are there, its id and phase are valid. The full schema check stays in packages/naive/src/records/validate.ts.
  */
 export function ventureHealth(dir) {
   const file = join(dir, "venture.json");
@@ -79,7 +79,7 @@ export function ventureHealth(dir) {
       ...(refused ? [refused.message] : []),
       `Fix it by hand: it must be a JSON object with ${VENTURE_SCHEMA().required.join(", ")}`,
       `Or rebuild a minimal one, keeping the broken file in _private/: node packages/naive/src/router/boundaries.mjs recover ${dir} --confirm recover`,
-      `Then check it: node packages/naive/src/records/validate.mjs --schema venture.schema.json --file ${file}`,
+      `Then check it: node packages/naive/src/records/validate.ts --schema venture.schema.json --file ${file}`,
     ],
     template: minimalVenture(dir),
   };

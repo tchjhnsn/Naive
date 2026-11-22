@@ -9,7 +9,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { logical, ventureFile } from "../core/venture-paths.mjs";
+import { logical, ventureFile } from "../core/venture-paths.ts";
 import { roles as roleRegistry } from "../engine/venture-type.mjs";
 import type { VentureRole } from "../records/types/records.d.ts";
 
@@ -125,7 +125,7 @@ function decisionHasPerson(d: DecisionFields, names: Set<unknown>, checkRoster: 
   });
 }
 
-export { peopleLintCommands } from "../records/routes/commands.mjs";
+export { peopleLintCommands } from "../records/routes/commands.ts";
 
 export function lint(dir: string) {
   const reg = registry();

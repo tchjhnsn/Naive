@@ -9,9 +9,9 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync,
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.mjs";
-import { entries, record } from "../../core/provenance.mjs";
-import { BLOBS, blobFile, blobHash, readBlob } from "../../core/blobs.mjs";
-import { pathsAsOf, readAsOf } from "../../store/as-of.mjs";
+import { entries, record } from "../../core/provenance.ts";
+import { BLOBS, blobFile, blobHash, readBlob } from "../../core/blobs.ts";
+import { pathsAsOf, readAsOf } from "../../store/as-of.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 let failed = 0;

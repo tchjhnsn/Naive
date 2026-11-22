@@ -1,5 +1,5 @@
 // The routes' actions, shared by the CLI, the MCP server and the HTTP API (EE-030, EE-032). The route
-// table itself is packages/naive/src/records/routes/routes.mjs, re-exported here: routes are generated from the data
+// table itself is packages/naive/src/records/routes/routes.ts, re-exported here: routes are generated from the data
 // model and the kit manifests, never written by hand, so they cannot drift from the files. The
 // conventions follow the Next.js App Router:
 //
@@ -43,8 +43,8 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
-import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.mjs";
-import { address } from "../store/connectors/contract.mjs";
+import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
+import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked } from "../engine/decisions.mjs";
 import { configOf, hold } from "../engine/gate.mjs";
 import { blocked as betaBlocked } from "../engine/beta-gate.mjs";
@@ -58,12 +58,12 @@ import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite
 // Appends (packages/naive/src/router/appends.mjs): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.mjs";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.mjs";
-import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.mjs";
+import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.mjs";
-import { actionScope, memo } from "../core/action-scope.mjs";
-// Context hook: instrumentation of every call and judgment (packages/naive/src/core/instrumentation.mjs, P-4, F-4).
-import { instrumented, judgment } from "../core/instrumentation.mjs";
+import { actionScope, memo } from "../core/action-scope.ts";
+// Context hook: instrumentation of every call and judgment (packages/naive/src/core/instrumentation.ts, P-4, F-4).
+import { instrumented, judgment } from "../core/instrumentation.ts";
 // Hooks for writes, reads and boundaries (wf/writes): the wrapper around call, per-record containment and private folders.
 import { around } from "./writes.mjs";
 import { contain } from "./boundaries.mjs";
@@ -76,16 +76,16 @@ import { brandLayout } from "../engine/brand.mjs";
 // Legal lint hook: legal/lint (packages/naive/src/checks/lint-legal.ts). A lint, not legal advice.
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../engine/stale.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { isFunction, templateOf } from "../engine/research-programs.mjs";
 import { coreOf, statementsIn, withCore } from "../engine/venture-core.mjs";
 import { telosView } from "../../../../frameworks/telos/adapter.mjs";
 import { migrated, scale } from "../engine/canonical.mjs";
-import { schemaNameOf } from "../records/index.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { schemaNameOf } from "../records/index.ts";
+import { validateFile } from "../records/validate.ts";
 import {
   PHASES, allowed, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
-} from "../records/routes/routes.mjs";
+} from "../records/routes/routes.ts";
 // The route table lives in packages/naive/src/records/routes so that schema/ can read it without importing this file.
 export { PHASES, allowed, files, gateOf, glob, groups, kits, repo, resolve, routes, ventureDir, ventures };
 
@@ -195,7 +195,7 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
  * decision, note, agent } for the log.
  */
 // Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
-// Context hook: every call is timed and measured for agent vitals (packages/naive/src/core/instrumentation.mjs).
+// Context hook: every call is timed and measured for agent vitals (packages/naive/src/core/instrumentation.ts).
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
 // Writes hook (packages/naive/src/router/writes.mjs): adds what reads, layouts and writes answer.
 // The projector hook (packages/naive/src/router/acting.mjs): whether the call carries the projector's symbol is read here and passed on.

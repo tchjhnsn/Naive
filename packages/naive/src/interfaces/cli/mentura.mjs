@@ -78,7 +78,7 @@ import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../../router/router.mjs";
-import { agentFromEnv, entries, record } from "../../core/provenance.mjs";
+import { agentFromEnv, entries, record } from "../../core/provenance.ts";
 import { FRAME, filesOf, statementFiles } from "../../engine/foundation.mjs";
 import { approve, decisionFile, decisions, merge, propose, rollback } from "../../engine/decisions.mjs";
 import { reasonsFromArgs, whyLines } from "../../engine/reasons.mjs";
@@ -86,7 +86,7 @@ import { impact } from "../../engine/impact.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../engine/gate-drafts.mjs";
 import { asRouted, findVenture } from "./find-venture.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 import { setPublic, visibilityOf } from "../../engine/visibility.mjs";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types

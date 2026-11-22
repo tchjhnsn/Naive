@@ -22,10 +22,10 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { call, ventureDir } from "./router.mjs";
-import { agentFromEnv, record as prov } from "../core/provenance.mjs";
+import { agentFromEnv, record as prov } from "../core/provenance.ts";
 import { altStatement, checkAssets, facts as allFacts, factsOf, REGISTER, registerOf } from "../engine/assets.mjs";
 import { brandOf, checkBrand, resolveBrand, sitemapOf, sitemapXml, termsFor, tokens, voice } from "../engine/brand.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const VERSION = "0.1.0";
 const today = () => new Date().toISOString();

@@ -15,7 +15,7 @@ import { call } from "../../router/router.mjs";
 import { ledgerPath, verify } from "../../router/detection-ledger.mjs";
 import { approve } from "../../engine/decisions.mjs";
 import { detectorFor } from "../../engine/detectors.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { validateValue } from "../../records/validate.ts";
 import { NOT_BUILT, SEAMS, toolsAgainstSpend } from "../../checks/check-seams.ts";
 import { ACT, DISMISS, decisionId, outcomeOf, run } from "../../router/orchestration/seams.ts";
 import { draft as connectionDraft } from "../../engine/generators/connection.ts";

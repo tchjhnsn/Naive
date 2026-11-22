@@ -7,8 +7,8 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readDataModel, recordsIn } from "../records/index.mjs";
-import { naiveScript } from "../core/scripts.mjs";
+import { readDataModel, recordsIn } from "../records/index.ts";
+import { naiveScript } from "../core/scripts.ts";
 import type { Board, DataModel, DecisionRights, Department, DepartmentCatalog, Evidence, Exit, FounderAgreement, Handoff, Integration, KnowledgeSources, Layer, LeadPlan, Ownership, Product, PublicationPolicy, TeamPlan, Telos, ValidationProblem, ValidationProductMarketFit, Venture, WhereUsed } from "../records/types/records.d.ts";
 
 // A library package's package.json has no schema: the fields these tests change.
@@ -345,7 +345,7 @@ for (const [name, text, pattern] of ([
 writeFileSync(join(repo, "packages/naive/src/store/connectors/leak.mjs"), `// a comment may name ${appFolder}/connectors/github.mjs\nexport default 1;\n`);
 expect("a comment that names an app module passes", run("check-boundary.ts", [], { EE_ROOT: repo }).status === 0);
 rmSync(join(repo, "packages/naive/src/store/connectors/leak.mjs"));
-edit(join(repo, "packages/naive/src/records/layers/knowledge/tooling/integrations.json"), (list: Integration[]) => { const g = must(list.find((t) => t.id === "github")); g.connector = { module: "packages/naive/src/store/connectors/filesystem.mjs", writes: ["direct"] }; g.credentials = ["GITHUB_TOKEN"]; });
+edit(join(repo, "packages/naive/src/records/layers/knowledge/tooling/integrations.json"), (list: Integration[]) => { const g = must(list.find((t) => t.id === "github")); g.connector = { module: "packages/naive/src/store/connectors/filesystem.ts", writes: ["direct"] }; g.credentials = ["GITHUB_TOKEN"]; });
 { const r = run("check-boundary.ts", [], { EE_ROOT: repo }); expect("a Naive connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.

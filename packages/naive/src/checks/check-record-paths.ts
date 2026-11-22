@@ -1,6 +1,6 @@
 // The record types' paths go through one resolver (monorepo rebuild step 5a-1,
 // design docs/design/MONOREPO_RECORDS_PACKAGE_2026-11-05.md in PR #243). Code that reads a framework schema file or the data model
-// asks packages/naive/src/records/index.mjs where it is, so the record types can move in one change. This check fails when
+// asks packages/naive/src/records/index.ts where it is, so the record types can move in one change. This check fails when
 // code outside the resolver builds such a path from the folder name.
 //
 //   node packages/naive/src/checks/check-record-paths.ts     check the tracked code, exit 1 on a finding
@@ -15,7 +15,7 @@
 //                     schema.replace(/^schema\//, ""), schema.startsWith("schema/"), "schema/".length, and in
 //                     Python startswith("schema/")
 //   python path       pathlib division by the folder: root / "schema" or root / "packages/naive/src/records/data-model.json"
-// A bare name ("venture.schema.json") is not a path: packages/naive/src/records/validate.mjs and the resolver look names up.
+// A bare name ("venture.schema.json") is not a path: packages/naive/src/records/validate.ts and the resolver look names up.
 // A message that mentions a path inside a sentence is not an argument by itself, so it is not a finding.
 
 import { spawnSync } from "node:child_process";
@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 export type Finding = { readonly file: string; readonly line: number; readonly kind: string; readonly text: string };
 
 /** The resolver itself: the one file that may name the folder. */
-export const RESOLVER = "packages/naive/src/records/index.mjs";
+export const RESOLVER = "packages/naive/src/records/index.ts";
 
 /** Files that name the folder on purpose, each with its reason. A fixture or a venture's own file belongs here. */
 export const ALLOW: Readonly<Record<string, string>> = {

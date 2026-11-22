@@ -7,7 +7,7 @@ import { mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CANVAS, canvasBox, leanCanvas, problems, roadmapOrder, unlocksOf } from "./lean-canvas.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { readDataModel } from "../records/index.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail?: unknown): void => {

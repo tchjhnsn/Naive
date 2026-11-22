@@ -18,12 +18,12 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 import { measures } from "../canonical.mjs";
 import { roleOf, routeGlob } from "../access.mjs";
 import { routeTask } from "../route-task.ts";
 import type { Context, LeadPlanBinding, Measure, Routed, Task } from "../route-task.ts";
-import { routes } from "../../records/routes/routes.mjs";
+import { routes } from "../../records/routes/routes.ts";
 import type { FunctionId, Phase, TeamPlanRole } from "./function-spec.ts";
 import { functionAgent, functionIds, naivePath, reachesTeamPlan, teamPlanEntry } from "./function-spec.ts";
 

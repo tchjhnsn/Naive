@@ -36,9 +36,9 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { entries as provEntries } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.mjs";
+import { entries as provEntries } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -51,8 +51,8 @@ export const keyOf = (parts) => sha(JSON.stringify(canon(parts)));
 // ---------------------------------------------------------------------------------------------
 // Per-action memoization (F-2, F-12, O-5)
 
-export { actionScope, actionStats, forget, inAction, memo } from "../core/action-scope.mjs";
-import { memo } from "../core/action-scope.mjs";
+export { actionScope, actionStats, forget, inAction, memo } from "../core/action-scope.ts";
+import { memo } from "../core/action-scope.ts";
 
 // ---------------------------------------------------------------------------------------------
 // Lifetimes (C-4): Next.js cacheLife profiles, in seconds. Fresh while younger than revalidate;
@@ -384,8 +384,8 @@ export function clear(dir, { level } = {}) {
 // ---------------------------------------------------------------------------------------------
 // The router's routes (system/cache, system/judge, system/answer) and their handlers
 
-// The cache's command routes are data in packages/naive/src/records/routes/commands.mjs.
-export { cacheRoutes } from "../records/routes/commands.mjs";
+// The cache's command routes are data in packages/naive/src/records/routes/commands.ts.
+export { cacheRoutes } from "../records/routes/commands.ts";
 
 // Whether a record is confirmed: the last provenance entry for its file was a person's (a write, an
 // accept or a confirm), or an agent wrote it and nobody has confirmed it since.

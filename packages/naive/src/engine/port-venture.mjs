@@ -23,9 +23,9 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { agentFromEnv, record } from "../core/provenance.mjs";
-import { CODEBASE, ventureFile } from "../core/venture-paths.mjs";
-import { envCommand, git as runGit, hostHook, refusedBy } from "../core/runtime.mjs";
+import { agentFromEnv, record } from "../core/provenance.ts";
+import { CODEBASE, ventureFile } from "../core/venture-paths.ts";
+import { envCommand, git as runGit, hostHook, refusedBy } from "../core/runtime.ts";
 
 export const PLAN = ".release/port-plan.json";
 export const TRACE = ".release/port-trace.json";

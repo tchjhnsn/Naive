@@ -10,7 +10,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { record } from "../../core/provenance.mjs";
+import { record } from "../../core/provenance.ts";
 import { signalId } from "../../core/signal-id.ts";
 import { windowProblems } from "../generators/eval-plan.ts";
 import { settledRecord, timeMs } from "./outcomes.ts";

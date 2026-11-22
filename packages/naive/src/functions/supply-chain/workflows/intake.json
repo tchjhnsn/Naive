@@ -12,7 +12,7 @@
     { "id": "summarize", "do": "Tell the founder in one message who supplies what, which critical items have a single source, what the open orders commit and what is missing to compute landed cost per unit, raising the order of work to the product lead.", "skill": "supplier-and-purchasing", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
     { "id": "single-sources-named", "kind": "review", "check": "Is every bottleneck or strategic item with a single source named in the summary with a proposed response?", "reviewer": "product-lead" }
   ]
 }

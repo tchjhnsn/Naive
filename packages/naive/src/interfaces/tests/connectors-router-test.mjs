@@ -1,7 +1,7 @@
 // The connectors through the router (EE-037, EE-042): a venture whose source map keeps one record type
 // in another folder, the catalog across both sources, the source-of-truth matrix and attributes
 // mastered elsewhere. These evals run routes through the router's call, so they moved here from
-// packages/naive/src/store/connectors/eval.mjs in step 4 of the router inversion. The contract suite stays there.
+// packages/naive/src/store/connectors/eval.ts in step 4 of the router inversion. The contract suite stays there.
 //
 //   router     reads come from the mapped source with their version, a write lands there and is
 //              logged by address, nothing invalid reaches the source, and every other record stays
@@ -15,9 +15,9 @@
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { blobSha } from "../../store/connectors/contract.mjs";
-import { harness } from "../../store/connectors/suite.mjs";
-import { build, FILE, load, search } from "../../store/connectors/catalog.mjs";
+import { blobSha } from "../../store/connectors/contract.ts";
+import { harness } from "../../store/connectors/suite.ts";
+import { build, FILE, load, search } from "../../store/connectors/catalog.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const h = harness("connectors-router");
@@ -31,7 +31,7 @@ process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 const shared = join(ws, "shared");
 const { call } = await import("../../router/router.mjs");
-const { entries } = await import("../../core/provenance.mjs");
+const { entries } = await import("../../core/provenance.ts");
 const kettle = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0], id: "kettle", name: "Kettle (in the shared folder)" };
 write(shared, { "products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" });
 const map = { sources: [{ id: "shared", connector: "filesystem", root: "../../shared" }], records: { product: "shared" } };
@@ -52,14 +52,14 @@ const w = await call({ venture: "tandem", route: "purpose/product/teapot", actio
 expect("router: a write lands in the mapped source, not the venture folder", w.ok && JSON.parse(readFileSync(join(shared, "products/teapot.json"), "utf8")).name === "Teapot" && !existsSync(join(tandem, "products/teapot.json")), JSON.stringify(w));
 const e = entries(tandem).at(-1);
 expect("router: the write is logged by address, with the source's version", e.entity === "shared://products/teapot.json" && e.source?.connector === "filesystem" && e.source.version === blobSha(readFileSync(join(shared, "products/teapot.json"))), JSON.stringify(e));
-const { readAsOf } = await import("../../store/as-of.mjs");
+const { readAsOf } = await import("../../store/as-of.ts");
 expect("router: a write to another source keeps its bytes in the venture's blob store, so an as-of read by address returns them",
   readAsOf(tandem, "shared://products/teapot.json", e.at)?.content === readFileSync(join(shared, "products/teapot.json"), "utf8"));
 const prov = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.ts"), ws], { encoding: "utf8" });
 const srcCheck = (d) => spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.ts"), d], { encoding: "utf8" });
 expect("router: check-provenance accepts entries for records in another source", prov.status === 0, prov.stderr);
 expect("router: check-sources accepts the map", srcCheck(ws).status === 0, srcCheck(ws).stderr);
-const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
+const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
 expect("router: the map matches its schema", valid.status === 0, valid.stdout + valid.stderr);
 write(tandem, { "knowledge/sources.json": JSON.stringify({ sources: [{ id: "team-repo", connector: "notion" }], records: { product: "team-repo", venture: "team-repo" } }) });
 const broken = srcCheck(ws);
@@ -93,8 +93,8 @@ expect("catalog: after a change, a rebuild reads only the new item", changed.rea
 
 // ---- Matrix (EE-042) ------------------------------------------------------------------------------
 console.log("\n# source-of-truth matrix");
-const { resolve: resolveRule } = await import("../../store/connectors/resolve.mjs");
-const { sourceFor } = await import("../../store/connectors/index.mjs");
+const { resolve: resolveRule } = await import("../../store/connectors/resolve.ts");
+const { sourceFor } = await import("../../store/connectors/index.ts");
 const rule = (o) => ({ record: "product", attribute: "*", phase: "*", product: "*", account: "*", actor: "*", owner: "founder", ...o });
 const matrix = { sources: map.sources, records: {}, rules: [
   rule({ system_of_record: "venture" }),

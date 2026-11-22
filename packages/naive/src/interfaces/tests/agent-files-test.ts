@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { edit, glob, grep, ls, read, readRaw, write } from "../../router/agent-files.ts";
-import { sessions, spans } from "../../core/instrumentation.mjs";
+import { sessions, spans } from "../../core/instrumentation.ts";
 
 const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 let failed = 0;

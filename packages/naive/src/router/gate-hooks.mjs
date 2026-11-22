@@ -8,9 +8,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { confidenceCall, evaluate, writerRule } from "../engine/gate.mjs";
 import { trialOf, writeHeld } from "../engine/gate-drafts.mjs";
 import { reachRefusal } from "../engine/agents/reach.mjs";
-import { entries as provEntries } from "../core/provenance.mjs";
+import { entries as provEntries } from "../core/provenance.ts";
 import { checksFor, configFor } from "../engine/naive-config.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 /**
  * One writer per file, checked on every write and append, local or in another source, before anything else is

@@ -29,10 +29,10 @@
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { entries as provenance } from "../core/provenance.mjs";
+import { entries as provenance } from "../core/provenance.ts";
 import { decisionFile, decisions, ownScore, PHASES } from "./decisions.mjs";
 import { structural, ventureRecords } from "./impact.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { line } from "./detectors.mjs";
 import { rank } from "./decision-queue.mjs";
 

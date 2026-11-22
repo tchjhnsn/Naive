@@ -16,10 +16,10 @@
 // under node_modules, where Node strips no types (router.mjs imports recipes.ts lazily for the same reason).
 // It never calls a model.
 
-import { record as prov } from "../core/provenance.mjs";
-import { address } from "../store/connectors/contract.mjs";
-import { schemaNameOf } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { record as prov } from "../core/provenance.ts";
+import { address } from "../store/connectors/contract.ts";
+import { schemaNameOf } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 import { gateWrite } from "./gate-hooks.mjs";
 
 /** Fields the claimant writes after a claim: progress and evidence. */

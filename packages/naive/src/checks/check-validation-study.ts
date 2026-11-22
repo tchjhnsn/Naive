@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { manifest } from "../engine/beta-gate.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import type { BetaCapabilities, Bug, ValidationFeedback, ValidationInterview } from "../records/types/records.d.ts";
 
 const list = <T>(d: string): { f: string, r: T }[] => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => ({ f, r: JSON.parse(readFileSync(join(d, f), "utf8")) as T })) : [];

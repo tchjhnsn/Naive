@@ -16,7 +16,7 @@
 //
 // Time travel is bitemporal (SQL:2011):
 //   --as-of <iso>     system time: each record as the venture knew it then, read through readAsOf from the provenance
-//                     log and the blob store (packages/naive/src/store/as-of.mjs). A record written outside the router
+//                     log and the blob store (packages/naive/src/store/as-of.ts). A record written outside the router
 //                     (init, a hand edit) has no system time until mentura baseline adopts it, so it reads as absent.
 //   --valid-at <date> application time: a cell counts only when its valid_from and valid_to include the date (valid_to
 //                     is exclusive, as SQL:2011 periods are); any other cell is unknown at that time. Cells without
@@ -36,10 +36,10 @@ import { join } from "node:path";
 import { CannotRun, SchemaInvalid } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain, runSync } from "../core/effect/run.ts";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { globRegExp, readDataModel, readSchema, venturePaths } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
-import { pathsAsOf, readAsOf } from "../store/as-of.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { globRegExp, readDataModel, readSchema, venturePaths } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
+import { pathsAsOf, readAsOf } from "../store/as-of.ts";
 import { agentWrote } from "./foundation.mjs";
 import { CANVAS, leanCanvas } from "./lean-canvas.mjs";
 import type { VentureAnatomy } from "../records/types/records.d.ts";

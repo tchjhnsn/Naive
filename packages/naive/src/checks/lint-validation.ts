@@ -12,7 +12,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { grade, gradeRecord } from "./check-validation.ts";
 import { label } from "../engine/assess-problem.mjs";
-import { logicalFiles, ventureFile } from "../core/venture-paths.mjs";
+import { logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import type { Graded, SubScoreRecord } from "./check-validation.ts";
 
 // The records here may be malformed, so they are read as loose objects and each field is narrowed where it is used.
@@ -235,7 +235,7 @@ export function lint(dir: string, { now = new Date() }: { now?: Date | string | 
   return { ok: !failed, rules, findings };
 }
 
-export { validationCommands } from "../records/routes/commands.mjs";
+export { validationCommands } from "../records/routes/commands.ts";
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);

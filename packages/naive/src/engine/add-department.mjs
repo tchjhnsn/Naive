@@ -13,7 +13,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { catalog, foldersOf } from "./departments.mjs";
 import { seedPrograms } from "./research-programs.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const args = process.argv.slice(2);
 const group = args.includes("--group");

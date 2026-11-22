@@ -1,6 +1,6 @@
 // Sources and connectors (EE-037). The knowledge layer federates: records stay in the sources a
 // venture already uses, and the router reaches each through a connector with one contract
-// (contract.mjs). Nothing is copied.
+// (contract.ts). Nothing is copied.
 //
 //   The registry   packages/naive/src/records/layers/knowledge/tooling/integrations.json: an integration with a `connector` names
 //                  the module that implements the contract for it.
@@ -19,12 +19,12 @@
 
 import { isAbsolute, join, resolve } from "node:path";
 import { Effect } from "effect";
-import { conformance } from "./contract.mjs";
-import { ANY, resolve as resolveRule } from "./resolve.mjs";
+import { conformance } from "./contract.ts";
+import { ANY, resolve as resolveRule } from "./resolve.ts";
 import { CannotRun, Refused } from "../../core/effect/errors.ts";
 import { VentureFs, readJson } from "../../core/effect/fs.ts";
 import { runPromise, runSync } from "../../core/effect/run.ts";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 /** @typedef {import("../../core/effect/errors.ts").NaiveError} NaiveError */
 /** @typedef {{ id: string, connector?: string, root?: string, writes?: string, implicit?: boolean, [k: string]: unknown }} Source */
@@ -120,7 +120,7 @@ export const sourceForEffect = (dir, recordType, context = {}) => Effect.gen(fun
 
 /**
  * The source a record type lives in, for a context (EE-042): the system of record of the most
- * specific rule that holds (resolve.mjs). The venture's phase comes from venture.json; product,
+ * specific rule that holds (resolve.ts). The venture's phase comes from venture.json; product,
  * account and actor come from the caller. With no rule, the venture's own folder.
  * @param {string} dir @param {string} recordType @param {Record<string, string>} [context]
  */

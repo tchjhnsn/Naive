@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, merge, propose, rollback } from "./decisions.mjs";
 import { staleOf } from "./stale.mjs";
-import { Validator, useValidator } from "../records/validate.mjs";
+import { Validator, useValidator } from "../records/validate.ts";
 
 let failed = 0;
 const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
@@ -50,7 +50,7 @@ try {
   const conforms = (record, schema) => {
     const f = join(v, "conforms.tmp.json");
     writeFileSync(f, JSON.stringify(record));
-    const r = spawnSync(process.execPath, [new URL("../records/validate.mjs", import.meta.url).pathname, "--schema", schema, "--file", f], { encoding: "utf8" });
+    const r = spawnSync(process.execPath, [new URL("../records/validate.ts", import.meta.url).pathname, "--schema", schema, "--file", f], { encoding: "utf8" });
     rmSync(f);
     return r.status === 0;
   };

@@ -7,8 +7,8 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { handle } from "./setup.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
-import { naiveScript } from "../../core/scripts.mjs";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { naiveScript } from "../../core/scripts.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "setup-test-"));
@@ -16,7 +16,7 @@ const dir = join(base, "acme");
 let failed = 0;
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
 /** @type {NodeJS.ProcessEnv} */
-// finance=rho syncs through the app's command (packages/naive/src/core/sync.mjs); the test names a stand-in.
+// finance=rho syncs through the app's command (packages/naive/src/core/sync.ts); the test names a stand-in.
 const env = { ...process.env, HOME: base, NAIVE_SYNC_RHO: `node ${join(repo, "packages/naive/src/records/examples/money-sync/sync.ts")}` };
 delete env.MENTURA_WORKSPACE;
 const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });

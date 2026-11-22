@@ -12,7 +12,7 @@
 // area over a ledger are packages/naive/src/engine/detection.ts.
 
 import { randomUUID } from "node:crypto";
-import { lineHash } from "../core/provenance.mjs";
+import { lineHash } from "../core/provenance.ts";
 import { call } from "./router.mjs";
 
 const RETRIES = 200;

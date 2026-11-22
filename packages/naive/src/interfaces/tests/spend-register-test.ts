@@ -13,11 +13,11 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "../../router/router.mjs";
-import { entries } from "../../core/provenance.mjs";
+import { entries } from "../../core/provenance.ts";
 import { writerRule } from "../../engine/gate.mjs";
-import { resolve as resolveRule } from "../../store/connectors/resolve.mjs";
+import { resolve as resolveRule } from "../../store/connectors/resolve.ts";
 import { draft, describe } from "../../engine/generators/spend-register.ts";
-import { readSchema } from "../../records/index.mjs";
+import { readSchema } from "../../records/index.ts";
 import type { SpendRegister } from "../../records/types/records.d.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;

@@ -5,9 +5,9 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { entries } from "../core/provenance.mjs";
-import { layoutOf, ventureFile } from "../core/venture-paths.mjs";
-import { naiveScript } from "../core/scripts.mjs";
+import { entries } from "../core/provenance.ts";
+import { layoutOf, ventureFile } from "../core/venture-paths.ts";
+import { naiveScript } from "../core/scripts.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;

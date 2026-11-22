@@ -13,8 +13,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { call } from "../../router/router.mjs";
 import { glob, ls, read, readRaw } from "../../router/agent-files.ts";
-import { record } from "../../core/provenance.mjs";
-import { blobHash } from "../../core/blobs.mjs";
+import { record } from "../../core/provenance.ts";
+import { blobHash } from "../../core/blobs.ts";
 import { cutFor, inEval, isResearcher } from "../../router/reads-as-of.mjs";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;

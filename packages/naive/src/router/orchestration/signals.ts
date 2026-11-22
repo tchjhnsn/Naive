@@ -26,13 +26,13 @@
 // It calls no model and copies no library signal into the venture.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { readBlob } from "../../core/blobs.mjs";
-import { entries, record } from "../../core/provenance.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { readBlob } from "../../core/blobs.ts";
+import { entries, record } from "../../core/provenance.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 import { decisionFile, propose } from "../../engine/decisions.mjs";
 import { verify } from "../../engine/freshness.mjs";
 import { mark } from "../../engine/stale.mjs";
-import { LOCAL, connect, sourcesOf } from "../../store/connectors/index.mjs";
+import { LOCAL, connect, sourcesOf } from "../../store/connectors/index.ts";
 import * as S from "../../engine/signals.ts";
 import type { Change, Facts, Library, Merged, ProvLine, Pulled, Rendered, Typed } from "../../engine/signals.ts";
 import { receptionPath } from "../../engine/generators/reception.ts";

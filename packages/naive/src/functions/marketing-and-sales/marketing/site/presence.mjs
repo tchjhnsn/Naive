@@ -22,7 +22,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ventureFile } from "../../../../core/venture-paths.mjs";
+import { ventureFile } from "../../../../core/venture-paths.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

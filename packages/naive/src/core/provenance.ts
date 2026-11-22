@@ -17,12 +17,12 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { basename, dirname, join } from "node:path";
 import { Effect } from "effect";
-import { blobHash, writeBlobEffect } from "./blobs.mjs";
+import { blobHash, writeBlobEffect } from "./blobs.ts";
 import { IoError, ParseError, Refused } from "./effect/errors.ts";
 import { VentureFs } from "./effect/fs.ts";
 import { runSync } from "./effect/run.ts";
-import { currentSpan, emit } from "./instrumentation.mjs";
-import { ventureFile } from "./venture-paths.mjs";
+import { currentSpan, emit } from "./instrumentation.ts";
+import { ventureFile } from "./venture-paths.ts";
 
 /** @typedef {import("./effect/errors.ts").NotFound} NotFound */
 /** A provenance line as JSON.parse gives it; typed loosely, as before, so callers keep their own narrower shapes. @typedef {any} Entry */
@@ -255,8 +255,8 @@ export function actingAgent(by) {
  * record in another source (EE-037), its address (<source>://<path>) with the content's sha256
  * and the source's version, commit and pull request.
  *
- * The bytes the line's sha256 names go to the blob store (packages/naive/src/core/blobs.mjs) before
- * the line is appended, so an as-of read can return them (packages/naive/src/store/as-of.mjs). With no
+ * The bytes the line's sha256 names go to the blob store (packages/naive/src/core/blobs.ts) before
+ * the line is appended, so an as-of read can return them (packages/naive/src/store/as-of.ts). With no
  * sha256 and no content, they are the local file's bytes. A caller that passes content (a write to
  * another source) has them stored when they hash to the sha256. A caller that passes only a sha256
  * (a log append, a publish) stores no blob: an append-only log would otherwise keep a whole copy of

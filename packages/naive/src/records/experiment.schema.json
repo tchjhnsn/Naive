@@ -156,7 +156,7 @@
     },
     "candidate": {
       "$ref": "eval-plan.schema.json#/$defs/sha",
-      "description": "sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.mjs). On a holdout line, the tip that was checked"
+      "description": "sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.ts). On a holdout line, the tip that was checked"
     },
     "base": {
       "description": "The tip the candidate was edited from, or null for a recipe's first write. A write whose base is not the tip is refused before it is scored and logs no line",

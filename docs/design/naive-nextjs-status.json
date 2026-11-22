@@ -242,7 +242,7 @@
    "evidence": [
     "packages/create-venture/index.mjs",
     "packages/create-venture/test.mjs",
-    "packages/naive/src/records/validate.mjs"
+    "packages/naive/src/records/validate.ts"
    ],
    "page": "get-started/install",
    "note": "Every record type has a schema and every write is checked. The editor map in .vscode/settings.json stands in for a $schema field, which the schemas' additionalProperties would refuse"
@@ -328,8 +328,8 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/core/instrumentation.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/instrumentation.ts",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/router/vitals.mjs",
     "packages/naive/src/interfaces/context-test.mjs"
    ],
@@ -865,7 +865,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs"
+    "packages/naive/src/core/provenance.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -885,7 +885,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs"
+    "packages/naive/src/core/provenance.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -940,7 +940,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/vitals.mjs",
-    "packages/naive/src/core/instrumentation.mjs",
+    "packages/naive/src/core/instrumentation.ts",
     "packages/naive/src/interfaces/context-test.mjs"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -1019,7 +1019,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs"
+    "packages/naive/src/core/provenance.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1240,7 +1240,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/store/connectors/index.mjs"
+    "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1262,7 +1262,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/store/connectors/index.mjs"
+    "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1271,7 +1271,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/core/instrumentation.mjs",
+    "packages/naive/src/core/instrumentation.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/context-test.mjs"
    ],
@@ -1309,7 +1309,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/store/connectors/index.mjs"
+    "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1319,7 +1319,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/store/connectors/index.mjs"
+    "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1389,7 +1389,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1423,7 +1423,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1434,7 +1434,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1445,7 +1445,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1456,7 +1456,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1467,7 +1467,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1490,7 +1490,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1501,7 +1501,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1514,7 +1514,7 @@
     "packages/naive/src/router/orchestration/triggers.mjs",
     "packages/naive/src/records/trigger.schema.json",
     "packages/naive/src/records/kit.schema.json",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/upgrades-test.mjs"
    ],
    "evidence_elsewhere": [
@@ -1530,7 +1530,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1546,7 +1546,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1557,7 +1557,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/core/provenance.mjs",
+    "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/decisions"
@@ -1800,7 +1800,7 @@
    "note": "Covered by F-7: ",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/store/connectors/index.mjs"
+    "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
   },

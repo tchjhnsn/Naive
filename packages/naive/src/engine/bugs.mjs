@@ -6,7 +6,7 @@
 // when there are none. --all lists every bug. Exits 0 either way; the answer is in the output.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 export function bugs(dir) {
   const d = ventureFile(dir, "product/bugs");

@@ -19,8 +19,8 @@ import { emit, explainSignal, pull, replay } from "../../router/orchestration/si
 import type { PullResult } from "../../router/orchestration/signals.ts";
 import { CURSOR, libraries, listenersOf, routerRoute } from "../../engine/signals.ts";
 import { signalId } from "../../core/signal-id.ts";
-import { entries } from "../../core/provenance.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { entries } from "../../core/provenance.ts";
+import { validateValue } from "../../records/validate.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 let failed = 0;

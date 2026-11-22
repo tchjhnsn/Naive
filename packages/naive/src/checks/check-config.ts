@@ -21,10 +21,10 @@ import { join, resolve as resolvePath } from "node:path";
 import { CONFIG, configFor, installed, pinProblems, rawConfig } from "../engine/naive-config.mjs";
 import { evaluate, patternRe, rulesFor } from "../engine/gate.mjs";
 import { teamPlan } from "../engine/access.mjs";
-import { gateOf, repo, resolve, routes } from "../records/routes/routes.mjs";
-import { agentFromEnv, record } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { gateOf, repo, resolve, routes } from "../records/routes/routes.ts";
+import { agentFromEnv, record } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateFile } from "../records/validate.ts";
 import type { NaiveConfig } from "../records/types/records.d.ts";
 
 const FRAMEWORKS = ["idea-map"];

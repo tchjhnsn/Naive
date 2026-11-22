@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { roles as ROLES, types as TYPES } from "../engine/venture-type.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import type { Founder, People, Venture, VentureRole, VentureTypes } from "../records/types/records.d.ts";
 
 /** people/people.json as this check reads it: hats are strings, since a hat that is not a function is a finding. */

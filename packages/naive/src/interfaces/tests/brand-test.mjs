@@ -13,7 +13,7 @@ import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { call } from "../../router/router.mjs";
 import { addAsset, addRemote } from "../../router/brand.mjs";
-import { entries } from "../../core/provenance.mjs";
+import { entries } from "../../core/provenance.ts";
 import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../engine/assets.mjs";
 import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "../../engine/brand.mjs";
 
@@ -363,7 +363,7 @@ const brand = {
   expect("every write and confirmation kept the provenance chain", p.status === 0, p.stdout + p.stderr);
   for (const f of ["marketing/brand.json", "public/assets.json", "glossary/finance.json", "raw/sources/cc-photo/source.json", "marketing/sitemap.json"]) {
     const map = { "marketing/brand.json": "marketing-brand.schema.json", "public/assets.json": "public-assets.schema.json", "glossary/finance.json": "glossary.schema.json", "raw/sources/cc-photo/source.json": "raw-source.schema.json", "marketing/sitemap.json": "marketing-sitemap.schema.json" };
-    const v = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", map[f], "--file", join(dir, f)], { encoding: "utf8" });
+    const v = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", map[f], "--file", join(dir, f)], { encoding: "utf8" });
     expect(`${f} validates against its schema`, v.status === 0, v.stdout + v.stderr);
   }
   expect("tokens() is null without a brand", tokens(join(ws, "nowhere"), null) === null);

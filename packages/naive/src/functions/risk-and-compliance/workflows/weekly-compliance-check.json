@@ -11,7 +11,7 @@
     { "id": "catch-new", "do": "Check new ownership grants and new leases for duties they create (an 83(b) within 30 days of a grant, a lease's notice date) and add each as an obligation.", "writes": ["legal/obligations/[id]"], "raises": ["ownership-or-control"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
     { "id": "nothing-due-silent", "kind": "review", "check": "Is every obligation past its alert date either met with evidence or open as a decision for the founder?", "reviewer": "finance-lead" }
   ]
 }

@@ -15,7 +15,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { readConfig } from "../engine/naive-config.mjs";
 import { decisions, decisionFiles, propose, decisionFile } from "../engine/decisions.mjs";
 import type { Constraints, DecisionRecord, ExitCriteria, Goal, NaiveConfig, Requirement, Venture } from "../records/types/records.d.ts";

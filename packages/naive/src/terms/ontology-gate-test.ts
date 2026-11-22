@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { closeSync, constants, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, statSync, unlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { stealDeadLock, takeStaleLock } from "../core/provenance.mjs";
+import { stealDeadLock, takeStaleLock } from "../core/provenance.ts";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = fileURLToPath(new URL("../../../..", import.meta.url));
@@ -40,7 +40,7 @@ const gate = (file: string, fn: string, extra: string[] = []) => {
   return { status: ran.status, stdout: ran.stdout, stderr: ran.stderr, body };
 };
 
-const schemaValid = (file: string) => run(process.execPath, [join(root, "packages/naive/src/records/validate.mjs"), "--schema", "handoff.schema.json", "--file", file]).status === 0;
+const schemaValid = (file: string) => run(process.execPath, [join(root, "packages/naive/src/records/validate.ts"), "--schema", "handoff.schema.json", "--file", file]).status === 0;
 
 const handoff = (id: string, ontology: Record<string, unknown>) => {
   const file = join(tmp, `${id}.json`);
@@ -219,7 +219,7 @@ for (const [file, fn, , verdict, witness] of rows) {
   const file = join(dir, "pricing-admit.json");
   cpSync(fix("pricing-admit.json"), file);
   const preload = join(dir, "no-validator.mjs");
-  writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.mjs", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
+  writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.ts", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
   const ran = run(process.execPath, ["--import", pathToFileURL(preload).href, join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", "marketing-and-sales", "--record"]);
   expect("a schema checker that cannot run is a tool error and records nothing", ran.status === 2 && !ran.stdout.includes("\"verdict\"") && !existsSync(join(dir, "pricing-admit.provenance.jsonl")));
 }
@@ -265,7 +265,7 @@ for (const [file, fn, , verdict, witness] of rows) {
   const line = JSON.parse(once) as { sha256?: string; activity?: string; judgment?: Verdict; hash?: string };
   const fresh = join(tmp, "one-line.json");
   writeFileSync(fresh, once.trim());
-  expect("the sidecar line matches the provenance schema", run(process.execPath, [join(root, "packages/naive/src/records/validate.mjs"), "--schema", "provenance-entry.schema.json", "--file", fresh]).status === 0);
+  expect("the sidecar line matches the provenance schema", run(process.execPath, [join(root, "packages/naive/src/records/validate.ts"), "--schema", "provenance-entry.schema.json", "--file", fresh]).status === 0);
   const body = createHash("sha256").update(readFileSync(file)).digest("hex");
   expect("the line's sha256 is the package body", line.sha256 === body);
   const checked = run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]);

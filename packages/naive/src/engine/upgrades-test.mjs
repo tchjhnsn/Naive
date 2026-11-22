@@ -10,7 +10,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { entries } from "../core/provenance.mjs";
+import { entries } from "../core/provenance.ts";
 import { cmp, registry, snapshot, updateFramework } from "./upgrades.mjs";
 import { rewriteRoute } from "./migrations/kit-to-package.mjs";
 
@@ -233,7 +233,7 @@ expect("a change nothing reads marks nothing", /nothing reads what changed/.test
 const platformAdapter = join(ws, "platform-adapter.json");
 // The app's own hook test sits beside its adapter file, named by a relative path, and runs from that folder.
 writeFileSync(join(ws, "app-hooks-test.mjs"), `process.exit(process.cwd() === ${JSON.stringify(ws)} ? 0 : 1);\n`);
-writeFileSync(platformAdapter, JSON.stringify({ name: "mentura", title: "Mentura (stand-in)", kind: "platform", reads: ["knowledge/sources.json"], files: [], skills: null, verify: ["packages/naive/src/store/connectors/eval.mjs", "app-hooks-test.mjs"], sources: [], note: "A stand-in for the app's platform adapter" }));
+writeFileSync(platformAdapter, JSON.stringify({ name: "mentura", title: "Mentura (stand-in)", kind: "platform", reads: ["knowledge/sources.json"], files: [], skills: null, verify: ["packages/naive/src/store/connectors/eval.ts", "app-hooks-test.mjs"], sources: [], note: "A stand-in for the app's platform adapter" }));
 const withPlatform = { NAIVE_PLATFORM_ADAPTER: platformAdapter };
 const list = JSON.parse(mentura(["adapters", "--json"], withPlatform).stdout);
 expect("Mentura is listed as the platform adapter beside the harness adapters", list[0]?.name === "mentura" && list[0].kind === "platform" && ["claude-code", "codex", "cursor"].every((x) => list.some((l) => l.name === x && l.kind === "harness")));

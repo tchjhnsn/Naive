@@ -3,9 +3,9 @@
 // is the line's own sha256 field (the content's SHA-256) and <aa> its first two characters. A blob is content-addressed
 // and immutable: writing one that exists is a no-op, and a file whose bytes do not hash to its name is never served.
 //
-// The provenance log writes the blob before it appends the line (packages/naive/src/core/provenance.mjs record), so a
+// The provenance log writes the blob before it appends the line (packages/naive/src/core/provenance.ts record), so a
 // line written since blobs exist always has its blob. Lines written before carry no blob, and nothing backfills them.
-// packages/naive/src/store/as-of.mjs reads a record as it was at a transaction time from these blobs.
+// packages/naive/src/store/as-of.ts reads a record as it was at a transaction time from these blobs.
 //
 // This is a .mjs file, not .ts, because every write through the router imports it, and Node does not strip types
 // under node_modules, so an app that installs Naive (Mentura) could not load a .ts file here.
@@ -19,7 +19,7 @@ import { Effect } from "effect";
 import { ParseError } from "./effect/errors.ts";
 import { VentureFs } from "./effect/fs.ts";
 import { runSync } from "./effect/run.ts";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "./venture-paths.ts";
 
 /** The blob store's folder, as a logical path in a venture. Every layout keeps .naive/ at the top. */
 export const BLOBS = ".naive/blobs";

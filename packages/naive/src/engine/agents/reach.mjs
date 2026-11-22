@@ -8,8 +8,8 @@
 //   functionOfAgent("finance-agent")       // "finance"; null for a lead, a researcher or any other role
 //   reachRefusal({ role, route, table })   // a refusal naming the agent, the route and its patterns, or null
 
-import { readDataModel } from "../../records/index.mjs";
-import { routes } from "../../records/routes/routes.mjs";
+import { readDataModel } from "../../records/index.ts";
+import { routes } from "../../records/routes/routes.ts";
 import { PLANS, routeGlob } from "../access.mjs";
 import { catalog } from "../departments.mjs";
 

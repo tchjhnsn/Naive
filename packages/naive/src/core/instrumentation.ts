@@ -26,7 +26,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash, randomUUID } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "./venture-paths.mjs";
+import { ventureFile } from "./venture-paths.ts";
 
 export const EVENTS = ".naive/events.jsonl";
 export const TRACES = "traces";

@@ -4,7 +4,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 export const LAYERS = ["governance", "operations"];
