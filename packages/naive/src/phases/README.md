@@ -36,7 +36,7 @@ flowchart LR
 ## Run and test
 
 - `node packages/naive/src/checks/check-phases.ts [--json]` checks every phase module: present, valid, at its step, a gate that asks something and requires evidence whose source is a record type, active workflows that exist, weights over exactly the 13 functions summing to 1, need-now priors for the phase, and no gate defined twice. It exits 1 on a finding and 2 when a framework file cannot be read.
-- `node packages/naive/src/checks/check-phases-test.ts` breaks each rule on copies and tests the loader and the generator (`packages/naive/src/engine/generators/phase-module.ts`); `node test.mjs` runs it.
+- `node packages/naive/src/checks/check-phases-test.ts` breaks each rule on copies and tests the loader and the generator (`packages/naive/src/engine/generators/phase-module.ts`); `node test.ts` runs it.
 
 ## How it connects
 

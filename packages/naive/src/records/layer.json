@@ -43,7 +43,7 @@
   ],
   "writes": [],
   "checks": [
-    "test.mjs",
+    "test.ts",
     "packages/naive/src/records/validate.ts",
     "packages/naive/src/checks/check-data-model.ts",
     "packages/naive/src/checks/check-ventures.ts",

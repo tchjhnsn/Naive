@@ -50,7 +50,7 @@ It is `.mjs`, like [`packages/naive/src/core`](../core/README.md), until its uni
 
 - `node packages/naive/src/checks/check-record-paths.ts` fails when code outside this module builds a schema or data-model path from the folder name (`join(root, "schema", name)`, a path literal such as `"packages/naive/src/records/data-model.json"`, a concatenation, a stored path read by its prefix, or a Python `root / "schema"`). Its allowlist names each exception with a reason.
 - `node packages/naive/src/checks/check-record-paths-test.ts` checks that every schema resolves by name and by stored path and that every schema the data model names exists, and breaks the check on copies.
-- `node test.mjs` runs both.
+- `node test.ts` runs both.
 
 ## How it connects
 

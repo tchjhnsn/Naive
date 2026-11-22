@@ -42,7 +42,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 ## Run and test
 
 - `node packages/naive/src/interfaces/tests/<name>-test.mjs` runs one test. Each prints its checks and exits 1 on a failure.
-- `node test.mjs` runs all of them.
+- `node test.ts` runs all of them.
 
 ## How it connects
 

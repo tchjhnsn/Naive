@@ -34,7 +34,7 @@ export function parse(text: string): Scenario[] {
 }
 
 export async function run(file: string) {
-  const { steps }: { steps: StepDefinition[] } = await import(file.replace(/\.feature$/, ".steps.mjs").replace(/^(?!\/)/, `${process.cwd()}/`));
+  const { steps }: { steps: StepDefinition[] } = await import(file.replace(/\.feature$/, existsSync(file.replace(/\.feature$/, ".steps.ts")) ? ".steps.ts" : ".steps.mjs").replace(/^(?!\/)/, `${process.cwd()}/`));
   const results = [];
   for (const sc of parse(readFileSync(file, "utf8"))) {
     const world: World = {};

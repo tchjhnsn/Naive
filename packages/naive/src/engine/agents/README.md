@@ -18,4 +18,4 @@ The function agents and lead agents, derived from Naive's own data (EE-124; they
 
 ## Run and test
 
-- `node packages/naive/src/engine/agents/agents-test.ts`; `node test.mjs` runs it. The MCP tools are tested in [`mcp-agent-brief-test.ts`](../../interfaces/tests/mcp-agent-brief-test.ts).
+- `node packages/naive/src/engine/agents/agents-test.ts`; `node test.ts` runs it. The MCP tools are tested in [`mcp-agent-brief-test.ts`](../../interfaces/tests/mcp-agent-brief-test.ts).

@@ -45,7 +45,7 @@ A **venture development framework** (proposed genus, EE-024), in the same genus 
 | Conventions over configuration | One opinionated default per choice, each with references (EE-014) |
 | Project structure | Workspace, venture folders, six layers, record types (`packages/naive/src/records/data-model.json`) |
 | Generator (`rails new`) | `node packages/naive/src/engine/init-venture.ts` |
-| Test suite | `node test.mjs`: every check, run in CI |
+| Test suite | `node test.ts`: every check, run in CI |
 | Packages and plug-ins | Venture packages (`packages/naive/library/packages/<name>/package.json`); a kit is Mentura's enhanced package, kept in Mentura and found through `NAIVE_KITS` (EE-071) |
 | Inversion of control | The framework's checks and runners call on the venture's records |
 

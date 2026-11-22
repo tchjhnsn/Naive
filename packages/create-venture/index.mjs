@@ -294,7 +294,7 @@ if (Object.keys(functions).length) {
 }
 
 // The venture's package.json: the framework as a dev dependency, the four scripts (I-17) and the framework's Node floor (EE-158).
-const fromClone = existsSync(join(framework, "test.mjs")) && !framework.split("/").includes("node_modules");
+const fromClone = existsSync(join(framework, "test.ts")) && !framework.split("/").includes("node_modules");
 // A dependency value is a range or a location, never name@range: --framework naive-framework@^0.2 keeps ^0.2.
 // From a clone, the pin is the clone's repository at its commit (naive#70, as everything-ecosystem pins it, EE-119), so the
 // venture installs on another machine; a clone with no commit or no repository field keeps a file: path.

@@ -60,4 +60,4 @@ Without a key, a reasoning model fills the answers file by hand and names itself
 }
 ```
 
-`roles` holds role ids (flagship, substrate, revenue-engine, wedge, end-product, option, unassigned), with `revenue_engine_tied` and `allowed_from` where they apply; `role_text` holds the words the Markdown shows. `test.mjs` checks that the two agree.
+`roles` holds role ids (flagship, substrate, revenue-engine, wedge, end-product, option, unassigned), with `revenue_engine_tied` and `allowed_from` where they apply; `role_text` holds the words the Markdown shows. `test.ts` checks that the two agree.
