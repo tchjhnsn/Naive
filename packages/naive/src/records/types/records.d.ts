@@ -2962,7 +2962,7 @@ export type MarketAnatomy = {
     network_effects?: AnatomyCellEnumCell;
     /** emerging, growth, mature or declining (market life cycle) */
     maturity?: AnatomyCellEnumCell;
-    /** fragmented, moderate or concentrated (by HHI bands: under 1500, 1500 to 2500, over 2500) */
+    /** fragmented, moderate or concentrated (by HHI bands of the 2023 Merger Guidelines: under 1000, 1000 to 1800, over 1800) */
     concentration?: AnatomyCellEnumCell;
   };
 };
