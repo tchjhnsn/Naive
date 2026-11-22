@@ -150,6 +150,8 @@ flowchart LR
 
 `node packages/naive/src/engine/decision-queue-test.ts` tests the owning-function rule, the score, themes, a phase change that reorders the queue, and the index's old fields unchanged. Not built: a person's own reordering of the queue, and notes on queue items.
 
+[`lean-canvas.mjs`](./lean-canvas.mjs) resolves the Lean Canvas, the venture's shared kernel (EE-155), from [`../functions/strategy/lean-canvas.json`](../functions/strategy/lean-canvas.json): nine boxes, each a reference to a record attribute (read through `statement` in [`foundation.mjs`](./foundation.mjs), so it copies nothing), its owner (the function the data model gives its record type), its status and value, the files it points at, and what filling it unlocks (the phase gate that asks for its record, the function workflows that read it, the record types whose refs point at it). The roadmap puts the current gate's evidence first, in the gate's order, then the next gate's, then the rest. Route `identity/lean-canvas` gives the whole canvas and `identity/lean-canvas/<box>` one box. The decision queue raises a decision that settles a record the phase's gate asks for (`GATE_LIFT`, 2) and breaks equal scores in the gate's order. `node packages/naive/src/engine/lean-canvas-test.ts` tests it. Not built: a view that draws the canvas, and writing a box from the canvas (a box is written at its record's own route).
+
 ## Agents
 
 The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-124).

@@ -1932,6 +1932,25 @@
       "note": "The map of strategic foundation by the Five Ws and How plus whether (EE-051)"
     },
     {
+      "id": "lean-canvas",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/lean-canvas.schema.json",
+      "generator": "packages/naive/src/engine/generators/lean-canvas.ts",
+      "paths": [
+        "packages/naive/src/functions/strategy/lean-canvas.json"
+      ],
+      "refs": [
+        {
+          "field": "boxes.record",
+          "to": "(record types)",
+          "checked_by": "packages/naive/src/engine/lean-canvas.mjs"
+        }
+      ],
+      "note": "The Lean Canvas (Maurya 2012) as the venture's shared kernel: nine boxes, each a reference to a record attribute its owning function writes (EE-155)"
+    },
+    {
       "id": "customer",
       "layer": "purpose",
       "function": "marketing-and-sales",
