@@ -13,7 +13,7 @@ Version 0.1.0, ours and unevaluated (EE-062, EE-063, EE-064, EE-065). For the de
 
 ## What it does
 
-1. **Read.** The app's site reader, named by `NAIVE_SITE_CMD` (run by `packages/naive/src/interfaces/harness/site.mjs`), reads the home page and up to nine pages it links to. Pages a marketing site usually has (about, pricing, careers, investors, community, press, security) come first, one per section. Each page records where it sits: the home page, the header or navigation, linked from the home page (the footer counts), or deeper.
+1. **Read.** The app's site reader, named by `NAIVE_SITE_CMD` (run by `packages/naive/src/interfaces/harness/site.ts`), reads the home page and up to nine pages it links to. Pages a marketing site usually has (about, pricing, careers, investors, community, press, security) come first, one per section. Each page records where it sits: the home page, the header or navigation, linked from the home page (the footer counts), or deeper.
 2. **Judge.** Jev answers one typed question per page and item: "Does this page tell a visitor …?" That is 150 questions for ten pages, in about 0.4 seconds. The judge is the command `NAIVE_JUDGE_CMD` names. Without one, the matrix's keywords judge instead, which is rougher, and the result says so.
 3. **Weigh.** The marketing matrix (`matrix.json`) names six audiences: customers, investors, candidates, contributors, partners and press. It lists fifteen items each audience may need to learn, and the record each item comes from. Every item is public by default (publish: true).
    - **Audience weights** come from the venture's facts: raising, hiring, inviting contributors, and what its ICP records say about who it courts. Investors weigh 1 while the venture is raising and 0.15 otherwise.
@@ -48,8 +48,8 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
 
 ## Where to run it
 
-- **Board:** `node packages/naive/src/interfaces/demo/board.mjs`, then `/site`. Paste a link, say who your customers are (optional), tick raising, hiring or contributors, and read the sitemap and its ratings.
-- **CLI:** `node packages/naive/src/interfaces/harness/site.mjs <url> [--venture <dir>] [--icp "<who your customers are>"] [--raising] [--hiring] [--contributors]`. With a venture, the result is saved to `operations/marketing/site-presence.json`, and the router command `operations/marketing/site` reads it back.
+- **Board:** `node packages/naive/src/interfaces/demo/board.ts`, then `/site`. Paste a link, say who your customers are (optional), tick raising, hiring or contributors, and read the sitemap and its ratings.
+- **CLI:** `node packages/naive/src/interfaces/harness/site.ts <url> [--venture <dir>] [--icp "<who your customers are>"] [--raising] [--hiring] [--contributors]`. With a venture, the result is saved to `operations/marketing/site-presence.json`, and the router command `operations/marketing/site` reads it back.
 
 ## In reverse: planning the site from the venture (EE-064)
 

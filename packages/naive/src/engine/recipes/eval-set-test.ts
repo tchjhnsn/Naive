@@ -146,7 +146,7 @@ try {
     && delta(setPerson).some((x) => (x.settled?.funding as { series: string }[] | undefined)?.some((f) => f.series === "series-b")), delta(setPerson).at(-1));
   expect("agent: with no local signal and no second producer, the round never settles", delta(setNone).every((x) => !(x.settled?.funding as { series: string }[] | undefined)?.some((f) => f.series === "series-b")));
   const cliEnv = { ...process.env, MENTURA_ACTOR: "agent", MENTURA_ACTOR_ID: "research-agent" };
-  const cli = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "recipes", "plan", PATTERN, "--by", "founder", "--venture", none], { encoding: "utf8", env: cliEnv });
+  const cli = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "recipes", "plan", PATTERN, "--by", "founder", "--venture", none], { encoding: "utf8", env: cliEnv });
   expect("agent: naive recipes plan refuses an agent", cli.status === 1 && /agent \(research-agent\) is acting/.test(cli.stderr), [cli.status, cli.stderr, cli.stdout]);
   const noBy = await planRecipe(none, PATTERN, {});
   expect("agent: a plan names the person who made it", !noBy.ok && /--by/.test(noBy.errors[0]));
@@ -175,7 +175,7 @@ try {
     checked.ok && checked.rows.length === r.rows.training && checked.rows.every((x) => "settled" in x && "predicted" in x && typeof x.loss === "number") && checked.disagreements.length === 0, checked.ok ? checked.disagreements : checked);
   const checkedLiar = await checkRecipe(dir, PATTERN, liar);
   expect("check: reports each noise disagreement", checkedLiar.ok && checkedLiar.disagreements.length > 0 && checkedLiar.disagreements.every((d) => d.without !== undefined), checkedLiar.ok ? checkedLiar.disagreements.length : checkedLiar);
-  const cliCheck = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "recipes", "check", PATTERN, "--venture", dir], { encoding: "utf8" });
+  const cliCheck = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "recipes", "check", PATTERN, "--venture", dir], { encoding: "utf8" });
   expect("check: naive recipes check prints the training loss beside the plain fold's", cliCheck.status === 0 && /training loss .* \(plain fold .*\) over \d+ rows/.test(cliCheck.stdout), [cliCheck.status, cliCheck.stderr, cliCheck.stdout.slice(0, 300)]);
 } finally {
   rmSync(tmp, { recursive: true, force: true });

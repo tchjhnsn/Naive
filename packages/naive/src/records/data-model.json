@@ -872,7 +872,7 @@
         {
           "field": "records",
           "to": "(record types)",
-          "checked_by": "packages/naive/src/interfaces/tests/freshness-test.mjs"
+          "checked_by": "packages/naive/src/interfaces/tests/freshness-test.ts"
         }
       ],
       "note": "Default freshness profiles by record type (Revalidating V-2): stale, revalidate and expire after Next.js cacheLife, plus per_phase and live; a venture overrides them under freshness in naive.config.json"
@@ -1874,7 +1874,7 @@
       "paths": [
         "packages/naive/src/interfaces/adapters/*.json"
       ],
-      "note": "What runs Naive on a platform or in an agent harness (Z-4): the entry files a harness adapter writes into a venture and where it loads skills, or the tests a platform adapter runs. A platform's adapter lives in the app that hosts Naive and is passed in with NAIVE_PLATFORM_ADAPTER. Verified when it passes the framework's tests (packages/naive/src/interfaces/adapters.mjs verify)"
+      "note": "What runs Naive on a platform or in an agent harness (Z-4): the entry files a harness adapter writes into a venture and where it loads skills, or the tests a platform adapter runs. A platform's adapter lives in the app that hosts Naive and is passed in with NAIVE_PLATFORM_ADAPTER. Verified when it passes the framework's tests (packages/naive/src/interfaces/adapters.ts verify)"
     },
     {
       "id": "upgrade-registry",

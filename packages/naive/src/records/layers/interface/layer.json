@@ -39,9 +39,9 @@
   "writes": [],
   "checks": [
     "packages/naive/src/checks/check-integrations.ts",
-    "packages/naive/src/interfaces/test.mjs",
-    "packages/naive/src/interfaces/adapters.mjs",
-    "packages/naive/src/interfaces/tests/gate-test.mjs",
+    "packages/naive/src/interfaces/test.ts",
+    "packages/naive/src/interfaces/adapters.ts",
+    "packages/naive/src/interfaces/tests/gate-test.ts",
     "packages/naive/src/router/orchestration/triggers.mjs"
   ],
   "gaps": [

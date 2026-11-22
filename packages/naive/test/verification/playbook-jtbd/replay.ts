@@ -90,7 +90,7 @@ async function read<T = unknown>(v: Fixture, route: string) {
 
 function accept(v: Fixture, route: string) {
   return spawnSync("node", [
-    join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "accept", route,
+    join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "accept", route,
     "--venture", v.id, "--workspace", v.workspace, "--confirm", route,
   ], { encoding: "utf8" });
 }

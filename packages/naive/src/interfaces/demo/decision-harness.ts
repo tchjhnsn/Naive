@@ -4,9 +4,9 @@
 // Runs on a copy of the example workspace, so nothing real changes. No model is called: the agent's
 // moves are scripted, so any harness (Claude Code, LangGraph, the Claude Agent SDK) can replay them.
 //
-//   node packages/naive/src/interfaces/demo/decision-harness.mjs          the founder types the decision at the prompt
-//   node packages/naive/src/interfaces/demo/decision-harness.mjs --auto   the founder's step is taken for them (tests)
-//   node packages/naive/src/interfaces/demo/decision-harness.mjs --board  also serves the live decision board for the run
+//   node packages/naive/src/interfaces/demo/decision-harness.ts          the founder types the decision at the prompt
+//   node packages/naive/src/interfaces/demo/decision-harness.ts --auto   the founder's step is taken for them (tests)
+//   node packages/naive/src/interfaces/demo/decision-harness.ts --board  also serves the live decision board for the run
 //                                                     at http://127.0.0.1:4331/ and paces the steps
 
 import { spawn, spawnSync } from "node:child_process";
@@ -25,14 +25,14 @@ const venture = "tandem", dir = join(ws, "ventures", venture);
 const env = { ...process.env, MENTURA_WORKSPACE: ws };
 const board = process.argv.includes("--board");
 let boardServer = null;
-if (board) { process.env.MENTURA_WORKSPACE = ws; boardServer = (await import("./board.mjs")).serve(4331, venture); console.log("Decision board: http://127.0.0.1:4331/"); }
+if (board) { process.env.MENTURA_WORKSPACE = ws; boardServer = (await import("./board.ts")).serve(4331, venture); console.log("Decision board: http://127.0.0.1:4331/"); }
 const say = async (who, text) => {
   if (board) await new Promise((r) => setTimeout(r, 2500));
   console.log(`\n${who === "agent" ? "AGENT  " : who === "naive" ? "NAIVE  " : "FOUNDER"} ${text}`);
 };
 
 // The agent's side: an MCP client over stdio.
-const server = spawn("node", [join(repo, "packages/naive/src/interfaces/mcp/server.mjs")], { env, stdio: ["pipe", "pipe", "inherit"] });
+const server = spawn("node", [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], { env, stdio: ["pipe", "pipe", "inherit"] });
 const pending = new Map();
 let next = 1;
 createInterface({ input: server.stdout }).on("line", (l) => { const m = JSON.parse(l); pending.get(m.id)?.(m); pending.delete(m.id); });
@@ -71,7 +71,7 @@ try {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
     typed = await new Promise((res) => rl.question(`\nFOUNDER Type reposition-shop-app to approve the agent's wording (anything else declines): `, (a) => { rl.close(); res(a.trim()); }));
   } else await say("founder", "(--auto) types reposition-shop-app");
-  const d = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "decide", "reposition-shop-app", "--venture", venture, "--by", "Founder", "--confirm", typed], { env, encoding: "utf8" });
+  const d = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "decide", "reposition-shop-app", "--venture", venture, "--by", "Founder", "--confirm", typed], { env, encoding: "utf8" });
   if (d.status !== 0) { await say("naive", `Not decided: ${(d.stderr || d.stdout).trim()}. The agent stays paused.`); process.exitCode = 0; }
   else {
     const r = JSON.parse(d.stdout);

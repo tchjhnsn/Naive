@@ -16,7 +16,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
 
 Then render `chart.mmd` with Pele 1.9.0 (`limit` 1000000, `outputLimit` 8000000, `maxEdges` 10000) and screenshot the SVG to `out/chart.png`. Copy `chart.mmd` and `chart.png` back to `out/`.
 
-The replay is `node packages/naive/src/interfaces/tests/lint-validation-test.mjs`.
+The replay is `node packages/naive/src/interfaces/tests/lint-validation-test.ts`.
 
 ## What the chart hides
 
@@ -55,7 +55,7 @@ The model does not parse arguments. The first route replay did.
 
 `validation/lint` runs the CLI as `node packages/naive/src/checks/lint-validation.ts <venture dir> --json`, with no `--now`. The parser treated index `indexOf("--now") + 1` as the date. When `--now` is absent that index is 0, so the venture directory was skipped and the CLI exited 2.
 
-The route reproduced it: `call` on `validation/lint` returned the usage line. The fix ignores a `--now` value only when the flag is present. The route then returns the finding, and exit 1 only when the fail-closed rule has one. `node packages/naive/src/interfaces/tests/lint-validation-test.mjs` covers the no-`--now` command as well.
+The route reproduced it: `call` on `validation/lint` returned the usage line. The fix ignores a `--now` value only when the flag is present. The route then returns the finding, and exit 1 only when the fail-closed rule has one. `node packages/naive/src/interfaces/tests/lint-validation-test.ts` covers the no-`--now` command as well.
 
 ## Left out
 

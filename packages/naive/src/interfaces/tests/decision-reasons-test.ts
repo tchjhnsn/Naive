@@ -72,7 +72,7 @@ try {
   // The CLI: decide --reason/--cite, then decisions --why.
   propose(v, { at: "marketing", id: "channel", question: "Which channel first?", answer: "Founder communities." }, { agentId: "cos" });
   const env = { ...process.env, MENTURA_WORKSPACE: ws };
-  const cli = (...args) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args], { env, encoding: "utf8" });
+  const cli = (...args) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { env, encoding: "utf8" });
   const c = cli("decide", "channel", "--venture", "rsn", "--by", "Founder", "--confirm", "channel", "--reason", "Interviews came from communities", "--cite", "evidence/interviews.json");
   expect("mentura decide --reason --cite freezes the reason", c.status === 0 && json("marketing/decisions/channel.decision.json").provenance.reasons?.[0]?.citations?.[0]?.version === shaOf(v, "evidence/interviews.json"), c.stderr || c.stdout);
   const y = cli("decisions", "--venture", "rsn", "--why", "channel");

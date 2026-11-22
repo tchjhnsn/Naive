@@ -2,7 +2,7 @@
 // reads and copies the skills of the packages open now; refresh() re-adapts every adapter a venture
 // has, after an upgrade (packages/naive/src/engine/upgrades.ts). It records what it wrote in <venture>/.naive/adapters.json
 // and never overwrites a file it did not write, or one a person changed since: it keeps theirs and says so.
-// Verifying an adapter runs routes, so verify() and the command line stay in packages/naive/src/interfaces/adapters.mjs.
+// Verifying an adapter runs routes, so verify() and the command line stay in packages/naive/src/interfaces/adapters.ts.
 
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";

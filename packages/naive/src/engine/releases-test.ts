@@ -23,7 +23,7 @@ delete env.MENTURA_MODEL; delete env.MENTURA_ACTOR; delete env.MENTURA_ACTOR_ID;
 // A stand-in agent that leaves a mark if anything calls a model (C-10: building calls none).
 writeFileSync(join(ws, "agent-called.mjs"), `import { writeFileSync } from "node:fs"; writeFileSync(${JSON.stringify(join(ws, "AGENT_CALLED"))}, "1"); console.log("{}");\n`);
 const run = (args: string[], extra: Record<string, string> = {}, input?: string) => spawnSync("node", args, { cwd: repo, env: { ...env, ...extra }, encoding: "utf8", input });
-const mentura = (...a: string[]) => run([join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a]);
+const mentura = (...a: string[]) => run([join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a]);
 const build = (dir: string, ...a: string[]) => run([join(repo, "packages/naive/src/router/orchestration/build-release.mjs"), dir, ...a]);
 const start = (dir: string, ...a: string[]) => run([join(repo, "packages/naive/src/engine/start-release.ts"), dir, ...a]);
 const get = (dir: string, path: string) => { const r = start(dir, "--get", path); let body = null; try { body = JSON.parse(r.stdout); } catch { body = r.stdout; } return { status: r.status, body }; };

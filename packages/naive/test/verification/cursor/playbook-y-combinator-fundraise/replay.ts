@@ -73,7 +73,7 @@ check("RoutesExist: playbook routes match the model", missingFromModel.length ==
 check("purpose/data-stream/[id] is not a template step", forbidden.has("purpose/data-stream/[id]") && !modelRoutes.has("purpose/data-stream/[id]"),
   "the playbook names it only to say not to write it");
 
-const unknown = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "fundraising/plan", "read", "--venture", "none", "--workspace", "/tmp"], { encoding: "utf8" });
+const unknown = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "fundraising/plan", "read", "--venture", "none", "--workspace", "/tmp"], { encoding: "utf8" });
 check("a route the router does not have fails the call", unknown.status !== 0 && /no route fundraising\/plan/.test(unknown.stderr), unknown.stderr.trim());
 
 const ws = mkdtempSync(join(tmpdir(), "yc-raise-"));
@@ -83,7 +83,7 @@ if (init.status !== 0) { console.error(init.stderr || init.stdout); process.exit
 
 let n = 0;
 function call(route: string, action: string, { as = "agent", input }: { as?: string, input?: unknown } = {}) {
-  const args = [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), route, action, "--venture", venture, "--workspace", ws, "--as", as, "--json"];
+  const args = [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), route, action, "--venture", venture, "--workspace", ws, "--as", as, "--json"];
   if (input) {
     const file = join(ws, `in-${n++}.json`);
     writeFileSync(file, JSON.stringify(input, null, 2));
@@ -379,7 +379,7 @@ check("Checks: status decided with no approved_by fails on a record that holds i
 const restored = call("decisions/raise-plan", "write", { as: "person", input: filled });
 check("main path: restoring the open filled plan passes again", restored.body?.ok === true && planCheck(call("decisions/raise-plan", "read").body?.result) === "pass", "restored");
 
-const decided = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "decide", "raise-plan", "--venture", venture, "--workspace", ws, "--by", "Ada Fixture", "--confirm", "raise-plan", "--answer", "Fixture answer, not a raise.", "--json"], { encoding: "utf8" });
+const decided = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "decide", "raise-plan", "--venture", venture, "--workspace", ws, "--by", "Ada Fixture", "--confirm", "raise-plan", "--answer", "Fixture answer, not a raise.", "--json"], { encoding: "utf8" });
 const decidedPlan = call("decisions/raise-plan", "read").body?.result;
 check("Checks: decide with --confirm settles the plan and it passes",
   decided.status === 0 && decidedPlan?.status === "decided" && decidedPlan?.provenance?.approved_by === "Ada Fixture" && planCheck(decidedPlan) === "pass",

@@ -4,7 +4,7 @@
 // purpose/ideas/dump.md. Naive splits it into ideas, a tagger (Jev, or the founder's own agent) tags
 // each with the departments it bears on, the records it feeds and whether it already exists
 // (conventions.json), and the result is purpose/ideas/map.mdx: one <Idea> per idea, its text
-// unchanged. The canvas (packages/naive/src/interfaces/demo/board.mjs, /map) draws it as a mind map; the summary says
+// unchanged. The canvas (packages/naive/src/interfaces/demo/board.ts, /map) draws it as a mind map; the summary says
 // where the founder's ideas cluster, what the venture's phase needs that the dump never mentions,
 // and what the dump says about whether a product exists.
 //
@@ -197,7 +197,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     writeFileSync(join(b, MAP), render(ideas, load(c) as Record<string, Partial<Tag>>, { venture: ventureOf(b).id, tagger: opt("tagger") ?? "unknown" }));
     console.log(`wrote ${MAP}: ${ideas.length} ideas`);
   } else if (a && existsSync(join(a, "venture.json"))) {
-    if (!existsSync(join(a, MAP))) { console.error(`${MAP} does not exist yet: the founder submits an idea dump first (node packages/naive/src/interfaces/harness/run.mjs discovery --dump <file>)`); process.exit(1); }
+    if (!existsSync(join(a, MAP))) { console.error(`${MAP} does not exist yet: the founder submits an idea dump first (node packages/naive/src/interfaces/harness/run.ts discovery --dump <file>)`); process.exit(1); }
     const s = summary(parse(readFileSync(join(a, MAP), "utf8")), ventureOf(a).phase);
     if (process.argv.includes("--json")) json({ ...s, ideas_list: parse(readFileSync(join(a, MAP), "utf8")).ideas });
     else console.log(`${s.ideas} ideas. Pillars: ${Object.entries(s.by_pillar).map(([k, v]) => `${k} ${v}`).join(", ")}.\nStrengths: ${s.strengths.map((x) => `${x.department} (${x.ideas})`).join(", ")}.\nGaps for this phase: ${s.gaps.map((x) => x.department).join(", ") || "none"}.\nNever mentioned: ${s.unasked.map((x) => x.record).join(", ") || "none"}.\nProduct: ${s.product.reading}.`);

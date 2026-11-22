@@ -233,7 +233,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
 
   const ws = mkdtempSync(join(tmpdir(), "legal-lint-ws-"));
   const env = { ...process.env, MENTURA_WORKSPACE: ws };
-  const init = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "init", join(ws, "acme"), "--id", "acme", "--layers", "purpose"], { encoding: "utf8", env });
+  const init = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "init", join(ws, "acme"), "--id", "acme", "--layers", "purpose"], { encoding: "utf8", env });
   expect("a venture the route can open", init.status === 0, init.stderr);
   const dir = join(ws, "acme");
   put(dir, "marketing/content/hours.mdx", claim("Customers save 10 hours a week"));

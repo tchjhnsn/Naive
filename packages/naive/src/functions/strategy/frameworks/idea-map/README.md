@@ -109,7 +109,7 @@ The docket is every open decision, staged the same way and ranked as before (EE-
 
 ## The boards
 
-`node packages/naive/src/interfaces/demo/board.mjs` serves four pages:
+`node packages/naive/src/interfaces/demo/board.ts` serves four pages:
 
 - `/map`: the idea map;
 - `/graph`: the idea graph;

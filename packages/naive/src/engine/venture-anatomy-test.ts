@@ -65,7 +65,7 @@ const rec = draftMarket({ segment: "Landlords with two to ten units", industry: 
 expect("the generator drafts the market whole", rec.ok && Object.keys(rec.draft.cells).length === 11, rec.errors);
 const input = join(ws, "market.json");
 writeFileSync(input, JSON.stringify(rec.draft));
-const w = node(["packages/naive/src/interfaces/cli/mentura.mjs", "markets/primary", "write", "--venture", "acme", "--as", "person", "--input", input], { MENTURA_WORKSPACE: ws });
+const w = node(["packages/naive/src/interfaces/cli/mentura.ts", "markets/primary", "write", "--venture", "acme", "--as", "person", "--input", input], { MENTURA_WORKSPACE: ws });
 expect("a person writes the market through the router at markets/primary", w.status === 0, w.stderr || w.stdout);
 const m1 = ventureAnatomy(dir);
 const market1 = m1.submatrices.find((s) => s.id === "market");
@@ -95,11 +95,11 @@ try { ventureAnatomy(dir, { validAt: "soon" }); } catch (e) { refused = e; }
 expect("a bad application date is refused at the boundary as CannotRun", refused instanceof CannotRun, String(refused));
 
 // ---- Routes ----
-const r = node(["packages/naive/src/interfaces/cli/mentura.mjs", "identity/venture-anatomy/market", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
+const r = node(["packages/naive/src/interfaces/cli/mentura.ts", "identity/venture-anatomy/market", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
 let routed: { id?: string, cells?: { known?: number } } = {};
 try { routed = JSON.parse(r.stdout); } catch { routed = {}; }
 expect("identity/venture-anatomy/<sub> returns that sub-matrix", routed.id === "market" && routed.cells?.known === 2, r.stdout.slice(0, 300) || r.stderr);
-const whole = node(["packages/naive/src/interfaces/cli/mentura.mjs", "identity/venture-anatomy", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
+const whole = node(["packages/naive/src/interfaces/cli/mentura.ts", "identity/venture-anatomy", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
 let all: { submatrices?: unknown[] } = {};
 try { all = JSON.parse(whole.stdout); } catch { all = {}; }
 expect("identity/venture-anatomy returns the whole matrix", all.submatrices?.length === 11, whole.stdout.slice(0, 300) || whole.stderr);

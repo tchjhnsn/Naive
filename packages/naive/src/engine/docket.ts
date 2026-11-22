@@ -88,7 +88,7 @@ export function rankDocket(all: DocketDecision[], phase: string, now = Date.now(
 
 // Settles one decision the way a founder would, through the CLI, with its proposed wording.
 function settle(ws: string, venture: string, d: Row) {
-  const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/mentura.mjs", import.meta.url).pathname, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+  const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/mentura.ts", import.meta.url).pathname, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
   const a = d.action;
   if (!a) return false;
   // spawnSync turns a missing argument into the string "undefined", as the replay always has.

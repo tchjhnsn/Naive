@@ -96,7 +96,7 @@ try {
   expect("route system/decision-index runs", r.ok && r.result.entries[0].id === "shop-scale", r);
   const vw = await call({ venture: "idx", route: "system/decision-index", action: "view", workspace: ws, actor: "person", actor_id: "Founder" });
   expect("route system/decision-index has a view", vw.ok, vw);
-  const c = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "index", "--venture", "idx", "--workspace", ws], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
+  const c = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "index", "--venture", "idx", "--workspace", ws], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
   expect("mentura index updates and reports the ranking", c.status === 0 && JSON.parse(c.stdout).ranked[0].id === "shop-scale", c.stdout + c.stderr);
 } finally {
   rmSync(ws, { recursive: true, force: true });

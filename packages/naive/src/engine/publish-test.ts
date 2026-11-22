@@ -52,7 +52,7 @@ expect("with no governance/delegation.json, --by alone does not make a founder",
 rmSync(bare, { recursive: true, force: true });
 
 // The CLI: naive publish check goes to the publish lint, everything else to the gate.
-const naive = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { encoding: "utf8" });
+const naive = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.ts", import.meta.url).pathname, ...a], { encoding: "utf8" });
 w("pages/secret.mdx", "---\ntitle: Secret\n---\nUse key sk-ant-abcdefghijklmnopqrstuvwxyz123456 to start.\n");
 const lc = naive("publish", "check", join(dir, "pages/secret.mdx"), "--venture", dir);
 expect("naive publish check runs the publish lint", lc.status === 1 && /ERROR\s+secrets/.test(lc.stderr) && !/no channel/.test(lc.stderr), lc.stderr);

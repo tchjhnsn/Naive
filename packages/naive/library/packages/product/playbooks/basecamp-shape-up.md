@@ -127,7 +127,7 @@ While that decision is open and fail-closed, `packages/naive/src/engine/decision
 A person runs:
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs decide bet-<slug> --venture <id> --by "<their name>" --answer <bet or decline>
+node packages/naive/src/interfaces/cli/mentura.ts decide bet-<slug> --venture <id> --by "<their name>" --answer <bet or decline>
 ```
 
 `mentura decide` asks them to type the decision id. `packages/naive/src/engine/decisions.ts` `approve()` records `provenance.approved_by`, and it accepts any wording, so the answer has to be exactly `bet` or `decline` for the bet check below to read it. Reasons go in `--note`.

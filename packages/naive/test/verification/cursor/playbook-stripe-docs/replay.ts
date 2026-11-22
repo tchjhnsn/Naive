@@ -15,7 +15,7 @@ type Decision = DecisionRecord | null | undefined;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../../../..");
-const cli = join(repo, "packages/naive/src/interfaces/cli/mentura.mjs");
+const cli = join(repo, "packages/naive/src/interfaces/cli/mentura.ts");
 const router = join(repo, "packages/naive/src/router/router.mjs");
 const init = join(repo, "packages/naive/src/engine/init-venture.ts");
 

@@ -136,7 +136,7 @@ expect("the CLI prints a meter per item and exits 0 for a report", cli.status ==
 const bad = node(["packages/naive/src/engine/phase-gate.ts", fresh, "--preset", "nope"]);
 expect("an unknown preset is a bad call (exit 2)", bad.status === 2, bad.stderr);
 expect("no venture is a bad call (exit 2)", node(["packages/naive/src/engine/phase-gate.ts"]).status === 2);
-const route = node(["packages/naive/src/interfaces/cli/mentura.mjs", "system/phase-gate", "run", "--venture", "fresh"], { MENTURA_WORKSPACE: ws });
+const route = node(["packages/naive/src/interfaces/cli/mentura.ts", "system/phase-gate", "run", "--venture", "fresh"], { MENTURA_WORKSPACE: ws });
 let routed: { preset?: string, items?: unknown[] } = {};
 try { routed = JSON.parse(route.stdout); } catch { routed = {}; }
 expect("system/phase-gate runs the gate as a command route", route.status === 0 && routed.preset === "strict" && routed.items?.length === 8, route.stdout.slice(0, 300) || route.stderr);

@@ -22,7 +22,7 @@ delete env.MENTURA_ACTOR_ID;
 delete env.MENTURA_PERSON;
 delete process.env.MENTURA_ACTOR_ID;
 delete process.env.MENTURA_PERSON;
-const cliPath = join(repo, "packages/naive/src/interfaces/cli/mentura.mjs");
+const cliPath = join(repo, "packages/naive/src/interfaces/cli/mentura.ts");
 const cli = (...a: string[]) => spawnSync(process.execPath, [cliPath, ...a], { encoding: "utf8", env });
 const json = (o: unknown): string => JSON.stringify(o, null, 2) + "\n";
 // Each record names the venture it is written to (the router refuses another, naive#71).

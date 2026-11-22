@@ -20,7 +20,7 @@ const inputFile = (name: string, record: unknown) => {
 };
 const ok = (rule: string, pass: unknown, detail: unknown) => { rows.push({ rule, pass, detail }); if (!pass) console.error(`FAIL ${rule}: ${detail}`); };
 
-const mentura = (workspace: string, venture: string, args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--venture", venture, "--workspace", workspace, "--json"], { encoding: "utf8" });
+const mentura = (workspace: string, venture: string, args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args, "--venture", venture, "--workspace", workspace, "--json"], { encoding: "utf8" });
 const jsonOf = (p: SpawnSyncReturns<string>) => { try { return JSON.parse(p.stdout); } catch { return null; } };
 
 function venture(id: string) {

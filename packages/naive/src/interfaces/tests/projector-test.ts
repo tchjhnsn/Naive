@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { call } from "../../router/router.mjs";
 import { PROJECTOR, asProjector } from "../../router/acting.mjs";
 import { write as writeFile } from "../../router/agent-files.ts";
-import { handle } from "../mcp/server.mjs";
+import { handle } from "../mcp/server.ts";
 import { EMIT_HINT, evaluate, writerRule } from "../../engine/gate.ts";
 import { entries } from "../../core/provenance.ts";
 import { routes } from "../../records/routes/routes.ts";
@@ -29,7 +29,7 @@ const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 delete env.MENTURA_ACTOR_ID;
 delete process.env.MENTURA_ACTOR_ID;
 process.env.MENTURA_WORKSPACE = ws; // the MCP server finds ventures there
-const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 
 interface Reply { ok: boolean, error?: string, gate_rule?: string, refused_by?: string, fix?: { command?: string, built?: boolean }, result?: { written?: string, draft?: boolean, note?: string } }
 type Args = Record<string | symbol, unknown>;
@@ -84,7 +84,7 @@ try {
   const byEnv = await write(SIGNALS, signals("2026-11-05"));
   delete process.env.MENTURA_ACTOR_ID;
   expect("MENTURA_ACTOR_ID=projector is refused", !byEnv.ok && /only Naive's own code/.test(byEnv.error ?? ""), show(byEnv));
-  const cliClaim = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), SIGNALS, "write", "--venture", "pj", "--input", input], { encoding: "utf8", env: { ...env, MENTURA_ACTOR_ID: "projector" } });
+  const cliClaim = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), SIGNALS, "write", "--venture", "pj", "--input", input], { encoding: "utf8", env: { ...env, MENTURA_ACTOR_ID: "projector" } });
   expect("the CLI with MENTURA_ACTOR_ID=projector is refused", cliClaim.status !== 0 && /only Naive's own code/.test(cliClaim.stdout + cliClaim.stderr), cliClaim.stdout + cliClaim.stderr);
   const asPerson = await run({ route: SIGNALS, action: "write", input: signals("2026-11-05"), actor: "person", actor_id: "projector", [PROJECTOR]: true });
   expect("the symbol on a person's call is refused: the projector is an agent", !asPerson.ok && /acts as an agent with actor_id projector/.test(asPerson.error ?? ""), show(asPerson));

@@ -88,7 +88,7 @@ assert.match(old.nudge ?? "", /29 days since you last worked on v\. Pick it up w
 assert.equal(summarize("v", "UTC", [], "2026-10-30").last_touch, null);
 
 // the CLI
-const cli = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "activity", "--venture", studio, "--dir", tdir, "--json"], { encoding: "utf8" });
+const cli = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "activity", "--venture", studio, "--dir", tdir, "--json"], { encoding: "utf8" });
 assert.equal(cli.status, 0, cli.stderr);
 assert.equal(JSON.parse(cli.stdout).ventures[0].days[0].messages, 5);
 assert.equal(spawnSync("node", [join(repo, "packages/naive/src/engine/activity.ts"), "--venture", studio, "--dir", tdir, "--from", "yesterday"]).status, 2);

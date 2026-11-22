@@ -20,7 +20,7 @@ const F = await import("../../engine/freshness.ts");
 let failed = 0;
 /** @param {string} name @param {unknown} ok @param {unknown} [detail] */
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail).slice(0, 600)}`}`); if (!ok) failed++; };
-const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
+const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
 const init = (id, phase = "discovery") => { const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, id), id, "--phase", phase, "--layers", "purpose"], { encoding: "utf8" }); if (p.status !== 0) throw new Error(p.stderr); return join(ws, id); };
 const item = (f, path) => f.items.find((i) => i.path === path);
 const write = (venture, route, input, provenance = {}) => call({ venture, route, action: "write", input, actor: "person", via: "cli", provenance });

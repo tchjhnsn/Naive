@@ -1,4 +1,4 @@
-// The freshness commands of the mentura CLI (Revalidating, V-1 to V-8). mentura.mjs hands these
+// The freshness commands of the mentura CLI (Revalidating, V-1 to V-8). mentura.ts hands these
 // commands here; the logic is packages/naive/src/engine/freshness.ts.
 //
 //   mentura revalidate <target> --venture <id> [--reason <text>] [--as person] [--json]

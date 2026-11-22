@@ -21,7 +21,7 @@ import { canClassify, classify } from "../../engine/venture-type.ts";
 import { ventureHealth } from "../../router/boundaries.mjs";
 import { runAgent } from "../../router/orchestration/migrate-venture.mjs";
 import { connect } from "../../store/connectors/filesystem.ts";
-import { scan } from "../harness/site.mjs";
+import { scan } from "../harness/site.ts";
 
 const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 let failed = 0;
@@ -103,7 +103,7 @@ ok("hosted: classifying a venture's type refuses", HOSTED.test(typed) && typed.s
 const agent = await refusal(() => runAgent("hello"));
 ok("hosted: the migration agent refuses", HOSTED.test(agent) && agent.startsWith("running the migration agent") && agent.includes("MENTURA_AGENT_CMD is ignored"), agent);
 
-const harness = spawnSync("node", [join(repo, "packages/naive/src/interfaces/harness/run.mjs"), "discovery"], { encoding: "utf8", env: { ...process.env } });
+const harness = spawnSync("node", [join(repo, "packages/naive/src/interfaces/harness/run.ts"), "discovery"], { encoding: "utf8", env: { ...process.env } });
 ok("hosted: the discovery harness exits 2 with the refusal", harness.status === 2 && harness.stderr.startsWith("the discovery harness is refused in hosted mode"), `${harness.status} ${harness.stderr}`);
 
 const store = connect({ root: dir, venture: true });

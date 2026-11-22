@@ -409,7 +409,7 @@ const order = (o) => Object.fromEntries(["header", "budget", "needs_input", "lay
  */
 export function runStreaming({ venture, route, input, workspace, actor_id }, onProgress = () => {}, every = 250) {
   return new Promise((done) => {
-    const args = [join(repoRoot, "packages/naive/src/interfaces/cli/mentura.mjs"), route, "run", "--venture", venture, "--json",
+    const args = [join(repoRoot, "packages/naive/src/interfaces/cli/mentura.ts"), route, "run", "--venture", venture, "--json",
       ...(input?.value !== undefined ? ["--value", String(input.value)] : []), ...(input?.as_is ? ["--as-is"] : []), ...(workspace ? ["--workspace", workspace] : [])];
     const env = { ...process.env, ...(actor_id ? { MENTURA_ACTOR_ID: actor_id } : {}) };
     const p = spawn(process.execPath, args, { env });

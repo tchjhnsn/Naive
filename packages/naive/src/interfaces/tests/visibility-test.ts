@@ -17,7 +17,7 @@ const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${n
 const ws = mkdtempSync(join(tmpdir(), "visibility-"));
 const v = join(ws, "vis");
 const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
-const cli = (args, env = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--venture", "vis"], { env: { ...process.env, MENTURA_WORKSPACE: ws, ...env }, encoding: "utf8" });
+const cli = (args, env = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args, "--venture", "vis"], { env: { ...process.env, MENTURA_WORKSPACE: ws, ...env }, encoding: "utf8" });
 const STATEMENT = "Building is easy now. Knowing what to decide next is not.";
 
 try {

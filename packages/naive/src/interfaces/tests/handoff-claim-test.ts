@@ -23,7 +23,7 @@ const show = (r: unknown): string => String(JSON.stringify(r)).slice(0, 400);
 const ws = mkdtempSync(join(tmpdir(), "handoff-claim-test-"));
 const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 for (const k of ["MENTURA_ACTOR_ID", "MENTURA_ACTOR", "MENTURA_SESSION", "MENTURA_MODEL", "MENTURA_PERSON"]) { delete env[k]; delete process.env[k]; }
-const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 
 interface Reply { ok: boolean, error?: string, claimed_by?: string, result?: { claimed?: string, claimed_by?: string, status?: string, written?: string, draft?: boolean } }
 type Handoff = Record<string, unknown> & { status?: string, claimed_by?: string, verification?: Record<string, unknown> };

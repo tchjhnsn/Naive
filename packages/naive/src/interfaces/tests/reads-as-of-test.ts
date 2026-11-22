@@ -23,7 +23,7 @@ const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`
 const ws = mkdtempSync(join(tmpdir(), "reads-as-of-test-"));
 const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 delete process.env.MENTURA_READS_AS_OF; delete process.env.MENTURA_ACTOR_ID;
-const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 const pause = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 const solution = (statement: string) => ({ venture: "clamp", statement, alternatives: ["a receptionist"], evidence: [] });
 const RESEARCHER = "strategy-researcher";

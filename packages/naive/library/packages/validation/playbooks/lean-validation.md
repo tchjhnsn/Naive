@@ -13,14 +13,14 @@ Draft. You decide what the problem is. This playbook fills an interview plan and
 Run a step from the repo root:
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs <route> <action> --venture <id> --json
+node packages/naive/src/interfaces/cli/mentura.ts <route> <action> --venture <id> --json
 ```
 
 An agent's write of `foundation/icp/<profile id>` or `foundation/problem` lands as a draft. Accept it before you read it back or run the assessment:
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs accept foundation/icp/<profile id> --venture <id> --confirm foundation/icp/<profile id>
-node packages/naive/src/interfaces/cli/mentura.mjs accept foundation/problem --venture <id> --confirm foundation/problem
+node packages/naive/src/interfaces/cli/mentura.ts accept foundation/icp/<profile id> --venture <id> --confirm foundation/icp/<profile id>
+node packages/naive/src/interfaces/cli/mentura.ts accept foundation/problem --venture <id> --confirm foundation/problem
 ```
 
 A person at the keyboard writes with `--as person`. The reads and the assessment see the accepted file. A draft is not that file.
@@ -142,7 +142,7 @@ Both of these can pass and can fail. `packages/naive/test/verification/playbook-
 ### The source check
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs foundation/problem check --venture <id> --json
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem check --venture <id> --json
 ```
 
 This runs `packages/naive/src/checks/check-validation.ts`.
@@ -154,7 +154,7 @@ It passes, and the command exits 0, when those are clean. A pass can still be a 
 ### The learning check
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs purpose/validation/assess run --venture <id> --json
+node packages/naive/src/interfaces/cli/mentura.ts purpose/validation/assess run --venture <id> --json
 ```
 
 It asks, and does not assess, when there is no accepted problem record, or when `statement`, `segment`, `cost` or `workarounds`, or `why_now` is missing, or when an assumption has no evidence yet. A draft does not count as the record.

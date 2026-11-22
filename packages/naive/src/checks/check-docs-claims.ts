@@ -2,7 +2,7 @@
 // Checks that the docs describe only what is built. Scans docs/master/*.md,
 // packages/naive/library/packages/*/playbooks/*.md, every SKILL.md and every README.md for claims in backticks and code blocks, and fails on any that the code does not have:
 //
-//   naive <cmd> / mentura <cmd>   the command is dispatched by packages/naive/src/interfaces/cli/naive.mjs or mentura.mjs
+//   naive <cmd> / mentura <cmd>   the command is dispatched by packages/naive/src/interfaces/cli/naive.ts or mentura.ts
 //   --flag after a naive command  the command (or the script it runs) reads that flag
 //   schema/..., interface/..., purpose/..., packages/naive/library/packages/..., docs/...   the repository path exists
 //   foundation/problem            a record route in the route table (packages/naive/src/records/routes/routes.ts routes())
@@ -59,8 +59,8 @@ if (argv[0] === "--readmes") {
 const docs = only.length ? only.map((f) => f.startsWith("/") ? f : join(repo, f)) : walk(repo).filter((f) => scanned(relative(repo, f)));
 
 // --- What the code has ---
-const naiveSrc = read("packages/naive/src/interfaces/cli/naive.mjs");
-const menturaSrc = read("packages/naive/src/interfaces/cli/mentura.mjs");
+const naiveSrc = read("packages/naive/src/interfaces/cli/naive.ts");
+const menturaSrc = read("packages/naive/src/interfaces/cli/mentura.ts");
 const literals = (src: string) => new Set([...src.matchAll(/cmd === "([a-z-]+)"/g)].map((m) => m[1])
   .concat([...src.matchAll(/\[((?:"[a-z-]+",?\s*)+)\]\.includes\(cmd\)/g)].flatMap((m) => [...m[1].matchAll(/"([a-z-]+)"/g)].map((x) => x[1]))));
 const naiveCmds = literals(naiveSrc);
@@ -73,7 +73,7 @@ const routeTop = new Set(table.map((r) => r.route.split("/")[0]));
 const packageAlias = (c: string) => /^packages\/[a-z0-9-]+$/.test(c) && existsSync(join(repo, "packages/naive/library", c, "package.json"));
 const isRoute = (c: string) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r) => r.route === c.replace(/<[^>]+>/g, "[id]")) || packageAlias(c);
 
-// The flags a naive command reads: in naive.mjs's branch for it and in the scripts that branch runs.
+// The flags a naive command reads: in naive.ts's branch for it and in the scripts that branch runs.
 // Only flag definitions count: a literal --name, or a name passed to a flag reader. Any other string is not a flag.
 const flagWords = (src: string) => new Set([...src.matchAll(/--([a-z][a-z-]*)/g), ...src.matchAll(/(?<![\w.])(?:opt|flag|has|pass)\(\s*"([a-z][a-z-]*)"/g)].map((m) => m[1]));
 const branchOf = (cmd: string) => {
@@ -106,13 +106,13 @@ function checkCommand(f: string, n: number, line: string) {
     const [, bin, cmd, tail] = m;
     claims++;
     if (bin === "naive") {
-      if (!naiveCmds.has(cmd)) { fail(f, n, `naive ${cmd}`, "packages/naive/src/interfaces/cli/naive.mjs has no such command"); continue; }
+      if (!naiveCmds.has(cmd)) { fail(f, n, `naive ${cmd}`, "packages/naive/src/interfaces/cli/naive.ts has no such command"); continue; }
       const known = flagsOf(cmd);
       for (const [, fl] of (tail ?? "").replace(/"[^"]*"|'[^']*'|\[[^\]]*\]/g, (s) => s.startsWith("[") ? s.slice(1, -1) : "").matchAll(/(?:^|\s)--([a-z][a-z-]*)/g)) {
         claims++;
         if (!known.has(fl)) fail(f, n, `naive ${cmd} --${fl}`, `naive ${cmd} never reads --${fl}`);
       }
-    } else if (!menturaCmds.has(cmd) && !routeTop.has(cmd) && !isRoute(cmd) && cmd !== "venture") fail(f, n, `mentura ${cmd}`, "packages/naive/src/interfaces/cli/mentura.mjs has no such command or route");
+    } else if (!menturaCmds.has(cmd) && !routeTop.has(cmd) && !isRoute(cmd) && cmd !== "venture") fail(f, n, `mentura ${cmd}`, "packages/naive/src/interfaces/cli/mentura.ts has no such command or route");
   }
 }
 

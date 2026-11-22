@@ -52,7 +52,7 @@ const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 const sorted = (x) => Array.isArray(x) ? x.map(sorted) : x && typeof x === "object" ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, sorted(x[k])])) : x;
 const stamp = (d) => new Date(d).toISOString().replace(/\.\d+Z$/, "Z");
-const CLI = "node packages/naive/src/interfaces/cli/mentura.mjs";
+const CLI = "node packages/naive/src/interfaces/cli/mentura.ts";
 
 export const CACHE = ".naive/cache/release.json";
 /** Record types that stay live: never frozen, always a hole (C-11, V-3). */

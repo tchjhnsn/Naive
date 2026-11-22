@@ -7,7 +7,7 @@
 // MENTURA_WORKSPACE (the default is the current directory). No dependencies: the map's React
 // Flow is fetched once from unpkg and cached in ~/.cache/naive-board.
 //
-//   node packages/naive/src/interfaces/demo/board.mjs [--venture <id>] [--port 4331]
+//   node packages/naive/src/interfaces/demo/board.ts [--venture <id>] [--port 4331]
 
 import { createServer } from "node:http";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -19,7 +19,7 @@ import { decisions } from "../../engine/decisions.ts";
 import { CONVENTIONS, MAP, parse, summary } from "../../functions/strategy/frameworks/idea-map/ideamap.ts";
 import { GRAPH } from "../../functions/strategy/frameworks/idea-map/graph.ts";
 import { route } from "../../functions/strategy/frameworks/idea-map/route.ts";
-import { scan } from "../harness/site.mjs";
+import { scan } from "../harness/site.ts";
 import { MATRIX } from "../../functions/marketing-and-sales/marketing/site/presence.ts";
 import { plan } from "../../functions/marketing-and-sales/marketing/site/plan.ts";
 import { write as writePackage, OUT as PACKAGE } from "../../engine/packages.ts";

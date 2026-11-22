@@ -37,7 +37,7 @@ A write whose record has a `venture` field naming another venture is refused bef
 
 ## Run and test
 
-- `node packages/naive/src/interfaces/test.mjs` tests the routes.
+- `node packages/naive/src/interfaces/test.ts` tests the routes.
 - `node packages/naive/src/router/writes-test.mjs` tests what a write answers.
 
 ## How it connects

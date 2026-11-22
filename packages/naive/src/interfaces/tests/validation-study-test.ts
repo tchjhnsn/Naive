@@ -2,7 +2,7 @@
 // records, the shared telemetry schema and writer, the plugin beta's gate and the feedback router. No network:
 // Jev and the telemetry sender are stubs.
 //
-//   node packages/naive/src/interfaces/tests/validation-study-test.mjs
+//   node packages/naive/src/interfaces/tests/validation-study-test.ts
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -23,8 +23,8 @@ const ws = mkdtempSync(join(tmpdir(), "validation-study-test-"));
 const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: ws });
 delete env.MENTURA_ACTOR_ID; delete env.TYPESAFE_API_KEY;
 delete process.env.MENTURA_ACTOR_ID;
-const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
-const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { encoding: "utf8", env: { ...env, NAIVE_BETA_TESTER: "t1" } });
+const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
+const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), ...a], { encoding: "utf8", env: { ...env, NAIVE_BETA_TESTER: "t1" } });
 const routesMd = () => readFileSync(join(repo, "docs/reference/ROUTES.md"), "utf8");
 const json = (o) => JSON.stringify(o, null, 2) + "\n";
 const put = (f, o) => { mkdirSync(join(f, ".."), { recursive: true }); writeFileSync(f, json(o)); };
@@ -137,7 +137,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("naive beta feedback and unlock from the CLI", fbCli.status === 0 && unCli.status === 0 && /unlocked validation/.test(unCli.stdout), fbCli.stdout + fbCli.stderr + unCli.stdout + unCli.stderr);
   expect("check-validation-study passes the feedback records", !check(dir).some((p) => /feedback/.test(p)));
   // The tester is one id everywhere: an agent's role changes nothing, and the CLI and the router agree.
-  const asRole = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "beta", "status", "--venture", dir], { encoding: "utf8", env: { ...env, MENTURA_ACTOR_ID: "builder", NAIVE_BETA_TESTER: "t1" } });
+  const asRole = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "beta", "status", "--venture", dir], { encoding: "utf8", env: { ...env, MENTURA_ACTOR_ID: "builder", NAIVE_BETA_TESTER: "t1" } });
   expect("the CLI's tester is NAIVE_BETA_TESTER, not the actor's role", /tester t1\b/.test(asRole.stdout), asRole.stdout + asRole.stderr);
   process.env.MENTURA_ACTOR_ID = "builder";
   const open = await call({ venture: "vs", route: "ideas/map", action: "read", workspace: ws, actor_id: "builder" });

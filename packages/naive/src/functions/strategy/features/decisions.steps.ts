@@ -27,7 +27,7 @@ const find = (w: World, id: string) => (w.report ??= JSON.parse(node(w, "package
 const report = (w: World) => { find(w, "venture"); return must(w.report ?? undefined, "report"); };
 const needNow = (w: World, type: string) => (JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout) as { rows: NeedRow[] }).rows.find((x) => x.type === type);
 
-const cli = (w: World, ...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
+const cli = (w: World, ...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
 const proposeAs = (w: World, d: Record<string, unknown>) => { const f = join(w.ws, "proposal.json"); writeFileSync(f, JSON.stringify(d)); w.p = cli(w, "propose", "--venture", w.venture, "--input", f, "--as", "builder"); w.report = null; };
 
 export const steps: Step[] = [
@@ -74,7 +74,7 @@ export const steps: Step[] = [
   [/^an agent writes the product "([a-z-]+)"$/, (w, id) => {
     const f = join(w.ws, "product.json");
     writeFileSync(f, readFileSync(join(w.dir, "products", `${id}.json`)));
-    w.p = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), `purpose/product/${id}`, "write", "--venture", w.venture, "--input", f], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
+    w.p = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), `purpose/product/${id}`, "write", "--venture", w.venture, "--input", f], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
   }],
   [/^the product write is a draft held by "([a-z-]+)"$/, (w, id) => {
     ok(w.p.status === 0, `write: ${w.p.stdout}${w.p.stderr}`);

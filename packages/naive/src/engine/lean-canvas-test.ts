@@ -49,7 +49,7 @@ const before = (d: string): string[] => readdirSync(d, { recursive: true }).map(
 const files0 = before(dir);
 const input = join(ws, "problem.json");
 writeFileSync(input, JSON.stringify({ venture: "acme", statement: "Small landlords lose a month of rent each year to slow turnover.", segment: "Landlords with two to ten units", evidence: [] }));
-const w = node(["packages/naive/src/interfaces/cli/mentura.mjs", "foundation/problem", "write", "--venture", "acme", "--as", "person", "--input", input], { MENTURA_WORKSPACE: ws });
+const w = node(["packages/naive/src/interfaces/cli/mentura.ts", "foundation/problem", "write", "--venture", "acme", "--as", "person", "--input", input], { MENTURA_WORKSPACE: ws });
 expect("a person writes the problem record through the router", w.status === 0, w.stderr || w.stdout);
 const files1 = before(dir);
 const problem = canvasBox(dir, "problem");
@@ -59,7 +59,7 @@ expect("after the problem is confirmed, the next box is customer segments", lean
 expect("an unknown box is null", canvasBox(dir, "nope") === null);
 
 // ---- Each box at its own route ----
-const r = node(["packages/naive/src/interfaces/cli/mentura.mjs", "identity/lean-canvas/problem", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
+const r = node(["packages/naive/src/interfaces/cli/mentura.ts", "identity/lean-canvas/problem", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
 let routed: { id?: string, status?: string } = {};
 try { routed = JSON.parse(r.stdout); } catch { routed = {}; }
 expect("identity/lean-canvas/<box> returns that one box", routed.id === "problem" && routed.status === "confirmed", r.stdout.slice(0, 300) || r.stderr);

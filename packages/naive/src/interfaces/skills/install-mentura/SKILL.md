@@ -38,11 +38,11 @@ cd mentura && npm install && node test.ts   # Node 22.18+; python3 with jsonsche
 ## 3. Start a venture, or point at existing ones
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs init <folder>/my-venture --id my-venture --layers purpose
-node packages/naive/src/interfaces/cli/mentura.mjs system/need-now run --venture my-venture --workspace <folder>
+node packages/naive/src/interfaces/cli/mentura.ts init <folder>/my-venture --id my-venture --layers purpose
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now run --venture my-venture --workspace <folder>
 ```
 
-`init` creates new ventures only: it refuses a directory that already has files. To bring an existing project in, create the venture, then run `node packages/naive/src/interfaces/cli/naive.mjs port --from <project> --venture <folder>/my-venture`, read the plan it writes, and apply it with `--apply --confirm port`. To have an agent rewrite the project as Naive records instead, use `naive.mjs migrate` with the same flags, have the founder settle each `migrate-<function>` decision, then run `migrate --venture <folder>/my-venture --apply`. Never run `init` on someone's existing project.
+`init` creates new ventures only: it refuses a directory that already has files. To bring an existing project in, create the venture, then run `node packages/naive/src/interfaces/cli/naive.ts port --from <project> --venture <folder>/my-venture`, read the plan it writes, and apply it with `--apply --confirm port`. To have an agent rewrite the project as Naive records instead, use `naive.ts migrate` with the same flags, have the founder settle each `migrate-<function>` decision, then run `migrate --venture <folder>/my-venture --apply`. Never run `init` on someone's existing project.
 
 To use the whole system, leave out `--layers`. The workspace is the folder that holds the ventures. Set `MENTURA_WORKSPACE` to it so that you do not have to pass `--workspace` each time.
 
@@ -68,7 +68,7 @@ claude mcp add mentura --env MENTURA_WORKSPACE=<folder> --env MENTURA_HARNESS="C
 }
 ```
 
-**Any other harness or script:** use the CLI (`node packages/naive/src/interfaces/cli/mentura.mjs help`). You can also run `node packages/naive/src/interfaces/api/server.mjs`. It listens only on 127.0.0.1:4330 and has no authentication, so keep it on the builder's own machine.
+**Any other harness or script:** use the CLI (`node packages/naive/src/interfaces/cli/mentura.ts help`). You can also run `node packages/naive/src/interfaces/api/server.ts`. It listens only on 127.0.0.1:4330 and has no authentication, so keep it on the builder's own machine.
 
 Use absolute paths in both configs. Check the connection by asking the agent to call `mentura_ventures`, then `mentura_view` on `system/overview`. Before an agent acts on a route, it should call `mentura_layout` for that route: it returns the kit's skills, references, template and gate.
 

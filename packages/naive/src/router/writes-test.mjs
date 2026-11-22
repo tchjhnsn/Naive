@@ -20,7 +20,7 @@ const ws = mkdtempSync(join(tmpdir(), "writes-test-"));
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.MENTURA_ACTOR_ID;
 const env = { ...process.env, MENTURA_WORKSPACE: ws };
-const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 const init = (id) => { const p = cli("init", join(ws, "ventures", id), "--id", id, "--layers", "purpose"); if (p.status !== 0) throw new Error(p.stderr); return join(ws, "ventures", id); };
 const put = (dir, rel, x) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2) + "\n"); };
 
@@ -47,7 +47,7 @@ const w2 = await c("validation/solution", "write", { input: { venture: "acme", s
 expect("M-17: after an agent's write, the next step is a person reviewing it", w2.result?.next?.action === "review" && w2.result.next.route === "validation/solution" && w2.result.next.who === "a person", w2.result?.next);
 const w3 = await c("foundation/problem", "write", { input: { ...problem, statement: "Physios lose evenings" } });
 expect("M-17: after a write held as a draft, the next route is accepting it", w3.result?.draft === true && w3.result.next?.action === "accept" && w3.result.next.command === "mentura accept foundation/problem --venture acme", w3.result?.next);
-const cliW = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "validation/solution", "write", "--venture", "acme", "--input", "-", "--as", "person"], { encoding: "utf8", env, input: JSON.stringify({ venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] }) });
+const cliW = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "validation/solution", "write", "--venture", "acme", "--input", "-", "--as", "person"], { encoding: "utf8", env, input: JSON.stringify({ venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] }) });
 const cliOut = JSON.parse(cliW.stdout || "{}");
 expect("M-3 and M-17 through the CLI: the answer carries changed and next", cliW.status === 0 && cliOut.changed?.record?.to === "confirmed" && cliOut.next?.route, cliW.stderr || cliOut);
 
@@ -251,7 +251,7 @@ for (const d of ["schema", "interface", "knowledge", "purpose", "operations", "e
 // The copy resolves its packages (effect, EE-125) from the repository's node_modules.
 symlinkSync(join(repo, "node_modules"), join(copy, "node_modules"), "dir");
 writeFileSync(recordsIn(copy).dataModelFile(), readFileSync(dataModelFile(), "utf8").slice(0, 500));
-const fw = spawnSync("node", [join(copy, "packages/naive/src/interfaces/cli/mentura.mjs"), "foundation/problem", "read", "--venture", "acme"], { encoding: "utf8", env });
+const fw = spawnSync("node", [join(copy, "packages/naive/src/interfaces/cli/mentura.ts"), "foundation/problem", "read", "--venture", "acme"], { encoding: "utf8", env });
 expect("E-8: a broken data model answers with recovery steps, not a stack trace", fw.status === 1 && /the framework is broken: packages\/naive\/src\/records\/data-model\.json/.test(fw.stderr) && /Recovery:/.test(fw.stderr) && /check-data-model/.test(fw.stderr), fw.stderr.slice(0, 400));
 rmSync(copy, { recursive: true, force: true });
 const fix = await c("foundation/problem", "write", { input: { statement: 5 }, actor: "person" });

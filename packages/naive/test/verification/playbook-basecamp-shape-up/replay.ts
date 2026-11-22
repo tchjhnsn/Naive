@@ -29,7 +29,7 @@ const note = (rule: string, ok: unknown, detail: unknown) => {
   console.log(`${ok ? "PASS" : "FAIL"}  ${rule}: ${detail}`);
 };
 
-const cli = (args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--workspace", root], { encoding: "utf8" });
+const cli = (args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args, "--workspace", root], { encoding: "utf8" });
 const writeRoute = async (route: string, record: Record<string, unknown>, actor?: string) => call({
   venture, route, action: "write", input: record, actor, workspace: root, via: "replay",
   provenance: { note: "shape-up replay" },

@@ -56,7 +56,7 @@ t("naive inbox lists waiting chunks; assign moves one and logs the choice", () =
   assert.equal(JSON.parse(readFileSync(join(root, "meta/routing-log.jsonl"), "utf8").trim()).chosen, "boats");
 });
 t("the CLI runs capture and inbox from inside a venture", () => {
-  const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { cwd: join(root, "bees"), encoding: "utf8" });
+  const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.ts", import.meta.url).pathname, ...a], { cwd: join(root, "bees"), encoding: "utf8" });
   assert.match(cli("capture", "harbor moorings").stdout, /kept raw\//);
   assert.equal(cli("inbox", "list").status, 0);
   assert.equal(cli("read", "boats", "foundation/problem.json").status, 1);

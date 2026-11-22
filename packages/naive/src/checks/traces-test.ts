@@ -119,7 +119,7 @@ delete process.env.NAIVE_TRACES; delete process.env.MENTURA_TRACE_ID; delete pro
   try { append(off, JSON.stringify({ name: "x", kind: "agent" })); } catch (e) { code = (e as { code?: number }).code ?? 0; }
   ok("append refuses when traces are off (exit 3)", code === 3);
 
-  const cli = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "trace", "show", "grok-1", "--venture", dir], { encoding: "utf8" });
+  const cli = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "trace", "show", "grok-1", "--venture", dir], { encoding: "utf8" });
   ok("naive trace show prints a session as a tree", cli.status === 0 && cli.stdout.includes("agent") && cli.stdout.includes("  tool"), cli.stderr);
   const check = spawnSync("node", [join(repo, "packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
   ok("check-traces passes from the command line", check.status === 0, check.stderr);

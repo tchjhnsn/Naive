@@ -24,12 +24,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 // engine's steps that write records. Each makes its venture under the temp dir.
 export const TESTS = [
   "packages/naive/src/router/writes-test.mjs",
-  "packages/naive/src/interfaces/test.mjs",
+  "packages/naive/src/interfaces/test.ts",
   "packages/naive/src/interfaces/tests/agent-files-test.ts",
-  "packages/naive/src/interfaces/tests/gate-test.mjs",
-  "packages/naive/src/interfaces/tests/freshness-test.mjs",
-  "packages/naive/src/interfaces/tests/decision-index-test.mjs",
-  "packages/naive/src/interfaces/tests/connectors-router-test.mjs",
+  "packages/naive/src/interfaces/tests/gate-test.ts",
+  "packages/naive/src/interfaces/tests/freshness-test.ts",
+  "packages/naive/src/interfaces/tests/decision-index-test.ts",
+  "packages/naive/src/interfaces/tests/connectors-router-test.ts",
   "packages/naive/src/engine/lifecycle-test.ts",
   "packages/naive/src/engine/decision-versions-test.ts",
   "packages/naive/src/engine/upgrades-test.ts",

@@ -16,7 +16,7 @@ const expect = (name: string, ok: unknown, detail = "") => { console.log(`${ok ?
 const base = mkdtempSync(join(tmpdir(), "src-layout-"));
 const ws = join(base, "workspace");
 cpSync(join(repo, "packages/naive/src/records/examples/workspace"), ws, { recursive: true });
-const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { encoding: "utf8", env: { ...process.env, NAIVE_CEILING_DIRECTORIES: base } });
+const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), ...a], { encoding: "utf8", env: { ...process.env, NAIVE_CEILING_DIRECTORIES: base } });
 const dir = join(ws, "ventures/acme-labs");
 const before = entries(dir).length;
 

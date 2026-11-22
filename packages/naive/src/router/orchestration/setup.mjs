@@ -2,7 +2,7 @@
 // hats, where each function keeps its truth, the strategic foundation and the first decisions (the decision
 // docket), and a goal for the discovery phase. It holds no view. The naive-setup skill
 // (packages/naive/src/interfaces/skills/naive-setup) renders it in the model's harness, as a Claude artifact where there is one;
-// packages/naive/src/interfaces/dev/setup.mjs serves the same state to a browser.
+// packages/naive/src/interfaces/dev/setup.ts serves the same state to a browser.
 //
 //   node packages/naive/src/router/orchestration/setup.mjs <venture dir> state                     the state, as JSON
 //   node packages/naive/src/router/orchestration/setup.mjs <venture dir> artifact                  the state rendered into the skill's artifact template

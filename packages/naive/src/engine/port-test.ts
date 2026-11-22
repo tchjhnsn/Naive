@@ -16,7 +16,7 @@ import type { PortItem } from "./port-venture.ts";
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name: string, ok: unknown, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { encoding: "utf8" });
+const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), ...a], { encoding: "utf8" });
 const git = (d: string, ...a: string[]) => spawnSync("git", ["-C", d, ...a], { encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } });
 // Every file under a folder with its bytes' hash and mode, .git included, so a move can be compared.
 const tree = (d: string, r = ""): string[] => readdirSync(join(d, r), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? tree(d, join(r, e.name))

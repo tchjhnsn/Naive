@@ -3,7 +3,7 @@
 // authentication, so it is for one builder's machine, not the internet. Every caller is treated as
 // an agent, so gated records are written as drafts for a person to accept.
 //
-//   node packages/naive/src/interfaces/api/server.mjs [--port 4330]
+//   node packages/naive/src/interfaces/api/server.ts [--port 4330]
 //
 //   GET  /routes, /groups                           the route table; route groups by phase
 //   GET  /ventures                                  ventures in the workspace

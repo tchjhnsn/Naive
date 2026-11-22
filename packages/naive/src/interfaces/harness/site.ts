@@ -8,7 +8,7 @@
 //
 // Without a judge the scoring falls back to the matrix's keywords and says so.
 //
-//   node packages/naive/src/interfaces/harness/site.mjs <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--pages 10] [--json]
+//   node packages/naive/src/interfaces/harness/site.ts <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--pages 10] [--json]
 
 import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -60,7 +60,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const url = process.argv[2];
   const opt = (n) => { const i = process.argv.indexOf(`--${n}`); return i > 0 ? process.argv[i + 1] : null; };
   const has = (n) => process.argv.includes(`--${n}`);
-  if (!url || url.startsWith("--")) { console.error("usage: node packages/naive/src/interfaces/harness/site.mjs <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--pages 10] [--json]"); process.exit(2); }
+  if (!url || url.startsWith("--")) { console.error("usage: node packages/naive/src/interfaces/harness/site.ts <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--pages 10] [--json]"); process.exit(2); }
   const flags = Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true]));
   scan(url, { venture: opt("venture"), flags, pages: Number(opt("pages") ?? 10), log: (m) => console.error(m) }).then((r) => {
     if (has("json")) return console.log(JSON.stringify(r, null, 2));

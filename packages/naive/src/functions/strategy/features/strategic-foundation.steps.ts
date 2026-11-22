@@ -15,7 +15,7 @@ type Question = { question: string, statements: { id: string, status: string, va
 const repo = new URL("../../../../../../", import.meta.url).pathname;
 const ok = (cond: unknown, msg: string) => { if (!cond) throw new Error(msg); };
 const node = (w: World, script: string, ...a: string[]) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
-const cli = (w: World, ...a: string[]) => node(w, "packages/naive/src/interfaces/cli/mentura.mjs", ...a);
+const cli = (w: World, ...a: string[]) => node(w, "packages/naive/src/interfaces/cli/mentura.ts", ...a);
 const foundation = (w: World) => JSON.parse(node(w, "packages/naive/src/engine/foundation.ts", w.dir, "--json").stdout) as Question[];
 const report = (w: World) => Object.fromEntries(foundation(w).flatMap((q) => q.statements.map((s) => [s.id, s.status])));
 // One ICP profile record, foundation/icp/owners.json.

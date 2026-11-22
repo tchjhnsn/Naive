@@ -62,4 +62,4 @@ The model is one profile. The playbook loops every profile `foundation/icp` list
 
 ## Covered code
 
-`packages/naive/library/packages/foundation/playbooks/jtbd.md`. `packages/naive/src/router/router.mjs` `resolve` and `call` for the routes in the table. `packages/naive/src/engine/foundation.ts` for a `problem_forms` id the problem record lacks. `packages/naive/src/records/icp-profile.schema.json` `jobs`. `packages/naive/src/interfaces/cli/mentura.mjs` `accept` for `foundation/icp/<id>`. Confirmed on this branch before the pull request, by the commands above.
+`packages/naive/library/packages/foundation/playbooks/jtbd.md`. `packages/naive/src/router/router.mjs` `resolve` and `call` for the routes in the table. `packages/naive/src/engine/foundation.ts` for a `problem_forms` id the problem record lacks. `packages/naive/src/records/icp-profile.schema.json` `jobs`. `packages/naive/src/interfaces/cli/mentura.ts` `accept` for `foundation/icp/<id>`. Confirmed on this branch before the pull request, by the commands above.

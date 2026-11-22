@@ -84,7 +84,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
-import { asRouted, findVenture } from "./find-venture.mjs";
+import { asRouted, findVenture } from "./find-venture.ts";
 import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.ts";
@@ -127,10 +127,10 @@ async function dev(dir) {
   const { workspace, venture } = asRouted(dir);
   process.env.MENTURA_WORKSPACE = workspace;
   const port = await free(Number(opt("port") ?? 4331));
-  // One origin: /setup is the setup page (packages/naive/src/interfaces/dev/setup.mjs); everything else is the board, served
+  // One origin: /setup is the setup page (packages/naive/src/interfaces/dev/setup.ts); everything else is the board, served
   // on a port of its own and passed through.
-  const { serve } = await import("../demo/board.mjs");
-  const { handle } = await import("../dev/setup.mjs");
+  const { serve } = await import("../demo/board.ts");
+  const { handle } = await import("../dev/setup.ts");
   const boardPort = await free(0);
   serve(boardPort, venture);
   const { createServer: http, request } = await import("node:http");
@@ -240,7 +240,7 @@ else if (cmd === "mcp") {
   const env = { ...process.env };
   const at = opt("venture") ? here() : findVenture();
   if (!env.MENTURA_WORKSPACE) env.MENTURA_WORKSPACE = at ? asRouted(at).workspace : process.cwd();
-  process.exit(spawnSync("node", [join(repo, "packages/naive/src/interfaces/mcp/server.mjs")], { stdio: "inherit", env }).status ?? 1);
+  process.exit(spawnSync("node", [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], { stdio: "inherit", env }).status ?? 1);
 }
 else if (cmd === "info") info(findVenture() ?? (opt("venture") && existsSync(join(resolve(opt("venture")), "venture.json")) ? resolve(opt("venture")) : null));
 else if (cmd === "build" || cmd === "start") {
@@ -368,7 +368,7 @@ else if (cmd === "build" || cmd === "start") {
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
   process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
 } else if (cmd === "typegen") {
-  const { TOOLS } = await import("../mcp/server.mjs");
+  const { TOOLS } = await import("../mcp/server.ts");
   const { routes } = await import("../../router/router.mjs");
   const out = join(repo, ".naive/types");
   mkdirSync(out, { recursive: true });

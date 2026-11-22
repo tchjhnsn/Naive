@@ -152,7 +152,7 @@ const parsed = JSON.parse(json.stdout || "{}") as { count_levels?: { moderate: n
 expect("the CLI prints JSON", json.status === 0 && parsed.venture === "acme" && parsed.count_levels?.moderate === 3, json.stderr);
 const bad = node(["packages/naive/src/engine/gate-calibration.ts", dir, "--valid-at", "soon"]);
 expect("a bad --valid-at exits 2", bad.status === 2, bad.status);
-const route = spawnSync("node", ["packages/naive/src/interfaces/cli/mentura.mjs", "system/phase-gate/calibrate", "run", "--venture", "acme"], { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
+const route = spawnSync("node", ["packages/naive/src/interfaces/cli/mentura.ts", "system/phase-gate/calibrate", "run", "--venture", "acme"], { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
 let routed: { venture?: string, count_levels?: { moderate: number }, items?: Record<string, { boundary: string }> } = {};
 try { routed = JSON.parse(route.stdout); } catch { routed = {}; }
 expect("the route system/phase-gate/calibrate runs the calibration as a command route", route.status === 0 && routed.venture === "acme" && routed.count_levels?.moderate === 3 && routed.items?.["economic-signal"]?.boundary === "fail-closed", route.stdout.slice(0, 400) + route.stderr);

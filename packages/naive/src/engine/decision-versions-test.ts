@@ -187,7 +187,7 @@ try {
   writeFileSync(join(ws, "gapa/venture.json"), JSON.stringify({ id: "gapa", name: "Gap A", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery" }, null, 2));
   const input = join(ws, "in.json");
   writeFileSync(input, JSON.stringify({ id: "x", question: "Q?", status: "decided", answer: "A.", decides: { path: "operations/x.json" }, layer: "operations", needed_in: "discovery" }));
-  const cli = (...a: string[]) => spawnSync("node", [join(new URL("../../../..", import.meta.url).pathname, "packages/naive/src/interfaces/cli/mentura.mjs"), "decisions/x", "write", "--venture", "gapa", "--input", input, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+  const cli = (...a: string[]) => spawnSync("node", [join(new URL("../../../..", import.meta.url).pathname, "packages/naive/src/interfaces/cli/mentura.ts"), "decisions/x", "write", "--venture", "gapa", "--input", input, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
   const pw = cli("--as", "person");
   expect("a person's write of a decided decision naming no approver is refused", pw.status !== 0 && /approved_by/.test(pw.stderr + pw.stdout) && !existsSync(join(ws, "gapa/decisions/x.decision.json")), pw.stdout + pw.stderr);
   const aw = cli();

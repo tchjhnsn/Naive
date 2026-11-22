@@ -1,15 +1,15 @@
 // Tests for the router and the three interfaces over it (EE-030): the CLI, the MCP server and the
 // HTTP API. They run on a copy of the example workspace in a temp folder.
 //
-//   node packages/naive/src/interfaces/test.mjs
+//   node packages/naive/src/interfaces/test.ts
 
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { call, capture, groups, judge, routes } from "../router/router.mjs";
-import { handle, TOOLS } from "./mcp/server.mjs";
-import { route as http } from "./api/server.mjs";
+import { handle, TOOLS } from "./mcp/server.ts";
+import { route as http } from "./api/server.ts";
 import { entries } from "../core/provenance.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
@@ -53,11 +53,11 @@ expect("foundation/core refuses an empty value", !(await call({ venture: "tandem
 const coreWritten = await call({ venture: "tandem", route: "foundation/core", action: "write", actor: "person", input: { tagline: "Ride together" } });
 const coreRead = await call({ venture: "tandem", route: "foundation/core", action: "read", actor: "person" });
 expect("foundation/core writes its field and reads only its view", coreWritten.ok && coreRead.result.tagline === "Ride together" && !("id" in coreRead.result) && !("phase" in coreRead.result));
-const envAgent = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.mjs"), "foundation/core", "write", "--as", "person", "--venture", "tandem", "--input", '{"tagline":"Signed by a model"}'], { env: { ...process.env, MENTURA_WORKSPACE: process.env.MENTURA_WORKSPACE, MENTURA_ACTOR: "agent", MENTURA_MODEL: "m" }, encoding: "utf8" });
+const envAgent = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), "foundation/core", "write", "--as", "person", "--venture", "tandem", "--input", '{"tagline":"Signed by a model"}'], { env: { ...process.env, MENTURA_WORKSPACE: process.env.MENTURA_WORKSPACE, MENTURA_ACTOR: "agent", MENTURA_MODEL: "m" }, encoding: "utf8" });
 expect("a declared agent saying --as person cannot write foundation/core", envAgent.status !== 0 && !readFileSync(join(tandem, "venture.json"), "utf8").includes("Signed by a model"));
 expect("no route claims venture.json as its file", !routes().some((r) => r.files?.includes("venture.json")));
 writeFileSync(join(tandem, "_drafts/venture.json.draft"), '{"tagline":"planted"}');
-const plantedAccept = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.mjs"), "accept", "foundation/core", "--venture", "tandem"], { env: process.env, encoding: "utf8" });
+const plantedAccept = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), "accept", "foundation/core", "--venture", "tandem"], { env: process.env, encoding: "utf8" });
 expect("foundation/core takes no accept, so a planted draft signs nothing", plantedAccept.status !== 0 && readFileSync(join(tandem, "venture.json"), "utf8").includes('"id"'));
 rmSync(join(tandem, "_drafts/venture.json.draft"), { force: true });
 writeFileSync(join(tandem, "venture.json"), identityBefore);
@@ -68,7 +68,7 @@ const cfgHeld = await call({ venture: "tandem", route: "purpose/validation/solut
 expect("naive.config.json fail_closed turns an agent's write into a draft, naming the rule", cfgHeld.ok && cfgHeld.result.draft && cfgHeld.result.gate_rule === "validation" && /naive.config.json/.test(cfgHeld.result.note));
 const cfgPerson = await call({ venture: "tandem", route: "purpose/validation/solution", action: "write", input: solution, actor: "person" });
 expect("naive.config.json fail_closed never holds a person's write", cfgPerson.ok && !cfgPerson.result.draft && !cfgPerson.result.gate_rule);
-const cfgAccept = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.mjs"), "accept", "validation/solution", "--venture", "tandem"], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+const cfgAccept = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), "accept", "validation/solution", "--venture", "tandem"], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
 expect("a person accepts a draft the naive.config.json gate held", cfgAccept.status === 0 && !existsSync(join(tandem, "_drafts/validation__solution.json.draft")));
 rmSync(join(tandem, "naive.config.json"));
 expect("a person's write to a gated record is written in place", (await call({ venture: "tandem", route: "governance/ownership", action: "write", input: own, actor: "person" })).result?.written === "governance/ownership.json");
@@ -148,7 +148,7 @@ expect("MCP tool errors come back as isError", (await handle({ jsonrpc: "2.0", i
 expect("MCP reads a record as a resource", JSON.parse((await handle({ jsonrpc: "2.0", id: 5, method: "resources/read", params: { uri: "mentura://tandem/purpose/validation/problem" } })).result.contents[0].text).evidence.length > 0);
 expect("MCP ignores notifications", (await handle({ jsonrpc: "2.0", method: "notifications/initialized" })) === null);
 expect("MCP refuses an unknown method", (await handle({ jsonrpc: "2.0", id: 6, method: "nope" })).error.code === -32601);
-const stdio = spawnSync("node", [join(root, "packages/naive/src/interfaces/mcp/server.mjs")], { input: '{"jsonrpc":"2.0","id":1,"method":"ping"}\nnot json\n', encoding: "utf8", env: process.env });
+const stdio = spawnSync("node", [join(root, "packages/naive/src/interfaces/mcp/server.ts")], { input: '{"jsonrpc":"2.0","id":1,"method":"ping"}\nnot json\n', encoding: "utf8", env: process.env });
 const lines = stdio.stdout.trim().split("\n").map((l) => JSON.parse(l));
 expect("MCP over stdio answers each line, and a parse error as -32700", lines[0].id === 1 && lines[1].error?.code === -32700);
 
@@ -166,7 +166,7 @@ expect("API GET a collection item", (await http("GET", "/ventures/tandem/purpose
 expect("API 405 for GET on run", (await http("GET", "/ventures/tandem/system/need-now/run"))[0] === 405);
 
 // CLI.
-const cli = (...a) => spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: process.env });
+const cli = (...a) => spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: process.env });
 expect("CLI lists ventures", /tandem/.test(cli("ventures").stdout));
 expect("CLI reads a record", (({ result, ...r }) => (result ?? r).evidence.length > 0)(JSON.parse(cli("purpose/validation/problem", "read", "--venture", "tandem").stdout)));
 expect("CLI fails with a message for an unknown route", cli("nope/nope", "read", "--venture", "tandem").status === 1);

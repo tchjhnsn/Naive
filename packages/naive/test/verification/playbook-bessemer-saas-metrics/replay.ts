@@ -426,7 +426,7 @@ async function main() {
     phase: "beachhead", arr_band: "$1-10MM", actuals: actualsFrom(money),
     targets: { ...blankTargets(), beachhead: { value: "125% net retention", metric: "net_retention", condition: "$1-10MM ARR median", source: SCALING } },
   });
-  const decide = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "decide", "finance-saas-metrics", "--venture", passId, "--workspace", workspace, "--by", "Fixture Founder", "--confirm", "finance-saas-metrics", "--answer", JSON.stringify(withNumber)], { encoding: "utf8" });
+  const decide = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "decide", "finance-saas-metrics", "--venture", passId, "--workspace", workspace, "--by", "Fixture Founder", "--confirm", "finance-saas-metrics", "--answer", JSON.stringify(withNumber)], { encoding: "utf8" });
   assert(decide.status === 0, `decide: ${decide.stderr || decide.stdout}`);
   const decided = (await read<DecisionRecord>(workspace, passId, "decisions/finance-saas-metrics")).result;
   assert(decided, "the decided record was not read");

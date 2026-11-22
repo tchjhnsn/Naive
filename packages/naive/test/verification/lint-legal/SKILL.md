@@ -23,14 +23,14 @@ Coverage, confirmed at commit `f6ac8f3` (`cursor/lint-legal`):
 | Exit | `process.exit` from `ok`, and `packages/naive/src/router/router.mjs` when it runs `legal/lint` |
 | channel `ventureFile` | every read goes through `ventureFile` in `packages/naive/src/core/venture-paths.ts` |
 
-`naive check` runs `packages/naive/src/checks/lint-legal.ts` because `packages/naive/src/interfaces/cli/naive.mjs` lists `lint-legal`.
+`naive check` runs `packages/naive/src/checks/lint-legal.ts` because `packages/naive/src/interfaces/cli/naive.ts` lists `lint-legal`.
 
-If `git diff <sync> -- packages/naive/src/checks/lint-legal.ts packages/naive/src/router/router.mjs packages/naive/src/interfaces/cli/naive.mjs` is empty, the model still describes the code. Move the sync commit forward only after you confirm, file by file, that each action above still matches.
+If `git diff <sync> -- packages/naive/src/checks/lint-legal.ts packages/naive/src/router/router.mjs packages/naive/src/interfaces/cli/naive.ts` is empty, the model still describes the code. Move the sync commit forward only after you confirm, file by file, that each action above still matches.
 
 ## Run it
 
 1. Run `/statechart` on `packages/naive/test/verification/lint-legal/LegalLint.tla` with `LegalLint.cfg` and `view.mjs`.
-2. Replay on the real CLI: `node packages/naive/src/interfaces/tests/lint-legal-test.mjs`.
+2. Replay on the real CLI: `node packages/naive/src/interfaces/tests/lint-legal-test.ts`.
 
 ## Real bug or model error?
 

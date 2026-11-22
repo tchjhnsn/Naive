@@ -4,7 +4,7 @@
 // change needs, is refused, and stops; this script waits until a person decides in another
 // terminal, then sends the agent back to finish. Needs the claude CLI, signed in.
 //
-//   node packages/naive/src/interfaces/demo/live-agent.mjs [--board]
+//   node packages/naive/src/interfaces/demo/live-agent.ts [--board]
 //     --board  serves the live decision board at http://127.0.0.1:4331/
 
 import { spawnSync } from "node:child_process";
@@ -19,10 +19,10 @@ cpSync(join(repo, "packages/naive/src/records/examples/workspace"), ws, { recurs
 const venture = "tandem", id = "reposition-shop-app";
 const decisionFile = join(ws, "ventures", venture, "products/decisions/shop-app.reposition.decision.json");
 const mcp = join(tmp, "mcp.json");
-writeFileSync(mcp, JSON.stringify({ mcpServers: { naive: { command: "node", args: [join(repo, "packages/naive/src/interfaces/mcp/server.mjs")], env: { MENTURA_WORKSPACE: ws } } } }));
+writeFileSync(mcp, JSON.stringify({ mcpServers: { naive: { command: "node", args: [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], env: { MENTURA_WORKSPACE: ws } } } }));
 
 let board = null;
-if (process.argv.includes("--board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("./board.mjs")).serve(4331, venture); console.log("Decision board: http://127.0.0.1:4331/"); }
+if (process.argv.includes("--board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("./board.ts")).serve(4331, venture); console.log("Decision board: http://127.0.0.1:4331/"); }
 
 const agent = (prompt) => {
   console.log("\nAGENT  working through Naive's MCP server...");
@@ -34,7 +34,7 @@ const agent = (prompt) => {
 const role = `You are the builder agent (agent_id builder) for the venture ${venture}. Work only through the naive MCP tools.`;
 agent(`${role} Task: reposition the shop-app product card (route purpose/product/shop-app) to lead with payroll. Call mentura_decisions first. Before changing the card, propose the decision the change needs with mentura_propose_decision: id ${id}, at "products", name "shop-app.reposition", parent "venture", with your proposed answer, one projected outcome, and unlocks [{"activity": "Reposition the shop-app product card", "routes": ["purpose/product/*"], "for": ["builder"]}]. Then try the write. If it is refused, stop and tell the founder, in two lines, what to approve and the exact command.`);
 
-console.log(`\nFOUNDER In another terminal, review and decide:\n         MENTURA_WORKSPACE=${ws} node ${join(repo, "packages/naive/src/interfaces/cli/mentura.mjs")} decide ${id} --venture ${venture} --by <your name>\nNAIVE   Waiting for the decision...`);
+console.log(`\nFOUNDER In another terminal, review and decide:\n         MENTURA_WORKSPACE=${ws} node ${join(repo, "packages/naive/src/interfaces/cli/mentura.ts")} decide ${id} --venture ${venture} --by <your name>\nNAIVE   Waiting for the decision...`);
 const decided = () => existsSync(decisionFile) && JSON.parse(readFileSync(decisionFile, "utf8")).status === "decided";
 while (!decided()) await new Promise((r) => setTimeout(r, 1000));
 const d = JSON.parse(readFileSync(decisionFile, "utf8"));

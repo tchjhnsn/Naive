@@ -24,7 +24,7 @@ The command routes `routes.ts` adds itself include `system/phase-gate` (EE-156),
 
 ## Run and test
 
-- `node packages/naive/src/interfaces/test.mjs` covers the route table through the router, and `node test.mjs` runs it.
+- `node packages/naive/src/interfaces/test.ts` covers the route table through the router, and `node test.mjs` runs it.
 - `node scripts/dependency-rules.ts --graph` shows that `packages` imports no other unit.
 
 ## How it connects

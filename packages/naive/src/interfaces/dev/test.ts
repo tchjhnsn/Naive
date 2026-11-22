@@ -6,7 +6,7 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { handle } from "./setup.mjs";
+import { handle } from "./setup.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { naiveScript } from "../../core/scripts.ts";
 

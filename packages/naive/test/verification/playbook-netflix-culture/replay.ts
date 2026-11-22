@@ -89,7 +89,7 @@ const unmarked = MARKS.filter((m) => !playbook.toLowerCase().includes(m.toLowerC
 if (unmarked.length) fail("TrademarkNamed", `the playbook does not name: ${unmarked.join("; ")}`);
 else pass("TrademarkNamed", "the playbook names every phrase the culture check refuses");
 
-const mentura = (args: string[], workspace: string) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--workspace", workspace], { encoding: "utf8" });
+const mentura = (args: string[], workspace: string) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args, "--workspace", workspace], { encoding: "utf8" });
 
 function gapsOf(team: ValidationTeam | null | undefined): { ok: false, error: string, gaps?: undefined } | { ok: true, gaps: string[], error?: undefined } {
   if (!team) return { ok: false, error: "people/team has no record" };

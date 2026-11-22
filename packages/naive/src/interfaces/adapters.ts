@@ -6,9 +6,9 @@
 // adapt() writes the entry files a harness reads and copies the skills of the packages open now. An
 // adapter is verified when it passes the framework's tests: verify() runs them.
 //
-//   node packages/naive/src/interfaces/adapters.mjs [--json]                        the adapters
-//   node packages/naive/src/interfaces/adapters.mjs adapt <adapter> <venture dir>   write a harness's files into a venture
-//   node packages/naive/src/interfaces/adapters.mjs verify [<adapter>] [--json]     run the framework's tests an adapter must pass
+//   node packages/naive/src/interfaces/adapters.ts [--json]                        the adapters
+//   node packages/naive/src/interfaces/adapters.ts adapt <adapter> <venture dir>   write a harness's files into a venture
+//   node packages/naive/src/interfaces/adapters.ts verify [<adapter>] [--json]     run the framework's tests an adapter must pass
 //
 // adapt() records what it wrote in <venture>/.naive/adapters.json and never overwrites a file it did not
 // write, or one a person changed since: it keeps theirs and says so. An upgrade refreshes the adapters
@@ -102,7 +102,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log(json ? JSON.stringify(list, null, 2) : list.map((a) => `${a.name.padEnd(12)} ${a.kind.padEnd(9)} ${a.path}  reads ${a.reads.join(", ")}`).join("\n"));
     } else if (cmd === "adapt") {
       const [name, dir] = rest;
-      if (!name || !dir) throw new Error("usage: node packages/naive/src/interfaces/adapters.mjs adapt <adapter> <venture dir>");
+      if (!name || !dir) throw new Error("usage: node packages/naive/src/interfaces/adapters.ts adapt <adapter> <venture dir>");
       const r = await adapt(dir, name);
       console.log(json ? JSON.stringify(r, null, 2) : [`adapted for ${r.adapter}: ${r.written.length} written, ${r.current.length} already current, ${r.kept.length} kept${r.skills.length ? `; skills: ${r.skills.join(", ")}` : ""}`,
         ...r.written.map((p) => `wrote     ${p}`), ...r.kept.map((k) => `kept      ${k.path} (${k.why})`), ...r.removed.map((p) => `removed   ${p}`)].join("\n"));
@@ -116,6 +116,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         for (const x of r.results) console.log(`  ${x.passed ? "pass" : "FAIL"}  ${x.test}${x.passed ? "" : `  ${x.detail}`}`);
       }
       process.exit(rs.every((r) => r.verified) ? 0 : 1);
-    } else throw new Error("usage: node packages/naive/src/interfaces/adapters.mjs [adapt <adapter> <venture dir> | verify [<adapter>]] [--json]");
+    } else throw new Error("usage: node packages/naive/src/interfaces/adapters.ts [adapt <adapter> <venture dir> | verify [<adapter>]] [--json]");
   } catch (e) { console.error(e.message); process.exit(1); }
 }

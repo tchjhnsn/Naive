@@ -10,7 +10,7 @@
 //   matrix     the most specific rule picks the system of record, and ties are refused
 //   attributes each attribute is read from and written to its own system of record
 //
-//   node packages/naive/src/interfaces/tests/connectors-router-test.mjs
+//   node packages/naive/src/interfaces/tests/connectors-router-test.ts
 
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, readFileSync } from "node:fs";

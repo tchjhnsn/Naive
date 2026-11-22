@@ -5,7 +5,7 @@
 // vitals and their check, and the trace a platform exporter ships. They run on a copy of the example
 // workspace in a temp folder and never write into the repository.
 //
-//   node packages/naive/src/interfaces/context-test.mjs
+//   node packages/naive/src/interfaces/context-test.ts
 
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
@@ -27,13 +27,13 @@ const { call, judge } = await import("../router/router.mjs");
 const ctx = await import("../router/context.mjs");
 const { events, register } = await import("../core/instrumentation.ts");
 const { vitals } = await import("../router/vitals.mjs");
-const { handle } = await import("./mcp/server.mjs");
+const { handle } = await import("./mcp/server.ts");
 const { propose, approve } = await import("../engine/decisions.ts");
 
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const nav = async (route, input = {}) => call({ venture: "tandem", route, action: "navigate", input });
-const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env } });
+const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: { ...process.env } });
 
 // The fixtures: a second product, part of the first and written by an agent; the first rewritten by a person (confirmed).
 const shop = JSON.parse(readFileSync(join(tandem, "products/shop-app.json"), "utf8"));

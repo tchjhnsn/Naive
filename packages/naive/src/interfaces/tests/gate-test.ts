@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.mjs";
-import { handle } from "../mcp/server.mjs";
+import { handle } from "../mcp/server.ts";
 import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-config.ts";
 import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.ts";
 import { inbox, variantsDecision } from "../../engine/gate-drafts.ts";
@@ -25,7 +25,7 @@ const ws = mkdtempSync(join(tmpdir(), "gate-test-"));
 const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: ws });
 delete env.MENTURA_ACTOR_ID;
 delete process.env.MENTURA_ACTOR_ID;
-const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 const node = (script, ...a) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env });
 const json = (o) => JSON.stringify(o, null, 2) + "\n";
 const read = (f) => JSON.parse(readFileSync(f, "utf8"));

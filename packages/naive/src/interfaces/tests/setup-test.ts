@@ -16,7 +16,7 @@ for (const k of ["MENTURA_WORKSPACE", "TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", 
 const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
 if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); process.exit(1); }
 process.env.MENTURA_WORKSPACE = base;
-const { handle } = await import("../mcp/server.mjs");
+const { handle } = await import("../mcp/server.ts");
 const { decisions } = await import("../../engine/decisions.ts");
 
 let failed = 0, n = 0;

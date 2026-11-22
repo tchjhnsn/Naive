@@ -26,7 +26,7 @@ const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const sha = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
-const mentura = (args, env = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args], { encoding: "utf8", env: { ...process.env, ...env } });
+const mentura = (args, env = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { encoding: "utf8", env: { ...process.env, ...env } });
 
 // A workspace with one venture per scenario, each with two customers a person wrote.
 const ws = mkdtempSync(join(tmpdir(), "model-steps-test-"));

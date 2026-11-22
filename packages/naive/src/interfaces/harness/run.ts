@@ -16,7 +16,7 @@
 // With --money and NAIVE_MONEY_CMD set, the founder's money source fills the venture's money package, and
 // the agent sees only its summary.
 //
-//   node packages/naive/src/interfaces/harness/run.mjs discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>]
+//   node packages/naive/src/interfaces/harness/run.ts discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>]
 //        [--workspace <dir>] [--board] [--yes] [--steps <n>] [--money sandbox|live|<fixture.json>]
 //
 //   --board   serves the decision board at http://127.0.0.1:4331/ and the idea map at /map
@@ -48,7 +48,7 @@ import { GRAPH, build as buildGraph, request as graphRequest } from "../../funct
 import { understood } from "../../functions/strategy/frameworks/idea-map/route.ts";
 import { createHash } from "node:crypto";
 import { agentFromEnv, record as prov } from "../../core/provenance.ts";
-import { evaluate } from "./evals.mjs";
+import { evaluate } from "./evals.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { HostedRefusal, isHosted } from "../../core/runtime.ts";
 
@@ -61,7 +61,7 @@ const flag = (n) => argv.includes(`--${n}`);
 const phase = argv[0];
 const dumpFile = opt("dump");
 if (phase !== "discovery" || !dumpFile || !existsSync(dumpFile)) {
-  console.error("usage: node packages/naive/src/interfaces/harness/run.mjs discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>] [--workspace <dir>] [--board] [--yes] [--steps <n>]");
+  console.error("usage: node packages/naive/src/interfaces/harness/run.ts discovery --dump <ideas.md> [--id <slug>] [--name <name>] [--founder <name>] [--workspace <dir>] [--board] [--yes] [--steps <n>]");
   process.exit(2);
 }
 const id = opt("id") ?? basename(dumpFile).replace(/\..*$/, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -80,7 +80,7 @@ const judgeRun = (req) => spawnSync(judgeCmd[0], judgeCmd.slice(1), { input: JSO
 const t0 = Date.now();
 const laps = [];
 const lap = (what) => { const s = (Date.now() - t0) / 1000; laps.push({ at: s, what }); console.log(`\n[${s.toFixed(1)}s] ${what}`); };
-const cli = (...args) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+const cli = (...args) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
 
 // The venture, scaffolded by Naive, and the founder's dump, kept as they wrote it.
 if (!existsSync(join(dir, "venture.json"))) {
@@ -108,13 +108,13 @@ if (opt("money") && moneyCmd) {
   } else console.log(`   money sync failed, so the run goes on without it: ${(p.stderr || p.stdout).trim().slice(0, 300)}`);
 }
 
-const servers = { naive: { command: "node", args: [join(repo, "packages/naive/src/interfaces/mcp/server.mjs")], env: { MENTURA_WORKSPACE: ws, MENTURA_PERSON: founder } } };
+const servers = { naive: { command: "node", args: [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], env: { MENTURA_WORKSPACE: ws, MENTURA_PERSON: founder } } };
 if (researchCmd) servers.research = { command: researchCmd[0], args: researchCmd.slice(1) };
 const mcp = join(ws, ".mcp-harness.json");
 writeFileSync(mcp, JSON.stringify({ mcpServers: servers }));
 
 let board = null;
-if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("../demo/board.mjs")).serve(4331, id); console.log("Decision board: http://127.0.0.1:4331/   Idea map: http://127.0.0.1:4331/map"); }
+if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("../demo/board.ts")).serve(4331, id); console.log("Decision board: http://127.0.0.1:4331/   Idea map: http://127.0.0.1:4331/map"); }
 
 // The trace (EE-058): every step and every tool call the agent made, with timings, for an exporter such as LangSmith.
 const iso = () => new Date().toISOString();
@@ -281,7 +281,7 @@ for (let n = 0; n < steps; n++) {
   docketSteps.push({ step: n + 1, ...compact(k), chose: pick.id });
   trace.children.push({ name: `docket: step ${n + 1}`, run_type: "chain", start: iso(), end: iso(), inputs: { venture: id }, outputs: docketSteps.at(-1) });
   lap(`docket: ${k.functions.map((f) => `${f.function} ${f.attention}`).join(" · ")}; next ${pick.id} (${pick.function}, value ${pick.value}${pick.dominant ? ", outweighs every other function" : ""})`);
-  console.log(`\nFOUNDER #${n + 1}: ${next.id}: ${next.question}\n         Why now: ${(next.why ?? []).join("; ")}${next.answer ? `\n         Proposed: ${next.answer}` : ""}\n         ${next.action.command.replace(/^mentura /, `MENTURA_WORKSPACE=${ws} node ${join(repo, "packages/naive/src/interfaces/cli/mentura.mjs")} `)}`);
+  console.log(`\nFOUNDER #${n + 1}: ${next.id}: ${next.question}\n         Why now: ${(next.why ?? []).join("; ")}${next.answer ? `\n         Proposed: ${next.answer}` : ""}\n         ${next.action.command.replace(/^mentura /, `MENTURA_WORKSPACE=${ws} node ${join(repo, "packages/naive/src/interfaces/cli/mentura.ts")} `)}`);
   const before = JSON.stringify(r.decisions.find((d) => d.id === next.id));
   if (flag("yes")) {
     const a = next.action;

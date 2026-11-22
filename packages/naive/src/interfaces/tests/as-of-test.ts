@@ -18,7 +18,7 @@ let failed = 0;
 const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "as-of-test-"));
 const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
-const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 const pause = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 const text = (o: unknown): string => JSON.stringify(o, null, 2) + "\n";
 const solution = (statement: string) => ({ venture: "asof", statement, alternatives: ["a receptionist"], evidence: [] });

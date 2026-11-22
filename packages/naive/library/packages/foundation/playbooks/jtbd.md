@@ -32,7 +32,7 @@ Strategyn describes a job as "the task, goal, or objective a customer is trying 
 
 ## Template
 
-Do the steps in order. Read and write through the router (`node packages/naive/src/interfaces/cli/mentura.mjs <route> <action> --venture <id>`). A missing record comes back as missing. Leave it missing. Do not fill a profile, a form, or a job from memory.
+Do the steps in order. Read and write through the router (`node packages/naive/src/interfaces/cli/mentura.ts <route> <action> --venture <id>`). A missing record comes back as missing. Leave it missing. Do not fill a profile, a form, or a job from memory.
 
 The venture provides `foundation/problem` and `foundation/icp` when the foundation package is in use (`packages/naive/library/packages/foundation/package.json` lists both as required). A product card is optional. Read `product/<id>` only after `product` shows that the card is there.
 
@@ -111,9 +111,9 @@ Also read `foundation/icp/<id>` for each profile you wrote. `pending_draft` mean
 
 After checks 1 to 3 pass on the drafts, the founder accepts each one:
 
-`node packages/naive/src/interfaces/cli/mentura.mjs accept foundation/icp/<profile id> --venture <venture id> --confirm foundation/icp/<profile id>`
+`node packages/naive/src/interfaces/cli/mentura.ts accept foundation/icp/<profile id> --venture <venture id> --confirm foundation/icp/<profile id>`
 
-That writes `foundation/icp/<profile id>` as a person. The typed confirmation is required because the record holds a foundation statement (`packages/naive/src/interfaces/cli/mentura.mjs`). Then run step 6 again. Check 4 passes when `icp` is `confirmed` and no profile has a `pending_draft`.
+That writes `foundation/icp/<profile id>` as a person. The typed confirmation is required because the record holds a foundation statement (`packages/naive/src/interfaces/cli/mentura.ts`). Then run step 6 again. Check 4 passes when `icp` is `confirmed` and no profile has a `pending_draft`.
 
 ## Checks
 

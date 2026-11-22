@@ -73,7 +73,7 @@ const ws = mkdtempSync(join(tmpdir(), "brand-test-"));
 const W = join(ws, "ventures");
 const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: W });
 delete env.MENTURA_ACTOR_ID;
-const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 const init = mentura("init", join(W, "acme"), "--id", "acme", "--layers", "purpose");
 expect("a venture to brand", init.status === 0, init.stderr);
 const dir = join(W, "acme");
@@ -344,7 +344,7 @@ const brand = {
 // ---- The same routes over MCP, as an agent reaches them.
 {
   process.env.MENTURA_WORKSPACE = W;
-  const { handle } = await import("../mcp/server.mjs");
+  const { handle } = await import("../mcp/server.ts");
   const mcp = async (name, args) => (await handle({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: args } })).result;
   const t = await mcp("mentura_run", { venture: "acme", route: "marketing/brand/tokens" });
   expect("Y-3 over MCP: an agent reads the brand tokens", !t.isError && /--color-accent: #1d4e89/.test(JSON.parse(t.content[0].text).css), t.content?.[0]?.text?.slice(0, 200));

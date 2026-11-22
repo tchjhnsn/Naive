@@ -98,7 +98,7 @@ try {
     for (const x of r.release.programs) console.log(`program   ${x.path} from ${x.template}`);
     for (const e of r.release.escalated) console.log(`escalate  ${e}`);
     for (const g of r.release.guides) console.log(`guide     ${g}`);
-    if (r.release.guides.length) console.log(`Read the guides: node packages/naive/src/interfaces/cli/naive.mjs upgrade ${dirArg} --guide`);
+    if (r.release.guides.length) console.log(`Read the guides: node packages/naive/src/interfaces/cli/naive.ts upgrade ${dirArg} --guide`);
   }
 } catch (e) { fail(e); }
 
@@ -108,6 +108,6 @@ function report(d: ReturnType<typeof check>) {
   if (d.changes) console.log(`changes   ${d.changes.added.length} added, ${d.changes.changed.length} changed, ${d.changes.removed.length} removed`);
   for (const c of d.checks ?? []) console.log(`${c.passed ? "pass" : "FAIL"}      ${c.check}${c.passed ? "" : `: ${c.output.split("\n").slice(-2).join(" / ")}`}`);
   for (const e of d.escalated ?? []) console.log(`escalate  ${e}`);
-  if (d.status === "ready") console.log(`Nothing has landed. To land it: node packages/naive/src/interfaces/cli/naive.mjs upgrade ${dirArg} --accept --confirm ${CONFIRM}`);
+  if (d.status === "ready") console.log(`Nothing has landed. To land it: node packages/naive/src/interfaces/cli/naive.ts upgrade ${dirArg} --accept --confirm ${CONFIRM}`);
   else if (d.status === "checks-failed") console.log(`Nothing has landed, and it cannot until the checks pass. Fix the copy in ${dirArg}/.naive/upgrade/venture and run --status, or --reject.`);
 }

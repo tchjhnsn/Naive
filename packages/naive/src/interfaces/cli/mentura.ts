@@ -73,7 +73,7 @@
 // Writes default to an agent actor; --as person is for a person at the keyboard, and a gated
 // record written by an agent lands in <venture>/_drafts/ for a person to accept.
 
-import "./guard.mjs"; // wf/writes hook: a broken framework file answers with recovery steps (E-8)
+import "./guard.ts"; // wf/writes hook: a broken framework file answers with recovery steps (E-8)
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -85,7 +85,7 @@ import { reasonsFromArgs, whyLines } from "../../engine/reasons.ts";
 import { impact } from "../../engine/impact.ts";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../engine/gate-drafts.ts";
-import { asRouted, findVenture } from "./find-venture.mjs";
+import { asRouted, findVenture } from "./find-venture.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { setPublic, visibilityOf } from "../../engine/visibility.ts";
 
@@ -148,7 +148,7 @@ if (cmd === "add") {
 }
 
 if (cmd === "typegen") {
-  const p = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "typegen"], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "typegen"], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -167,8 +167,8 @@ if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
   const args = cmd === "triggers" ? ["packages/naive/src/router/orchestration/triggers.mjs", d, ...pass("fire", "json")]
     : cmd === "stale" ? ["packages/naive/src/engine/stale.ts", d, ...pass("json")]
     : cmd === "notify" ? ["packages/naive/src/engine/stale.ts", d, "--notify", ...pass("source", "path", "version", "json")]
-    : cmd === "adapt" ? ["packages/naive/src/interfaces/adapters.mjs", "adapt", action ?? "", d, ...pass("json")]
-    : ["packages/naive/src/interfaces/adapters.mjs", ...positional.slice(1), ...pass("json")];
+    : cmd === "adapt" ? ["packages/naive/src/interfaces/adapters.ts", "adapt", action ?? "", d, ...pass("json")]
+    : ["packages/naive/src/interfaces/adapters.ts", ...positional.slice(1), ...pass("json")];
   const p = spawnSync("node", [join(repo, args[0]), ...args.slice(1)], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
@@ -421,8 +421,8 @@ if (cmd === "baseline") {
   process.exit(0);
 }
 
-// Freshness (Revalidating, V-1 to V-8): revalidate, verify, phase and freshness live in ./freshness.mjs.
-if (["revalidate", "verify", "phase", "freshness"].includes(cmd)) process.exit(await (await import("./freshness.mjs")).main(cmd, argv, workspace));
+// Freshness (Revalidating, V-1 to V-8): revalidate, verify, phase and freshness live in ./freshness.ts.
+if (["revalidate", "verify", "phase", "freshness"].includes(cmd)) process.exit(await (await import("./freshness.ts")).main(cmd, argv, workspace));
 
 // Context hook (packages/naive/src/router/context.mjs): navigate and head read a route header first, with its layout once per
 // session (--session), its template and prefetched refs (--task, --prefetch, --no-prefetch, --stream); batch runs

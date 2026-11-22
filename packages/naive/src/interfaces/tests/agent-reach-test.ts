@@ -74,7 +74,7 @@ try {
   // The CLI path the gap was found on: MENTURA_ACTOR_ID=finance-agent mentura customers/<id> write.
   const input = join(ws, "x.json");
   writeFileSync(input, JSON.stringify({ id: "delta", name: "Delta" }));
-  const cli = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "customers/delta", "write", "--venture", "lab", "--input", input],
+  const cli = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "customers/delta", "write", "--venture", "lab", "--input", input],
     { encoding: "utf8", env: { ...env, MENTURA_ACTOR_ID: "finance-agent" } });
   expect("the CLI refuses finance-agent writing customers/delta and writes nothing", cli.status !== 0 && /agent-reach|may not write customers\/delta/.test(cli.stdout + cli.stderr) && !existsSync(join(dir, "customers/delta.json")), cli.stdout + cli.stderr);
 }

@@ -29,8 +29,8 @@ const fingerprint = () => createHash("sha256").update(JSON.stringify(readdirSync
 const before = fingerprint();
 
 const env = { ...process.env, MENTURA_WORKSPACE: ws, MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.ts")}` };
-const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { env, encoding: "utf8" });
-const mentura = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { env, encoding: "utf8" });
+const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), ...a], { env, encoding: "utf8" });
+const mentura = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { env, encoding: "utf8" });
 const init = (id: string) => spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures", id), id], { encoding: "utf8" }).status === 0;
 
 const dir = join(ws, "ventures", "kettle");
@@ -61,7 +61,7 @@ for (const c of ["check-ventures", "check-provenance", "check-sources"]) {
 }
 
 expect("a second venture for the failing agent", init("kettle2"));
-const bad = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "migrate", "--from", src, "--venture", join(ws, "ventures", "kettle2")], { env: { ...env, MENTURA_AGENT_CMD: "node -e process.exit(3)" }, encoding: "utf8" });
+const bad = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "migrate", "--from", src, "--venture", join(ws, "ventures", "kettle2")], { env: { ...env, MENTURA_AGENT_CMD: "node -e process.exit(3)" }, encoding: "utf8" });
 expect("a failing agent stops the migrate and says so, with nothing planned", bad.status === 1 && /agent/.test(bad.stderr) && !existsSync(join(ws, "ventures/kettle2/.release/migrate-plan.json")), bad.stderr);
 
 const up = mentura("migrate", "--venture", "kettle");

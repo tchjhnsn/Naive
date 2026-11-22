@@ -9,7 +9,7 @@ import { checkUserFrameworks, listFrameworks, newFramework, publishFramework, re
 const ws = mkdtempSync(join(tmpdir(), "naive-fw-"));
 writeFileSync(join(ws, "naive-workspace.json"), JSON.stringify({ schema: "everything-ecosystem", schema_version: "0.5.0", ventures: ["v"] }));
 mkdirSync(join(ws, "v"));
-const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { cwd: join(ws, "v"), encoding: "utf8" });
+const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.ts", import.meta.url).pathname, ...a], { cwd: join(ws, "v"), encoding: "utf8" });
 
 // new scaffolds the three files, and list marks built-in and workspace frameworks
 newFramework("now-what", join(ws, "v"), { owner: "Torian" });

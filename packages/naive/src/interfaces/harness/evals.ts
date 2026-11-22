@@ -2,7 +2,7 @@
 // on the venture the run left behind. Outcomes are evaluations for decisions; these are evaluations
 // for the agent. Each returns a score from 0 to 1 and a comment saying what failed.
 //
-//   import { evaluate } from "./evals.mjs";  evaluate(dir, { researched: [urls], settled: [ids] })
+//   import { evaluate } from "./evals.ts";  evaluate(dir, { researched: [urls], settled: [ids] })
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";

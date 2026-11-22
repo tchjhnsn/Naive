@@ -64,7 +64,7 @@ This repository, and so the naive-framework npm package, is Naive's Claude Code 
 /plugin install naive@naive
 ```
 
-From a clone, add it by path instead: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here. `node packages/naive/src/interfaces/plugin-test.mjs` tests the plugin.
+From a clone, add it by path instead: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here. `node packages/naive/src/interfaces/plugin-test.ts` tests the plugin.
 
 ## Vault and repo
 

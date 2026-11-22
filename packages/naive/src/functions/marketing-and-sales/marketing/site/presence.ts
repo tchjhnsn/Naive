@@ -42,7 +42,7 @@ export type Matrix = {
   page_labels: Record<string, string>;
   when: Record<string, string>;
 };
-/** One page the site reader read (packages/naive/src/interfaces/harness/site.mjs). */
+/** One page the site reader read (packages/naive/src/interfaces/harness/site.ts). */
 export type SitePage = { path: string; title?: string; label?: string; text?: string; depth: number; in_nav?: boolean; error?: unknown };
 /** The site as the reader read it. */
 export type Site = { site: string; via?: "firecrawl" | "fetch"; read_at?: string; pages: SitePage[]; links?: { path: string; label: string; in_nav: boolean }[] };
@@ -291,7 +291,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (dir) { mkdirSync(join(dir, dirname(PRESENCE)), { recursive: true }); writeFileSync(ventureFile(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
     console.log(JSON.stringify(r, null, 2));
   } else if (a && existsSync(join(a, "venture.json"))) {
-    if (!existsSync(join(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node packages/naive/src/interfaces/harness/site.mjs <url> --venture <dir>)`); process.exit(1); }
+    if (!existsSync(join(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node packages/naive/src/interfaces/harness/site.ts <url> --venture <dir>)`); process.exit(1); }
     const r = load(join(a, PRESENCE)) as SitePresence;
     if (has("json")) console.log(JSON.stringify(r, null, 2));
     else {

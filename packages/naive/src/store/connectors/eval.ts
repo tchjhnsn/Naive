@@ -8,7 +8,7 @@
 //   register   an app's connector, registered by absolute path, is in the registry and connects
 //
 // The router, catalog, source-of-truth matrix and attribute evals run routes through the router,
-// so they are in packages/naive/src/interfaces/tests/connectors-router-test.mjs (router inversion, step 4).
+// so they are in packages/naive/src/interfaces/tests/connectors-router-test.ts (router inversion, step 4).
 //
 //   node packages/naive/src/store/connectors/eval.ts
 

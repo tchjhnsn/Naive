@@ -202,7 +202,7 @@ function trace(dir: string, name: string, inputs: Record<string, unknown>, start
     tags: ["naive", "port"], children: items.map((i) => ({ name: `${i.action} ${basename(i.from)}`, run_type: "tool", start, end, inputs: { from: i.from, to: i.to },
       outputs: { action: i.action, reason: i.reason, files: i.files, bytes: i.bytes, warnings: i.warnings, done: i.done } })) };
   try { mkdirSync(dirname(ventureFile(dir, TRACE)), { recursive: true }); writeFileSync(ventureFile(dir, TRACE), JSON.stringify(t, null, 2) + "\n"); } catch { return; }
-  // The harness's way (packages/naive/src/interfaces/harness/run.mjs): with NAIVE_TRACE_CMD set, the app's exporter ships the trace.
+  // The harness's way (packages/naive/src/interfaces/harness/run.ts): with NAIVE_TRACE_CMD set, the app's exporter ships the trace.
   // Hosted, NAIVE_TRACE_CMD is ignored and the host's trace hook ships it, if it registered one.
   const hook = hostHook("trace");
   if (hook) {

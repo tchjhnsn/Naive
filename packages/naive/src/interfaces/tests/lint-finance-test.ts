@@ -3,7 +3,7 @@
 // phase changes the metric rule, finance_lint.rules.<id>.mode decides the exit code, and missing
 // or malformed records (including a missing price or cost) do not throw. Reads go through ventureFile.
 //
-//   node packages/naive/src/interfaces/tests/lint-finance-test.mjs
+//   node packages/naive/src/interfaces/tests/lint-finance-test.ts
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";

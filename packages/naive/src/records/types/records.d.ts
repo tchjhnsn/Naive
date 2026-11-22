@@ -70,7 +70,7 @@ export type Activity = {
   computed?: string;
 };
 
-/** What runs Naive on a platform or in an agent harness (Z-4), as a Next.js adapter customizes build and deploy for a platform. A harness adapter (Claude Code, Codex, Cursor) adapts the framework through the venture's AGENTS.md and skills: the entry files it writes into a venture, and where it puts the package skills. A platform adapter (Mentura, Naive's first, as Vercel is for Next.js) names the tests it runs. An adapter is verified when it passes the framework's tests (node packages/naive/src/interfaces/adapters.mjs verify <name>). Harness adapters are packages/naive/src/interfaces/adapters/<name>.json; the platform's is platform/adapter.json. */
+/** What runs Naive on a platform or in an agent harness (Z-4), as a Next.js adapter customizes build and deploy for a platform. A harness adapter (Claude Code, Codex, Cursor) adapts the framework through the venture's AGENTS.md and skills: the entry files it writes into a venture, and where it puts the package skills. A platform adapter (Mentura, Naive's first, as Vercel is for Next.js) names the tests it runs. An adapter is verified when it passes the framework's tests (node packages/naive/src/interfaces/adapters.ts verify <name>). Harness adapters are packages/naive/src/interfaces/adapters/<name>.json; the platform's is platform/adapter.json. */
 export type Adapter = {
   name: string;
   title: string;
@@ -4955,7 +4955,7 @@ export type RoleTemplate = {
   skill: string;
 };
 
-/** Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. packages/naive/src/interfaces/test.mjs checks that every alias points at a route that exists. */
+/** Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. packages/naive/src/interfaces/test.ts checks that every alias points at a route that exists. */
 export type RouteAliases = {
   aliases: {
     /** The old route */
