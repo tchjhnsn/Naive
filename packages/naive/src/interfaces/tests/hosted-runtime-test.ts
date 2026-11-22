@@ -1,4 +1,4 @@
-// Tests hosted mode (packages/naive/src/core/runtime.mjs): under NAIVE_RUNTIME=hosted each feature that reaches
+// Tests hosted mode (packages/naive/src/core/runtime.ts): under NAIVE_RUNTIME=hosted each feature that reaches
 // outside the tenant refuses with a message naming the feature and why, environment commands are ignored, and
 // a host's registered hooks (judge, site, sandbox, git) stand in. Without NAIVE_RUNTIME the laptop path still runs.
 //
@@ -9,19 +9,19 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { HostedRefusal, clearHooks, envCommand, git, hostHook, registerHook } from "../../core/runtime.mjs";
-import { syncCommand } from "../../core/sync.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
-import { activity } from "../../engine/activity.mjs";
-import { judge } from "../../engine/caching.mjs";
-import { planOne } from "../../engine/port-venture.mjs";
-import { runHandoff } from "../../engine/run-handoff.mjs";
-import { updateFramework } from "../../engine/upgrades.mjs";
-import { canClassify, classify } from "../../engine/venture-type.mjs";
-import { ventureHealth } from "../../router/boundaries.mjs";
-import { runAgent } from "../../router/orchestration/migrate-venture.mjs";
-import { connect } from "../../store/connectors/filesystem.mjs";
-import { scan } from "../harness/site.mjs";
+import { HostedRefusal, clearHooks, envCommand, git, hostHook, registerHook } from "../../core/runtime.ts";
+import { syncCommand } from "../../core/sync.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { activity } from "../../engine/activity.ts";
+import { judge } from "../../engine/caching.ts";
+import { planOne } from "../../engine/port-venture.ts";
+import { runHandoff } from "../../engine/run-handoff.ts";
+import { updateFramework } from "../../engine/upgrades.ts";
+import { canClassify, classify } from "../../engine/venture-type.ts";
+import { ventureHealth } from "../../router/boundaries.ts";
+import { runAgent } from "../../router/orchestration/migrate-venture.ts";
+import { connect } from "../../store/connectors/filesystem.ts";
+import { scan } from "../harness/site.ts";
 
 const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 let failed = 0;
@@ -33,12 +33,12 @@ const HOSTED = /is refused in hosted mode \(NAIVE_RUNTIME=hosted\): /;
 
 const ws = mkdtempSync(join(tmpdir(), "hosted-runtime-"));
 const dir = join(ws, "kettle");
-const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, "kettle", "--layers", "purpose"], { encoding: "utf8" });
+const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, "kettle", "--layers", "purpose"], { encoding: "utf8" });
 if (init.status !== 0) throw new Error(init.stderr);
 const handoffs = ventureFile(dir, "operations/handoffs");
 mkdirSync(handoffs, { recursive: true });
 writeFileSync(join(handoffs, "h1.json"), JSON.stringify({ id: "h1", done_criteria: [{ id: "c1", kind: "conformance", check: "true" }] }, null, 2) + "\n");
-const judgeScript = join(ws, "judge.mjs");
+const judgeScript = join(ws, "judge.ts");
 writeFileSync(judgeScript, "let s='';process.stdin.on('data',(d)=>s+=d).on('end',()=>{const r=JSON.parse(s);console.log(JSON.stringify({model:'cmd',answers:Object.fromEntries(Object.keys(r.questions).map((k)=>[k,'from the command']))}));});\n");
 process.env.NAIVE_JUDGE_CMD = `node ${judgeScript}`;
 process.env.NAIVE_SYNC_RHO = "echo synced";
@@ -57,7 +57,7 @@ ok("laptop: NAIVE_SYNC_* names the sync command", syncCommand("rho") === "echo s
 ok("laptop: a judge command can classify a type", canClassify());
 const laptopRun = await runHandoff(dir, "h1", { log: () => {} });
 ok("laptop: run-handoff runs a bash criterion", laptopRun.evidence.passed && !String(laptopRun.evidence.subject.version).startsWith("naive-framework@"));
-const laptopCli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.mjs"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
+const laptopCli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.ts"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
 ok("laptop: the run-handoff command passes and writes evidence", laptopCli.status === 0 && laptopCli.stdout.includes("pass c1") && laptopCli.stdout.includes("every criterion run passed"), `${laptopCli.status} ${laptopCli.stdout}${laptopCli.stderr}`);
 let laptopActivity = "ran";
 try { activity({ root: dir, dir: join(ws, "transcripts") }); } catch (e) { laptopActivity = e instanceof Error ? e.message : String(e); }
@@ -79,7 +79,7 @@ ok("hosted: reading a site refuses without a site hook", HOSTED.test(read) && re
 const ran = await refusal(() => runHandoff(dir, "h1", { log: () => {} }));
 ok("hosted: run-handoff refuses bash done-criteria without a sandbox", HOSTED.test(ran) && ran.startsWith("running a handoff's bash done-criteria") && ran.includes("Naive never runs a tenant's shell on the host") && ran.includes('registerHook("sandbox", fn)'), ran);
 
-const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.mjs"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
+const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.ts"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
 ok("hosted: the run-handoff command exits 2 with the refusal", cli.status === 2 && HOSTED.test(cli.stderr), `${cli.status} ${cli.stderr}`);
 
 const transcripts = await refusal(() => activity({ root: dir, dir: join(homedir(), ".claude/projects") }));
@@ -103,7 +103,7 @@ ok("hosted: classifying a venture's type refuses", HOSTED.test(typed) && typed.s
 const agent = await refusal(() => runAgent("hello"));
 ok("hosted: the migration agent refuses", HOSTED.test(agent) && agent.startsWith("running the migration agent") && agent.includes("MENTURA_AGENT_CMD is ignored"), agent);
 
-const harness = spawnSync("node", [join(repo, "packages/naive/src/interfaces/harness/run.mjs"), "discovery"], { encoding: "utf8", env: { ...process.env } });
+const harness = spawnSync("node", [join(repo, "packages/naive/src/interfaces/harness/run.ts"), "discovery"], { encoding: "utf8", env: { ...process.env } });
 ok("hosted: the discovery harness exits 2 with the refusal", harness.status === 2 && harness.stderr.startsWith("the discovery harness is refused in hosted mode"), `${harness.status} ${harness.stderr}`);
 
 const store = connect({ root: dir, venture: true });

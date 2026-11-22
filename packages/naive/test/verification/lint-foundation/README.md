@@ -19,7 +19,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/statechart \
   packages/naive/test/verification/lint-foundation/FoundationLint.tla \
   --config packages/naive/test/verification/lint-foundation/FoundationLint.cfg \
-  --view packages/naive/test/verification/lint-foundation/view.mjs \
+  --view packages/naive/test/verification/lint-foundation/view.ts \
   --out packages/naive/test/verification/lint-foundation/out
 ```
 
@@ -28,14 +28,14 @@ Then render `out/chart.mmd` with Pele 1.9.0 and the kit's `naive-example/pele/re
 Replay the rules on the CLI:
 
 ```sh
-node packages/naive/src/interfaces/tests/lint-foundation-test.mjs
+node packages/naive/src/interfaces/tests/lint-foundation-test.ts
 ```
 
 ## Rules
 
 | Rule | TLC | Replay |
 |---|---|---|
-| TypeOK | PASS | The CLI result is JSON with `ok`, `rules` and `findings`, and the process exits 0, 1 or 2. `node packages/naive/src/interfaces/tests/lint-foundation-test.mjs` |
+| TypeOK | PASS | The CLI result is JSON with `ok`, `rules` and `findings`, and the process exits 0, 1 or 2. `node packages/naive/src/interfaces/tests/lint-foundation-test.ts` |
 | InputsViaVentureFile | PASS | A structured venture is read from `k-base/` and `meta/`. A decoy at the flat path is ignored. Test: "a structured venture reads k-base and meta, not the flat decoy" |
 | FixtureFires (`mission-names-no-icp`) | PASS | Promise "We help everyone." with ICP short "mentors". Test: "the fixture exits 0 while every rule fires" |
 | FixtureFires (`icp-no-jobs`) | PASS | That ICP has `jobs: []`. Same test |

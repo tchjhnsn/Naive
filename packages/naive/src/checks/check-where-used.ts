@@ -8,9 +8,9 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { connect, sourceFor, sourcesOf } from "../store/connectors/index.mjs";
-import { resolve } from "../records/routes/routes.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { connect, sourceFor, sourcesOf } from "../store/connectors/index.ts";
+import { resolve } from "../records/routes/routes.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 import type { WhereUsed } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];
@@ -31,9 +31,9 @@ for (const v of walk(dir)) {
     const where = `${id}: ${fact.id}`;
     const { r, params } = resolve(fact.parent.route);
     if (!r || r.kind !== "record" || r.collection === "list") { errors.push(`${where}: parent ${fact.parent.route} is not a record route`); continue; }
-    const context = r.collection === "item" && (r.record === "product" || r.record === "account") ? { [r.record]: params.id } : {};
+    const context = r.collection === "item" && (r.record === "product" || r.record === "account") && params.id !== undefined ? { [r.record]: params.id } : {};
     const src = sourceFor(v, r.record, context);
-    const cands = (r.collection === "item" ? r.files.map((f: string) => f.replace("*", params.id)) : r.files).filter((f: string) => !f.includes("*"));
+    const cands = (r.collection === "item" ? r.files.map((f: string) => f.replace("*", String(params.id))) : r.files).filter((f: string) => !f.includes("*"));
     const path = cands.find((f: string) => existsSync(ventureFile(v, f))) ?? cands[0];
     if (src.connector !== "filesystem") { unchecked.push(`${where}: parent is in ${src.id}`); continue; }
     const parent = await (await connect(src, v)).read(path);

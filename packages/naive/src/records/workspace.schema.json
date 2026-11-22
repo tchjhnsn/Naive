@@ -62,11 +62,11 @@
     },
     "timeZone": {
       "type": "string",
-      "description": "The workspace's IANA time zone (for example America/New_York): the clock's zone (packages/naive/src/engine/clock.mjs). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture"
+      "description": "The workspace's IANA time zone (for example America/New_York): the clock's zone (packages/naive/src/engine/clock.ts). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture"
     },
     "calendar": {
       "type": "string",
-      "description": "The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (packages/naive/src/engine/calendar.mjs). Created with the workspace"
+      "description": "The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (packages/naive/src/engine/calendar.ts). Created with the workspace"
     }
   },
   "additionalProperties": false

@@ -4,7 +4,7 @@
 // fills the producer (local/founder unless given), observed (now unless given) and the id, the address of every
 // other field (packages/naive/src/core/signal-id.ts). The draft is for the venture's local library at
 // raw/signals/signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json. naive signals emit writes one (packages/naive/src/router/orchestration/signals.ts).
-import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { signalId } from "../../core/signal-id.ts";
 import type { Signal } from "../../records/types/records.d.ts";
 

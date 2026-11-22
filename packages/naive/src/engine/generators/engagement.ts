@@ -3,7 +3,7 @@
 // the client and title unless one is given, starts the status at proposed and each deliverable at planned, and refuses
 // a deliverable without acceptance criteria, since no work starts without one. The draft goes to the write chain for
 // service-delivery/engagements/<id>.json, which only the service-delivery agent (service-delivery-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Engagement } from "../../records/types/records.d.ts";
 
 export const record = "engagement";

@@ -4,7 +4,7 @@
 // and refuses a role that has no portfolio, since only a lead has a plan. The draft goes to the write chain for
 // operations/leads/<lead>.json (route operations/lead/[id]).
 import { existsSync, readFileSync } from "node:fs";
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { LeadPlan } from "../../records/types/records.d.ts";
 
 export const record = "lead-plan";

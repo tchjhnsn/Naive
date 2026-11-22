@@ -13,7 +13,7 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { reviewIsIndependent } from "./verify.ts";
 import type { Decision, DecisionRights, Handoff } from "../records/types/records.d.ts";
 

@@ -3,7 +3,7 @@
 // venture owns, leases, was given or borrows it. The generator derives the id (the asset's tag) from the name unless
 // one is given, starts the status at in-use, or in-storage when no one holds it. The draft goes to the write chain for
 // assets/register/<id>.json, which only the assets agent (assets-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { FixedAsset } from "../../records/types/records.d.ts";
 
 export const record = "fixed-asset";

@@ -23,7 +23,7 @@
 // that are not Effect yet.
 
 import { Effect } from "effect";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain, runSync } from "../core/effect/run.ts";

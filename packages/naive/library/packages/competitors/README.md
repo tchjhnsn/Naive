@@ -34,15 +34,15 @@ A known competitor is a subject in the `competitors` collection. A venture turns
 
 ## Run and test
 
-- `node packages/naive/src/checks/competitors-package-test.ts` checks the package holds together: each listener hears a type the package ships, each project listener routes to a projection of that type, each case's signals match the type and its parts, each projection writes a record type the package owns with fields that record's schema has and names its subject field, only the person's master record is written once, and each expected record holds its subject and is valid once each entry names its signal. `node test.mjs` runs it.
+- `node packages/naive/src/checks/competitors-package-test.ts` checks the package holds together: each listener hears a type the package ships, each project listener routes to a projection of that type, each case's signals match the type and its parts, each projection writes a record type the package owns with fields that record's schema has and names its subject field, only the person's master record is written once, and each expected record holds its subject and is valid once each entry names its signal. `node test.ts` runs it.
 - `node packages/naive/src/engine/signals/render-test.ts` renders every case here through the real render (`renderCase` in [`render.ts`](../../../src/engine/signals/render.ts)) to its expected records. The test sits in that folder because only its own files and its front door may import the render.
-- `node packages/naive/src/checks/check-data-model.ts` checks the manifest, its ownership of the two record types and its listeners; `node packages/naive/src/records/validate.mjs` validates the signal types.
+- `node packages/naive/src/checks/check-data-model.ts` checks the manifest, its ownership of the two record types and its listeners; `node packages/naive/src/records/validate.ts` validates the signal types.
 
 ## How it connects
 
 - Record types: [`competitor.schema.json`](../../../src/records/competitor.schema.json) and [`competitor-signals.schema.json`](../../../src/records/competitor-signals.schema.json), routes `purpose/competitor` and `purpose/competitor-signals`.
 - The upgrade registry, [`packages/naive/src/engine/upgrades.json`](../../../src/engine/upgrades.json), lists the package at 0.1.0 on the stable channel, so `naive upgrade` pins it in every venture as it does the other data packages. The catalog's record graph and order cover core and handoff packages only, so the package is not in [`catalog.json`](../catalog.json), like customers, investors and money.
-- The router lets only the signal projector write `competitors/<id>/signals.json` (`writerRule` in [`gate.mjs`](../../../src/engine/gate.mjs)).
+- The router lets only the signal projector write `competitors/<id>/signals.json` (`writerRule` in [`gate.ts`](../../../src/engine/gate.ts)).
 
 ## Not built
 

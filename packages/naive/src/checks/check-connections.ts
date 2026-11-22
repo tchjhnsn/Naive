@@ -16,7 +16,7 @@
 //     venture's governance/decision-rights.json (else Naive's template) does not define;
 //   - it claims authority (authoritative_for) without naming its source, names a source the venture's
 //     knowledge/sources.json does not list, or claims a record or field that the source map does not give to that
-//     source: the rule resolve.mjs picks for it must exist, must not tie, and must name the connection's source as its
+//     source: the rule resolve.ts picks for it must exist, must not tie, and must name the connection's source as its
 //     system of record. A connection points at the source map; it never overrides it.
 // It does not connect to anything: the app's connectors act, and a connector being present is not permission to act.
 //
@@ -25,14 +25,14 @@
 
 import { join } from "node:path";
 import { Effect } from "effect";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { describe, runMain, runSync } from "../core/effect/run.ts";
-import { validateValue } from "../records/validate.mjs";
+import { validateValue } from "../records/validate.ts";
 import type { CapabilityCluster, Connection } from "../records/types/records.d.ts";
-import { LOCAL, MAP } from "../store/connectors/index.mjs";
-import { resolve } from "../store/connectors/resolve.mjs";
+import { LOCAL, MAP } from "../store/connectors/index.ts";
+import { resolve } from "../store/connectors/resolve.ts";
 import { APPROVAL_CLASS } from "../engine/generators/connection.ts";
 
 // EE_ROOT points the catalog checks at another copy of the repository (used by check-connections-test.ts).

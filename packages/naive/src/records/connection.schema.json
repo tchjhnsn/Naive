@@ -16,7 +16,7 @@
     "status": { "enum": ["planned", "connected", "disconnected"], "default": "planned" },
     "authoritative_for": {
       "type": "array",
-      "description": "Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.mjs) to a rule whose system of record is this connection's source; everything else stays owned by the repository.",
+      "description": "Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.ts) to a rule whose system of record is this connection's source; everything else stays owned by the repository.",
       "items": {
         "type": "object",
         "required": ["record", "attribute"],

@@ -13,9 +13,9 @@
 // the recipe, takes in new versions.
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { actingAgent, agentFromEnv, record } from "../../core/provenance.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { actingAgent, agentFromEnv, record } from "../../core/provenance.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { validateValue } from "../../records/validate.ts";
 import { idsIn, libraries, mergeTypes, resolveType, splitRange, typesIn } from "../signals.ts";
 import { plainListeners } from "./outcomes.ts";
 import { lintRecipe, recipeExports } from "./sandbox.ts";

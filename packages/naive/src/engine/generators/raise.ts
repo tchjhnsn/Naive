@@ -3,7 +3,7 @@
 // generator derives the id from the title unless one is given, starts the status at planned, and starts targets,
 // meetings and materials empty. The draft goes to the write chain for investor-relations/raises/<id>.json, which only the
 // external-relationships agent (external-relationships-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Raise } from "../../records/types/records.d.ts";
 
 export const record = "raise";

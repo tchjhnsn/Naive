@@ -6,7 +6,7 @@
 //   warnings: a logged file that has changed since its last entry, or is gone, so its later
 //     history is only in git; a derived_from path (not a URL or a decision id) that is not in the
 //     venture folder; time going backwards.
-// The schema of each line is checked by packages/naive/src/records/validate.mjs.
+// The schema of each line is checked by packages/naive/src/records/validate.ts.
 //
 //   node packages/naive/src/checks/check-provenance.ts <workspace or venture dir>
 //   node packages/naive/src/checks/check-provenance.ts --package <handoff.json>
@@ -15,10 +15,10 @@
 // A gate line is about the package body's sha256, not about its position, so any gate may be
 // the first line. Two identical lines for the same gate and the same body are an error.
 
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { contentHash, gateLineKey, gateSidecar, lineHash, LOG, packageForSidecar } from "../core/provenance.mjs";
+import { contentHash, gateLineKey, gateSidecar, lineHash, LOG, packageForSidecar } from "../core/provenance.ts";
 import type { ProvenanceEntry, Venture } from "../records/types/records.d.ts";
 
 const errors: string[] = [], warnings: string[] = [];

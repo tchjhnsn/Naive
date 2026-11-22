@@ -14,7 +14,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { independent, reviewIsIndependent } from "./verify.ts";
 import type { DecisionRights, Evidence, Handoff, Venture } from "../records/types/records.d.ts";
 

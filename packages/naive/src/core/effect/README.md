@@ -49,7 +49,7 @@ stateDiagram-v2
 - When moving an existing module, keep its exported names and shapes (wrap with `runSync` or `runPromise`) and leave its tests unchanged, one unit per pull request.
 - Code that serves one venture for a while (a CLI run, a server, a test) builds `ventureRuntime(dir)` once, runs its Effects through it and calls `dispose()` when done. A test passes `{ fs: MemoryFs(...) }` instead of providing a layer to each run.
 - Export the Effect behind each moved function too, named after it with the suffix `Effect` (`record` and `recordEffect`, `writeBlob` and `writeBlobEffect`), so code moved later composes the Effects and not the runners.
-- Hold a lock, a temporary file or any other resource with `Effect.acquireRelease` inside `Effect.scoped`, so it is released however the work ends. `lockFile` in [`../provenance.mjs`](../provenance.mjs) is the pattern.
+- Hold a lock, a temporary file or any other resource with `Effect.acquireRelease` inside `Effect.scoped`, so it is released however the work ends. `lockFile` in [`../provenance.ts`](../provenance.ts) is the pattern.
 
 ## Run and test
 
@@ -58,7 +58,7 @@ stateDiagram-v2
 
 ## How it connects
 
-- Called by: the modules moved to Effect: the checks `check-functions.ts`, `check-connections.ts`, `check-seams.ts` and `check-detectors.ts` in [`checks/`](../../checks/README.md), the store connectors in [`store/connectors/`](../../store/connectors/README.md), and [`../provenance.mjs`](../provenance.mjs) and [`../blobs.mjs`](../blobs.mjs).
+- Called by: the modules moved to Effect: the checks `check-functions.ts`, `check-connections.ts`, `check-seams.ts` and `check-detectors.ts` in [`checks/`](../../checks/README.md), the store connectors in [`store/connectors/`](../../store/connectors/README.md), and [`../provenance.ts`](../provenance.ts) and [`../blobs.ts`](../blobs.ts).
 - Calls: `effect` and Node built-ins only.
 
 ## Not built

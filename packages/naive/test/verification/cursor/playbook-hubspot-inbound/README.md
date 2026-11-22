@@ -13,7 +13,7 @@ rm -rf /tmp/hubspot-inbound-chart
 /path/to/pstack/skills/statechart/scripts/statechart \
   packages/naive/test/verification/cursor/playbook-hubspot-inbound/HubspotInbound.tla \
   --config packages/naive/test/verification/cursor/playbook-hubspot-inbound/HubspotInbound.cfg \
-  --view packages/naive/test/verification/cursor/playbook-hubspot-inbound/view.mjs \
+  --view packages/naive/test/verification/cursor/playbook-hubspot-inbound/view.ts \
   --out /tmp/hubspot-inbound-chart
 ```
 
@@ -24,7 +24,7 @@ Render the PNG with Pele 1.9.0 and the renderer shipped with the pstack naive ex
 Replay the routes:
 
 ```sh
-node packages/naive/test/verification/cursor/playbook-hubspot-inbound/replay.mjs
+node packages/naive/test/verification/cursor/playbook-hubspot-inbound/replay.ts
 ```
 
 ## What TLC found

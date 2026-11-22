@@ -14,13 +14,13 @@ import { createHash } from "node:crypto";
 import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { emit, explainSignal, pull, replay } from "../../router/orchestration/signals.ts";
 import type { PullResult } from "../../router/orchestration/signals.ts";
 import { CURSOR, libraries, listenersOf, routerRoute } from "../../engine/signals.ts";
 import { signalId } from "../../core/signal-id.ts";
-import { entries } from "../../core/provenance.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { entries } from "../../core/provenance.ts";
+import { validateValue } from "../../records/validate.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 let failed = 0;
@@ -31,7 +31,7 @@ const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 for (const k of ["MENTURA_ACTOR_ID", "MENTURA_ACTOR", "MENTURA_PERSON"]) { delete env[k]; delete process.env[k]; }
 process.env.MENTURA_WORKSPACE = ws;
 const node = (script: string, ...a: string[]) => spawnSync(process.execPath, [join(repo, script), ...a], { encoding: "utf8", env });
-const naive = (...a: string[]) => node("packages/naive/src/interfaces/cli/naive.mjs", ...a);
+const naive = (...a: string[]) => node("packages/naive/src/interfaces/cli/naive.ts", ...a);
 const read = (f: string): unknown => JSON.parse(readFileSync(f, "utf8"));
 
 // Every file under a folder with a hash of its bytes: "writes nothing" means this does not change.
@@ -70,7 +70,7 @@ try {
   rmSync(join(ws, "library/types"), { recursive: true });
   cpSync(join(repo, "packages/naive/library/packages/competitors/signals/types"), join(ws, "library/types"), { recursive: true });
   const venture = (id: string, listeners: unknown[], off: string[] = []) => {
-    const made = node("packages/naive/src/interfaces/cli/mentura.mjs", "init", join(ws, "ventures", id), "--id", id, "--layers", "purpose");
+    const made = node("packages/naive/src/interfaces/cli/mentura.ts", "init", join(ws, "ventures", id), "--id", id, "--layers", "purpose");
     if (made.status !== 0) throw new Error(made.stderr);
     const dir = join(ws, "ventures", id);
     const cfg = existsSync(join(dir, "naive.config.json")) ? read(join(dir, "naive.config.json")) as Record<string, unknown> : {};
