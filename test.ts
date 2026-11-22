@@ -49,6 +49,7 @@ const steps: Step[] = [
   ["the Claude Code plugin (manifest, skills, MCP server outside a venture, marketplaces)", "node", ["packages/naive/src/interfaces/plugin-test.ts"]],
   ["the compiled package's build: what is compiled, .ts paths renamed to .js, a relative import that names no file refused (EE-159)", "node", ["scripts/build-test.ts"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["packages/create-venture/test.ts"]],
+  ["the Effect pin a venture shares with Naive (EE-161)", "node", ["packages/naive/src/engine/effect-pin-test.ts"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["packages/naive/src/interfaces/tests/setup-test.ts"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.ts"]],
   ["router write steps as Effects: the schema check through RecordValidator, the gate through Gate, each replaced by a provided service", "node", ["packages/naive/src/router/write-effects-test.ts"]],

@@ -88,6 +88,7 @@ import { asRouted, findVenture } from "./find-venture.ts";
 import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.ts";
+import { checkCopies } from "../../engine/effect-pin.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
@@ -175,6 +176,10 @@ function check(dir: string): number {
     console.log(`${r.status === 0 ? "pass" : "FAIL"}  ${c.replace("check-", "")}: ${last}`);
     if (r.status !== 0) console.log((r.stdout + r.stderr).trim().split("\n").slice(0, 12).map((l) => `      ${l}`).join("\n"));
   }
+  // One Effect, shared (EE-161): the venture pins Naive's exact effect version and loads the copy Naive loads.
+  const effect = checkCopies(dir);
+  if (!effect.ok) failed++;
+  console.log(`${effect.ok ? "pass" : "FAIL"}  effect: ${effect.message}`);
   // The workspace the venture sits in: its naive-workspace.json matches the schema.
   const ws = findWorkspace(dir);
   if (ws) { const e = checkWorkspace(ws); if (e) failed++; console.log(`${e ? "FAIL" : "pass"}  workspace: ${e ? e.split("\n")[0] : "naive-workspace.json matches its schema"}`); }
