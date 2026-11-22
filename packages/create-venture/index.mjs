@@ -236,7 +236,8 @@ rl?.close();
 
 // 4. The venture itself, by the framework's own scaffold.
 console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
-const init = spawnSync("node", [join(framework, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
+const initScript = fwModule("packages/naive/src/engine/init-venture.ts");
+const init = spawnSync("node", [initScript, dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
   ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");

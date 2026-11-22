@@ -11,8 +11,8 @@ flowchart LR
   PJ["phases/&lt;id&gt;/phase.json<br/>gate, evidence, workflows, weights"] --> LOAD["phases.mjs<br/>loadPhase, loadPhases,<br/>phaseWeights, phaseGateRecords,<br/>phasePriors"]
   NN["engine/need-now.json"] -->|derived| LOAD
   DEP["functions/departments.json"] -->|derived| LOAD
-  LOAD --> LC["engine/lifecycle.mjs"]
-  LOAD --> NOW["engine/need-now.mjs"]
+  LOAD --> LC["engine/lifecycle.ts"]
+  LOAD --> NOW["engine/need-now.ts"]
   LOAD --> AN["product-anatomy/anatomy.mjs"]
   PJ -->|read as data| RT["records/routes/routes.mjs"]
   PJ --> CHK["checks/check-phases.ts"]

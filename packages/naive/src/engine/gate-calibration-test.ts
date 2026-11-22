@@ -96,7 +96,7 @@ expect("unknown cells add assumptions in the plan's words and lower confidence",
 const est = cal(market({ customer_type: { status: "estimated", value: "business" } }), null);
 expect("an estimated cell counts with half the confidence of a known one", est.confidence.score < sparse.confidence.score && est.confidence.score > 0, [est.confidence, sparse.confidence]);
 expect("the gradeItem default stays 18 months, a shorter window drops a level", (() => {
-  const e = { kind: "desk-research", audience: "target", collected: "2025-11-01" };
+  const e = { kind: "desk-research", audience: "target", collected: "2025-11-01" } as const;
   const t = new Date("2026-11-01");
   return gradeItem(e, t).level === "low" && gradeItem(e, t, 9).level === "very low";
 })());
