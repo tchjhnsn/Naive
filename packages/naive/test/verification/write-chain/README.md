@@ -4,7 +4,7 @@ What happens when a person or an agent saves a record in Naive, generated from t
 
 - **Source record:** a draft architecture record (sha256 `133c4e1b824c`) kept outside this repo while Naive's architecture is rebuilt system by system (`docs/design/NAIVE_SYSTEMS_2026-11-01.md`). This chart covers one mechanism, saving a record. It is not Naive's architecture; it will be regenerated from the rebuilt record.
 - **Generator:** `gen-statechart.py`, a prototype outside this repo; it moves in with the rebuilt record.
-- **Code the steps are anchored in:** `packages/naive/src/router/router.mjs` and `packages/naive/src/router/writes.mjs` at everything-ecosystem main `2507d1a` (check A12, `flow-check.ts`: 13/13 anchors found in order).
+- **Code the steps are anchored in:** `packages/naive/src/router/router.ts` and `packages/naive/src/router/writes.ts` at everything-ecosystem main `2507d1a` (check A12, `flow-check.ts`: 13/13 anchors found in order).
 
 ## Rules
 

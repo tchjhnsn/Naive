@@ -16,7 +16,7 @@
 //
 //   node packages/naive/src/checks/check-publication.ts <workspace or venture dir>
 
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Handoff, PublicationPolicy, Venture } from "../records/types/records.d.ts";

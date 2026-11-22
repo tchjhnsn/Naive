@@ -12,7 +12,7 @@ The canvas spans functions. In Domain-Driven Design (Evans) terms, each function
 
 - `packages/naive/src/functions/strategy/lean-canvas.json` defines the boxes. Each box names a record type and an attribute. It holds no venture data.
 - A box's owner is the function the data model gives its record type. The strategy function owns the canvas itself, which only assembles and orders the boxes.
-- `packages/naive/src/engine/lean-canvas.mjs` resolves the canvas for a venture. It reads each box through the same `statement` reader as the identity statements, so a box shows confirmed, agent, draft or missing, and copies nothing.
+- `packages/naive/src/engine/lean-canvas.ts` resolves the canvas for a venture. It reads each box through the same `statement` reader as the identity statements, so a box shows confirmed, agent, draft or missing, and copies nothing.
 - What a box unlocks comes from data: the phase gate whose exit evidence names its record type, the function workflows that read its route, and the record types whose refs point at it.
 - The roadmap orders the boxes: the current phase's gate evidence first, in the gate's order, then the next gate's, then the rest in canvas order.
 - Each box is its own route, `identity/lean-canvas/<box>`, beside `identity/lean-canvas`.
@@ -27,7 +27,7 @@ flowchart LR
   REC["venture records<br/>written by their owners"] -->|read, never copied| ENG
   ENG --> CAN["identity/lean-canvas<br/>roadmap, next box"]
   ENG --> BOX["identity/lean-canvas/&lt;box&gt;<br/>owner, status, unlocks"]
-  PH --> Q["decision-queue.mjs<br/>x2 for gate evidence"]
+  PH --> Q["decision-queue.ts<br/>x2 for gate evidence"]
 ```
 
 ## What the data model says about owners

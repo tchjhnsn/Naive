@@ -15,7 +15,7 @@
   ],
   "template": null,
   "skill": "packages/naive/src/functions/strategy/skills/ambition-tier/SKILL.md",
-  "adapter": "frameworks/ambition-tier/adapter.mjs",
+  "adapter": "frameworks/ambition-tier/adapter.ts",
   "checks": [],
   "maps_to": [
     { "framework_field": "ambition", "canonical_route": "foundation/goals/[id]", "canonical_field": "value", "note": "goal id scale, kind scale" }

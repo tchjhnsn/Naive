@@ -13,7 +13,7 @@ rm -rf packages/naive/test/verification/playbook-lean-validation/out
 # skills/statechart/scripts/statechart in the pstack kit
 statechart \
   packages/naive/test/verification/playbook-lean-validation/LeanValidation.tla \
-  --view packages/naive/test/verification/playbook-lean-validation/view.mjs \
+  --view packages/naive/test/verification/playbook-lean-validation/view.ts \
   --out packages/naive/test/verification/playbook-lean-validation/out
 ```
 
@@ -22,7 +22,7 @@ statechart \
 Replay the routes:
 
 ```sh
-node packages/naive/test/verification/playbook-lean-validation/replay.mjs
+node packages/naive/test/verification/playbook-lean-validation/replay.ts
 ```
 
 ## This run
@@ -41,7 +41,7 @@ Hidden on purpose:
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
-| RouteExists. Every step uses a route `node packages/naive/src/router/router.mjs` resolves: `foundation/icp`, `foundation/icp/shop-owners`, `foundation/problem`, `purpose/validation/assess`, `raw/sources/problem-interview-plan`, `raw/sources/problem-interview-notes`, `purpose/raw/text/problem-interview-notes`. | PASS | PASS. `replay.mjs` wrote and read each of those routes on a fixture venture. |
+| RouteExists. Every step uses a route `node packages/naive/src/router/router.ts` resolves: `foundation/icp`, `foundation/icp/shop-owners`, `foundation/problem`, `purpose/validation/assess`, `raw/sources/problem-interview-plan`, `raw/sources/problem-interview-notes`, `purpose/raw/text/problem-interview-notes`. | PASS | PASS. `replay.mjs` wrote and read each of those routes on a fixture venture. |
 | WhoWasProvided. A step reads the customer profile only after the venture has one or an earlier step wrote one. | PASS | PASS. A read of `foundation/icp` before any profile is not a record. After a person writes `foundation/icp/shop-owners`, the list read returns that profile keyed by id. A second fixture that already had the file reads it, and an agent's second profile stays out of the list until it is accepted. |
 | PlanFollowsClaim. The interview plan is written only after the problem claim is accepted. | PASS | PASS. `raw/sources/problem-interview-plan` was written after `mentura accept foundation/problem`, and the read returned that id. |
 | NotesFollowPlan. The notes are filed only after the plan was read back, and the text route is empty until the file exists. | PASS | PASS. `purpose/raw/text/problem-interview-notes` was not found before `text.md` existed, and returned the notes after it did. |
@@ -67,9 +67,9 @@ This section is the record of that run. Neither the 203-state failing TLC run no
 
 The first spec set `SameFile == FALSE`, which is `purpose/validation/assess` reading `purpose/validation/problem.json` while `foundation/problem` writes `foundation/problem.json`. TLC (203 states) broke `CheckReadsTheRecordTheTemplateWrote`. The shortest path was: read the profile the venture already has, write the claim, write the plan, read the plan, file the notes, read the notes, add evidence, run the assessment.
 
-Replay, before the fix: `node packages/naive/src/engine/assess-problem.mjs instance/ventures/everything-ecosystem` answered that there is no problem record. The venture's record is `foundation/problem.json`.
+Replay, before the fix: `node packages/naive/src/engine/assess-problem.ts instance/ventures/everything-ecosystem` answered that there is no problem record. The venture's record is `foundation/problem.json`.
 
-`packages/naive/src/engine/assess-problem.mjs` `problemFile()` now reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. The same order as the route. With `SameFile == TRUE`, TLC holds, as it must with that value hard-coded. The fixture replay above is the re-run.
+`packages/naive/src/engine/assess-problem.ts` `problemFile()` now reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. The same order as the route. With `SameFile == TRUE`, TLC holds, as it must with that value hard-coded. The fixture replay above is the re-run.
 
 ## Left out
 

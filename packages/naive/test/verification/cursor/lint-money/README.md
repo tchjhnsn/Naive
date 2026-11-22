@@ -14,7 +14,7 @@ JAVA=java \
 node --disable-warning=ExperimentalWarning \
   /path/to/pstack-kit/skills/statechart/scripts/statechart.ts \
   packages/naive/test/verification/cursor/lint-money/MoneyLint.tla \
-  --view packages/naive/test/verification/cursor/lint-money/view.mjs \
+  --view packages/naive/test/verification/cursor/lint-money/view.ts \
   --out /tmp/money-lint-chart
 ```
 

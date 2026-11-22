@@ -3,7 +3,7 @@
 // the status at candidate with no approver: approval is a person's, so an agent's draft never arrives approved. The
 // draft goes to the write chain for supply-chain/suppliers/<id>.json, which only the supply-chain agent
 // (supply-chain-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Supplier } from "../../records/types/records.d.ts";
 
 export const record = "supplier";

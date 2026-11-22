@@ -22,9 +22,9 @@ import type { Known } from "../../engine/recipes/outcomes.ts";
 import { producerShares } from "../../engine/recipes/render.ts";
 import { checkRecipes } from "../../checks/check-recipes.ts";
 import { signalId, canonicalJson } from "../../core/signal-id.ts";
-import { hasBlob } from "../../core/blobs.mjs";
-import { entries } from "../../core/provenance.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { hasBlob } from "../../core/blobs.ts";
+import { entries } from "../../core/provenance.ts";
+import { validateValue } from "../../records/validate.ts";
 import type { Reception, Signal } from "../../records/types/records.d.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
@@ -36,7 +36,7 @@ const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 for (const k of ["MENTURA_ACTOR_ID", "MENTURA_ACTOR", "MENTURA_PERSON", "MENTURA_MODEL"]) { delete env[k]; delete process.env[k]; }
 process.env.MENTURA_WORKSPACE = ws;
 const node = (script: string, a: string[], extra: NodeJS.ProcessEnv = {}) => spawnSync(process.execPath, [join(repo, script), ...a], { encoding: "utf8", env: { ...env, ...extra } });
-const naive = (a: string[], extra: NodeJS.ProcessEnv = {}) => node("packages/naive/src/interfaces/cli/naive.mjs", a, extra);
+const naive = (a: string[], extra: NodeJS.ProcessEnv = {}) => node("packages/naive/src/interfaces/cli/naive.ts", a, extra);
 const read = (f: string): unknown => JSON.parse(readFileSync(f, "utf8"));
 const sha = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
 
@@ -77,7 +77,7 @@ try {
   const CONFIRM = publish(funding("other-desk/wire", "seed", 3000000, "2026-11-05", "2026-11-17T09:00:00Z", { reliability: "B", credibility: 2 }), "2026-11-17");
 
   const venture = (id: string) => {
-    const made = node("packages/naive/src/interfaces/cli/mentura.mjs", ["init", join(ws, "ventures", id), "--id", id, "--layers", "purpose"]);
+    const made = node("packages/naive/src/interfaces/cli/mentura.ts", ["init", join(ws, "ventures", id), "--id", id, "--layers", "purpose"]);
     if (made.status !== 0) throw new Error(made.stderr);
     const dir = join(ws, "ventures", id);
     const cfg = existsSync(join(dir, "naive.config.json")) ? read(join(dir, "naive.config.json")) as Record<string, unknown> : {};

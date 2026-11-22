@@ -4,7 +4,7 @@
 // at its url (checked null) must say why in note, as packages/naive/src/terms/standards-test.ts requires.
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { cli, drop, questions, repo, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, repo, schemaOf, slug, validate } from "./generate.ts";
 import type { Standard } from "../../records/types/records.d.ts";
 
 export const record = "standard";

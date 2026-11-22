@@ -48,16 +48,16 @@ import { Effect } from "effect";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain, runSync } from "../core/effect/run.ts";
-import { lineHash } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { ROOT, readDataModel } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { lineHash } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { ROOT, readDataModel } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 import type { Detector, DetectorTrial } from "../records/types/records.d.ts";
-import { LOCAL, MAP } from "../store/connectors/index.mjs";
+import { LOCAL, MAP } from "../store/connectors/index.ts";
 import { bestCriterion, expectedCost, optimalBeta, summarize, wilson } from "../engine/detection.ts";
 import type { Payoffs, Summary, Trial } from "../engine/detection.ts";
-import { DETECTORS, TEMPLATE } from "../engine/detectors.mjs";
-import { decisionFile, propose, signers } from "../engine/decisions.mjs";
+import { DETECTORS, TEMPLATE } from "../engine/detectors.ts";
+import { decisionFile, propose, signers } from "../engine/decisions.ts";
 
 /** The costs each impact tier sets by default (detector.schema.json, tier). */
 export const TIER_COSTS: Readonly<Record<string, Payoffs>> = {

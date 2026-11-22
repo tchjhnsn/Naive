@@ -15,11 +15,11 @@ The marketing and sales function (APQC 3.0, Market and Sell Products and Service
 | [decisions.json](./decisions.json) | The decision matrix |
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn who the venture sells to and where each sale stands |
 | [workflows/weekly-pipeline-review.json](./workflows/weekly-pipeline-review.json) | Workflow: review the sales pipeline each week |
-| [marketing/canaries-test.mjs](./marketing/canaries-test.mjs) | Its test |
+| [marketing/canaries-test.mjs](./marketing/canaries-test.ts) | Its test |
 | [marketing/fixtures](./marketing/fixtures) | A folder |
-| [marketing/leaks-test.mjs](./marketing/leaks-test.mjs) | Its test |
-| [marketing/publish-build-test.mjs](./marketing/publish-build-test.mjs) | Its test |
-| [marketing/publish-build.mjs](./marketing/publish-build.mjs) | The publish build: gate, compile, build, leak check and sha256 of each output |
+| [marketing/leaks-test.mjs](./marketing/leaks-test.ts) | Its test |
+| [marketing/publish-build-test.mjs](./marketing/publish-build-test.ts) | Its test |
+| [marketing/publish-build.mjs](./marketing/publish-build.ts) | The publish build: gate, compile, build, leak check and sha256 of each output |
 | [marketing/site](./marketing/site) | Site presence: read a venture's website, judge which pages say what with Jev, and score how present its public records are, weighed by who the site must speak to now and  |
 | [skills/brand-pillar](./skills/brand-pillar) | Skill: Provide Brand pillar context: teams, roles, Tier 1 deliverables (identity, voice, asset library, foreshadowing invariants, version-identities), cross-pillar overlap zone |
 | [skills/pipeline-review](./skills/pipeline-review) | Skill: keep the sales pipeline true: MEDDIC qualification, stage evidence, leads with no reply, deals with no next step, and the win-loss reason of each closed deal |

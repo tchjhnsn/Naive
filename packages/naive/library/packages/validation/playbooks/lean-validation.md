@@ -13,14 +13,14 @@ Draft. You decide what the problem is. This playbook fills an interview plan and
 Run a step from the repo root:
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs <route> <action> --venture <id> --json
+node packages/naive/src/interfaces/cli/mentura.ts <route> <action> --venture <id> --json
 ```
 
 An agent's write of `foundation/icp/<profile id>` or `foundation/problem` lands as a draft. Accept it before you read it back or run the assessment:
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs accept foundation/icp/<profile id> --venture <id> --confirm foundation/icp/<profile id>
-node packages/naive/src/interfaces/cli/mentura.mjs accept foundation/problem --venture <id> --confirm foundation/problem
+node packages/naive/src/interfaces/cli/mentura.ts accept foundation/icp/<profile id> --venture <id> --confirm foundation/icp/<profile id>
+node packages/naive/src/interfaces/cli/mentura.ts accept foundation/problem --venture <id> --confirm foundation/problem
 ```
 
 A person at the keyboard writes with `--as person`. The reads and the assessment see the accepted file. A draft is not that file.
@@ -133,16 +133,16 @@ Write `foundation/problem` again with the claim from step 2 and one evidence ite
 
 Do not invent a count, a quote, or a source. A missing source stays an open question.
 
-`packages/naive/src/engine/assess-problem.mjs` demonstrates an assumption only for first-hand `behavior` or `commitment` from the target segment, five or more people, collected within 18 months. Anything else from a target, adjacent, or unknown audience infers. That bar is this framework's, in that file (`MIN_SAMPLE`, `MAX_AGE_MONTHS`).
+`packages/naive/src/engine/assess-problem.ts` demonstrates an assumption only for first-hand `behavior` or `commitment` from the target segment, five or more people, collected within 18 months. Anything else from a target, adjacent, or unknown audience infers. That bar is this framework's, in that file (`MIN_SAMPLE`, `MAX_AGE_MONTHS`).
 
 ## Checks
 
-Both of these can pass and can fail. `packages/naive/test/verification/playbook-lean-validation/replay.mjs` runs them on a fixture venture.
+Both of these can pass and can fail. `packages/naive/test/verification/playbook-lean-validation/replay.ts` runs them on a fixture venture.
 
 ### The source check
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs foundation/problem check --venture <id> --json
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem check --venture <id> --json
 ```
 
 This runs `packages/naive/src/checks/check-validation.ts`.
@@ -154,11 +154,11 @@ It passes, and the command exits 0, when those are clean. A pass can still be a 
 ### The learning check
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs purpose/validation/assess run --venture <id> --json
+node packages/naive/src/interfaces/cli/mentura.ts purpose/validation/assess run --venture <id> --json
 ```
 
 It asks, and does not assess, when there is no accepted problem record, or when `statement`, `segment`, `cost` or `workarounds`, or `why_now` is missing, or when an assumption has no evidence yet. A draft does not count as the record.
 
 When it assesses, `supports` is `explore`, `prototype`, `charge`, or `raise`. It worked for the commitment you are about to make when `blocking` is empty for that next rung. It did not work when a blocking test remains. The result names the next test. Missing evidence stays unknown or assumed.
 
-`packages/naive/src/engine/assess-problem.mjs` reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. Those are the two files on the `foundation/problem` route.
+`packages/naive/src/engine/assess-problem.ts` reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. Those are the two files on the `foundation/problem` route.

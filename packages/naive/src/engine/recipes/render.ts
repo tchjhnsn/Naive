@@ -14,9 +14,9 @@
 //
 // Nothing here calls a model or a clock: every time is an argument.
 import { createHash } from "node:crypto";
-import { readDataModel, globRegExp, venturePaths } from "../../records/index.mjs";
-import { validateValue } from "../../records/validate.mjs";
-import { readAsOf } from "../../store/as-of.mjs";
+import { readDataModel, globRegExp, venturePaths } from "../../records/index.ts";
+import { validateValue } from "../../records/validate.ts";
+import { readAsOf } from "../../store/as-of.ts";
 import { draft as draftReceptions } from "../generators/reception.ts";
 import { fill, withdraw } from "../signals.ts";
 import { forecastOutcome, recipeInput, settledRecord, settledSignals, timeMs } from "./outcomes.ts";

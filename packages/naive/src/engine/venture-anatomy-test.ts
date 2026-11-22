@@ -9,7 +9,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { addCounts, type ApplicationDate, cellStatuses, isApplicationDate, confidenceOf, countOf, coverageOf, problems, problemsOf, statusAt, submatrix, ventureAnatomy, viewOf } from "./venture-anatomy.ts";
-import { leanCanvas } from "./lean-canvas.mjs";
+import { leanCanvas } from "./lean-canvas.ts";
 import { CannotRun } from "../core/effect/errors.ts";
 import { draft as draftMarket } from "./generators/market-anatomy.ts";
 import type { VentureAnatomy } from "../records/types/records.d.ts";
@@ -24,7 +24,7 @@ const repo = new URL("../../../..", import.meta.url).pathname;
 const node = (args: string[], env: Record<string, string> = {}) => spawnSync("node", args, { cwd: repo, encoding: "utf8", env: { ...process.env, ...env } });
 const ws = mkdtempSync(join(tmpdir(), "venture-anatomy-"));
 const dir = join(ws, "acme");
-const made = node(["packages/naive/src/engine/init-venture.mjs", dir, "acme", "--type", "software-startup"]);
+const made = node(["packages/naive/src/engine/init-venture.ts", dir, "acme", "--type", "software-startup"]);
 expect("a software startup venture starts", made.status === 0, made.stderr);
 
 // ---- The definition ----
@@ -65,7 +65,7 @@ const rec = draftMarket({ segment: "Landlords with two to ten units", industry: 
 expect("the generator drafts the market whole", rec.ok && Object.keys(rec.draft.cells).length === 11, rec.errors);
 const input = join(ws, "market.json");
 writeFileSync(input, JSON.stringify(rec.draft));
-const w = node(["packages/naive/src/interfaces/cli/mentura.mjs", "markets/primary", "write", "--venture", "acme", "--as", "person", "--input", input], { MENTURA_WORKSPACE: ws });
+const w = node(["packages/naive/src/interfaces/cli/mentura.ts", "markets/primary", "write", "--venture", "acme", "--as", "person", "--input", input], { MENTURA_WORKSPACE: ws });
 expect("a person writes the market through the router at markets/primary", w.status === 0, w.stderr || w.stdout);
 const m1 = ventureAnatomy(dir);
 const market1 = m1.submatrices.find((s) => s.id === "market");
@@ -95,11 +95,11 @@ try { ventureAnatomy(dir, { validAt: "soon" }); } catch (e) { refused = e; }
 expect("a bad application date is refused at the boundary as CannotRun", refused instanceof CannotRun, String(refused));
 
 // ---- Routes ----
-const r = node(["packages/naive/src/interfaces/cli/mentura.mjs", "identity/venture-anatomy/market", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
+const r = node(["packages/naive/src/interfaces/cli/mentura.ts", "identity/venture-anatomy/market", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
 let routed: { id?: string, cells?: { known?: number } } = {};
 try { routed = JSON.parse(r.stdout); } catch { routed = {}; }
 expect("identity/venture-anatomy/<sub> returns that sub-matrix", routed.id === "market" && routed.cells?.known === 2, r.stdout.slice(0, 300) || r.stderr);
-const whole = node(["packages/naive/src/interfaces/cli/mentura.mjs", "identity/venture-anatomy", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
+const whole = node(["packages/naive/src/interfaces/cli/mentura.ts", "identity/venture-anatomy", "run", "--venture", "acme"], { MENTURA_WORKSPACE: ws });
 let all: { submatrices?: unknown[] } = {};
 try { all = JSON.parse(whole.stdout); } catch { all = {}; }
 expect("identity/venture-anatomy returns the whole matrix", all.submatrices?.length === 11, whole.stdout.slice(0, 300) || whole.stderr);

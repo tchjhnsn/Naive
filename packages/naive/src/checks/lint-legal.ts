@@ -16,7 +16,7 @@
 // customers/<id>.json, or investors/<id>.json. A file that is missing or does not parse is skipped.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const NOTICE = "This is a lint, not legal advice.";
 const ID = /^[a-z0-9][a-z0-9-]*$/;
@@ -167,4 +167,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   process.exit(r.ok ? 0 : 1);
 }
 
-export { legalCommands } from "../records/routes/commands.mjs";
+export { legalCommands } from "../records/routes/commands.ts";

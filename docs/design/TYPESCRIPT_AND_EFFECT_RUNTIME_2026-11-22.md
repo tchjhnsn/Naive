@@ -110,7 +110,7 @@ Each service is a `Context.Service` with a live layer and a test layer.
 |---|---|---|
 | VentureFs | direct `node:fs` (exists) | NodeFs, MemoryFs, later the hosted working copy |
 | NaiveConfig | `naive.config.json` read by the gate and check-config | file plus `NAIVE_*` environment, decoded by the record validator |
-| RecordValidator | `validate.mjs` | one layer, fails with SchemaInvalid |
+| RecordValidator | `validate.ts` | one layer, fails with SchemaInvalid |
 | Connectors | the `registerConnector` registry | filesystem; Postgres or Neon from the host |
 | Provenance | `core/provenance.mjs`, `core/blobs.mjs` | file log; memory in tests |
 | Gate | `engine/gate.mjs`, `router/acting.mjs` | one layer, fails with Refused |

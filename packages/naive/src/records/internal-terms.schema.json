@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "internal-terms.schema.json",
   "title": "Internal terms",
-  "description": "Patterns that mark internal text, which public output must never contain (packages/naive/src/engine/check-leaks.mjs). Naive's own list is packages/naive/src/engine/internal-terms.json; a venture's founder edits its own at <venture>/governance/internal-terms.json, for unannounced codenames and internal jargon. A pattern with severity warn is reported without failing, for a term whose status a person has not decided yet.",
+  "description": "Patterns that mark internal text, which public output must never contain (packages/naive/src/engine/check-leaks.ts). Naive's own list is packages/naive/src/engine/internal-terms.json; a venture's founder edits its own at <venture>/governance/internal-terms.json, for unannounced codenames and internal jargon. A pattern with severity warn is reported without failing, for a term whose status a person has not decided yet.",
   "type": "object",
   "required": ["patterns"],
   "properties": {

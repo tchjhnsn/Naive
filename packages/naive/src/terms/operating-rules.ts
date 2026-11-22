@@ -3,7 +3,7 @@
 // The default module is packages/naive/src/terms/operating-rules.json. A venture supplies its own
 // operating-rules.json, merged over the default. On a structured venture that file is
 // meta/operating-rules.json. Scalars and arrays in the overlay replace the default.
-// Objects merge key by key. The merged module is checked by packages/naive/src/records/validate.mjs, the
+// Objects merge key by key. The merged module is checked by packages/naive/src/records/validate.ts, the
 // same checker the handoff schema uses. Three checks the schema does not express stay
 // here: jev.yes above jev.no, loss.p0 below loss.p1, alpha + beta below 1,
 // standing.costly at least standing.low, and a routing rule id is unique.
@@ -18,8 +18,8 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateFile } from "../records/validate.ts";
 import type { OperatingRules } from "../records/types/records.d.ts";
 
 export const DEFAULT_MODULE = "packages/naive/src/terms/operating-rules.json";
@@ -34,7 +34,7 @@ export class OperatingRulesError extends Error {
 
 const isRecord = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x);
 
-/** Schema problems from packages/naive/src/records/validate.mjs. Empty when the document matches. A checker that cannot run throws. */
+/** Schema problems from packages/naive/src/records/validate.ts. Empty when the document matches. A checker that cannot run throws. */
 function schemaProblems(value: unknown): string[] {
   const dir = mkdtempSync(join(tmpdir(), "operating-rules-"));
   const file = join(dir, "module.json");

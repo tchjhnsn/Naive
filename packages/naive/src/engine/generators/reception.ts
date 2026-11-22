@@ -6,7 +6,7 @@
 // only those times, lag and age. The producer's confirmed and withdrawn shares come from the caller, which computes
 // them from history (the signal pull, packages/naive/src/engine/recipes/render.ts, build plan item 9), and are null
 // when it gives none. Uptake stays null (not built).
-import { cli, validate } from "./generate.mjs";
+import { cli, validate } from "./generate.ts";
 import type { Reception } from "../../records/types/records.d.ts";
 
 export const record = "reception";

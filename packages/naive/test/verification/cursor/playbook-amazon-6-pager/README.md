@@ -6,11 +6,11 @@ The replay runs against the router on this branch, where each ICP profile is its
 
 | Action | Code the replay called |
 | --- | --- |
-| ReadInputs, WriteNarrative | `call` read of `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights` (`packages/naive/src/router/router.mjs`). The fixture writes those records first. Its profile goes to `foundation/icp/shop-owners`, because `foundation/icp` has no write action. |
-| DraftGap, DraftFull, WriteFaq, Propose | `propose()` in `packages/naive/src/engine/decisions.mjs` (what `mentura propose` calls), which writes `decisions/<id>.decision.json` |
+| ReadInputs, WriteNarrative | `call` read of `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights` (`packages/naive/src/router/router.ts`). The fixture writes those records first. Its profile goes to `foundation/icp/shop-owners`, because `foundation/icp` has no write action. |
+| DraftGap, DraftFull, WriteFaq, Propose | `propose()` in `packages/naive/src/engine/decisions.ts` (what `mentura propose` calls), which writes `decisions/<id>.decision.json` |
 | RecordFinding | `call` write then read of `evidence/[id]` |
 | RunMatrix | `call` run of `governance/decisions` |
-| FounderDecides | `approve()` in `packages/naive/src/engine/decisions.mjs` (what `mentura decide` calls) |
+| FounderDecides | `approve()` in `packages/naive/src/engine/decisions.ts` (what `mentura decide` calls) |
 
 The chart hides one step: `Done`, which stays in "Decided by you". The incomplete memo stays an open draft beside the finished one. That is how the checks can fail and pass in one run. The model does not include a later rewrite. The playbook allows another propose while the record is still open. It does not read `ideas/map`. It runs `governance/decisions` once in the model, after the FAQ. The playbook also runs that command at draft time, to copy the phase.
 
@@ -26,7 +26,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/pstack/skills/statechart/scripts/statechart.ts \
   packages/naive/test/verification/cursor/playbook-amazon-6-pager/AmazonSixPager.tla \
   --config packages/naive/test/verification/cursor/playbook-amazon-6-pager/AmazonSixPager.cfg \
-  --view packages/naive/test/verification/cursor/playbook-amazon-6-pager/view.mjs \
+  --view packages/naive/test/verification/cursor/playbook-amazon-6-pager/view.ts \
   --out /tmp/amazon-six-pager-chart
 ```
 
@@ -35,7 +35,7 @@ Copy `chart.mmd` from that directory over `out/chart.mmd`. Render with Pele 1.9.
 Replay the rules on a fixture venture:
 
 ```sh
-node packages/naive/test/verification/cursor/playbook-amazon-6-pager/replay.mjs
+node packages/naive/test/verification/cursor/playbook-amazon-6-pager/replay.ts
 ```
 
 ## Rules
@@ -45,7 +45,7 @@ TLC reached 10 distinct states and found no broken rule (`out/tlc.out`, `out/rep
 | Rule | TLC | Replay |
 | --- | --- | --- |
 | TypeOK | PASS | The ten states use only `none`, `open`, and `decided`, and the founder is the only decider. |
-| RoutesReal | PASS | `resolve()` in `packages/naive/src/router/router.mjs` finds `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights`, `decisions/[id]`, `evidence/[id]`, and `governance/decisions`. A write to `decisions/bad.id` is refused: `bad.id is not a valid id (lowercase letters, digits and hyphens)`. |
+| RoutesReal | PASS | `resolve()` in `packages/naive/src/router/router.ts` finds `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights`, `decisions/[id]`, `evidence/[id]`, and `governance/decisions`. A write to `decisions/bad.id` is refused: `bad.id is not a valid id (lowercase letters, digits and hyphens)`. |
 | NoReadBeforeProvided | PASS | The fixture writes the four input records, then reads them, then drafts. `foundation/icp` returns the profiles keyed by id, and the replay takes the primary one from that read. On a second venture with no problem record, `foundation/problem` reads as not found (`no validation-problem record yet`) and the replay writes no memo. A finding with no `ran_at` or `runner` is refused. `evidence/faq-finding` with both is written, then read, before the FAQ cites it. |
 | MemoNeverDecides | PASS | `propose()` with `status: "decided"` returns `an agent may only propose an open decision; a person approves it` and writes nothing. After propose, `decisions/full-memo` is `open`, `drafted_by.kind` is `agent`, and `approved_by` is absent. `approve()` by Avery Founder sets `status` to `decided` and `approved_by` to that name. A second approve returns `full-memo is already decided`. |
 | ChecksCanPassAndFail | PASS | `decisions/gap-memo` fails customer, problem, solution, principle, faq, and still-open. `decisions/full-memo` after propose passes those, and passes person-decided. After approve, still-open no longer passes, and person-decided does. No replay row builds a decided record with no approver, because the router refuses one (see below). |

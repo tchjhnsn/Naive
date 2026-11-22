@@ -4,7 +4,7 @@
 // last sync yet, a daily reconciliation, status planned, and for a send, payment or signature action with no approval
 // the class it needs (APPROVAL_CLASS). It never changes an approval a person gave: a wrong one stays, and
 // packages/naive/src/checks/check-connections.ts refuses it. The draft goes to the write chain for it/connections/<id>.json.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Connection } from "../../records/types/records.d.ts";
 
 export const record = "connection";

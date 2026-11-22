@@ -44,8 +44,8 @@ A **venture development framework** (proposed genus, EE-024), in the same genus 
 |---|---|
 | Conventions over configuration | One opinionated default per choice, each with references (EE-014) |
 | Project structure | Workspace, venture folders, six layers, record types (`packages/naive/src/records/data-model.json`) |
-| Generator (`rails new`) | `node packages/naive/src/engine/init-venture.mjs` |
-| Test suite | `node test.mjs`: every check, run in CI |
+| Generator (`rails new`) | `node packages/naive/src/engine/init-venture.ts` |
+| Test suite | `node test.ts`: every check, run in CI |
 | Packages and plug-ins | Venture packages (`packages/naive/library/packages/<name>/package.json`); a kit is Mentura's enhanced package, kept in Mentura and found through `NAIVE_KITS` (EE-071) |
 | Inversion of control | The framework's checks and runners call on the venture's records |
 
@@ -64,7 +64,7 @@ This repository, and so the naive-framework npm package, is Naive's Claude Code 
 /plugin install naive@naive
 ```
 
-From a clone, add it by path instead: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here. `node packages/naive/src/interfaces/plugin-test.mjs` tests the plugin.
+From a clone, add it by path instead: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here. `node packages/naive/src/interfaces/plugin-test.ts` tests the plugin.
 
 ## Vault and repo
 

@@ -18,5 +18,5 @@ Naive, the venture development framework (EE-024, EE-118). Naive is to a venture
 
 ## Run and test
 
-- `node test.mjs` at the repository root runs every test and check here.
+- `node test.ts` at the repository root runs every test and check here.
 - `node scripts/dependency-rules.ts` checks that the units in `src/` import in one direction.

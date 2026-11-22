@@ -23,7 +23,7 @@ One paragraph: what this folder does, for whom, and the decision that set it up 
 ## Run and test
 
 - `node <script> <args>`: what it does and what it prints.
-- The test that covers this folder, and how `node test.mjs` runs it.
+- The test that covers this folder, and how `node test.ts` runs it.
 
 ## How it connects
 

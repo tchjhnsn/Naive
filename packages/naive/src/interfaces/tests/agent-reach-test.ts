@@ -1,5 +1,5 @@
-// Tests a function agent's write reach through the router (packages/naive/src/engine/agents/reach.mjs, reachOfWrite
-// in packages/naive/src/router/gate-hooks.mjs): an agent acting as <function>-agent writes only decisions/* and the
+// Tests a function agent's write reach through the router (packages/naive/src/engine/agents/reach.ts, reachOfWrite
+// in packages/naive/src/router/gate-hooks.ts): an agent acting as <function>-agent writes only decisions/* and the
 // routes of the record types the data model gives its function. finance-agent writing a customer is refused before
 // the schema and nothing lands; its decision write is not refused for reach; a person, a lead and plain agent are not
 // checked; and the spec's writes are the list the router enforces. The venture lives in a temporary workspace.
@@ -10,8 +10,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.mjs";
-import { functionOfAgent, functionWrites, reachRefusal } from "../../engine/agents/reach.mjs";
+import { call } from "../../router/router.ts";
+import { functionOfAgent, functionWrites, reachRefusal } from "../../engine/agents/reach.ts";
 import { functionAgent } from "../../engine/agents/function-spec.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
@@ -40,7 +40,7 @@ try {
   expect("reachRefusal leaves a lead unchecked", reachRefusal({ role: "finance-lead", route: "customers/acme" }) === null);
 
   // Through the router.
-  const made = spawnSync(process.execPath, [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, "ventures/lab"), "lab", "--type", "software-startup"], { encoding: "utf8", env });
+  const made = spawnSync(process.execPath, [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures/lab"), "lab", "--type", "software-startup"], { encoding: "utf8", env });
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   const dir = join(ws, "ventures/lab");
   const customer = { id: "acme", name: "Acme" };
@@ -74,7 +74,7 @@ try {
   // The CLI path the gap was found on: MENTURA_ACTOR_ID=finance-agent mentura customers/<id> write.
   const input = join(ws, "x.json");
   writeFileSync(input, JSON.stringify({ id: "delta", name: "Delta" }));
-  const cli = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "customers/delta", "write", "--venture", "lab", "--input", input],
+  const cli = spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "customers/delta", "write", "--venture", "lab", "--input", input],
     { encoding: "utf8", env: { ...env, MENTURA_ACTOR_ID: "finance-agent" } });
   expect("the CLI refuses finance-agent writing customers/delta and writes nothing", cli.status !== 0 && /agent-reach|may not write customers\/delta/.test(cli.stdout + cli.stderr) && !existsSync(join(dir, "customers/delta.json")), cli.stdout + cli.stderr);
 }

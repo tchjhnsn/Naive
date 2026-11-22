@@ -215,7 +215,7 @@
             ]
           },
           "function": {
-            "description": "The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null",
+            "description": "The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.ts) names that function or null",
             "enum": [
               "strategy",
               "products",
@@ -262,7 +262,7 @@
               "json-lines",
               "typescript"
             ],
-            "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it"
+            "description": "Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.ts does not read it"
           },
           "kind": {
             "$ref": "#/$defs/kind"
@@ -274,7 +274,7 @@
               "person",
               "function"
             ],
-            "description": "Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function"
+            "description": "Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.ts). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function"
           },
           "settles": {
             "$ref": "#/$defs/settles"
@@ -334,7 +334,7 @@
     },
     "files": {
       "type": "array",
-      "description": "Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.mjs pathKind reads them together with the record types",
+      "description": "Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.ts pathKind reads them together with the record types",
       "items": {
         "type": "object",
         "required": [

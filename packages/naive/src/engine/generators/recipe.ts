@@ -6,7 +6,7 @@
 // (packages/naive/src/engine/recipes/sandbox.ts). Editing render to fold the signals is the person's or the
 // researcher's work. Drafting the plain fold from the signal types' projects is naive recipes init
 // (packages/naive/src/engine/recipes/starter.ts).
-import { cli, validate } from "./generate.mjs";
+import { cli, validate } from "./generate.ts";
 import { lintRecipe } from "../recipes/sandbox.ts";
 import type { Recipe } from "../../records/types/records.d.ts";
 

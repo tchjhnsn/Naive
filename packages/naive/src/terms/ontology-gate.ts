@@ -19,8 +19,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { recordGate } from "../core/provenance.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { recordGate } from "../core/provenance.ts";
+import { validateFile } from "../records/validate.ts";
 import { dispositionOf, operatingRulesFor, OperatingRulesError } from "./operating-rules.ts";
 import { run, type Base, type Term } from "./engine.ts";
 import { TERMS } from "./terms.ts";

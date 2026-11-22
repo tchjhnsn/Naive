@@ -3,9 +3,9 @@
 import assert from "node:assert/strict";
 import { Effect } from "effect";
 import { MemoryFs } from "../../core/effect/fs.ts";
-import { safePathEffect, checkWriteEffect, blobSha } from "./contract.mjs";
-import { sourceForEffect, sourcesOfEffect } from "./index.mjs";
-import { connectEffects } from "./filesystem.mjs";
+import { safePathEffect, checkWriteEffect, blobSha } from "./contract.ts";
+import { sourceForEffect, sourcesOfEffect } from "./index.ts";
+import { connectEffects } from "./filesystem.ts";
 
 const results: [string, boolean][] = [];
 const test = async (name: string, fn: () => void | Promise<void>) => {

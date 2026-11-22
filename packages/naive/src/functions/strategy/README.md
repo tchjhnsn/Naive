@@ -16,9 +16,9 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's strategy |
 | [workflows/strategy-review.json](./workflows/strategy-review.json) | Workflow: review the strategy against the evidence |
 | [features/decisions.feature](./features/decisions.feature) | Gherkin behaviors (EE-050) |
-| [features/decisions.steps.mjs](./features/decisions.steps.mjs) | Step definitions for the behaviors beside it |
+| [features/decisions.steps.mjs](./features/decisions.steps.ts) | Step definitions for the behaviors beside it |
 | [features/strategic-foundation.feature](./features/strategic-foundation.feature) | Gherkin behaviors (EE-050) |
-| [features/strategic-foundation.steps.mjs](./features/strategic-foundation.steps.mjs) | Step definitions for the behaviors beside it |
+| [features/strategic-foundation.steps.mjs](./features/strategic-foundation.steps.ts) | Step definitions for the behaviors beside it |
 | [frameworks/business-discovery-framework-amendments-2026-05-20.md](./frameworks/business-discovery-framework-amendments-2026-05-20.md) | Discovery Framework Amendments: 2026-05-20 |
 | [frameworks/business-discovery-framework.html](./frameworks/business-discovery-framework.html) | A rendered document |
 | [frameworks/business-discovery-framework.md](./frameworks/business-discovery-framework.md) | Business Discovery Framework |
@@ -37,7 +37,7 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [skills/office-hours-mode](./skills/office-hours-mode) | Skill: Switch AI thought-partnership posture to "office hours mode": sharp critique, evidence-demanding, weakest-claim-first. |
 | [skills/strategy-review](./skills/strategy-review) | Skill: Run the fixed-cadence strategy review: test the strategy as diagnosis, guiding policy and coherent actions, check kill criteria and default alive, compare intended with realized strategy, and bring every strategic choice to the founder as a decision |
 | [skills/telos](./skills/telos) | Skill: Start with the end: help the owner state what the venture is for when it has done its job, how anyone would know (measures), what the owners intend to happen then (hold,  |
-| [lean-canvas.json](./lean-canvas.json) | The Lean Canvas (Maurya 2012), the venture's shared kernel (EE-155): nine boxes, each a reference to a record attribute its owning function writes. Strategy owns the canvas and none of the boxes it does not own; `packages/naive/src/engine/lean-canvas.mjs` resolves it |
+| [lean-canvas.json](./lean-canvas.json) | The Lean Canvas (Maurya 2012), the venture's shared kernel (EE-155): nine boxes, each a reference to a record attribute its owning function writes. Strategy owns the canvas and none of the boxes it does not own; `packages/naive/src/engine/lean-canvas.ts` resolves it |
 | [venture-anatomy.json](./venture-anatomy.json) | The Venture Anatomy Matrix (EE-157), the venture's architecture description after ISO/IEC/IEEE 42010: eleven sub-matrices, each naming its record types, owning function, the Regulation S-K items it covers, the phase it is expected from and how it nests, plus the lean-canvas, business-model-canvas and s1-outline viewpoints. Strategy owns the matrix; `packages/naive/src/engine/venture-anatomy.ts` resolves it |
 | [strategic-foundation.json](./strategic-foundation.json) | A record |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/strategy.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |

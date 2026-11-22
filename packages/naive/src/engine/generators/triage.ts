@@ -3,7 +3,7 @@
 // generator marks each label sure or not against the line (sure at or above it, or at or below one minus it; a
 // Score is never a filing decision, so it is always sure), lists the held keys and sets the status. The deciding
 // itself is packages/naive/src/engine/triage.ts; this only shapes and checks the record.
-import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import type { Triage } from "../../records/types/records.d.ts";
 
 export const record = "triage";

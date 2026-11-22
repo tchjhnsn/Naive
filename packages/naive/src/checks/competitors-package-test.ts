@@ -10,8 +10,8 @@
 
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { Validator, registryOf } from "../records/validate.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { Validator, registryOf } from "../records/validate.ts";
+import { readDataModel } from "../records/index.ts";
 import type { Listener, SignalType } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../../", import.meta.url).pathname;
