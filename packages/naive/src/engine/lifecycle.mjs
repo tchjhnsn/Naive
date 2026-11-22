@@ -31,7 +31,7 @@ import { phase as changePhase } from "./freshness.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
 import { validateFile } from "../records/validate.mjs";
-import { runSync } from "../core/effect/run.mjs";
+import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";
 import { meter, phaseGate } from "./phase-gate.mjs";
 

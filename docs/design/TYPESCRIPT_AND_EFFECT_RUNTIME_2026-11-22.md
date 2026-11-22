@@ -1,6 +1,6 @@
 # TypeScript everywhere and ventures that run on Effect
 
-Date: 2026-11-22. Status: proposed. Nothing in this document is built except the audit script results it reports, the Effect pieces already on main (EE-125, EE-126), the Node floor (EE-158) and step 0, the build step (EE-159). Step 0 was built as a mirror: `scripts/build.ts` writes `dist/` with every shipped file at its own path, code compiled and the rest copied, so no module had to change how it finds its files (point 5 below). It emits no declarations: each export's `types` condition names the source file, which the package still ships.
+Date: 2026-11-22. Status: proposed. Nothing in this document is built except the audit script results it reports, the Effect pieces already on main (EE-125, EE-126), the Node floor (EE-158), step 0, the build step (EE-159), and phase 2, the venture runtime with VentureFs as its only service (EE-161). Step 0 was built as a mirror: `scripts/build.ts` writes `dist/` with every shipped file at its own path, code compiled and the rest copied, so no module had to change how it finds its files (point 5 below). It emits no declarations: each export's `types` condition names the source file, which the package still ships.
 
 ## Goal
 

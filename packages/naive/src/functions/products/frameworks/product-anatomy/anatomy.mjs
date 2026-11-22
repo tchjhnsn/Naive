@@ -21,7 +21,7 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ventureFile } from "../../../../core/venture-paths.mjs";
-import { runSync } from "../../../../core/effect/run.mjs";
+import { runSync } from "../../../../core/effect/run.ts";
 import { loadPhases } from "../../../../phases/phases.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));

@@ -26,7 +26,7 @@ The knowledge layer is where every record is stored and found. It does not copy 
 
 ## Written in Effect
 
-The connectors are written as Effects (EE-125): they reach files through `VentureFs` and fail with Naive's tagged errors (`packages/naive/src/core/effect/errors.mjs`). The plain exports keep their old names and shapes, so the router, the checks and an app's `registerConnector` calls do not change. The naming is fixed once:
+The connectors are written as Effects (EE-125): they reach files through `VentureFs` and fail with Naive's tagged errors (`packages/naive/src/core/effect/errors.ts`). The plain exports keep their old names and shapes, so the router, the checks and an app's `registerConnector` calls do not change. The naming is fixed once:
 
 - Every exported function `name` that reads files or can fail has an Effect version `nameEffect` with the same arguments, which succeeds with what `name` returns or resolves to: `sourcesOfEffect`, `sourceForEffect`, `attributeSourcesEffect`, `registryEffect`, `registerConnectorEffect`, `connectEffect` and `connectAllEffect` in `index.mjs`; `safePathEffect` and `checkWriteEffect` in `contract.mjs`; `loadEffect`, `buildEffect` and `searchLiveEffect` in `catalog.mjs`. `name` runs it with `runSync` or `runPromise`.
 - A connector's own methods are the one exception, because the contract is an object: `connectEffects(options)` in `filesystem.mjs` gives the filesystem connector whose five methods return Effects, and `connect(options)` gives the same connector with each method run as a Promise.

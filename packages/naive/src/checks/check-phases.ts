@@ -17,9 +17,9 @@
 
 import { Effect } from "effect";
 import { join } from "node:path";
-import { CannotRun, SchemaInvalid } from "../core/effect/errors.mjs";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
-import { runMain } from "../core/effect/run.mjs";
+import { CannotRun, SchemaInvalid } from "../core/effect/errors.ts";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
+import { runMain } from "../core/effect/run.ts";
 import { phaseFile, phasesDir } from "../phases/phases.mjs";
 import { recordsIn } from "../records/index.mjs";
 import { validateValue } from "../records/validate.mjs";

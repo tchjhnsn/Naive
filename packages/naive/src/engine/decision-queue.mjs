@@ -17,8 +17,8 @@
 
 import { Effect } from "effect";
 import { join } from "node:path";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
-import { runSync } from "../core/effect/run.mjs";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
+import { runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.mjs";
 import { readDataModel } from "../records/index.mjs";
@@ -232,7 +232,7 @@ const jsonFiles = (dir) => Effect.gen(function* () {
  * @param {string} dir the venture folder
  * @param {string} phase
  * @param {{ root?: string }} [opts]
- * @returns {Effect.Effect<RankingContext, import("../core/effect/errors.mjs").NaiveError, "naive/VentureFs">}
+ * @returns {Effect.Effect<RankingContext, import("../core/effect/errors.ts").NaiveError, "naive/VentureFs">}
  */
 export const rankingContextEffect = (dir, phase, { root = ROOT } = {}) => Effect.gen(function* () {
   const fs = yield* VentureFs;

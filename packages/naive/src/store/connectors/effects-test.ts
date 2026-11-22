@@ -2,7 +2,7 @@
 // the filesystem connector's Effect methods, compare on write and the tagged errors.
 import assert from "node:assert/strict";
 import { Effect } from "effect";
-import { MemoryFs } from "../../core/effect/fs.mjs";
+import { MemoryFs } from "../../core/effect/fs.ts";
 import { safePathEffect, checkWriteEffect, blobSha } from "./contract.mjs";
 import { sourceForEffect, sourcesOfEffect } from "./index.mjs";
 import { connectEffects } from "./filesystem.mjs";
