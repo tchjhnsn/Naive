@@ -285,8 +285,7 @@ export function recordFiles(root = ROOT) {
   const rules = model.records
     .filter((r) => r.schema && recordRelative(r.schema) !== null && ["json", "json-list", "json-lines"].includes(r.form ?? "json"))
     .map((r) => ({ schema: String(r.schema), form: r.form ?? "json", globs: r.paths }));
-  // fs.globSync is Node 22; the published package runs on Node 20, so it is looked up only here, in the
-  // whole-repository run, and never when a caller validates one record.
+  // fs.globSync is looked up only here, in the whole-repository run, and never when a caller validates one record.
   const globSync = fs.globSync;
   if (typeof globSync !== "function") throw new Error("validating every record needs Node 22 or later (fs.globSync)");
   /** @type {Map<string, { weight: number, schema: string, form: string }>} */
