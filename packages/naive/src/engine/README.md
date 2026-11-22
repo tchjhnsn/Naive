@@ -104,7 +104,7 @@ The pure signal render (signal library build plan item 3) has its own README: [`
 
 The recipe sandbox (autoresearch build plan item 4) and the eval sets and scoring (item 5) have their own README: [`packages/naive/src/engine/recipes/`](./recipes/README.md). The sandbox lints a venture recipe, runs a batch of calls in one child process under Node's permission model with a fresh `vm` realm per call, and checks that the receptions cover each heard signal once. It is layered defence, not a security boundary; QuickJS compiled to wasm is the hardening path (not built). `naive recipes plan` freezes an eval set from what people and producers settled, and `naive recipes check` and the dev verdict score a recipe on it. `naive recipes init` writes the starter recipe (the plain fold), and `render.ts` there is how the signal pull renders through a live recipe, writes receptions and fills hindsight (item 9).
 
-`workspace-init.mjs`, `workspace-init-test.mjs` and `frames-test.mjs` run create-venture from [`packages/create-venture/index.mjs`](../../../create-venture/index.mjs). It moved there from the interface folder in step 2 of the Naive layout (EE-118). Not built yet: Naive as one package, the rest of that layout.
+`workspace-init.mjs`, `workspace-init-test.mjs` and `frames-test.mjs` run create-venture from [`packages/create-venture/index.mjs`](../../../create-venture/index.mjs). It moved there from the interface folder in step 2 of the Naive layout (EE-118). Not built yet: Naive as one package, the rest of that layout. Its packed-install test also packs the framework's runtime dependencies (`effect`) from this checkout, so the install stays offline.
 
 ## Example ventures
 
