@@ -1,48 +1,43 @@
 // The file system as an Effect service (EE-125). Naive code that reads or writes files asks for
 // VentureFs instead of importing node:fs, so a test can provide an in-memory one (MemoryFs) and a
 // host can provide its own. NodeFs is the default, backed by node:fs.
-// A .mjs file because router and store modules import it and Node does not strip types under node_modules.
-import { Context, Effect, Layer } from "effect";
+import { Context, Effect, Layer, Predicate } from "effect";
 import { appendFileSync, closeSync, existsSync, linkSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { IoError, NotFound, ParseError } from "./errors.ts";
 
-/**
- * @typedef {{
- *   readonly exists: (path: string) => Effect.Effect<boolean>,
- *   readonly readText: (path: string) => Effect.Effect<string, IoError | NotFound>,
- *   readonly writeText: (path: string, text: string | Buffer) => Effect.Effect<void, IoError>,
- *   readonly readBytes: (path: string) => Effect.Effect<Buffer, IoError | NotFound>,
- *   readonly append: (path: string, text: string | Buffer) => Effect.Effect<void, IoError>,
- *   readonly createExclusive: (path: string) => Effect.Effect<boolean, IoError>,
- *   readonly stat: (path: string) => Effect.Effect<{ ino: number, mtimeMs: number, isDirectory: boolean } | null>,
- *   readonly list: (dir: string) => Effect.Effect<string[], IoError>,
- *   readonly isDirectory: (path: string) => Effect.Effect<boolean>,
- *   readonly rename: (from: string, to: string) => Effect.Effect<void, IoError>,
- *   readonly remove: (path: string) => Effect.Effect<void, IoError>,
- *   readonly link: (from: string, to: string) => Effect.Effect<void, IoError>,
- * }} VentureFsShape
- */
+export type VentureFsShape = {
+  readonly exists: (path: string) => Effect.Effect<boolean>;
+  readonly readText: (path: string) => Effect.Effect<string, IoError | NotFound>;
+  readonly writeText: (path: string, text: string | Buffer) => Effect.Effect<void, IoError>;
+  readonly readBytes: (path: string) => Effect.Effect<Buffer, IoError | NotFound>;
+  readonly append: (path: string, text: string | Buffer) => Effect.Effect<void, IoError>;
+  readonly createExclusive: (path: string) => Effect.Effect<boolean, IoError>;
+  readonly stat: (path: string) => Effect.Effect<{ ino: number; mtimeMs: number; isDirectory: boolean } | null>;
+  readonly list: (dir: string) => Effect.Effect<string[], IoError>;
+  readonly isDirectory: (path: string) => Effect.Effect<boolean>;
+  readonly rename: (from: string, to: string) => Effect.Effect<void, IoError>;
+  readonly remove: (path: string) => Effect.Effect<void, IoError>;
+  readonly link: (from: string, to: string) => Effect.Effect<void, IoError>;
+};
 
 /** The file system service. Yield it inside Effect.gen: `const fs = yield* VentureFs`. */
-export const VentureFs = /** @type {Context.Service<"naive/VentureFs", VentureFsShape>} */ (Context.Service("naive/VentureFs"));
+export const VentureFs = Context.Service<"naive/VentureFs", VentureFsShape>("naive/VentureFs");
 
-/** @param {string} path @param {string} op */
-const io = (path, op) => /** @param {unknown} cause */ (cause) => new IoError({ path, op, cause });
+const io = (path: string, op: string) => (cause: unknown) => new IoError({ path, op, cause });
 
-/** @type {VentureFsShape} */
-export const nodeFs = {
+export const nodeFs: VentureFsShape = {
   exists: (path) => Effect.sync(() => existsSync(path)),
-  readText: (path) => Effect.suspend(() => /** @type {Effect.Effect<string, IoError | NotFound>} */ (existsSync(path)
+  readText: (path) => Effect.suspend((): Effect.Effect<string, IoError | NotFound> => (existsSync(path)
     ? Effect.try({ try: () => readFileSync(path, "utf8"), catch: io(path, "read") })
     : Effect.fail(new NotFound({ what: "file", path })))),
   writeText: (path, text) => Effect.try({ try: () => { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, text); }, catch: io(path, "write") }),
-  readBytes: (path) => Effect.suspend(() => /** @type {Effect.Effect<Buffer, IoError | NotFound>} */ (existsSync(path)
+  readBytes: (path) => Effect.suspend((): Effect.Effect<Buffer, IoError | NotFound> => (existsSync(path)
     ? Effect.try({ try: () => readFileSync(path), catch: io(path, "read") })
     : Effect.fail(new NotFound({ what: "file", path })))),
   append: (path, text) => Effect.try({ try: () => { mkdirSync(dirname(path), { recursive: true }); appendFileSync(path, text); }, catch: io(path, "append") }),
   createExclusive: (path) => Effect.try({
-    try: () => { mkdirSync(dirname(path), { recursive: true }); try { closeSync(openSync(path, "wx")); return true; } catch (e) { if (/** @type {{ code?: string }} */ (e).code === "EEXIST") return false; throw e; } },
+    try: () => { mkdirSync(dirname(path), { recursive: true }); try { closeSync(openSync(path, "wx")); return true; } catch (e) { if (Predicate.hasProperty(e, "code") && e.code === "EEXIST") return false; throw e; } },
     catch: io(path, "create"),
   }),
   stat: (path) => Effect.sync(() => { try { const s = statSync(path); return { ino: s.ino, mtimeMs: s.mtimeMs, isDirectory: s.isDirectory() }; } catch { return null; } }),
@@ -55,22 +50,14 @@ export const nodeFs = {
 
 export const NodeFs = Layer.succeed(VentureFs, nodeFs);
 
-/**
- * An in-memory file system for tests: paths are keys, folders are implied by prefixes.
- * @param {Record<string, string>} [files]
- * @returns {VentureFsShape & { files: Map<string, string> }}
- */
-export const memoryFs = (files = {}) => {
+/** An in-memory file system for tests: paths are keys, folders are implied by prefixes. */
+export const memoryFs = (files: Record<string, string> = {}): VentureFsShape & { files: Map<string, string> } => {
   const map = new Map(Object.entries(files));
-  /** @type {Map<string, number>} */
-  const mtimes = new Map();
+  const mtimes = new Map<string, number>();
   let inode = 0;
-  /** @type {Map<string, number>} */
-  const inodes = new Map();
-  /** @param {string} path */
-  const touch = (path) => { mtimes.set(path, Date.now()); if (!inodes.has(path)) inodes.set(path, ++inode); };
-  /** @param {string} dir */
-  const under = (dir) => [...map.keys()].filter((k) => k.startsWith(dir.endsWith("/") ? dir : `${dir}/`));
+  const inodes = new Map<string, number>();
+  const touch = (path: string) => { mtimes.set(path, Date.now()); if (!inodes.has(path)) inodes.set(path, ++inode); };
+  const under = (dir: string) => [...map.keys()].filter((k) => k.startsWith(dir.endsWith("/") ? dir : `${dir}/`));
   return {
     files: map,
     exists: (path) => Effect.sync(() => map.has(path) || under(path).length > 0),
@@ -95,27 +82,17 @@ export const memoryFs = (files = {}) => {
   };
 };
 
-/** @param {Record<string, string>} [files] */
-export const MemoryFs = (files = {}) => Layer.succeed(VentureFs, memoryFs(files));
+export const MemoryFs = (files: Record<string, string> = {}) => Layer.succeed(VentureFs, memoryFs(files));
 
-/**
- * Read and parse a JSON file through VentureFs.
- * @param {string} path
- * @returns {Effect.Effect<unknown, IoError | NotFound | ParseError, "naive/VentureFs">}
- */
-export const readJson = (path) => Effect.gen(function* () {
+/** Read and parse a JSON file through VentureFs. */
+export const readJson = (path: string): Effect.Effect<unknown, IoError | NotFound | ParseError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const text = yield* fs.readText(path);
-  return yield* Effect.try({ try: () => /** @type {unknown} */ (JSON.parse(text)), catch: (cause) => new ParseError({ path, cause }) });
+  return yield* Effect.try({ try: (): unknown => JSON.parse(text), catch: (cause) => new ParseError({ path, cause }) });
 });
 
-/**
- * Write a value as JSON with a trailing newline, the way every Naive record is written.
- * @param {string} path
- * @param {unknown} value
- * @returns {Effect.Effect<void, IoError, "naive/VentureFs">}
- */
-export const writeJson = (path, value) => Effect.gen(function* () {
+/** Write a value as JSON with a trailing newline, the way every Naive record is written. */
+export const writeJson = (path: string, value: unknown): Effect.Effect<void, IoError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   yield* fs.writeText(path, `${JSON.stringify(value, null, 2)}\n`);
 });

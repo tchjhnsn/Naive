@@ -3,43 +3,24 @@
 //     module moved to Effect keeps its existing exports and callers do not change in the same PR;
 //   - exitCode maps a failure to Naive's CLI convention: 2 when a check cannot run, else 1;
 //   - runMain runs a CLI's Effect, prints a failure in one line and sets process.exitCode.
-// A .mjs file because router and store modules import it and Node does not strip types under node_modules.
 import { Cause, Effect, Exit } from "effect";
+import type { NaiveError } from "./errors.ts";
 import { NodeFs } from "./fs.ts";
 
-/** @typedef {import("./errors.ts").NaiveError} NaiveError */
-
-/**
- * Throws the tagged error itself (not a wrapper), so old try/catch callers see `_tag` and the message.
- * @template A, E
- * @param {Exit.Exit<A, E>} exit
- * @returns {A}
- */
-const unwrap = (exit) => {
+/** Throws the tagged error itself (not a wrapper), so old try/catch callers see `_tag` and the message. */
+const unwrap = <A, E>(exit: Exit.Exit<A, E>): A => {
   if (Exit.isSuccess(exit)) return exit.value;
   const failure = Cause.findErrorOption(exit.cause);
   throw failure._tag === "Some" ? failure.value : Cause.squash(exit.cause);
 };
 
-/**
- * @template A, E
- * @param {Effect.Effect<A, E, "naive/VentureFs">} effect
- * @returns {A}
- */
-export const runSync = (effect) => unwrap(Effect.runSyncExit(Effect.provide(effect, NodeFs)));
+export const runSync = <A, E>(effect: Effect.Effect<A, E, "naive/VentureFs">): A => unwrap(Effect.runSyncExit(Effect.provide(effect, NodeFs)));
 
-/**
- * @template A, E
- * @param {Effect.Effect<A, E, "naive/VentureFs">} effect
- * @returns {Promise<A>}
- */
-export const runPromise = async (effect) => unwrap(await Effect.runPromiseExit(Effect.provide(effect, NodeFs)));
+export const runPromise = async <A, E>(effect: Effect.Effect<A, E, "naive/VentureFs">): Promise<A> => unwrap(await Effect.runPromiseExit(Effect.provide(effect, NodeFs)));
 
-/** @param {NaiveError} error @returns {1 | 2} */
-export const exitCode = (error) => (error._tag === "CannotRun" ? 2 : 1);
+export const exitCode = (error: NaiveError): 1 | 2 => (error._tag === "CannotRun" ? 2 : 1);
 
-/** @param {NaiveError} error @returns {string} */
-export const describe = (error) => {
+export const describe = (error: NaiveError): string => {
   switch (error._tag) {
     case "IoError": return `cannot ${error.op} ${error.path}`;
     case "ParseError": return `${error.path} is not valid JSON`;
@@ -51,12 +32,7 @@ export const describe = (error) => {
   }
 };
 
-/**
- * @template A
- * @param {Effect.Effect<A, NaiveError, "naive/VentureFs">} effect
- * @returns {Promise<A | undefined>}
- */
-export const runMain = async (effect) => {
+export const runMain = async <A>(effect: Effect.Effect<A, NaiveError, "naive/VentureFs">): Promise<A | undefined> => {
   const exit = await Effect.runPromiseExit(Effect.provide(effect, NodeFs));
   if (Exit.isSuccess(exit)) return exit.value;
   const failure = Cause.findErrorOption(exit.cause);
