@@ -6,6 +6,8 @@ Up: [src](../README.md)
 
 The routes' actions, shared by the CLI, the MCP server and the HTTP API (EE-030). Routes follow the Next.js App Router (EE-032). The route table itself is generated in [`packages/naive/src/records/routes`](../records/routes/README.md); renamed routes keep resolving through `route-aliases.json`.
 
+A write whose record has a `venture` field naming another venture is refused before the schema check, so a record carried over from one venture is never filed under another.
+
 ## Where things are
 
 | Path | Holds |

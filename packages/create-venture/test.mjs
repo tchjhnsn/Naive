@@ -37,6 +37,11 @@ t("--yes creates a venture with the recommended defaults, installs the framework
   ok(venture.layout === "structured" && existsSync(join(v, "k-base/foundation")) && existsSync(join(v, "meta/provenance.jsonl")), "the structured layout: k-base/ and meta/");
   ok(existsSync(join(v, "node_modules/.bin/naive")), "naive is installed in the venture");
   ok(existsSync(join(v, ".git")), "a git repository");
+  // naive#70: from a clone the pin is the repository at a commit, never a path on this machine.
+  const pin = load(join(v, "package.json")).devDependencies["naive-framework"];
+  ok(/^git\+https:\/\/\S+#[0-9a-f]{40}$/.test(pin) || (pin.startsWith("file:") && !/^[0-9a-f]{40}$/.test(spawnSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).stdout.trim())), pin);
+  // naive#68: with no --name the founder is "Founder", not the git user.
+  ok(load(join(v, "k-base/people/people.json")).people[0].name === "Founder", JSON.stringify(load(join(v, "k-base/people/people.json")).people));
 });
 
 t("the first venture is My first venture, in a workspace named Naive workspace; both can be named", () => {
@@ -227,7 +232,7 @@ t("outside a venture, naive says how to name one", () => {
 
 t("naive upgrade --framework reinstalls the framework with the venture's package manager", () => {
   const r = naive(["upgrade", "--framework"], v);
-  ok(r.status === 0 && /updating the framework: npm install --save-dev file:/.test(r.stdout), r.stdout + r.stderr);
+  ok(r.status === 0 && /updating the framework: (npm install --save-dev file:|pinned git\+https:\/\/\S+#[0-9a-f]{40})/.test(r.stdout), r.stdout + r.stderr);
 });
 
 t("naive build and start say plainly when the release scripts are missing, and otherwise run them", () => {

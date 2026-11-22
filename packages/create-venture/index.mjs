@@ -105,7 +105,6 @@ const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(
 const DEPARTMENTS = JSON.parse(readFileSync(join(framework, "packages/naive/src/functions/departments.json"), "utf8")).departments;
 const deptLabel = (d) => DEPARTMENTS.find((x) => x.id === d)?.label ?? d;
 const roleOf = (r) => ROLES.find((x) => x.id === r);
-const gitName = () => spawnSync("git", ["config", "user.name"], { encoding: "utf8" }).stdout?.trim() || null;
 
 // 2. What you are building: in a few words for the model, or from the list. Nothing is scaffolded until it is set.
 let vtype = opt("type") ? TYPES.find((t) => t.id === opt("type")) : null;
@@ -146,7 +145,8 @@ let role = opt("role") ?? (interactive ? await choose("What is your role in it?"
 if (!vtype.roles.includes(role)) fail(`a ${vtype.label.toLowerCase()} has no ${role} role: one of ${vtype.roles.join(", ")}`);
 
 // 4. You, and whether you are building it solo or with a team.
-const me = opt("name") ?? (interactive ? await ask("What is your name?", gitName() ?? "Founder") : gitName() ?? "Founder");
+// A git identity is not a person's name (a cloud session's is "claude"), so the founder is asked, or is "Founder" until named.
+const me = opt("name") ?? (interactive ? await ask("What is your name?", "Founder") : "Founder");
 let others = opt("team") ? opt("team").split(",").map((x) => x.trim()).filter(Boolean) : [];
 if (!opt("team") && interactive && (await choose("Are you building it solo or with a team?", ["solo", "team"], prefs?.mode ?? "solo")) === "team") {
   others = (await ask("Who else is founding it? (names, comma separated)", "")).split(",").map((x) => x.trim()).filter(Boolean);
@@ -290,7 +290,12 @@ if (Object.keys(functions).length) {
 // The venture's package.json: the framework as a dev dependency and the four scripts (I-17).
 const fromClone = existsSync(join(framework, "test.mjs")) && !framework.split("/").includes("node_modules");
 // A dependency value is a range or a location, never name@range: --framework naive-framework@^0.2 keeps ^0.2.
-const spec = opt("framework")?.replace(new RegExp(`^${fw.name}@`), "") ?? (fromClone ? `file:${framework}` : `^${fw.version}`);
+// From a clone, the pin is the clone's repository at its commit (naive#70, as everything-ecosystem pins it, EE-119), so the
+// venture installs on another machine; a clone with no commit or no repository field keeps a file: path.
+const head = fromClone ? spawnSync("git", ["rev-parse", "HEAD"], { cwd: framework, encoding: "utf8" }).stdout?.trim() : "";
+const repoUrl = typeof fw.repository === "string" ? fw.repository : fw.repository?.url;
+const gitPin = fromClone && /^[0-9a-f]{40}$/.test(head ?? "") && repoUrl ? `${repoUrl.replace(/#.*$/, "")}#${head}` : null;
+const spec = opt("framework")?.replace(new RegExp(`^${fw.name}@`), "") ?? (fromClone ? gitPin ?? `file:${framework}` : `^${fw.version}`);
 writeFileSync(join(dir, "package.json"), JSON.stringify({
   name: id, private: true, type: "module",
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
@@ -310,7 +315,10 @@ writeFileSync(join(dir, ".vscode/settings.json"), JSON.stringify({
 // 5. Install, then git, as create-next-app does.
 if (!flag("skip-install")) {
   console.log(`Installing the framework with ${manager}:\n- ${fw.name}\n`);
-  const r = spawnSync(manager, ["install"], { cwd: dir, stdio: "inherit" });
+  // A git pin from a clone installs from the clone itself, so no network or repository access is needed here; the pin
+  // in package.json is what another machine installs.
+  const local = gitPin && spec === gitPin && manager === "npm";
+  const r = spawnSync(manager, local ? ["install", "--no-save", framework] : ["install"], { cwd: dir, stdio: "inherit" });
   if (r.status !== 0) fail(`${manager} install failed in ${dir}. Fix the error above, then run ${manager} install there.`);
 }
 let git = "skipped (--no-git)";

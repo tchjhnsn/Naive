@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { decisions, propose } from "../../engine/decisions.mjs";
+import { decisions, ownScore, propose } from "../../engine/decisions.mjs";
 import { phaseWeight, rankHistory, read, rebuild, update, violations } from "../../engine/decision-index.mjs";
 import { record } from "../../core/provenance.mjs";
 import { call } from "../../router/router.mjs";
@@ -104,5 +104,16 @@ try {
   expect("mentura index updates and reports the ranking", c.status === 0 && JSON.parse(c.stdout).ranked[0].id === "shop-scale", c.stdout + c.stderr);
 } finally {
   rmSync(ws, { recursive: true, force: true });
+}
+// naive#72: a fail-closed decision due in five days scores above zero, and more than one due in fourteen.
+{
+  const now = Date.parse("2026-11-20T00:00:00Z");
+  const at = (days) => new Date(now + days * 864e5).toISOString();
+  const five = ownScore({ id: "a", status: "open", boundary: "fail-closed", due: at(5) }, "discovery", now);
+  const far = ownScore({ id: "b", status: "open", boundary: "fail-closed", due: at(14) }, "discovery", now);
+  const open = ownScore({ id: "c", status: "open", boundary: "fail-open", due: at(5) }, "discovery", now);
+  expect("a fail-closed decision due in five days scores above zero", five.score > 0 && five.why.some((w) => /due in 5 days/.test(w)) && five.why.some((w) => /fails closed/.test(w)), five);
+  expect("a nearer due date scores higher", five.score > far.score && far.score > 0, { five, far });
+  expect("fail-closed adds weight over the same decision failing open", five.score > open.score && open.score > 0, { five, open });
 }
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }

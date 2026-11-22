@@ -50,3 +50,5 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 - A test in `schema/` that does not import the router, the MCP server, the HTTP API or a module in [`packages/naive/src/router/orchestration/`](../../router/orchestration/README.md) stays next to its module, even when it starts the CLI as a child process.
 
 Tests that check a record against its schema run `node packages/naive/src/records/validate.mjs`, not Python.
+
+`decision-index-test.mjs` also checks `ownScore` on fail-closed decisions due in five and fourteen days: a nearer due date scores higher, and failing closed adds weight (naive#72).
