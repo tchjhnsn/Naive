@@ -108,6 +108,17 @@ Naive is moving from JavaScript to TypeScript in four phases: type-check the Jav
 - No `any` in new code. Use `unknown` and narrow it.
 - Existing `.mjs` files are converted in their phase, not inside unrelated PRs.
 
+## Vendored repositories
+
+`repos/` holds the source of libraries Naive depends on, added with `git subtree --squash` so agents can read the real code, its tests and its docs instead of guessing from the web or from compiled `node_modules`. `repos/effect` is Effect at the tag of the exact version in `package.json` (`effect@4.1.5`).
+
+- Read `repos/effect/LLMS.md` before writing Effect code, and use `repos/effect/packages/effect/src` and its tests as the source of truth for idiomatic usage and API design.
+- Use vendored repositories as read-only reference. Prefer their examples and patterns over generated guesses or web search results.
+- Do not edit files under `repos/` unless asked.
+- Do not import from `repos/`. Code imports the installed package (`effect`), never the vendored copy.
+- A vendored copy moves with its pin, in the same pull request: `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git effect@<version> --squash`. `node scripts/vendored.ts` fails when they differ (`node scripts/vendored-test.ts`).
+- `repos/` is not shipped in the package and is left out of the type check, ESLint, the docs claims check, the boundary check and the data model check.
+
 ## Rules
 
 - Never read or print `.env*` files.
