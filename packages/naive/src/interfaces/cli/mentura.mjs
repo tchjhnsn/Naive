@@ -308,7 +308,7 @@ if (cmd === "index") {
   const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
   out({ venture: idx.venture, phase: idx.phase, update: { mode: idx.last_update.mode, events: idx.last_update.events, rescored: idx.last_update.touched.map((t) => t.id) },
     flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),
-    ranked: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, why: e.why })) });
+    ranked: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, why: e.why })), queue: idx.queue ?? [] });
   process.exit(0);
 }
 
