@@ -1,0 +1,29 @@
+{
+  "name": "sales",
+  "title": "Sales",
+  "kind": "data",
+  "purpose": "The sales pipeline: one sales/opportunities/<id>.json per potential sale, from lead to won or lost, with MEDDIC qualification and the win-loss reason (APQC PCF 3.5.1). The marketing and sales function owns it, so its agent can keep the pipeline. Never complete.",
+  "function": "marketing-and-sales",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "icp",
+    "customer",
+    "account"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "purpose",
+  "records": [
+    "opportunity"
+  ],
+  "schemas": [
+    "packages/naive/src/records/opportunity.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}

@@ -87,7 +87,10 @@ t("installed from the registry, the venture depends on the framework by version,
   for (const d of [repo, join(repo, "packages/create-venture")]) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: d, env, encoding: "utf8" }).status === 0, `npm pack in ${d}`);
   const tgz = (n) => join(packs, readdirSync(packs).find((f) => f.startsWith(`${n}-`)));
   writeFileSync(join(proj, "package.json"), "{}\n");
-  const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture")], { cwd: proj, env, encoding: "utf8" });
+  // The framework's runtime dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
+  const deps = Object.keys(load(join(repo, "package.json")).dependencies ?? {});
+  for (const d of deps) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: join(repo, "node_modules", d), env, encoding: "utf8" }).status === 0, `npm pack ${d}`);
+  const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture"), ...deps.map(tgz)], { cwd: proj, env, encoding: "utf8" });
   ok(i.status === 0, i.stderr);
   const r = spawnSync("node", [join(proj, "node_modules/.bin/create-venture"), "from-registry", "--yes", "--skip-install", "--no-git"], { cwd: base, env, encoding: "utf8" });
   ok(r.status === 0, r.stderr + r.stdout);

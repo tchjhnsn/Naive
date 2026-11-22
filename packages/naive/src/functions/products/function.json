@@ -1,0 +1,7 @@
+{
+  "id": "products",
+  "purpose": "Decide what to build for whom, check each risk before building it, and keep the product cards and bug list true.",
+  "intake": "intake",
+  "measures": ["usage_or_adoption", "flow_and_lead_time", "learning"],
+  "clusters": ["runtime-and-data", "identity-and-secrets"]
+}

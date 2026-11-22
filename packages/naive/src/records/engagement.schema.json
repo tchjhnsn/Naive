@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "engagement.schema.json",
+  "title": "Engagement",
+  "description": "One client engagement, at service-delivery/engagements/<id>.json (route service-delivery/engagements/[id]): the client, the offer it delivers, each deliverable with its acceptance criteria and due date, approved and pending change requests, the budget and the status. It follows APQC PCF 5.3 (deliver service to customer: initiate, execute and complete service delivery). The work itself runs as handoffs, which the engagement lists by id. The service-delivery function owns it, and only the service-delivery agent (role service-delivery-agent) or a person writes it. Signing the statement of work is a legal-or-terms decision, and the engagement only records that it was signed.",
+  "type": "object",
+  "required": ["id", "client", "title", "deliverables", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The engagement's id, the file name without .json" },
+    "client": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The client by reference: the id of a customer record (customers/<id>.json)" },
+    "offer": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The service offer it delivers, by id, or absent for custom work" },
+    "title": { "type": "string", "minLength": 1 },
+    "sow_signed": { "type": ["string", "null"], "format": "date", "description": "The date both sides signed the statement of work, or null before then" },
+    "start": { "type": ["string", "null"], "format": "date" },
+    "end": { "type": ["string", "null"], "format": "date", "description": "The planned end, or the actual end once closed" },
+    "deliverables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "acceptance", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "description": { "type": "string", "minLength": 1 },
+          "acceptance": { "type": "string", "minLength": 1, "description": "The test the client applies to accept it. No deliverable starts without one" },
+          "due": { "type": ["string", "null"], "format": "date" },
+          "status": { "enum": ["planned", "in-progress", "delivered", "accepted", "rejected"] },
+          "evidence": { "type": "string", "description": "The evidence record that shows the client accepted it" }
+        }
+      }
+    },
+    "changes": {
+      "type": "array",
+      "description": "Change requests (APQC 5.3.2.4 to 5.3.2.5): every scope change, with its effect on price and date, approved before the work",
+      "items": {
+        "type": "object",
+        "required": ["id", "change", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "change": { "type": "string", "minLength": 1 },
+          "price_impact": { "type": "number", "description": "Added (or, negative, removed) price in the engagement's currency" },
+          "days_impact": { "type": "integer", "description": "Days added to (or, negative, removed from) the end date" },
+          "status": { "enum": ["requested", "approved", "rejected"] }
+        }
+      }
+    },
+    "price_model": { "enum": ["fixed", "value", "time-and-materials", "retainer", "subscription"] },
+    "budget": { "type": "number", "minimum": 0, "description": "The agreed price, or the cap for time and materials" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code, such as USD" },
+    "handoffs": { "type": "array", "items": { "type": "string" }, "description": "The ids of the handoffs that carry the work (operations/handoffs/<id>.json)" },
+    "status": { "enum": ["proposed", "active", "paused", "closed", "cancelled"] },
+    "review": { "type": "string", "description": "The close review (APQC 5.3.3): what went well, why anything overran, what can be reused, the client's feedback" },
+    "note": { "type": "string" }
+  }
+}

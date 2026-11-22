@@ -13,7 +13,6 @@
     "product"
   ],
   "planned": [
-    "budget and runway",
     "revenue",
     "financial model"
   ],
@@ -42,10 +41,12 @@
   ],
   "layer": "purpose",
   "records": [
-    "spend-register"
+    "spend-register",
+    "budget"
   ],
   "schemas": [
-    "packages/naive/src/records/spend-register.schema.json"
+    "packages/naive/src/records/spend-register.schema.json",
+    "packages/naive/src/records/budget.schema.json"
   ],
   "templates": [],
   "checks": [

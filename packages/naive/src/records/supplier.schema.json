@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supplier.schema.json",
+  "title": "Supplier",
+  "description": "One entry of the approved supplier list, at supply-chain/suppliers/<id>.json (route supply-chain/suppliers/[id]): who supplies the venture with materials, parts, manufacturing or logistics, what they may supply, whether a person approved them and how risky the supply is. It follows ISO 9001:2015 clause 8.4 (control of externally provided processes, products and services: criteria for selecting, evaluating and re-evaluating suppliers) and APQC PCF 4.2.2 (select suppliers and develop and maintain contracts), with the Kraljic matrix (Kraljic, HBR 1983) for the risk class. The supply-chain function owns it, and only the supply-chain agent (role supply-chain-agent) or a person writes it. Approval is a person's: an agent may draft a candidate, and approved_by names the person who approved it. Contacts and bank details are not kept here.",
+  "type": "object",
+  "required": ["id", "name", "supplies", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The supplier's id, the file name without .json" },
+    "name": { "type": "string", "minLength": 1, "description": "The supplier's trading name" },
+    "supplies": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "What the supplier may supply: parts, materials, assembly, packaging, freight, warehousing" },
+    "kind": { "enum": ["manufacturer", "contract-manufacturer", "distributor", "logistics", "warehouse", "service"], "description": "What sort of supplier it is; a third-party logistics provider (3PL) is warehouse or logistics" },
+    "status": { "enum": ["candidate", "approved", "conditional", "suspended", "retired"], "description": "candidate until a person approves it; conditional is approved with open findings; suspended stops new orders" },
+    "approved_on": { "type": ["string", "null"], "format": "date", "description": "When a person approved it, or null" },
+    "approved_by": { "type": ["string", "null"], "description": "The person who approved it, never an agent" },
+    "review_due": { "type": ["string", "null"], "format": "date", "description": "When the supplier is next re-evaluated (ISO 9001 8.4.1 re-evaluation); yearly by default" },
+    "risk_class": { "enum": ["routine", "leverage", "bottleneck", "strategic"], "description": "The Kraljic quadrant of what it supplies: profit impact against supply risk" },
+    "single_source": { "type": "boolean", "description": "True when nobody else is approved to supply the same item. A bottleneck or strategic single source needs a recorded decision: second source, buffer stock or accept the risk" },
+    "country": { "type": "string", "pattern": "^[A-Z]{2}$", "description": "Where it ships from, as an ISO 3166-1 alpha-2 code" },
+    "certifications": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Certifications the supplier holds, such as ISO 9001:2015" },
+    "lead_time_days": { "type": "integer", "minimum": 0, "description": "Quoted lead time from order to ship, in days" },
+    "moq": { "type": "integer", "minimum": 0, "description": "Minimum order quantity in its quoted unit" },
+    "note": { "type": "string" }
+  }
+}

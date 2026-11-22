@@ -1,0 +1,66 @@
+{
+  "id": "quarterly-team-review",
+  "function": "human-capital",
+  "title": "Review the team plan each quarter",
+  "trigger": {
+    "kind": "schedule",
+    "cadence": "quarterly"
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "people/founders",
+    "foundation/goals",
+    "purpose/money/summary"
+  ],
+  "steps": [
+    {
+      "id": "recheck-roles",
+      "do": "For each role, check again whether an agent can now do the work, using the capability register's dated entries.",
+      "skill": "team-design",
+      "writes": [
+        "people/team-plan"
+      ]
+    },
+    {
+      "id": "recheck-contractors",
+      "do": "Apply the behavioral, financial and relationship test to every contractor and raise any that looks like employment.",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "propose-openings",
+      "do": "Propose any person role the goals need, with its cost at about 1.4 times wages and a recruiting brief, as a decision for the founder.",
+      "skill": "recruiting",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "spend-money",
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "update-people",
+      "do": "Update the people record with every change since last quarter.",
+      "writes": [
+        "people"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "openings-decided-or-open",
+      "kind": "review",
+      "check": "Is every proposed role either decided by the founder or open as a decision with its cost and the agent alternative?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

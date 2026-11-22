@@ -1,0 +1,11 @@
+{
+  "function": "service-delivery",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Record that the audit report was delivered on the 14th", "Mark a deliverable late against its due date"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "product-lead", "examples": ["Put the Acme rollout ahead of the internal runbook rewrite", "Cap founder delivery hours at half the week this month"] },
+    { "class": "strategy-or-constitution", "level": "escalate", "examples": ["Add a fixed-price onboarding package to the catalogue", "Retire hourly consulting as an offer"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Sign the statement of work with Acme", "Accept a change request that adds two weeks and $3,000"] },
+    { "class": "public-commitment", "level": "escalate", "examples": ["Send the final report to the client", "Publish the new offer and its price on the website"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Hire a subcontractor for the data migration", "Buy a tool licence for one engagement"] }
+  ]
+}

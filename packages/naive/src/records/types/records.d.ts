@@ -236,6 +236,46 @@ export type Board = {
   }[];
 };
 
+/** One budget of the venture (APQC 9.1.1, planning, budgeting and forecasting), at finance/budget/<id>.json (route finance/budget/[id]): planned revenue and spend by category and month, one line per category and month, each line naming the source its figure rests on, and the cash the plan starts from. Runway is projected from it, never stored in it: ending cash each month is the opening cash plus the month's revenue lines less its spend lines, and runway is the number of months before ending cash falls below zero (projectRunway in packages/naive/src/engine/generators/budget.ts). A venture keeps one budget per scenario it plans (base, and a downside when the founder wants one). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
+export type Budget = {
+  /** The budget's id, the file name without .json, such as 2027-base */
+  id: string;
+  title: string;
+  /** ISO 4217 code for every amount in the budget, such as USD */
+  currency: string;
+  /** Which case the budget plans. base is the plan the founder works to; downside assumes revenue slips or costs rise */
+  scenario: "base" | "downside" | "upside";
+  /** The first month the budget covers, YYYY-MM */
+  start: string;
+  /** The last month the budget covers, YYYY-MM */
+  end: string;
+  /** The cash the budget starts from */
+  opening_cash: {
+    amount: number;
+    /**
+     * @format date
+     */
+    as_of: string;
+    /** The record the figure comes from, usually money/_summary or a money account (money/<id>) */
+    source: string;
+  };
+  /** One planned amount per category and month */
+  lines: {
+    /** The budget category, such as software, payroll, contractors, hosting or rent. The founder chooses the categories; keep them few and stable */
+    category: string;
+    /** The month the amount falls in, YYYY-MM, between start and end */
+    period: string;
+    /** revenue adds to cash; spend takes from it */
+    kind: "revenue" | "spend";
+    /** The planned amount for the month, in the budget's currency */
+    amount: number;
+    /** What the figure rests on: a record route (finance/spend/<id>, people/team-plan, validation/pricing) or the word assumption followed by the reasoning, so a guess is never mistaken for a fact */
+    source: string;
+    note?: string;
+  }[];
+  note?: string;
+};
+
 /** One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node packages/naive/src/engine/bugs.mjs, naive bugs). */
 export type Bug = {
   id: string;
@@ -1166,6 +1206,65 @@ export type DetectorLine = {
   decision?: string;
 };
 
+/** One client engagement, at service-delivery/engagements/<id>.json (route service-delivery/engagements/[id]): the client, the offer it delivers, each deliverable with its acceptance criteria and due date, approved and pending change requests, the budget and the status. It follows APQC PCF 5.3 (deliver service to customer: initiate, execute and complete service delivery). The work itself runs as handoffs, which the engagement lists by id. The service-delivery function owns it, and only the service-delivery agent (role service-delivery-agent) or a person writes it. Signing the statement of work is a legal-or-terms decision, and the engagement only records that it was signed. */
+export type Engagement = {
+  /** The engagement's id, the file name without .json */
+  id: string;
+  /** The client by reference: the id of a customer record (customers/<id>.json) */
+  client: string;
+  /** The service offer it delivers, by id, or absent for custom work */
+  offer?: string;
+  title: string;
+  /**
+   * The date both sides signed the statement of work, or null before then
+   * @format date
+   */
+  sow_signed?: string | null;
+  /**
+   * @format date
+   */
+  start?: string | null;
+  /**
+   * The planned end, or the actual end once closed
+   * @format date
+   */
+  end?: string | null;
+  deliverables: {
+    id: string;
+    description: string;
+    /** The test the client applies to accept it. No deliverable starts without one */
+    acceptance: string;
+    /**
+     * @format date
+     */
+    due?: string | null;
+    status: "planned" | "in-progress" | "delivered" | "accepted" | "rejected";
+    /** The evidence record that shows the client accepted it */
+    evidence?: string;
+  }[];
+  /** Change requests (APQC 5.3.2.4 to 5.3.2.5): every scope change, with its effect on price and date, approved before the work */
+  changes?: {
+    id: string;
+    change: string;
+    /** Added (or, negative, removed) price in the engagement's currency */
+    price_impact?: number;
+    /** Days added to (or, negative, removed from) the end date */
+    days_impact?: number;
+    status: "requested" | "approved" | "rejected";
+  }[];
+  price_model?: "fixed" | "value" | "time-and-materials" | "retainer" | "subscription";
+  /** The agreed price, or the cap for time and materials */
+  budget?: number;
+  /** ISO 4217 code, such as USD */
+  currency?: string;
+  /** The ids of the handoffs that carry the work (operations/handoffs/<id>.json) */
+  handoffs?: string[];
+  status: "proposed" | "active" | "paused" | "closed" | "cancelled";
+  /** The close review (APQC 5.3.3): what went well, why anything overran, what can be reused, the client's feedback */
+  review?: string;
+  note?: string;
+};
+
 /** One frozen version of how a recipe is scored, at <pattern>.plan.json beside the recipe (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The eval plan"): the as-of points of each window, the horizon and the gap between windows, the read cut, the row weights, the margin a keep needs and the budgets. A person makes it with naive recipes plan (packages/naive/src/engine/recipes/eval-set.ts); its sha is on every experiment line, and its eval set is frozen at <venture>/_eval/<sha>/, a folder no agent reads through the router. The windows run training, a gap, dev, a gap, holdout, and the researcher sees the venture only as of read_cut. That the windows are ordered and purged is checked by the plan command, not by this schema. */
 export type EvalPlan = {
   $schema?: string;
@@ -1412,6 +1511,61 @@ export type ExperimentPrev = string;
 
 /** sha256 of prev followed by this line without its hash field, as JSON with sorted keys */
 export type ExperimentHash = string;
+
+/** One entry of the venture's asset register (ISO 55000:2024 asset; APQC 10.3.2, update work and asset records), at assets/register/<id>.json (route assets/register/[id]): one piece of physical equipment the venture owns, leases or uses, who holds it, what it cost and how it left. Register every purchase above the capitalization threshold the founder sets with finance, and every portable device that holds data whatever its cost. Intangible assets (domains, trademarks, code) are not fixed assets. The assets function owns it, and only the assets agent (role assets-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
+export type FixedAsset = {
+  /** The asset's tag, the file name without .json */
+  id: string;
+  /** What it is, such as 14-inch laptop */
+  name: string;
+  category: "computer" | "phone" | "peripheral" | "furniture" | "production-equipment" | "lab-equipment" | "vehicle" | "other";
+  /** The maker's serial number */
+  serial?: string;
+  /** True when the device stores venture or customer data, so it must be wiped before it leaves (NIST SP 800-88) */
+  holds_data: boolean;
+  /** The person who holds it, by people record id, or null when it is in storage */
+  custodian: string | null;
+  /** Where it is kept, such as home office or the workshop */
+  location?: string;
+  /**
+   * The date the venture bought, leased or received it
+   * @format date
+   */
+  acquired: string;
+  /** What it cost to acquire, in currency */
+  cost: number;
+  /** ISO 4217 code */
+  currency: string;
+  /** contributed: a founder gave it to the venture, which is an ownership matter; borrowed: the venture uses it and someone else owns it */
+  ownership: "owned" | "leased" | "contributed" | "borrowed";
+  /** True when finance books it as an asset and depreciates it; false when it was expensed under the capitalization threshold */
+  capitalized?: boolean;
+  /** How long the venture expects to use it */
+  useful_life_months?: number;
+  /**
+   * @format date
+   */
+  warranty_end?: string | null;
+  /** The spend register line that paid for it, by id (finance/spend/<id>), when it was bought */
+  spend?: string;
+  /** The lease it is held under, by id (assets/leases/<id>), when leased */
+  lease?: string;
+  status: "in-use" | "in-storage" | "in-repair" | "disposed";
+  /** How it left the venture (APQC 10.4). Required once status is disposed */
+  disposal?: {
+    /**
+     * @format date
+     */
+    date: string;
+    method: "sold" | "traded" | "recycled" | "scrapped" | "returned" | "lost";
+    /** True when its data was wiped before it left, null when it held no data */
+    wiped: boolean | null;
+    /** Where the wipe or sale is proved: a receipt, a certificate or an evidence record */
+    evidence?: string;
+    proceeds?: number;
+  };
+  note?: string;
+};
 
 /** The summary of what founders agreed with each other, at <venture>/governance/founder-agreement.json (EE-022), with the full text (or the signed document's location) in founder-agreement.md beside it. Equity and vesting live in ownership.json and are not repeated here. Required once two or more founders share ownership. */
 export type FounderAgreement = {
@@ -1750,6 +1904,73 @@ export type FreshnessProfilesProfile = {
   /** A fast-changing record (pipeline, money, streams): never frozen into a release, it stays a live hole */
   live?: boolean;
   note?: string;
+};
+
+/** One function's decision matrix, at packages/naive/src/functions/<id>/decisions.json: for each decision class (packages/naive/template/governance/decision-rights.json) the function's work raises, whether its agent decides, recommends for an approver, or escalates to a person. It is the RACI/DACI view of the venture-wide decision rights for one function, and never loosens them: a class in delegation.json one_way_doors or never_redelegated is always escalate (packages/naive/src/checks/check-functions.ts). A venture tightens a row in its own governance, never here. */
+export type FunctionDecisions = {
+  function: string;
+  rows: {
+    /** A decision-rights.json class id. */
+    class: string;
+    /** decide: the agent decides and records it. recommend: the agent proposes, the approver decides. escalate: a person decides; the agent prepares the decision with evidence. */
+    level: "decide" | "recommend" | "escalate";
+    /** For recommend: the role that decides (a lead id, chief-of-staff or founder). */
+    approver?: string;
+    /** Concrete decisions of this class in this function, as the founder would say them. */
+    examples: string[];
+  }[];
+};
+
+/** The manifest of one function module, at packages/naive/src/functions/<id>/function.json. A function module is one of the 13 functions in packages/naive/src/functions/departments.json, as a folder: this manifest, the agent's instructions (agent.md), its workflows (workflows/<id>.json), its decision matrix (decisions.json), its skills and templates. What the manifest does not hold is derived, never typed twice: the record types the function owns come from the function field in data-model.json, its lead from the portfolios of the lead role templates, and its agent's write reach from the routes of the packages it owns. packages/naive/src/checks/check-functions.ts checks a module against all of it. */
+export type FunctionModule = {
+  /** A departments.json id, the same as the folder's name. */
+  id: string;
+  /** What the function is for, in one plain sentence a founder reads. */
+  purpose: string;
+  /** The id of the workflow the function's agent runs first in a venture: it asks the person only what the function's records are missing, most needed first. */
+  intake: string;
+  /** The telos measure kinds the function's work moves (foundation/telos measures[].kind), so a lead can weigh it. */
+  measures: string[];
+  /** The capability clusters (packages/naive/src/functions/it/capability-clusters.json ids) whose outside systems the function relies on. Empty when GitHub plus Naive is enough. */
+  clusters: string[];
+  note?: string;
+};
+
+/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json (packages/naive/src/checks/check-functions.ts). */
+export type FunctionWorkflow = {
+  /** The file's name without .json. */
+  id: string;
+  function: string;
+  title: string;
+  trigger: {
+    /** intake: once, when the function joins a venture, and again when its records are missing. schedule: on a cadence. event: when a route is written. request: when a lead or person hands it off. */
+    kind: "intake" | "schedule" | "event" | "request";
+    /** For schedule. */
+    cadence?: "daily" | "weekly" | "monthly" | "quarterly";
+    /** For event: the route pattern whose write starts it. */
+    route?: string;
+  };
+  /** Route patterns the agent reads first. */
+  reads?: string[];
+  steps: {
+    id: string;
+    /** What the agent does, in one plain sentence. */
+    do: string;
+    /** A skill in the function's skills/ folder to load for this step. */
+    skill?: string;
+    /** True when the step asks the person, because only they know the answer. */
+    ask?: boolean;
+    /** Route patterns this step writes. */
+    writes?: string[];
+    /** Decision classes this step may raise. */
+    raises?: string[];
+  }[];
+  done_criteria: {
+    id: string;
+    kind: "conformance" | "self-proof" | "review";
+    check: string;
+    reviewer?: string;
+  }[];
 };
 
 /** The fund's economics and structure (fund/terms.json): target size, vintage, fees, carry and term, and the closes so far. */
@@ -2393,6 +2614,49 @@ export type LeadPlan = {
   next_review?: string;
 };
 
+/** One lease or space commitment of the venture (a lease under ASC 842 and IFRS 16; APQC 10.1.3, provide workspace and facilities), at assets/leases/<id>.json (route assets/leases/[id]): premises, coworking or equipment, with its term, rent, notice and renewal dates and the terms that are hard to exit (a personal guarantee, auto-renewal). It abstracts the signed document and never replaces it. Signing, renewing or giving notice is a person's decision. The assets function owns it, and only the assets agent (role assets-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
+export type Lease = {
+  /** The lease's id, the file name without .json */
+  id: string;
+  kind: "premises" | "coworking" | "equipment" | "vehicle";
+  /** The landlord, coworking operator or lessor */
+  counterparty: string;
+  /**
+   * @format date
+   */
+  start: string;
+  /**
+   * The last day of the current term, or null for month-to-month
+   * @format date
+   */
+  end: string | null;
+  rent: {
+    amount: number;
+    currency: string;
+    cadence: "monthly" | "quarterly" | "annual";
+    /** How the rent rises, such as 3% each year */
+    escalation?: string;
+  };
+  deposit?: number;
+  /** True when the term renews unless notice is given */
+  auto_renews: boolean;
+  /** Days of notice the venture must give to end the lease or not renew it */
+  notice_days: number;
+  /** When and how the venture may end early, and at what cost */
+  break_clause?: string;
+  /** True when a founder personally guarantees the rent. Signing one is always a founder decision */
+  personal_guarantee: boolean;
+  /** Cover the lease requires the venture to hold */
+  insurance_required?: string;
+  /** The spend register line that pays the rent, by id (finance/spend/<id>) */
+  spend?: string;
+  /** Where the signed lease is kept */
+  document?: string;
+  /** proposed waits on the founder's decision to sign */
+  status: "proposed" | "active" | "notice-given" | "ended";
+  note?: string;
+};
+
 /** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and the set of frames are fixed; a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
 export type LifecyclePlaybook = {
   id: string;
@@ -2967,6 +3231,42 @@ export type NextjsStatus = {
   }[];
 };
 
+/** One entry of the venture's obligations register, its compliance calendar (ISO 37301:2021 clause 4.5, compliance obligations; APQC 11.2.2.2, identify applicable requirements), at legal/obligations/<id>.json (route legal/obligations/[id]): one duty the venture must meet by a date, such as a franchise tax, an annual report, a Form D, an 83(b) election, a licence renewal or a contract's notice date, with who imposes it, who owns it and what proves it was met. The agent prepares; a person files, signs and pays. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
+export type Obligation = {
+  /** The obligation's id, the file name without .json */
+  id: string;
+  title: string;
+  kind: "filing" | "tax" | "election" | "renewal" | "report" | "notice" | "privacy-request" | "other";
+  /** Who imposes it: a regulator, a tax authority, a court or a counterparty */
+  authority: string;
+  /** The law, rule or contract clause it comes from, cited */
+  basis: string;
+  recurrence: "once" | "monthly" | "quarterly" | "annual";
+  /**
+   * The next date it must be met
+   * @format date
+   */
+  due_date: string;
+  /** Days it takes to prepare. The calendar raises it at least twice this many days before the due date */
+  prep_days: number;
+  /** The person who files, signs or pays, by people record id or role */
+  owner: string;
+  fee?: {
+    amount: number;
+    currency: string;
+  };
+  /** What a miss costs: curable, a late fee, or not curable at all (a missed 83(b) window) */
+  cure?: "curable" | "late-fee" | "not-curable";
+  status: "upcoming" | "met" | "missed" | "not-applicable";
+  /**
+   * @format date
+   */
+  last_met?: string | null;
+  /** What proves it was met: a filing receipt, a proof of mailing or an evidence record */
+  evidence?: string;
+  note?: string;
+};
+
 /** The catalog of ontologies (N-050): one file, packages/naive/src/terms/ontology-catalog.json, lists every name@function scope with its own version, owner, status and imports. Seeded with one scope per function (gate G5, Torian 2026-11-05). That each scope's suffix is a function id and its owner, that imports are acyclic and that every term a scope uses is defined in it or in a scope it imports is checked by node packages/naive/src/terms/catalog-test.ts, not here. mappings names the SKOS and OWL term for each class and field, or none. */
 export type OntologyCatalog = OntologyCatalogCatalog;
 
@@ -3333,6 +3633,79 @@ export type OperatingRulesRoutingRule = {
   kind: "remove" | "merge";
 } | unknown);
 
+/** One potential sale in the venture's pipeline, at sales/opportunities/<id>.json (route sales/opportunities/[id]): from first interest (a lead) to won or lost. It follows the CRM practice of APQC PCF 3.5.1 (develop and manage sales opportunities), with MEDDIC qualification fields and a win-loss reason once closed. The marketing and sales function owns it, and only the marketing and sales agent (role marketing-and-sales-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). The buyer is named by reference to an account or customer record, never by contact details. */
+export type Opportunity = {
+  /** The opportunity's id, the file name without .json */
+  id: string;
+  /** What is being sold to whom, in a few words */
+  title: string;
+  /** The buying party by reference: the id of an account record (accounts/<id>/account.json) */
+  account?: string;
+  /** The customer record (customers/<id>.json) once the opportunity is won */
+  customer?: string;
+  /** The ideal customer profile it fits, by foundation/icp id */
+  icp?: string;
+  /** lead: interest shown, not yet qualified. qualified: the economic buyer, decision criteria and a reason to act now are known. proposal: an offer was sent. negotiation: terms are being agreed. won or lost: closed */
+  pipeline_stage: "lead" | "qualified" | "proposal" | "negotiation" | "won" | "lost";
+  /** How the opportunity reached the venture */
+  source: "inbound" | "outbound" | "referral" | "partner" | "event" | "other";
+  /** The traction channel it came through, such as search, a community or a conference (Weinberg and Mares, Traction) */
+  channel?: string;
+  /**
+   * When the interest was first recorded
+   * @format date-time
+   */
+  created: string;
+  /**
+   * When the venture first replied; null while no one has. Inbound leads are answered within an hour (Oldroyd, McElheran and Elkington, HBR 2011)
+   * @format date-time
+   */
+  first_response?: string | null;
+  /** What the deal is expected to be worth */
+  value?: {
+    amount: number;
+    /** ISO 4217 code, such as USD */
+    currency: string;
+    cadence: "one-time" | "monthly" | "annual";
+  };
+  /**
+   * When the deal is expected to close
+   * @format date
+   */
+  expected_close?: string | null;
+  /** MEDDIC qualification, each field what is known so far. An opportunity enters a forecast only when economic_buyer, decision_criteria and pain are known */
+  qualification?: {
+    /** The gain the buyer expects, in their numbers */
+    metrics?: string;
+    /** The role that can say yes to the money */
+    economic_buyer?: string;
+    /** How the buyer will judge the options */
+    decision_criteria?: string;
+    /** The steps and people between now and a signature */
+    decision_process?: string;
+    /** The problem that makes them act now */
+    pain?: string;
+    /** The role inside the buyer who argues for the venture */
+    champion?: string;
+  };
+  /** The next agreed action and its date */
+  next_step?: string;
+  /** Why it was won or lost, for a closed opportunity (win-loss analysis) */
+  outcome?: {
+    /** The main reason, in a sentence */
+    reason: string;
+    /** The kind of reason, so reasons can be counted */
+    category?: "product" | "price" | "positioning" | "timing" | "competitor" | "relationship" | "no-decision" | "other";
+    /** Who gave the reason: the buyer in a win-loss interview, or the seller's own account */
+    from: "buyer" | "seller";
+    /** The competitor record id that won or lost against the venture, when there was one */
+    competitor?: string;
+  };
+  /** Who works the opportunity: a person or a role id */
+  owner?: string;
+  note?: string;
+};
+
 /** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.mjs checks it; packages/naive/src/engine/payouts.mjs computes payouts from it. */
 export type Ownership = {
   /**
@@ -3460,6 +3833,98 @@ export type Playbook = {
     /** The view to build for the founder at this step, per the choosing-artifacts skill */
     artifact?: string;
   }[];
+};
+
+/** One blameless postmortem, at capabilities/postmortems/<id>.json (route capabilities/postmortems/[id]): what happened, its impact, a timeline, the contributing causes as conditions of the process or system and never as people, the corrective and preventive actions with an owner each, and the lessons to reuse. It follows the Google SRE book, chapter 15 (postmortem culture), ISO 9001:2015 clause 10.2 (nonconformity and corrective action) and APQC PCF 13.3.3 (manage non-conformance) and 13.4.4.2 (capture lessons learned). The capabilities function owns it, and only its agent (capabilities-agent) or a person writes it (writer function). The agent drafts it; a person reviews it before it closes. */
+export type Postmortem = {
+  /** The postmortem's id, the file name without .json */
+  id: string;
+  title: string;
+  /**
+   * The day the event happened
+   * @format date
+   */
+  date: string;
+  /** Which trigger, set in advance, made it owed. Anyone may request one */
+  trigger: "customer-visible-failure" | "data-loss" | "one-way-door-reversed" | "handoff-failed-twice" | "security-event" | "requested";
+  /** The process record (capabilities/processes/<id>.json) it concerns, when one exists */
+  process?: string;
+  summary: string;
+  /** Who or what was affected, and how much */
+  impact?: string;
+  timeline?: {
+    at: string;
+    event: string;
+  }[];
+  /** Conditions of the process or system the venture controls, never a person's name */
+  contributing_causes: string[];
+  actions: {
+    action: string;
+    kind: "corrective" | "preventive" | "mitigation";
+    owner: string;
+    /**
+     * @format date
+     */
+    due?: string | null;
+    status: "open" | "done" | "dropped";
+    /** The handoff that carries it, by id */
+    handoff?: string;
+  }[];
+  /** What another process or function can reuse */
+  lessons?: string[];
+  /** draft: written by the agent. reviewed: a person reviewed it. closed: every action is done or dropped */
+  status: "draft" | "reviewed" | "closed";
+  reviewed_by?: string;
+  note?: string;
+};
+
+/** One recurring business process in the venture's process catalog, at capabilities/processes/<id>.json (route capabilities/processes/[id]): its purpose and one owner, what starts it, its suppliers, inputs, outputs and customers (SIPOC), its working procedure as steps with the control points marked, and three health measures (cycle time, rework rate, first-pass yield). It follows APQC PCF 13.1 (manage business processes: assign process ownership 13.1.1, define processes and control points 13.1.3, measure process performance 13.1.4). The capabilities function owns it, and only its agent (capabilities-agent) or a person writes it (writer function). A process that crosses functions names each one. */
+export type Process = {
+  /** The process's id, the file name without .json */
+  id: string;
+  name: string;
+  /** What the process is for, in a sentence */
+  purpose: string;
+  /** The one role or person accountable for it, by role id or name. A process with two owners has none */
+  owner: string;
+  /** What starts a run: an event, a schedule or a request */
+  trigger: string;
+  /** The functions the process crosses, as packages/naive/src/functions/departments.json ids */
+  functions?: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
+  suppliers?: string[];
+  inputs?: string[];
+  outputs?: string[];
+  /** Who receives the outputs, inside or outside the venture */
+  customers?: string[];
+  /** The working procedure, in order */
+  steps?: {
+    id: string;
+    do: string;
+    /** The role that does it */
+    by?: string;
+    /** True when the step checks or approves before work goes on (APQC 13.1.3.3) */
+    control_point?: boolean;
+  }[];
+  measures?: {
+    /** Runs counted in the window */
+    runs?: number;
+    /** Median days from trigger to done */
+    cycle_time_days?: number | null;
+    /** Share of runs reopened */
+    rework_rate?: number | null;
+    /** Share of runs whose done-criteria passed on the first try */
+    first_pass_yield?: number | null;
+    /**
+     * @format date
+     */
+    as_of?: string;
+  };
+  status: "draft" | "active" | "retired";
+  /**
+   * @format date
+   */
+  last_reviewed?: string | null;
+  note?: string;
 };
 
 /** One product of a venture, stored as a card at products/<id>.json (EE-011). It holds the product's own market, job, technology, offering and business model; Product Anatomy judges it against the venture's core and assigns its portfolio role per phase. */
@@ -3818,6 +4283,123 @@ export type Publications = {
   }[];
 };
 
+/** One purchase order to a supplier, at supply-chain/purchase-orders/<id>.json (route supply-chain/purchase-orders/[id]), following APQC PCF 4.2.3 (order materials and services). A cross-border order names one of the eleven Incoterms 2020 rules and its named place, which decide who pays and carries the risk of each leg. The supply-chain function owns it, and only the supply-chain agent (role supply-chain-agent) or a person writes it. A purchase order commits money, so its writes carry decision class spend-money: an agent's write is held as a draft until a person accepts it, and sending it to the supplier is a person's act. */
+export type PurchaseOrder = {
+  /** The order's id, the file name without .json, such as po-2026-001 */
+  id: string;
+  /** The supplier by reference: the id of a supplier record (supply-chain/suppliers/<id>.json) */
+  supplier: string;
+  lines: {
+    /** What is ordered: a SKU, part number or description */
+    item: string;
+    quantity: number;
+    /** The unit of measure, such as each, kg or carton */
+    unit?: string;
+    /** Price per unit in the order's currency */
+    unit_price: number;
+  }[];
+  /** ISO 4217 code, such as USD */
+  currency: string;
+  /** The sum of quantity times unit price over the lines, before freight and duty */
+  total?: number;
+  /** The Incoterms 2020 rule; required in practice for a cross-border order */
+  incoterm?: "EXW" | "FCA" | "CPT" | "CIP" | "DAP" | "DPU" | "DDP" | "FAS" | "FOB" | "CFR" | "CIF";
+  /** The place the Incoterms rule names, such as the port or warehouse */
+  named_place?: string;
+  /**
+   * @format date
+   */
+  ordered_on?: string | null;
+  /**
+   * The date the supplier confirmed for delivery
+   * @format date
+   */
+  delivery_date?: string | null;
+  /** Such as 30% deposit, 70% before shipment, or net 30 */
+  payment_terms?: string;
+  /** draft until a person approves the spend; sent and confirmed follow the supplier; received when goods arrive; closed when paid and matched */
+  status: "draft" | "approved" | "sent" | "confirmed" | "received" | "closed" | "cancelled";
+  /** The id of the decision record in which a person approved the spend */
+  decision?: string;
+  note?: string;
+};
+
+/** One fundraise run as a bounded project, at investor-relations/raises/<id>.json (route investor-relations/raises/[id]): the ask and the milestone it pays for, the opening and stop dates, the securities exemption it relies on, the materials investors see, the target investors with each one's pipeline status, and every meeting with its follow-up. It follows APQC PCF 12.1 (build investor relationships) and the practice that a venture is either raising or not, with a start, a target and a stop date (Graham, How to Raise Money, 2013). The external-relationships function owns it, and only its agent (external-relationships-agent) or a person writes it (writer function). Investors are named by investor record id (investors/<id>.json); the raise never copies their contact details. Accepting a term sheet is never recorded here as done by an agent: it is an ownership-or-control decision a person takes. */
+export type Raise = {
+  /** The raise's id, the file name without .json, such as pre-seed-2027 */
+  id: string;
+  title: string;
+  /** planned: not yet meeting investors about it. open: between opens and closes. closed: money committed and signed. abandoned: stopped without closing */
+  status: "planned" | "open" | "closed" | "abandoned";
+  ask: {
+    /** The amount the venture asks for */
+    amount: number;
+    /** The least that still reaches the milestone */
+    minimum?: number;
+    /** ISO 4217 code, such as USD */
+    currency: string;
+    instrument: "safe" | "convertible-note" | "priced-equity" | "grant" | "debt" | "revenue-based" | "other";
+    /** Proposed terms in a sentence (cap, discount, valuation), as proposed, never as agreed */
+    terms?: string;
+  };
+  /** What the money reaches that changes the venture's value, in a sentence */
+  milestone: string;
+  /** The securities exemption the raise relies on (US Regulation D Rules 506(b) and 506(c), Regulation Crowdfunding, Regulation A). Under 506(b) nothing public may say the venture is raising (Rule 502(c)) */
+  exemption?: "reg-d-506b" | "reg-d-506c" | "reg-cf" | "reg-a" | "non-us" | "none" | "unknown";
+  /**
+   * The day the raise opens
+   * @format date
+   */
+  opens?: string | null;
+  /**
+   * The stop date: the raise closes or stops on it, whatever was committed
+   * @format date
+   */
+  closes?: string | null;
+  /** What investors see, by path or link; a person approves each before it is sent */
+  materials?: {
+    kind: "deck" | "memo" | "one-pager" | "financial-model" | "data-room" | "other";
+    /** A venture path or a link */
+    ref: string;
+    status: "draft" | "approved" | "retired";
+  }[];
+  /** The investors this raise approaches, with each one's status in the pipeline */
+  targets?: {
+    /** An investor record id (investors/<id>.json) */
+    investor: string;
+    status: "to-contact" | "contacted" | "meeting" | "diligence" | "term-sheet" | "committed" | "passed";
+    /** 1 is approached first */
+    priority?: number;
+    /** Who can introduce the venture, by name or people record id */
+    warm_path?: string;
+    /** The amount committed or discussed, in the ask's currency */
+    amount?: number;
+  }[];
+  /** Every meeting with an investor about this raise, in date order */
+  meetings?: {
+    investor: string;
+    /**
+     * @format date
+     */
+    date: string;
+    kind: "intro" | "pitch" | "partner-meeting" | "diligence" | "follow-up" | "relationship";
+    notes?: string;
+    /** What the founder said would be true by the next meeting, with its date, so the next meeting can grade it (Suster, lines, not dots) */
+    promised?: string;
+    follow_up?: {
+      action: string;
+      /**
+       * @format date
+       */
+      due: string;
+      done: boolean;
+    };
+  }[];
+  /** The id of the decision record that accepts or declines the terms, once a person takes it */
+  decision?: string;
+  note?: string;
+};
+
 /** Where a founder-supplied source came from, at raw/sources/<id>/source.json (EE-070). text.md is the text. original.* stays out of git. Raw is immutable. */
 export type RawSource = {
   id: string;
@@ -3979,6 +4561,45 @@ export type Requirement = {
   conversation?: ConversationRef[];
 };
 
+/** One entry of the venture's risk register (ISO 31000:2018 clauses 6.4 to 6.6: risk assessment, risk treatment, monitoring and review), at legal/risks/<id>.json (route legal/risks/[id]): what could happen, why, what it would cost, who owns it and what the venture does about it. Likelihood and impact are 90% ranges, not ordinal scores (Hubbard, The Failure of Risk Management; Cox 2008), so expected loss can be computed and compared. Every live risk has a person owner and a review date. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
+export type Risk = {
+  /** The risk's id, the file name without .json */
+  id: string;
+  /** The event, in a short sentence */
+  title: string;
+  /** What would make it happen */
+  cause: string;
+  /** What it would do to the venture */
+  consequence: string;
+  category: "legal" | "regulatory" | "financial" | "operational" | "security" | "privacy" | "strategic" | "reputational";
+  /** The person who owns the risk's treatment, by people record id or role */
+  owner: string;
+  /** The chance it happens in the next 12 months, as a 90% range of probabilities */
+  likelihood: {
+    low: number;
+    high: number;
+  };
+  /** What it would cost if it happens, as a 90% range */
+  impact: {
+    low: number;
+    high: number;
+    currency: string;
+  };
+  /** The ISO 31000 6.5 options in short: avoid (stop the activity), reduce (add a control), transfer (insurance or a contract), accept (live with it, with a reason) */
+  treatment: "avoid" | "reduce" | "transfer" | "accept";
+  /** What the venture does, and the handoff or decision that carries it */
+  treatment_plan?: string;
+  status: "open" | "treating" | "closed";
+  /**
+   * When the owner next reviews it
+   * @format date
+   */
+  review_date: string;
+  /** Routes of records the risk concerns, such as an obligation or a lease */
+  related?: string[];
+  note?: string;
+};
+
 /** One role a venture can install, at packages/naive/template/governance/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.mjs. */
 export type RoleTemplate = {
   /** Matches the file name */
@@ -4061,6 +4682,36 @@ export type SdlcCatalog = {
       }[];
     }[];
   }[];
+};
+
+/** One entry of the venture's service catalogue, at service-delivery/offers/<id>.json (route service-delivery/offers/[id]): a named service with its outcome, what it includes and excludes, how it is priced and how long it takes. It follows ITIL 4 service catalogue management and APQC PCF 5.1.2 (develop service delivery strategies). The service-delivery function owns it, and only the service-delivery agent (role service-delivery-agent) or a person writes it. Publishing an offer or its price outside the venture is a public-commitment decision. */
+export type ServiceOffer = {
+  /** The offer's id, the file name without .json */
+  id: string;
+  name: string;
+  /** What the client has at the end, in one sentence */
+  outcome: string;
+  /** The deliverables and activities in scope */
+  includes: string[];
+  /** What is out of scope, said plainly so a change request can point to it */
+  excludes?: string[];
+  /** How it is priced. Time and materials only when scope cannot be defined */
+  price_model: "fixed" | "value" | "time-and-materials" | "retainer" | "subscription";
+  /** The list price, or the rate for time and materials, or null when quoted per client */
+  price?: number | null;
+  /** ISO 4217 code, such as USD */
+  currency?: string;
+  /** The usual length from start to acceptance, in days */
+  duration_days?: number;
+  /** What the client must provide before work starts */
+  prerequisites?: string[];
+  /** Where the offer's delivery runbook is, as a venture path */
+  runbook?: string;
+  /** The product card this offer belongs to, by id, when the venture keeps one */
+  product?: string;
+  /** offered once a person has approved it for sale */
+  status: "draft" | "offered" | "retired";
+  note?: string;
 };
 
 /** library.json at the root of a signal library (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): a source that holds signal types and signals in the naive-signal-library@1 layout and is read in place. The layout: library.json; types/<id>/<version>.signal.json (the components); signals/<type>/<subject>/<yyyy-mm-dd>-<id>.json (the elements, immutable); log/<type>/<yyyy-mm-dd>.jsonl (the append-only day index). library.json lists no types: they are whatever types/ holds. A venture lists a library as a source with carries signals in knowledge/sources.json. Naive's own packages are the implicit library naive (open types only), and a venture's raw/signals/ is its implicit local library (signals and log only); neither has a library.json. Nothing reads a library yet: the connector and the pull are later build items. */
@@ -4346,6 +4997,42 @@ export type SpendRegister = {
   note?: string;
 };
 
+/** One investor or board update for one period, at investor-relations/updates/<id>.json (route investor-relations/updates/[id]), in the common investor update format: a headline, metrics defined the same way every time with their source, highlights, lowlights, at most three asks and runway (APQC PCF 12.1.3 communicate with shareholders, 12.3.1 report results to the board). The external-relationships function owns it, and only its agent (external-relationships-agent) or a person writes it (writer function). The agent drafts; a person approves and sends it, because sending outside on the venture's behalf is a public-commitment decision. */
+export type StakeholderUpdate = {
+  /** The update's id, the file name without .json, such as 2027-03 */
+  id: string;
+  /** The month (2027-03) or quarter (2027-Q1) it covers */
+  period: string;
+  audience: "investors" | "board" | "advisors" | "investors-and-board";
+  /** draft: written by the agent. approved: a person approved it. sent: a person sent it */
+  status: "draft" | "approved" | "sent";
+  /** The most important change since the last update, in one sentence */
+  headline: string;
+  /** The same metrics as last period, each with its source record so a reader can check it */
+  metrics: {
+    name: string;
+    value: number | string;
+    previous?: number | string | null;
+    unit?: string;
+    /** The route or record the figure came from */
+    source: string;
+  }[];
+  highlights: string[];
+  /** What went wrong or is at risk. Bad news goes here first, before anyone hears it elsewhere */
+  lowlights: string[];
+  /** At most three asks, each specific enough to act on in a day */
+  asks: string[];
+  /** Months of runway, from the money summary */
+  runway_months?: number | null;
+  /** The person who approved it */
+  approved_by?: string;
+  /**
+   * @format date
+   */
+  sent_on?: string | null;
+  note?: string;
+};
+
 /** The framework's map of strategic foundation (EE-051): per question of the Five Ws and How plus whether, the record attributes that answer it. */
 export type StrategicFoundation = {
   version: string;
@@ -4373,6 +5060,140 @@ export type Stream = {
   sensitive: boolean;
   /** What the versioned summary.md covers, when sensitive is true */
   summary?: string;
+};
+
+/** One entry of the approved supplier list, at supply-chain/suppliers/<id>.json (route supply-chain/suppliers/[id]): who supplies the venture with materials, parts, manufacturing or logistics, what they may supply, whether a person approved them and how risky the supply is. It follows ISO 9001:2015 clause 8.4 (control of externally provided processes, products and services: criteria for selecting, evaluating and re-evaluating suppliers) and APQC PCF 4.2.2 (select suppliers and develop and maintain contracts), with the Kraljic matrix (Kraljic, HBR 1983) for the risk class. The supply-chain function owns it, and only the supply-chain agent (role supply-chain-agent) or a person writes it. Approval is a person's: an agent may draft a candidate, and approved_by names the person who approved it. Contacts and bank details are not kept here. */
+export type Supplier = {
+  /** The supplier's id, the file name without .json */
+  id: string;
+  /** The supplier's trading name */
+  name: string;
+  /** What the supplier may supply: parts, materials, assembly, packaging, freight, warehousing */
+  supplies: string[];
+  /** What sort of supplier it is; a third-party logistics provider (3PL) is warehouse or logistics */
+  kind?: "manufacturer" | "contract-manufacturer" | "distributor" | "logistics" | "warehouse" | "service";
+  /** candidate until a person approves it; conditional is approved with open findings; suspended stops new orders */
+  status: "candidate" | "approved" | "conditional" | "suspended" | "retired";
+  /**
+   * When a person approved it, or null
+   * @format date
+   */
+  approved_on?: string | null;
+  /** The person who approved it, never an agent */
+  approved_by?: string | null;
+  /**
+   * When the supplier is next re-evaluated (ISO 9001 8.4.1 re-evaluation); yearly by default
+   * @format date
+   */
+  review_due?: string | null;
+  /** The Kraljic quadrant of what it supplies: profit impact against supply risk */
+  risk_class?: "routine" | "leverage" | "bottleneck" | "strategic";
+  /** True when nobody else is approved to supply the same item. A bottleneck or strategic single source needs a recorded decision: second source, buffer stock or accept the risk */
+  single_source?: boolean;
+  /** Where it ships from, as an ISO 3166-1 alpha-2 code */
+  country?: string;
+  /** Certifications the supplier holds, such as ISO 9001:2015 */
+  certifications?: string[];
+  /** Quoted lead time from order to ship, in days */
+  lead_time_days?: number;
+  /** Minimum order quantity in its quoted unit */
+  moq?: number;
+  note?: string;
+};
+
+/** One customer contact and its handling, at support/cases/<id>.json (route support/cases/[id]): a question, a problem, a request or a complaint, tagged with a contact reason, from first reply to resolution. It follows APQC PCF 6.2.2 and 6.2.3 (manage problems, requests and inquiries; manage complaints) and ISO 10002:2018 for complaints. The customer service function owns it, and only the customer service agent (role customer-service-agent) or a person writes it. It holds no transcript and no contact details: the customer is a customer record id, and the conversation stays in the helpdesk, named by its external id. */
+export type SupportCase = {
+  /** The case's id, the file name without .json */
+  id: string;
+  /**
+   * When the customer made contact
+   * @format date-time
+   */
+  opened: string;
+  channel: "email" | "chat" | "phone" | "form" | "in-app" | "community" | "social";
+  /** complaint: an expression of dissatisfaction that needs a response (ISO 10002); a person closes it */
+  kind: "question" | "problem" | "request" | "complaint";
+  /** The customer record (customers/<id>.json), when the contact is a known customer */
+  customer?: string;
+  /** The conversation's id in the helpdesk tool, where the messages stay */
+  external_id?: string;
+  /** What the customer needs, in a sentence, with no personal details */
+  summary: string;
+  /** The contact reason, from the support policy's reasons */
+  reason?: string;
+  status: "new" | "open" | "waiting-on-customer" | "resolved" | "closed";
+  /**
+   * When the first reply went out; null while none has
+   * @format date-time
+   */
+  first_response?: string | null;
+  /**
+   * When it was resolved
+   * @format date-time
+   */
+  resolved?: string | null;
+  /** What fixed it, or the answer given */
+  resolution?: string;
+  /** Why it happened, for a problem or a complaint */
+  root_cause?: string;
+  /** An earlier case on the same issue for the same customer, so repeat contacts can be counted */
+  repeat_of?: string;
+  /** The bug record (product/bugs/<id>.json) it was filed as */
+  bug?: string;
+  /** A refund or credit granted on the case, with the decision that approved it */
+  refund?: {
+    amount: number;
+    /** ISO 4217 code */
+    currency: string;
+    /** The id of the spend-money decision a person made */
+    decision: string;
+  };
+  note?: string;
+};
+
+/** The venture's customer support policy, at support/policy.json (route support/policy): the channels customers use, the hours, the response targets, the refund rule and when a case goes to a person. It follows APQC PCF 6.1.3 to 6.1.5 (channel strategy, policies and procedures, service levels per segment) and ISO 10002:2018 (complaints handling). The customer service function owns it, and only the customer service agent (role customer-service-agent) or a person writes it. A person decides it: every agent write is held as a draft under public-commitment, because customers rely on what it promises. */
+export type SupportPolicy = {
+  /** Where customers reach the venture */
+  channels: {
+    channel: "email" | "chat" | "phone" | "form" | "in-app" | "community" | "social";
+    /** When it is answered, such as weekdays 9 to 5 US Central */
+    hours?: string;
+    /** The connection record (it/connections/<id>.json) for the helpdesk tool behind it, if any */
+    connection?: string;
+  }[];
+  /** Service level targets (APQC 6.1.5): how fast a first reply and a resolution should come, per channel and segment */
+  targets: {
+    /** The channel it applies to; absent means every channel */
+    channel?: string;
+    /** The customer segment or plan it applies to; absent means every customer */
+    segment?: string;
+    /** Hours to the first reply from a person or an agent */
+    first_response_hours: number;
+    /** Hours to resolution */
+    resolution_hours?: number;
+    /** True when the hours count only the channel's open hours */
+    business_hours?: boolean;
+  }[];
+  /** The refund and credit rule. Every refund moves money, so in Naive it is a spend-money decision a person makes; the limit says what a person may grant on a case without further review */
+  refunds: {
+    /** When a customer gets a refund or credit, in plain words */
+    rule: string;
+    limit?: {
+      amount: number;
+      /** ISO 4217 code */
+      currency: string;
+    };
+  };
+  /** What sends a case to a person at once */
+  escalate_when: ("complaint" | "legal-threat" | "safety" | "refund-above-limit" | "data-request" | "public-mention" | "repeat-contact" | "low-confidence")[];
+  /** The contact reason list every case is tagged with (contact drivers, Price and Jaffe, The Best Service Is No Service) */
+  reasons?: string[];
+  /**
+   * When a person last reviewed the policy
+   * @format date
+   */
+  reviewed?: string;
+  note?: string;
 };
 
 /** The systems of record create-venture offers per function (packages/naive/src/engine/systems-catalog.json): each system's kind, what its address looks like, and the code that connects to it, if any. */

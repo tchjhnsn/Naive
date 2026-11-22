@@ -1,0 +1,54 @@
+{
+  "id": "postmortem",
+  "function": "capabilities",
+  "title": "Write a postmortem when work fails",
+  "trigger": {
+    "kind": "event",
+    "route": "operations/handoff/[id]"
+  },
+  "reads": [
+    "operations/handoff",
+    "evidence",
+    "product/bugs",
+    "decisions/*",
+    "capabilities/processes"
+  ],
+  "steps": [
+    {
+      "id": "check-trigger",
+      "do": "Check whether the change meets a postmortem trigger: a handoff failed twice, a customer-visible failure, data loss, a reversed one-way door or a request."
+    },
+    {
+      "id": "draft",
+      "do": "Draft a blameless postmortem with timeline, contributing causes, actions and lessons, citing every source.",
+      "skill": "postmortem",
+      "writes": [
+        "capabilities/postmortems/[id]"
+      ]
+    },
+    {
+      "id": "act",
+      "do": "Update the affected process record and open a handoff for each action that needs work.",
+      "writes": [
+        "capabilities/processes/[id]",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "implementation-detail"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "blameless-and-owned",
+      "kind": "review",
+      "check": "Does the postmortem name no person as a cause, and does every action have one owner and a due date?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

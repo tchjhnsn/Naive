@@ -1,0 +1,13 @@
+{
+  "id": "external-relationships",
+  "purpose": "Keep the venture's investors, board and outside partners informed and its fundraising on track, with a person approving everything that goes out.",
+  "intake": "intake",
+  "measures": [
+    "learning",
+    "compliance_met"
+  ],
+  "clusters": [
+    "signatures-and-privileged-records",
+    "private-contact-records"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "id": "intake",
+  "function": "capabilities",
+  "title": "Learn how the venture works",
+  "trigger": {
+    "kind": "intake"
+  },
+  "reads": [
+    "venture",
+    "operations/handoff",
+    "evidence",
+    "capabilities/processes",
+    "people/team-plan"
+  ],
+  "steps": [
+    {
+      "id": "read-what-exists",
+      "do": "Read the handoffs, evidence and process records, and list each kind of work done three or more times with no process record, most runs first."
+    },
+    {
+      "id": "ask-owners",
+      "do": "Ask the founder which of that recurring work matters most and who owns each, one owner per process.",
+      "ask": true
+    },
+    {
+      "id": "write-processes",
+      "do": "Draft a process record for each, with its trigger, inputs, outputs, steps, control points and measures from the handoffs.",
+      "skill": "working-procedure",
+      "writes": [
+        "capabilities/processes/[id]"
+      ]
+    },
+    {
+      "id": "ask-postmortem-triggers",
+      "do": "Ask whether anything has failed in a way the founder wants never to repeat, and draft a postmortem for each.",
+      "skill": "postmortem",
+      "ask": true,
+      "writes": [
+        "capabilities/postmortems/[id]"
+      ]
+    },
+    {
+      "id": "summarize",
+      "do": "Summarize the process catalog for the strategy lead: each process, its owner and health, and the bottleneck to work first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "one-owner-each",
+      "kind": "review",
+      "check": "Does every process record name exactly one owner and cite the handoffs its measures came from?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

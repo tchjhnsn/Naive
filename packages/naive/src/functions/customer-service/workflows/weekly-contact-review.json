@@ -1,0 +1,17 @@
+{
+  "id": "weekly-contact-review",
+  "function": "customer-service",
+  "title": "Review contact reasons and response times each week",
+  "trigger": { "kind": "schedule", "cadence": "weekly" },
+  "reads": ["support/policy", "support/cases", "customers", "product/bugs"],
+  "steps": [
+    { "id": "close-stale", "do": "Close cases resolved more than seven days ago with no reply from the customer, and reopen any the customer wrote about again.", "writes": ["support/cases/[id]"] },
+    { "id": "measure", "do": "Count this week's cases per active customer by reason, the share answered within target, and repeat contacts within seven days.", "skill": "support-triage" },
+    { "id": "send-to-product", "do": "Send products the top contact reasons with counts and the cases behind them, as a handoff.", "writes": ["operations/handoff/[id]"], "raises": ["defer-or-route"] },
+    { "id": "propose-removal", "do": "For the top contact reason by volume, propose to the growth lead whether to remove it with a product or policy fix, answer it with published help, or keep handling it.", "raises": ["set-priorities"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "top-reason-decided", "kind": "review", "check": "Does the top contact reason this week have a proposal open or decided, and does every count cite the cases it came from?", "reviewer": "growth-lead" }
+  ]
+}

@@ -3,6 +3,14 @@
   "purpose": "Say who owns and controls the venture and who may decide what: ownership (cap table), founders, boards, investor rights and exits, roles, decision rights, where it publishes and who may publish what (the publication gate), the venture template and its pillars, and escalation to the owner.",
   "skills": [
     {
+      "id": "risk-register",
+      "path": "packages/naive/src/functions/risk-and-compliance/skills/risk-register/SKILL.md"
+    },
+    {
+      "id": "compliance-calendar",
+      "path": "packages/naive/src/functions/risk-and-compliance/skills/compliance-calendar/SKILL.md"
+    },
+    {
       "id": "brand-pillar",
       "path": "packages/naive/src/functions/marketing-and-sales/skills/brand-pillar/SKILL.md"
     },
@@ -37,6 +45,10 @@
     {
       "id": "stakeholder-update",
       "path": "packages/naive/src/functions/external-relationships/skills/stakeholder-update/SKILL.md"
+    },
+    {
+      "id": "fundraise",
+      "path": "packages/naive/src/functions/external-relationships/skills/fundraise/SKILL.md"
     },
     {
       "id": "cofounder-structure",
@@ -80,7 +92,8 @@
     "delegation",
     "publications",
     "detector",
-    "detector-trial"
+    "detector-trial",
+    "function-decisions"
   ],
   "reads": [
     "handoff",

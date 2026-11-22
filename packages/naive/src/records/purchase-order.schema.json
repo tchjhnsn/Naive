@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "purchase-order.schema.json",
+  "title": "Purchase order",
+  "description": "One purchase order to a supplier, at supply-chain/purchase-orders/<id>.json (route supply-chain/purchase-orders/[id]), following APQC PCF 4.2.3 (order materials and services). A cross-border order names one of the eleven Incoterms 2020 rules and its named place, which decide who pays and carries the risk of each leg. The supply-chain function owns it, and only the supply-chain agent (role supply-chain-agent) or a person writes it. A purchase order commits money, so its writes carry decision class spend-money: an agent's write is held as a draft until a person accepts it, and sending it to the supplier is a person's act.",
+  "type": "object",
+  "required": ["id", "supplier", "lines", "currency", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The order's id, the file name without .json, such as po-2026-001" },
+    "supplier": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The supplier by reference: the id of a supplier record (supply-chain/suppliers/<id>.json)" },
+    "lines": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["item", "quantity", "unit_price"],
+        "additionalProperties": false,
+        "properties": {
+          "item": { "type": "string", "minLength": 1, "description": "What is ordered: a SKU, part number or description" },
+          "quantity": { "type": "number", "exclusiveMinimum": 0 },
+          "unit": { "type": "string", "description": "The unit of measure, such as each, kg or carton" },
+          "unit_price": { "type": "number", "minimum": 0, "description": "Price per unit in the order's currency" }
+        }
+      }
+    },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code, such as USD" },
+    "total": { "type": "number", "minimum": 0, "description": "The sum of quantity times unit price over the lines, before freight and duty" },
+    "incoterm": { "enum": ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP", "FAS", "FOB", "CFR", "CIF"], "description": "The Incoterms 2020 rule; required in practice for a cross-border order" },
+    "named_place": { "type": "string", "description": "The place the Incoterms rule names, such as the port or warehouse" },
+    "ordered_on": { "type": ["string", "null"], "format": "date" },
+    "delivery_date": { "type": ["string", "null"], "format": "date", "description": "The date the supplier confirmed for delivery" },
+    "payment_terms": { "type": "string", "description": "Such as 30% deposit, 70% before shipment, or net 30" },
+    "status": { "enum": ["draft", "approved", "sent", "confirmed", "received", "closed", "cancelled"], "description": "draft until a person approves the spend; sent and confirmed follow the supplier; received when goods arrive; closed when paid and matched" },
+    "decision": { "type": "string", "description": "The id of the decision record in which a person approved the spend" },
+    "note": { "type": "string" }
+  }
+}
