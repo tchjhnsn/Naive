@@ -2625,6 +2625,18 @@
       "note": "A lifecycle phase as a module (EE-126): its question, stage gate and exit evidence, the function workflows active in it and the weights that rank decisions across functions. No agent and no records owned; need-now priors are derived from need-now.json and departments.json"
     },
     {
+      "id": "gate-calibration",
+      "layer": "operations",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/gate-calibration.schema.json",
+      "generator": "packages/naive/src/engine/generators/gate-calibration.ts",
+      "paths": [
+        "packages/naive/src/phases/gate-calibration.json"
+      ],
+      "note": "How a venture's phase gate thresholds are derived from its market and industry anatomy cells (EE-157): count levels relative to reachable buyers, rules that raise items or make them fail closed, staleness, the override policy and what confirms a problem. Every rule is an unvalidated prior"
+    },
+    {
       "id": "phase-gate-policies",
       "layer": "operations",
       "function": "strategy",

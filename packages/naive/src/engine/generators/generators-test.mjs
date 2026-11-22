@@ -20,6 +20,7 @@ import * as supportPolicy from "./support-policy.ts";
 import * as supportCase from "./support-case.ts";
 import * as validationPlan from "./validation-plan.ts";
 import * as gatePolicies from "./phase-gate-policies.ts";
+import * as gateCalibration from "./gate-calibration.ts";
 import * as marketAnatomy from "./market-anatomy.ts";
 import * as industryAnatomy from "./industry-anatomy.ts";
 import * as ventureAnatomy from "./venture-anatomy.ts";
@@ -143,6 +144,10 @@ t("phase-gate-policies: strictness ranks lenient below standard below strict", g
 const { decision: _d, ...short } = presets.standard;
 t("phase-gate-policies: a preset missing an item is refused", !gatePolicies.draft({ ...shipped, phases: { discovery: { ...shipped.phases.discovery, presets: { standard: short } } } }).ok);
 t("phase-gate-policies: an item naming an unknown record type is refused", !gatePolicies.draft({ ...shipped, phases: { discovery: { ...shipped.phases.discovery, items: [{ ...shipped.phases.discovery.items[0], record: "nope" }, ...shipped.phases.discovery.items.slice(1)] } } }).ok);
+const shippedCal = JSON.parse(readFileSync(new URL("../../phases/gate-calibration.json", import.meta.url), "utf8"));
+const { version: _calVersion, ...calRest } = shippedCal;
+t("gate-calibration: the shipped rules redraft and pass", gateCalibration.draft(calRest).ok);
+t("gate-calibration: a draft with no rules is refused", !gateCalibration.draft({ ...calRest, rules: [] }).ok);
 
 const mk = marketAnatomy.draft({}, { venture: v });
 t("market-anatomy: an empty draft is the whole sub-matrix, every cell unknown, at markets/primary", mk.ok && mk.route === "markets/primary" && mk.draft.venture === "kettle" && Object.values(mk.draft.cells).length === 11 && Object.values(mk.draft.cells).every((c) => c.status === "unknown"));

@@ -516,6 +516,121 @@
         "is": "adapted",
         "why": "Shapes the risk sub-matrix (EE-157)."
       }
+    },
+    {
+      "id": "porter-1979-five-forces",
+      "title": "How Competitive Forces Shape Strategy",
+      "authors": [
+        "Michael E. Porter"
+      ],
+      "year": 1979,
+      "kind": "article",
+      "summary": "Harvard Business Review: industry structure through five forces, supplier power, buyer power, threat of new entrants, threat of substitutes and rivalry among existing competitors.",
+      "url": "https://hbr.org/1979/03/how-competitive-forces-shape-strategy",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:industry-anatomy"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The industry anatomy matrix rates the five forces low, medium or high (EE-157)."
+      }
+    },
+    {
+      "id": "webster-wind-1972-buying-center",
+      "title": "A General Model for Understanding Organizational Buying Behavior",
+      "authors": [
+        "Frederick E. Webster Jr.",
+        "Yoram Wind"
+      ],
+      "year": 1972,
+      "kind": "paper",
+      "summary": "Journal of Marketing 36(2): organizational purchases are made by a buying center of several roles (users, influencers, buyers, deciders, gatekeepers).",
+      "url": "https://doi.org/10.1177/002224297203600204",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:market-anatomy",
+        "field:buying_roles"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The market cell buying_roles counts the roles in the buying center; three or more means interviews must span roles (EE-157)."
+      }
+    },
+    {
+      "id": "doj-ftc-2023-merger-guidelines",
+      "title": "Merger Guidelines (2023)",
+      "authors": [
+        "U.S. Department of Justice",
+        "Federal Trade Commission"
+      ],
+      "year": 2023,
+      "kind": "standard",
+      "summary": "Issued December 18, 2023. A market with an HHI over 1,800 is highly concentrated (the 2010 Horizontal Merger Guidelines had used 2,500).",
+      "url": "https://www.justice.gov/d9/2023-12/2023%20Merger%20Guidelines.pdf",
+      "checked": "2026-11-22",
+      "informs": [
+        "field:concentration"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The market cell concentration uses the 2023 bands: under 1,000 fragmented, 1,000 to 1,800 moderate, over 1,800 concentrated (EE-157)."
+      }
+    },
+    {
+      "id": "fine-1998-clockspeed",
+      "title": "Clockspeed: Winning Industry Control in the Age of Temporary Advantage",
+      "authors": [
+        "Charles H. Fine"
+      ],
+      "year": 1998,
+      "kind": "book",
+      "summary": "Industries evolve at different clockspeeds, the rate at which products, processes and organizations change; fast-clockspeed industries need shorter planning and evidence horizons.",
+      "informs": [
+        "field:clockspeed"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The industry cell clockspeed; fast clockspeed shortens how long evidence stays fresh, 9 months instead of 18 (EE-157)."
+      }
+    },
+    {
+      "id": "levitt-1965-product-life-cycle",
+      "title": "Exploit the Product Life Cycle",
+      "authors": [
+        "Theodore Levitt"
+      ],
+      "year": 1965,
+      "kind": "article",
+      "summary": "Harvard Business Review: markets and products pass through introduction, growth, maturity and decline, each needing different strategy.",
+      "url": "https://hbr.org/1965/11/exploit-the-product-life-cycle",
+      "checked": "2026-11-22",
+      "informs": [
+        "field:maturity"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The market cell maturity uses emerging, growth, mature and declining (EE-157)."
+      }
+    },
+    {
+      "id": "blank-dorf-2012-startup-owners-manual",
+      "title": "The Startup Owner's Manual",
+      "authors": [
+        "Steve Blank",
+        "Bob Dorf"
+      ],
+      "year": 2012,
+      "kind": "book",
+      "summary": "Customer development step by step, including market sizing as total, served and target market (TAM, SAM, SOM).",
+      "informs": [
+        "field:reachable_buyers",
+        "field:serviceable_market_usd"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "Naive counts the obtainable market as reachable buyers (a head count) as well as dollars, because gate thresholds scale with how many people can be reached (EE-157)."
+      }
     }
   ]
 }

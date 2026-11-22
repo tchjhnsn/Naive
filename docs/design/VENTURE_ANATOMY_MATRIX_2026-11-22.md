@@ -52,7 +52,7 @@ The confidence share is known plus estimated cells over all cells.
 | switching_cost | low, medium or high | Porter 1980 |
 | network_effects | none, indirect or direct | |
 | maturity | emerging, growth, mature or declining | the market life cycle |
-| concentration | fragmented, moderate or concentrated | HHI bands: under 1500, 1500 to 2500, over 2500 (2010 Horizontal Merger Guidelines) |
+| concentration | fragmented, moderate or concentrated | HHI bands: under 1000, 1000 to 1800, over 1800 (2023 Merger Guidelines, which lowered the 2010 line of 2500 back to 1800) |
 
 ### The industry dimensions
 
@@ -177,13 +177,12 @@ Registered in `packages/naive/src/records/layers/purpose/references/references.j
 - gartner-2017-digital-twin-organization: Gartner, Digital twin of an organization. https://www.gartner.com/en/documents/8166629
 - blank-2005-four-steps: Steve Blank, The Four Steps to the Epiphany. https://steveblank.com/2009/09/17/the-path-of-warriors-and-winners/
 
-Cited by the market and industry schemas and not yet registered as references:
-
-- Michael E. Porter, How Competitive Forces Shape Strategy, Harvard Business Review, 1979. https://hbr.org/1979/03/how-competitive-forces-shape-strategy
-- Frederick E. Webster and Yoram Wind, A General Model for Understanding Organizational Buying Behavior, Journal of Marketing 36(2), 1972. https://doi.org/10.1177/002224297203600204
-- U.S. Department of Justice and Federal Trade Commission, Horizontal Merger Guidelines, 2010 (the HHI bands). https://www.justice.gov/atr/horizontal-merger-guidelines-08192010
-- Charles H. Fine, Clockspeed: Winning Industry Control in the Age of Temporary Advantage, Perseus Books, 1998. No URL recorded.
-- The market life cycle (emerging, growth, mature, declining). No single source recorded.
+- porter-1979-five-forces: Michael E. Porter, How Competitive Forces Shape Strategy, Harvard Business Review, 1979. https://hbr.org/1979/03/how-competitive-forces-shape-strategy
+- webster-wind-1972-buying-center: Frederick E. Webster and Yoram Wind, A General Model for Understanding Organizational Buying Behavior, Journal of Marketing 36(2), 1972. https://doi.org/10.1177/002224297203600204
+- doj-ftc-2023-merger-guidelines: U.S. Department of Justice and Federal Trade Commission, Merger Guidelines, 2023 (the HHI bands; the 2010 guidelines used 2,500 for highly concentrated). https://www.justice.gov/d9/2023-12/2023%20Merger%20Guidelines.pdf
+- fine-1998-clockspeed: Charles H. Fine, Clockspeed: Winning Industry Control in the Age of Temporary Advantage, 1998. No URL recorded.
+- levitt-1965-product-life-cycle: Theodore Levitt, Exploit the Product Life Cycle, Harvard Business Review, 1965. https://hbr.org/1965/11/exploit-the-product-life-cycle
+- blank-dorf-2012-startup-owners-manual: Steve Blank and Bob Dorf, The Startup Owner's Manual, 2012 (TAM, SAM, SOM). No URL recorded.
 
 ## Not built
 
@@ -192,5 +191,4 @@ Cited by the market and industry schemas and not yet registered as references:
 - The visualization suite in the Venture Studio.
 - Record types for the parts no sub-matrix has yet: financial statements under Regulation S-X (the budget and spend register stand in for them), key partners for the Business Model Canvas, and Item 402 executive compensation.
 - A system time for records written outside the router: init writes the primary market and industry directly, so they read as absent as of any time until `mentura baseline` adopts them.
-- Registering the five sources above that the schemas cite but references.json does not hold.
 - The ontology nouns the references name (venture-anatomy, viewpoint, time-travel, business-model-canvas, s1-outline, anatomy-cell). The ontology's `view` means a route rendered as a page, not a 42010 view.
