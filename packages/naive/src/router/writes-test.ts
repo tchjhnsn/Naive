@@ -14,6 +14,44 @@ import type { CallArgs } from "./router.ts";
 
 /** A row of a router answer, read field by field. */
 type Row = Record<string, unknown>;
+/** What a record's metadata holds (O-1, O-2, O-3), as far as these tests read it. */
+type Metadata = {
+  venture?: { id: string; phase: string }; record: { type: string; route: string }; id?: string; created?: string; updated?: string; by?: { kind: string };
+  writes: number; from?: string; note: string; frontmatter?: { title?: string; tags: string[] }; items: Record<string, { id: string; by: { kind: string } }>;
+  derived?: { function?: string; owner?: string; by?: string; state?: string; counts?: Record<string, number>; count?: number };
+};
+/** One level of the read hierarchy (P-28). */
+type Level = { level: string; caught?: boolean; holds?: { chain?: string[]; need_now?: { status: string } } };
+/** The fields a router answer carries beside its result, as far as these tests read them. */
+type Extras = {
+  params?: { id?: string }; filtered?: { matched: number; of: number }; filtered_out?: unknown; metadata?: Metadata; hierarchy?: Level[]; resolved_by?: string;
+  errors?: Record<string, { error?: string }>; fix?: { schema?: string; template?: string; skills: unknown[] }; pending_drafts?: unknown[]; source?: { address?: string };
+  global_error?: { scope: string; problem: string; recovery: string[]; template?: { id: string; layers: unknown } };
+};
+/** A router answer whose result has the shape T the route gives. The test names T at each call; the router types result as unknown. */
+type Reply<T> = { ok: boolean; error?: string; result: T } & Extras;
+/** What a write answers (M-3, M-17). */
+type Written = {
+  changed?: { record?: { from: string; to: string; package: string }; packages?: { package: string; progress: { from: number; to: number } }[]; moves_now?: Row[]; need_now?: Row[] };
+  next?: { route: string; action: string; command: string; who?: string }; draft?: boolean;
+};
+/** A package's own route (L-6, P-37). */
+type PackageRead = { package: string; kind?: string; records: Row[]; progress: number; moves_now: string[]; waits: unknown; loading: { drafts: { route: string; accept: string }[] } | null };
+/** One route a layout lists with its actions (M-9). */
+type ActionRow = { route: string; actions?: string[]; available: string[]; write?: { lands: string | null; why: string } };
+/** A layout (L-9, P-36, M-9). */
+type Layout = {
+  params?: { id?: string }; instructions: Record<string, string>; chain: { path: string }[]; group?: { group: string; packages: string[]; context?: string };
+  actions?: { folder: string; routes: ActionRow[] };
+};
+/** A list read: its items by id. */
+type Items = Record<string, Row>;
+/** One package as the overview's @packages slot shows it (P-17). */
+type PackageSlot = { package: string; default?: boolean; shows: string; start: string; state?: unknown };
+/** The overview (P-17). */
+type Overview = { slots: { slot: string; data: PackageSlot[] }[] };
+/** The venture route's manifest (P-3). */
+type VentureRead = { packages: { declared: boolean; list: Row[] }; kits: { extends: string }[]; functions: { function: string; owner?: string }[] };
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -32,51 +70,51 @@ const other = init("other");
 const { call, ventures } = await import("./router.ts");
 const { structure, manifest, checkManifest, routable } = await import("../engine/structure.ts");
 const { boundaries, recover, ventureHealth, frameworkHealth } = await import("./boundaries.ts");
-const c = (route: string, action: string, extra: Partial<CallArgs> = {}) => call({ venture: "acme", route, action, workspace: ws, ...extra });
+const c = async <T = Items>(route: string, action: string, extra: Partial<CallArgs> = {}) => (await call({ venture: "acme", route, action, workspace: ws, ...extra })) as Reply<T>;
 
 // M-3 and M-17: a write answers with what it changed and the next route.
 const problem = { venture: "acme", statement: "Solo physios lose their evenings to booking calls", segment: "solo physiotherapy clinics", evidence: [] };
-const w1 = await c("foundation/problem", "write", { input: problem, actor: "person" });
+const w1 = await c<Written>("foundation/problem", "write", { input: problem, actor: "person" });
 const ch = w1.result?.changed;
 expect("M-3: a write answers with the record's state before and after", ch?.record?.from === "missing" && ch?.record?.to === "confirmed" && ch?.record?.package === "foundation", ch);
 expect("M-3: it names each package whose progress moved", ch?.packages?.some((p: { package: string; progress: { from: number; to: number } }) => p.package === "foundation" && p.progress.to > p.progress.from), ch?.packages);
 expect("M-3: it names the records that move now because of it", ch?.moves_now?.some((m: Row) => m.record === "validation-solution" && m.route === "validation/solution"), ch?.moves_now);
 // naive#71: a record that names another venture is refused, and nothing is written.
-const wrongVenture = await call({ venture: "other", route: "foundation/problem", action: "write", workspace: ws, input: problem, actor: "person" });
+const wrongVenture = await c<Written>("foundation/problem", "write", { venture: "other", input: problem, actor: "person" });
 expect("a record whose venture field names another venture is refused", !wrongVenture.ok && /names venture acme, but it is being written to other/.test(wrongVenture.error ?? ""), wrongVenture);
 expect("M-3: it names the need-now rows it settled", ch?.need_now?.some((n: Row) => n.record === "validation-problem" && n.from === "suggest now" && n.to === "held"), ch?.need_now);
 expect("M-17: a write answers with the next route: the next required record in its package", w1.result?.next?.route === "foundation/icp/[id]" && w1.result.next.action === "write" && /mentura foundation\/icp\/<id> write --venture acme/.test(w1.result.next.command), w1.result?.next);
-const w2 = await c("validation/solution", "write", { input: { venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] } });
+const w2 = await c<Written>("validation/solution", "write", { input: { venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] } });
 expect("M-17: after an agent's write, the next step is a person reviewing it", w2.result?.next?.action === "review" && w2.result.next.route === "validation/solution" && w2.result.next.who === "a person", w2.result?.next);
-const w3 = await c("foundation/problem", "write", { input: { ...problem, statement: "Physios lose evenings" } });
+const w3 = await c<Written>("foundation/problem", "write", { input: { ...problem, statement: "Physios lose evenings" } });
 expect("M-17: after a write held as a draft, the next route is accepting it", w3.result?.draft === true && w3.result.next?.action === "accept" && w3.result.next.command === "mentura accept foundation/problem --venture acme", w3.result?.next);
 const cliW = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "validation/solution", "write", "--venture", "acme", "--input", "-", "--as", "person"], { encoding: "utf8", env, input: JSON.stringify({ venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] }) });
 const cliOut = JSON.parse(cliW.stdout || "{}");
 expect("M-3 and M-17 through the CLI: the answer carries changed and next", cliW.status === 0 && cliOut.changed?.record?.to === "confirmed" && cliOut.next?.route, cliW.stderr || cliOut);
 
 // P-37 and L-6: a package's own route.
-const fnd = await c("foundation", "read");
+const fnd = await c<PackageRead>("foundation", "read");
 expect("L-6: a package's route returns its records and their state", fnd.ok && fnd.result.package === "foundation" && fnd.result.records.some((r: Row) => r.route === "foundation/problem" && r.status === "draft") && typeof fnd.result.progress === "number", fnd);
 expect("L-6: it says what moves now and what waits", fnd.result?.moves_now?.includes("foundation/icp/[id]") && Array.isArray(fnd.result.waits), fnd.result);
 expect("P-37: a package's pending state lists its drafts and how to accept them", fnd.result?.loading?.drafts?.[0]?.route === "foundation/problem" && fnd.result.loading.drafts[0].accept === "mentura accept foundation/problem --venture acme" && fnd.pending_drafts?.length === 1, fnd.result?.loading);
-const val = await c("validation", "read");
+const val = await c<PackageRead>("validation", "read");
 expect("P-37: a package with no drafts has no pending state", val.ok && val.result.loading === null, val.result?.loading);
-const prod = await c("packages/product", "read");
+const prod = await c<PackageRead>("packages/product", "read");
 expect("L-6: packages/<name> reaches a package whose name is also a record route", prod.ok && prod.result.package === "product" && prod.result.kind === "core", prod);
-const view = await c("validation", "view");
+const view = await c<string>("validation", "view");
 expect("L-6: a package's view is a Markdown page", view.ok && /^# Validation\n/.test(view.result) && /\| validation\/solution \|/.test(view.result), view.result);
 expect("L-6: a package route refuses an action it does not have", (await c("validation", "write", { input: {} })).ok === false);
 
 // L-9 and L-10: params and filters.
 await c("customers/ada", "write", { input: { id: "ada", name: "Ada", status: "active", segment: "clinic" }, actor: "person" });
 await c("customers/bo", "write", { input: { id: "bo", name: "Bo", status: "lapsed", segment: "gym" }, actor: "person" });
-const ada = await c("customers/ada", "read");
+const ada = await c<Row>("customers/ada", "read");
 expect("L-9: a read of an item carries its params", ada.ok && ada.params?.id === "ada" && ada.result.name === "Ada", ada);
 put(acme, "customers/AGENTS.md", "# Customers\n\ncustomer: [id]\n");
 put(acme, "accounts/ada/AGENTS.md", "# Ada's account\n\naccount_note: keep it short\n");
-const lay = await c("customers/ada", "layout");
+const lay = await c<Layout>("customers/ada", "layout");
 expect("L-9: an item's params reach every layout below it: [id] in an instruction becomes the id", lay.ok && lay.result.params?.id === "ada" && lay.result.instructions.customer === "ada", lay.result?.instructions);
-const acct = await c("purpose/account/ada", "layout");
+const acct = await c<Layout>("purpose/account/ada", "layout");
 expect("L-9: the item's own folder AGENTS.md joins its layout chain", acct.ok && acct.result.chain.map((x: Row) => x.path).includes("accounts/ada/AGENTS.md") && acct.result.instructions.account_note === "keep it short", acct.result?.chain?.map((x: Row) => x.path));
 const active = await c("customers", "read", { input: { where: { status: "active" } } });
 expect("L-10: where filters a list by a field", active.ok && Object.keys(active.result).join() === "ada" && active.filtered?.matched === 1 && active.filtered.of === 2, active);
@@ -84,7 +122,7 @@ const bySeg = await c("customers", "read", { input: { where: { segment: ["gym", 
 expect("L-10: a filter value may be a list of values", Object.keys(bySeg.result ?? {}).join() === "bo", bySeg.result);
 const byState = await c("customers", "read", { input: { where: { state: "confirmed" } } });
 expect("L-10: where can filter by a derived field (state)", Object.keys(byState.result ?? {}).sort().join() === "ada,bo", byState.result);
-const miss = await c("customers/ada", "read", { input: { where: { status: "lapsed" } } });
+const miss = await c<Row | null>("customers/ada", "read", { input: { where: { status: "lapsed" } } });
 expect("L-10: a single record that does not match comes back null with filtered_out", miss.ok && miss.result === null && miss.filtered_out, miss);
 const cliWhere = cli("customers", "read", "--venture", "acme", "--where", "status=lapsed");
 expect("L-10: the CLI's --where filters a read", cliWhere.status === 0 && Object.keys(JSON.parse(cliWhere.stdout)).join() === "bo", cliWhere.stdout + cliWhere.stderr);
@@ -92,7 +130,7 @@ const cliAny = cli("customers", "read", "--venture", "acme", "--where", "status=
 expect("L-10: a CLI filter value lists alternatives with |", cliAny.status === 0 && Object.keys(JSON.parse(cliAny.stdout)).join() === "bo", cliAny.stdout + cliAny.stderr);
 
 // O-1, O-2, O-3: metadata.
-const pr = await c("validation/solution", "read");
+const pr = await c<Row>("validation/solution", "read");
 const md = pr.metadata;
 expect("O-1: a read's metadata carries the venture's identity and the record's type", md?.venture?.id === "acme" && md.venture.phase === "discovery" && md.record.type === "validation-solution" && md.record.route === "validation/solution", md);
 expect("O-2: derived fields come from code: function, owner, state, counts", md?.derived?.function === "strategy" && md.derived.owner === "the founder" && md.derived.by === "code" && md.derived.state === "confirmed" && md.derived.counts?.alternatives === 1, md?.derived);
@@ -100,14 +138,14 @@ expect("O-3: every record gets id, created, updated and who wrote it last", md?.
 const list = await c("customers", "read");
 expect("O-2 and O-3: a list's metadata counts its items and gives each one its fields", list.metadata?.derived?.count === 2 && list.metadata.items.ada.id === "ada" && list.metadata.items.ada.by.kind === "person", list.metadata);
 put(acme, "ideas/map.mdx", "---\ntitle: Acme's ideas\ntags: [ideas, acme]\n---\n\n## Ideas\n");
-const map = await c("ideas/map", "read");
+const map = await c<string>("ideas/map", "read");
 expect("O-1: a Markdown record's frontmatter is its metadata", map.metadata?.frontmatter?.title === "Acme's ideas" && map.metadata.frontmatter.tags.join() === "ideas,acme", map.metadata);
 expect("O-3: a file written outside the router says so and how to adopt it", map.metadata?.from === "file" && /baseline/.test(map.metadata.note), map.metadata);
 
 // P-28: the hierarchy.
-const h1 = await c("foundation/icp", "read", { input: { hierarchy: true } });
+const h1 = await c<Row | null>("foundation/icp", "read", { input: { hierarchy: true } });
 expect("P-28: a read lists its levels in order: layout, template, error, loading, not-found, page", h1.hierarchy?.map((l: Row) => l.level).join() === "layout,template,error,loading,not-found,page", h1.hierarchy);
-expect("P-28: a missing record resolves at not-found", h1.resolved_by === "not-found" && h1.hierarchy.find((l: Row) => l.level === "not-found").caught, h1.resolved_by);
+expect("P-28: a missing record resolves at not-found", h1.resolved_by === "not-found" && h1.hierarchy?.find((l) => l.level === "not-found")?.caught, h1.resolved_by);
 expect("P-28: the layout and template levels hold the context and the fresh context", h1.hierarchy?.[0].holds?.chain?.[0] === "AGENTS.md" && h1.hierarchy[1].holds?.need_now?.status, h1.hierarchy?.slice(0, 2));
 expect("P-28: a record with a draft waiting resolves at loading", (await c("foundation/problem", "read")).resolved_by === "loading");
 expect("P-28: a record that is there resolves at page", (await c("validation/solution", "read")).resolved_by === "page");
@@ -119,8 +157,8 @@ put(acme, "customers/cy.json", "{ \"id\": \"cy\", ");
 const contained = await c("customers", "read");
 expect("E-6: one bad record does not fail its list: the others come back", contained.ok && Object.keys(contained.result).sort().join() === "ada,bo", contained);
 expect("E-6: the bad record is named with why", /customers\/cy\.json does not parse/.test(contained.errors?.cy?.error ?? ""), contained.errors);
-const bad = await c("customers/cy", "read");
-expect("E-6: reading the bad record alone is that record's error, not a crash", bad.ok === false && /does not parse/.test(bad.error) && bad.fix?.schema && bad.resolved_by === "error", bad);
+const bad = await c<Row | null>("customers/cy", "read");
+expect("E-6: reading the bad record alone is that record's error, not a crash", bad.ok === false && /does not parse/.test(bad.error ?? "") && bad.fix?.schema && bad.resolved_by === "error", bad);
 const cliBad = cli("customers", "read", "--venture", "acme");
 expect("E-6: the CLI shows the contained error beside the good records", cliBad.status === 0 && JSON.parse(cliBad.stdout).errors?.cy, cliBad.stdout + cliBad.stderr);
 rmSync(join(acme, "customers/cy.json"));
@@ -135,8 +173,8 @@ const priv = await c("customers", "read");
 expect("P-22: a file under a private folder or with a private name is never routed", priv.ok && Object.keys(priv.result).sort().join() === "ada,bo", Object.keys(priv.result ?? {}));
 const streams = await c("purpose/data-stream", "read");
 expect("P-22: a private folder the data model names (_streams) is still routed", streams.ok && streams.result && Object.keys(streams.result).includes("visits"), streams);
-const content = await c("marketing/content", "read");
-expect("P-22: a ** route never descends into a private folder", content.ok && /Hi/.test(content.result) && !/Not yet/.test(content.result) && /home\.mdx$/.test(content.source?.address), content);
+const content = await c<string>("marketing/content", "read");
+expect("P-22: a ** route never descends into a private folder", content.ok && /Hi/.test(content.result) && !/Not yet/.test(content.result) && /home\.mdx$/.test(content.source?.address ?? ""), content);
 expect("P-22: routable() needs each private segment named in the pattern", routable("customers/_streams/v/stream.json", "customers/_streams/*/stream.json") && !routable("customers/_old.json", "customers/*.json"));
 const st = structure(acme);
 expect("P-22: the structure check lists the private folders and what each holds", st.errors.length === 0 && st.private.some((p) => p.folder === "_drafts/") && st.private.some((p) => p.folder === "customers/_notes/" && /notes/.test(p.holds)), st);
@@ -155,15 +193,15 @@ rmSync(join(acme, "marketing/layout.md")); rmSync(join(acme, "marketing/_streams
 
 // P-36: route groups.
 put(acme, "(go-to-market)/AGENTS.md", "# Go to market\n\naudience: clinic owners\n");
-const gl = await c("marketing/sitemap", "layout");
+const gl = await c<Layout>("marketing/sitemap", "layout");
 expect("P-36: a package in a group gets the group's layout", gl.ok && gl.result.group?.group === "(go-to-market)" && gl.result.group.packages.includes("relationships"), gl.result?.group);
 expect("P-36: the group's AGENTS.md sits after the venture root's in the chain", gl.result?.chain?.map((x: Row) => x.path).slice(0, 2).join() === "AGENTS.md,(go-to-market)/AGENTS.md" && gl.result.instructions.audience === "clinic owners", gl.result?.chain?.map((x: Row) => x.path));
-const fl = await c("foundation/problem", "layout");
+const fl = await c<Layout>("foundation/problem", "layout");
 expect("P-36: the group layout is opt-in: a package outside it does not get it", fl.ok && !fl.result.group && !fl.result.chain.some((x: { path: string }) => x.path.startsWith("(")), fl.result?.group);
 put(acme, "naive.config.json", { groups: { strategy: { packages: ["foundation", "validation"], context: "The problem and the proof travel together." } } });
-const fl2 = await c("foundation/problem", "layout");
+const fl2 = await c<Layout>("foundation/problem", "layout");
 expect("P-36: a venture adds a group in naive.config.json", fl2.result?.group?.group === "(strategy)" && fl2.result.group.context === "The problem and the proof travel together.", fl2.result?.group);
-const gr = await c("(go-to-market)", "read");
+const gr = await c<{ packages: Row[] }>("(go-to-market)", "read");
 expect("P-36: a group's route reads its packages' states", gr.ok && gr.result.packages.map((p: Row) => p.package).join() === "marketing,relationships,customers", gr.result);
 expect("P-36: a group folder holding only its AGENTS.md passes the structure check", structure(acme).errors.length === 0, structure(acme).errors);
 put(acme, "(go-to-market)/plan.json", {});
@@ -171,31 +209,31 @@ expect("P-36: a group folder holding records fails the structure check", structu
 rmSync(join(acme, "(go-to-market)/plan.json"));
 
 // M-9: a layout lists the actions available in its folder.
-const al = await c("validation/solution", "layout");
+const al = await c<Layout>("validation/solution", "layout");
 const pricing = al.result?.actions?.routes?.find((x: Row) => x.route === "validation/pricing");
 expect("M-9: a layout lists the routes in its folder with their actions", al.result?.actions?.folder === "validation" && al.result.actions.routes.length >= 5 && pricing?.actions?.includes("write"), al.result?.actions);
 expect("M-9: it says whether an agent's write lands as the record", pricing?.write?.lands === "record" && pricing.available.includes("write"), pricing);
-const fa = await c("foundation/problem", "layout");
+const fa = await c<Layout>("foundation/problem", "layout");
 expect("M-9: a gated record's write lands as a draft for an agent, with why", fa.result?.actions?.routes?.find((x: Row) => x.route === "foundation/problem")?.write?.lands === "draft", fa.result?.actions?.routes);
-const fp = await c("foundation/problem", "layout", { actor: "person" });
+const fp = await c<Layout>("foundation/problem", "layout", { actor: "person" });
 expect("M-9: for a person the same write lands as the record", fp.result?.actions?.routes?.find((x: Row) => x.route === "foundation/problem")?.write?.lands === "record");
 put(acme, "validation/decisions/pricing.decision.json", { id: "pricing-model", question: "Do we charge per clinic or per seat?", layer: "purpose", boundary: "fail-open", needed_in: "discovery", status: "open", unlocks: [{ activity: "Write the pricing record", routes: ["validation/pricing"] }] });
-const locked = (await c("validation/solution", "layout")).result.actions.routes.find((x: Row) => x.route === "validation/pricing");
-expect("M-9: a route a decision keeps locked offers no write, and names the decision", locked.write?.lands === null && /pricing-model/.test(locked.write.why) && !locked.available.includes("write"), locked);
+const locked = (await c<Layout>("validation/solution", "layout")).result.actions?.routes.find((x: Row) => x.route === "validation/pricing");
+expect("M-9: a route a decision keeps locked offers no write, and names the decision", locked?.write?.lands === null && /pricing-model/.test(locked.write.why) && !locked.available.includes("write"), locked);
 put(acme, "people/team-plan.json", { roles: [{ id: "scribe", occupant: "agent", status: "filled", routes: { read: ["**"], write: ["foundation/**"] } }] });
-const robot = (await c("validation/solution", "layout", { actor_id: "scribe" })).result.actions.routes.find((x: Row) => x.route === "validation/solution");
-expect("M-9: a role the team plan keeps out of a route is told so", robot.write?.lands === null && /team plan/.test(robot.write.why), robot);
+const robot = (await c<Layout>("validation/solution", "layout", { actor_id: "scribe" })).result.actions?.routes.find((x: Row) => x.route === "validation/solution");
+expect("M-9: a role the team plan keeps out of a route is told so", robot?.write?.lands === null && /team plan/.test(robot.write.why), robot);
 rmSync(join(acme, "people/team-plan.json")); rmSync(join(acme, "validation/decisions"), { recursive: true });
 
 // P-17: the overview's default for a package with nothing in it.
-const ov = await c("system/overview", "run");
+const ov = await c<Overview>("system/overview", "run");
 const slot = ov.result?.slots?.find((s: Row) => s.slot === "@packages")?.data;
 expect("P-17: the overview has a @packages slot", Array.isArray(slot), ov.result?.slots?.map((s: Row) => s.slot));
 const empty = slot?.find((p: Row) => p.package === "product");
 expect("P-17: a package with nothing in it shows its default: what to write first", empty?.default === true && /nothing written yet/.test(empty.shows) && empty.start === "mentura product/<id> write --venture acme --input <file>" , empty);
-const fresh = (await call({ venture: "other", route: "system/overview", action: "run", workspace: ws })).result.slots.find((s: Row) => s.slot === "@packages").data.find((p: Row) => p.package === "validation");
+const fresh = (await c<Overview>("system/overview", "run", { venture: "other" })).result.slots.find((s) => s.slot === "@packages")?.data.find((p) => p.package === "validation");
 expect("P-17: the default starts from the template when the route has one", fresh?.default && fresh.start === "mentura validation/solution template, then mentura validation/solution write --venture other --input <file>", fresh);
-expect("P-17: a package with records shows its state instead", slot?.find((p: Row) => p.package === "foundation")?.default === undefined && slot.find((p: Row) => p.package === "foundation").state, slot);
+expect("P-17: a package with records shows its state instead", slot?.find((p: Row) => p.package === "foundation")?.default === undefined && slot?.find((p) => p.package === "foundation")?.state, slot);
 
 // P-3: venture.json declares packages, kits and function owners.
 const m0 = await manifest(acme);
@@ -205,8 +243,8 @@ const vj = JSON.parse(readFileSync(join(acme, "venture.json"), "utf8"));
 writeFileSync(join(acme, "venture.json"), JSON.stringify({ ...vj, packages: ["foundation", "validation", "customers"], kits: [{ id: "interviews", extends: "validation" }], functions: { strategy: { owner: "Torian" } } }, null, 2));
 const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", "venture.schema.json", "--file", join(acme, "venture.json")], { encoding: "utf8" });
 expect("P-3: venture.json with packages, kits and functions matches its schema", valid.status === 0, valid.stdout + valid.stderr);
-const m1 = (await c("venture", "read")).result;
-expect("P-3: the venture route reads the manifest: declared packages, kits and owners", m1?.packages?.declared && m1.packages.list.map((p: Row) => p.name).join() === "foundation,validation,customers" && m1.kits[0].extends === "validation" && m1.functions.find((f: Row) => f.function === "strategy").owner === "Torian", m1);
+const m1 = (await c<VentureRead>("venture", "read")).result;
+expect("P-3: the venture route reads the manifest: declared packages, kits and owners", m1?.packages?.declared && m1.packages.list.map((p: Row) => p.name).join() === "foundation,validation,customers" && m1.kits[0].extends === "validation" && m1.functions.find((f) => f.function === "strategy")?.owner === "Torian", m1);
 expect("P-3: a declared owner reaches a record's derived metadata", (await c("validation/solution", "read")).metadata?.derived?.owner === "Torian");
 writeFileSync(join(acme, "venture.json"), JSON.stringify({ ...vj, packages: ["foundation", "nope"], kits: [{ id: "x", extends: "marketing" }], functions: { strategy: {}, dancing: { owner: "me" } } }, null, 2));
 const errs = checkManifest(acme);
@@ -219,7 +257,7 @@ const b = await boundaries(acme);
 const vb = b.packages.find((p) => p.package === "validation"), fb = b.packages.find((p) => p.package === "foundation");
 expect("E-5: a failing record in one package is contained there", !b.ok && b.reached === "package" && b.contained?.includes("validation") && vb?.records?.some((r) => r.file === "validation/solution.json" && !r.ok && r.fix?.schema), b);
 expect("E-5: the other packages proceed", b.venture.ok && fb?.ok && b.proceeds.includes("foundation"), { venture: b.venture, foundation: fb });
-const pc = await c("validation", "check");
+const pc = await c<{ package: string; records: Row[] }>("validation", "check");
 expect("E-5: a package's own check runs its boundary", pc.ok === false && pc.result.package === "validation" && pc.result.records.some((r: Row) => !r.ok), pc);
 expect("E-5: a sound package's check passes", (await c("foundation", "check")).ok === true);
 put(acme, "marketing/_drafts/x.draft", "{}");
@@ -234,8 +272,8 @@ writeFileSync(join(acme, "validation/solution.json"), JSON.stringify({ venture: 
 writeFileSync(join(other, "venture.json"), "{ \"id\": \"other\", \"name\": ");
 expect("E-8: one broken venture.json does not stop the router finding the others", (await c("validation/solution", "read")).ok);
 expect("E-8: ventures lists the broken one as broken", ventures(ws).find((v: Row) => v.id === "other")?.broken === true);
-const ge = await call({ venture: "other", route: "foundation/problem", action: "read", workspace: ws });
-expect("E-8: a broken venture.json answers with what is wrong and the recovery steps", !ge.ok && ge.global_error?.scope === "venture" && /does not parse/.test(ge.global_error.problem) && /line 1/.test(ge.global_error.problem) && /Recovery:/.test(ge.error) && ge.global_error.recovery.some((s: string) => /boundaries\.ts recover/.test(s)), ge);
+const ge = await c<Row | null>("foundation/problem", "read", { venture: "other" });
+expect("E-8: a broken venture.json answers with what is wrong and the recovery steps", !ge.ok && ge.global_error?.scope === "venture" && /does not parse/.test(ge.global_error.problem) && /line 1/.test(ge.global_error.problem) && /Recovery:/.test(ge.error ?? "") && ge.global_error.recovery.some((s: string) => /boundaries\.ts recover/.test(s)), ge);
 expect("P-15: the global error carries a minimal venture.json to start from", ge.global_error?.template?.id === "other" && ge.global_error.template.layers, ge.global_error?.template);
 const cge = cli("foundation/problem", "read", "--venture", "other");
 expect("E-8: the CLI prints the recovery steps and exits 1", cge.status === 1 && /Recovery:/.test(cge.stderr) && !/at .*\.(?:mjs|ts):\d+/.test(cge.stderr), cge.stderr);
@@ -257,7 +295,7 @@ writeFileSync(recordsIn(copy).dataModelFile(), readFileSync(dataModelFile(), "ut
 const fw = spawnSync("node", [join(copy, "packages/naive/src/interfaces/cli/mentura.ts"), "foundation/problem", "read", "--venture", "acme"], { encoding: "utf8", env });
 expect("E-8: a broken data model answers with recovery steps, not a stack trace", fw.status === 1 && /the framework is broken: packages\/naive\/src\/records\/data-model\.json/.test(fw.stderr) && /Recovery:/.test(fw.stderr) && /check-data-model/.test(fw.stderr), fw.stderr.slice(0, 400));
 rmSync(copy, { recursive: true, force: true });
-const fix = await c("foundation/problem", "write", { input: { statement: 5 }, actor: "person" });
+const fix = await c<Written>("foundation/problem", "write", { input: { statement: 5 }, actor: "person" });
 expect("P-15: a write that fails answers with the package's skill and template", !fix.ok && fix.fix?.template && fix.fix.skills.length, fix.fix);
 
 rmSync(ws, { recursive: true, force: true });

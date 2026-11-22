@@ -27,7 +27,7 @@ import type { RouteEntry } from "../router.ts";
 import type { DecisionRecord, KnowledgeSources, Venture } from "../../records/types/records.d.ts";
 
 /** One record the agent proposed, and what became of it. */
-type PlanItem = { id: string; from: string[]; route: string; record: unknown; reshaping: string; confidence: number; status: string; why?: string; at?: string };
+type PlanItem = { id: string; from: string[]; route: string; record: unknown; reshaping: string; confidence: number; status: string; why?: string; at?: string | boolean };
 type Left = { from: string; why: string };
 /** The migrate plan in .release/migrate-plan.json. It is not a record type, so its shape is written here. */
 export type MigratePlan = { from: string; venture: string; at: string; items: PlanItem[]; left_behind: Left[] };
@@ -165,9 +165,11 @@ export async function apply(dir: string) {
     const r = await call({ workspace: dirname(dir), venture: basename(dir), route: it.route, action: "write", input: it.record, actor: "agent", actor_id: "naive-migrate", via: "migrate",
       provenance: { note: `migrated from ${it.from.map((f) => join(p.from, f)).join(", ")}: ${it.reshaping}`, decision: d.id, derived_from: it.from.map((f) => `file://${join(p.from, f)}`) } });
     if (!r.ok) { it.status = "failed"; it.why = r.error; done.failed++; continue; }
-    const landed = r.result?.draft ? "drafted" : "brought";
+    // A record write answers what it wrote and whether it is a draft (packages/naive/src/router/router.ts).
+    const res = r.result as { written?: string; draft?: boolean } | undefined;
+    const landed = res?.draft ? "drafted" : "brought";
     it.status = landed;
-    it.at = r.result?.draft ?? r.result?.written;
+    it.at = res?.draft ?? res?.written;
     done[landed]++;
   }
   if (pointed) {

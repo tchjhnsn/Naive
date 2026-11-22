@@ -27,7 +27,8 @@ import { kit } from "../../engine/kits.ts";
 import { CONFIG, readConfig, writeConfig } from "../../engine/naive-config.ts";
 import { packages } from "../../engine/packages.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
-import type { NaiveConfig, ProvenanceEntry, Trigger, Venture } from "../../records/types/records.d.ts";
+import type { NaiveConfig, Trigger, Venture } from "../../records/types/records.d.ts";
+import type { Entry } from "../../core/provenance.ts";
 
 /**
  * The config as triggers read it. triggers_off is read and written here but naive-config.schema.json
@@ -73,7 +74,7 @@ export function triggersOf(dir: string): { triggers: Live[]; problems: string[] 
 }
 
 /** Whether a provenance entry starts a trigger. */
-export function matches(t: Trigger, e: ProvenanceEntry) {
+export function matches(t: Trigger, e: Entry) {
   const on: Trigger["on"] = t.on ?? {};
   const acts: string[] | null = on.activity ? [on.activity].flat() : null;
   if (acts && !acts.includes(e.activity)) return false;
@@ -98,7 +99,7 @@ function readState(dir: string): State {
 }
 const saveState = (dir: string, s: State) => { mkdirSync(join(dir, ".naive"), { recursive: true }); writeFileSync(ventureFile(dir, STATE), JSON.stringify(s, null, 2) + "\n"); };
 
-const complete = (dir: string, name: string | undefined): boolean => { try { return packages(dir).complete.includes(name); } catch { return false; } };
+const complete = (dir: string, name: string | undefined): boolean => { try { return name !== undefined && packages(dir).complete.includes(name); } catch { return false; } };
 const brief = (x: unknown) => (x == null ? null : typeof x === "string" ? x.slice(0, 300) : JSON.stringify(x).slice(0, 300));
 
 // E-7: a failed run becomes a decision the founder owes. It fails open: the rest of the venture goes on.
@@ -112,7 +113,7 @@ function raise(dir: string, run: Run) {
   return r.ok ? id : null;
 }
 
-async function runOne(dir: string, t: Live, e: ProvenanceEntry | undefined, state: State, extra: Partial<Run> = {}): Promise<Run> {
+async function runOne(dir: string, t: Live, e: Entry | undefined, state: State, extra: Partial<Run> = {}): Promise<Run> {
   const v = load(join(dir, "venture.json")) as Venture;
   const run: Run = ({ n: state.runs.length + 1, trigger: t.id, from: t.from, event: e?.hash ?? null, entity: e?.entity ?? null, activity: e?.activity ?? null, at: now(), ...extra });
   try {
@@ -136,7 +137,7 @@ export async function settle(dir: string, state: State = readState(dir)): Promis
   if (!raised.length) return [];
   const ds = new Map<string, Dec>(decisions(dir).decisions.map((d: Dec) => [d.id, d] as const));
   const { triggers } = triggersOf(dir);
-  const log: ProvenanceEntry[] = entries(dir);
+  const log: Entry[] = entries(dir);
   const done: Run[] = [];
   for (const run of raised) {
     const d = run.decision === undefined ? undefined : ds.get(run.decision);
@@ -192,7 +193,7 @@ export async function fire(dir: string, { rounds = 20 }: { rounds?: number } = {
     const active = triggers.filter((t) => t.enabled);
     const ranOnce = (t: Live) => t.once && state.runs.some((r) => r.trigger === t.id && r.outcome === "ran");
     for (let round = 0; round < rounds; round++) {
-      const log: ProvenanceEntry[] = entries(dir);
+      const log: Entry[] = entries(dir);
       const at = state.cursor ? log.findIndex((e) => e.hash === state.cursor) + 1 : log.findIndex((e) => e.at >= state.since);
       const pending = at < 0 ? [] : log.slice(at);
       // Runs waiting on a package go first, once the package is complete.

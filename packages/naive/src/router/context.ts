@@ -372,7 +372,7 @@ export async function navigate({ venture, route, workspace, actor = "agent", act
   if (!r) return { ok: false, error: `no route ${route}` };
   const dir = ventureDir(venture, workspace);
   if (!dir) return { ok: false, error: `no venture ${venture}` };
-  const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  const concrete = r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route;
   const set = settings(dir);
   const send = (part: string, data: unknown) => { try { onPart?.({ part, data: data === undefined ? data : JSON.parse(JSON.stringify(data)) }); } catch {} };
   const out: Navigated = {};

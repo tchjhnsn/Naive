@@ -12,15 +12,16 @@ import { entries as provEntries } from "../core/provenance.ts";
 import { checksFor, configFor } from "../engine/naive-config.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import type { CallProvenance, RouteEntry } from "./router.ts";
+import type { Appended } from "./detection-ledger.ts";
 import type { DetectorTrial } from "../records/types/records.d.ts";
 
 /** The gate's verdict on a write that does not pass. */
-export type Verdict = { then: string; rule: string | null; source: string | null; why?: string; fix?: unknown; owner?: string; matched?: unknown[]; variants?: boolean; function?: string };
+export type Verdict = { then: string; rule: string | null; source: string | null; why?: string; fix?: unknown; owner?: string; matched?: unknown[]; variants?: boolean; function?: string | null };
 /** A refusal as a router answer. */
 type Refusal = { ok: false; error: string; gate_rule: string; refused_by: string; fix?: unknown; may_write?: unknown };
 type Ledgered = Record<string, unknown>;
 /** What the gate reads of a route: recipes/<pattern> passes its own table entry (recipes.ts). */
-type GateRoute = { route?: string; record?: string; writer?: string; function?: string };
+type GateRoute = { route?: string; record?: string; writer?: string; function?: string | null };
 /** A thrown value's message, when it has one. */
 const messageOf = (e: unknown): unknown => (e && typeof e === "object" && "message" in e ? e.message : undefined);
 
@@ -105,7 +106,7 @@ export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile,
   if (!existsSync(detFile)) return null;
   const ctx = { venture, workspace, actor_id, via };
   const ledger = () => import("./detection-ledger.ts");
-  const answer = (res: { ok: boolean; error?: string; result?: { line: { id: string } } }, what: { kind: string; call?: string; outcome?: string }): Ledgered => res.ok && res.result ? { id: GATE_DETECTOR, appended: what.kind, line: res.result.line.id, ...(what.call ? { call: what.call } : { outcome: what.outcome }) } : { id: GATE_DETECTOR, error: res.error };
+  const answer = (res: Appended, what: { kind: string; call?: string; outcome?: string }): Ledgered => res.ok && res.result ? { id: GATE_DETECTOR, appended: what.kind, line: res.result.line.id, ...(what.call ? { call: what.call } : { outcome: what.outcome }) } : { id: GATE_DETECTOR, error: res.error };
   const guard = (fn: (hash: string) => Promise<Ledgered>) => async (hash: string): Promise<Ledgered> => { try { return await fn(hash); } catch (e) { return { id: GATE_DETECTOR, error: String(messageOf(e) ?? e) }; } };
   if (actor === "person") {
     const by = { kind: "person" as const, id: process.env.MENTURA_PERSON ?? actor_id ?? "founder" };

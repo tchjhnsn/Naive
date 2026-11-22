@@ -33,7 +33,7 @@ const messageOf = (e: unknown): string => String((isObj(e) ? e.message : undefin
 
 /** A global error (E-8): the scope, the file, what is wrong and how to recover. */
 export type Health = { scope: string; file: string; problem: string; recovery: string[]; template?: Obj };
-type Checked = { record: string; route: string; file: string; ok: boolean; error?: string; fix?: { schema?: string; template?: string | null; skills: string[] } };
+type Checked = { record: string; route: string; file: string; ok: boolean; error?: string; fix?: { schema?: string | null; template?: string | null; skills: string[] } };
 type PackageBoundary = { package: string; ok: boolean; error?: string; records: Checked[]; checks: { check: string; passed: boolean; output: string }[] };
 /** What boundaries() answers. */
 export type Boundaries = {

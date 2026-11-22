@@ -32,6 +32,9 @@ type Asset = PublicAssets["assets"][number];
 type Remote = NonNullable<PublicAssets["remote"]>[number];
 /** A router answer, or a refusal made here. */
 type Answer = { ok: boolean; error?: unknown; result?: unknown; [k: string]: unknown };
+/** What fill answers on success. */
+type Filled = { filled: string[]; missing: string[]; unregistered: string[] };
+const isFilled = (x: unknown): x is Filled => !!x && typeof x === "object" && "filled" in x && Array.isArray(x.filled) && "unregistered" in x && Array.isArray(x.unregistered);
 
 const VERSION = "0.1.0";
 const today = () => new Date().toISOString();
@@ -98,7 +101,7 @@ export async function setAlt({ venture, workspace, path, text, actor = "agent" }
   a.alt = { text: text as string, by: actor === "person" ? "person" : "agent" };
   const w = await writeRegister(venture, workspace, reg, { actor, note: `alt text of ${path} by ${a.alt.by}` });
   if (!w.ok) return w;
-  if (actor === "person") prov(dir, { entity: REGISTER, route: "public/assets", activity: "confirm", statement: altStatement(path, text), agent: agentFromEnv("person", "cli"), note: `alt text of ${path} written by a person` });
+  if (actor === "person") prov(dir, { entity: REGISTER, route: "public/assets", activity: "confirm", statement: altStatement(a.path, a.alt.text), agent: agentFromEnv("person", "cli"), note: `alt text of ${path} written by a person` });
   return { ok: true, result: { path, alt: a.alt, confirmed: actor === "person" } };
 }
 
@@ -109,7 +112,7 @@ export function confirmAlt({ venture, workspace, path, by }: { venture: string; 
   if (!by) return { ok: false, error: "say who is confirming: --by <name>" };
   const a = (registerOf(dir) as PublicAssets | null)?.assets.find((x) => x.path === path);
   if (!a?.alt?.text) return { ok: false, error: `${path} has no alt text to confirm` };
-  const e = prov(dir, { entity: REGISTER, route: "public/assets", activity: "confirm", statement: altStatement(path, a.alt.text), agent: agentFromEnv("person", "cli", { id: by }), note: `${by} confirmed the alt text of ${path}: ${a.alt.text}` });
+  const e = prov(dir, { entity: REGISTER, route: "public/assets", activity: "confirm", statement: altStatement(a.path, a.alt.text), agent: agentFromEnv("person", "cli", { id: by }), note: `${by} confirmed the alt text of ${path}: ${a.alt.text}` });
   return { ok: true, result: { path, alt: a.alt.text, confirmed_by: by, provenance: e.hash } };
 }
 
@@ -177,7 +180,7 @@ export async function main(argv: string[], { workspace }: { workspace?: string }
 
   if (group === "assets") {
     if (verb === "add") return show(await addAsset({ venture, workspace, path: arg, source: opt("source"), license: opt("license"), credit: opt("credit"), alt: opt("alt"), decorative: flag("decorative"), origin_url: opt("origin-url"), design_system: opt("design-system"), actor }), `registered: ${arg}`);
-    if (verb === "fill") { const r = await fill({ venture, workspace }); return show(r, r.ok ? `filled: ${r.result.filled.length ? r.result.filled.join(", ") : "nothing changed"}${r.result.unregistered.length ? `\nnot registered: ${r.result.unregistered.join(", ")}` : ""}` : undefined); }
+    if (verb === "fill") { const r = await fill({ venture, workspace }); const res = r.result; return show(r, r.ok && isFilled(res) ? `filled: ${res.filled.length ? res.filled.join(", ") : "nothing changed"}${res.unregistered.length ? `\nnot registered: ${res.unregistered.join(", ")}` : ""}` : undefined); }
     if (verb === "alt") return show(await setAlt({ venture, workspace, path: arg, text: opt("text"), actor }), `alt text of ${arg} written by ${actor}${actor === "agent" ? "; a person confirms it with mentura assets confirm" : ""}`);
     if (verb === "confirm") {
       // The person types the path to confirm, as with foundation statements (EE-051).
@@ -207,8 +210,9 @@ export async function main(argv: string[], { workspace }: { workspace?: string }
     if (verb === "resolve") { if (!brand) return need(); return show({ ok: true, result: resolveBrand(brand, arg ?? "") }); }
     if (verb === "terms") { const t = termsFor(dir, arg); return show({ ok: true, result: t }, t.terms.map((x) => `${x.term}  (${x.from}): ${x.meaning}`).join("\n") || `no terms reach ${arg}`); }
     if (verb === "voice") {
-      const v = opt("text") !== undefined ? { violations: (await import("../engine/brand.ts")).voiceCheck(opt("text"), brand ? resolveBrand(brand, opt("for") ?? "").voice.rules : []) } : voice(dir, brand);
-      const lines = v.violations.map((x) => `${x.file ? `${x.file}:` : "line "}${x.line}  "${x.found}" breaks ${x.rule}${x.use ? `; use "${x.use}"` : ""}`);
+      const said = opt("text");
+      const v = said !== undefined ? { violations: (await import("../engine/brand.ts")).voiceCheck(said, brand ? resolveBrand(brand, opt("for") ?? "").voice.rules : []) } : voice(dir, brand);
+      const lines = v.violations.map((x) => `${"file" in x && x.file ? `${x.file}:` : "line "}${x.line}  "${x.found}" breaks ${x.rule}${x.use ? `; use "${x.use}"` : ""}`);
       if (flag("json")) console.log(JSON.stringify(v, null, 2)); else console.log(lines.join("\n") || "keeps to the voice rules");
       return v.violations.length ? 1 : 0;
     }

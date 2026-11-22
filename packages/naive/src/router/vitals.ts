@@ -20,14 +20,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { events } from "../core/instrumentation.ts";
+import type { InstrumentEvent } from "../core/instrumentation.ts";
 import { entries } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
-/** One instrumentation event (packages/naive/src/core/instrumentation.mjs): a call or a judgment. */
-type Ev = {
-  kind: string; at: string; ms?: number; id?: string; parent?: string; session?: string; useful?: boolean; tokens?: number; ok?: boolean; action?: string; route?: string;
-  venture?: string; via?: string; actor?: string; question?: string; score?: number; threshold?: number; outcome?: string; model?: string; owner?: string;
-};
+/** One instrumentation event (packages/naive/src/core/instrumentation.ts): a call or a judgment. */
+type Ev = InstrumentEvent;
 type Vital = { p75: number | null; threshold: number; n: number; passed: boolean | null; status: string; never_useful?: number };
 type Run = { name: string; run_type: string; start: string; end: string; inputs: Record<string, unknown>; outputs: Record<string, unknown>; error?: string; metadata: Record<string, unknown>; children?: Run[] };
 

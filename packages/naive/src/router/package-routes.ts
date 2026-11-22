@@ -100,7 +100,7 @@ async function pendingIn(dir: string, types: string[], venture: string | undefin
   for (const f of readdirSync(d).filter((x) => x.endsWith(".draft"))) {
     const file = f.slice(0, -".draft".length).replace(/__/g, "/");
     const type = recordOf(file);
-    if (!types.includes(type)) continue;
+    if (type === null || !types.includes(type)) continue;
     const route = await routeOfType(type);
     const id = route?.endsWith("[id]") ? String(file.split("/").at(-1)).replace(/\.json$/, "") : null;
     const concrete = id && route ? route.replace("[id]", id) : route;
@@ -183,11 +183,13 @@ export async function specialCall({ venture, route, action, workspace }: CallArg
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (!dir && !(action === "layout" && sp.kind !== "venture")) return { ok: false, error: `no venture ${venture}` };
   if (sp.kind === "venture") {
+    // Only a group or package layout runs without a venture (above).
+    if (!dir) return { ok: false, error: `no venture ${venture}` };
     const { manifest } = await import("../engine/structure.ts");
     const { boundaries } = await import("./boundaries.ts");
     if (action === "check") { const b = await boundaries(dir); return { ok: b.ok, result: b }; }
     const m = await manifest(dir);
-    if (action === "view") return { ok: true, result: `# ${m.identity.name}\n\nPhase: ${m.phase}. Packages: ${m.packages.list.map((p: { name: string }) => p.name).join(", ")}.\n\n| Function | Owner | Packages |\n| --- | --- | --- |\n${m.functions.map((f: { function: string; owner?: string; packages: string[] }) => `| ${f.function} | ${f.owner ?? "nobody yet"} | ${f.packages.join(", ")} |`).join("\n")}\n` };
+    if (action === "view") return { ok: true, result: `# ${m.identity.name}\n\nPhase: ${m.phase}. Packages: ${m.packages.list.map((p: { name: string }) => p.name).join(", ")}.\n\n| Function | Owner | Packages |\n| --- | --- | --- |\n${m.functions.map((f: { function: string; owner?: string | null; packages: string[] }) => `| ${f.function} | ${f.owner ?? "nobody yet"} | ${f.packages.join(", ")} |`).join("\n")}\n` };
     if (action === "layout") return { ok: true, result: { route: "venture", manifest: m } };
     return { ok: true, result: m };
   }
@@ -208,6 +210,8 @@ export async function specialCall({ venture, route, action, workspace }: CallArg
     const def = packageDef(name);
     return { ok: true, result: { route: name, package: { name, title: def.title, purpose: def.purpose, function: def.function ?? def.department ?? null, skill: def.skill?.path ?? null, gates: def.gates ?? [] }, group: groupLayout(name, dir) } };
   }
+  // Only a layout runs without a venture (above).
+  if (!dir) return { ok: false, error: `no venture ${venture}` };
   if (action === "check") { const { boundaries } = await import("./boundaries.ts"); const b = await boundaries(dir, { only: [name] }); return { ok: b.packages.every((p) => p.ok), result: b.packages[0] ?? { package: name, ok: true, note: "not in use by this venture" } }; }
   const s = await packageState(dir, name, venture);
   return action === "view" ? { ok: true, result: pageOf(s) } : { ok: true, result: s, ...(s.loading ? { pending_drafts: s.loading.drafts } : {}) };

@@ -25,18 +25,21 @@ import { groupLayout, packageOfRecord, routeOfType, specialCall } from "./packag
 import { filterRead, hierarchy, metadataFor, resolvedBy, withParams } from "./reads.ts";
 import type { Answer, CallArgs, RouteEntry } from "./router.ts";
 import type { Layout } from "./reads.ts";
+import type { Matrix } from "../engine/decisions.ts";
 
 type Obj = Record<string, unknown>;
 /** A thrown value's message, or the value itself. */
 const messageOf = (e: unknown): string => String((e && typeof e === "object" && "message" in e ? e.message : undefined) ?? e);
 /** One record of a package as the venture package reports it. */
 type PkgRecord = { record: string; title?: string; role?: string; moves?: string; status?: string };
-/** One package as the venture package reports it. */
-type Pkg = { id: string; title?: string; progress?: unknown; state?: string; unlocks?: unknown[]; records: PkgRecord[] };
+/** One package as the venture package reports it. A handoff package lists no records. */
+type Pkg = { id: string; title?: string; progress?: unknown; state?: string; unlocks?: unknown[]; records?: PkgRecord[] };
+/** A core package, which lists its records. */
+type CorePkg = Pkg & { records: PkgRecord[] };
 type NeedRow = { type: string; status: string; now: number; why?: string };
 type Dec = { id: string; render?: string; question?: string | null; rank?: number | null; source?: string };
 /** The state a write can change, taken before and after it. */
-type Snapshot = { packages: { core?: Pkg[]; handoff?: Pkg[] } | null; need: { rows?: NeedRow[] } | null; decisions: { decisions?: Dec[]; phase?: string } | null };
+type Snapshot = { packages: { core?: CorePkg[]; handoff?: Pkg[] } | null; need: { rows?: NeedRow[] } | null; decisions: Matrix | null };
 /** What a write changed (M-3). */
 type Change = { moves_now: { record: string; package: string; route: string | null }[]; [k: string]: unknown };
 
@@ -169,7 +172,7 @@ export async function around(inner: (a: CallArgs) => Answer | Promise<Answer>, a
   if (!res.r && actor === "public") return { ok: false, error: `the public reader reads only record routes; ${route} is a package, group or venture route` };
   if (!res.r) return (await specialCall(args)) ?? inner(args);
   const r = res.r, params = res.params;
-  const concrete = r.recipe ? `recipes/${params.pattern}` : r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  const concrete = r.recipe ? `recipes/${params.pattern}` : r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route;
   const before = action === "write" && dir && r.kind === "record" ? await snapshot(dir) : null;
   let out: Answer;
   try { out = await inner(args); }

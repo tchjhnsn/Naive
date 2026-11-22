@@ -132,7 +132,7 @@ export async function claimHandoff({ dir, r, id, route, requested, file, actor, 
     if (h.status !== "ready") return { ok: false, error: `${id} is ${h.status}: only a ready handoff is claimed (node packages/naive/src/checks/check-ready.ts --record makes it ready)` };
     if (h.role !== actor_id) return { ok: false, error: `${id} is addressed to ${h.role}, not ${actor_id}: only its role claims it` };
     const next = { ...h, claimed_by: who, status: "in-progress" };
-    const v = validateValue(schemaNameOf(r.schema), next);
+    const v = validateValue(schemaNameOf(String(r.schema)), next);
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}` };
     const text = JSON.stringify(next, null, 2) + "\n";
     let w: Awaited<ReturnType<Store["write"]>>;

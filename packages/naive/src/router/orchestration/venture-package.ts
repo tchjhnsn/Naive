@@ -24,8 +24,11 @@ export function routesOf(dir: string) {
 /**
  * The venture package with each record's idea-map title and route.
  */
-export function venturePackage(dir: string, opts: { flags?: Record<string, boolean>; answers?: unknown } = {}) {
-  return packages(dir, { ...opts, routes: routesOf(dir) });
+type PackagesOptions = NonNullable<Parameters<typeof packages>[1]>;
+export function venturePackage(dir: string, opts: Omit<PackagesOptions, "routes"> = {}) {
+  // The idea map's routing, as packages reads it. Its Routing type says next.by is a string where the idea map gives a
+  // string or null (a step no one owns yet); packages only prints it, so the value passes through unchanged.
+  return packages(dir, { ...opts, routes: routesOf(dir) as PackagesOptions["routes"] });
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

@@ -66,7 +66,7 @@ export async function appendLine({ dir, r, id, route, requested, file, input, ac
     const { hash: _hash, prev: _prev, ...rest } = line;
     const chained: Obj = { ...rest, prev };
     chained.hash = lineHash(prev, chained);
-    const v = validateValue(schemaNameOf(r.schema), chained);
+    const v = validateValue(schemaNameOf(String(r.schema)), chained);
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}` };
     const text = JSON.stringify(chained) + "\n";
     let w: Awaited<ReturnType<Store["write"]>>;

@@ -14,7 +14,7 @@
 import { randomUUID } from "node:crypto";
 import { lineHash } from "../core/provenance.ts";
 import { call } from "./router.ts";
-import type { CallProvenance } from "./router.ts";
+import type { Answer, CallProvenance } from "./router.ts";
 import type { DetectorTrial } from "../records/types/records.d.ts";
 
 const RETRIES = 200;
@@ -33,6 +33,9 @@ export const FITS: Record<string, string[]> = { yes: ["hit", "false-alarm"], no:
 export type Ctx = { venture?: string; workspace?: string; actor?: string; actor_id?: string; via?: string; provenance?: CallProvenance };
 /** One ledger line: a trial or a resolution. */
 export type Line = DetectorTrial;
+/** What an append answers: the router's append action (packages/naive/src/router/appends.ts) gives the line it chained. */
+export type Appended = Answer<{ line: Line }>;
+const isObj = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object";
 
 /**
  * A detector's ledger, read through the router: its lines in order and its version (null when there is none yet).
@@ -40,7 +43,9 @@ export type Line = DetectorTrial;
 export async function read(ctx: Ctx, detector: string): Promise<{ lines: Line[]; version: string | null }> {
   const res = await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "read", actor: ctx.actor ?? "agent", actor_id: ctx.actor_id, via: ctx.via ?? "router" });
   if (!res.ok) throw new Error(res.error ?? `could not read ${ledgerPath(detector)}`);
-  return { lines: Array.isArray(res.result) ? res.result : [], version: res.source?.version ?? null };
+  // The ledger route reads a JSON lines log, whose lines are trusted to be ledger lines (its schema checks every append).
+  const lines: Line[] = Array.isArray(res.result) ? res.result : [];
+  return { lines, version: isObj(res.source) && typeof res.source.version === "string" ? res.source.version : null };
 }
 
 /**
@@ -77,7 +82,7 @@ export async function appendTrial(ctx: Ctx, { detector, score, criterion, call: 
   detector: string; score: number; criterion: DetectorTrial["criterion"]; call: "yes" | "no" | "unsure"; provenance?: string; id?: string; at?: string; note?: string;
 }) {
   const line = drop({ kind: "trial", id: id ?? randomUUID(), detector, at: at ?? new Date().toISOString(), score, criterion, call: made, provenance, note });
-  return await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "append", input: { line }, actor: ctx.actor ?? "agent", actor_id: ctx.actor_id, via: ctx.via ?? "router", provenance: ctx.provenance });
+  return (await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "append", input: { line }, actor: ctx.actor ?? "agent", actor_id: ctx.actor_id, via: ctx.via ?? "router", provenance: ctx.provenance })) as Appended;
 }
 
 /**
@@ -86,7 +91,7 @@ export async function appendTrial(ctx: Ctx, { detector, score, criterion, call: 
  */
 export async function resolveTrial(ctx: Ctx, { detector, trial, outcome, by, signal, id, at, note }: {
   detector: string; trial: string; outcome: NonNullable<DetectorTrial["outcome"]>; by: NonNullable<DetectorTrial["by"]>; signal?: DetectorTrial["signal"]; id?: string; at?: string; note?: string;
-}) {
+}): Promise<Appended> {
   for (let i = 0; ; i++) {
     const { lines, version } = await read(ctx, detector);
     const t = lines.find((l) => l.kind === "trial" && l.id === trial);
@@ -96,7 +101,7 @@ export async function resolveTrial(ctx: Ctx, { detector, trial, outcome, by, sig
     if (!(FITS[t.call ?? ""] ?? []).includes(outcome)) return { ok: false, error: `trial ${trial} was a ${t.call} call, which cannot resolve as ${outcome}` };
     const line = drop({ kind: "resolution", id: id ?? randomUUID(), detector, at: at ?? new Date().toISOString(), trial, outcome, signal, by, note });
     const res = await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "append", input: { line, base: version }, actor: ctx.actor ?? "person", actor_id: ctx.actor_id, via: ctx.via ?? "router", provenance: ctx.provenance });
-    if (res.ok || !res.conflict || i >= RETRIES) return res;
+    if (res.ok || !res.conflict || i >= RETRIES) return res as Appended;
     await pause();
   }
 }

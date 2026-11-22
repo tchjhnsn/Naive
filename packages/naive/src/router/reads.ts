@@ -68,7 +68,7 @@ export async function stateOf(dir: string, file: string) {
 export function defaults(dir: string, file: string, id: string) {
   const es = entries(dir).filter((e: { entity: string }) => e.entity === file);
   if (es.length) {
-    const last = es.at(-1);
+    const last = es[es.length - 1];
     return { id, created: es[0].at, updated: last.at, by: { kind: last.agent?.kind ?? null, ...(last.agent?.id ? { id: last.agent.id } : {}), via: last.agent?.via ?? null }, activity: last.activity, writes: es.length, from: "provenance" };
   }
   const st = existsSync(ventureFile(dir, file)) ? statSync(ventureFile(dir, file)) : null;

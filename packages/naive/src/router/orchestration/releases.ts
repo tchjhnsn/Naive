@@ -47,7 +47,8 @@ import { ventureFile } from "../../core/venture-paths.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { validateFile } from "../../records/validate.ts";
 import type { RecordRoute, RouteEntry } from "../router.ts";
-import type { DecisionRecord, ProvenanceEntry, Venture } from "../../records/types/records.d.ts";
+import type { DecisionRecord, Venture } from "../../records/types/records.d.ts";
+import type { Entry } from "../../core/provenance.ts";
 
 // The release (release.json, card.json) has no JSON Schema (its data model entry has schema null): this
 // module writes it, so its shapes are written here.
@@ -168,13 +169,13 @@ const who = (a: { id?: string; kind?: string; via?: string } | undefined) => a?.
  * accept, a person's baseline, or a confirm of every foundation statement in it, after the last
  * agent write, and the file unchanged since the last entry (its sha256 matches).
  */
-export function confirmation(dir: string, file: string, type: string, log: ProvenanceEntry[]): Confirmation {
+export function confirmation(dir: string, file: string, type: string, log: Entry[]): Confirmation {
   const es = log.filter((e) => e.entity === file);
   if (!es.length) return { ok: false, why: "no provenance entry: written outside the router", fix: "baseline" };
   const last = es[es.length - 1];
   const now = sha(readFileSync(ventureFile(dir, file)));
   if (last.sha256 && last.sha256 !== now) return { ok: false, why: "changed since its last provenance entry", fix: "rewrite" };
-  const statements: { record?: string; id: string }[] = FRAME.questions.flatMap((q: { statements: { record?: string; id?: string }[] }) => q.statements).filter((s: { record?: string; id?: string }) => s.record === type && s.id);
+  const statements = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record === type && s.id);
   const ok = confirmedIn(dir, file, null) || (statements.length > 0 && statements.every((s) => confirmedIn(dir, file, s.id)));
   if (!ok) return { ok: false, why: "an agent wrote it and no person has confirmed it", fix: statements.length ? "confirm" : "rewrite", statements: statements.map((s) => s.id) };
   const by = [...es].reverse().find((e) => e.agent?.kind === "person" || e.activity === "accept");
@@ -236,7 +237,7 @@ function stripPrivate(text: string, file: string): { text: string; withheld: str
 /** Everything a release would hold, read from the venture as it is. Writes nothing. */
 export async function survey(dir: string, { cache }: { cache?: Cache } = {}): Promise<Survey> {
   const v = load(join(dir, "venture.json")) as Venture;
-  const log: ProvenanceEntry[] = provEntries(dir);
+  const log: Entry[] = provEntries(dir);
   const ms = matchers();
   const files = ventureFiles(dir);
   const frozen: Frozen[] = [], holes: Hole[] = [], leftOut: LeftOut[] = [], blockers: Blocker[] = [], privateCount = { records: 0, folder: 0 };
@@ -339,7 +340,7 @@ export function packagePlan(dir: string, s: Survey): PackageEntry[] {
 
 // ---- running the frozen commands against the confirmed records alone (H-4, C-10) ----
 
-async function frozenCommands(dir: string, v: Venture, frozen: Frozen[], plan: CommandEntry[], cache: Cache, log: ProvenanceEntry[]): Promise<Record<string, Ran>> {
+async function frozenCommands(dir: string, v: Venture, frozen: Frozen[], plan: CommandEntry[], cache: Cache, log: Entry[]): Promise<Record<string, Ran>> {
   const ws = mkdtempSync(join(tmpdir(), "naive-release-"));
   const shadow = join(ws, v.id);
   try {
@@ -490,10 +491,11 @@ export async function add(dir: string, route: string, { now = new Date().toISOSt
   { ok: false; error: string; fix?: string; manifest?: undefined; added?: undefined } | { ok: true; manifest: Manifest; added: { route: string; file: string; from: string | null }; error?: undefined; fix?: undefined }
 > {
   dir = resolvePath(dir);
-  const m: Manifest | null = readRelease(dir);
+  // The manifest a build here wrote (readRelease parses it with the engine's looser type).
+  const m = readRelease(dir) as Manifest | null;
   if (!m) return { ok: false, error: `no release in ${dir}: build one first` };
   // A record route always names its record type and files.
-  const r: RecordRoute | undefined = routes().find((x: RouteEntry) => x.kind === "record" && x.collection === "item" && route.startsWith(x.route.slice(0, -4)) && !route.slice(x.route.length - 4).includes("/"));
+  const r: RecordRoute | undefined = routes().find((x: RouteEntry): x is RecordRoute => x.kind === "record" && x.collection === "item" && route.startsWith(x.route.slice(0, -4)) && !route.slice(x.route.length - 4).includes("/"));
   if (!r) return { ok: false, error: `${route} is not a collection item route (such as product/<id>)` };
   const id = route.slice(r.route.length - 4);
   if (m.records.some((x) => x.route === route)) return { ok: false, error: `${route} is already in release ${m.release}; a full build updates it` };
@@ -534,7 +536,8 @@ function mdOf(x: unknown, depth = 0): string {
 /** Z-3: the release as plain files in out/: Markdown and JSON, no live holes, every number dated. */
 export function exportRelease(dir: string, out: string): { ok: false; error: string; out?: undefined; records?: undefined; left_out_live?: undefined } | { ok: true; out: string; records: number; left_out_live: number; error?: undefined } {
   dir = resolvePath(dir); out = resolvePath(out);
-  const m: Manifest | null = readRelease(dir);
+  // The manifest a build here wrote (readRelease parses it with the engine's looser type).
+  const m = readRelease(dir) as Manifest | null;
   if (!m) return { ok: false, error: `no release in ${dir}: build one first` };
   if (existsSync(out) && readdirSync(out).length) return { ok: false, error: `${out} exists and is not empty: an export never writes over files` };
   mkdirSync(out, { recursive: true });

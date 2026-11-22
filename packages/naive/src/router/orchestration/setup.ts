@@ -15,16 +15,14 @@ import { basename, dirname, join, resolve } from "node:path";
 import { sync, syncCommand } from "../../core/sync.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import type { KnowledgeSources, People, SystemsCatalog, Venture, VentureTypes } from "../../records/types/records.d.ts";
+import type { ProposeInput, RankedDecision } from "../../engine/decisions.ts";
 
 type Functions = NonNullable<KnowledgeSources["functions"]>;
 /** Where one function keeps its truth, in knowledge/sources.json. */
 type FunctionTruth = NonNullable<Functions[keyof Functions]>;
 type SystemPointer = FunctionTruth["systems"][number];
 /** A decision as decisions() lists it, with only the fields setup reads. */
-type Dec = {
-  id: string; status: string; source?: string; render?: string; question?: string; options?: string[]; answer?: unknown; why?: unknown[];
-  statement?: string | null; decides?: unknown; layer?: string; needed_in?: string; provenance?: { drafted_by?: { kind?: string } };
-};
+type Dec = RankedDecision & { options?: string[]; statement?: string | null };
 /** An answer from the decision engine or the router. */
 type Answer = { ok: boolean; result?: unknown; error?: unknown; [k: string]: unknown };
 
@@ -78,10 +76,11 @@ export async function decide(dir: string, { id, answer, via = "api", where = "/s
     return approve(dir, GOAL, { by, answer: String(answer).trim(), via, note: `set at ${where}` } as Parameters<typeof approve>[2]);
   }
   if (!d) return { ok: false, error: `no decision ${id}` };
+  // The door checks the proposal against the decision schema, so a resolved decision's null record or phase passes through to it as before.
   if (d.source === "foundation") {
     const sid = id.replace(/^foundation-/, "");
     const did = `statement-${sid}`;
-    const p = propose(dir, { id: did, question: d.question, statement: sid, decides: d.decides, layer: d.layer === "system" ? "purpose" : d.layer, needed_in: d.needed_in }, { via });
+    const p = propose(dir, { id: did, question: d.question, statement: sid, decides: d.decides as ProposeInput["decides"], layer: d.layer === "system" ? "purpose" : d.layer, needed_in: d.needed_in as string | undefined }, { via });
     if (!p.ok) return p;
     return approve(dir, did, { by, answer: String(answer).trim(), via, note: `the founder's words at ${where}` } as Parameters<typeof approve>[2]);
   }
@@ -117,9 +116,10 @@ export async function relay(dir: string, { id, answer, agentId, harness, model }
   if (id === GOAL) return propose(dir, { ...(d ? {} : { decides: { record: "exit-criteria", path: "foundation/exit-criteria/discovery.json" }, layer: "purpose", needed_in: "discovery", boundary: "fail-open" }), id: GOAL, question: d?.question ?? "What must be true for the venture to leave discovery? Name the goal this phase works toward.", answer: words, note }, opts);
   if (!d) return { ok: false, error: `no decision ${id}` };
   if (d.status === "decided") return { ok: false, error: `${id} is decided; only the founder can change it` };
+  // As above: the door checks the proposal against the decision schema.
   if (d.source === "foundation") {
     const sid = id.replace(/^foundation-/, "");
-    return propose(dir, { id: `statement-${sid}`, question: d.question, statement: sid, decides: d.decides, layer: d.layer === "system" ? "purpose" : d.layer, needed_in: d.needed_in, answer: words, note }, opts);
+    return propose(dir, { id: `statement-${sid}`, question: d.question, statement: sid, decides: d.decides as ProposeInput["decides"], layer: d.layer === "system" ? "purpose" : d.layer, needed_in: d.needed_in as string | undefined, answer: words, note }, opts);
   }
   return propose(dir, { id, question: d.question, answer: words, note }, opts);
 }

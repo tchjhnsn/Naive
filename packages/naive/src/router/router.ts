@@ -44,6 +44,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
+import type { Entry } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked } from "../engine/decisions.ts";
 import { configOf, hold } from "../engine/gate.ts";
@@ -61,6 +62,7 @@ import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.ts";
+import type { InternalInput } from "../engine/caching.ts";
 import { actionScope, memo } from "../core/action-scope.ts";
 // Context hook: instrumentation of every call and judgment (packages/naive/src/core/instrumentation.ts, P-4, F-4).
 import { instrumented, judgment } from "../core/instrumentation.ts";
@@ -84,6 +86,7 @@ import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 import type { DecisionRecord, TeamPlan, Venture } from "../records/types/records.d.ts";
+import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
   PHASES, allowed, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
 } from "../records/routes/routes.ts";
@@ -101,23 +104,21 @@ export type CallArgs = {
   venture?: string; route: string; action: string; input?: unknown; actor?: string; actor_id?: string; workspace?: string; via?: string;
   reads_as_of?: string | number | null; provenance?: CallProvenance; [PROJECTOR]?: boolean;
 };
-/** What a router action answers: ok, and the result or an error, with whatever else the action adds. */
-export type Answer = { ok: boolean; error?: string; result?: unknown; [k: string]: unknown };
+/**
+ * What a router action answers: ok, and the result or an error, with whatever else the action adds. The result is
+ * unknown unless a caller that knows the route names its shape as T.
+ */
+export type Answer<T = unknown> = { ok: boolean; error?: string; result?: T; [k: string]: unknown };
 /** One entry of the route table (packages/naive/src/records/routes/routes.ts). Record routes carry files; command routes a script. */
-export type RouteEntry = {
-  route: string; kind: string; actions: string[]; groups: string[]; note: string;
-  record?: string; layer?: string; kit?: string | null; package?: string | null; kit_path?: string | null; schema?: string; form?: string; checks?: string[];
-  template?: string | null; decision_class?: string | null; view_of?: string; writer?: string; function?: string; collection?: "list" | "item"; files?: string[];
-  recipe?: boolean; script?: string | null; internal?: string; needs?: string[]; value_flag?: string; venture_arg?: string; args?: string[]; as_is?: boolean;
-};
+export type RouteEntry = Route;
 /** A record route: one with files. */
-export type RecordRoute = RouteEntry & { record: string; files: string[] };
-/** A source a record type lives in (knowledge/sources.json, packages/naive/src/store/connectors). */
-export type Source = { id: string; connector?: string; [k: string]: unknown };
+export type { RecordRoute };
+/** A source a record type lives in (knowledge/sources.json, packages/naive/src/store/connectors), which names its connector. */
+export type Source = { id: string; connector: string; [k: string]: unknown };
 /** One item a connector reads. */
 export type Item = { path: string; content: string; version?: string; commit?: string; permalink?: string; attributes?: Obj };
-/** What a connector's write answers. */
-type Written = { version?: string; commit?: string; pull_request?: { url: string } };
+/** What a connector's write answers (the contract's Written, packages/naive/src/store/connectors/contract.ts). */
+type Written = { version: string; commit?: string; pull_request?: { url: string } };
 /** What a read needs of a store: a connector, or the as-of store (reads-as-of.ts asOfStore), which only reads. */
 export type ReadStore = { list: () => Promise<{ path: string }[]>; read: (path: string) => Promise<Item | null> };
 /** A connected connector, as the contract has it (packages/naive/src/store/connectors/contract.ts). */
@@ -159,7 +160,7 @@ export function draftOf(route: string, venture: string | null | undefined, works
   if (!r || r.kind !== "record" || r.collection === "list" || !dir) return null;
   const file = fileFor(r, params, dir);
   if (!file) return null; // a route with no concrete file (a pattern-only slot) has no draft
-  return { dir, file, draft: draftPath(file), gate: gateOf(r, dir), route: r.collection === "item" ? r.route.replace("[id]", params.id) : r.route };
+  return { dir, file, draft: draftPath(file), gate: gateOf(r, dir), route: r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route };
 }
 
 type Chained = { path: string; text: string };
@@ -239,7 +240,7 @@ const fix = (r: RouteEntry) => ({ skills: r.kit_path ? skillsOf(kits().find((k) 
 // The projector hook (packages/naive/src/router/acting.ts): whether the call carries the projector's symbol is read here and passed on.
 // As-of hook (packages/naive/src/router/reads-as-of.ts): a researcher reads only as of its cut (reads_as_of, by default
 // MENTURA_READS_AS_OF), and an as-of call is refused every action that reads the venture live, before anything runs.
-export const call = (args: CallArgs) => actionScope(() => instrumented(args, (a: CallArgs) => actingCall(a, (b) => {
+export const call = (args: CallArgs): Promise<Answer> => actionScope(() => instrumented(args, (a: CallArgs) => actingCall(a, (b) => {
   const c = { ...b, reads_as_of: b.reads_as_of ?? process.env.MENTURA_READS_AS_OF, actor_id: b.actor_id ?? process.env.MENTURA_ACTOR_ID };
   const no = asOfRefusal(c);
   if (no) return no;
@@ -259,12 +260,13 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   // session, its template and prefetched refs; head stops after the header (N-3, L-2, O-4).
   if (action === "navigate" || action === "head") return (await import("./context.ts")).navigate({ ...(inp ?? {}), venture, route: requested, workspace, actor, actor_id, via, header_only: action === "head" || !!inp?.header_only });
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
-  route = r.recipe ? `recipes/${params.pattern ?? ""}` : r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
-  if (!r.recipe && r.record === "recipe" && (action === "write" || action === "append")) return { ...recipeRefusal(route, r.collection === "item" ? fileFor(r, params, null) : null), ...deprecated };
+  route = r.recipe ? `recipes/${params.pattern ?? ""}` : r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route;
+  if (r.kind === "record" && !r.recipe && r.record === "recipe" && (action === "write" || action === "append")) return { ...recipeRefusal(route, r.collection === "item" ? fileFor(r, params, null) : null), ...deprecated };
   if (!r.actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${r.actions.join(", ")})` };
   // A research program's template is its own function's starter (packages/naive/src/functions/<function>/templates/research-program.md).
-  if (action === "template" && r.record === "research-program" && r.collection === "item" && isFunction(params.id)) return { ok: true, result: readFileSync(join(repo, templateOf(params.id)), "utf8"), ...deprecated };
-  if (action === "template") return { ok: true, result: readFileSync(join(repo, r.template), "utf8"), ...deprecated };
+  if (action === "template" && r.record === "research-program" && r.collection === "item" && params.id !== undefined && isFunction(params.id)) return { ok: true, result: readFileSync(join(repo, templateOf(params.id)), "utf8"), ...deprecated };
+  // A route offers template only when it has one (records/routes/routes.ts).
+  if (action === "template" && r.template) return { ok: true, result: readFileSync(join(repo, r.template), "utf8"), ...deprecated };
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (action === "layout") { if (venture && !dir) return { ok: false, error: `no venture ${venture}` }; return { ok: true, result: layout(r, dir), ...deprecated }; }
   if (!dir) return { ok: false, error: `no venture ${venture}` };
@@ -300,13 +302,16 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (r.internal === "overview") return { ok: true, result: await overview(venture, workspace), ...deprecated };
     if (r.internal === "robots") return { ok: true, result: robots(dir), ...deprecated };
     // Caching hook: system/cache, system/judge and system/answer are handled in packages/naive/src/engine/caching.ts.
-    if (["cache", "judge", "answer"].includes(String(r.internal))) return { ...(await cacheInternal(r.internal, { dir, venture, workspace, input, actor, actor_id, via, provenance }, { call, resolve, draftOf })), ...deprecated };
+    if (r.internal === "cache" || r.internal === "judge" || r.internal === "answer") return { ...(await cacheInternal(r.internal, { dir, venture: venture ?? "", workspace, input: inp as InternalInput | undefined, actor, actor_id, via, provenance }, { call: (req) => call({ ...req, provenance: req.provenance as CallProvenance | undefined }), resolve, draftOf })), ...deprecated };
     const lacking = (r.needs ?? []).filter((f: string) => !existsSync(ventureFile(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };
     if (r.value_flag && !inp?.value) return { ok: false, error: `${route} needs a value (${r.note})` };
+    // Every command route without a script is one the router answers itself, above (records/routes).
+    const script = r.script;
+    if (script === null) return { ok: false, error: `${route} has no script` };
     const args = r.venture_arg === "id" ? [dir, ...(inp?.value ? [String(inp.value)] : []), "--json"] : r.value_flag ? [dir, r.value_flag, String(inp?.value), "--json"] : [dir, ...(r.args ?? []), ...(r.as_is && inp?.as_is ? ["--as-is"] : []), "--json"];
     // Caching hook (C-3, H-3): a declared command's result comes from the record-level cache; the spawn is memoized per action (O-5).
-    const p = await cachedCommand({ dir, route, script: r.script, args, input: inp, actor, actor_id }, () => memo(`cmd:${r.script} ${args.join(" ")}`, () => spawnSync("node", [join(repo, r.script), ...args], { encoding: "utf8" }), { dir }));
+    const p = await cachedCommand({ dir, route, script, args, input: inp, actor, actor_id }, () => memo(`cmd:${script} ${args.join(" ")}`, () => spawnSync("node", [join(repo, script), ...args], { encoding: "utf8" }), { dir }));
     const cache = p.cache ? { cache: p.cache } : {};
     if (p.status !== 0) return { ok: false, error: (p.stderr || p.stdout).trim() };
     // A command that needs input first (EE-050) answers needs_input: the caller asks the person
@@ -353,8 +358,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const draft = cut === null && !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading: Obj = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e: { entity: string }) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
     if (remote) {
-      type Pr = { entity: string; at: string; source: { pull_request: string } };
-      const prs: Pr[] = provEntries(dir).filter((e: { entity: string; source?: { pull_request?: string } }) => e.source?.pull_request && found.concat(patterns).some((f: string) => e.entity === address(src.id, f)));
+      type Pr = Entry & { source: { pull_request: string } };
+      const prs = provEntries(dir).filter((e): e is Pr => !!e.source?.pull_request && found.concat(patterns).some((f: string) => e.entity === address(src.id, f)));
       if (prs.length) loading.pending_pull_requests = prs.map((e) => ({ entity: e.entity, pull_request: e.source.pull_request, since: e.at }));
     }
     // Framework view hook: a migrated venture's telos is rendered from its canonical goals and exit criteria (frameworks/telos).
@@ -457,7 +462,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Prose a person owns (writer person: a research program) is written whole as text, not as a JSON record.
     const prose = r.writer === "person" && (r.form === "prose" || r.form === "markdown");
     if (!prose && (!input || typeof input !== "object")) return { ok: false, error: "write needs the record as input" };
-    if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(params.id)) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
+    if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(String(params.id))) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
     const file = fileFor(r, params, dir);
     if (isRecipeFile(file)) return { ...recipeRefusal(route, file), ...deprecated };
     // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
@@ -502,7 +507,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const scratch = mkdtempSync(join(tmpdir(), "mentura-write-"));
     const tmp = join(scratch, basename(file));
     writeFileSync(tmp, text);
-    const v = validateFile(schemaNameOf(r.schema), tmp);
+    const v = validateFile(schemaNameOf(String(r.schema)), tmp);
     rmSync(scratch, { recursive: true, force: true });
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) };
     const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
@@ -537,7 +542,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // could answer for a decided decision and skip the draft below.
     if (r.record === "decision-record" && !remote) {
       const here = existsSync(ventureFile(dir, file)) ? (load(ventureFile(dir, file)) as DecisionRecord).id : basename(file, ".decision.json");
-      const holder = decisionFile(dir, rec.id);
+      const holder = typeof rec.id === "string" ? decisionFile(dir, rec.id) : null;
       if (rec.id !== here || (holder && holder !== file)) return { ok: false, error: `${file} holds decision ${here}, not ${rec.id}: a decision's id is its file name, and one id has one file` };
     }
     // Rewriting a decided record, to reopen it say, unsettles it, which is a person's act too (approve
@@ -656,31 +661,40 @@ function md(x: unknown, depth = 2): string {
 type Slot = { slot: string; data?: unknown; error?: string };
 // What a view reads of an answer: an overview's slots, a missing record's note, a waiting draft, else the result as it is.
 type Viewed = { result?: { venture?: string; slots?: Slot[] } | null; not_found?: { note: string; template?: string | null; need_now?: { status: string; now: string } | null }; pending_draft?: { accept: string } };
-function render(route: string, res: Viewed): string {
+function render(route: string, answer: Answer): string {
+  // A view reads these fields of whatever the route answered; one it lacks is undefined, as before.
+  const res = answer as Viewed;
   if (res.result?.slots) return [`# ${res.result.venture}: overview`, ...res.result.slots.map((s) => `## ${s.slot}\n\n${s.error ? `_could not render: ${s.error}_` : md(s.data, 3)}`)].join("\n\n");
   const head = `# ${route}`;
   if (res.result === null && res.not_found) return `${head}\n\n${res.not_found.note}.${res.not_found.template ? ` Start from \`${res.not_found.template}\`.` : ""}${res.not_found.need_now ? ` Need-now: ${res.not_found.need_now.status} (${res.not_found.need_now.now}).` : ""}`;
   return `${head}\n\n${res.pending_draft ? `> A draft is waiting for a person to accept: \`${res.pending_draft.accept}\`\n\n` : ""}${md(res.result)}`;
 }
 
+/** What the overview reads of purpose/validation/assess (packages/naive/src/engine/assess-problem.ts). */
+type Assessed = { supports: unknown; next: unknown; assumptions: { assumption: string; label: string }[]; missing: unknown[] };
+/** What the overview reads of system/time-to-ready (packages/naive/src/engine/time-to-ready.ts). */
+type Ready = { running: { on?: string; missing: string[] }; layers: { layer: string; ready_on?: string; missing: string[] }[] };
 // The overview's slots (@slot): each is computed on its own, so one failing does not stop the rest.
 async function overview(venture: string | undefined, workspace: string | undefined) {
   const dir = ventureDir(venture, workspace);
-  const v = load(join(dir, "venture.json")) as Venture;
+  // callInAction answered "no venture" before reaching here, so dir is found.
+  if (!dir) throw new Error(`no venture ${venture}`);
+  const v = load<Venture>(join(dir, "venture.json"));
   const slot = async (name: string, f: () => unknown): Promise<Slot> => { try { return { slot: name, data: await f() }; } catch (e) { return { slot: name, error: messageOf(e).split("\n")[0] }; } };
-  const run = async (route: string) => { const r = await call({ venture, route, action: "run", workspace }); if (!r.ok) throw new Error(r.error); return r.result; };
-  const read = async (route: string) => { const r = await call({ venture, route, action: "read", workspace }); if (!r.ok) throw new Error(r.error); return r.result ?? r.not_found?.note; };
+  // Each slot names the shape of the command or record it reads (a parse boundary); a slot whose answer lacks a field fails alone, as before.
+  const run = async <T>(route: string): Promise<T> => { const r = await call({ venture, route, action: "run", workspace }); if (!r.ok) throw new Error(r.error); return r.result as T; };
+  const read = async <T>(route: string): Promise<T | string> => { const r = await call({ venture, route, action: "read", workspace }); if (!r.ok) throw new Error(r.error); return (r.result ?? (r as Answer & { not_found?: { note?: string } }).not_found?.note) as T | string; };
   return {
     venture: v.id,
     slots: await Promise.all([
       slot("@venture", () => ({ name: v.name, phase: v.phase, ambition: scale(dir, v), status: v.status, promise: v.core?.promise ?? null })),
-      slot("@telos", async () => { const t = await read("purpose/telos"); return typeof t === "string" ? t : { end: t.end ?? t.statement ?? null, phases: (t.phases ?? []).map((p: { phase: string }) => p.phase) }; }),
-      slot("@validation", async () => { const r = await call({ venture, route: "purpose/validation/assess", action: "run", input: { as_is: true }, workspace }); if (!r.ok) throw new Error(r.error); const a = r.result; return { supports: a.supports, next: a.next, assumptions: a.assumptions.map((x: { assumption: string; label: string }) => `${x.assumption}: ${x.label}`).join(", "), missing: a.missing.length }; }),
-      slot("@need-now", async () => (await run("system/need-now")).rows.filter((x: { status: string }) => x.status === "suggest now").map((x: { type: string; now: string; why: string }) => ({ record: x.type, now: x.now, why: x.why }))),
-      slot("@ready", async () => { const t = await run("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l: { layer: string; ready_on?: string; missing: string[] }) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
-      slot("@team", async () => { const p = await read("people/team-plan"); if (typeof p === "string") return p; return p.roles.map((x: TeamPlan["roles"][number]) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
+      slot("@telos", async () => { const t = await read<{ end?: string; statement?: string; phases?: { phase: string }[] }>("purpose/telos"); return typeof t === "string" ? t : { end: t.end ?? t.statement ?? null, phases: (t.phases ?? []).map((p: { phase: string }) => p.phase) }; }),
+      slot("@validation", async () => { const r = await call({ venture, route: "purpose/validation/assess", action: "run", input: { as_is: true }, workspace }); if (!r.ok) throw new Error(r.error); const a = r.result as Assessed; return { supports: a.supports, next: a.next, assumptions: a.assumptions.map((x: { assumption: string; label: string }) => `${x.assumption}: ${x.label}`).join(", "), missing: a.missing.length }; }),
+      slot("@need-now", async () => (await run<{ rows: { status: string; type: string; now: string; why: string }[] }>("system/need-now")).rows.filter((x: { status: string }) => x.status === "suggest now").map((x: { type: string; now: string; why: string }) => ({ record: x.type, now: x.now, why: x.why }))),
+      slot("@ready", async () => { const t = await run<Ready>("system/time-to-ready"); return { running: t.running.on ?? `not yet: ${t.running.missing.join(", ")}`, layers: t.layers.map((l: { layer: string; ready_on?: string; missing: string[] }) => ({ layer: l.layer, ready: l.ready_on ?? `missing ${l.missing.join(", ")}` })) }; }),
+      slot("@team", async () => { const p = await read<TeamPlan>("people/team-plan"); if (typeof p === "string") return p; return p.roles.map((x: TeamPlan["roles"][number]) => ({ role: x.id, occupant: x.occupant, status: x.status, needed_by: x.needed_by })); }),
       slot("@packages", () => packageSlots(dir, venture)), // P-17: a package with nothing in it shows its default
-      slot("@provenance", () => provEntries(dir).slice(-5).reverse().map((e: { at: string; activity: string; entity: string; agent: { kind: string; id?: string; via?: string } }) => ({ at: e.at, activity: e.activity, entity: e.entity, by: `${e.agent.kind}${e.agent.id ? ` ${e.agent.id}` : ""} via ${e.agent.via}` }))),
+      slot("@provenance", () => provEntries(dir).slice(-5).reverse().map((e) => ({ at: e.at, activity: e.activity, entity: e.entity, by: `${e.agent?.kind}${e.agent?.id ? ` ${e.agent.id}` : ""} via ${e.agent?.via}` }))),
     ]),
   };
 }

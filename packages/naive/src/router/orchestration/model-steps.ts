@@ -46,7 +46,8 @@ import { dirname, join, resolve as resolvePath } from "node:path";
 import { call as routerCall, files as ventureFiles, glob, routes } from "../router.ts";
 import type { Answer, CallArgs, RouteEntry } from "../router.ts";
 import type { BoundedKit } from "../kit-boundary.ts";
-import type { Judgment, ProvenanceEntry, Venture } from "../../records/types/records.d.ts";
+import type { Judgment, Venture } from "../../records/types/records.d.ts";
+import type { Entry as LogEntry } from "../../core/provenance.ts";
 import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.ts";
 import { decisions as decisionsOf, propose } from "../../engine/decisions.ts";
 import { loadPackages } from "../../engine/load-packages.ts";
@@ -662,10 +663,10 @@ export async function run(dir: string, declared: Declared[], { ask, speculate = 
 const WRITES = new Set(["write", "draft", "accept", "baseline", "move"]);
 /** The person who confirmed a file's current content, or null. */
 function confirmedBy(dir: string, file: string) {
-  const es: ProvenanceEntry[] = provEntries(dir).filter((e: ProvenanceEntry) => e.entity === file);
+  const es: LogEntry[] = provEntries(dir).filter((e) => e.entity === file);
   const last = es.filter((e) => WRITES.has(e.activity)).at(-1);
-  const c = last && es.slice(es.indexOf(last) + 1).find((e) => e.activity === "confirm" && e.agent.kind === "person");
-  return c ? c.agent.id ?? "a person" : null;
+  const c = last && es.slice(es.indexOf(last) + 1).find((e) => e.activity === "confirm" && e.agent?.kind === "person");
+  return c ? c.agent?.id ?? "a person" : null;
 }
 const isModelJudgment = (dir: string, f: string) => {
   if (!glob(`${JUDGMENTS}/*.json`).test(f) || !existsSync(ventureFile(dir, f))) return false;
@@ -682,14 +683,14 @@ export type Whose = { entity: string; status: string; model: boolean; downstream
  */
 export async function provenanceOf(dir: string, file: string, { checks = false, call = routerCall, workspace, seen = new Set<string>() }: { checks?: boolean; call?: Call; workspace?: string; seen?: Set<string> } = {}): Promise<Whose> {
   seen.add(file);
-  const es: ProvenanceEntry[] = provEntries(dir).filter((e: ProvenanceEntry) => e.entity === file);
+  const es: LogEntry[] = provEntries(dir).filter((e) => e.entity === file);
   const writes = es.filter((e) => WRITES.has(e.activity));
   const last = writes.at(-1);
   if (!last) return { entity: file, status: "unlogged", model: false, downstream_of_model: [], why: "not in the provenance log" };
-  const confirmed = es.slice(es.indexOf(last) + 1).find((e) => e.activity === "confirm" && e.agent.kind === "person");
-  const model = isModelJudgment(dir, file) && last.agent.kind === "agent";
-  if (last.agent.kind === "person" || confirmed) return { entity: file, status: "person", model: false, downstream_of_model: [],
-    why: confirmed ? `confirmed by ${confirmed.agent.id ?? "a person"}` : `${last.activity === "accept" ? "accepted" : "written"} by ${last.agent.id ?? "a person"}` };
+  const confirmed = es.slice(es.indexOf(last) + 1).find((e) => e.activity === "confirm" && e.agent?.kind === "person");
+  const model = isModelJudgment(dir, file) && last.agent?.kind === "agent";
+  if (last.agent?.kind === "person" || confirmed) return { entity: file, status: "person", model: false, downstream_of_model: [],
+    why: confirmed ? `confirmed by ${confirmed.agent?.id ?? "a person"}` : `${last.activity === "accept" ? "accepted" : "written"} by ${last.agent?.id ?? "a person"}` };
   const upstream: string[] = [];
   for (const d of (last.derived_from ?? []).map((x) => x.split("#")[0]).filter((x) => !seen.has(x) && existsSync(ventureFile(dir, x)))) {
     const u = await provenanceOf(dir, d, { seen });
