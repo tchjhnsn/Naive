@@ -10,10 +10,11 @@
 //     called from withSpan nests under it;
 //   - status: error, with the first line of the failure, when the span's exit is a failure; an interruption is error too.
 //
-// Not built: a provenance line written inside an Effect span does not name it yet, because provenance finds the
-// current span through AsyncLocalStorage and an Effect fiber does not carry it (phase 7 moves provenance to a service).
+// A provenance line written inside an Effect span names it (traceContextOf, read by core/provenance.ts), when the
+// span is this tracer's for the same venture and that venture writes traces.
+import { resolve } from "node:path";
 import { Cause, Exit, Option, Tracer } from "effect";
-import { currentSpan, SPAN_KINDS, span as writeSpan, type SpanKind } from "../instrumentation.ts";
+import { currentSpan, SPAN_KINDS, span as writeSpan, type SpanKind, tracing } from "../instrumentation.ts";
 
 const KIND = "naive.kind";
 const SESSION = "naive.session";
@@ -70,3 +71,10 @@ export const inSession = (session: string): Record<string, string> => ({ [SESSIO
 
 /** Sets the trace kind of a span: `Effect.withSpan(name, { attributes: { ...asKind("tool") } })`. */
 export const asKind = (kind: SpanKind): Record<string, string> => ({ [KIND]: kind });
+
+/**
+ * The trace span a provenance line should name, for an Effect span: its ids and session when it is a NaiveTracer
+ * span for `dir` and that venture writes traces, so the line never names a span no trace file will hold. Else null.
+ */
+export const traceContextOf = (s: Tracer.AnySpan, dir: string): { trace_id: string; span_id: string; session: string } | null =>
+  s instanceof NaiveSpan && resolve(s.dir) === resolve(dir) && tracing(dir).on ? { trace_id: s.traceId, span_id: s.spanId, session: s.session } : null;
