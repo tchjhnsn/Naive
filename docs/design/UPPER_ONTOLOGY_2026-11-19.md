@@ -7,7 +7,7 @@ ai-model: claude
 authority: advisory
 status: DRAFT
 tags: [naive, terms, ontology, bfo, roles, ee-125]
-description: "The upper ontology gains material object and place, and product becomes a role a thing bears, so one thing can be a product and a supply at once (EE-129)."
+description: "The upper ontology gains material object and place, and product becomes a role a thing bears, so one thing can be a product and a supply at once (EE-151)."
 ---
 
 # Upper ontology: things, places and product as a role
