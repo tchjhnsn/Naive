@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "standard.schema.json",
   "title": "Standard",
-  "description": "One outside standard the Everything Ecosystem uses, maps to, has considered or has rejected, one file per standard at packages/naive/src/terms/standards/<id>.json (EE-124). It says what we take from the standard, which of our nouns and record types use it, and the gaps we found in it. That the id matches the file name, that every noun and record type it names exists, and that an adopted or mapped standard names at least one user are checked by node packages/naive/src/terms/standards-test.ts, not here. A citation of a specific source (a book, paper or page) stays a reference record (reference.schema.json); a standard is the thing many references and nouns rest on.",
+  "description": "One outside standard the Everything Ecosystem uses, maps to, has considered or has rejected, one file per standard at packages/naive/src/terms/standards/<id>.json (EE-131). It says what we take from the standard, which of our nouns and record types use it, and the gaps we found in it. That the id matches the file name, that every noun and record type it names exists, and that an adopted or mapped standard names at least one user are checked by node packages/naive/src/terms/standards-test.ts, not here. A citation of a specific source (a book, paper or page) stays a reference record (reference.schema.json); a standard is the thing many references and nouns rest on.",
   "type": "object",
   "required": ["id", "name", "issuer", "url", "status", "checked", "copyright", "uses", "used_by", "gaps"],
   "additionalProperties": false,

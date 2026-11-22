@@ -1782,7 +1782,7 @@
       ]
     },
     {
-      "id": "EE-124",
+      "id": "EE-131",
       "date": "2026-11-19",
       "status": "in-force",
       "decision": "Outside standards are catalogued one record per standard in packages/naive/src/terms/standards/<id>.json (record type standard): what we take from it, its status (adopted, mapped, considered or rejected), the nouns and record types that use it, the gaps we found in it, and the date it was last confirmed at its url, or null with a reason. The catalog lives in Naive beside the ontology because the checks that read it live here, and it moves when the parts shared by every framework of the Everything Ecosystem move out of Naive. A citation of one source stays a reference record. A noun's standard field becoming a catalog id is not built.",

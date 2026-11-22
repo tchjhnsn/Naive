@@ -4,7 +4,7 @@ Up: [terms](../README.md)
 
 ## What this is
 
-The catalog of outside standards the Everything Ecosystem uses, maps to, has considered or has rejected: one record per standard, each saying what we take from it, which of our nouns and record types use it, and the gaps we found in it (EE-124). A citation of one source, such as a book or a page, stays a reference record; a standard is what many references and nouns rest on. Each record follows [`standard.schema.json`](../../records/standard.schema.json).
+The catalog of outside standards the Everything Ecosystem uses, maps to, has considered or has rejected: one record per standard, each saying what we take from it, which of our nouns and record types use it, and the gaps we found in it (EE-131). A citation of one source, such as a book or a page, stays a reference record; a standard is what many references and nouns rest on. Each record follows [`standard.schema.json`](../../records/standard.schema.json).
 
 ## Where things are
 

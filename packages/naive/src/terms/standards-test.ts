@@ -1,4 +1,4 @@
-// Checks the catalog of standards (EE-124): packages/naive/src/terms/standards/<id>.json holds one outside standard per
+// Checks the catalog of standards (EE-131): packages/naive/src/terms/standards/<id>.json holds one outside standard per
 // file, with what we take from it, its status, the nouns and record types that use it and the gaps found in it.
 //
 //   node packages/naive/src/terms/standards-test.ts               fixture cases, then the repository

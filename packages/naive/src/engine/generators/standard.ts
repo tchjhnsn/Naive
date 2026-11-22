@@ -1,4 +1,4 @@
-// Record generator for the catalog of standards (EE-099, EE-124). Each standard is one file,
+// Record generator for the catalog of standards (EE-099, EE-131). Each standard is one file,
 // packages/naive/src/terms/standards/<id>.json, in the framework, so the generator drafts one new file with an id that
 // no file has yet. It is a change to the framework (a pull request), not a venture route. A standard not yet confirmed
 // at its url (checked null) must say why in note, as packages/naive/src/terms/standards-test.ts requires.
