@@ -28,16 +28,19 @@
 import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-// The framework: the checkout this package sits in, or the installed naive-framework package.
+// The framework: the checkout this package sits in, or the installed naive-framework package. Node does not strip
+// types under node_modules, so an installed framework runs from its compiled copy, dist/ (EE-159).
 const framework = (() => {
   const checkout = resolve(here, "../..");
-  if (existsSync(join(checkout, "packages/naive/src/engine/init-venture.mjs"))) return checkout;
-  try { return dirname(fileURLToPath(import.meta.resolve("naive-framework/package.json"))); } catch { return null; }
+  const root = existsSync(join(checkout, "packages/naive/src/engine/init-venture.mjs")) ? checkout
+    : (() => { try { return dirname(fileURLToPath(import.meta.resolve("naive-framework/package.json"))); } catch { return null; } })();
+  if (!root) return null;
+  return root.split(sep).includes("node_modules") && existsSync(join(root, "dist/package.json")) ? join(root, "dist") : root;
 })();
 if (!framework) { console.error("create-venture could not find the Naive framework (naive-framework) to create the venture with"); process.exit(1); }
 const fw = JSON.parse(readFileSync(join(framework, "package.json"), "utf8"));
