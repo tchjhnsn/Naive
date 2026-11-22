@@ -26,7 +26,8 @@ const all = run("tsconfig.json");
 const strict = run("tsconfig.strict.json");
 const failing = [...all.errors, ...strict.errors];
 
-const tracked = spawnSync("git", ["ls-files", "*.mjs", "*.ts"], { cwd: root, encoding: "utf8" }).stdout.split("\n");
+// repos/ is vendored reference source (AGENTS.md, Vendored repositories), excluded in tsconfig.json too.
+const tracked = spawnSync("git", ["ls-files", "*.mjs", "*.ts", ":!repos"], { cwd: root, encoding: "utf8" }).stdout.split("\n");
 const suppressed = tracked.filter((f) => f && existsSync(join(root, f))
   && new RegExp(SUPPRESS).test(readFileSync(join(root, f), "utf8")));
 
