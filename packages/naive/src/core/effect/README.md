@@ -4,7 +4,7 @@ Up: [core](../README.md)
 
 ## What this is
 
-Naive's base for code written with [Effect](https://effect.website) (EE-125). It holds the tagged errors every Effect in Naive fails with, the file system and naive.config.json as services, the venture runtime that builds a venture's services once (EE-161), and the runners that let code that is not Effect yet call code that is. Effect is pinned to one exact version in the root `package.json`. The files are strict TypeScript; the package ships them compiled to `.mjs` (EE-159, EE-160), so an app that imports the old `.mjs` names keeps working.
+Naive's base for code written with [Effect](https://effect.website) (EE-125). It holds the tagged errors every Effect in Naive fails with, the file system, naive.config.json, where Naive runs and its judge as services, the venture runtime that builds a venture's services once (EE-161), and the runners that let code that is not Effect yet call code that is. Effect is pinned to one exact version in the root `package.json`. The files are strict TypeScript; the package ships them compiled to `.mjs` (EE-159, EE-160), so an app that imports the old `.mjs` names keeps working.
 
 ```mermaid
 flowchart LR
@@ -19,6 +19,10 @@ flowchart LR
   EFF -->|"yield* NaiveConfig, read(dir)"| CFG{{NaiveConfig}}
   CFG -->|NaiveConfigFile, the default| FS
   CFG -->|NaiveConfigOf, fixed configs| FIX[(a record per folder)]
+  EFF -->|askJudge| JUDGE{{Judge}}
+  JUDGE --> HOST{{HostRuntime}}
+  HOST -->|HostRuntimeLive: NAIVE_RUNTIME and registerHook| HOOKS[(the host's hooks)]
+  JUDGE -->|laptop| CMD[(NAIVE_JUDGE_CMD)]
   EFF -->|fails with| ERR["IoError, ParseError, NotFound,<br/>SchemaInvalid, Refused, CannotRun,<br/>VersionConflict"]
 ```
 
@@ -42,7 +46,8 @@ stateDiagram-v2
 | [`errors.ts`](./errors.ts) | The tagged errors, each with a readable `message`: `IoError`, `ParseError`, `NotFound`, `SchemaInvalid`, `Refused` (the gate, access or a writer rule), `CannotRun` (exit code 2) and `VersionConflict` (a compare-on-write whose base is stale, built with the connector contract's `(path, base, current)`), and their union `NaiveError`. Catch one with `Effect.catchTag`. |
 | [`fs.ts`](./fs.ts) | `VentureFs`, the file system as a service (`exists`, `readText`, `readBytes`, `writeText` of text or bytes, `append`, `createExclusive` for a lock file, `stat`, `link`, `list`, `isDirectory`, `rename`, `remove`); `NodeFs`, its layer over `node:fs`; `MemoryFs` and `memoryFs`, an in-memory one for tests; `readJson` and `writeJson`, which write JSON the way every record is written. |
 | [`config.ts`](./config.ts) | `NaiveConfig`, the venture's `naive.config.json` as a service: `read(dir)` gives the file as written, `{}` when there is none, and fails with `ParseError` when it is not JSON. `NaiveConfigFile`, its default layer, reads through `VentureFs`; `NaiveConfigOf` gives fixed configs by folder for a test or a host; `configOf(dir)` reads through whichever is provided. The engine's `readConfig`, `rawConfig` and `configFor` (`../../engine/naive-config.ts`) read through it with their old shapes and messages. Overrides from `NAIVE_*` environment variables are not built. |
-| [`runtime.ts`](./runtime.ts) | `VentureLayer(dir, overrides?)`, the layer of a venture's services, and `ventureRuntime(dir, overrides?)`, a `ManagedRuntime` built from it (EE-161). Its services are `VentureFs` (`NodeFs` unless `overrides.fs` gives another layer, such as `MemoryFs` in a test) and `NaiveConfig` (`NaiveConfigFile` over that file system unless `overrides.config` gives another). `VentureServices` names what a venture's Effects may ask for. Each runtime builds its own layer, so two ventures given their own layers share no service, and disposing one leaves the other running. `dir` names the venture; no service reads under it yet. |
+| [`host.ts`](./host.ts) | `HostRuntime`, where Naive runs (`hosted`, `hook(name)`, `envCommand(name)`): `HostRuntimeLive` asks `../runtime.ts` at each call, so `NAIVE_RUNTIME` and `registerHook` work as before, even for a hook registered after the runtime was built; `Laptop` and `Hosted(hooks)` are fixed layers. `Judge`, System 1's judge (`ask({ feature, input, cmd? })`, or `askJudge`): hosted, the host's judge hook or a `HostedRefusal`; on a laptop, the command in `NAIVE_JUDGE_CMD` or `cmd`, and null when there is none. `JudgeLive` asks through the provided `HostRuntime`; `JudgeFake` answers from a function. The judgment cache's `judge` (`../../engine/caching.ts`) asks through it. Frames, the venture type classifier and the harnesses still read the judge command themselves. |
+| [`runtime.ts`](./runtime.ts) | `VentureLayer(dir, overrides?)`, the layer of a venture's services, and `ventureRuntime(dir, overrides?)`, a `ManagedRuntime` built from it (EE-161). Its services are `VentureFs` (`NodeFs` unless `overrides.fs` gives another layer, such as `MemoryFs` in a test), `NaiveConfig` (`NaiveConfigFile` over that file system unless `overrides.config` gives another), `HostRuntime` (`HostRuntimeLive` unless `overrides.host`) and `Judge` (`JudgeLive` over that host unless `overrides.judge`). `VentureServices` names what a venture's Effects may ask for. Each runtime builds its own layer, so two ventures given their own layers share no service, and disposing one leaves the other running. `dir` names the venture; no service reads under it yet. |
 | [`run.ts`](./run.ts) | `runSync` and `runPromise` run through one venture runtime for the process (`ventureRuntime(".")`, never disposed) and throw the tagged error itself, so a module moved to Effect keeps its exports; `runMain` runs a CLI's Effect through it, prints a failure in one line (`describe`) and sets the exit code (`exitCode`). |
 
 ## How to write Naive code with Effect
@@ -59,6 +64,7 @@ stateDiagram-v2
 
 - `node packages/naive/src/core/effect/effect-test.ts` tests the errors, both file systems, the runners and the venture runtime: a runtime on `MemoryFs` reads and writes without touching the disk, a disposed runtime has released its layer and refuses to run, and two ventures' runtimes stay separate. `node test.ts` runs it.
 - `node packages/naive/src/core/effect/config-test.ts` tests `NaiveConfig`: the file layer on `MemoryFs`, a missing and a broken file, fixed configs and the runtime's override; `node packages/naive/src/engine/naive-config-test.ts` tests the engine reading through it unchanged.
+- `node packages/naive/src/core/effect/host-test.ts` tests `HostRuntime` and `Judge`: the fixed layers, a hosted refusal and a hook, a laptop command and none, the fake judge, the live layer reading `registerHook` after the runtime was built, and the runtime's overrides.
 - `node packages/naive/src/core/provenance-effect-test.ts` tests the provenance and blob Effects on `MemoryFs`.
 
 ## How it connects
