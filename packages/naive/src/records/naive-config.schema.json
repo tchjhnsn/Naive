@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "naive-config.schema.json",
   "title": "naive.config.json",
-  "description": "A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.ts <venture dir> checks it.",
+  "description": "A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.ts. node packages/naive/src/checks/check-config.ts <venture dir> checks it.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -39,7 +39,7 @@
     "beta": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The plugin beta's gate (packages/naive/src/engine/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default.",
+      "description": "The plugin beta's gate (packages/naive/src/engine/beta-gate.ts): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default.",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -77,7 +77,7 @@
     "telemetry": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Usage telemetry (packages/naive/src/engine/telemetry.mjs, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on.",
+      "description": "Usage telemetry (packages/naive/src/engine/telemetry.ts, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on.",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -244,7 +244,8 @@
               "channel": {
                 "enum": [
                   "stable",
-                  "canary"
+                  "canary",
+                  "experimental"
                 ]
               }
             }
@@ -293,7 +294,7 @@
     "publish_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The publish lint (packages/naive/src/engine/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived",
+      "description": "The publish lint (packages/naive/src/engine/publish-lint.ts): each rule off, warn or error, the marks to flag, and findings a person waived",
       "properties": {
         "rules": {
           "type": "object",
@@ -354,7 +355,7 @@
     "publish_build": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one",
+      "description": "The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.ts): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one",
       "properties": {
         "out": {
           "type": "string",
@@ -392,7 +393,17 @@
     },
     "triggers": {
       "type": "array",
-      "description": "What starts the next step on an event (packages/naive/src/router/orchestration/triggers.mjs)"
+      "items": {
+        "$ref": "trigger.schema.json"
+      },
+      "description": "What starts the next step on an event (packages/naive/src/router/orchestration/triggers.ts)"
+    },
+    "triggers_off": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Trigger ids switched off: a person answering a failed run with off adds its id here, and the trigger stays off until the id is removed (packages/naive/src/router/orchestration/triggers.ts)"
     },
     "listeners": {
       "type": "array",
@@ -684,7 +695,7 @@
     "phase_gates": {
       "type": "object",
       "additionalProperties": false,
-      "description": "How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.mjs, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only.",
+      "description": "How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.ts, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only.",
       "properties": {
         "preset": {
           "enum": [

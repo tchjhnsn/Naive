@@ -8,10 +8,10 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "./router.mjs";
-import { appendTrial, ledgerPath, read, resolveTrial, verify } from "./detection-ledger.mjs";
-import { entries } from "../core/provenance.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { call } from "./router.ts";
+import { appendTrial, ledgerPath, read, resolveTrial, verify } from "./detection-ledger.ts";
+import { entries } from "../core/provenance.ts";
+import { validateValue } from "../records/validate.ts";
 
 const repo = new URL("../../../../", import.meta.url).pathname;
 let failed = 0;
@@ -22,13 +22,13 @@ delete env.MENTURA_ACTOR_ID;
 delete env.MENTURA_PERSON;
 delete process.env.MENTURA_ACTOR_ID;
 delete process.env.MENTURA_PERSON;
-const cliPath = join(repo, "packages/naive/src/interfaces/cli/mentura.mjs");
+const cliPath = join(repo, "packages/naive/src/interfaces/cli/mentura.ts");
 const cli = (...a: string[]) => spawnSync(process.execPath, [cliPath, ...a], { encoding: "utf8", env });
 const json = (o: unknown): string => JSON.stringify(o, null, 2) + "\n";
 // Each record names the venture it is written to (the router refuses another, naive#71).
 const solution = (statement: string, venture = "x") => ({ venture, statement, alternatives: ["a receptionist"], evidence: [] });
 const DETECTOR = {
-  id: "gate-confidence", tier: "low", call_site: "packages/naive/src/engine/gate.mjs confidence_below",
+  id: "gate-confidence", tier: "low", call_site: "packages/naive/src/engine/gate.ts confidence_below",
   question: { verb: "hold", noun: "write", asking_function: "governance", text: "Does this write need a person?" },
   evidence: { kind: "founder-agent", sensor: "the writing agent", scale: { min: 0, max: 1, meaning: "the agent's confidence in its write" }, sources: [{ source: "venture", records: "system/provenance" }] },
   criterion: { yes: { value: 0.7, set_by: "test" } },
@@ -114,7 +114,7 @@ const ctx = (v: string) => ({ venture: v, workspace: ws });
 {
   const dir = venture("parallel", true);
   const writers = 6, each = 5;
-  const mod = new URL("./detection-ledger.mjs", import.meta.url).href;
+  const mod = new URL("./detection-ledger.ts", import.meta.url).href;
   const code = `const { appendTrial } = await import(${JSON.stringify(mod)});
 for (let i = 0; i < ${each}; i++) { const r = await appendTrial({ venture: "parallel", workspace: ${JSON.stringify(ws)} }, { detector: "gate-confidence", score: Math.random(), criterion: { yes: 0.7 }, call: "no" }); if (!r.ok) { console.error(r.error); process.exit(1); } }`;
   const runs = await Promise.all(Array.from({ length: writers }, () => new Promise<number>((done) => {
@@ -149,13 +149,13 @@ process.exit(r.ok ? 0 : 3);`;
   const id = (t.result as { line: { id: string } } | undefined)?.line.id ?? "";
   const by = { kind: "person" as const, id: "founder" };
   const unknown = await resolveTrial(ctx("refuse"), { detector: "gate-confidence", trial: "no-such-trial", outcome: "hit", by });
-  expect("a resolution for an unknown trial is refused", !unknown.ok && /holds no trial/.test(unknown.error), JSON.stringify(unknown));
+  expect("a resolution for an unknown trial is refused", !unknown.ok && /holds no trial/.test(unknown.error ?? ""), JSON.stringify(unknown));
   const wrong = await resolveTrial(ctx("refuse"), { detector: "gate-confidence", trial: id, outcome: "miss", by });
-  expect("a yes call cannot resolve as a miss", !wrong.ok && /cannot resolve as miss/.test(wrong.error), JSON.stringify(wrong));
+  expect("a yes call cannot resolve as a miss", !wrong.ok && /cannot resolve as miss/.test(wrong.error ?? ""), JSON.stringify(wrong));
   const first = await resolveTrial(ctx("refuse"), { detector: "gate-confidence", trial: id, outcome: "hit", by });
   const dup = await resolveTrial(ctx("refuse"), { detector: "gate-confidence", trial: id, outcome: "false-alarm", by });
   expect("the first resolution lands", first.ok, JSON.stringify(first));
-  expect("a second resolution of the same trial is refused", !dup.ok && /already resolved/.test(dup.error), JSON.stringify(dup));
+  expect("a second resolution of the same trial is refused", !dup.ok && /already resolved/.test(dup.error ?? ""), JSON.stringify(dup));
   const sameId = await call({ venture: "refuse", workspace: ws, route: "governance/detector-trial/gate-confidence", action: "append", input: { line: { kind: "trial", id, detector: "gate-confidence", at: new Date().toISOString(), score: 0.1, criterion: { yes: 0.7 }, call: "yes" } } }) as Reply;
   expect("a line whose id the ledger holds is refused", !sameId.ok && /already holds a line/.test(sameId.error ?? ""), JSON.stringify(sameId));
   const { version } = await read(ctx("refuse"), "gate-confidence");

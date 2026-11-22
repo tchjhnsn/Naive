@@ -45,7 +45,7 @@
   ],
   "weights": {
     "version": "0.1.0",
-    "note": "Unvalidated priors, ours: how much each function's open decisions count when decisions are ranked across functions in this phase. They sum to 1. The decision queue ranks with them (packages/naive/src/engine/decision-queue.mjs, EE-127).",
+    "note": "Unvalidated priors, ours: how much each function's open decisions count when decisions are ranked across functions in this phase. They sum to 1. The decision queue ranks with them (packages/naive/src/engine/decision-queue.ts, EE-127).",
     "functions": {
       "strategy": {
         "weight": 0.12,

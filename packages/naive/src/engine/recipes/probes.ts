@@ -12,7 +12,7 @@
 // consumer probes holds still while recipes change, and two consumers that hear one signal draw apart. Who reads it:
 // the pull marks probes when it writes reception files, which is build plan item 9 (not built).
 import { createHash } from "node:crypto";
-import { rawConfig } from "../naive-config.mjs";
+import { rawConfig } from "../naive-config.ts";
 
 /** What a probed noise reception carries: the rate it was drawn at, which is its propensity. */
 export type Probe = { rate: number };

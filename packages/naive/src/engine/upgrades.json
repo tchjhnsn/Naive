@@ -35,21 +35,21 @@
   "migrations": [
     {
       "id": "package-layout",
-      "module": "packages/naive/src/engine/migrations/package-layout.mjs",
+      "module": "packages/naive/src/engine/migrations/package-layout.ts",
       "package": null,
       "decision": "EE-070",
       "aliases": "packages/naive/src/router/route-aliases.json"
     },
     {
       "id": "kit-to-package",
-      "module": "packages/naive/src/engine/migrations/kit-to-package.mjs",
+      "module": "packages/naive/src/engine/migrations/kit-to-package.ts",
       "package": null,
       "decision": "EE-071",
       "aliases": "packages/naive/src/router/route-aliases.json"
     },
     {
       "id": "icp-profiles",
-      "module": "packages/naive/src/engine/migrations/icp-profiles.mjs",
+      "module": "packages/naive/src/engine/migrations/icp-profiles.ts",
       "package": "foundation",
       "from": "0.3.0",
       "to": "0.4.0",
@@ -57,7 +57,7 @@
     },
     {
       "id": "telos-to-goals",
-      "module": "packages/naive/src/engine/migrations/telos-to-goals.mjs",
+      "module": "packages/naive/src/engine/migrations/telos-to-goals.ts",
       "package": "foundation",
       "from": "0.4.0",
       "to": "0.5.0",

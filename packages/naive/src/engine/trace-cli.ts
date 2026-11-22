@@ -12,7 +12,7 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { sessions, span, spans, tracing } from "../core/instrumentation.mjs";
+import { sessions, span, spans, tracing } from "../core/instrumentation.ts";
 import type { TraceSpan } from "../records/types/records.d.ts";
 
 type Input = { name: string, kind: string, trace_id?: string, span_id?: string, parent_span_id?: string, start?: string, end?: string, status?: string, error?: string, attributes?: Record<string, unknown> };

@@ -9,10 +9,10 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { LOCAL, MAP, registry } from "../store/connectors/index.mjs";
-import { ANY, CONTEXT, specificity } from "../store/connectors/resolve.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { readDataModel } from "../records/index.mjs";
+import { LOCAL, MAP, registry } from "../store/connectors/index.ts";
+import { ANY, CONTEXT, specificity } from "../store/connectors/resolve.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { readDataModel } from "../records/index.ts";
 import type { DataModel, KnowledgeSources, SystemsCatalog, Venture } from "../records/types/records.d.ts";
 
 /** One rule of a source map's source-of-truth matrix (EE-042). */

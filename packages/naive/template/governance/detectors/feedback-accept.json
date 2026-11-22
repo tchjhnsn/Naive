@@ -2,7 +2,7 @@
   "id": "feedback-accept",
   "title": "Accept Jev's routing of a feedback item",
   "description": "Feedback routing takes Jev's destination for a beta tester's feedback when Jev's confidence is at or above the line. Below it, the fallback decides.",
-  "call_site": "packages/naive/src/engine/feedback-route.mjs route, accept",
+  "call_site": "packages/naive/src/engine/feedback-route.ts route, accept",
   "tier": "low",
   "question": {
     "verb": "accept",

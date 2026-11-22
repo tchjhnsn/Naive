@@ -52,7 +52,7 @@
     "Two connectors so far (filesystem and GitHub); a database, Notion, Slack or Salesforce each need their own module meeting the same contract",
     "Checks and command routes (need-now, time-to-ready, validation score) still read the venture folder, so they do not yet see a record kept in another source",
     "A merged pull request is not logged as an accept in provenance; the read after the merge is the only sign",
-    "Freshness (packages/naive/src/engine/freshness.mjs) checks children in the venture folder only; a child in another source is listed as needing the platform, and a webhook from a system of record that marks summaries stale (V-9) is the platform's"
+    "Freshness (packages/naive/src/engine/freshness.ts) checks children in the venture folder only; a child in another source is listed as needing the platform, and a webhook from a system of record that marks summaries stale (V-9) is the platform's"
   ],
   "name": "knowledge"
 }

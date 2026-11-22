@@ -1159,7 +1159,7 @@
     {
       "noun": "preference stack",
       "level": "governance",
-      "meaning": "The order and amounts in which a sale's proceeds reach each owner, preferences first by seniority, then common; computed from the cap table by packages/naive/src/engine/payouts.mjs, never typed",
+      "meaning": "The order and amounts in which a sale's proceeds reach each owner, preferences first by seniority, then common; computed from the cap table by packages/naive/src/engine/payouts.ts, never typed",
       "standard": "venture finance usage (pref stack; Feld and Mendelson, Venture Deals)",
       "status": "new",
       "function": null,

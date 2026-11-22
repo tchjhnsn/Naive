@@ -9,8 +9,8 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { PACKAGE_FUNCTION } from "../core/venture-paths.mjs";
-import { routes } from "../records/routes/routes.mjs";
+import { PACKAGE_FUNCTION } from "../core/venture-paths.ts";
+import { routes } from "../records/routes/routes.ts";
 import type { CapabilityCluster, Connection } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../../", import.meta.url).pathname;

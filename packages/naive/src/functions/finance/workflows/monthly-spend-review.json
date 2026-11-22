@@ -12,7 +12,7 @@
     { "id": "update-summary", "do": "Rewrite the money summary with this month's burn and the runway projected from the revised budget, and raise priorities to the finance lead if runway fell under six months.", "writes": ["purpose/money/summary"], "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
     { "id": "every-flag-decided-or-open", "kind": "review", "check": "Is every flagged spend item either kept with a reason or open as a decision for the founder?", "reviewer": "finance-lead" }
   ]
 }

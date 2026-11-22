@@ -6,8 +6,8 @@
 // else, so an agent may use this generator only to show the starter to a person.
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cli, repo } from "./generate.mjs";
-import { isFunction, programPath, templateOf } from "../research-programs.mjs";
+import { cli, repo } from "./generate.ts";
+import { isFunction, programPath, templateOf } from "../research-programs.ts";
 
 export const record = "research-program";
 export const describe = () => ({ record, ask: [

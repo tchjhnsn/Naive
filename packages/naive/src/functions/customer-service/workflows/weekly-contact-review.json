@@ -11,7 +11,7 @@
     { "id": "propose-removal", "do": "For the top contact reason by volume, propose to the growth lead whether to remove it with a product or policy fix, answer it with published help, or keep handling it.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
     { "id": "top-reason-decided", "kind": "review", "check": "Does the top contact reason this week have a proposal open or decided, and does every count cite the cases it came from?", "reviewer": "growth-lead" }
   ]
 }

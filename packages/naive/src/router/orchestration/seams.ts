@@ -22,16 +22,16 @@
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { entries } from "../../core/provenance.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
-import { decisionFile, decisionFiles } from "../../engine/decisions.mjs";
-import { criterionFor, detectorFor } from "../../engine/detectors.mjs";
+import { entries } from "../../core/provenance.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { decisionFile, decisionFiles } from "../../engine/decisions.ts";
+import { criterionFor, detectorFor } from "../../engine/detectors.ts";
 import { call as callAt } from "../../engine/generators/detector-trial.ts";
 import { SEAMS } from "../../checks/check-seams.ts";
 import type { Seam, Subject } from "../../checks/check-seams.ts";
 import type { DecisionRecord, DetectorTrial } from "../../records/types/records.d.ts";
-import { appendTrial, read as readLedger, resolveTrial } from "../detection-ledger.mjs";
-import { call } from "../router.mjs";
+import { appendTrial, read as readLedger, resolveTrial } from "../detection-ledger.ts";
+import { call } from "../router.ts";
 
 /** The two answers a lead gives. An answer that starts with DISMISS settles the call as a false alarm. */
 export const ACT = "Act on it: fix the records or the tool";

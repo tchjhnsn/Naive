@@ -4,7 +4,7 @@
 // matrix lacks. packages/naive/src/engine/venture-anatomy.ts checks the record types, owners and coverage.
 import { join } from "node:path";
 import { cli, describeFrom, validate } from "./function-common.ts";
-import { readJson, repo } from "./generate.mjs";
+import { readJson, repo } from "./generate.ts";
 import type { VentureAnatomy } from "../../records/types/records.d.ts";
 
 export const record = "venture-anatomy";

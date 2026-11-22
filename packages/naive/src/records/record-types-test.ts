@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, globSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readDataModel, recordRelative } from "./index.mjs";
+import { readDataModel, recordRelative } from "./index.ts";
 
 type Case = { type: string; accepts: unknown[]; rejects: unknown[] };
 type RecordType = { schema: string | null; form?: string; paths: string[] };
@@ -170,7 +170,7 @@ writeFileSync(output, `${readFileSync(output, "utf8")}// edited\n`);
 expect("--check fails on a hand edit", generate(stale, "--check").status === 1);
 
 // Which files a schema governs comes from packages/naive/src/records/data-model.json; a file two record types match
-// belongs to the more specific glob, as in packages/naive/src/records/validate.mjs.
+// belongs to the more specific glob, as in packages/naive/src/records/validate.ts.
 const model = readDataModel() as { records: RecordType[] };
 const pascal = (s: string) => s.split(/[^a-zA-Z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join("");
 const best = new Map<string, { weight: number; type: string; form: string }>();

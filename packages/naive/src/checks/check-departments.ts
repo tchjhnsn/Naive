@@ -9,7 +9,7 @@
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { catalog, foldersOf } from "../engine/departments.mjs";
+import { catalog, foldersOf } from "../engine/departments.ts";
 import type { DepartmentCatalog, Venture } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];
@@ -27,7 +27,7 @@ for (const v of walk(dir)) {
   ventures++;
   for (const id of listed) {
     if (!byId.has(id)) errors.push(`${venture.id}: departments lists ${id}, which is not in packages/naive/src/functions/departments.json`);
-    else if (!found.some((f) => f.tag?.department === id)) errors.push(`${venture.id}: ${id} is listed but has no folder (node packages/naive/src/engine/add-department.mjs ${v} ${id})`);
+    else if (!found.some((f) => f.tag?.department === id)) errors.push(`${venture.id}: ${id} is listed but has no folder (node packages/naive/src/engine/add-department.ts ${v} ${id})`);
   }
   for (const f of found) {
     folders++;

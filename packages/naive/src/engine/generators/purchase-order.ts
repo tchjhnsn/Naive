@@ -3,7 +3,7 @@
 // rule and named place. The generator takes the id given or derives one from the supplier and the order date, computes
 // the total from the lines and starts the status at draft. The record type carries decision class spend-money, so an
 // agent's write to supply-chain/purchase-orders/<id>.json is held as a draft until a person accepts it.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { PurchaseOrder } from "../../records/types/records.d.ts";
 
 export const record = "purchase-order";

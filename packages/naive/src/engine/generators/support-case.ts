@@ -4,7 +4,7 @@
 // first_response and resolved null. A refund needs the id of the spend-money decision a person made. The case holds no
 // transcript and no contact details. The draft goes to the write chain for support/cases/<id>.json, which only the
 // customer service agent (customer-service-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { SupportCase } from "../../records/types/records.d.ts";
 
 export const record = "support-case";

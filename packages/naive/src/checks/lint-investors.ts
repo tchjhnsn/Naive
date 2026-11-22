@@ -6,7 +6,7 @@
 //
 // Rules are fail-open (warn) by default. naive.config.json investors_lint.rules.<id>.mode set to
 // "fail-closed" makes that rule's findings fail the run (exit 1). Every record is read through
-// ventureFile (packages/naive/src/core/venture-paths.mjs). A missing file or a file that is not JSON is skipped.
+// ventureFile (packages/naive/src/core/venture-paths.ts). A missing file or a file that is not JSON is skipped.
 //
 // A raise decision is a decision whose id or question says raise, raising, fundraise or
 // fundraising. It has a use of funds when the answer, the note, an option or an outcome says
@@ -25,7 +25,7 @@
 // both flagged. Sending does not clear the flag.
 
 import { existsSync, readFileSync } from "node:fs";
-import { logicalFiles, ventureFile } from "../core/venture-paths.mjs";
+import { logicalFiles, ventureFile } from "../core/venture-paths.ts";
 
 // A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
 // types describe valid records, and this lint reads any.
@@ -141,7 +141,7 @@ function hasFigure(n: Loose) {
 
 const figureName = (n: Loose) => (typeof n.name === "string" && n.name.trim() ? n.name.trim() : typeof n.label === "string" && n.label.trim() ? n.label.trim() : "a number");
 
-export { investorsLintCommands } from "../records/routes/commands.mjs";
+export { investorsLintCommands } from "../records/routes/commands.ts";
 
 export function lint(dir: string) {
   const cfg = load(dir, "naive.config.json");
