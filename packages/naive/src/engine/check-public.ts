@@ -11,37 +11,41 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Product, Venture } from "../records/types/records.d.ts";
 
 export const CONTENT = "operations/marketing/content";
 const RUN = 10;
-const words = (s) => s.toLowerCase().replace(/<[^>]+>/g, " ").match(/[a-z0-9$%']+/g) ?? [];
-const runs = (s) => { const w = words(s), out = new Set(); for (let i = 0; i + RUN <= w.length; i++) out.add(w.slice(i, i + RUN).join(" ")); return out; };
-const strings = (x) => typeof x === "string" ? [x] : Array.isArray(x) ? x.flatMap(strings) : x && typeof x === "object" ? Object.values(x).flatMap(strings) : [];
+const words = (s: string): string[] => s.toLowerCase().replace(/<[^>]+>/g, " ").match(/[a-z0-9$%']+/g) ?? [];
+const runs = (s: string) => { const w = words(s), out = new Set<string>(); for (let i = 0; i + RUN <= w.length; i++) out.add(w.slice(i, i + RUN).join(" ")); return out; };
+const strings = (x: unknown): string[] => typeof x === "string" ? [x] : Array.isArray(x) ? x.flatMap(strings) : x && typeof x === "object" ? Object.values(x).flatMap(strings) : [];
 
-export function frontmatter(text) {
+/** A content file's frontmatter: every value a string, except publish, read as true or false. */
+export type Frontmatter = Record<string, string | boolean>;
+
+export function frontmatter(text: string): { meta: Frontmatter; body: string } {
   const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!m) return { meta: {}, body: text };
-  const meta = Object.fromEntries(m[1].split("\n").map((l) => l.match(/^([a-z_]+):\s*(.*)$/)).filter(Boolean).map(([, k, v]) => [k, v.replace(/^["']|["']$/g, "").trim()]));
+  const meta: Frontmatter = Object.fromEntries(m[1].split("\n").map((l) => l.match(/^([a-z_]+):\s*(.*)$/)).filter((x): x is RegExpMatchArray => x !== null).map(([, k, v]) => [k, v.replace(/^["']|["']$/g, "").trim()]));
   if (meta.publish) meta.publish = meta.publish === "true";
   return { meta, body: m[2] };
 }
 
-function files(dir) {
+function files(dir: string): string[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).flatMap((f) => statSync(ventureFile(dir, f)).isDirectory() ? files(ventureFile(dir, f)) : f.endsWith(".mdx") ? [ventureFile(dir, f)] : []);
 }
 
-export function check(dir) {
-  const venture = existsSync(join(dir, "venture.json")) ? JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) : {};
-  const publicText = [venture.name, venture.brand?.tagline].filter(Boolean);
+export function check(dir: string) {
+  const venture: Partial<Venture> = existsSync(join(dir, "venture.json")) ? JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) : {};
+  const publicText = [venture.name, venture.brand?.tagline].filter((t): t is string => Boolean(t));
   const pdir = join(ventureFile(dir, "products"));
-  if (existsSync(pdir)) for (const f of readdirSync(pdir).filter((f) => f.endsWith(".json"))) publicText.push(JSON.parse(readFileSync(join(pdir, f), "utf8")).name ?? "");
+  if (existsSync(pdir)) for (const f of readdirSync(pdir).filter((f) => f.endsWith(".json"))) publicText.push((JSON.parse(readFileSync(join(pdir, f), "utf8")) as Product).name ?? "");
   const allowed = new Set(publicText.flatMap((t) => [...runs(t)]));
   const results = files(ventureFile(dir, CONTENT)).map((f) => {
-    const rel = relative(dir, f), { meta, body } = frontmatter(readFileSync(f, "utf8")), errors = [];
+    const rel = relative(dir, f), { meta, body } = frontmatter(readFileSync(f, "utf8")), errors: string[] = [];
     // variant_of names a record (foundation/problem.json) or one field of it (foundation/problem.json#statement,
     // the form packages/naive/src/engine/visibility.mjs variantOf reads); a field narrows the copy check to that field's text.
-    const [srcRel, field] = (meta.variant_of ?? "").split("#");
+    const [srcRel, field] = String(meta.variant_of ?? "").split("#");
     if (!meta.variant_of) errors.push("names no internal record (variant_of): marketing content is a variant of an internal record");
     else if (!existsSync(ventureFile(dir, srcRel))) errors.push(`variant_of ${meta.variant_of} does not exist`);
     if (!meta.audience) errors.push("names no audience");
@@ -50,8 +54,8 @@ export function check(dir) {
     if (meta.variant_of && existsSync(ventureFile(dir, srcRel))) {
       const src = ventureFile(dir, srcRel);
       const raw = readFileSync(src, "utf8");
-      const record = src.endsWith(".json") ? JSON.parse(raw) : raw;
-      const text = field && typeof record === "object" ? field.split(".").reduce((x, k) => (x == null ? undefined : x[k]), record) : record;
+      const record: unknown = src.endsWith(".json") ? JSON.parse(raw) : raw;
+      const text = field && typeof record === "object" ? field.split(".").reduce<unknown>((x, k) => (x == null ? undefined : (x as Record<string, unknown>)[k]), record) : record;
       if (field && text === undefined) errors.push(`variant_of ${meta.variant_of}: the record has no field ${field}`);
       const internal = new Set(strings(text ?? "").flatMap((s) => [...runs(s)]));
       const leaks = [...runs(body)].filter((r) => internal.has(r) && !allowed.has(r));

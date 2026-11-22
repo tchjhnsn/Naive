@@ -7,18 +7,19 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Bug } from "../records/types/records.d.ts";
 
-export function bugs(dir) {
+export function bugs(dir: string): Bug[] {
   const d = ventureFile(dir, "product/bugs");
   return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => JSON.parse(readFileSync(`${d}/${f}`, "utf8"))) : [];
 }
 
-export const isOpen = (b) => b.status === "open" || b.status === "in-progress";
+export const isOpen = (b: Bug): boolean => b.status === "open" || b.status === "in-progress";
 
-export function summary(dir) {
+export function summary(dir: string) {
   const all = bugs(dir);
   const blocking = all.filter((b) => isOpen(b) && (b.severity === "P0" || b.severity === "P1"));
-  const count = (s) => all.filter((b) => isOpen(b) && b.severity === s).length;
+  const count = (s: Bug["severity"]) => all.filter((b) => isOpen(b) && b.severity === s).length;
   return { stable: blocking.length === 0, open: { P0: count("P0"), P1: count("P1"), P2: count("P2"), P3: count("P3") }, blocking, total: all.length };
 }
 

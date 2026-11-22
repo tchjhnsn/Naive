@@ -7,9 +7,9 @@ import { join } from "node:path";
 import { analytics } from "./decision-analytics.ts";
 
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
-const venture = (files) => {
+const t = (name: string, fn: () => void) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
+const ok = (c: unknown, m?: string) => { if (!c) throw new Error(m ?? "assertion failed"); };
+const venture = (files: Record<string, unknown>) => {
   const v = mkdtempSync(join(tmpdir(), "dan-"));
   for (const [f, x] of Object.entries(files)) { mkdirSync(join(v, f, ".."), { recursive: true }); writeFileSync(join(v, f), typeof x === "string" ? x : JSON.stringify(x)); }
   return v;
@@ -24,7 +24,7 @@ const v = venture({
   "products/decisions/product.flagship.decision.json": { id: "flagship", question: "Which product is the flagship?", status: "open", type: "Portfolio" },
 });
 const a = analytics(v, Date.parse("2026-10-28T22:00:00Z"));
-const fn = (f) => a.functions.find((x) => x.function === f);
+const fn = (f: string) => a.functions.find((x) => x.function === f);
 
 t("each decision is counted under the function that holds what it decides, by type, decided or open", () => {
   const f = fn("Foundation");

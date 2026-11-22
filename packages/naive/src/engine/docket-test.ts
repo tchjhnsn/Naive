@@ -9,8 +9,8 @@ import { docket, replay } from "./docket.mjs";
 const root = new URL("../records/examples/workspace/ventures/", import.meta.url).pathname;
 const now = Date.parse("2026-10-29T12:00:00Z");
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m); };
+const t = (name: string, fn: () => void) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
+const ok = (c: unknown, m: string) => { if (!c) throw new Error(m); };
 
 for (const v of readdirSync(root)) {
   const dir = join(root, v);
@@ -20,14 +20,14 @@ for (const v of readdirSync(root)) {
     for (const d of all) ok(d.value >= d.own && (d.holds.length === 0 ? d.value === d.own : d.value > d.own), `${d.id}: own ${d.own}, value ${d.value}, holds ${d.holds.length}`);
   });
   t(`${v}: functions rank by attention, each the halving sum of its decisions' values`, () => {
-    for (const f of k.functions) ok(f.attention === Math.round(f.decisions.reduce((s, d, i) => s + d.value / 2 ** i, 0)), `${f.id} attention ${f.attention}`);
+    for (const f of k.functions) ok(f.attention === Math.round(f.decisions.reduce((s: number, d: { value: number }, i: number) => s + d.value / 2 ** i, 0)), `${f.id} attention ${f.attention}`);
     for (let i = 1; i < k.functions.length; i++) ok(k.functions[i - 1].attention >= k.functions[i].attention, "functions out of order");
   });
   t(`${v}: dominant means outweighing every other function together`, () => {
     for (const f of k.functions) for (const d of f.decisions) ok(d.dominant === (k.functions.length > 1 && d.value > k.total - f.attention), d.id);
   });
   t(`${v}: next is the top decision of the top function`, () => {
-    ok(!k.functions.length || (k.next.function_id === k.functions[0].id && k.next.decision === k.functions[0].decisions[0].id), JSON.stringify(k.next));
+    ok(!k.functions.length || (k.next?.function_id === k.functions[0].id && k.next?.decision === k.functions[0].decisions[0].id), JSON.stringify(k.next));
   });
 }
 

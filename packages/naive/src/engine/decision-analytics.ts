@@ -20,23 +20,28 @@ import { join } from "node:path";
 import { decisions } from "./decisions.ts";
 import { HOME, PACKAGES, TITLES } from "./packages.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { DecisionRecord } from "../records/types/records.d.ts";
 
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-const titleOf = (t) => ({ icp: "ICP", "venture-core": "Core product" })[t] ?? TITLES[t] ?? t.replace(/^validation-/, "").replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
-const FUNCTION_OF = { ...HOME, "venture-core": "foundation", brand: "marketing" };
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+const titleOf = (t: string): string => ({ icp: "ICP", "venture-core": "Core product" } as Record<string, string>)[t] ?? (TITLES as Record<string, string>)[t] ?? t.replace(/^validation-/, "").replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
+const FUNCTION_OF: Record<string, string> = { ...HOME, "venture-core": "foundation", brand: "marketing" };
 const DECIDED = new Set(["decided", "accepted"]);
 const OPEN = new Set(["now", "overdue", "waiting", "stale", "later"]);
 
+/** One decision as analytics counts it. */
+export type AnalyticsRow = { id: string; question: string; kind: string; type: string; function: string; function_id: string; state: string; render: string; decided_by: string | null; decided_at: string | null; phase: string | null; wording: string | null; outcomes: string[] };
+
 /** Counts over a venture's decisions; nothing is written. */
-export function analytics(dir, now) {
+export function analytics(dir: string, now?: number) {
   const r = decisions(dir, now);
-  const rows = r.decisions.filter((d) => d.source !== "root").map((d) => {
-    const raw = d.file ? load(ventureFile(dir, d.file)) : {};
+  const rows = r.decisions.filter((d) => d.source !== "root").map((d): AnalyticsRow => {
+    // A decision record may set its own type; the schema does not name it.
+    const raw: Partial<DecisionRecord> & { type?: string } = d.file ? load(ventureFile(dir, d.file)) : {};
     const record = d.decides?.record ?? null;
     // A foundation statement belongs to the strategic foundation whatever record holds it; so does a
     // decision about venture.json itself (the core product, the team).
     const statement = d.source === "foundation" ? d.id.replace(/^foundation-/, "") : null;
-    const fn = statement || d.part_of === "foundation" || d.decides?.path === "venture.json" ? "foundation" : FUNCTION_OF[record] ?? null;
+    const fn = statement || d.part_of === "foundation" || d.decides?.path === "venture.json" ? "foundation" : (record !== null ? FUNCTION_OF[record] : undefined) ?? null;
     const state = DECIDED.has(d.status) ? "decided" : OPEN.has(d.render) ? "open" : d.render;
     const pv = d.provenance ?? raw.provenance ?? null;
     return {
@@ -47,7 +52,8 @@ export function analytics(dir, now) {
       outcomes: (raw.outcomes ?? []).map((o) => o.result ?? "pending"),
     };
   });
-  const count = (xs, key) => Object.entries(xs.reduce((m, x) => ((m[key(x)] = (m[key(x)] ?? 0) + 1), m), {})).sort((a, b) => b[1] - a[1]).map(([k, n]) => ({ key: k, n }));
+  // A key is a property name, so a null key counts under "null", as JavaScript names it.
+const count = <T>(xs: T[], key: (x: T) => unknown) => Object.entries(xs.reduce((m: Record<string, number>, x) => ((m[String(key(x))] = (m[String(key(x))] ?? 0) + 1), m), {})).sort((a, b) => b[1] - a[1]).map(([k, n]) => ({ key: k, n }));
   const functions = [...new Set(rows.map((x) => x.function))].map((f) => {
     const xs = rows.filter((x) => x.function === f);
     return { function: f, id: xs[0].function_id, total: xs.length, decided: xs.filter((x) => x.state === "decided").length, open: xs.filter((x) => x.state === "open").length,
@@ -55,12 +61,12 @@ export function analytics(dir, now) {
   }).sort((a, b) => b.total - a.total || a.function.localeCompare(b.function));
   const decided = rows.filter((x) => x.state === "decided");
   const outcomes = rows.flatMap((x) => x.outcomes);
-  const days = count(decided.filter((x) => x.decided_at), (x) => x.decided_at.slice(0, 10)).sort((a, b) => a.key.localeCompare(b.key));
+  const days = count(decided.filter((x) => x.decided_at), (x) => (x.decided_at ?? "").slice(0, 10)).sort((a, b) => a.key.localeCompare(b.key));
   return {
     venture: r.venture, phase: r.phase, total: rows.length, decided: decided.length, open: rows.filter((x) => x.state === "open").length,
     functions, types: count(rows, (x) => x.type), kinds: count(rows, (x) => x.kind),
     wording: count(decided, (x) => x.wording), by: count(decided.filter((x) => x.decided_by), (x) => x.decided_by), phases: count(decided.filter((x) => x.phase), (x) => x.phase),
-    outcomes: /** @type {{ total: number, met: number, partly: number, missed: number, pending: number }} */ ({ total: outcomes.length, ...Object.fromEntries(["met", "partly", "missed", "pending"].map((k) => [k, outcomes.filter((o) => o === k).length])) }),
+    outcomes: { total: outcomes.length, ...Object.fromEntries(["met", "partly", "missed", "pending"].map((k) => [k, outcomes.filter((o) => o === k).length])) } as { total: number; met: number; partly: number; missed: number; pending: number },
     over_time: days.map(({ key, n }) => ({ day: key, decided: n })),
     decisions: rows,
     next: [

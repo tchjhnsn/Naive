@@ -23,21 +23,28 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import { entries } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { ProvenanceEntry, PublicAssets, PublicAssetsFacts, RawSource } from "../records/types/records.d.ts";
+
+/** What code reads from a file's bytes: the register's facts without filled_at. */
+export type Facts = Omit<PublicAssetsFacts, "filled_at">;
+type Dims = { width?: number; height?: number };
+/** Alt text an agent wrote that no person has confirmed yet. */
+export type PendingAlt = { path: string; alt: string; by: string; confirm: string };
 
 export const REGISTER = "public/assets.json";
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
 
 // ---------------------------------------------------------------------------------------------
 // Facts read from the bytes. The type comes from the file's signature, not its name.
 
-const EXT = { png: ["png"], gif: ["gif"], jpeg: ["jpg", "jpeg"], webp: ["webp"], ico: ["ico"], svg: ["svg"], pdf: ["pdf"], woff2: ["woff2"], woff: ["woff"], ttf: ["ttf"], otf: ["otf"] };
+const EXT: Record<string, string[]> = { png: ["png"], gif: ["gif"], jpeg: ["jpg", "jpeg"], webp: ["webp"], ico: ["ico"], svg: ["svg"], pdf: ["pdf"], woff2: ["woff2"], woff: ["woff"], ttf: ["ttf"], otf: ["otf"] };
 export const IMAGE = new Set(["png", "gif", "jpeg", "webp", "ico", "svg"]);
 export const FONT = new Set(["woff2", "woff", "ttf", "otf"]);
 export const MIME = { png: "image/png", gif: "image/gif", jpeg: "image/jpeg", webp: "image/webp", ico: "image/x-icon", svg: "image/svg+xml", pdf: "application/pdf", woff2: "font/woff2", woff: "font/woff", ttf: "font/ttf", otf: "font/otf" };
 
-const ascii = (b, s, n) => b.subarray(s, s + n).toString("latin1");
+const ascii = (b: Buffer, s: number, n: number) => b.subarray(s, s + n).toString("latin1");
 
-function jpegSize(b) {
+function jpegSize(b: Buffer): Dims {
   let i = 2;
   while (i + 9 < b.length) {
     if (b[i] !== 0xff) { i++; continue; }
@@ -50,7 +57,7 @@ function jpegSize(b) {
   return {};
 }
 
-function webpSize(b) {
+function webpSize(b: Buffer): Dims {
   const chunk = ascii(b, 12, 4);
   if (chunk === "VP8 " && b.length >= 30) return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
   if (chunk === "VP8L" && b.length >= 25) {
@@ -61,9 +68,9 @@ function webpSize(b) {
   return {};
 }
 
-function svgSize(text) {
+function svgSize(text: string): Dims {
   const tag = text.match(/<svg\b[^>]*>/i)?.[0] ?? "";
-  const attr = (n) => tag.match(new RegExp(`\\s${n}\\s*=\\s*["']\\s*([0-9.]+)(px)?\\s*["']`, "i"));
+  const attr = (n: string) => tag.match(new RegExp(`\\s${n}\\s*=\\s*["']\\s*([0-9.]+)(px)?\\s*["']`, "i"));
   const w = attr("width"), h = attr("height");
   if (w && h) return { width: Math.round(Number(w[1])), height: Math.round(Number(h[1])) };
   const vb = tag.match(/viewBox\s*=\s*["']\s*[-0-9.]+[\s,]+[-0-9.]+[\s,]+([0-9.]+)[\s,]+([0-9.]+)\s*["']/i);
@@ -71,9 +78,9 @@ function svgSize(text) {
 }
 
 /** What the bytes say: type, width and height for images, the sizes an icon holds, bytes and sha256. */
-export function factsOf(buf) {
+export function factsOf(buf: Buffer | Uint8Array): Facts {
   const b = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
-  let type = "unknown", dims = {}, sizes;
+  let type = "unknown", dims: Dims = {}, sizes: string[] | undefined;
   if (b.length >= 24 && b[0] === 0x89 && ascii(b, 1, 3) === "PNG") { type = "png"; dims = { width: b.readUInt32BE(16), height: b.readUInt32BE(20) }; }
   else if (b.length >= 10 && /^GIF8[79]a$/.test(ascii(b, 0, 6))) { type = "gif"; dims = { width: b.readUInt16LE(6), height: b.readUInt16LE(8) }; }
   else if (b.length >= 4 && b[0] === 0xff && b[1] === 0xd8) { type = "jpeg"; dims = jpegSize(b); }
@@ -99,50 +106,51 @@ export function factsOf(buf) {
 }
 
 /** The file's extension agrees with what its bytes are. */
-export const extensionFits = (path, type) => (EXT[type] ?? []).includes(extname(path).slice(1).toLowerCase());
+export const extensionFits = (path: string, type: string) => (EXT[type] ?? []).includes(extname(path).slice(1).toLowerCase());
 
 // ---------------------------------------------------------------------------------------------
 // Licenses. Copying a work into public/ (so a release ships it) needs a license that allows it.
 
 const COPYABLE = ["cc0-1.0", "cc-by-4.0", "cc-by-3.0", "cc-by-sa-4.0", "cc-by-sa-3.0", "mit", "apache-2.0", "ofl-1.1", "bsd-2-clause", "bsd-3-clause", "isc", "unlicense", "public-domain", "owned", "licensed"];
 /** Whether a license lets the venture keep and ship a full copy. Unknown, all-rights-reserved and editorial-only do not. */
-export const allowsCopy = (license) => COPYABLE.includes(String(license ?? "").trim().toLowerCase());
+export const allowsCopy = (license: unknown) => COPYABLE.includes(String(license ?? "").trim().toLowerCase());
 export const LICENSES_THAT_COPY = COPYABLE;
 
 /** A host allowlist entry matches a host exactly, or "*.example.com" matches any subdomain of it. */
-export const hostAllowed = (host, hosts = []) => hosts.some((h) => h === host || (h.startsWith("*.") && host.endsWith(h.slice(1))));
+export const hostAllowed = (host: string, hosts: string[] = []) => hosts.some((h) => h === host || (h.startsWith("*.") && host.endsWith(h.slice(1))));
 
 /** The hash a person's confirmation of one alt text is bound to: the statement id in provenance. */
-export const altStatement = (path, text) => `alt-${createHash("sha256").update(`${path}\n${text}`).digest("hex").slice(0, 16)}`;
+export const altStatement = (path: string, text: string) => `alt-${createHash("sha256").update(`${path}\n${text}`).digest("hex").slice(0, 16)}`;
 
 // ---------------------------------------------------------------------------------------------
 // The register and its check.
 
 /** The files in public/, relative to the venture folder, without the register itself. */
-export function publicFiles(dir) {
+export function publicFiles(dir: string): string[] {
   const root = join(dir, "public");
-  const walk = (d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]) : [];
+  const walk = (d: string): string[] => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]) : [];
   return walk(root).map((f) => f.slice(dir.length + 1)).filter((f) => f !== REGISTER).sort();
 }
 
-export const registerOf = (dir) => existsSync(ventureFile(dir, REGISTER)) ? load(ventureFile(dir, REGISTER)) : null;
+export const registerOf = (dir: string) => existsSync(ventureFile(dir, REGISTER)) ? load(ventureFile(dir, REGISTER)) as PublicAssets : null;
 
 /** The facts code reads from every file in public/. */
-export function facts(dir) {
+export function facts(dir: string) {
   return publicFiles(dir).map((path) => ({ path, ...factsOf(readFileSync(ventureFile(dir, path))) }));
 }
 
 /** Which alt texts a person has confirmed, from the provenance log. */
-export function confirmedAlts(dir) {
-  return new Set(entries(dir).filter((e) => e.activity === "confirm" && e.agent?.kind === "person" && e.statement?.startsWith("alt-")).map((e) => e.statement));
+export function confirmedAlts(dir: string) {
+  const all: ProvenanceEntry[] = entries(dir);
+  return new Set(all.filter((e) => e.activity === "confirm" && e.agent?.kind === "person" && e.statement?.startsWith("alt-")).map((e) => e.statement));
 }
 
 /**
  * The register check. errors fail it; pending lists alt text an agent wrote that no person has
  * confirmed yet (not an error: it ships with agent provenance until then).
  */
-export function checkAssets(dir) {
-  const errors = [], warnings = [], pending = [];
+export function checkAssets(dir: string) {
+  const errors: string[] = [], warnings: string[] = [], pending: PendingAlt[] = [];
   const reg = registerOf(dir);
   const files = publicFiles(dir);
   if (!reg) {
@@ -164,7 +172,7 @@ export function checkAssets(dir) {
     if (real.type !== "unknown" && !extensionFits(a.path, real.type)) errors.push(`${a.path}: the bytes are ${real.type}, the name says otherwise`);
     // Facts are code's: recorded facts must equal what the file says now.
     if (!a.facts) errors.push(`${a.path}: no facts yet; run mentura assets fill so code records them (J-4)`);
-    else for (const k of ["type", "width", "height", "bytes", "sha256"]) if ((a.facts[k] ?? null) !== (real[k] ?? null)) { errors.push(`${a.path}: recorded ${k} ${a.facts[k] ?? "none"} is not the file's ${real[k] ?? "none"}; facts are filled by code, run mentura assets fill (J-4)`); break; }
+    else for (const k of ["type", "width", "height", "bytes", "sha256"] as const) if ((a.facts[k] ?? null) !== (real[k] ?? null)) { errors.push(`${a.path}: recorded ${k} ${a.facts[k] ?? "none"} is not the file's ${real[k] ?? "none"}; facts are filled by code, run mentura assets fill (J-4)`); break; }
     // Alt text: an image needs it unless it is decorative; an agent's stays pending until a person confirms it.
     if (IMAGE.has(real.type)) {
       if (!a.alt?.text && !a.decorative) errors.push(`${a.path}: an image with no alt text; write it, or mark it decorative (J-4)`);
@@ -184,8 +192,8 @@ export function checkAssets(dir) {
   for (const r of reg.remote ?? []) {
     const src = join(ventureFile(dir, "raw/sources"), r.id, "source.json");
     if (!existsSync(src)) errors.push(`remote ${r.url}: no note in raw/sources/${r.id}/ (J-3)`);
-    else if (load(src).origin !== r.url) errors.push(`remote ${r.url}: raw/sources/${r.id}/source.json names another origin`);
-    let host = null;
+    else if ((load(src) as RawSource).origin !== r.url) errors.push(`remote ${r.url}: raw/sources/${r.id}/source.json names another origin`);
+    let host: string | null = null;
     try { host = new URL(r.url).host; } catch { errors.push(`remote ${r.url}: not a URL`); }
     if (r.fetched && host && !hostAllowed(host, reg.remote_hosts ?? [])) errors.push(`remote ${r.url}: fetched from ${host}, which is not in remote_hosts, the hosts an agent may fetch from (J-3)`);
     if (!r.credit) errors.push(`remote ${r.url}: no credit; say who made it (J-4)`);

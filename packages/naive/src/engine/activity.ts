@@ -21,17 +21,25 @@ import { addDays, localDate, daysBetween, zoneOf } from "./clock.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { findWorkspace } from "./workspace.mjs";
 import { HostedRefusal, isHosted } from "../core/runtime.ts";
+import type { Activity, ActivitySummary, Venture } from "../records/types/records.d.ts";
 
 export const GAP_MINUTES = 10;
 export const NUDGE_DAYS = 7;
 
-const readJson = (p) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return null; } };
+const readJson = (p: string) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return null; } };
+
+/** A venture found under a root: its id, its absolute folder and its time zone. */
+export type FoundVenture = { id: string; dir: string; tz: string };
+/** A transcript as a session: its file, working directories, the founder's messages and their text. */
+export type Session = { file: string; cwds: Set<string>; messages: { timestamp: string; chars: number }[]; text: string };
+/** One venture's activity: a record per day, before --write stamps it as computed. */
+export type VentureActivity = { venture: string; dir: string; time_zone: string; days: Activity[] };
 
 /** The ventures under a root: the root itself when it is one, else every venture.json below it. */
-export function venturesUnder(root) {
+export function venturesUnder(root: string): FoundVenture[] {
   if (existsSync(join(root, "venture.json"))) return [ventureAt(root)];
-  const out = [];
-  const visit = (d, depth) => {
+  const out: FoundVenture[] = [];
+  const visit = (d: string, depth: number) => {
     if (depth > 5 || !existsSync(d)) return;
     for (const e of readdirSync(d, { withFileTypes: true })) {
       if (!e.isDirectory() || [".git", "node_modules", ".naive", "raw", "codebase", "repo"].includes(e.name)) continue;
@@ -43,16 +51,16 @@ export function venturesUnder(root) {
   visit(root, 0);
   return out;
 }
-function ventureAt(dir) {
-  const v = readJson(join(dir, "venture.json")) ?? {};
+function ventureAt(dir: string): FoundVenture {
+  const v: Partial<Venture> = readJson(join(dir, "venture.json")) ?? {};
   return { id: v.id ?? basename(dir), dir: resolve(dir), tz: zoneOf(dir) };
 }
 
 /** Each transcript as a session: its file, working directories, and the founder's messages (timestamp, characters). */
-export function readSessions(dir) {
-  const out = [];
+export function readSessions(dir: string): Session[] {
+  const out: Session[] = [];
   for (const file of transcriptFiles(dir)) {
-    const s = { file: relative(dir, file), cwds: new Set(), messages: [], text: "" };
+    const s: Session = { file: relative(dir, file), cwds: new Set(), messages: [], text: "" };
     for (const line of readFileSync(file, "utf8").split("\n")) {
       if (!line.trim()) continue;
       let e;
@@ -68,57 +76,57 @@ export function readSessions(dir) {
   return out;
 }
 
-const inside = (child, parent) => child === parent || child.startsWith(parent + sep);
+const inside = (child: string, parent: string) => child === parent || child.startsWith(parent + sep);
 
 /** Which venture a session belongs to, and how: the deepest venture holding its cwd, else one whose path it names. */
-export function matchVenture(session, ventures, root) {
-  let best = null;
+export function matchVenture(session: Session, ventures: FoundVenture[], root: string): { v: FoundVenture; by: "cwd" | "mention" } | null {
+  let best: { v: FoundVenture; by: "cwd" | "mention" } | null = null;
   for (const v of ventures) for (const c of session.cwds) if (inside(c, v.dir) && (!best || v.dir.length > best.v.dir.length)) best = { v, by: "cwd" };
   if (best) return best;
   for (const v of [...ventures].sort((a, b) => b.dir.length - a.dir.length)) {
     const rel = relative(root, v.dir);
-    const names = [v.dir, rel.includes(sep) ? rel : null, `ventures/${basename(v.dir)}`].filter(Boolean);
+    const names = [v.dir, rel.includes(sep) ? rel : null, `ventures/${basename(v.dir)}`].filter((n): n is string => Boolean(n));
     if (names.some((n) => session.text.includes(n))) return { v, by: "mention" };
   }
   return null;
 }
 
 /** Sum of gaps of GAP_MINUTES or less between sorted instants, in minutes. */
-export function activeMinutes(timestamps) {
+export function activeMinutes(timestamps: string[]): number {
   const t = timestamps.map((x) => Date.parse(x)).sort((a, b) => a - b);
   let ms = 0;
   for (let i = 1; i < t.length; i++) { const gap = t[i] - t[i - 1]; if (gap <= GAP_MINUTES * 60000) ms += gap; }
   return Math.round(ms / 60000 * 10) / 10;
 }
 
-/** Per venture, per day: sessions, active minutes, messages, tokens in.
- *  @param {{ root: string, dir?: string, from?: string, to?: string }} opts */
-export function activity({ root, dir, from, to }) {
+/** Per venture, per day: sessions, active minutes, messages, tokens in. */
+export function activity({ root, dir, from, to }: { root: string; dir: string; from?: string; to?: string }): VentureActivity[] {
   // Hosted, transcripts reach a venture as records: no folder outside the tenant (~/.claude/projects) is read.
   if (isHosted() && !(dir && (resolve(dir) === resolve(root) || resolve(dir).startsWith(resolve(root) + sep)))) {
     throw new HostedRefusal("reading harness transcripts", `${dir ?? "the transcript folder"} is outside the venture, and a hosted run reads nothing outside the tenant (such as ~/.claude/projects)`);
   }
   const ventures = venturesUnder(root);
   const sessions = readSessions(dir);
-  const rows = new Map(); // venture id -> day -> {files, stamps, chars, by}
+  const rows = new Map<string, { venture: FoundVenture; days: Map<string, { files: Set<string>; stamps: string[]; chars: number; by: Set<"cwd" | "mention"> }> }>(); // venture id -> day -> {files, stamps, chars, by}
   for (const s of sessions) {
     const m = matchVenture(s, ventures, root);
     if (!m) continue;
     const { v, by } = m;
-    if (!rows.has(v.id)) rows.set(v.id, { venture: v, days: new Map() });
-    const days = rows.get(v.id).days;
+    const row = rows.get(v.id) ?? { venture: v, days: new Map() };
+    rows.set(v.id, row);
+    const days = row.days;
     for (const msg of s.messages) {
       const day = localDate(msg.timestamp, v.tz);
       if ((from && day < from) || (to && day > to)) continue;
-      if (!days.has(day)) days.set(day, { files: new Set(), stamps: [], chars: 0, by: new Set() });
-      const d = days.get(day);
+      const d = days.get(day) ?? { files: new Set(), stamps: [], chars: 0, by: new Set() };
+      days.set(day, d);
       d.files.add(s.file); d.stamps.push(msg.timestamp); d.chars += msg.chars; d.by.add(by);
     }
   }
   return [...rows.values()].map(({ venture, days }) => ({
     venture: venture.id, dir: venture.dir, time_zone: venture.tz,
     days: [...days].sort(([a], [b]) => a.localeCompare(b)).map(([date, d]) => ({
-      venture: venture.id, date, time_zone: venture.tz, visibility: "internal",
+      venture: venture.id, date, time_zone: venture.tz, visibility: "internal" as const,
       sessions: d.files.size, active_minutes: activeMinutes(d.stamps), messages: d.stamps.length, tokens_in: Math.ceil(d.chars / 4),
       session_files: [...d.files].sort(), matched_by: [...d.by].sort(),
     })),
@@ -126,20 +134,20 @@ export function activity({ root, dir, from, to }) {
 }
 
 /** Days since last touch, streak and active days in the last 30, from the active dates, as of a day. */
-export function summarize(venture, tz, activeDates, today) {
+export function summarize(venture: string, tz: string, activeDates: string[], today: string): ActivitySummary {
   const set = new Set(activeDates.filter((d) => d <= today));
   const last = [...set].sort().at(-1) ?? null;
   let streak = 0;
   for (let d = set.has(today) ? today : addDays(today, -1); set.has(d); d = addDays(d, -1)) streak++;
   const since = last ? daysBetween(last, today) : null;
-  const out = { venture, as_of: today, time_zone: tz, visibility: "internal", last_touch: last, days_since_last_touch: since, streak, active_days_30: [...set].filter((d) => daysBetween(d, today) < 30).length };
+  const out: ActivitySummary = { venture, as_of: today, time_zone: tz, visibility: "internal", last_touch: last, days_since_last_touch: since, streak, active_days_30: [...set].filter((d) => daysBetween(d, today) < 30).length };
   if (since !== null && since >= NUDGE_DAYS) out.nudge = `${since} days since you last worked on ${venture}. Pick it up when you are ready.`;
   return out;
 }
 
 /** Writes each day's record and the summary into each venture's operations/activity/. */
-export function writeActivity(result, now = new Date()) {
-  const written = [];
+export function writeActivity(result: VentureActivity[], now = new Date()): string[] {
+  const written: string[] = [];
   for (const v of result) {
     const folder = ventureFile(v.dir, "operations/activity");
     if (!resolve(folder).startsWith(v.dir + sep)) throw new Error("refusing to write outside the venture");
@@ -158,7 +166,7 @@ export function writeActivity(result, now = new Date()) {
   return written;
 }
 
-function findRoot(from) {
+function findRoot(from: string): string | null {
   for (let d = resolve(from); ; d = dirname(d)) {
     if (existsSync(join(d, "venture.json"))) return d;
     if (dirname(d) === d) break;
@@ -168,13 +176,14 @@ function findRoot(from) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
-  const opt = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
-  const root = opt("venture") ? resolve(opt("venture")) : findRoot(process.cwd());
+  const opt = (n: string) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
+  const venture = opt("venture");
+  const root = venture ? resolve(venture) : findRoot(process.cwd());
   if (!root) { console.error("no venture.json or workspace here or above: run naive activity inside a venture or workspace, or pass --venture <dir>"); process.exit(1); }
   for (const d of [opt("from"), opt("to")]) if (d && !/^\d{4}-\d{2}-\d{2}$/.test(d)) { console.error(`--from and --to take a date, YYYY-MM-DD: ${d}`); process.exit(2); }
-  let result;
+  let result: VentureActivity[] = [];
   try { result = activity({ root, dir: resolve(opt("dir") ?? join(homedir(), ".claude/projects")), from: opt("from"), to: opt("to") }); }
-  catch (e) { if (!(e instanceof HostedRefusal)) throw e; console.error(e.message); process.exit(2); }
+  catch (e) { if (!(e instanceof HostedRefusal)) throw e; console.error((e as Error).message); process.exit(2); }
   const written = args.includes("--write") ? writeActivity(result) : [];
   if (args.includes("--json")) { console.log(JSON.stringify({ ventures: result, written }, null, 2)); process.exit(0); }
   if (!result.length) console.log("no sessions matched a venture here");

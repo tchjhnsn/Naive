@@ -8,22 +8,23 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Decision } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 if (spawnSync("python3", ["-I", "-c", "import jsonschema, referencing"]).status !== 0) {
   console.error("decision-affects-test needs the jsonschema package: pip install jsonschema");
   process.exit(2);
 }
-const base = JSON.parse(readFileSync(join(repo, "docs/decisions/decisions.json"), "utf8"));
+const base: Decision = JSON.parse(readFileSync(join(repo, "docs/decisions/decisions.json"), "utf8"));
 const record = { ...base.decisions.find((d) => d.affects), affects: [] };
 const dir = mkdtempSync(join(tmpdir(), "affects-test-"));
 let failed = 0, n = 0;
-const valid = (entry) => {
+const valid = (entry: unknown) => {
   const f = join(dir, `${n++}.json`);
   writeFileSync(f, JSON.stringify({ ...base, decisions: [{ ...record, affects: [entry] }] }));
   return spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", "decision.schema.json", "--file", f], { encoding: "utf8" }).status === 0;
 };
-const expect = (name, want, entry) => {
+const expect = (name: string, want: boolean, entry: unknown) => {
   const ok = valid(entry) === want;
   console.log(`${ok ? "pass" : "FAIL"}  ${want ? "accepts" : "rejects"} ${name}${ok ? "" : `  ${JSON.stringify(entry)}`}`);
   if (!ok) failed++;

@@ -10,13 +10,14 @@ import { approve, decisions, merge, propose } from "./decisions.ts";
 import { impact } from "./impact.mjs";
 import { record } from "../core/provenance.ts";
 import { stale } from "./stale.mjs";
+import type { DecisionImpact } from "../records/types/records.d.ts";
 
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail?: unknown) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const repo = new URL("../../../..", import.meta.url).pathname;
 const v = mkdtempSync(join(tmpdir(), "impact-"));
-const put = (rel, o) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), JSON.stringify(o, null, 2) + "\n"); };
-const json = (rel) => JSON.parse(readFileSync(join(v, rel), "utf8"));
+const put = (rel: string, o: unknown) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), JSON.stringify(o, null, 2) + "\n"); };
+const json = (rel: string) => JSON.parse(readFileSync(join(v, rel), "utf8"));
 const agent = { kind: "person", id: "Founder", via: "cli" };
 put("venture.json", { id: "imp", name: "Imp", type: "software-startup", phase: "discovery" });
 put("product/shop.json", { id: "shop", name: "Shop", description: "A shop." });
@@ -26,17 +27,18 @@ put("people/people.json", { venture: "imp", mode: "solo", people: [{ id: "founde
 put("marketing/notes.json", { unrelated: true });
 
 try {
-  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: f, route: "x", activity: "write", agent }));
+  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, { entity: f, route: "x", activity: "write", agent } as Parameters<typeof record>[1]);
   // The team plan was written from the product: provenance says it reads it.
-  record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] }));
+  record(v, { entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] } as Parameters<typeof record>[1]);
 
   propose(v, { at: "product", id: "shop-price", question: "What does Shop sell?", answer: "A shop for makers.", applies_to: [{ file: "product/shop.json", field: "description" }] }, { agentId: "cos" });
   approve(v, "shop-price", { by: "Founder" });
   const m = merge(v, "shop-price", { by: "Founder" });
-  expect("merge returns the impact summary", m.ok && m.result.impact?.affected === 2, m);
+  expect("merge returns the impact summary", m.ok && "affected" in m.result.impact && m.result.impact.affected === 2, m);
 
-  const im = json("product/decisions/shop-price.impact.json");
-  const fn = (id) => im.functions.find((f) => f.function === id);
+  const im: DecisionImpact = json("product/decisions/shop-price.impact.json");
+  type Fn = DecisionImpact["functions"][number];
+  const fn = (id: string): Fn => im.functions.find((f) => f.function === id) as Fn;
   expect("the impact record lists every function", im.functions.length === 10 && im.decision === "shop-price" && im.version === 1, im);
   expect("a provenance reader lands in its function (people)", fn("people").affected_records.includes("people/team-plan.json"), fn("people"));
   expect("a data-model ref lands in its function (customers)", fn("customers").affected_records.includes("accounts/acme/account.json"), fn("customers"));
@@ -55,13 +57,13 @@ try {
   const marks = () => json(".naive/stale.json").marks.length;
   const n = marks();
   const again = impact(v, "shop-price");
-  expect("rebuilding the map is idempotent: same follow-ups, no duplicates", again.ok && again.result.affected === 2 && decisions(v).decisions.filter((d) => d.id.startsWith("revise-")).length === 2, again);
+  expect("rebuilding the map is idempotent: same follow-ups, no duplicates", again.ok && again.result?.affected === 2 && decisions(v).decisions.filter((d) => d.id.startsWith("revise-")).length === 2, again);
   expect("rerunning impact adds no duplicate stale marks", marks() === n, json(".naive/stale.json").marks);
 
   propose(v, { at: "product", id: "shop-name", question: "What is Shop called?", answer: "Shoppe", applies_to: [{ file: "product/shop.json", field: "name" }] }, { agentId: "cos" });
   approve(v, "shop-name", { by: "Founder" });
   const never = impact(v, "shop-name");
-  expect("impact on a decision never merged is refused and marks nothing", !never.ok && /never merged/.test(never.error) && marks() === n, never);
+  expect("impact on a decision never merged is refused and marks nothing", !never.ok && /never merged/.test(never.error ?? "") && marks() === n, never);
   expect("an unknown decision is refused", !impact(v, "nope").ok);
 } finally {
   rmSync(v, { recursive: true, force: true });

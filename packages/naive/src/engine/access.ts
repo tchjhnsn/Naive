@@ -9,33 +9,34 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { TeamPlan } from "../records/types/records.d.ts";
 
 export const PLANS = ["people/team-plan.json", "operations/team-plan.json"];
 
 // Globs over routes, as in the team plan: * is one segment, ** any depth.
-export const routeGlob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
+export const routeGlob = (g: string): RegExp => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
 
 /** The venture's team plan, or null. Read fresh on every call, so a changed plan is seen at once. */
-export function teamPlan(dir) {
+export function teamPlan(dir: string | null | undefined): (TeamPlan & { path: string }) | null {
   const f = dir && PLANS.map((p) => ventureFile(dir, p)).find((p) => existsSync(p));
   return f ? { path: f, ...JSON.parse(readFileSync(f, "utf8")) } : null;
 }
 
 /** A role's entry in the team plan, or null. */
-export function roleOf(dir, roleId) {
+export function roleOf(dir: string | null | undefined, roleId: string | null | undefined): TeamPlan["roles"][number] | null {
   if (!roleId) return null;
   return teamPlan(dir)?.roles?.find((r) => r.id === roleId) ?? null;
 }
 
 /** The globs a role may read and write, or null for a role that may reach every route. */
-export function globsOf(dir, roleId) {
+export function globsOf(dir: string | null | undefined, roleId: string | null | undefined): { read: string[]; write: string[] } | null {
   const role = roleOf(dir, roleId);
   if (!role?.routes) return null;
   return { read: role.routes.read ?? ["**"], write: role.routes.write ?? [] };
 }
 
 /** Whether a role may read or write a route. */
-export function may(dir, roleId, act, route) {
+export function may(dir: string | null | undefined, roleId: string | null | undefined, act: string, route: string): boolean {
   if (!roleId || !dir) return true;
   const g = globsOf(dir, roleId);
   if (!g) return true;
@@ -46,13 +47,13 @@ export function may(dir, roleId, act, route) {
  * Whether a role may read at least one item of a collection: it may read the list route itself,
  * or one of its read globs reaches an item under it (product/kettle under product).
  */
-export function mayReadSome(dir, roleId, listRoute) {
+export function mayReadSome(dir: string | null | undefined, roleId: string | null | undefined, listRoute: string): boolean {
   if (may(dir, roleId, "read", listRoute)) return true;
   const g = globsOf(dir, roleId);
   return !!g && g.read.some((x) => x.startsWith(`${listRoute}/`) || routeGlob(x).test(`${listRoute}/x`));
 }
 
 /** Whether a role may read one item of a collection: the list route covers its items, or the item route is listed. */
-export function mayReadItem(dir, roleId, listRoute, id) {
+export function mayReadItem(dir: string | null | undefined, roleId: string | null | undefined, listRoute: string, id: string): boolean {
   return may(dir, roleId, "read", listRoute) || may(dir, roleId, "read", `${listRoute}/${id}`);
 }

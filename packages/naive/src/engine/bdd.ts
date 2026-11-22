@@ -11,31 +11,38 @@
 
 import { readFileSync } from "node:fs";
 
-export function parse(text) {
-  const scenarios = [];
-  let rule = null, background = [], cur = null;
+/** A scenario, with the background steps of its rule before its own. */
+export type Scenario = { name: string; rule: string | null; steps: string[] };
+/** What a scenario's steps share; a step may set cleanup to run after the scenario. */
+export type World = { cleanup?: () => unknown; [key: string]: unknown };
+/** A step definition: the pattern and what runs with its groups. */
+export type StepDefinition = [RegExp, (world: World, ...groups: string[]) => unknown];
+
+export function parse(text: string): Scenario[] {
+  const scenarios: Scenario[] = [];
+  let rule: string | null = null, background: string[] = [], cur: { background?: true; steps: string[] } | null = null;
   for (const raw of text.split("\n")) {
     const line = raw.trim();
     if (!line || line.startsWith("#")) continue;
     let m;
     if ((m = line.match(/^Rule:\s*(.*)$/))) { rule = m[1]; background = []; cur = null; }
     else if (/^Background:/.test(line)) cur = { background: true, steps: background };
-    else if ((m = line.match(/^Scenario:\s*(.*)$/))) { cur = { name: m[1], rule, steps: [...background] }; scenarios.push(cur); }
+    else if ((m = line.match(/^Scenario:\s*(.*)$/))) { const sc: Scenario = { name: m[1], rule, steps: [...background] }; cur = sc; scenarios.push(sc); }
     else if ((m = line.match(/^(Given|When|Then|And|But)\s+(.*)$/)) && cur) cur.steps.push(m[2]);
   }
   return scenarios;
 }
 
-export async function run(file) {
-  const { steps } = await import(file.replace(/\.feature$/, ".steps.mjs").replace(/^(?!\/)/, `${process.cwd()}/`));
+export async function run(file: string) {
+  const { steps }: { steps: StepDefinition[] } = await import(file.replace(/\.feature$/, ".steps.mjs").replace(/^(?!\/)/, `${process.cwd()}/`));
   const results = [];
   for (const sc of parse(readFileSync(file, "utf8"))) {
-    const world = {};
-    let error = null;
+    const world: World = {};
+    let error: string | null = null;
     for (const text of sc.steps) {
-      const hit = steps.map(([re, fn]) => [text.match(re), fn]).find(([m]) => m);
+      const hit = steps.map(([re, fn]) => [text.match(re), fn] as const).find((h): h is readonly [RegExpMatchArray, StepDefinition[1]] => Boolean(h[0]));
       if (!hit) { error = `no step definition: ${text}`; break; }
-      try { await hit[1](world, ...hit[0].slice(1)); } catch (e) { error = `${text}: ${e.message}`; break; }
+      try { await hit[1](world, ...hit[0].slice(1)); } catch (e) { error = `${text}: ${(e as Error).message}`; break; }
     }
     await world.cleanup?.();
     results.push({ scenario: sc.name, rule: sc.rule, ok: !error, error });

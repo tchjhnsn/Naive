@@ -9,25 +9,27 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { InternalTerms } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const load = (f: string): InternalTerms => JSON.parse(readFileSync(f, "utf8"));
 
-export function patterns(venture) {
+export function patterns(venture?: string) {
   const own = venture && existsSync(ventureFile(venture, "governance/internal-terms.json")) ? load(ventureFile(venture, "governance/internal-terms.json")).patterns ?? [] : [];
   return [...load(join(repo, "packages/naive/src/engine/internal-terms.json")).patterns, ...own].map((p) => ({ ...p, re: new RegExp(p.regex, "g") }));
 }
 
 // The text a reader can see: MDX comments and frontmatter removed.
-const visible = (file, text) => file.endsWith(".mdx") || file.endsWith(".md") ? text.replace(/^---\n[\s\S]*?\n---\n?/, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "") : text;
+const visible = (file: string, text: string) => file.endsWith(".mdx") || file.endsWith(".md") ? text.replace(/^---\n[\s\S]*?\n---\n?/, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "") : text;
 
-const walk = (p) => statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];
+const walk = (p: string): string[] => statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];
 
-/** Each match: { file, pattern, text, why, severity }. A warn match is reported and does not fail.
- *  @param {string[]} paths @param {{ venture?: string }} [opts] */
-export function leaks(paths, { venture } = {}) {
-  const ps = patterns(venture), out = [];
-  for (const file of paths.filter(existsSync).flatMap(walk).filter((f) => /\.(mdx?|json|html|txt)$/.test(f) && !f.endsWith("meta.json"))) {
+/** One match of an internal-terms pattern. A warn match is reported and does not fail. */
+export type Leak = { file: string; pattern: string; text: string; why: string; severity: "fail" | "warn" };
+
+export function leaks(paths: string[], { venture }: { venture?: string } = {}): Leak[] {
+  const ps = patterns(venture), out: Leak[] = [];
+  for (const file of paths.filter((p) => existsSync(p)).flatMap(walk).filter((f) => /\.(mdx?|json|html|txt)$/.test(f) && !f.endsWith("meta.json"))) {
     const text = visible(file, readFileSync(file, "utf8"));
     for (const p of ps) for (const m of text.matchAll(p.re)) out.push({ file, pattern: p.id, text: m[0], why: p.why, severity: p.severity ?? "fail" });
   }

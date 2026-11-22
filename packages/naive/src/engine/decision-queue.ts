@@ -13,7 +13,6 @@
 //
 // The rules are pure functions. Reading what they need (phase weights, role templates, decision rights, the function
 // matrices, lead plans, goals and handoffs) is an Effect through VentureFs (EE-125); rank() runs it with runSync.
-// A .mjs file because decision-index.ts imports it and the router imports that.
 
 import { Effect } from "effect";
 import { join } from "node:path";
@@ -23,6 +22,8 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.mjs";
 import { readDataModel } from "../records/index.ts";
 import { recordOf } from "./decisions.ts";
+import type { NaiveError } from "../core/effect/errors.ts";
+import type { DataModel } from "../records/types/records.d.ts";
 
 /** The owner of a decision no rule assigns. */
 export const VENTURE = "venture";
@@ -33,25 +34,23 @@ export const GATE_LIFT = 2;
 /** How many items the queue shows. */
 export const QUEUE_SIZE = 10;
 
-/**
- * @typedef {{ function: string, by: "class" | "record" | "none", why: string }} Owner
- * @typedef {{ class?: string | null, record?: string | null, records?: (string | null)[] }} OwnerInput
- * @typedef {{ functions: readonly string[], classes: Record<string, string>, recordFunctions: Record<string, string | null> }} OwnerContext
- * @typedef {{ score: number, function: string, measures?: readonly string[], record?: string | null }} CrossInput
- * @typedef {{ weights: Record<string, number>, bound: Record<string, string>, gate?: readonly string[] }} CrossContext
- * @typedef {{ score: number, function_weight: number, multiplier: number, measure_lift: number, measures: string[], gate_lift: number, cross: number }} CrossParts
- * @typedef {{ id: string, keys: readonly string[] }} Keyed
- * @typedef {{ id: string, keys: string[], members: string[] }} Theme
- * @typedef {{ id: string, question?: string, score: number, why?: string[], impact?: { changed?: string[] } }} IndexEntry
- * @typedef {{ class?: string, decides?: { record?: string | null, path?: string } }} DecisionView
- * @typedef {{ outcomes?: { measure?: string }[] }} RawDecision
- * @typedef {{ entry: IndexEntry, decision: DecisionView, raw: RawDecision }} Item
- * @typedef {{
- *   phase: string, functions: string[], weights: Record<string, number>, classes: Record<string, string>,
- *   recordFunctions: Record<string, string | null>, leads: { id: string, portfolio: string[] }[],
- *   bound: Record<string, string>, goalMeasures: Record<string, string[]>, handoffs: Record<string, string[]>, gate: string[],
- * }} RankingContext
- */
+export type Owner = { function: string; by: "class" | "record" | "none"; why: string };
+export type OwnerInput = { class?: string | null; record?: string | null; records?: (string | null)[] };
+export type OwnerContext = { functions: readonly string[]; classes: Record<string, string>; recordFunctions: Record<string, string | null> };
+export type CrossInput = { score: number; function: string; measures?: readonly string[]; record?: string | null };
+export type CrossContext = { weights: Record<string, number>; bound: Record<string, string>; gate?: readonly string[] };
+export type CrossParts = { score: number; function_weight: number; multiplier: number; measure_lift: number; measures: string[]; gate_lift: number; cross: number };
+export type Keyed = { id: string; keys: readonly string[] };
+export type Theme = { id: string; keys: string[]; members: string[] };
+export type IndexEntry = { id: string; question?: string; score: number; why?: string[]; impact?: { changed?: string[] } };
+export type DecisionView = { class?: string; decides?: { record?: string | null; path?: string } };
+export type RawDecision = { outcomes?: { measure?: string }[] };
+export type Item = { entry: IndexEntry; decision: DecisionView; raw: RawDecision };
+export type RankingContext = {
+  phase: string; functions: string[]; weights: Record<string, number>; classes: Record<string, string>;
+  recordFunctions: Record<string, string | null>; leads: { id: string; portfolio: string[] }[];
+  bound: Record<string, string>; goalMeasures: Record<string, string[]>; handoffs: Record<string, string[]>; gate: string[];
+};
 
 /**
  * The function that owns a decision. The rule, in order:
@@ -61,11 +60,8 @@ export const QUEUE_SIZE = 10;
  *   3. the function of the first record it would change that has one;
  *   4. else "venture".
  * The decision-record schema has no function field, so the class comes first.
- * @param {OwnerInput} d
- * @param {OwnerContext} ctx
- * @returns {Owner}
  */
-export function ownerOf(d, ctx) {
+export function ownerOf(d: OwnerInput, ctx: OwnerContext): Owner {
   const known = new Set(ctx.functions);
   const byClass = d.class ? ctx.classes[d.class] : undefined;
   if (byClass && known.has(byClass)) return { function: byClass, by: "class", why: `its class ${d.class} belongs to ${byClass}` };
@@ -76,8 +72,7 @@ export function ownerOf(d, ctx) {
   return { function: VENTURE, by: "none", why: "no class or record names a function, so the venture owns it" };
 }
 
-/** @param {number} n @param {number} [places] */
-const round = (n, places = 2) => Math.round(n * 10 ** places) / 10 ** places;
+const round = (n: number, places = 2) => Math.round(n * 10 ** places) / 10 ** places;
 
 /**
  * The cross-function score of one decision:
@@ -86,11 +81,8 @@ const round = (n, places = 2) => Math.round(n * 10 ** places) / 10 ** places;
  * where w_f is its function's weight in the venture's phase (phase.json, through phaseWeights) and mean w the mean
  * weight over the phase's functions (1/13 when they sum to 1), so a function at the mean leaves the score as it is.
  * "venture", or a function the phase does not weigh, counts at the mean. With no weights the multiplier is 1.
- * @param {CrossInput} e
- * @param {CrossContext} ctx
- * @returns {CrossParts}
  */
-export function crossScore(e, ctx) {
+export function crossScore(e: CrossInput, ctx: CrossContext): CrossParts {
   const ws = Object.values(ctx.weights);
   const mean = ws.length ? ws.reduce((a, b) => a + b, 0) / ws.length : 0;
   const w = ctx.weights[e.function] ?? mean;
@@ -104,38 +96,28 @@ export function crossScore(e, ctx) {
 /**
  * Orders by cross score, then the gate's own order of its evidence (problem before customer profile), then the
  * index's score, then id: the same input always gives the same order.
- * @param {{ id: string, score: number, cross: number, gate_rank?: number }} a
- * @param {{ id: string, score: number, cross: number, gate_rank?: number }} b
  */
-export const byCross = (a, b) => b.cross - a.cross || (a.gate_rank ?? Infinity) - (b.gate_rank ?? Infinity) || b.score - a.score || a.id.localeCompare(b.id);
+export const byCross = (a: { id: string; score: number; cross: number; gate_rank?: number }, b: { id: string; score: number; cross: number; gate_rank?: number }) => b.cross - a.cross || (a.gate_rank ?? Infinity) - (b.gate_rank ?? Infinity) || b.score - a.score || a.id.localeCompare(b.id);
 
 /**
  * Where a record type stands in the gate's evidence list, or undefined when the gate does not ask for it.
- * @param {readonly string[] | undefined} gate @param {string | null | undefined} record
  */
-const gateRank = (gate, record) => { const i = record ? (gate ?? []).indexOf(record) : -1; return i < 0 ? undefined : i; };
+const gateRank = (gate: readonly string[] | undefined, record: string | null | undefined) => { const i = record ? (gate ?? []).indexOf(record) : -1; return i < 0 ? undefined : i; };
 
 /**
  * Themes: decisions linked by a shared key (a record file, or a handoff) fall in one theme, transitively. Input in
  * rank order; each theme is named after its first member, lists its members in that order and the keys two or more
  * members share, and themes come in the order of their first member. No model, no clustering library.
- * @param {readonly Keyed[]} ranked
- * @returns {Theme[]}
  */
-export function themesOf(ranked) {
-  /** @type {Map<string, string>} */
-  const parent = new Map(ranked.map((r) => [r.id, r.id]));
+export function themesOf(ranked: readonly Keyed[]): Theme[] {
+  const parent = new Map<string, string>(ranked.map((r) => [r.id, r.id]));
   const pos = new Map(ranked.map((r, i) => [r.id, i]));
-  /** @param {string} x @returns {string} */
-  const find = (x) => { let p = /** @type {string} */ (parent.get(x)); while (p !== x) { x = p; p = /** @type {string} */ (parent.get(x)); } return x; };
-  /** @param {string} a @param {string} b */
-  const join2 = (a, b) => { const [ra, rb] = [find(a), find(b)]; if (ra === rb) return; const [lo, hi] = (pos.get(ra) ?? 0) <= (pos.get(rb) ?? 0) ? [ra, rb] : [rb, ra]; parent.set(hi, lo); };
-  /** @type {Map<string, string[]>} */
-  const holders = new Map();
+  const find = (x: string): string => { let p = parent.get(x) as string; while (p !== x) { x = p; p = parent.get(x) as string; } return x; };
+  const join2 = (a: string, b: string) => { const [ra, rb] = [find(a), find(b)]; if (ra === rb) return; const [lo, hi] = (pos.get(ra) ?? 0) <= (pos.get(rb) ?? 0) ? [ra, rb] : [rb, ra]; parent.set(hi, lo); };
+  const holders = new Map<string, string[]>();
   for (const r of ranked) for (const k of new Set(r.keys)) holders.set(k, [...(holders.get(k) ?? []), r.id]);
   for (const ids of holders.values()) for (const id of ids.slice(1)) join2(ids[0], id);
-  /** @type {Map<string, Theme>} */
-  const out = new Map();
+  const out = new Map<string, Theme>();
   for (const r of ranked) {
     const root = find(r.id);
     const t = out.get(root) ?? { id: root, keys: [], members: [] };
@@ -149,23 +131,17 @@ export function themesOf(ranked) {
 
 /**
  * The measures a decision bears on: an outcome whose measure names a measure id (bare, or <goal>/<measure>), and the
- * measures of a goal file it would change.
- * @param {RawDecision} raw
- * @param {readonly string[]} changed
- * @param {Record<string, string[]>} goalMeasures goal file to its measure ids
+ * measures of a goal file it would change. goalMeasures maps a goal file to its measure ids.
  */
-export function measuresOf(raw, changed, goalMeasures) {
-  const named = (raw.outcomes ?? []).map((o) => o.measure).filter((m) => typeof m === "string" && /^[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(m)).map((m) => /** @type {string} */ (m).split("/").at(-1) ?? "");
+export function measuresOf(raw: RawDecision, changed: readonly string[], goalMeasures: Record<string, string[]>): string[] {
+  const named = (raw.outcomes ?? []).map((o) => o.measure).filter((m): m is string => typeof m === "string" && /^[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(m)).map((m) => m.split("/").at(-1) ?? "");
   return [...new Set([...named, ...changed.flatMap((f) => goalMeasures[f] ?? [])])].sort();
 }
 
 /**
  * The queue, the per-function index and the themes, from the index's entries and the ranking context. Pure.
- * @param {readonly Item[]} items
- * @param {RankingContext} ctx
- * @param {{ size?: number }} [opts]
  */
-export function rankItems(items, ctx, { size = QUEUE_SIZE } = {}) {
+export function rankItems(items: readonly Item[], ctx: RankingContext, { size = QUEUE_SIZE }: { size?: number } = {}) {
   const rows = items.map(({ entry, decision, raw }) => {
     const changed = entry.impact?.changed ?? [];
     const owner = ownerOf({ class: decision.class ?? null, record: decision.decides?.record ?? null, records: changed.map(recordOf) }, ctx);
@@ -174,17 +150,16 @@ export function rankItems(items, ctx, { size = QUEUE_SIZE } = {}) {
     return { id: entry.id, question: entry.question ?? "", score: entry.score, cross: parts.cross, owner, parts, keys, record: decision.decides?.record ?? null, gate_rank: gateRank(ctx.gate, decision.decides?.record), why: entry.why ?? [] };
   }).sort(byCross);
   const order = [...ctx.functions, VENTURE];
-  /** @type {Record<string, { rank: number, id: string, score: number }[]>} */
-  const by_function = {};
+  const by_function: Record<string, { rank: number; id: string; score: number }[]> = {};
   for (const fn of order) {
     const mine = rows.filter((r) => r.owner.function === fn).sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
     if (mine.length) by_function[fn] = mine.map((r, i) => ({ rank: i + 1, id: r.id, score: r.score }));
   }
   const themes = themesOf(rows);
   const byId = new Map(rows.map((r) => [r.id, r]));
-  const leadOf = (/** @type {string} */ fn) => { const ls = ctx.leads.filter((l) => l.portfolio.includes(fn)).map((l) => l.id); return ls.length === 1 ? ls[0] : null; };
+  const leadOf = (fn: string) => { const ls = ctx.leads.filter((l) => l.portfolio.includes(fn)).map((l) => l.id); return ls.length === 1 ? ls[0] : null; };
   const queue = themes.slice(0, size).map((t, i) => {
-    const head = /** @type {(typeof rows)[number]} */ (byId.get(t.id));
+    const head = byId.get(t.id) as (typeof rows)[number];
     const fn = head.owner.function;
     const why = [
       head.owner.why,
@@ -205,20 +180,16 @@ export function rankItems(items, ctx, { size = QUEUE_SIZE } = {}) {
 
 // ---- Reading the context (Effect, through VentureFs) ----
 
-/** @param {unknown} v @returns {v is Record<string, unknown>} */
-const isObject = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-/** @param {unknown} v @returns {string[]} */
-const strings = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === "string") : []);
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
 
 /**
  * Every JSON file in a folder, parsed, by file name. A venture file that cannot be read is left out, so one broken
  * lead plan or handoff does not stop the index.
- * @param {string} dir
  */
-const jsonFiles = (dir) => Effect.gen(function* () {
+const jsonFiles = (dir: string) => Effect.gen(function* () {
   const fs = yield* VentureFs;
-  /** @type {{ name: string, value: unknown }[]} */
-  const out = [];
+  const out: { name: string; value: unknown }[] = [];
   for (const name of yield* fs.list(dir)) {
     if (!name.endsWith(".json")) continue;
     const value = yield* Effect.orElseSucceed(readJson(join(dir, name)), () => null);
@@ -228,32 +199,26 @@ const jsonFiles = (dir) => Effect.gen(function* () {
 });
 
 /**
- * What the ranking reads, for one venture in one phase. A phase with no module ranks with no weights.
- * @param {string} dir the venture folder
- * @param {string} phase
- * @param {{ root?: string }} [opts]
- * @returns {Effect.Effect<RankingContext, import("../core/effect/errors.ts").NaiveError, "naive/VentureFs">}
+ * What the ranking reads, for one venture (dir) in one phase. A phase with no module ranks with no weights.
  */
-export const rankingContextEffect = (dir, phase, { root = ROOT } = {}) => Effect.gen(function* () {
+export const rankingContextEffect = (dir: string, phase: string, { root = ROOT }: { root?: string } = {}): Effect.Effect<RankingContext, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const depts = yield* readJson(join(root, "packages/naive/src/functions/departments.json"));
   const functions = isObject(depts) && Array.isArray(depts.departments) ? depts.departments.filter(isObject).map((d) => String(d.id)) : [];
-  const weights = yield* phaseWeights(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed(/** @type {Record<string, number>} */ ({}))));
-  const gate = yield* phaseGateRecords(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed(/** @type {string[]} */ ([]))));
+  const weights = yield* phaseWeights(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed({} as Record<string, number>)));
+  const gate = yield* phaseGateRecords(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed([] as string[])));
 
   const roles = (yield* jsonFiles(join(root, "packages/naive/template/governance/roles"))).map((f) => f.value).filter(isObject);
   const leads = roles.filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: String(r.id), portfolio: strings(r.portfolio) }));
-  const roleFunction = new Map(roles.filter((r) => typeof r.function === "string" && functions.includes(/** @type {string} */ (r.function))).map((r) => [String(r.id), /** @type {string} */ (r.function)]));
+  const roleFunction = new Map(roles.filter((r) => typeof r.function === "string" && functions.includes(r.function as string)).map((r) => [String(r.id), r.function as string]));
 
   // Classes: the owning role's function in decision rights (the venture's own, else the template's), else the one
   // function whose matrix lists the class.
   const ownRights = ventureFile(dir, "governance/decision-rights.json");
   const rightsFile = (yield* fs.exists(ownRights)) ? ownRights : join(root, "packages/naive/template/governance/decision-rights.json");
   const rights = yield* Effect.orElseSucceed(readJson(rightsFile), () => null);
-  /** @type {Record<string, string>} */
-  const classes = {};
-  /** @type {Map<string, Set<string>>} */
-  const inMatrices = new Map();
+  const classes: Record<string, string> = {};
+  const inMatrices = new Map<string, Set<string>>();
   for (const fn of functions) {
     const file = join(root, "packages/naive/src/functions", fn, "decisions.json");
     if (!(yield* fs.exists(file))) continue;
@@ -266,29 +231,24 @@ export const rankingContextEffect = (dir, phase, { root = ROOT } = {}) => Effect
     if (typeof c.id === "string" && fn) classes[c.id] = fn;
   }
 
-  /** @type {Record<string, string | null>} */
-  const recordFunctions = Object.fromEntries(/** @type {{ id: string, function?: string | null }[]} */ (readDataModel().records).map((r) => [r.id, r.function ?? null]));
+  const recordFunctions: Record<string, string | null> = Object.fromEntries((readDataModel() as DataModel).records.map((r) => [r.id, r.function ?? null]));
 
   // Measures a lead plan binds, to the lead (one accountable lead per measure; a measure two plans bind binds neither).
-  /** @type {Map<string, Set<string>>} */
-  const binders = new Map();
+  const binders = new Map<string, Set<string>>();
   for (const { value } of yield* jsonFiles(ventureFile(dir, "operations/leads"))) {
     if (!isObject(value) || typeof value.lead !== "string") continue;
-    for (const m of strings(value.measures)) binders.set(m, new Set([...(binders.get(m) ?? []), /** @type {string} */ (value.lead)]));
+    for (const m of strings(value.measures)) binders.set(m, new Set([...(binders.get(m) ?? []), value.lead as string]));
   }
-  /** @type {Record<string, string>} */
-  const bound = {};
+  const bound: Record<string, string> = {};
   for (const [m, ls] of binders) if (ls.size === 1) bound[m] = [...ls][0];
 
-  /** @type {Record<string, string[]>} */
-  const goalMeasures = {};
+  const goalMeasures: Record<string, string[]> = {};
   for (const { name, value } of yield* jsonFiles(ventureFile(dir, "foundation/goals"))) {
     if (isObject(value) && Array.isArray(value.measures)) goalMeasures[`foundation/goals/${name}`] = value.measures.filter(isObject).map((m) => String(m.id));
   }
 
   // Handoffs, by the decisions they execute (governed_by).
-  /** @type {Record<string, string[]>} */
-  const handoffs = {};
+  const handoffs: Record<string, string[]> = {};
   for (const { name, value } of yield* jsonFiles(ventureFile(dir, "operations/handoffs"))) {
     if (!isObject(value)) continue;
     const id = typeof value.id === "string" ? value.id : name.replace(/\.json$/, "");
@@ -299,13 +259,11 @@ export const rankingContextEffect = (dir, phase, { root = ROOT } = {}) => Effect
 
 /**
  * The ranking for one venture, as an Effect.
- * @param {string} dir @param {string} phase @param {readonly Item[]} items @param {{ root?: string, size?: number }} [opts]
  */
-export const rankEffect = (dir, phase, items, opts = {}) => Effect.map(rankingContextEffect(dir, phase, opts), (ctx) => rankItems(items, ctx, opts));
+export const rankEffect = (dir: string, phase: string, items: readonly Item[], opts: { root?: string; size?: number } = {}) => Effect.map(rankingContextEffect(dir, phase, opts), (ctx) => rankItems(items, ctx, opts));
 
 /**
  * The ranking for one venture: by_function, themes and queue. Throws the tagged error when a file Naive ships cannot
  * be read.
- * @param {string} dir @param {string} phase @param {readonly Item[]} items @param {{ root?: string, size?: number }} [opts]
  */
-export const rank = (dir, phase, items, opts = {}) => runSync(rankEffect(dir, phase, items, opts));
+export const rank = (dir: string, phase: string, items: readonly Item[], opts: { root?: string; size?: number } = {}) => runSync(rankEffect(dir, phase, items, opts));

@@ -17,10 +17,20 @@ import { rankDocket } from "./docket.mjs";
 
 const FILE = new URL("../records/examples/docket-scenarios.json", import.meta.url).pathname;
 const NOW = Date.parse("2026-10-29T12:00:00Z");
-const TITLE = { foundation: "Foundation", validation: "Validation", product: "Product", marketing: "Marketing and sales", finance: "Finance", people: "People", legal: "Legal and governance", operations: "Operations" };
+const TITLE: Record<string, string> = { foundation: "Foundation", validation: "Validation", product: "Product", marketing: "Marketing and sales", finance: "Finance", people: "People", legal: "Legal and governance", operations: "Operations" };
+
+// docket-scenarios.json has no schema (the data model lists it as an example file), so its shape is named here.
+/** One open decision in a scenario, before it is resolved. */
+type ScenarioDecision = { id: string; question: string; function: string; state: string; unlocks?: string[]; drafted?: boolean; held_by?: string; outcomes?: number; due_in_hours?: number; foundation?: boolean };
+/** The right next step: its decision and function. */
+type Expected = { decision: string; function: string };
+/** A venture state with its expected next step, or a day of states with one expected step each. */
+type Scenario = { id: string; phase: string; situation: string; why: string; source: string; decisions: ScenarioDecision[]; expected?: Expected; steps?: Expected[] };
+/** The judge's answers, by question key. */
+type Answers = Record<string, { noul?: number | boolean } | undefined>;
 
 /** The decisions as decisions.ts would resolve them, after the given ones are settled. */
-function resolve(decisions, settled) {
+function resolve(decisions: ScenarioDecision[], settled: Set<string>) {
   const open = decisions.filter((d) => !settled.has(d.id));
   return open.map((d) => {
     const held = d.held_by && !settled.has(d.held_by);
@@ -35,10 +45,10 @@ function resolve(decisions, settled) {
 
 /** Every moment to score: one per scenario, or one per step of a day. */
 export function states(file = FILE) {
-  const { scenarios } = JSON.parse(readFileSync(file, "utf8"));
+  const { scenarios }: { scenarios: Scenario[] } = JSON.parse(readFileSync(file, "utf8"));
   return scenarios.flatMap((s) => {
-    const steps = s.steps ?? [s.expected];
-    const settled = new Set();
+    const steps = s.steps ?? [s.expected as Expected];
+    const settled = new Set<string>();
     return steps.map((exp, i) => {
       const st = { id: steps.length > 1 ? `${s.id}#${i + 1}` : s.id, scenario: s, phase: s.phase, decisions: resolve(s.decisions, settled), expected: exp };
       settled.add(exp.decision);
@@ -47,10 +57,13 @@ export function states(file = FILE) {
   });
 }
 
-const actionable = (st) => st.decisions.filter((d) => ["now", "overdue", "stale"].includes(d.render));
+/** One moment to score. */
+type State = ReturnType<typeof states>[number];
+
+const actionable = (st: State) => st.decisions.filter((d) => ["now", "overdue", "stale"].includes(d.render));
 
 export function request(list = states()) {
-  const questions = {};
+  const questions: Record<string, unknown> = {};
   for (const st of list) for (const d of actionable(st))
     questions[`next:${st.id}:${d.id}`] = { type: "noul", instructions: `In the venture state \`states.${st.id}\`, is the open decision \`${d.id}\` the single best next step for the founder to settle now, before every other open decision listed there?`,
       criteria: { true: "Yes: this one should come first", false: "No: another listed decision should come first" } };
@@ -59,7 +72,7 @@ export function request(list = states()) {
   return { state: { guidelines: "Each state is a venture at one moment: its phase, its situation, and its open decisions with their function and whether each can be settled now or waits on another. Judge as an experienced startup advisor would.", states: state }, model: "jev-latest", questions };
 }
 
-export function score(answers = null, list = states()) {
+export function score(answers: Answers | null = null, list = states()) {
   const rows = list.map((st) => {
     const k = rankDocket(st.decisions, st.phase, NOW);
     const judge = answers ? actionable(st).map((d) => {
@@ -71,7 +84,7 @@ export function score(answers = null, list = states()) {
       docket_right: k.next?.decision === st.expected.decision, docket_function_right: k.next?.function_id === st.expected.function,
       ...(judge ? { judge_right: judge.id === st.expected.decision, agree: judge.id === k.next?.decision } : {}) };
   });
-  const rate = (k) => Math.round((rows.filter((r) => r[k]).length / rows.length) * 100) / 100;
+  const rate = (k: "docket_right" | "docket_function_right" | "judge_right" | "agree") => Math.round((rows.filter((r) => r[k]).length / rows.length) * 100) / 100;
   return { states: rows.length, docket_next: rate("docket_right"), docket_function: rate("docket_function_right"),
     ...(answers ? { judge_next: rate("judge_right"), docket_judge_agree: rate("agree") } : {}), rows };
 }
@@ -79,11 +92,11 @@ export function score(answers = null, list = states()) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   if (process.argv[2] === "request") { console.log(JSON.stringify(request())); process.exit(0); }
   const i = process.argv.indexOf("--answers");
-  const answers = i >= 0 ? JSON.parse(readFileSync(process.argv[i + 1], "utf8")).answers : null;
+  const answers: Answers | null = i >= 0 ? JSON.parse(readFileSync(process.argv[i + 1], "utf8")).answers : null;
   const r = score(answers);
   if (process.argv.includes("--json")) console.log(JSON.stringify(r, null, 2));
   else {
     for (const x of r.rows) console.log(`${x.docket_right ? "right" : "MISS "}  ${x.state.padEnd(34)} expected ${x.expected.decision.padEnd(22)} docket ${String(x.docket.decision).padEnd(22)}${x.judge ? ` judge ${x.judge.decision} (${x.judge.p})${x.judge_right ? "" : " MISS"}` : ""}`);
-    console.log(`\n${r.states} states: the docket picked the expected next step in ${Math.round(r.docket_next * 100)}% and the expected function in ${Math.round(r.docket_function * 100)}%${answers ? `; the judge picked it in ${Math.round(r.judge_next * 100)}%, and agreed with the docket in ${Math.round(r.docket_judge_agree * 100)}%` : ""}`);
+    console.log(`\n${r.states} states: the docket picked the expected next step in ${Math.round(r.docket_next * 100)}% and the expected function in ${Math.round(r.docket_function * 100)}%${answers ? `; the judge picked it in ${Math.round((r.judge_next ?? 0) * 100)}%, and agreed with the docket in ${Math.round((r.docket_judge_agree ?? 0) * 100)}%` : ""}`);
   }
 }

@@ -5,22 +5,26 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Department, DepartmentCatalog } from "../records/types/records.d.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 export const LAYERS = ["governance", "operations"];
 export const GROUPS = ["primary", "support"];
 
-export const catalog = () => JSON.parse(readFileSync(join(root, "packages/naive/src/functions/departments.json"), "utf8")).departments;
+export const catalog = (): DepartmentCatalog["departments"] => JSON.parse(readFileSync(join(root, "packages/naive/src/functions/departments.json"), "utf8")).departments;
 
-/** Every department folder in a venture: { layer, path (its logical path), folder, group, tag }. */
-export function foldersOf(dir) {
-  const out = [];
+/** One department folder in a venture: path is its logical path, tag its department.json when it has one. */
+export type DepartmentFolder = { layer: string; path: string; folder: string; group: string | null; tag: Department | null };
+
+/** Every department folder in a venture. */
+export function foldersOf(dir: string): DepartmentFolder[] {
+  const out: DepartmentFolder[] = [];
   for (const layer of LAYERS) {
     const base = ventureFile(dir, `${layer}/departments`);
     if (!existsSync(base)) continue;
     for (const e of readdirSync(base, { withFileTypes: true }).filter((e) => e.isDirectory())) {
-      const inside = GROUPS.includes(e.name) && !existsSync(join(base, e.name, "department.json"))
-        ? readdirSync(join(base, e.name), { withFileTypes: true }).filter((x) => x.isDirectory()).map((x) => [e.name, x.name])
+      const inside: [string | null, string][] = GROUPS.includes(e.name) && !existsSync(join(base, e.name, "department.json"))
+        ? readdirSync(join(base, e.name), { withFileTypes: true }).filter((x) => x.isDirectory()).map((x): [string, string] => [e.name, x.name])
         : [[null, e.name]];
       for (const [group, folder] of inside) {
         const rel = [layer, "departments", ...(group ? [group] : []), folder].join("/");

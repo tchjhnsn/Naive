@@ -11,9 +11,9 @@ import { staleOf } from "./stale.mjs";
 import { Validator, useValidator } from "../records/validate.ts";
 
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail?: unknown) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const v = mkdtempSync(join(tmpdir(), "versions-"));
-const json = (rel) => JSON.parse(readFileSync(join(v, rel), "utf8"));
+const json = (rel: string) => JSON.parse(readFileSync(join(v, rel), "utf8"));
 mkdirSync(join(v, "marketing/decisions"), { recursive: true });
 writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "vers", name: "Vers", type: "software-startup", phase: "discovery" }, null, 2));
 const F = "marketing/decisions/mission.decision.json";
@@ -47,7 +47,7 @@ try {
   const av = approve(u, "mission", { by: "Founder", via: "console", account: "acct-1", answer: "A checked answer" });
   const dv = JSON.parse(readFileSync(join(u, F), "utf8"));
   expect("a checked sign-in records the signer as verified with its account", av.ok && av.result.signer === "verified" && dv.provenance.signer === "verified" && dv.provenance.signer_account === "acct-1" && dv.provenance.wording === "own", dv.provenance);
-  const conforms = (record, schema) => {
+  const conforms = (record: unknown, schema: string) => {
     const f = join(v, "conforms.tmp.json");
     writeFileSync(f, JSON.stringify(record));
     const r = spawnSync(process.execPath, [new URL("../records/validate.ts", import.meta.url).pathname, "--schema", schema, "--file", f], { encoding: "utf8" });
@@ -55,7 +55,7 @@ try {
     return r.status === 0;
   };
   const RECORD = "decision-record.schema.json", ENTRY = "provenance-entry.schema.json";
-  const withProvenance = (p) => ({ ...dv, provenance: p });
+  const withProvenance = (p: unknown) => ({ ...dv, provenance: p });
   const { signer_account: _account, ...noAccount } = dv.provenance;
   expect("a verified record with its account conforms", conforms(dv, RECORD));
   expect("verified without an account does not conform", !conforms(withProvenance(noAccount), RECORD));
@@ -147,7 +147,7 @@ try {
   approve(v, "headline", { by: "Founder" });
   expect("a role cannot merge by naming itself as the person", !merge(v, "headline", { by: "chief-of-staff" }).ok);
   expect("with no delegation record a role cannot merge", /only the founder merges/.test(merge(v, "headline", { role: "chief-of-staff" }).error ?? ""));
-  const grants = (may_merge, classes = ["experience-design"], expires = null) => writeFileSync(join(v, "governance/delegation.json"), JSON.stringify({ register: "delegation", root: "founder", one_way_doors: ["production-ship"], grants: [{ id: "founder-to-cos", from: "founder", to: "chief-of-staff", classes, scope: "venture", may_redelegate: false, may_merge, expires }] }, null, 2));
+  const grants = (may_merge: boolean, classes = ["experience-design"], expires: string | null = null) => writeFileSync(join(v, "governance/delegation.json"), JSON.stringify({ register: "delegation", root: "founder", one_way_doors: ["production-ship"], grants: [{ id: "founder-to-cos", from: "founder", to: "chief-of-staff", classes, scope: "venture", may_redelegate: false, may_merge, expires }] }, null, 2));
   mkdirSync(join(v, "governance"), { recursive: true });
   grants(true);
   expect("a decision with no class is merged only by the founder", /names no decision class/.test(merge(v, "headline", { role: "chief-of-staff" }).error ?? ""));
@@ -187,7 +187,7 @@ try {
   writeFileSync(join(ws, "gapa/venture.json"), JSON.stringify({ id: "gapa", name: "Gap A", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery" }, null, 2));
   const input = join(ws, "in.json");
   writeFileSync(input, JSON.stringify({ id: "x", question: "Q?", status: "decided", answer: "A.", decides: { path: "operations/x.json" }, layer: "operations", needed_in: "discovery" }));
-  const cli = (...a) => spawnSync("node", [join(new URL("../../../..", import.meta.url).pathname, "packages/naive/src/interfaces/cli/mentura.mjs"), "decisions/x", "write", "--venture", "gapa", "--input", input, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+  const cli = (...a: string[]) => spawnSync("node", [join(new URL("../../../..", import.meta.url).pathname, "packages/naive/src/interfaces/cli/mentura.mjs"), "decisions/x", "write", "--venture", "gapa", "--input", input, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
   const pw = cli("--as", "person");
   expect("a person's write of a decided decision naming no approver is refused", pw.status !== 0 && /approved_by/.test(pw.stderr + pw.stdout) && !existsSync(join(ws, "gapa/decisions/x.decision.json")), pw.stdout + pw.stderr);
   const aw = cli();

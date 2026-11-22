@@ -13,7 +13,7 @@ const repo = new URL("../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "naive-activity-"));
 writeFileSync(join(ws, "naive-workspace.json"), JSON.stringify({ name: "ws", timeZone: "Asia/Tokyo" }));
 const studio = join(ws, "ventures/studio"), tandem = join(ws, "ventures/tandem"), quiet = join(ws, "ventures/quiet");
-for (const [d, v] of /** @type {[string, *][]} */ ([[studio, { id: "studio", timeZone: "America/Chicago" }], [tandem, { id: "tandem" }], [quiet, { id: "quiet" }]])) { mkdirSync(d, { recursive: true }); writeFileSync(join(d, "venture.json"), JSON.stringify(v)); }
+for (const [d, v] of [[studio, { id: "studio", timeZone: "America/Chicago" }], [tandem, { id: "tandem" }], [quiet, { id: "quiet" }]] as [string, object][]) { mkdirSync(d, { recursive: true }); writeFileSync(join(d, "venture.json"), JSON.stringify(v)); }
 
 // the clock: the venture's zone, else the workspace's
 assert.equal(zoneOf(studio), "America/Chicago");
@@ -26,8 +26,8 @@ assert.equal(activeMinutes(["2026-10-29T10:00:00Z", "2026-10-29T10:05:00Z", "202
 assert.equal(activeMinutes(["2026-10-29T10:00:00Z"]), 0);
 
 const tdir = mkdtempSync(join(tmpdir(), "naive-activity-t-"));
-const H = (ts, text, cwd) => JSON.stringify({ type: "user", timestamp: ts, ...(cwd ? { cwd } : {}), message: { role: "user", content: text } });
-const A = (ts) => JSON.stringify({ type: "assistant", timestamp: ts, message: { role: "assistant", content: [{ type: "text", text: "x".repeat(4000) }] } });
+const H = (ts: string, text: string, cwd?: string) => JSON.stringify({ type: "user", timestamp: ts, ...(cwd ? { cwd } : {}), message: { role: "user", content: text } });
+const A = (ts: string) => JSON.stringify({ type: "assistant", timestamp: ts, message: { role: "assistant", content: [{ type: "text", text: "x".repeat(4000) }] } });
 writeFileSync(join(tdir, "a.jsonl"), [
   H("2026-10-28T15:00:00Z", "abcd".repeat(10), join(studio, "sub")), A("2026-10-28T15:01:00Z"),
   H("2026-10-28T15:06:00Z", "abcd", join(studio, "sub")),
@@ -46,6 +46,7 @@ writeFileSync(join(tdir, "d.jsonl"), H("2026-10-29T20:00:00Z", "nothing to do wi
 
 const res = activity({ root: ws, dir: tdir });
 const s = res.find((v) => v.venture === "studio");
+assert.ok(s, "studio has activity");
 assert.deepEqual(s.days.map((d) => d.date), ["2026-10-28"], "every studio message is on the 28th in Chicago");
 const d28 = s.days[0];
 assert.equal(d28.sessions, 2);
@@ -54,7 +55,8 @@ assert.equal(d28.active_minutes, 8, "15:00, 15:06, 15:08 count; 16:00 and 03:00 
 assert.equal(d28.tokens_in, Math.ceil((40 + 4 + 4 + 4 + 24) / 4), "tokens in estimate the founder's characters only");
 assert.deepEqual(d28.matched_by, ["cwd"]);
 const t = res.find((v) => v.venture === "tandem");
-assert.deepEqual(t.days.map((d) => [d.date, d.matched_by[0], d.active_minutes]), [["2026-10-30", "mention", 3]], "Tokyo day, matched by mention");
+assert.ok(t, "tandem has activity");
+assert.deepEqual(t.days.map((d) => [d.date, d.matched_by?.[0], d.active_minutes]), [["2026-10-30", "mention", 3]], "Tokyo day, matched by mention");
 assert.ok(!res.find((v) => v.venture === "quiet"), "no sessions, no rows");
 assert.deepEqual(activity({ root: ws, dir: tdir, from: "2026-10-29" }).find((v) => v.venture === "studio")?.days ?? [], [], "--from filters by the venture's day");
 assert.equal(activity({ root: studio, dir: tdir }).length, 1, "inside a venture, only that venture");
@@ -65,7 +67,7 @@ const rec = join(studio, "operations/activity/2026-10-28.json");
 const sum = join(studio, "operations/activity/_summary.json");
 assert.ok(written.includes(rec) && written.includes(sum));
 assert.equal(JSON.parse(readFileSync(rec, "utf8")).visibility, "internal");
-const validate = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const validate = (schema: string, file: string) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
 for (const [schema, file] of [["activity.schema.json", rec], ["activity-summary.schema.json", sum]]) {
   const v = validate(schema, file);
   if (/needs jsonschema/.test(v.stderr)) { console.log("activity: python jsonschema missing, schema checks skipped"); break; }
@@ -82,7 +84,7 @@ assert.equal(summarize("v", "UTC", ["2026-10-28", "2026-10-29", "2026-10-30"], "
 assert.equal(summarize("v", "UTC", ["2026-10-26", "2026-10-28"], "2026-10-28").streak, 1);
 const old = summarize("v", "UTC", ["2026-10-01"], "2026-10-30");
 assert.equal(old.days_since_last_touch, 29);
-assert.match(old.nudge, /29 days since you last worked on v\. Pick it up when you are ready/, "a gentle nudge, never an alarm");
+assert.match(old.nudge ?? "", /29 days since you last worked on v\. Pick it up when you are ready/, "a gentle nudge, never an alarm");
 assert.equal(summarize("v", "UTC", [], "2026-10-30").last_touch, null);
 
 // the CLI

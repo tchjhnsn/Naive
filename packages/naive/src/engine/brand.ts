@@ -32,11 +32,23 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allowsCopy, factsOf, registerOf, REGISTER } from "./assets.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Glossary, MarketingBrand, MarketingBrandColors, MarketingBrandRule, MarketingSitemap } from "../records/types/records.d.ts";
+
+type Typeface = NonNullable<MarketingBrand["typefaces"]>[number];
+/** A glossary term and the package it comes from. */
+export type SeenTerm = Glossary["terms"][number] & { from: string };
+/** One phrase a voice rule says to avoid, found on a line. */
+export type VoiceHit = { rule: string; line: number; found: string; use: string | null; why: string | null };
+/** The brand at a route: values from the venture and every scope that covers it, nearest last. */
+export type ResolvedBrand = {
+  route: string; name: string | null; colors: Record<string, string>; fonts: Record<string, Typeface>;
+  voice: { tone: string[]; rules: MarketingBrandRule[] }; scopes: string[]; set_by: Record<string, string>;
+};
 
 export const BRAND = "marketing/brand.json";
 export const SITEMAPS = ["marketing/sitemap.json", "operations/marketing/sitemap.json"];
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-export const brandOf = (dir) => dir && existsSync(ventureFile(dir, BRAND)) ? load(ventureFile(dir, BRAND)) : null;
+const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
+export const brandOf = (dir: string | null | undefined) => dir && existsSync(ventureFile(dir, BRAND)) ? load(ventureFile(dir, BRAND)) as MarketingBrand : null;
 
 // ---------------------------------------------------------------------------------------------
 // Router hooks. The route table (packages/naive/src/records/routes/routes.ts) lists these command routes from packages/naive/src/records/routes/commands.ts, re-exported here; this module never imports the router.
@@ -47,7 +59,7 @@ export { BRAND_ROUTES } from "../records/routes/commands.ts";
 export { brandCommands } from "../records/routes/commands.ts";
 
 /** What a layout adds for an agent: the brand and voice at this route, and the terms its package sees. */
-export function brandLayout(dir, route) {
+export function brandLayout(dir: string | null | undefined, route: string) {
   if (!dir) return null;
   const brand = brandOf(dir);
   const pkg = route.split("/")[0];
@@ -63,21 +75,21 @@ export function brandLayout(dir, route) {
 // ---------------------------------------------------------------------------------------------
 // Resolution: nearer context wins (Y-5, T-2).
 
-const covers = (scope, route) => route === scope || route.startsWith(`${scope}/`);
-const depth = (s) => s.split("/").filter(Boolean).length;
+const covers = (scope: string, route: string) => route === scope || route.startsWith(`${scope}/`);
+const depth = (s: string) => s.split("/").filter(Boolean).length;
 
 /**
  * The brand at a route: the venture's colors, font roles and voice rules, then each scope whose
  * `for` covers the route, shallowest first, so the nearest scope wins. set_by says which scope set
  * each value (the venture brand is "venture").
  */
-export function resolveBrand(brand, route = "") {
+export function resolveBrand(brand: MarketingBrand, route = ""): ResolvedBrand {
   const faces = new Map((brand.typefaces ?? []).map((t) => [t.id, t]));
-  const colors = { ...(brand.colors ?? {}) };
-  const roles = { ...(brand.fonts ?? {}) };
+  const colors: Record<string, string> = { ...(brand.colors ?? {}) };
+  const roles: Record<string, string> = { ...(brand.fonts ?? {}) };
   const rules = new Map((brand.voice?.rules ?? []).map((r) => [r.id, r]));
   let tone = brand.voice?.tone ?? [];
-  const set_by = {};
+  const set_by: Record<string, string> = {};
   for (const k of Object.keys(colors)) set_by[`color.${k}`] = "venture";
   for (const k of Object.keys(roles)) set_by[`font.${k}`] = "venture";
   for (const k of rules.keys()) set_by[`voice.${k}`] = "venture";
@@ -88,49 +100,50 @@ export function resolveBrand(brand, route = "") {
     for (const r of s.voice?.rules ?? []) { rules.set(r.id, r); set_by[`voice.${r.id}`] = s.for; }
     if (s.voice?.tone) tone = s.voice.tone;
   }
-  const fonts = Object.fromEntries(Object.entries(roles).filter(([, id]) => faces.has(id)).map(([role, id]) => [role, faces.get(id)]));
+  const fonts = Object.fromEntries(Object.entries(roles).flatMap(([role, id]): [string, Typeface][] => { const t = faces.get(id); return t ? [[role, t]] : []; }));
   return { route, name: brand.name ?? null, colors, fonts, voice: { tone, rules: [...rules.values()] }, scopes: scopes.map((s) => s.for), set_by };
 }
 
 // ---------------------------------------------------------------------------------------------
 // Tokens: W3C design tokens (DTCG), CSS custom properties and head links.
 
-const cssName = (s) => String(s).toLowerCase().replace(/[^a-z0-9-]+/g, "-");
-const familyList = (t) => [JSON.stringify(t.family), ...(t.fallback ?? [])].join(", ");
-const FORMAT = { woff2: "woff2", woff: "woff", ttf: "truetype", otf: "opentype" };
-const url = (path) => `/${path.replace(/^public\//, "")}`;
+const cssName = (s: unknown) => String(s).toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+const familyList = (t: Typeface) => [JSON.stringify(t.family), ...(t.fallback ?? [])].join(", ");
+const FORMAT: Record<string, string> = { woff2: "woff2", woff: "woff", ttf: "truetype", otf: "opentype" };
+const url = (path: string) => `/${path.replace(/^public\//, "")}`;
 
 /** The marks as head links: the file-based icons Next.js turns into <link> tags. */
-export function headLinks(dir, brand) {
+export function headLinks(dir: string, brand: MarketingBrand) {
   const reg = registerOf(dir);
-  const factsFor = (p) => reg?.assets?.find((a) => a.path === p)?.facts ?? (existsSync(ventureFile(dir, p)) ? factsOf(readFileSync(ventureFile(dir, p))) : null);
-  const out = [];
+  const factsFor = (p: string) => reg?.assets?.find((a) => a.path === p)?.facts ?? (existsSync(ventureFile(dir, p)) ? factsOf(readFileSync(ventureFile(dir, p))) : null);
+  const out: Record<string, string | undefined>[] = [];
+  const types: Record<string, string> = { png: "image/png", svg: "image/svg+xml", ico: "image/x-icon" };
   for (const m of brand.marks ?? []) {
     if (m.kind === "logo") continue;
     const f = factsFor(m.asset);
     const sizes = m.kind === "favicon" ? "any" : f?.width ? `${f.width}x${f.height}` : undefined;
-    const type = { png: "image/png", svg: "image/svg+xml", ico: "image/x-icon" }[f?.type];
+    const type = f ? types[f.type] : undefined;
     out.push(Object.fromEntries(Object.entries({ rel: m.kind === "apple-icon" ? "apple-touch-icon" : "icon", href: url(m.asset), type, sizes }).filter(([, v]) => v)));
   }
   return out;
 }
 
 /** DTCG tokens, CSS (custom properties, @font-face, one selector per scope) and head links. */
-export function tokens(dir, brand = brandOf(dir)) {
+export function tokens(dir: string, brand: MarketingBrand | null = brandOf(dir)) {
   if (!brand) return null;
   const at = resolveBrand(brand, "");
-  const dtcg = { color: {}, font: {} };
+  const dtcg: { color: Record<string, { $type: string; $value: string }>; font: Record<string, { $type: string; $value: string[]; $description: string }> } = { color: {}, font: {} };
   for (const [k, v] of Object.entries(at.colors)) dtcg.color[k] = { $type: "color", $value: v };
   for (const [role, t] of Object.entries(at.fonts)) dtcg.font[role] = { $type: "fontFamily", $value: [t.family, ...(t.fallback ?? [])], $description: `${t.family}, ${t.license}` };
   const faces = (brand.typefaces ?? []).filter((t) => t.source === "self-hosted").flatMap((t) => (t.files ?? []).map((f) => {
-    const ext = f.split(".").pop().toLowerCase();
+    const ext = (f.split(".").pop() ?? "").toLowerCase();
     return `@font-face {\n  font-family: ${JSON.stringify(t.family)};\n  src: url("${url(f)}") format("${FORMAT[ext] ?? ext}");\n  font-display: swap;\n}`;
   }));
-  const decl = (colors, fonts) => [...Object.entries(colors).map(([k, v]) => `  --color-${cssName(k)}: ${v};`), ...Object.entries(fonts).map(([role, t]) => `  --font-${cssName(role)}: ${familyList(t)};`)].join("\n");
+  const decl = (colors: Record<string, string>, fonts: Record<string, Typeface>) => [...Object.entries(colors).map(([k, v]) => `  --color-${cssName(k)}: ${v};`), ...Object.entries(fonts).map(([role, t]) => `  --font-${cssName(role)}: ${familyList(t)};`)].join("\n");
   const blocks = [...faces, `:root {\n${decl(at.colors, at.fonts)}\n}`];
   const faceById = new Map((brand.typefaces ?? []).map((t) => [t.id, t]));
   for (const s of [...(brand.scopes ?? [])].sort((a, b) => depth(a.for) - depth(b.for))) {
-    const f = Object.fromEntries(Object.entries(s.fonts ?? {}).filter(([, id]) => faceById.has(id)).map(([role, id]) => [role, faceById.get(id)]));
+    const f = Object.fromEntries(Object.entries(s.fonts ?? {}).flatMap(([role, id]): [string, Typeface][] => { const t = faceById.get(id); return t ? [[role, t]] : []; }));
     const d = decl(s.colors ?? {}, f);
     if (d) blocks.push(`[data-naive-scope="${s.for}"] {\n${d}\n}`);
   }
@@ -141,20 +154,20 @@ export function tokens(dir, brand = brandOf(dir)) {
 // Glossaries (Y-2): a package's terms stay local unless it exports them.
 
 /** Every package glossary in the venture (glossary/<package>.json): package -> record. */
-export function glossaries(dir) {
-  const out = new Map();
+export function glossaries(dir: string): Map<string, Glossary> {
+  const out = new Map<string, Glossary>();
   const g = dir ? join(dir, "glossary") : null;
   if (!g || !existsSync(g)) return out;
-  for (const f of readdirSync(g).filter((n) => n.endsWith(".json")).sort()) out.set(f.slice(0, -5), load(join(g, f)));
+  for (const f of readdirSync(g).filter((n) => n.endsWith(".json")).sort()) out.set(f.slice(0, -5), load(join(g, f)) as Glossary);
   return out;
 }
 
 /** The terms a package sees: its own (all of them), then other packages' exported ones. Its own win. */
-export function termsFor(dir, pkg) {
+export function termsFor(dir: string, pkg: string) {
   const all = glossaries(dir);
-  const own = (all.get(pkg)?.terms ?? []).map((t) => ({ ...t, from: pkg }));
+  const own: SeenTerm[] = (all.get(pkg)?.terms ?? []).map((t) => ({ ...t, from: pkg }));
   const names = new Set(own.map((t) => t.term.toLowerCase()));
-  const imported = [], shadows = [];
+  const imported: SeenTerm[] = [], shadows: { term: string; from: string; kept: string }[] = [];
   let hidden = 0;
   for (const [p, g] of all) {
     if (p === pkg) continue;
@@ -167,12 +180,12 @@ export function termsFor(dir, pkg) {
   return { package: pkg, terms: [...own, ...imported], shadows, hidden };
 }
 
-function checkGlossaries(dir) {
-  const errors = [], warnings = [];
-  const exported = new Map();
+function checkGlossaries(dir: string) {
+  const errors: string[] = [], warnings: string[] = [];
+  const exported = new Map<string, SeenTerm>();
   for (const [p, g] of glossaries(dir)) {
     if (g.package !== p) errors.push(`glossary/${p}.json: names package ${g.package}; the file for ${g.package} is glossary/${g.package}.json (Y-2)`);
-    const seen = new Set();
+    const seen = new Set<string>();
     for (const t of g.terms ?? []) {
       const k = t.term.toLowerCase();
       if (seen.has(k)) errors.push(`glossary/${p}.json: ${t.term} is defined twice`);
@@ -189,12 +202,12 @@ function checkGlossaries(dir) {
 // ---------------------------------------------------------------------------------------------
 // Voice (Y-3): the global stylesheet for words.
 
-const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const phrase = (p) => new RegExp(`(^|[^\\p{L}\\p{N}])(${escape(p)})(?=$|[^\\p{L}\\p{N}])`, "giu");
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const phrase = (p: string) => new RegExp(`(^|[^\\p{L}\\p{N}])(${escape(p)})(?=$|[^\\p{L}\\p{N}])`, "giu");
 
 /** Text held to voice rules: every phrase to avoid, by line, with what to use instead. Frontmatter and code are skipped. */
-export function voiceCheck(text, rules) {
-  const out = [];
+export function voiceCheck(text: string, rules: MarketingBrandRule[]): VoiceHit[] {
+  const out: VoiceHit[] = [];
   let fence = false, front = false;
   text.split("\n").forEach((line, i) => {
     if (i === 0 && line.trim() === "---") { front = true; return; }
@@ -202,20 +215,20 @@ export function voiceCheck(text, rules) {
     if (/^\s*(```|~~~)/.test(line)) { fence = !fence; return; }
     if (fence) return;
     const plain = line.replace(/`[^`]*`/g, "");
-    for (const r of rules) for (const a of [].concat(r.avoid ?? [])) for (const m of plain.matchAll(phrase(a))) out.push({ rule: r.id, line: i + 1, found: m[2], use: r.use ?? null, why: r.why ?? null });
+    for (const r of rules) for (const a of ([] as string[]).concat(r.avoid ?? [])) for (const m of plain.matchAll(phrase(a))) out.push({ rule: r.id, line: i + 1, found: m[2], use: r.use ?? null, why: r.why ?? null });
   });
   return out;
 }
 
 /** The venture's marketing content files, venture-relative. */
-export function contentFiles(dir) {
-  const walk = (d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : /\.(mdx?|txt)$/.test(e.name) ? [join(d, e.name)] : []) : [];
+export function contentFiles(dir: string) {
+  const walk = (d: string): string[] => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : /\.(mdx?|txt)$/.test(e.name) ? [join(d, e.name)] : []) : [];
   return ["marketing/content", "operations/marketing/content"].flatMap((p) => walk(ventureFile(dir, p))).map((f) => f.slice(dir.length + 1)).sort();
 }
 
 /** Every marketing content file held to the voice rules in force at its path, and to other packages' local terms (warnings). */
-export function voice(dir, brand = brandOf(dir)) {
-  const violations = [], leaks = [];
+export function voice(dir: string, brand: MarketingBrand | null = brandOf(dir)) {
+  const violations: (VoiceHit & { file: string })[] = [], leaks: { file: string; line: number; term: string; local_to: string }[] = [];
   const local = [...glossaries(dir)].filter(([p]) => p !== "marketing").flatMap(([p, g]) => (g.terms ?? []).filter((t) => !t.export).map((t) => ({ ...t, from: p })));
   for (const f of contentFiles(dir)) {
     const text = readFileSync(ventureFile(dir, f), "utf8");
@@ -231,17 +244,17 @@ export function voice(dir, brand = brandOf(dir)) {
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 
-export function checkBrand(dir) {
-  const errors = [], warnings = [];
+export function checkBrand(dir: string) {
+  const errors: string[] = [], warnings: string[] = [];
   const brand = brandOf(dir);
   const g = checkGlossaries(dir);
   errors.push(...g.errors); warnings.push(...g.warnings);
   if (!brand) return { ok: !errors.length, errors, warnings, brand: false };
   const reg = registerOf(dir);
-  const asset = (p) => reg?.assets?.find((a) => a.path === p);
+  const asset = (p: string) => reg?.assets?.find((a) => a.path === p);
   const faces = new Map((brand.typefaces ?? []).map((t) => [t.id, t]));
   // Colors (Y-3).
-  const colorsOk = (cs, where) => { for (const [k, v] of Object.entries(cs ?? {})) if (!HEX.test(v)) errors.push(`${where}: color ${k} is ${v}, not a hex color`); };
+  const colorsOk = (cs: MarketingBrandColors | undefined, where: string) => { for (const [k, v] of Object.entries(cs ?? {})) if (!HEX.test(v)) errors.push(`${where}: color ${k} is ${v}, not a hex color`); };
   colorsOk(brand.colors, BRAND);
   // Typefaces (T-1): licensed, self-hosted from registered files, never fetched from another host by the browser.
   for (const t of brand.typefaces ?? []) {
@@ -301,20 +314,21 @@ export function checkBrand(dir) {
 // ---------------------------------------------------------------------------------------------
 // The sitemap (P-26): rendered from the marketing record, for a release.
 
-const xmlEscape = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+const xmlEscape = (s: unknown) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
-export function sitemapOf(dir) {
+export function sitemapOf(dir: string) {
   const f = SITEMAPS.find((p) => existsSync(ventureFile(dir, p)));
-  return f ? { file: f, record: load(ventureFile(dir, f)) } : null;
+  return f ? { file: f, record: load(ventureFile(dir, f)) as MarketingSitemap } : null;
 }
 
-/** sitemaps.org XML from a marketing sitemap record: one <url> per planned page, home first. */
-export function sitemapXml(record, base) {
-  let root;
+/** sitemaps.org XML from a marketing sitemap record: one <url> per planned page, home first. It reads only planned_at and each page's path and level. */
+export function sitemapXml(record: Pick<MarketingSitemap, "planned_at"> & { pages: Pick<MarketingSitemap["pages"][number], "path" | "level">[] }, base: string) {
+  let root: URL;
   try { root = new URL(base); } catch { throw new Error(`${base} is not a URL`); }
   if (!/^https?:$/.test(root.protocol)) throw new Error(`${base} is not an http or https URL`);
   const origin = base.replace(/\/+$/, "");
-  const lastmod = /^\d{4}-\d{2}-\d{2}/.test(record.planned_at ?? "") ? record.planned_at.slice(0, 10) : null;
+  const planned = record.planned_at ?? "";
+  const lastmod = /^\d{4}-\d{2}-\d{2}/.test(planned) ? planned.slice(0, 10) : null;
   const pages = [...record.pages].sort((a, b) => (a.level === "home" ? -1 : b.level === "home" ? 1 : 0));
   const urls = pages.map((p) => {
     const path = p.path.startsWith("/") ? p.path : `/${p.path}`;
@@ -327,24 +341,25 @@ export function sitemapXml(record, base) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
-  const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+  const opt = (n: string) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
   const json = argv.includes("--json");
   const dir = argv[0];
   const mode = argv[1] && !argv[1].startsWith("--") ? argv[1] : null;
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/brand.ts <venture dir> tokens|voice|check | --for <route> | --package <id> | --base <url> [--json]"); process.exit(2); }
-  const print = (x, text) => console.log(json ? JSON.stringify(x, null, 2) : text ?? JSON.stringify(x, null, 2));
-  if (opt("for") !== undefined) {
+  const print = (x: unknown, text?: string) => console.log(json ? JSON.stringify(x, null, 2) : text ?? JSON.stringify(x, null, 2));
+  const forRoute = opt("for"), pkg = opt("package"), base = opt("base");
+  if (forRoute !== undefined) {
     const brand = brandOf(dir);
     if (!brand) { console.error(`no brand yet: write ${BRAND} (mentura marketing/brand template)`); process.exit(1); }
-    print(resolveBrand(brand, opt("for")));
-  } else if (opt("package") !== undefined) {
-    const t = termsFor(dir, opt("package"));
-    print(t, t.terms.map((x) => `${x.term.padEnd(24)} ${x.from.padEnd(12)} ${x.meaning}`).join("\n") || `no terms reach ${opt("package")}`);
-  } else if (opt("base") !== undefined) {
+    print(resolveBrand(brand, forRoute));
+  } else if (pkg !== undefined) {
+    const t = termsFor(dir, pkg);
+    print(t, t.terms.map((x) => `${x.term.padEnd(24)} ${x.from.padEnd(12)} ${x.meaning}`).join("\n") || `no terms reach ${pkg}`);
+  } else if (base !== undefined) {
     const s = sitemapOf(dir);
     if (!s) { console.error("no marketing sitemap yet: plan it (mentura operations/marketing/sitemap run) and write marketing/sitemap.json"); process.exit(1); }
-    let xml;
-    try { xml = sitemapXml(s.record, opt("base")); } catch (e) { console.error(e.message); process.exit(1); }
+    let xml: string;
+    try { xml = sitemapXml(s.record, base); } catch (e) { console.error((e as Error).message); process.exit(1); }
     print({ from: s.file, pages: s.record.pages.length, xml }, xml);
   } else if (mode === "tokens") {
     const t = tokens(dir);

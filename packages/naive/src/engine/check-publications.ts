@@ -13,24 +13,27 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { artifacts } from "./check-artifacts.ts";
+import type { Artifact, PublicationPolicy, Publications } from "../records/types/records.d.ts";
 
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-const sha = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
-const ventures = (d) => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);
-const sub = (d) => { try { return readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules").flatMap((e) => ventures(join(d, e.name))); } catch { return []; } };
-const agentRoles = new Set(load(new URL("../../template/governance/roles/agent-roles.json", import.meta.url)).roles.filter((r) => r.tier && r.tier !== "person").map((r) => r.id));
+const load = (f: string | URL) => JSON.parse(readFileSync(f, "utf8"));
+const sha = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
+const ventures = (d: string): string[] => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);
+const sub = (d: string): string[] => { try { return readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules").flatMap((e) => ventures(join(d, e.name))); } catch { return []; } };
+// agent-roles.json has no schema yet (the data model's role record type), so its shape is named here.
+const roleList: { roles: { id: string; tier?: string }[] } = load(new URL("../../template/governance/roles/agent-roles.json", import.meta.url));
+const agentRoles = new Set(roleList.roles.filter((r) => r.tier && r.tier !== "person").map((r) => r.id));
 
 /** { errors, warnings } for one venture. */
-export function checkVenture(dir) {
-  const errors = [], warnings = [];
+export function checkVenture(dir: string) {
+  const errors: string[] = [], warnings: string[] = [];
   const mFile = ventureFile(dir, "governance/publications.json");
-  const m = existsSync(mFile) ? load(mFile) : { entries: [] };
+  const m: Publications = existsSync(mFile) ? load(mFile) : { entries: [] };
   const pFile = ventureFile(dir, "governance/publication-policy.json");
-  const channels = new Set(existsSync(pFile) ? load(pFile).channels.map((c) => c.id) : []);
+  const channels = new Set(existsSync(pFile) ? (load(pFile) as PublicationPolicy).channels.map((c) => c.id) : []);
   const arts = new Map(artifacts(dir).map((a) => [a.id, a]));
   const at = "governance/publications.json";
   for (const a of arts.values()) {
-    const raw = load(ventureFile(dir, a.file));
+    const raw: Artifact = load(ventureFile(dir, a.file));
     if (raw.published && !m.entries.some((e) => e.artifact === a.id && e.sha256)) errors.push(`${a.file}: live (published) with no entry in ${at}`);
   }
   for (const e of m.entries) {
@@ -53,7 +56,8 @@ export function checkVenture(dir) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const root = process.argv[2];
   if (!root) { console.error("usage: node packages/naive/src/engine/check-publications.ts <workspace or venture dir>"); process.exit(2); }
-  let errors = [], warnings = [], n = 0;
+  const errors: string[] = [], warnings: string[] = [];
+  let n = 0;
   for (const v of ventures(root)) { const r = checkVenture(v); errors.push(...r.errors.map((x) => `${v}: ${x}`)); warnings.push(...r.warnings.map((x) => `${v}: ${x}`)); n += r.entries; }
   for (const w of warnings) console.log(`warning: ${w}`);
   for (const e of errors) console.error(e);

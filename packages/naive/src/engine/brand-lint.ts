@@ -11,10 +11,11 @@ import { join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { DESIGN_SYSTEM } from "./design-system.ts";
 import { contentFiles } from "./brand.ts";
+import type { DecisionRecord, MarketingDesignSystem } from "../records/types/records.d.ts";
 
-const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const has = (text, term) => new RegExp(`(^|[^\\p{L}\\p{N}])${esc(term)}(?=$|[^\\p{L}\\p{N}])`, "iu").test(text);
+const load = (f: string) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const has = (text: string, term: string) => new RegExp(`(^|[^\\p{L}\\p{N}])${esc(term)}(?=$|[^\\p{L}\\p{N}])`, "iu").test(text);
 
 export const JARGON = ["synergy", "leverage", "paradigm", "best-in-class", "world-class", "disrupt", "game-changer", "cutting-edge", "holistic", "seamless", "robust", "next-gen"];
 
@@ -26,9 +27,9 @@ export const RULES = [
 ];
 
 // Every */decisions/*.decision.json under the venture, skipping hidden, _drafts, code and nested ventures.
-function decisionFiles(dir) {
-  const out = [];
-  const walk = (d, depth) => {
+function decisionFiles(dir: string): string[] {
+  const out: string[] = [];
+  const walk = (d: string, depth: number) => {
     for (const e of readdirSync(d, { withFileTypes: true })) {
       const p = join(d, e.name);
       if (e.isDirectory()) {
@@ -42,29 +43,33 @@ function decisionFiles(dir) {
   return out.sort();
 }
 
-const textOf = (d) => [d.question, typeof d.answer === "string" ? d.answer : JSON.stringify(d.answer ?? ""),
-  ...(d.options ?? []).map((o) => (typeof o === "string" ? o : [o.label, o.id, o.description, o.value].filter(Boolean).join(" ")))].filter(Boolean).join("\n");
+// The schema says options are strings; an option written as an object is read by its label, id, description and value.
+const textOf = (d: DecisionRecord) => [d.question, typeof d.answer === "string" ? d.answer : JSON.stringify(d.answer ?? ""),
+  ...(d.options ?? []).map((o: unknown) => (typeof o === "string" ? o : ["label", "id", "description", "value"].map((k) => (o as Record<string, unknown>)[k]).filter(Boolean).join(" ")))].filter(Boolean).join("\n");
 
-function icpsOf(d) {
-  const ids = new Set();
+function icpsOf(d: object): string[] {
+  const ids = new Set<string>();
   for (const m of JSON.stringify(d).matchAll(/icp:([a-z0-9][\w-]*)/gi)) ids.add(m[1]);
-  for (const k of ["icp", "icps", "audience", "audiences"]) for (const v of [].concat(d[k] ?? [])) if (typeof v === "string") ids.add(v.replace(/^icp:/, ""));
+  for (const k of ["icp", "icps", "audience", "audiences"]) for (const v of ([] as unknown[]).concat((d as Record<string, unknown>)[k] ?? [])) if (typeof v === "string") ids.add(v.replace(/^icp:/, ""));
   return [...ids];
 }
 
-export function lint(dir) {
-  const ds = load(ventureFile(dir, DESIGN_SYSTEM));
-  const cfg = load(ventureFile(dir, "naive.config.json"))?.brand_lint?.rules ?? {};
-  const rules = RULES.map((r) => ({ ...r, mode: ["fail-open", "fail-closed"].includes(cfg[r.id]?.mode) ? cfg[r.id].mode : r.mode }));
+/** One finding: the rule, its mode, the file, what is wrong and what to do. */
+export type Finding = { rule: string; mode: string; file: string; message: string; suggestion: string };
+
+export function lint(dir: string) {
+  const ds: MarketingDesignSystem | null = load(ventureFile(dir, DESIGN_SYSTEM));
+  const cfg: Record<string, { mode?: string } | undefined> = load(ventureFile(dir, "naive.config.json"))?.brand_lint?.rules ?? {};
+  const rules = RULES.map((r) => { const m = cfg[r.id]?.mode; return { ...r, mode: m !== undefined && ["fail-open", "fail-closed"].includes(m) ? m : r.mode }; });
   const mode = Object.fromEntries(rules.map((r) => [r.id, r.mode]));
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
   const avoid = ds?.ethos?.avoid ?? [];
   const audiences = new Set(ds?.audiences ?? []);
   const dsRel = relative(dir, ventureFile(dir, DESIGN_SYSTEM));
 
   for (const f of decisionFiles(dir)) {
-    const d = load(f); if (!d) continue;
+    const d: DecisionRecord | null = load(f); if (!d) continue;
     const rel = relative(dir, f), text = textOf(d);
     for (const a of avoid) if (has(text, a)) add("avoid-words", rel, `mentions "${a}", which the ethos says to avoid`, `reword without "${a}"`);
     for (const j of JARGON) if (has(text, j)) add("voice-jargon", rel, `uses jargon "${j}"`, "say it plainly");

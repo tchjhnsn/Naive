@@ -27,6 +27,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { ValidationEvidence, ValidationProblem } from "../records/types/records.d.ts";
 
 export const ASSUMPTIONS = [
   { id: "exists", says: "the problem is real", field: "statement", test: "Find people already paying for or building a workaround (search, forums, competitors' customers)" },
@@ -34,23 +35,23 @@ export const ASSUMPTIONS = [
   { id: "hurts", says: "it costs enough that people already spend time or money on it", field: "cost or workarounds", test: "Ask in those interviews what they spent on it last month, in hours or money, and look for a workaround they pay for" },
   { id: "why-now", says: "something has changed that makes it solvable or urgent now", field: "why_now", test: "Cite the change: a trend, a new technology, a rule, with a source" },
 ];
-export const LADDER = [
+export const LADDER: { rung: string; unlocks: string; needs?: Record<string, number> }[] = [
   { rung: "explore", unlocks: "keep researching the problem" },
   { rung: "prototype", unlocks: "build something cheap to test a solution", needs: { exists: 1, hurts: 1 } },
   { rung: "charge", unlocks: "ask people in the segment to pay", needs: { exists: 1, segment: 2, hurts: 2 } },
   { rung: "raise", unlocks: "ask investors for money on the problem's strength (the problem alone is never enough)", needs: { exists: 2, segment: 2, hurts: 2, "why-now": 1 } },
 ];
-const LABEL = { 2: "demonstrated", 1: "inferred" };
+const LABEL: Record<number, string> = { 2: "demonstrated", 1: "inferred" };
 const MIN_SAMPLE = 5, MAX_AGE_MONTHS = 18;
 
-const months = (from, to) => (to - +new Date(from)) / (1000 * 60 * 60 * 24 * 30.44);
-export const originOf = (e) => e.origin ?? (e.source?.path && !e.source?.url ? "first-hand" : "reported");
+const months = (from: string, to: Date) => (+to - +new Date(from)) / (1000 * 60 * 60 * 24 * 30.44);
+export const originOf = (e: ValidationEvidence) => e.origin ?? (e.source?.path && !e.source?.url ? "first-hand" : "reported");
 
 // The foundation/problem route writes foundation/problem.json (the first path in the data model)
 // and keeps purpose/validation/problem.json when that file is already the record. Read the same
 // file the route reads, or the assessment cannot see a claim the template just wrote.
 const PROBLEM_FILES = ["foundation/problem.json", "purpose/validation/problem.json"];
-export function problemFile(dir) {
+export function problemFile(dir: string): string | null {
   for (const rel of PROBLEM_FILES) {
     const p = ventureFile(dir, rel);
     if (existsSync(p)) return p;
@@ -59,17 +60,20 @@ export function problemFile(dir) {
 }
 
 /** How strongly one item bears on its assumption: 2 demonstrates, 1 infers, 0 counts for nothing. */
-export function strength(e, today = new Date()) {
+export function strength(e: ValidationEvidence, today = new Date()): number {
   if (e.audience === "wrong") return 0;
   const shows = ["behavior", "commitment"].includes(e.kind) && e.audience === "target" && originOf(e) === "first-hand"
     && (e.sample?.n ?? 0) >= MIN_SAMPLE && months(e.collected, today) <= MAX_AGE_MONTHS;
   return shows ? 2 : 1;
 }
 
-const stated = (rec, a) => a.id === "hurts" ? !!(rec.cost || rec.workarounds?.length) : a.id === "why-now" ? !!rec.why_now : !!rec[a.field];
+const stated = (rec: ValidationProblem, a: (typeof ASSUMPTIONS)[number]) => a.id === "hurts" ? !!(rec.cost || rec.workarounds?.length) : a.id === "why-now" ? !!rec.why_now : !!(rec as Record<string, unknown>)[a.field];
 
 /** The label for each assumption, with the items behind it. */
-export function label(rec, today = new Date()) {
+/** One assumption's label, with the items behind it. */
+export type Label = { assumption: string; says: string; label: string; level: number; for: string[]; against: string[]; ignored: string[] };
+
+export function label(rec: ValidationProblem | null, today = new Date()): Label[] {
   const ev = rec?.evidence ?? [];
   return ASSUMPTIONS.map((a) => {
     const on = ev.filter((e) => (e.assumption ?? "exists") === a.id).map((e) => ({ id: e.id, supports: e.supports !== false, s: strength(e, today), target: e.audience === "target" }));
@@ -82,20 +86,20 @@ export function label(rec, today = new Date()) {
 }
 
 /** The highest rung the labels support, and what blocks the next one. */
-export function ladder(labels) {
+export function ladder(labels: Label[]) {
   const lv = Object.fromEntries(labels.map((l) => [l.assumption, l.level]));
   const contradicted = labels.filter((l) => l.label === "contradicted").map((l) => l.assumption);
   let i = 0;
-  while (i + 1 < LADDER.length && !contradicted.length && Object.entries(LADDER[i + 1].needs).every(([a, n]) => lv[a] >= n)) i++;
+  while (i + 1 < LADDER.length && !contradicted.length && Object.entries(LADDER[i + 1].needs ?? {}).every(([a, n]) => lv[a] >= n)) i++;
   const next = LADDER[i + 1];
-  const blocking = next ? Object.entries(next.needs).filter(([a, n]) => lv[a] < n || contradicted.includes(a)).map(([a, n]) => ({ assumption: a, needs: LABEL[n], has: labels.find((l) => l.assumption === a).label, test: ASSUMPTIONS.find((x) => x.id === a).test })) : [];
+  const blocking = next ? Object.entries(next.needs ?? {}).filter(([a, n]) => lv[a] < n || contradicted.includes(a)).map(([a, n]) => ({ assumption: a, needs: LABEL[n], has: labels.find((l) => l.assumption === a)?.label, test: ASSUMPTIONS.find((x) => x.id === a)?.test })) : [];
   return { supports: LADDER[i].rung, unlocks: LADDER[i].unlocks, next: next?.rung ?? null, blocking, contradicted };
 }
 
 /** What is missing from the record before assessing it, and what running as is would mean. */
-export function preflight(rec) {
+export function preflight(rec: ValidationProblem | null): Missing[] {
   if (!rec) return [{ field: "purpose/validation/problem.json", why: "there is no problem record", as_is: "every assumption is unknown; the evidence supports exploring only" }];
-  const m = [];
+  const m: Missing[] = [];
   for (const a of ASSUMPTIONS) if (!stated(rec, a)) m.push({ field: a.field, why: `says whether ${a.says}`, as_is: `${a.id} is unknown unless evidence bears on it` });
   const untagged = (rec.evidence ?? []).filter((e) => !e.assumption).map((e) => e.id);
   if (untagged.length) m.push({ field: "evidence[].assumption", items: untagged, why: "which assumption each item bears on (exists, segment, hurts, why-now)", as_is: "these items count toward exists only" });
@@ -108,24 +112,25 @@ export function preflight(rec) {
 
 export const ASK = "Some things the assessment reads are missing. Fill them in first, or run it as is?";
 
-/** @typedef {{ field: string, items?: string[], why: string, as_is: string }} Missing */
-/** @typedef {ReturnType<typeof ladder>} Rung */
-/**
- * @typedef {{ needs_input?: { ask: string, missing: Missing[], options: { choice: string, how: string }[] } } & Partial<Rung & { venture: string | null, ran_as_is: boolean, missing: Missing[], assumptions: ReturnType<typeof label>,
- *   forms: ({ form: string, statement: string, assumptions: ReturnType<typeof label> } & Pick<Rung, "supports" | "next" | "blocking">)[] }>} Assessment
- */
+/** A field the assessment reads that the record lacks, and what running without it means. */
+export type Missing = { field: string; items?: string[]; why: string; as_is: string };
+/** The rung the labels support. */
+export type Rung = ReturnType<typeof ladder>;
+/** A run: the question to ask when input is missing, or the assessment. */
+export type Assessment = { needs_input?: { ask: string; missing: Missing[]; options: { choice: string; how: string }[] } } & Partial<Rung & { venture: string | null; ran_as_is: boolean; missing: Missing[]; assumptions: Label[];
+  forms: ({ form: string; statement: string; assumptions: Label[] } & Pick<Rung, "supports" | "next" | "blocking">)[] }>;
 
-/** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. @returns {Assessment} */
-export function assess(dir, { as_is = false, today = new Date() } = {}) {
+/** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. */
+export function assess(dir: string, { as_is = false, today = new Date() }: { as_is?: boolean; today?: Date } = {}): Assessment {
   const f = problemFile(dir);
-  const rec = f ? JSON.parse(readFileSync(f, "utf8")) : null;
+  const rec: ValidationProblem | null = f ? JSON.parse(readFileSync(f, "utf8")) : null;
   const missing = preflight(rec);
   if (missing.length && !as_is) return { needs_input: { ask: ASK, missing, options: [
     { choice: "fill-in", how: "write the missing fields through foundation/problem (foundation/problem.json, or purpose/validation/problem.json when that file is already the record; template: packages/naive/src/functions/strategy/kits/validation/templates/problem.md), then run again" },
     { choice: "run-as-is", how: "run again with as_is (CLI --as-is; MCP and API as_is: true)" }] } };
   const labels = label(rec, today);
   // Each open form is assessed from its own evidence; its evidence also counts for the root.
-  const forms = (rec?.forms ?? []).filter((f) => f.status !== "dropped").map((f) => {
+  const forms = !rec ? [] : (rec.forms ?? []).filter((f) => f.status !== "dropped").map((f) => {
     const own = label({ ...rec, statement: f.statement, segment: f.segment ?? rec.segment, evidence: (rec.evidence ?? []).filter((e) => e.form === f.id) }, today);
     const { supports, next, blocking } = ladder(own);
     return { form: f.id, statement: f.statement, assumptions: own, supports, next, blocking };
@@ -136,18 +141,19 @@ export function assess(dir, { as_is = false, today = new Date() } = {}) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   if (!dir) { console.error("usage: node packages/naive/src/engine/assess-problem.ts <venture dir> [--json] [--preflight] [--as-is]"); process.exit(2); }
-  const flag = (f) => process.argv.includes(f);
+  const flag = (f: string) => process.argv.includes(f);
   const loaded = problemFile(dir);
-  /** @type {Assessment} */
-  const out = flag("--preflight") ? { missing: preflight(loaded ? JSON.parse(readFileSync(loaded, "utf8")) : null) } : assess(dir, { as_is: flag("--as-is") });
+  const out: Assessment = flag("--preflight") ? { missing: preflight(loaded ? JSON.parse(readFileSync(loaded, "utf8")) : null) } : assess(dir, { as_is: flag("--as-is") });
   if (flag("--json")) { console.log(JSON.stringify(out, null, 2)); process.exit(0); }
-  const list = (m) => m.map((x) => `  - ${x.field}${x.items ? ` (${x.items.join(", ")})` : ""}: ${x.why}. As is: ${x.as_is}`).join("\n");
+  const list = (m: Missing[]) => m.map((x) => `  - ${x.field}${x.items ? ` (${x.items.join(", ")})` : ""}: ${x.why}. As is: ${x.as_is}`).join("\n");
   if (out.needs_input) { console.log(`${out.needs_input.ask}\n${list(out.needs_input.missing)}\nFill in: ${out.needs_input.options[0].how}\nRun as is: ${out.needs_input.options[1].how}`); process.exit(0); }
-  if (!out.assumptions) { console.log(out.missing.length ? list(out.missing) : "nothing missing"); process.exit(0); }
+  if (!out.assumptions) { console.log(out.missing?.length ? list(out.missing) : "nothing missing"); process.exit(0); }
   for (const a of out.assumptions) console.log(`${a.assumption.padEnd(8)} ${a.label.padEnd(13)} ${a.says}${a.for.length ? `  [for: ${a.for.join(", ")}]` : ""}${a.against.length ? `  [against: ${a.against.join(", ")}]` : ""}`);
   console.log(`\nThe evidence supports: ${out.supports} (${out.unlocks}).`);
-  if (out.contradicted.length) console.log(`Evidence from the segment contradicts ${out.contradicted.join(", ")}: reframe the problem or the segment and test again.`);
-  if (out.next) console.log(`To reach ${out.next}:\n${out.blocking.map((b) => `  - ${b.assumption}: ${b.has}, needs ${b.needs}. ${b.test}`).join("\n")}`);
-  for (const f of out.forms) console.log(`\nForm ${f.form}: supports ${f.supports}. ${f.assumptions.map((a) => `${a.assumption} ${a.label}`).join(", ")}`);
-  if (out.ran_as_is) console.log(`\nRan as is; missing:\n${list(out.missing)}`);
+  // Past the two exits above, out is a whole assessment: every field below is set.
+  const contradicted = out.contradicted ?? [];
+  if (contradicted.length) console.log(`Evidence from the segment contradicts ${contradicted.join(", ")}: reframe the problem or the segment and test again.`);
+  if (out.next) console.log(`To reach ${out.next}:\n${(out.blocking ?? []).map((b) => `  - ${b.assumption}: ${b.has}, needs ${b.needs}. ${b.test}`).join("\n")}`);
+  for (const f of out.forms ?? []) console.log(`\nForm ${f.form}: supports ${f.supports}. ${f.assumptions.map((a) => `${a.assumption} ${a.label}`).join(", ")}`);
+  if (out.ran_as_is) console.log(`\nRan as is; missing:\n${list(out.missing ?? [])}`);
 }

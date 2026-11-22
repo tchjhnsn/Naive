@@ -9,18 +9,19 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Artifact } from "../records/types/records.d.ts";
 
-const sha = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
-const ventures = (d) => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);
-const sub = (d) => { try { return readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules").flatMap((e) => ventures(join(d, e.name))); } catch { return []; } };
+const sha = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
+const ventures = (d: string): string[] => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);
+const sub = (d: string): string[] => { try { return readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules").flatMap((e) => ventures(join(d, e.name))); } catch { return []; } };
 
 /** The state of every artifact in a venture: fresh, stale (a record changed) or broken (a record is gone). */
-export function artifacts(dir) {
+export function artifacts(dir: string) {
   const folder = ventureFile(dir, "artifacts");
   if (!existsSync(folder)) return [];
   return readdirSync(folder).filter((f) => f.endsWith(".json")).sort().map((f) => {
-    const a = JSON.parse(readFileSync(join(folder, f), "utf8"));
-    const missing = [], changed = [];
+    const a: Artifact = JSON.parse(readFileSync(join(folder, f), "utf8"));
+    const missing: string[] = [], changed: string[] = [];
     for (const s of a.built_from ?? []) {
       const p = ventureFile(dir, s.record);
       if (!existsSync(p)) missing.push(s.record);
@@ -33,7 +34,7 @@ export function artifacts(dir) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const root = process.argv[2];
   if (!root) { console.error("usage: node packages/naive/src/engine/check-artifacts.ts <workspace or venture dir>"); process.exit(2); }
-  const errors = [], warnings = [];
+  const errors: string[] = [], warnings: string[] = [];
   let n = 0;
   for (const v of ventures(root)) for (const a of artifacts(v)) {
     n++;

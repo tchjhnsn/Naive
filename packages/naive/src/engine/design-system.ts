@@ -13,13 +13,13 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-const read = (dir, rel) => (existsSync(ventureFile(dir, rel)) ? load(ventureFile(dir, rel)) : null);
-const list = (dir, rel) => (existsSync(ventureFile(dir, rel)) ? readdirSync(ventureFile(dir, rel)).filter((f) => f.endsWith(".json")).sort() : []);
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+const read = (dir: string, rel: string) => (existsSync(ventureFile(dir, rel)) ? load(ventureFile(dir, rel)) : null);
+const list = (dir: string, rel: string): string[] => (existsSync(ventureFile(dir, rel)) ? readdirSync(ventureFile(dir, rel)).filter((f) => f.endsWith(".json")).sort() : []);
 export const DESIGN_SYSTEM = "marketing/design-system.json";
 
 // The latest decided mission wording, else the venture's core promise.
-function mission(dir) {
+function mission(dir: string) {
   const decided = list(dir, "marketing/decisions").map((f) => read(dir, `marketing/decisions/${f}`))
     .filter((d) => d && /^mission/.test(d.id) && d.status === "decided" && d.answer)
     .sort((a, b) => String(a.provenance?.approved_at).localeCompare(String(b.provenance?.approved_at)));
@@ -28,9 +28,12 @@ function mission(dir) {
   return core?.promise ? { value: core.promise, route: "venture", confirmed: null } : null;
 }
 
+/** One input: its value, the route it is read from, and for the mission whether a person decided it. */
+export type Input = { value: unknown; route: string; confirmed?: boolean | null };
+
 /** Everything the design system reads from other functions, keyed for a choice's `from`. */
-export function inputs(dir) {
-  const out = {};
+export function inputs(dir: string): Record<string, Input> {
+  const out: Record<string, Input> = {};
   const m = mission(dir);
   if (m) out.mission = m;
   const core = read(dir, "venture.json")?.core;
@@ -42,7 +45,7 @@ export function inputs(dir) {
   const profiles = list(dir, "foundation/icp").length
     ? list(dir, "foundation/icp").map((f) => read(dir, `foundation/icp/${f}`))
     : read(dir, "foundation/icp.json")?.profiles ?? [];
-  for (const p of profiles.filter((x) => x?.id && x.status !== "retired")) {
+  for (const p of profiles.filter((x: { id?: string; status?: string } | null) => x?.id && x.status !== "retired")) {
     out[`icp:${p.id}`] = { value: { who: p.who, short: p.short, primary: !!p.primary, traits: p.traits ?? [], jobs: p.jobs ?? [] }, route: `foundation/icp/${p.id}` };
   }
   for (const a of read(dir, "foundation/alignment.json")?.principles ?? []) out[`alignment:${a.id}`] = { value: a.statement, route: "foundation/alignment" };
@@ -58,12 +61,12 @@ export function inputs(dir) {
 }
 
 /** Problems with the design system: a choice resting on an input that is gone, or no primary audience. */
-export function check(dir) {
+export function check(dir: string): string[] {
   const ds = read(dir, DESIGN_SYSTEM);
   if (!ds) return [];
   const have = inputs(dir);
-  const known = (k) => k in have || k.startsWith("competitor:");
-  const out = [];
+  const known = (k: string) => k in have || k.startsWith("competitor:");
+  const out: string[] = [];
   for (const k of ds.ethos?.from ?? []) if (!known(k)) out.push(`ethos rests on ${k}, which no record answers now`);
   for (const c of ds.choices ?? []) for (const k of c.from ?? []) if (!known(k)) out.push(`${c.area} choice "${c.choice}" rests on ${k}, which no record answers now: revisit it`);
   for (const a of ds.audiences ?? []) if (!(`icp:${a}` in have)) out.push(`audience ${a} is not an ICP profile`);

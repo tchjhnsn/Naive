@@ -8,15 +8,15 @@ import { spawnSync } from "node:child_process";
 const root = new URL("../../../..", import.meta.url).pathname;
 const check = join(root, "packages/naive/src/checks/check-data-packages.ts");
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
+const t = (name: string, fn: () => void) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
+const ok = (c: boolean, m?: string) => { if (!c) throw new Error(m ?? "assertion failed"); };
 const venture = () => {
   const d = mkdtempSync(join(tmpdir(), "data-"));
   mkdirSync(join(d, "customers"), { recursive: true });
   writeFileSync(join(d, "venture.json"), JSON.stringify({ id: "kept" }));
   return d;
 };
-const run = (d) => spawnSync("node", [check, d], { encoding: "utf8" });
+const run = (d: string) => spawnSync("node", [check, d], { encoding: "utf8" });
 
 t("an empty data package passes", () => {
   const d = venture();

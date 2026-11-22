@@ -9,7 +9,7 @@ import { artifacts } from "./check-artifacts.ts";
 
 const dir = mkdtempSync(join(tmpdir(), "artifacts-"));
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: boolean, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "t", name: "t", parent: null, phase: "discovery", owner: "self", status: "active", layers: {} }));
 mkdirSync(join(dir, "foundation"), { recursive: true });
 mkdirSync(join(dir, "artifacts"), { recursive: true });

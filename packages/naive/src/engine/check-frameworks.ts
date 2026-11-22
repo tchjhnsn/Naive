@@ -12,21 +12,22 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Framework } from "../records/types/records.d.ts";
 
 export const CANONICAL = ["foundation/goals", "foundation/requirements", "foundation/exit-criteria", "foundation/constraints"];
-const canonical = (route) => CANONICAL.some((c) => route === c || route === `${c}/[id]` || (route.startsWith(`${c}/`) && !route.slice(c.length + 1).includes("/")));
+const canonical = (route: string) => CANONICAL.some((c) => route === c || route === `${c}/[id]` || (route.startsWith(`${c}/`) && !route.slice(c.length + 1).includes("/")));
 const FRAMEWORK_ONLY = [/telos\.json/, /\.ambition\b/];
 const ALWAYS_ALLOWED = ["packages/naive/src/engine/canonical.ts", "packages/naive/src/engine/check-frameworks.ts", "packages/naive/src/engine/upgrades.mjs", "packages/naive/src/records/validate.ts"];
 
-export function check(root) {
-  const errors = [];
+export function check(root: string) {
+  const errors: string[] = [];
   const fdir = join(root, "frameworks");
-  const fws = existsSync(fdir) ? readdirSync(fdir, { withFileTypes: true }).filter((e) => e.isDirectory() && existsSync(join(fdir, e.name, "framework.json"))).map((e) => ({ dir: `frameworks/${e.name}`, f: JSON.parse(readFileSync(join(fdir, e.name, "framework.json"), "utf8")) })) : [];
+  const fws = existsSync(fdir) ? readdirSync(fdir, { withFileTypes: true }).filter((e) => e.isDirectory() && existsSync(join(fdir, e.name, "framework.json"))).map((e) => ({ dir: `frameworks/${e.name}`, f: JSON.parse(readFileSync(join(fdir, e.name, "framework.json"), "utf8")) as Framework })) : [];
   const allowed = new Set(ALWAYS_ALLOWED);
   for (const { dir, f } of fws) {
     if (f.id !== dir.split("/")[1]) errors.push(`${dir}/framework.json: id ${f.id} does not match its folder`);
     for (const m of f.maps_to ?? []) if (!canonical(m.canonical_route)) errors.push(`${dir}: maps_to ${m.framework_field} -> ${m.canonical_route}, which is not a canonical route (${CANONICAL.join(", ")})`);
-    for (const p of [f.template, f.playbook, f.skill, f.adapter, ...(f.checks ?? [])].filter(Boolean)) if (!existsSync(join(root, p))) errors.push(`${dir}: ${p} not found`);
+    for (const p of [f.template, f.playbook, f.skill, f.adapter, ...(f.checks ?? [])].filter((p): p is string => Boolean(p))) if (!existsSync(join(root, p))) errors.push(`${dir}: ${p} not found`);
     for (const c of f.checks ?? []) allowed.add(c);
   }
   // The units that held schema/ before EE-118 step 5, the folder this check read.

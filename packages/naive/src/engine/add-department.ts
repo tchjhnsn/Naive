@@ -14,6 +14,7 @@ import { join } from "node:path";
 import { catalog, foldersOf } from "./departments.ts";
 import { seedPrograms } from "./research-programs.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Venture } from "../records/types/records.d.ts";
 
 const args = process.argv.slice(2);
 const group = args.includes("--group");
@@ -24,11 +25,11 @@ const all = catalog();
 const d = all.find((x) => x.id === id);
 if (!d) { console.error(`unknown department ${id}: one of ${all.map((x) => x.id).join(", ")}`); process.exit(2); }
 
-const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
+const venture: Venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
 const layersOn = ["operations", ...(venture.layers?.governance ? ["governance"] : [])];
 const held = foldersOf(dir).filter((f) => f.tag?.department === id).map((f) => f.layer);
 const tag = { department: d.id, value_chain: d.value_chain, apqc: d.apqc.id };
-const made = [];
+const made: string[] = [];
 for (const layer of layersOn.filter((l) => !held.includes(l))) {
   const rel = [layer, "departments", ...(group ? [d.value_chain] : []), d.id].join("/");
   if (existsSync(ventureFile(dir, rel))) { console.error(`${rel} exists without a department.json; add the tag by hand`); process.exit(1); }
