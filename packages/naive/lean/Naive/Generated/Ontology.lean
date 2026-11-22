@@ -366,7 +366,7 @@ def «liquidationWaterfall» : Concept Placement := ⟨[
 def «exit» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
-/-- [D] preference stack (new). The order and amounts in which a sale's proceeds reach each owner, preferences first by seniority, then common; computed from the cap table by packages/naive/src/engine/payouts.mjs, never typed. Standard: venture finance usage (pref stack; Feld and Mendelson, Venture Deals). Fields: broader ["information artifact"]; handoff_type false. -/
+/-- [D] preference stack (new). The order and amounts in which a sale's proceeds reach each owner, preferences first by seniority, then common; computed from the cap table by packages/naive/src/engine/payouts.ts, never typed. Standard: venture finance usage (pref stack; Feld and Mendelson, Venture Deals). Fields: broader ["information artifact"]; handoff_type false. -/
 def «preferenceStack» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
