@@ -18,6 +18,6 @@ Run from a clone of Naive, the venture's `package.json` pins `naive-framework` t
 
 ## Run and test
 
-- `node packages/create-venture/test.mjs` tests the generator; `node test.mjs` runs it.
+- `node packages/create-venture/test.mjs` tests the generator; `node test.mjs` runs it. The registry test packs the framework, create-venture and the framework's runtime dependencies (`effect`) from this checkout and installs them offline.
 
 Its `naive dev` test expects every record to be checked as it is saved, because the check runs in process through `validateFile` in [`packages/naive/src/records/validate.mjs`](../naive/src/records/README.md) and needs no Python.

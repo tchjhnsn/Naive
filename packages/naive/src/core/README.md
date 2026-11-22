@@ -19,6 +19,7 @@ The first code package of the monorepo rebuild. It holds the modules every layer
 | [`scripts.mjs`](./scripts.mjs) | `naiveScript(name)` finds a script by its file name across the units of `packages/naive/src/`, for code that runs another script as a child process. Imports nothing in the repository. |
 | [`action-scope.mjs`](./action-scope.mjs) | One action's scope: `actionScope`, `memo`, `forget`, `inAction` and `actionStats`, values computed once per router call and shared. Imports nothing in the repository. `packages/naive/src/engine/caching.mjs` re-exports it. |
 | [`signal-id.ts`](./signal-id.ts) | A signal's address (signal library design): `signalId` is the first 24 hex characters of the sha256 of the canonical JSON of every field but `id`, `canonicalJson` sorts keys at every level with no whitespace (the provenance log's rule), and `idHolds` says whether a signal's id is its address. Pure. Imports nothing in the repository. |
+| [`effect/`](./effect/README.md) | Naive's base for code written with Effect (EE-125): the tagged errors, `VentureFs` (the file system as a service, with an in-memory one for tests) and the runners that let existing code call an Effect (`runSync`, `runPromise`, `runMain`). Imports only `effect` and Node built-ins. |
 
 The old path `schema/venture-paths.mjs` re-exports `venture-paths.mjs` for one release, for an installed create-venture that imports it by path.
 
@@ -32,7 +33,7 @@ The old path `schema/venture-paths.mjs` re-exports `venture-paths.mjs` for one r
 ## How it connects
 
 - Called by: [`packages/naive/src/router/router.mjs`](../router/router.mjs), the CLI, the checkers in [`schema/`](../engine/README.md), the console bridge and the store kernel.
-- Calls: only Node built-ins, and `provenance.mjs` starts `packages/naive/src/router/orchestration/triggers.mjs` as a child process after a write.
+- Calls: only Node built-ins and, in `effect/`, the `effect` package, and `provenance.mjs` starts `packages/naive/src/router/orchestration/triggers.mjs` as a child process after a write.
 
 ## Not built
 
