@@ -162,7 +162,11 @@ t("check names a relations entry that is not an object, and exits 1 without a st
 });
 
 t("without the term engine, check refuses stated relations instead of passing them", async () => {
-  const r = await node(["--no-experimental-strip-types", graphCli, "check", examples]);
+  // The rest of Naive is TypeScript too, so the engine is taken away as an installed package loses it: Node refuses
+  // to strip its types.
+  const noEngine = `import { registerHooks } from "node:module";
+registerHooks({ resolve(s, c, next) { if (/\\/terms\\/(engine|terms|relations)\\.ts$/.test(s)) throw Object.assign(new Error("no term engine"), { code: "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING" }); return next(s, c); } });`;
+  const r = await node(["--import", `data:text/javascript,${encodeURIComponent(noEngine)}`, graphCli, "check", examples]);
   ok(r.status === 1 && /5 stated relation\(s\) need the EE-095 term engine/.test(r.stdout), r.stdout + r.stderr);
 });
 
