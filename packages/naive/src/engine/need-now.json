@@ -124,6 +124,26 @@
       ],
       "why": "The discovery gate asks which assumptions are still open and how each will be tested (EE-156)"
     },
+    "market-anatomy": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.7,
+        "beachhead": 0.6,
+        "scale": 0.4,
+        "platform": 0.3
+      },
+      "why": "Init writes the primary market with every cell unknown; filling it tells the gate calibration what counts as enough evidence (EE-157)"
+    },
+    "industry-anatomy": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.5,
+        "beachhead": 0.4,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "Init writes the primary industry with every cell unknown; its forces, regulation and cost of error decide how strict the gates should be (EE-157)"
+    },
     "validation-go-to-market": {
       "base": {
         "discovery": 0.3,

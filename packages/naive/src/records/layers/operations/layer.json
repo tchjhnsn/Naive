@@ -73,6 +73,7 @@
     "function-module",
     "phase-module",
     "phase-gate-policies",
+    "gate-calibration",
     "function-workflow"
   ],
   "reads": [
