@@ -11,11 +11,11 @@
 // kind's workflow that starts another kind's (a trigger after a handoff's evidence, say) never waits on the first
 // one's shard locks. The workflow and cluster modules load only here, and only when a caller asks for an engine.
 
-import { readFileSync } from "node:fs";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
-import { Effect, Layer, ManagedRuntime } from "effect";
-import type { WorkflowEngine } from "effect/workflow/WorkflowEngine";
+import { type Context, Effect, Layer, ManagedRuntime, Schema } from "effect";
+import type { WorkflowEngine, WorkflowInstance } from "effect/workflow/WorkflowEngine";
 import { NodeSqlite } from "./node-sqlite.ts";
 import { hostHook, missingHook } from "../runtime.ts";
 
@@ -63,4 +63,57 @@ export async function engineLayer(dir: string, kind = "handoffs", engine: Durabl
 export async function runDurable<A, E, R>(layer: Layer.Layer<R, unknown>, effect: Effect.Effect<A, E, R>): Promise<A> {
   const runtime = ManagedRuntime.make(layer);
   try { return await runtime.runPromise(effect); } finally { await runtime.dispose(); }
+}
+
+/** One step of durable work: an async function run as a workflow activity, its JSON result stored under its name. */
+export type Step = <A>(name: string, run: () => Promise<A>) => Promise<A>;
+
+/** A step that just runs, for the memory path: callers take a Step and stay one function on both paths. */
+export const plainStep: Step = (_name, run) => run();
+
+/**
+ * The step bridge: inside a workflow body, given the body's own context, runs async code as activities. A resumed
+ * workflow answers a finished step from storage without running it, so code written against Step replays the same
+ * way as long as everything it reads that can change comes from a step. Activity names are replay keys and must be
+ * unique within one run.
+ */
+export async function activityStep(): Promise<(_context: Context.Context<WorkflowEngine | WorkflowInstance>) => Step> {
+  const Activity = await import("effect/workflow/Activity");
+  return (context) => (name, run) => Effect.runPromiseWith(context)(Activity.make({
+    name, success: Schema.String,
+    execute: Effect.promise(async () => { const v = await run(); killSeam(name); return JSON.stringify(v ?? null); }),
+  })).then((s) => JSON.parse(s));
+}
+
+/**
+ * A test seam for crash-and-resume tests: NAIVE_DURABLE_KILL=<step name prefix>:<marker file> kills the process once,
+ * right after a step whose name starts with the prefix has run and before its result is stored, as a crash would.
+ * The marker file makes it once. Unset, it does nothing.
+ */
+function killSeam(name: string): void {
+  const seam = process.env.NAIVE_DURABLE_KILL;
+  if (!seam) return;
+  const at = seam.indexOf(":");
+  const prefix = seam.slice(0, at), marker = seam.slice(at + 1);
+  if (!name.startsWith(prefix) || !marker || existsSync(marker)) return;
+  writeFileSync(marker, name);
+  process.kill(process.pid, "SIGKILL");
+}
+
+/**
+ * The open run of one kind of durable work: a run id kept in .naive/durable-runs/<kind>-<name>.json until the run
+ * closes, so a process that died resumes the same workflow and a later run starts a new one.
+ */
+export function openRun(dir: string, kind: string, name: string): string {
+  const f = join(dir, ".naive", "durable-runs", `${kind}-${name.replace(/[^a-zA-Z0-9._-]/g, "_")}.json`);
+  try { return (JSON.parse(readFileSync(f, "utf8")) as { id: string }).id; } catch { /* no open run */ }
+  const id = randomUUID();
+  mkdirSync(dirname(f), { recursive: true });
+  writeFileSync(f, JSON.stringify({ id, opened: new Date().toISOString() }) + "\n");
+  return id;
+}
+
+/** Closes the open run of one kind of durable work, so the next run starts afresh. */
+export function closeRun(dir: string, kind: string, name: string): void {
+  rmSync(join(dir, ".naive", "durable-runs", `${kind}-${name.replace(/[^a-zA-Z0-9._-]/g, "_")}.json`), { force: true });
 }
