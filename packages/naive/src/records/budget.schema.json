@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "budget.schema.json",
+  "title": "Budget",
+  "description": "One budget of the venture (APQC 9.1.1, planning, budgeting and forecasting), at finance/budget/<id>.json (route finance/budget/[id]): planned revenue and spend by category and month, one line per category and month, each line naming the source its figure rests on, and the cash the plan starts from. Runway is projected from it, never stored in it: ending cash each month is the opening cash plus the month's revenue lines less its spend lines, and runway is the number of months before ending cash falls below zero (projectRunway in packages/naive/src/engine/generators/budget.ts). A venture keeps one budget per scenario it plans (base, and a downside when the founder wants one). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json).",
+  "type": "object",
+  "required": ["id", "title", "currency", "scenario", "start", "end", "opening_cash", "lines"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The budget's id, the file name without .json, such as 2027-base" },
+    "title": { "type": "string", "minLength": 1 },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code for every amount in the budget, such as USD" },
+    "scenario": { "enum": ["base", "downside", "upside"], "description": "Which case the budget plans. base is the plan the founder works to; downside assumes revenue slips or costs rise" },
+    "start": { "type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$", "description": "The first month the budget covers, YYYY-MM" },
+    "end": { "type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$", "description": "The last month the budget covers, YYYY-MM" },
+    "opening_cash": {
+      "type": "object",
+      "required": ["amount", "as_of", "source"],
+      "additionalProperties": false,
+      "description": "The cash the budget starts from",
+      "properties": {
+        "amount": { "type": "number" },
+        "as_of": { "type": "string", "format": "date" },
+        "source": { "type": "string", "minLength": 1, "description": "The record the figure comes from, usually money/_summary or a money account (money/<id>)" }
+      }
+    },
+    "lines": {
+      "type": "array",
+      "description": "One planned amount per category and month",
+      "items": {
+        "type": "object",
+        "required": ["category", "period", "kind", "amount", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "category": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The budget category, such as software, payroll, contractors, hosting or rent. The founder chooses the categories; keep them few and stable" },
+          "period": { "type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$", "description": "The month the amount falls in, YYYY-MM, between start and end" },
+          "kind": { "enum": ["revenue", "spend"], "description": "revenue adds to cash; spend takes from it" },
+          "amount": { "type": "number", "minimum": 0, "description": "The planned amount for the month, in the budget's currency" },
+          "source": { "type": "string", "minLength": 1, "description": "What the figure rests on: a record route (finance/spend/<id>, people/team-plan, validation/pricing) or the word assumption followed by the reasoning, so a guess is never mistaken for a fact" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "note": { "type": "string" }
+  }
+}

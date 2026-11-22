@@ -1,0 +1,81 @@
+{
+  "id": "intake",
+  "function": "external-relationships",
+  "title": "Learn the venture's investors and raise",
+  "trigger": {
+    "kind": "intake"
+  },
+  "reads": [
+    "venture",
+    "investors",
+    "investor-relations/raises",
+    "investor-relations/updates",
+    "governance/ownership",
+    "purpose/money/summary"
+  ],
+  "steps": [
+    {
+      "id": "read-what-exists",
+      "do": "Read the investor, raise, update and ownership records, and list what is missing, most needed first."
+    },
+    {
+      "id": "ask-investors",
+      "do": "Ask who already holds equity, a SAFE or a note, and who the founder has talked to about investing, and record one investor record each.",
+      "ask": true,
+      "writes": [
+        "investors/[id]"
+      ]
+    },
+    {
+      "id": "ask-raise",
+      "do": "Ask whether the venture is raising or means to, and if so draft the raise with its ask, milestone and stop date for the founder to decide.",
+      "skill": "fundraise",
+      "ask": true,
+      "writes": [
+        "investor-relations/raises/[id]"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "ask-metrics",
+      "do": "Ask which metrics investors should see every month, and find the record each comes from.",
+      "ask": true
+    },
+    {
+      "id": "draft-first-update",
+      "do": "If anyone holds equity or a SAFE, draft the first investor update for the founder to approve and send.",
+      "skill": "stakeholder-update",
+      "writes": [
+        "investor-relations/updates/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "summarize",
+      "do": "Summarize for the strategy lead: investors, the raise if any, and the next outreach in order.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "nothing-sent-unapproved",
+      "kind": "review",
+      "check": "Is every update and material still a draft or approved by a person, and does every metric cite its source record?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

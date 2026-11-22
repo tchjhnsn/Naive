@@ -1,0 +1,18 @@
+{
+  "id": "intake",
+  "function": "assets",
+  "title": "Learn the venture's equipment and space",
+  "trigger": { "kind": "intake" },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/spend", "people"],
+  "steps": [
+    { "id": "read-what-exists", "do": "Read the asset register, the leases, the spend register and the people record, and list what is missing, most needed first: leases and personal guarantees, then devices that hold data, then the rest." },
+    { "id": "ask-space", "do": "Ask the founder where the venture works (home, coworking, an office) and, for every lease or membership, its term, rent, notice days, auto-renewal and any personal guarantee, and abstract each into a lease record.", "skill": "lease-review", "ask": true, "writes": ["assets/leases/[id]"], "raises": ["legal-or-terms"] },
+    { "id": "ask-equipment", "do": "Ask which devices and equipment the venture owns, leases or uses, who holds each, and what it cost; register every item above the capitalization threshold and every device that holds data.", "skill": "asset-register", "ask": true, "writes": ["assets/register/[id]"] },
+    { "id": "ask-contributed", "do": "Ask whether any founder's own equipment was given to the venture, record it as contributed, and bring the ownership question to the founder.", "ask": true, "writes": ["assets/register/[id]"], "raises": ["ownership-or-control"] },
+    { "id": "summarize", "do": "Tell the founder what the register and leases now hold: the item count and total cost, who holds which data device, and every lease date in the next 12 months, each citing its record." }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "every-lease-dated", "kind": "review", "check": "Does every active lease record its end date (or month-to-month), its notice days and whether a founder guarantees it?", "reviewer": "finance-lead" }
+  ]
+}

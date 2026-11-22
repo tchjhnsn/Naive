@@ -1,0 +1,62 @@
+{
+  "id": "weekly-process-review",
+  "function": "capabilities",
+  "title": "Review process health each week",
+  "trigger": {
+    "kind": "schedule",
+    "cadence": "weekly"
+  },
+  "reads": [
+    "capabilities/processes",
+    "operations/handoff",
+    "evidence",
+    "capabilities/postmortems"
+  ],
+  "steps": [
+    {
+      "id": "measure",
+      "do": "Update each active process's runs, cycle time, rework rate and first-pass yield from this week's handoffs and evidence.",
+      "writes": [
+        "capabilities/processes/[id]"
+      ]
+    },
+    {
+      "id": "find-new-repeats",
+      "do": "Find work done three or more times with no process record and draft one.",
+      "skill": "working-procedure",
+      "writes": [
+        "capabilities/processes/[id]"
+      ]
+    },
+    {
+      "id": "find-bottleneck",
+      "do": "Name the step with the longest queue of waiting handoffs and propose one change to it, raising the order to the strategy lead.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "chase-actions",
+      "do": "List postmortem actions past due and open a handoff for each that has none.",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "one-change-proposed",
+      "kind": "review",
+      "check": "Is exactly one change proposed, at the bottleneck, with the measure that will show whether it worked?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

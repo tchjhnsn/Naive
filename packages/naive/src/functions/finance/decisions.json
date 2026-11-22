@@ -1,0 +1,13 @@
+{
+  "function": "finance",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Record that the bank balance on the 1st was $12,400", "Categorize a charge as software spend"] },
+    { "class": "spend-register-upkeep", "level": "escalate", "examples": ["Add a new subscription to the spend register", "Correct a renewal date"] },
+    { "class": "cancel-or-downgrade", "level": "escalate", "examples": ["Cancel an unused design tool", "Move a plan from annual to monthly"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Pay a contractor's invoice", "Buy a year of hosting up front"] },
+    { "class": "move-payment-method", "level": "escalate", "examples": ["Move every subscription to the business card"] },
+    { "class": "ownership-or-control", "level": "escalate", "examples": ["Issue options to a first hire", "Sign a SAFE"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Accept a lender's terms", "Agree to a revenue-share contract"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "finance-lead", "examples": ["Which costs to cut first if runway drops under six months"] }
+  ]
+}

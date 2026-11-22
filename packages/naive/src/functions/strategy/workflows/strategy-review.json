@@ -1,0 +1,70 @@
+{
+  "id": "strategy-review",
+  "function": "strategy",
+  "title": "Review the strategy against the evidence",
+  "trigger": {
+    "kind": "schedule",
+    "cadence": "monthly"
+  },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/exit-criteria",
+    "validation/*",
+    "purpose/competitor-signals",
+    "purpose/money/summary",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-evidence",
+      "do": "Read every validation record, competitor signal, decision and money figure since the last review, citing each by route."
+    },
+    {
+      "id": "test-kernel",
+      "do": "Write the diagnosis, guiding policy and coherent actions the records support, and say plainly where they hold only goals.",
+      "skill": "strategy-review"
+    },
+    {
+      "id": "check-kill-criteria",
+      "do": "Check each live bet's kill criteria and raise a decision for the founder when one is met or has no date.",
+      "skill": "strategy-review",
+      "raises": [
+        "continue-or-stop"
+      ]
+    },
+    {
+      "id": "check-direction",
+      "do": "Compare intended with realized strategy and the default-alive test, and raise a change of customer, product or model when the evidence contradicts the current one.",
+      "skill": "strategy-review",
+      "raises": [
+        "change-direction",
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "next-assumption",
+      "do": "Propose the next assumption to test and update the goal drafts, raising the order to the strategy lead.",
+      "writes": [
+        "foundation/goals/[id]",
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "every-choice-decided-or-open",
+      "kind": "review",
+      "check": "Is every strategic choice the evidence put in question either confirmed by the founder or open as a decision with options and evidence?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

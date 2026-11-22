@@ -1,0 +1,63 @@
+{
+  "function": "external-relationships",
+  "rows": [
+    {
+      "class": "domain-fact",
+      "level": "decide",
+      "examples": [
+        "Log a meeting with an investor and its follow-up",
+        "Move an investor from meeting to diligence after they asked for the data room"
+      ]
+    },
+    {
+      "class": "public-commitment",
+      "level": "escalate",
+      "examples": [
+        "Send this month's investor update",
+        "Send the deck to an investor",
+        "Publish a funding announcement"
+      ]
+    },
+    {
+      "class": "strategy-or-constitution",
+      "level": "escalate",
+      "examples": [
+        "Open a raise",
+        "Change the amount or instrument of a raise"
+      ]
+    },
+    {
+      "class": "ownership-or-control",
+      "level": "escalate",
+      "examples": [
+        "Accept a term sheet",
+        "Give an investor a board seat"
+      ]
+    },
+    {
+      "class": "legal-or-terms",
+      "level": "escalate",
+      "examples": [
+        "Sign an NDA with a partner",
+        "Agree to an investor's side letter"
+      ]
+    },
+    {
+      "class": "spend-money",
+      "level": "escalate",
+      "examples": [
+        "Pay for a data room tool",
+        "Hire a PR agency"
+      ]
+    },
+    {
+      "class": "set-priorities",
+      "level": "recommend",
+      "approver": "strategy-lead",
+      "examples": [
+        "Which investors to approach first",
+        "Whether a partner conversation comes before the raise"
+      ]
+    }
+  ]
+}

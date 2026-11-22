@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "support-case.schema.json",
+  "title": "Support case",
+  "description": "One customer contact and its handling, at support/cases/<id>.json (route support/cases/[id]): a question, a problem, a request or a complaint, tagged with a contact reason, from first reply to resolution. It follows APQC PCF 6.2.2 and 6.2.3 (manage problems, requests and inquiries; manage complaints) and ISO 10002:2018 for complaints. The customer service function owns it, and only the customer service agent (role customer-service-agent) or a person writes it. It holds no transcript and no contact details: the customer is a customer record id, and the conversation stays in the helpdesk, named by its external id.",
+  "type": "object",
+  "required": ["id", "opened", "channel", "kind", "summary", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The case's id, the file name without .json" },
+    "opened": { "type": "string", "format": "date-time", "description": "When the customer made contact" },
+    "channel": { "enum": ["email", "chat", "phone", "form", "in-app", "community", "social"] },
+    "kind": { "enum": ["question", "problem", "request", "complaint"], "description": "complaint: an expression of dissatisfaction that needs a response (ISO 10002); a person closes it" },
+    "customer": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The customer record (customers/<id>.json), when the contact is a known customer" },
+    "external_id": { "type": "string", "description": "The conversation's id in the helpdesk tool, where the messages stay" },
+    "summary": { "type": "string", "minLength": 1, "description": "What the customer needs, in a sentence, with no personal details" },
+    "reason": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The contact reason, from the support policy's reasons" },
+    "status": { "enum": ["new", "open", "waiting-on-customer", "resolved", "closed"] },
+    "first_response": { "type": ["string", "null"], "format": "date-time", "description": "When the first reply went out; null while none has" },
+    "resolved": { "type": ["string", "null"], "format": "date-time", "description": "When it was resolved" },
+    "resolution": { "type": "string", "description": "What fixed it, or the answer given" },
+    "root_cause": { "type": "string", "description": "Why it happened, for a problem or a complaint" },
+    "repeat_of": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "An earlier case on the same issue for the same customer, so repeat contacts can be counted" },
+    "bug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The bug record (product/bugs/<id>.json) it was filed as" },
+    "refund": {
+      "type": "object",
+      "required": ["amount", "currency", "decision"],
+      "additionalProperties": false,
+      "description": "A refund or credit granted on the case, with the decision that approved it",
+      "properties": {
+        "amount": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code" },
+        "decision": { "type": "string", "minLength": 1, "description": "The id of the spend-money decision a person made" }
+      }
+    },
+    "note": { "type": "string" }
+  }
+}

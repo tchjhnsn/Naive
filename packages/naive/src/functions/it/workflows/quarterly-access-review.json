@@ -1,0 +1,18 @@
+{
+  "id": "quarterly-access-review",
+  "function": "it",
+  "title": "Review access and tools each quarter",
+  "trigger": { "kind": "schedule", "cadence": "quarterly" },
+  "reads": ["it/connections", "finance/spend", "people/team-plan", "governance/delegation", "knowledge/sources"],
+  "steps": [
+    { "id": "review-scopes", "do": "For each connection, compare the scopes each person and agent role holds with what its work used this quarter, and remove what was not used.", "skill": "access-review", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
+    { "id": "check-leavers", "do": "Check that every person who left and every retired agent role has no remaining access, and revoke what remains.", "skill": "access-review", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
+    { "id": "check-baseline", "do": "Check MFA, credential rotation dates and the last tested restore of the venture's records, and prepare a decision for anything that needs wider access, a paid plan or new terms.", "skill": "access-review", "raises": ["security-loosening", "spend-money", "legal-or-terms"] },
+    { "id": "match-spend", "do": "Compare the connections with the spend register and flag any paid tool with no connection or no use, proposing cancel, downgrade or keep for the founder.", "raises": ["cancel-or-downgrade"] },
+    { "id": "propose-order", "do": "Propose the order of this quarter's IT fixes to the product lead, worst exposure first.", "raises": ["set-priorities"] }
+  ],
+  "done_criteria": [
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts" },
+    { "id": "least-privilege", "kind": "review", "check": "Does every agent role hold its own credential with no scope it did not use this quarter, and is every widening open as a decision for the founder?", "reviewer": "product-lead" }
+  ]
+}

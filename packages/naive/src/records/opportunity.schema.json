@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "opportunity.schema.json",
+  "title": "Sales opportunity",
+  "description": "One potential sale in the venture's pipeline, at sales/opportunities/<id>.json (route sales/opportunities/[id]): from first interest (a lead) to won or lost. It follows the CRM practice of APQC PCF 3.5.1 (develop and manage sales opportunities), with MEDDIC qualification fields and a win-loss reason once closed. The marketing and sales function owns it, and only the marketing and sales agent (role marketing-and-sales-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). The buyer is named by reference to an account or customer record, never by contact details.",
+  "type": "object",
+  "required": ["id", "title", "pipeline_stage", "source", "created"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The opportunity's id, the file name without .json" },
+    "title": { "type": "string", "minLength": 1, "description": "What is being sold to whom, in a few words" },
+    "account": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The buying party by reference: the id of an account record (accounts/<id>/account.json)" },
+    "customer": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The customer record (customers/<id>.json) once the opportunity is won" },
+    "icp": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The ideal customer profile it fits, by foundation/icp id" },
+    "pipeline_stage": {
+      "enum": ["lead", "qualified", "proposal", "negotiation", "won", "lost"],
+      "description": "lead: interest shown, not yet qualified. qualified: the economic buyer, decision criteria and a reason to act now are known. proposal: an offer was sent. negotiation: terms are being agreed. won or lost: closed"
+    },
+    "source": { "enum": ["inbound", "outbound", "referral", "partner", "event", "other"], "description": "How the opportunity reached the venture" },
+    "channel": { "type": "string", "description": "The traction channel it came through, such as search, a community or a conference (Weinberg and Mares, Traction)" },
+    "created": { "type": "string", "format": "date-time", "description": "When the interest was first recorded" },
+    "first_response": { "type": ["string", "null"], "format": "date-time", "description": "When the venture first replied; null while no one has. Inbound leads are answered within an hour (Oldroyd, McElheran and Elkington, HBR 2011)" },
+    "value": {
+      "type": "object",
+      "required": ["amount", "currency", "cadence"],
+      "additionalProperties": false,
+      "description": "What the deal is expected to be worth",
+      "properties": {
+        "amount": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code, such as USD" },
+        "cadence": { "enum": ["one-time", "monthly", "annual"] }
+      }
+    },
+    "expected_close": { "type": ["string", "null"], "format": "date", "description": "When the deal is expected to close" },
+    "qualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "MEDDIC qualification, each field what is known so far. An opportunity enters a forecast only when economic_buyer, decision_criteria and pain are known",
+      "properties": {
+        "metrics": { "type": "string", "description": "The gain the buyer expects, in their numbers" },
+        "economic_buyer": { "type": "string", "description": "The role that can say yes to the money" },
+        "decision_criteria": { "type": "string", "description": "How the buyer will judge the options" },
+        "decision_process": { "type": "string", "description": "The steps and people between now and a signature" },
+        "pain": { "type": "string", "description": "The problem that makes them act now" },
+        "champion": { "type": "string", "description": "The role inside the buyer who argues for the venture" }
+      }
+    },
+    "next_step": { "type": "string", "description": "The next agreed action and its date" },
+    "outcome": {
+      "type": "object",
+      "required": ["reason", "from"],
+      "additionalProperties": false,
+      "description": "Why it was won or lost, for a closed opportunity (win-loss analysis)",
+      "properties": {
+        "reason": { "type": "string", "minLength": 1, "description": "The main reason, in a sentence" },
+        "category": { "enum": ["product", "price", "positioning", "timing", "competitor", "relationship", "no-decision", "other"], "description": "The kind of reason, so reasons can be counted" },
+        "from": { "enum": ["buyer", "seller"], "description": "Who gave the reason: the buyer in a win-loss interview, or the seller's own account" },
+        "competitor": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The competitor record id that won or lost against the venture, when there was one" }
+      }
+    },
+    "owner": { "type": "string", "description": "Who works the opportunity: a person or a role id" },
+    "note": { "type": "string" }
+  }
+}

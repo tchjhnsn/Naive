@@ -1,0 +1,7 @@
+{
+  "id": "marketing-and-sales",
+  "purpose": "Find the people the venture is for, tell them clearly what it offers, and keep every potential sale written down until it is won or lost.",
+  "intake": "intake",
+  "measures": ["revenue", "usage_or_adoption"],
+  "clusters": ["messaging-delivery", "private-contact-records"]
+}

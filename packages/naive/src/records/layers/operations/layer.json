@@ -3,8 +3,36 @@
   "purpose": "Run the business (business operations): the team plan and hiring, handing work to people and agents (handoffs, with decision rights, done-criteria, attempt limits and run caps), and the tools each function uses, such as marketing (including the marketing website, EE-044), sales and research. How software or hardware gets built is MAD's, a separate product that reads these records (EE-038).",
   "skills": [
     {
+      "id": "support-triage",
+      "path": "packages/naive/src/functions/customer-service/skills/support-triage/SKILL.md"
+    },
+    {
+      "id": "asset-register",
+      "path": "packages/naive/src/functions/assets/skills/asset-register/SKILL.md"
+    },
+    {
+      "id": "lease-review",
+      "path": "packages/naive/src/functions/assets/skills/lease-review/SKILL.md"
+    },
+    {
       "id": "tool-selection",
       "path": "packages/naive/src/functions/it/skills/tool-selection/SKILL.md"
+    },
+    {
+      "id": "access-review",
+      "path": "packages/naive/src/functions/it/skills/access-review/SKILL.md"
+    },
+    {
+      "id": "four-risks-review",
+      "path": "packages/naive/src/functions/products/skills/four-risks-review/SKILL.md"
+    },
+    {
+      "id": "engagement-delivery",
+      "path": "packages/naive/src/functions/service-delivery/skills/engagement-delivery/SKILL.md"
+    },
+    {
+      "id": "supplier-and-purchasing",
+      "path": "packages/naive/src/functions/supply-chain/skills/supplier-and-purchasing/SKILL.md"
     },
     {
       "id": "team-design",
@@ -13,6 +41,14 @@
     {
       "id": "recruiting",
       "path": "packages/naive/src/functions/human-capital/skills/recruiting/SKILL.md"
+    },
+    {
+      "id": "working-procedure",
+      "path": "packages/naive/src/functions/capabilities/skills/working-procedure/SKILL.md"
+    },
+    {
+      "id": "postmortem",
+      "path": "packages/naive/src/functions/capabilities/skills/postmortem/SKILL.md"
     }
   ],
   "records": [
@@ -33,7 +69,9 @@
     "public-assets",
     "activity",
     "activity-summary",
-    "research-program"
+    "research-program",
+    "function-module",
+    "function-workflow"
   ],
   "reads": [
     "agent-capability",

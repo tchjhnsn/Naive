@@ -38,3 +38,4 @@ The old path `schema/venture-paths.mjs` re-exports `venture-paths.mjs` for one r
 
 - This folder is not an npm workspace package yet. It becomes one, with a scoped name, once the workspaces pull request lands and the scope is chosen (open in the rebuild plan).
 - The route table moved to [`packages/naive/src/records/routes`](../records/routes/README.md). The modules that ran routes through the router's `call` moved to [`packages/naive/src/router/orchestration/`](../router/orchestration/README.md), so the engine no longer imports the router. No import cycle between units remains (`node scripts/dependency-rules.ts`).
+- `PACKAGE_FUNCTION` in `venture-paths.mjs` gives the function modules' new packages their owners: `sales` and `support` (growth), `supply-chain`, `service-delivery` (products), `assets` (assets), `capabilities` and `investor-relations` (strategy portfolio).

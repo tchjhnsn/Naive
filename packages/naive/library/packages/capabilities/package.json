@@ -1,0 +1,30 @@
+{
+  "name": "capabilities",
+  "title": "Capabilities",
+  "kind": "data",
+  "purpose": "How the venture works, as opposed to what it does (APQC PCF 13.1 and 13.3): one capabilities/processes/<id>.json per recurring process in the process catalog, with its owner, procedure, control points and health measures, and one capabilities/postmortems/<id>.json per blameless postmortem. The capabilities function owns it, so only the capabilities agent or a person writes these records. Never complete.",
+  "function": "capabilities",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "handoff",
+    "evidence"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "operations",
+  "records": [
+    "process",
+    "postmortem"
+  ],
+  "schemas": [
+    "packages/naive/src/records/process.schema.json",
+    "packages/naive/src/records/postmortem.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}

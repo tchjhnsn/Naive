@@ -1,0 +1,10 @@
+{
+  "id": "capabilities",
+  "purpose": "Write down how the venture's recurring work is done, who owns each process, and learn from every failure so the same work gets faster and breaks less.",
+  "intake": "intake",
+  "measures": [
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "clusters": []
+}

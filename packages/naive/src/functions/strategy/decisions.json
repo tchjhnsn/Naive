@@ -1,0 +1,62 @@
+{
+  "function": "strategy",
+  "rows": [
+    {
+      "class": "domain-fact",
+      "level": "decide",
+      "examples": [
+        "Record that a competitor launched a free tier on 3 March",
+        "Record what an interview said about the problem"
+      ]
+    },
+    {
+      "class": "strategy-or-constitution",
+      "level": "escalate",
+      "examples": [
+        "Change the telos or its measures",
+        "Choose the beachhead customer",
+        "Add a second product line"
+      ]
+    },
+    {
+      "class": "continue-or-stop",
+      "level": "escalate",
+      "examples": [
+        "Stop the current bet because its kill criteria were met",
+        "Start building the product after validation"
+      ]
+    },
+    {
+      "class": "change-direction",
+      "level": "escalate",
+      "examples": [
+        "Move from selling to agencies to selling to in-house teams"
+      ]
+    },
+    {
+      "class": "contradicts-ledger",
+      "level": "escalate",
+      "examples": [
+        "A goal that conflicts with a decision in force"
+      ]
+    },
+    {
+      "class": "set-priorities",
+      "level": "recommend",
+      "approver": "strategy-lead",
+      "examples": [
+        "Which assumption to test next",
+        "Whether to work the pricing test before the channel test"
+      ]
+    },
+    {
+      "class": "defer-or-route",
+      "level": "recommend",
+      "approver": "strategy-lead",
+      "examples": [
+        "Defer an idea from the dump to next quarter",
+        "Route a market question to the strategy researcher"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "id": "service-delivery",
+  "purpose": "Say which services the venture sells and deliver each client engagement on time, inside its scope and with the client's written acceptance.",
+  "intake": "intake",
+  "measures": ["revenue", "flow_and_lead_time", "cost_or_time_saved"],
+  "clusters": []
+}
