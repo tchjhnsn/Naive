@@ -122,6 +122,29 @@ The engine's modules (decisions, freshness, generators, lifecycle, upgrades, use
 
 `ownScore` in `decisions.mjs` scores an open decision for the docket and the decision index. A due date within three days dominates; one from three to fourteen days out still counts, less the further it is (24 at five days, 9 at fourteen). An open fail-closed decision adds 15, because the work behind it waits until a person decides it.
 
+## The decision queue
+
+[`decision-queue.mjs`](./decision-queue.mjs) turns the decision index into one short queue across the 13 functions, right for the venture's phase (EE-127). `decision-index.mjs` calls it on every run and adds `by_function`, `themes` and `queue` to its cache, its `--json` output and route `system/decision-index`, beside its old fields, which do not change. The rules are pure functions; reading the phase weights, role templates, decision rights, the function matrices, lead plans, goals and handoffs is an Effect through `VentureFs` (`rankingContextEffect`, EE-125). A venture's lead plan, goal or handoff that cannot be read is left out, so it does not stop the index.
+
+- Owning function (`ownerOf`): the decision's class, when its owner in decision rights is a role whose template names one function, or when one function's decision matrix alone lists it; else the function of the record type it decides (`function` in `data-model.json`); else of the first record it would change that has one; else `venture`.
+- Per function (`by_function`): the index's score, ranked within each function, in `departments.json` order with `venture` last.
+- Cross-function score (`crossScore`): score x (the function's weight in the phase / the mean weight of the phase's functions) x 1.5 when the decision bears on a measure exactly one lead plan binds. A decision bears on a measure when an outcome's `measure` names it (`<measure>` or `<goal>/<measure>`) or it would change the goal file that defines it. `venture`, and a function the phase does not weigh, count at the mean. Ties break by the index's score, then by id.
+- Themes (`themesOf`): decisions that would change the same record, or that one handoff executes (`governed_by`), fall in one theme, transitively. A theme is named after its highest-ranked member and lists the keys its members share. It is a plain grouping by shared keys: no model and no clustering library.
+- Queue: the first ten themes by cross score, one item each: the head decision, its function, the lead whose portfolio holds that function (null for `venture` or when no single lead holds it), the score parts, the members and why.
+
+```mermaid
+flowchart LR
+  IDX["decision-index.mjs<br/>entries (score)"] --> OWN["ownerOf<br/>class, record, venture"]
+  PH["phases/&lt;phase&gt;/phase.json<br/>weights"] --> X["crossScore<br/>score x w/mean x lift"]
+  LP["operations/leads/*.json<br/>bound measures"] --> X
+  OWN --> BF["by_function"]
+  OWN --> X
+  X --> TH["themesOf<br/>same record or handoff"]
+  TH --> Q["queue<br/>top 10, one per theme, with lead"]
+```
+
+`node packages/naive/src/engine/decision-queue-test.ts` tests the owning-function rule, the score, themes, a phase change that reorders the queue, and the index's old fields unchanged. Not built: a person's own reordering of the queue, and notes on queue items.
+
 ## Agents
 
 The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-124).

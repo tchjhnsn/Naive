@@ -4,7 +4,7 @@ Up: [src](../README.md)
 
 ## What this is
 
-The five lifecycle phases as phase modules (EE-126): one folder per phase (discovery, validation, beachhead, scale, platform), each holding a `phase.json` with the phase's question, its stage gate after Cooper's stage-gate (the gate's name, the questions it asks and the exit evidence it requires, each from a venture record type), the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records: the function agents do the work, and the phase says what counts now. This folder is the one place a phase's name, question and gate are defined. The lifecycle, the route table and Product Anatomy read them from here, and a lifecycle playbook names a gate only when it renames it. The phase's need-now priors are not copied in: the loader derives them from `packages/naive/src/engine/need-now.json` and `packages/naive/src/functions/departments.json`. The weights are unvalidated 0.x priors, each with a reason, and nothing ranks with them yet.
+The five lifecycle phases as phase modules (EE-126): one folder per phase (discovery, validation, beachhead, scale, platform), each holding a `phase.json` with the phase's question, its stage gate after Cooper's stage-gate (the gate's name, the questions it asks and the exit evidence it requires, each from a venture record type), the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records: the function agents do the work, and the phase says what counts now. This folder is the one place a phase's name, question and gate are defined. The lifecycle, the route table and Product Anatomy read them from here, and a lifecycle playbook names a gate only when it renames it. The phase's need-now priors are not copied in: the loader derives them from `packages/naive/src/engine/need-now.json` and `packages/naive/src/functions/departments.json`. The weights are unvalidated 0.x priors, each with a reason; the decision queue ranks decisions across functions with them ([`decision-queue.mjs`](../engine/decision-queue.mjs), EE-127).
 
 ```mermaid
 flowchart LR
@@ -42,5 +42,4 @@ flowchart LR
 
 ## Not built
 
-- Ranking decisions across functions with `phaseWeights` is not built; the docket still ranks by `ownScore` and phase weight in `packages/naive/src/engine/decisions.mjs` and `packages/naive/src/engine/decision-index.mjs`.
 - The lifecycle does not yet check a phase module's gate evidence; it clears a gate on the venture's exit criteria and its playbook's evidence.
