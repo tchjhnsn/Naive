@@ -18,13 +18,13 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve as resolvePath } from "node:path";
-import { CONFIG, configFor, installed, pinProblems, rawConfig } from "../engine/naive-config.mjs";
-import { evaluate, patternRe, rulesFor } from "../engine/gate.mjs";
-import { teamPlan } from "../engine/access.mjs";
-import { gateOf, repo, resolve, routes } from "../records/routes/routes.mjs";
-import { agentFromEnv, record } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateFile } from "../records/validate.mjs";
+import { CONFIG, configFor, installed, pinProblems, rawConfig } from "../engine/naive-config.ts";
+import { evaluate, patternRe, rulesFor } from "../engine/gate.ts";
+import { teamPlan } from "../engine/access.ts";
+import { gateOf, repo, resolve, routes } from "../records/routes/routes.ts";
+import { agentFromEnv, record } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateFile } from "../records/validate.ts";
 import type { NaiveConfig } from "../records/types/records.d.ts";
 
 const FRAMEWORKS = ["idea-map"];
@@ -49,7 +49,7 @@ export function check(dir: string): { errors: string[], warnings: string[], note
     if (ids.has(r.id)) errors.push(`gate rule ${r.id}: duplicate id`);
     ids.add(r.id);
   }
-  for (const p of config.gate.fail_closed ?? []) if (!known(p) && !known(`${p}/**`)) errors.push(`gate.fail_closed ${p}: matches no route (see node packages/naive/src/router/router.mjs --md)`);
+  for (const p of config.gate.fail_closed ?? []) if (!known(p) && !known(`${p}/**`)) errors.push(`gate.fail_closed ${p}: matches no route (see node packages/naive/src/router/router.ts --md)`);
   for (const r of config.gate.rules ?? []) for (const p of r.routes ?? []) if (!known(p)) errors.push(`gate rule ${r.id}: ${p} matches no route`);
   for (const c of [...(config.checks.off ?? []), ...(config.checks.warn ?? [])]) if (!existsSync(join(repo, c))) errors.push(`checks: ${c} does not exist`);
   for (const p of pinProblems(config)) errors.push(p.installed ? `packages: ${p.package} is pinned to ${p.pinned} but ${p.installed} is installed` : `packages: ${p.package} is not an installed package`);
@@ -66,9 +66,9 @@ export function check(dir: string): { errors: string[], warnings: string[], note
 export function explain(dir: string, route: string, { actor = "agent", role, confidence }: { actor?: string, role?: string, confidence?: number } = {}) {
   const { r, params } = resolve(route);
   if (!r || r.kind !== "record" || !r.actions.includes("write")) throw new Error(`${route} is not a writable record route`);
-  const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  const concrete = r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route;
   const cls = gateOf(r, dir);
-  const files = (r.collection === "item" ? r.files.map((x: string) => x.replace("*", params.id)) : r.files);
+  const files = (r.collection === "item" ? r.files.map((x: string) => x.replace("*", String(params.id))) : r.files);
   const exists = files.some((x: string) => existsSync(ventureFile(dir, x)));
   const verdict = evaluate({ config: configFor(dir), dir, route: concrete, table: r.route, record: r.record, actor, role, confidence, exists, decisionOwner: cls?.owner ?? undefined });
   return { route: concrete, record: r.record, actor, role: role ?? null, confidence: confidence ?? null, decision_class: cls ? { class: cls.class, level: cls.level, drafts: cls.drafts && actor !== "person" } : null, gate: verdict };

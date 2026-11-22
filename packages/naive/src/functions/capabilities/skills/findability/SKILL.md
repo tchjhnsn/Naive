@@ -26,7 +26,7 @@ Before creating a decision, ADR, term, source, dependency, skill, contract, risk
 
 ## 3. Deep pass (paid, phase boundaries and campaigns)
 
-Reference implementation: a private synthesis project (`synth.mjs` classifies notes by domain, product, layer and kind; `decisions.mjs` compares ledger decisions pairwise within a domain). TypeSafe Jev, cached; key from the repo's `.env.local`, never printed. Lessons from the first run:
+Reference implementation: a private synthesis project (`synth.mjs` classifies notes by domain, product, layer and kind; `decisions.ts` compares ledger decisions pairwise within a domain). TypeSafe Jev, cached; key from the repo's `.env.local`, never printed. Lessons from the first run:
 - Ask *wholly* versus *partly* superseded; 11 of 12 "superseded" flags were partial.
 - A domain list that misses areas leaves decisions uncompared (27 of 120 in the first run); include company-structure and peer-company domains.
 - Treat results as leads to confirm, not findings.

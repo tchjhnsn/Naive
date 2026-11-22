@@ -52,11 +52,11 @@
   ],
   "checks": [
     "packages/naive/src/checks/check-telos.ts",
-    "packages/naive/src/records/validate.mjs",
+    "packages/naive/src/records/validate.ts",
     "packages/naive/src/checks/check-validation.ts",
-    "packages/naive/src/engine/foundation.mjs",
+    "packages/naive/src/engine/foundation.ts",
     "packages/naive/src/checks/lint-foundation.ts",
-    "packages/naive/src/engine/check-frameworks.mjs"
+    "packages/naive/src/engine/check-frameworks.ts"
   ],
   "skill": {
     "id": "foundation-function",

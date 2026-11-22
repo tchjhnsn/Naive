@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "calendar-event.schema.json",
   "title": "Calendar event",
-  "description": "One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; packages/naive/src/engine/calendar.mjs computes them each time the calendar is read.",
+  "description": "One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; packages/naive/src/engine/calendar.ts computes them each time the calendar is read.",
   "type": "object",
   "required": ["@type", "uid", "title", "start", "timeZone", "calendar"],
   "properties": {

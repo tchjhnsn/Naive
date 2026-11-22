@@ -1,5 +1,5 @@
 // Breaks check-phases.ts on copies of the repository: each rule fails when its file is wrong, and the real repository
-// passes. Also tests the phase loader (packages/naive/src/phases/phases.mjs) and the phase-module generator.
+// passes. Also tests the phase loader (packages/naive/src/phases/phases.ts) and the phase-module generator.
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { Effect } from "effect";
 import { MemoryFs } from "../core/effect/fs.ts";
 import { runSync } from "../core/effect/run.ts";
-import { loadPhase, loadPhases, phasePriors, phaseWeights } from "../phases/phases.mjs";
+import { loadPhase, loadPhases, phasePriors, phaseWeights } from "../phases/phases.ts";
 import { draft } from "../engine/generators/phase-module.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

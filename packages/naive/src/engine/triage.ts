@@ -13,8 +13,8 @@
 // the routed work to a person whatever else holds. Nothing here calls a model or the network: the platform sends the
 // request and passes the answers back.
 
-import { line } from "./detectors.mjs";
-import { split, terms } from "./workspace.mjs";
+import { line } from "./detectors.ts";
+import { split, terms } from "./workspace.ts";
 
 export const MODEL = "jev-latest";
 export const ACCEPT = 0.95;

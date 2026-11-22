@@ -178,7 +178,7 @@ An agent proposes the decision open. A person decides it. Do not write `status: 
 Write the proposal as JSON and run:
 
 ```bash
-node packages/naive/src/interfaces/cli/mentura.mjs propose --venture <id> --input <file>
+node packages/naive/src/interfaces/cli/mentura.ts propose --venture <id> --input <file>
 ```
 
 ```json
@@ -198,13 +198,13 @@ node packages/naive/src/interfaces/cli/mentura.mjs propose --venture <id> --inpu
 `boundary: fail-closed` means that while this decision is open, an agent's write of `people/team-plan` is a draft. Propose this before step 6 if an agent is doing the writing. You accept the draft with:
 
 ```bash
-node packages/naive/src/interfaces/cli/mentura.mjs accept people/team-plan --venture <id>
+node packages/naive/src/interfaces/cli/mentura.ts accept people/team-plan --venture <id>
 ```
 
 You decide it with your name. `--confirm` must be the decision id:
 
 ```bash
-node packages/naive/src/interfaces/cli/mentura.mjs decide team-plan-culture --venture <id> --by "<your name>" --confirm team-plan-culture
+node packages/naive/src/interfaces/cli/mentura.ts decide team-plan-culture --venture <id> --by "<your name>" --confirm team-plan-culture
 ```
 
 Pass `--answer` when the words should be yours rather than the draft. After the decision is decided, a later agent write is not held by this decision. A later change is still yours: write `people/team-plan` as a person (`--as person`), or open a new decision.
@@ -218,7 +218,7 @@ A check that cannot fail is not a check. Each one below fails on a real record a
 Route: `people/team-plan` check.
 
 ```bash
-node packages/naive/src/interfaces/cli/mentura.mjs people/team-plan check --venture <id>
+node packages/naive/src/interfaces/cli/mentura.ts people/team-plan check --venture <id>
 ```
 
 This runs `packages/naive/src/checks/check-team.ts`. It fails when an open person role needed by the current phase or earlier has no `recruiting` entry, or the brief file is missing. It passes when that entry and that file exist.
@@ -243,7 +243,7 @@ It fails when any of these is true:
 
 It passes when none of those are true.
 
-`packages/naive/test/verification/playbook-netflix-culture/replay.mjs` runs both checks on a fixture venture, including a missing brief, a pasted principle, an invented figure, a check before you decide, and a check after you decide.
+`packages/naive/test/verification/playbook-netflix-culture/replay.ts` runs both checks on a fixture venture, including a missing brief, a pasted principle, an invented figure, a check before you decide, and a check after you decide.
 
 ## Sources
 

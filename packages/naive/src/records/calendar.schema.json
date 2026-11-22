@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "calendar.schema.json",
   "title": "Calendar",
-  "description": "One calendar in a workspace (calendar/calendars/<id>.json): who owns it, who is on it, and who may see it. Events name it by id. A workspace is initiated with the default calendar, default, named Venture (Torian, 2026-10-30; packages/naive/src/engine/calendar.mjs).",
+  "description": "One calendar in a workspace (calendar/calendars/<id>.json): who owns it, who is on it, and who may see it. Events name it by id. A workspace is initiated with the default calendar, default, named Venture (Torian, 2026-10-30; packages/naive/src/engine/calendar.ts).",
   "type": "object",
   "required": ["id", "name", "owner", "members", "visibility"],
   "properties": {

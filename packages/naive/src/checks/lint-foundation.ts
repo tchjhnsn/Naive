@@ -8,7 +8,7 @@
 // Every record is read through ventureFile. A missing or malformed record is skipped.
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 // A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
 // types describe valid records, and this lint reads any.
@@ -155,7 +155,7 @@ export function lint(dir: string) {
   return { ok: !failed, rules, findings };
 }
 
-export { foundationLintCommands } from "../records/routes/commands.mjs";
+export { foundationLintCommands } from "../records/routes/commands.ts";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];

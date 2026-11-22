@@ -46,7 +46,7 @@
   ],
   "writes": [],
   "checks": [
-    "packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs"
+    "packages/naive/src/functions/capabilities/skills/design-coverage/check.ts"
   ],
   "gaps": [
     "Audits (coverage, fidelity, findability) print reports but do not write evidence records"

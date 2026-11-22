@@ -3,7 +3,7 @@
 // The generator derives the id from the date and title unless one is given, starts actions empty and the status at
 // draft, so a person reviews it before it closes. The draft goes to the write chain for
 // capabilities/postmortems/<id>.json, which only the capabilities agent (capabilities-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Postmortem } from "../../records/types/records.d.ts";
 
 export const record = "postmortem";

@@ -1,4 +1,4 @@
-// Tests the record types' resolver (packages/naive/src/records/index.mjs) and the check that every record path goes through
+// Tests the record types' resolver (packages/naive/src/records/index.ts) and the check that every record path goes through
 // it (packages/naive/src/checks/check-record-paths.ts). Each rule of the check fails on a copy that breaks it.
 //
 //   node packages/naive/src/checks/check-record-paths-test.ts
@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 import { ALLOW, check, RESOLVER, scan, staleAllow } from "./check-record-paths.ts";
 import {
   APP_DATA_MODEL, dataModelFile, KINDS, listSchemas, pathKind, readDataModel, readSchema, RECORDS, recordPath, recordRelative, recordsIn, ROOT, schemaFile, schemaName, schemaNameOf,
-} from "../records/index.mjs";
+} from "../records/index.ts";
 
 const root = fileURLToPath(new URL("../../../..", import.meta.url));
 const tmp = mkdtempSync(join(tmpdir(), "check-record-paths-"));
@@ -70,7 +70,7 @@ try {
     assert.equal(recordRelative("./schema/venture.schema.json"), "venture.schema.json");
   });
 
-  test("schemaNameOf gives the name packages/naive/src/records/validate.mjs takes, and keeps another folder's path whole", () => {
+  test("schemaNameOf gives the name packages/naive/src/records/validate.ts takes, and keeps another folder's path whole", () => {
     assert.equal(schemaNameOf("packages/naive/src/records/venture.schema.json"), "venture.schema.json");
     assert.equal(schemaNameOf("app/schemas/claim.schema.json"), "app/schemas/claim.schema.json");
   });
@@ -181,7 +181,7 @@ try {
       "b/name.mjs": `spawnSync("python3", [validator, "--schema", "venture.schema.json", "--file", f]);`,
       "b/message.mjs": "return { error: `does not match packages/naive/src/records/venture.schema.json, so nothing was written` };",
       "b/comment.mjs": `// load(join(repo, "packages/naive/src/records/data-model.json"))\n/* join(root, "schema", schema) */\n * "schema/" + name`,
-      "b/script.mjs": `spawnSync("node", [join(root, "schema", script), dir]);\nconst v = join(repo, "packages/naive/src/records/validate.mjs");`,
+      "b/script.mjs": `spawnSync("node", [join(root, "schema", script), dir]);\nconst v = join(repo, "packages/naive/src/records/validate.ts");`,
       "b/field.mjs": `expect(fix.schema === "packages/naive/src/records/validation-problem.schema.json");\nconst note = { path: "packages/naive/src/records/handoff.schema.json" };`,
       "b/allowed.mjs": `const model = load(join(repo, "packages/naive/src/records/data-model.json"));`,
       "docs/design/preserved/old.mjs": `const model = load(join(repo, "packages/naive/src/records/data-model.json"));`,

@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { lint, proposeFindings, ASPECTS } from "./premise-lint.ts";
-import { approve } from "../engine/decisions.mjs";
+import { approve } from "../engine/decisions.ts";
 
 let failed = 0;
 const ok = (cond: unknown, name: string) => { console.log(`${cond ? "ok  " : "FAIL"}  ${name}`); if (!cond) failed++; };
@@ -148,7 +148,7 @@ ok(premiseFiles(d5).length === 2 && JSON.parse(readFileSync(openFile, "utf8")).q
 // A failed proposal prints why and exits non-zero.
 const d6 = fresh("Grow a good business.");
 const preload = join(d6, "no-validator.mjs");
-writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.mjs", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
+writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.ts", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
 const bad = spawnSync(process.execPath, ["--import", pathToFileURL(preload).href, linterPath, d6, "--propose"], { encoding: "utf8" });
 ok(bad.status === 1 && /could not propose .*no schema decision-record\.schema\.json/s.test(bad.stderr), "a failed proposal prints the failure and exits non-zero");
 
@@ -210,7 +210,7 @@ const rerun = run(d11);
 const kept = JSON.parse(readFileSync(settledFile, "utf8"));
 ok(rerun.status === 0 && kept.question === "older wording" && kept.status === "decided" && kept.answer === "ten customers", "a decided decision with other wording is left alone");
 
-// Parents decisions.mjs accepts are not reported missing.
+// Parents decisions.ts accepts are not reported missing.
 const d13 = fresh("Grow a good business.");
 run(d13);
 const [linterId] = premiseFiles(d13).map((f) => f.replace(".decision.json", ""));

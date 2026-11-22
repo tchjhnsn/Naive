@@ -3,7 +3,7 @@
 // audience, the headline, the metrics and the three lists. The generator derives the id from the period unless one is
 // given and always starts the status at draft: a person approves and sends it (public-commitment). The draft goes to
 // the write chain for investor-relations/updates/<id>.json, which only the external-relationships agent or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { StakeholderUpdate } from "../../records/types/records.d.ts";
 
 export const record = "stakeholder-update";

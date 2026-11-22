@@ -38,10 +38,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { canonicalJson } from "../core/signal-id.ts";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { routes } from "../records/routes/routes.mjs";
-import { validateValue } from "../records/validate.mjs";
-import { namedPerson, packageDefs } from "../engine/naive-config.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { routes } from "../records/routes/routes.ts";
+import { validateValue } from "../records/validate.ts";
+import { namedPerson, packageDefs } from "../engine/naive-config.ts";
 import { LOCAL_LIBRARY, LOCAL_ROOT, NAIVE_LIBRARY, fill, listenersOf, propsProblem, readSignal, recordFile, renderCase, resolveType, routerRoute, satisfies, splitRange, viewsOf, withdraw } from "../engine/signals.ts";
 import type { Library, Pulled } from "../engine/signals.ts";
 import type { Listener, ListenerPredicate, SignalType } from "../records/types/records.d.ts";

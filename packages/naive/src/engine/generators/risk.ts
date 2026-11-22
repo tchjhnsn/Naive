@@ -4,7 +4,7 @@
 // at open. expectedLoss gives the range of expected loss (likelihood times impact) so risks are ranked by money, not
 // by ordinal scores (Hubbard). The draft goes to the write chain for legal/risks/<id>.json, which only the
 // risk-and-compliance agent (risk-and-compliance-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Risk } from "../../records/types/records.d.ts";
 
 export const record = "risk";

@@ -33,7 +33,7 @@ The rules travel with every Jev request as `state.guidelines` (`conventions.json
 
 ## 2. Dump to graph
 
-- **An idea builds on another only when it needs that idea's answer first.** Jev answers one question per ordered pair of ideas, with a bar of 0.5. Without Jev, Naive's record order supplies the edges (`ORDER` in `graph.mjs`).
+- **An idea builds on another only when it needs that idea's answer first.** Jev answers one question per ordered pair of ideas, with a bar of 0.5. Without Jev, Naive's record order supplies the edges (`ORDER` in `graph.ts`).
 - **The graph stays acyclic.** Edges are added strongest first, an edge that would close a cycle is dropped, and only direct dependencies are kept (transitive reduction). A dependency given twice, as when an idea states a `builds-on` that the convention or Jev also gives, is one edge, so the hashes and the root do not change.
 - **It is a Merkle DAG.** An idea's hash covers its text and the hashes of what it builds on, so a change upstream changes every hash below it.
 - **Signal.** Each idea is weighted by what the phase needs of its records (0.35), how much builds on it (0.25), how concrete it is (0.25) and how much of the dump circles it (0.15).
@@ -68,9 +68,9 @@ Every relation check runs through the EE-095 term engine, as the term typed-link
 - a target that does not exist (a scope the idea `creates` may be one the catalog does not list yet);
 - a cycle through `broader` (with `narrower` read backwards), `part-of` or `builds-on`.
 
-`packages/naive/lean/Naive/Terms.lean` proves three facts about the relation table that reading `narrower` backwards relies on. Inverses come in pairs, a relation and its inverse share one order, and each order is a relation read forward. No Lean theorem covers a graph of links or the cycle search itself. `test.mjs` tests those through the check command, and keeps the schemas, the table and Lean naming the same relations.
+`packages/naive/lean/Naive/Terms.lean` proves three facts about the relation table that reading `narrower` backwards relies on. Inverses come in pairs, a relation and its inverse share one order, and each order is a relation read forward. No Lean theorem covers a graph of links or the cycle search itself. `test.ts` tests those through the check command, and keeps the schemas, the table and Lean naming the same relations.
 
-`node graph.mjs check <ideas folder>` checks a folder of idea records and exits 1 on any problem, naming each one. Each record's id must match its file name, so no two records share an id, and a relations entry that is not an object is named. `build` refuses ideas whose stated relations fail. The term engine loads only when an idea states a relation, so a process that imports `graph.mjs` for its constants, such as the router, does not load it. Where the engine cannot load (Node before 22.18, or a copy under `node_modules`), check and build refuse every stated relation.
+`node graph.ts check <ideas folder>` checks a folder of idea records and exits 1 on any problem, naming each one. Each record's id must match its file name, so no two records share an id, and a relations entry that is not an object is named. `build` refuses ideas whose stated relations fail. The term engine loads only when an idea states a relation, so a process that imports `graph.ts` for its constants, such as the router, does not load it. Where the engine cannot load (Node before 22.18, or a copy under `node_modules`), check and build refuse every stated relation.
 
 ```mermaid
 flowchart LR
@@ -86,7 +86,7 @@ flowchart LR
 
 Every tagged idea goes to the records it feeds. A record is a destination: the problem, who it is for, products, the core promise, vision, the solution, go to market, pricing, the team, alignment and brand. The routing table is `conventions.json` `records`: each entry has a title, the route that writes the record, and the decisions it settles (foundation statements and Naive's product and team questions). Any decision an agent proposed about that record also belongs to it.
 
-`route.mjs` reads the record types from the data model through [`packages/naive/src/records`](../../../../records/README.md), and `test.mjs` reads the idea and graph schemas the same way.
+`route.ts` reads the record types from the data model through [`packages/naive/src/records`](../../../../records/README.md), and `test.ts` reads the idea and graph schemas the same way.
 
 A destination's stage comes from the framework's own state, never from a guess:
 
@@ -109,7 +109,7 @@ The docket is every open decision, staged the same way and ranked as before (EE-
 
 ## The boards
 
-`node packages/naive/src/interfaces/demo/board.mjs` serves four pages:
+`node packages/naive/src/interfaces/demo/board.ts` serves four pages:
 
 - `/map`: the idea map;
 - `/graph`: the idea graph;

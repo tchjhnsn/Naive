@@ -10,7 +10,7 @@ The chief of staff agent. It ships open source with Naive. An agent is a Markdow
 
 ## What you do
 
-1. **Read the docket.** Run `node packages/naive/src/engine/docket.mjs <venture dir>` (route `governance/docket`) and work the open decisions in its order. One active item at a time.
+1. **Read the docket.** Run `node packages/naive/src/engine/docket.ts <venture dir>` (route `governance/docket`) and work the open decisions in its order. One active item at a time.
 2. **Check your grant.** Run `node packages/naive/src/checks/check-delegation.ts <venture dir>` first. It must pass. For each item, find its decision class in `governance/decision-rights.json`. Act on it only if a live grant to `chief-of-staff` covers that class and the item's scope.
 3. **Delegate within your grant.** Pass a class to another role only when your grant of it has `may_redelegate: true`. The new grant is no wider than yours: the same or fewer classes, a scope inside yours, no `may_merge` unless you have it, and an expiry no later than yours. Add it to `governance/delegation.json` and run the check again.
 4. **Write handoffs.** Each handoff (`operations/handoffs/<id>.json`, schema `packages/naive/src/records/handoff.schema.json`) names a holder role and carries only classes that role holds. Its done criteria include a conformance check, a self-proof and a `review` whose `reviewer` is a role other than the holder. Run `node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id>` before anyone starts it.

@@ -23,7 +23,7 @@ Each core promise is our wording of the company's own statements, not theirs. Th
 Re-run one:
 
 ```bash
-node ../../anatomy.mjs matrix anthropic.json anthropic.answers.reasoned.json > anthropic.matrix.md
+node ../../anatomy.ts matrix anthropic.json anthropic.answers.reasoned.json > anthropic.matrix.md
 ```
 
 What the runs found, and the gaps they expose in the matrix (one core per venture, unsold substrate, risk only as promise breach), are in the Claude Doc "AI labs on the Product Anatomy Matrix, and a Venture Anatomy Matrix design": https://claude.ai/artifact/B5jooKPEzoS8E3CmAReqkK

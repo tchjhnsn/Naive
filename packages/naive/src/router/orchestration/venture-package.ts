@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+// The venture package with the idea map's routing (EE-067, EE-069, EE-061). packages/naive/src/engine/packages.ts computes
+// the package; route() in packages/naive/src/functions/strategy/frameworks/idea-map/route.ts says where the founder's ideas for each
+// record stand and the one step that moves it. The idea map reads schema/ itself, so packages/naive/src/engine/packages.ts
+// cannot import it without a cycle; this module composes the two (router inversion, step 4c).
+//
+//   node packages/naive/src/router/orchestration/venture-package.ts <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json]
+//   node packages/naive/src/router/orchestration/venture-package.ts request <venture>   the Jev request for the questions the records leave open
+//
+// --write renders the readable view into <venture>/package/ (write() in packages/naive/src/engine/packages.ts).
+
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { packages, request, write } from "../../engine/packages.ts";
+import { route } from "../../functions/strategy/frameworks/idea-map/route.ts";
+
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+
+/** The idea map's routing for a venture, or null when it cannot be computed (no idea map, a bad record). */
+export function routesOf(dir: string) {
+  try { return route(dir); } catch { return null; }
+}
+
+/**
+ * The venture package with each record's idea-map title and route.
+ */
+type PackagesOptions = NonNullable<Parameters<typeof packages>[1]>;
+export function venturePackage(dir: string, opts: Omit<PackagesOptions, "routes"> = {}) {
+  // The idea map's routing, as packages reads it. Its Routing type says next.by is a string where the idea map gives a
+  // string or null (a step no one owns yet); packages only prints it, so the value passes through unchanged.
+  return packages(dir, { ...opts, routes: routesOf(dir) as PackagesOptions["routes"] });
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const args = process.argv.slice(2);
+  const opt = (n: string): string | null => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : null; };
+  const has = (n: string) => args.includes(`--${n}`);
+  if (args[0] === "request") { console.log(JSON.stringify(request(args[1]))); process.exit(0); }
+  const dir = args[0];
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/router/orchestration/venture-package.ts <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json] | request <venture>"); process.exit(2); }
+  const answersFile = opt("answers");
+  const answers = answersFile ? load(answersFile).answers : null;
+  const r = venturePackage(dir, { flags: Object.fromEntries(["raising", "hiring"].filter(has).map((k) => [k, true])), answers });
+  if (has("write")) console.error(`wrote ${write(dir, r)}`);
+  if (has("json")) console.log(JSON.stringify(r, null, 2));
+  else {
+    console.log(`${r.name} (${r.phase}): ${Math.round(r.progress * 100)}% across the open core packages; complete: ${r.complete.join(", ") || "none yet"}`);
+    for (const p of r.core) console.log(`core    ${p.in.padEnd(5)} ${p.title.padEnd(22)} fit ${String(p.fit).padEnd(5)} ${p.in === "now" ? `${p.state.padEnd(9)} ${Math.round(p.progress * 100)}%  moving: ${p.moving.join(", ") || "none"}` : p.why}`);
+    for (const p of r.handoff) console.log(`handoff ${p.in.padEnd(5)} ${p.title.padEnd(22)} fit ${String(p.fit).padEnd(5)} ${p.in === "now" ? `waits on ${p.waits_on.join(", ") || "nothing"}` : p.why}`);
+    const open = r.situation.questions.filter((q: { value?: unknown }) => q.value == null);
+    if (open.length) console.log(`Open: ${open.map((q: { ask: string }) => q.ask).join(" ")}`);
+  }
+}

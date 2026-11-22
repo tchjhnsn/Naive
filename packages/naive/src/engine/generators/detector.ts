@@ -4,7 +4,7 @@
 // rest 1) and a base rate read from the ledger unless one is stated. A one_way_door detector gets no costs and the
 // criterion route person: every call goes to a person. It never derives a criterion line: a line is given and names
 // who set it. The draft goes to the write chain for governance/detectors/<id>.json.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Detector } from "../../records/types/records.d.ts";
 
 export const record = "detector";

@@ -15,10 +15,10 @@
 //   node packages/naive/src/router/agent-files.ts <venture> edit <path> <old> <new> [--all]
 
 import { readFileSync } from "node:fs";
-import { call, glob as routeGlob, routes, ventureDir } from "./router.mjs";
-import { withSpan } from "../core/instrumentation.mjs";
+import { call, glob as routeGlob, routes, ventureDir } from "./router.ts";
+import { withSpan } from "../core/instrumentation.ts";
 
-/** reads_as_of: read the venture as it was at this time (packages/naive/src/router/reads-as-of.mjs). A researcher role
+/** reads_as_of: read the venture as it was at this time (packages/naive/src/router/reads-as-of.ts). A researcher role
  *  must pass it, and every operation then reads, lists and globs as of it. */
 export interface Context { venture: string, workspace?: string, actor_id?: string, via?: string, reads_as_of?: string }
 export interface FileInfo { path: string, is_dir: boolean, exists?: boolean }

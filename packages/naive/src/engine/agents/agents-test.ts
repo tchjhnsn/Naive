@@ -4,7 +4,7 @@
 // answer for one function, one portfolio, across portfolios and a one-way door. No model and no venture is needed.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { routeGlob } from "../access.mjs";
+import { routeGlob } from "../access.ts";
 import { functionAgent, functionIds, reachesTeamPlan, teamPlanEntry } from "./function-spec.ts";
 import { beyondLead, leadAgent, leadIds, leadTeamPlanEntry, routeFor } from "./lead-spec.ts";
 

@@ -12,9 +12,9 @@ import { spawn, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.mjs";
-import { routes } from "../../records/routes/routes.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
+import { call } from "../../router/router.ts";
+import { routes } from "../../records/routes/routes.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 let failed = 0;
@@ -23,7 +23,7 @@ const show = (r: unknown): string => String(JSON.stringify(r)).slice(0, 400);
 const ws = mkdtempSync(join(tmpdir(), "handoff-claim-test-"));
 const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 for (const k of ["MENTURA_ACTOR_ID", "MENTURA_ACTOR", "MENTURA_SESSION", "MENTURA_MODEL", "MENTURA_PERSON"]) { delete env[k]; delete process.env[k]; }
-const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 
 interface Reply { ok: boolean, error?: string, claimed_by?: string, result?: { claimed?: string, claimed_by?: string, status?: string, written?: string, draft?: boolean } }
 type Handoff = Record<string, unknown> & { status?: string, claimed_by?: string, verification?: Record<string, unknown> };
@@ -60,7 +60,7 @@ const stored = (id: string): Handoff => JSON.parse(readFileSync(ventureFile(dir,
 
 // Claims race from separate processes and exactly one wins, in each of several rounds.
 {
-  const mod = new URL("../../router/router.mjs", import.meta.url).href;
+  const mod = new URL("../../router/router.ts", import.meta.url).href;
   const rounds = 5, racers = 6;
   const code = (id: string, i: number) => `const { call } = await import(${JSON.stringify(mod)});
 const r = await call({ venture: ${JSON.stringify(V)}, workspace: ${JSON.stringify(ws)}, route: "operations/handoff/${id}", action: "claim", actor: "agent", actor_id: ${JSON.stringify(ROLE)} });

@@ -1,6 +1,6 @@
 # Seed fundraising playbook
 
-Model of `packages/naive/library/packages/investors/playbooks/y-combinator-fundraise.md`. TLC checks the template's order. The replay runs the same routes on a fixture venture through `packages/naive/src/interfaces/cli/mentura.mjs`.
+Model of `packages/naive/library/packages/investors/playbooks/y-combinator-fundraise.md`. TLC checks the template's order. The replay runs the same routes on a fixture venture through `packages/naive/src/interfaces/cli/mentura.ts`.
 
 The chart hides one step: `Done`, the stutter that stays on "Signed instrument on the cap table" so the end state is not a deadlock.
 
@@ -12,22 +12,22 @@ The statechart command writes only to a new or empty folder. TLC is the copy the
 rm -rf packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out
 <statechart>/scripts/statechart \
   packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/YCFundraise.tla \
-  --view packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/view.mjs \
+  --view packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/view.ts \
   --out packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out
 node <pele>/render.mjs packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out/chart.mmd
 sh <pele>/png.sh packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out/chart.svg
-node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.mjs
+node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.ts
 ```
 
 `<statechart>` is the pstack `skills/statechart` directory. `<pele>` is `naive-example/pele` from the same kit, after `npm ci`. This run used those paths under `/tmp/pstack/pstack-kit/`.
 
 ## Rules
 
-TLC on 29 October 2026: 12 distinct states, 15 steps, no error (`out/tlc.out`). The chart draws 14 arrows. Replay: `node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.mjs` printed `37/37 passed`.
+TLC on 29 October 2026: 12 distinct states, 15 steps, no error (`out/tlc.out`). The chart draws 14 arrows. Replay: `node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.ts` printed `37/37 passed`.
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
-| RoutesExist. Every step uses a route the router serves. | PASS | PASS. 18 routes from the model are in `node packages/naive/src/router/router.mjs`, and they are the routes the playbook names. `fundraising/plan` is rejected with `no route fundraising/plan`. |
+| RoutesExist. Every step uses a route the router serves. | PASS | PASS. 18 routes from the model are in `node packages/naive/src/router/router.ts`, and they are the routes the playbook names. `fundraising/plan` is rejected with `no route fundraising/plan`. |
 | Accounted. A step only touches a record the venture already has, or a route the template writes. | PASS | PASS. The template does not write `purpose/data-stream/[id]`. A write of `purpose/data-stream/meetings` stored `customers/_streams/meetings/stream.json`, because that glob is first on the route. |
 | NoUnreadSource. A later step does not read a record nothing earlier provided. | PASS | PASS. `foundation/problem` is `not_found` on a new venture. The raise plan's `inputs` are written only after those records exist, and the check fails an input that is still missing. |
 | PassMeansReady. A passing check is a filled plan, investor records, and a checklist. | PASS | PASS. Checks 1 to 3 pass only after the filled plan, one named investor, the checklist, and cited evidence on `foundation/problem`. |

@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Base } from "./engine.ts";
 import type { Arrangement } from "./levels.ts";
-import { recordsIn } from "../records/index.mjs";
+import { recordsIn } from "../records/index.ts";
 
 export type Fixture<F extends Base> = { id: string; says: string; source: string; parts: string[]; facts: F; expects: Record<string, boolean> };
 

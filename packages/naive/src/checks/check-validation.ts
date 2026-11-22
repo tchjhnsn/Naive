@@ -23,13 +23,13 @@
 //
 //   node packages/naive/src/checks/check-validation.ts <workspace or venture dir> [--json] [--score]
 
-import { ventureFile } from "../core/venture-paths.mjs";
-import { line } from "../engine/detectors.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { line } from "../engine/detectors.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Product, ValidationEvidence, ValidationGoToMarket, ValidationOperationsReadiness, ValidationPricing, ValidationProblem, ValidationProductMarketFit, ValidationSolution, ValidationTeam, Venture } from "../records/types/records.d.ts";
 
-import { LEVELS, WEIGHT, START, gradeItem, gradeRecord } from "../engine/evidence-grade.mjs";
+import { LEVELS, WEIGHT, START, gradeItem, gradeRecord } from "../engine/evidence-grade.ts";
 export { LEVELS, WEIGHT, START, gradeItem, gradeRecord };
 
 /** A validation record. Which sub-score it is comes from its file name, so code narrows it by that name. */

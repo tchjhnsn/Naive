@@ -36,9 +36,9 @@ The book allows a rare extension of a couple of weeks, and prefers not to use it
 
 ## Template
 
-Fill this in for one product. Each step names the Naive route it reads or writes. Routes are the ones `node packages/naive/src/router/router.mjs` lists. Specs and a roadmap are not records yet (`packages/naive/library/packages/product/package.json` lists them under `planned`). The cycle and the pitch are handoffs. The bet is a decision record.
+Fill this in for one product. Each step names the Naive route it reads or writes. Routes are the ones `node packages/naive/src/router/router.ts` lists. Specs and a roadmap are not records yet (`packages/naive/library/packages/product/package.json` lists them under `planned`). The cycle and the pitch are handoffs. The bet is a decision record.
 
-The product function reads `foundation/icp`. It does not copy that profile onto the product card. `packages/naive/src/engine/design-system.mjs` `inputs()` is the pattern: read the other function's record by its route, and leave it there.
+The product function reads `foundation/icp`. It does not copy that profile onto the product card. `packages/naive/src/engine/design-system.ts` `inputs()` is the pattern: read the other function's record by its route, and leave it there.
 
 `operations/handoff` is suggested from validation onward (`packages/naive/src/engine/need-now.json` gives handoff a discovery prior of 0.3 and a validation prior of 0.7, and the suggest line is 0.5). The route itself resolves in any phase.
 
@@ -72,7 +72,7 @@ Status stays `draft`. Role is `builder` unless step 3 named another role that ow
 
 `done_criteria` needs one `conformance` and one `self-proof` (`packages/naive/src/checks/check-ready.ts`, `packages/naive/src/checks/check-execution.ts`). Use:
 
-- conformance: `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.mjs <path to the brief>`
+- conformance: `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.ts <path to the brief>`
 - self-proof: a command that runs this cycle's work and exits 0 when that work actually happened. Until you have that command, use `node -e "console.error('replace this command with one that runs the cycle work'); process.exit(1)"`. That command fails on purpose.
 - review, optional: a question for a role other than the holder, for example architect: "Does what shipped stay inside the no-gos?"
 
@@ -108,7 +108,7 @@ The holes you already patched in the shaping: the approaches this cycle will not
 What this cycle leaves out so the appetite holds.
 ```
 
-A small batch in the book is one or two weeks inside a six-week cycle. This template's check expects a six-week appetite. A pitch whose appetite does not say six weeks fails `pitch-check.mjs`.
+A small batch in the book is one or two weeks inside a six-week cycle. This template's check expects a six-week appetite. A pitch whose appetite does not say six weeks fails `pitch-check.ts`.
 
 This handoff is the pitch. It is not a backlog item. A pitch you do not bet stays `draft`. You do not open a list route for it.
 
@@ -118,19 +118,19 @@ Write `decisions/[id]`.
 
 Use an id such as `bet-<slug>`. Status is `open`. Boundary is `fail-closed`. Set `decides.path` to `operations/handoffs/cycle-<slug>.json` and `decides.record` to `handoff`. Question: "Do we bet one six-week cycle on this pitch?" Options: `bet` and `decline`. Leave `answer` null for the founder to supply, or draft one of those two words. Set `provenance.drafted_by.kind` to `agent`.
 
-Do not set status to `decided`. Only a person settles a decision (EE-058): the router saves an agent's write of `status: decided` as a draft, and the record stays open (`packages/naive/src/router/router.mjs` write). The founder decides in the next step.
+Do not set status to `decided`. Only a person settles a decision (EE-058): the router saves an agent's write of `status: decided` as a draft, and the record stays open (`packages/naive/src/router/router.ts` write). The founder decides in the next step.
 
-While that decision is open and fail-closed, `packages/naive/src/engine/decisions.mjs` `holding()` matches `decides.path` to the cycle handoff file. An agent's later write of that file comes back as a draft (`packages/naive/src/router/router.mjs` write).
+While that decision is open and fail-closed, `packages/naive/src/engine/decisions.ts` `holding()` matches `decides.path` to the cycle handoff file. An agent's later write of that file comes back as a draft (`packages/naive/src/router/router.ts` write).
 
 ### 6. The founder bets or declines
 
 A person runs:
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.mjs decide bet-<slug> --venture <id> --by "<their name>" --answer <bet or decline>
+node packages/naive/src/interfaces/cli/mentura.ts decide bet-<slug> --venture <id> --by "<their name>" --answer <bet or decline>
 ```
 
-`mentura decide` asks them to type the decision id. `packages/naive/src/engine/decisions.mjs` `approve()` records `provenance.approved_by`, and it accepts any wording, so the answer has to be exactly `bet` or `decline` for the bet check below to read it. Reasons go in `--note`.
+`mentura decide` asks them to type the decision id. `packages/naive/src/engine/decisions.ts` `approve()` records `provenance.approved_by`, and it accepts any wording, so the answer has to be exactly `bet` or `decline` for the bet check below to read it. Reasons go in `--note`.
 
 Decline: leave the cycle handoff in `draft`. Do not start it. Do not carry it forward. Someone who wants it later proposes a new bet.
 
@@ -186,17 +186,17 @@ When the work did ship inside the appetite, write `evidence/[id]` with `subject.
 
 ## Checks
 
-Each of these can pass and can fail. The replay is `node packages/naive/test/verification/playbook-basecamp-shape-up/replay.mjs`.
+Each of these can pass and can fail. The replay is `node packages/naive/test/verification/playbook-basecamp-shape-up/replay.ts`.
 
 | Check | Pass | Fail |
 |---|---|---|
-| `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.mjs <brief>` | Outcome, Work, and the five pitch sections all have text, and the appetite says six weeks | Any of those sections is missing or empty, or the appetite does not say six weeks |
+| `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.ts <brief>` | Outcome, Work, and the five pitch sections all have text, and the appetite says six weeks | Any of those sections is missing or empty, or the appetite does not say six weeks |
 | `node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id>` | The brief, products, governing log entry, role, classes, and criteria scripts are in place | Any of those is missing. A `governed_by` id that exists only as `decisions/[id]` fails, because this checker reads the decision log |
 | `node packages/naive/src/checks/check-execution.ts <venture dir>` | A draft cycle handoff with a known role and both kinds of criteria, or a done handoff with a pull request and passing evidence, or an escalated handoff with an open question and `claimed_by` | `done` with no evidence, or `escalated` with no open question, or `in-progress` with no `ready_check` |
 | Read `decisions/<bet id>` and `system/provenance` | The cycle handoff is `draft`, or the bet is `decided` with `answer` exactly `bet` and provenance shows `approve()` (`activity` accept, agent kind person, `approved_by` set) | The cycle handoff is past `draft` while the bet is missing, still open, answered anything other than `bet`, or `decided` with no person accept in the provenance log |
 | Read `operations/handoff/cooldown-<slug>` and the cycle handoff | The cool-down record is absent, or it exists and the cycle status is `done` or `escalated` | The cool-down record exists while the cycle is `draft`, `ready`, or `in-progress` |
 
-Run the ready and execution commands with the venture directory and, for ready, the handoff id. The `check` action on `operations/handoff/[id]` spawns each of the handoff's checkers with only the venture directory (`packages/naive/src/router/router.mjs`). `packages/naive/src/checks/check-ready.ts` then exits 2, because it requires the handoff id. Use the commands in the table.
+Run the ready and execution commands with the venture directory and, for ready, the handoff id. The `check` action on `operations/handoff/[id]` spawns each of the handoff's checkers with only the venture directory (`packages/naive/src/router/router.ts`). `packages/naive/src/checks/check-ready.ts` then exits 2, because it requires the handoff id. Use the commands in the table.
 
 ## Trademark
 
