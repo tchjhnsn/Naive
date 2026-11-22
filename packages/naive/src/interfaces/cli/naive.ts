@@ -212,7 +212,7 @@ function upgradeFramework(dir: string): number {
   // the clone, so the update needs no network; the new pin is what another machine installs. The clone is the
   // package root, above dist/ when this runs compiled (EE-159).
   const gitPin = /^(git\+|github:)/.test(deps[name]) && deps[name].includes("#");
-  const head = gitPin && existsSync(join(PACKAGE_ROOT, "test.mjs")) ? spawnSync("git", ["rev-parse", "HEAD"], { cwd: PACKAGE_ROOT, encoding: "utf8" }).stdout?.trim() : "";
+  const head = gitPin && existsSync(join(PACKAGE_ROOT, "test.ts")) ? spawnSync("git", ["rev-parse", "HEAD"], { cwd: PACKAGE_ROOT, encoding: "utf8" }).stdout?.trim() : "";
   if (pm === "npm" && /^[0-9a-f]{40}$/.test(head ?? "")) {
     const pin = deps[name].replace(/#.*$/, `#${head}`);
     const j = JSON.parse(readFileSync(pkg, "utf8"));
