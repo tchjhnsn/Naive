@@ -1802,6 +1802,33 @@
       ]
     },
     {
+      "id": "EE-155",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "The Lean Canvas (Maurya, Running Lean, 2012) is the venture's shared kernel in the sense of Evans' Domain-Driven Design: one page every function reads. Its nine boxes are references to record attributes, never copies, and each box is owned by the function the data model gives its record type; the strategy function owns the canvas itself, which only assembles and orders the boxes. Each box is fetchable at its own route (identity/lean-canvas/<box>) and shows what filling it unlocks: the phase gate that asks for its record, the function workflows that read it and the record types that reference it. The canvas is presented as a roadmap, the current phase's gate evidence first in the gate's order, so the founder sees the template and what each record unlocks instead of one-off questions. The decision queue raises a decision that settles a record the phase's gate asks for by 2 and breaks ties in the gate's order. venture.json core gains unfair_advantage.",
+      "why": "Torian, 2026-11-22: rather than asking one-off questions, present the standard template for the records and the roadmap of what each one unlocks; the canvas is a nested component whose parts span functions and can be fetched from it, acting as a kernel of the venture. The queue had put the problem statement eighth in discovery although the gate asks for it first.",
+      "related": [
+        "EE-127",
+        "EE-126",
+        "EE-091",
+        "EE-051"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/lean-canvas.mjs",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/lean-canvas.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",

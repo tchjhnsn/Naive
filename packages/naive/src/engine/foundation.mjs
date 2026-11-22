@@ -92,23 +92,28 @@ export function confirmedIn(dir, file, id, seen = new Set()) {
   return es.filter((e) => e.activity === "move" && e.entity === file).flatMap((e) => e.derived_from ?? []).some((p) => confirmedIn(dir, p, id, seen));
 }
 
+/** One statement's status and value: a record attribute, confirmed by a person, written by an agent, waiting as a
+ *  draft or missing. The Lean Canvas (lean-canvas.mjs) reads its boxes through this too.
+ * @param {string} dir
+ * @param {{ id: string, record?: string | null, attribute?: string | null, note?: string }} s */
+export function statement(dir, s) {
+  if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
+  const { files, attribute } = statementFiles(dir, s);
+  // A retired product no longer answers for the venture.
+  const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), attribute) })).filter((x) => filled(x.v));
+  const drafts = files.filter((f) => existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
+  // A migrated venture's statement sits on a canonical record, which its record type does not name.
+  const home = s.record === "telos" && migrated(dir) ? drafts[0] ?? files[0] : null;
+  if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing", ...(home ? { path: home } : {}) };
+  // A record with no log entry existed before the log; a person's baseline or write confirms it.
+  const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
+  return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", confirmed, ...(home ? { path: home } : {}), agent_wrote: values.some(({ f }) => agentWrote(dir, f)), unsigned_write: values.some(({ f }) => unsignedWrite(dir, f)),
+    value: attribute === "." ? values.map(({ v }) => v) : values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
+}
+
 /** Each foundation statement of a venture, with its status and value. */
 export function foundation(dir) {
-  const report = FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => {
-    if (s.derived_from) return s;
-    if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
-    const { files, attribute } = statementFiles(dir, s);
-    // A retired product no longer answers for the venture.
-    const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), attribute) })).filter((x) => filled(x.v));
-    const drafts = files.filter((f) => existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
-    // A migrated venture's statement sits on a canonical record, which its record type does not name.
-    const home = s.record === "telos" && migrated(dir) ? drafts[0] ?? files[0] : null;
-    if (!values.length) return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : "missing", ...(home ? { path: home } : {}) };
-    // A record with no log entry existed before the log; a person's baseline or write confirms it.
-    const confirmed = values.every(({ f }) => confirmedIn(dir, f, s.id));
-    return { id: s.id, record: s.record, attribute: s.attribute, status: drafts.length ? "draft" : confirmed ? "confirmed" : "agent", confirmed, ...(home ? { path: home } : {}), agent_wrote: values.some(({ f }) => agentWrote(dir, f)), unsigned_write: values.some(({ f }) => unsignedWrite(dir, f)),
-      value: attribute === "." ? values.map(({ v }) => v) : values.length === 1 && !files[0].includes("products/") ? values[0].v : Object.fromEntries(values.map(({ f, v }) => [f, v])) };
-  }) }));
+  const report = FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => s.derived_from ? s : statement(dir, s)) }));
   // A derived statement takes its source's status and shows the primary ICP profile's short form.
   const all = report.flatMap((q) => q.statements);
   for (const q of report) q.statements = q.statements.map((s) => {
