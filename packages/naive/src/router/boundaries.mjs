@@ -156,7 +156,7 @@ export async function boundaries(dir, { only = null } = {}) {
     try {
       const pkg = load(join(repo, "packages/naive/library", "packages", name, "package.json"));
       const types = [...new Set([...(pkg.required ?? []), ...(pkg.optional ?? []), ...(pkg.records ?? [])])];
-      const records = [], checks = new Set((pkg.checks ?? []).filter((c) => /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts" && existsSync(join(repo, c))));
+      const records = [], checks = new Set((pkg.checks ?? []).filter((c) => /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.(mjs|ts)$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts" && existsSync(join(repo, c))));
       for (const t of types) {
         const r = rs.find((x) => x.record === t);
         if (!r) continue;
