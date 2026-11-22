@@ -7,7 +7,7 @@ ai-model: claude
 authority: advisory
 status: DRAFT
 tags: [naive, evidence, measurement, ucum, physical-systems, ee-127]
-description: "Evidence records the unit tested, the conditions and measured values with UCUM units and limits, so a static fire is evidence like a passing suite (EE-127)."
+description: "Evidence records the unit tested, the conditions and measured values with UCUM units and limits, so a static fire is evidence like a passing suite (EE-153)."
 ---
 
 # Measured evidence
