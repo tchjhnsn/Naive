@@ -1,0 +1,18 @@
+{
+  "id": "weekly-engagement-review",
+  "function": "service-delivery",
+  "title": "Review every engagement each week",
+  "trigger": { "kind": "schedule", "cadence": "weekly" },
+  "reads": ["service-delivery/engagements", "service-delivery/offers", "operations/handoff", "evidence", "operations/activity", "customers"],
+  "steps": [
+    { "id": "update-status", "do": "Update each deliverable's status from its handoffs and evidence, and mark any that passed its due date.", "writes": ["service-delivery/engagements/[id]"] },
+    { "id": "log-changes", "do": "Write every scope change the client asked for as a change request with its price and date impact, and bring each to the founder before work on it starts.", "skill": "engagement-delivery", "writes": ["service-delivery/engagements/[id]"], "raises": ["legal-or-terms"] },
+    { "id": "check-margin-and-capacity", "do": "Compare each engagement's budget with the effort spent, flag any forecast margin under 35% and any week where delivery took more than half of the founder's time, and propose the order of work to the product lead.", "skill": "engagement-delivery", "raises": ["set-priorities"] },
+    { "id": "prepare-deliveries", "do": "For each deliverable ready to go to the client, prepare the message and the evidence that it meets its acceptance test, for the founder to send.", "raises": ["public-commitment"] },
+    { "id": "close-and-review", "do": "For each engagement whose deliverables are all accepted, write the close review (what went well, why anything overran, what can be reused) and close it; on the third delivery of the same request, propose a fixed-scope offer.", "skill": "engagement-delivery", "writes": ["service-delivery/engagements/[id]", "service-delivery/offers/[id]"], "raises": ["strategy-or-constitution"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "no-unapproved-scope", "kind": "review", "check": "Is every scope change on an active engagement either approved or open as a decision for the founder, with no work started on an unapproved one?", "reviewer": "product-lead" }
+  ]
+}

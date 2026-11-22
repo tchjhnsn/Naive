@@ -1,0 +1,7 @@
+{
+  "id": "it",
+  "purpose": "Know every outside system the venture connects, who and which agent can reach each one and with what access, and keep that access no wider than the work needs.",
+  "intake": "intake",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "clusters": ["identity-and-secrets"]
+}

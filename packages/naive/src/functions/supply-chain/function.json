@@ -1,0 +1,7 @@
+{
+  "id": "supply-chain",
+  "purpose": "For a venture that makes, buys or ships physical goods, know who supplies it, what each order commits and what each unit really costs to land.",
+  "intake": "intake",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "clusters": []
+}

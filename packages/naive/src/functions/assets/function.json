@@ -1,0 +1,7 @@
+{
+  "id": "assets",
+  "purpose": "Know what equipment and space the venture has, who holds each item, and every lease date that needs a decision before it passes.",
+  "intake": "intake",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "clusters": ["money-and-books"]
+}

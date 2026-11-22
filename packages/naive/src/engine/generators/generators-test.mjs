@@ -15,6 +15,9 @@ import * as capabilityCluster from "./capability-cluster.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
+import * as opportunity from "./opportunity.ts";
+import * as supportPolicy from "./support-policy.ts";
+import * as supportCase from "./support-case.ts";
 
 let fails = 0;
 const t = (name, ok) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}`); if (!ok) fails++; };
@@ -23,7 +26,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage, opportunity, supportPolicy, supportCase]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -110,6 +113,17 @@ const cc = capabilityCluster.draft({ title: "Physical logistics", functions: ["s
 t("capability-cluster: a new cluster is added to the catalog and passes the schema", cc.ok && cc.added === "physical-logistics" && cc.draft.clusters.length === 7);
 t("capability-cluster: a cluster already in the catalog is refused", !capabilityCluster.draft({ title: "Messaging delivery", functions: ["products"], gaps: ["runtime"], why: "x" }).ok);
 t("capability-cluster: a vendor field fails the schema", cc.ok && !validate("capability-cluster", { ...cc.draft, clusters: [{ ...cc.draft.clusters[0], vendor: "Acme" }] }).ok);
+
+const op = opportunity.draft({ title: "Corner Bakery POS", source: "inbound", created: "2026-11-20T15:00:00Z", value: { amount: 600, currency: "USD", cadence: "annual" } });
+t("opportunity: draft starts at lead with no reply yet and passes the schema", op.ok && op.route === "sales/opportunities/corner-bakery-pos" && op.draft.pipeline_stage === "lead" && op.draft.first_response === null);
+t("opportunity: a lost opportunity with no outcome is refused", !opportunity.draft({ ...op.draft, pipeline_stage: "lost" }).ok);
+t("opportunity: a lost opportunity with the buyer's reason passes", opportunity.draft({ ...op.draft, pipeline_stage: "lost", outcome: { reason: "Chose to keep the spreadsheet", category: "no-decision", from: "buyer" } }).ok);
+const pol = supportPolicy.draft({ channels: [{ channel: "email", hours: "weekdays" }], targets: [{ first_response_hours: 24, business_hours: true }], refunds: { rule: "Full refund within 30 days of purchase" } });
+t("support-policy: draft fills the starting escalations and passes the schema", pol.ok && pol.route === "support/policy" && pol.draft.escalate_when.includes("legal-threat"));
+t("support-policy: escalations a person gave are kept", supportPolicy.draft({ ...pol.draft, escalate_when: ["safety"] }).draft?.escalate_when.join() === "safety");
+const sc = supportCase.draft({ opened: "2026-11-21T09:30:00Z", channel: "email", kind: "complaint", summary: "Charged twice this month" });
+t("support-case: draft starts at new with its id from the date and passes the schema", sc.ok && sc.route === "support/cases/2026-11-21-charged-twice-this-month" && sc.draft.status === "new" && sc.draft.resolved === null);
+t("support-case: a refund with no decision fails the schema", !validate("support-case", { ...sc.draft, refund: { amount: 20, currency: "USD" } }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

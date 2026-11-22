@@ -1,0 +1,30 @@
+{
+  "name": "assets",
+  "title": "Assets",
+  "kind": "data",
+  "purpose": "The venture's physical equipment and space: the asset register (assets/register/<id>.json, who holds each device, what it cost and how it left) and its leases and space commitments (assets/leases/<id>.json, with notice and renewal dates). The assets function owns it, so the assets agent gets its write routes. Never complete.",
+  "function": "assets",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "spend-register",
+    "people"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "operations",
+  "records": [
+    "fixed-asset",
+    "lease"
+  ],
+  "schemas": [
+    "packages/naive/src/records/fixed-asset.schema.json",
+    "packages/naive/src/records/lease.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}

@@ -1,0 +1,7 @@
+{
+  "id": "customer-service",
+  "purpose": "Answer every customer well and on time, and turn what customers tell the venture into fixes the rest of the venture hears about.",
+  "intake": "intake",
+  "measures": ["usage_or_adoption", "revenue"],
+  "clusters": ["messaging-delivery", "private-contact-records"]
+}

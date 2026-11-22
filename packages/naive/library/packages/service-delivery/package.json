@@ -1,0 +1,31 @@
+{
+  "name": "service-delivery",
+  "title": "Service delivery",
+  "kind": "data",
+  "purpose": "The services the venture sells and the client engagements that deliver them, one service-delivery/offers/<id>.json and one service-delivery/engagements/<id>.json each (ITIL 4 service catalogue management; APQC PCF 5.3). The work inside an engagement runs as handoffs. The service-delivery function owns it, so the service-delivery agent gets its write routes. Never complete.",
+  "function": "service-delivery",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "customer",
+    "product",
+    "handoff"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "operations",
+  "records": [
+    "service-offer",
+    "engagement"
+  ],
+  "schemas": [
+    "packages/naive/src/records/service-offer.schema.json",
+    "packages/naive/src/records/engagement.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}

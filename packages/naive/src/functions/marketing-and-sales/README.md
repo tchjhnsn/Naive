@@ -10,6 +10,11 @@ The marketing and sales function (APQC 3.0, Market and Sell Products and Service
 
 | Path | Holds |
 |---|---|
+| [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
+| [agent.md](./agent.md) | The marketing and sales agent's instructions |
+| [decisions.json](./decisions.json) | The decision matrix |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn who the venture sells to and where each sale stands |
+| [workflows/weekly-pipeline-review.json](./workflows/weekly-pipeline-review.json) | Workflow: review the sales pipeline each week |
 | [marketing/canaries-test.mjs](./marketing/canaries-test.mjs) | Its test |
 | [marketing/fixtures](./marketing/fixtures) | A folder |
 | [marketing/leaks-test.mjs](./marketing/leaks-test.mjs) | Its test |
@@ -17,6 +22,7 @@ The marketing and sales function (APQC 3.0, Market and Sell Products and Service
 | [marketing/publish-build.mjs](./marketing/publish-build.mjs) | The publish build: gate, compile, build, leak check and sha256 of each output |
 | [marketing/site](./marketing/site) | Site presence: read a venture's website, judge which pages say what with Jev, and score how present its public records are, weighed by who the site must speak to now and  |
 | [skills/brand-pillar](./skills/brand-pillar) | Skill: Provide Brand pillar context: teams, roles, Tier 1 deliverables (identity, voice, asset library, foreshadowing invariants, version-identities), cross-pillar overlap zone |
+| [skills/pipeline-review](./skills/pipeline-review) | Skill: keep the sales pipeline true: MEDDIC qualification, stage evidence, leads with no reply, deals with no next step, and the win-loss reason of each closed deal |
 | [skills/publication-policy](./skills/publication-policy) | Skill: Help a venture decide where it publishes and who may publish what there: its channels (website, docs site, social, newsletter, app store, press, investor update, regulato |
 | [templates/marketing-brand.md](./templates/marketing-brand.md) | Template: brand |
 | [templates/public-assets.md](./templates/public-assets.md) | Template: public assets |

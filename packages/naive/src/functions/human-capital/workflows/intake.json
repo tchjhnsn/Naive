@@ -1,0 +1,76 @@
+{
+  "id": "intake",
+  "function": "human-capital",
+  "title": "Learn who works on the venture",
+  "trigger": {
+    "kind": "intake"
+  },
+  "reads": [
+    "venture",
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/ownership"
+  ],
+  "steps": [
+    {
+      "id": "read-what-exists",
+      "do": "Read the people, founder and team plan records, and list what is missing, most needed first."
+    },
+    {
+      "id": "ask-founders",
+      "do": "Ask who the founders are, what each one does and which functions each owns, and record them.",
+      "ask": true,
+      "writes": [
+        "people/founders/[id]",
+        "people"
+      ]
+    },
+    {
+      "id": "ask-others",
+      "do": "Ask who else works on the venture, as contractor, advisor or employee, and on what terms; any agreement or grant goes to the founder.",
+      "ask": true,
+      "writes": [
+        "people"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "ownership-or-control"
+      ]
+    },
+    {
+      "id": "draft-team-plan",
+      "do": "Draft the team plan: the roles the work needs, agent or person for each from the capability register, and the human loops.",
+      "skill": "team-design",
+      "writes": [
+        "people/team-plan"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "summarize",
+      "do": "Summarize for the strategy lead who does what, which roles are open, and why each is a person or an agent.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "roles-justified",
+      "kind": "review",
+      "check": "Does every person role in the team plan say why an agent cannot do the work, citing the capability register?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

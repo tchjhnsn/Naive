@@ -1,0 +1,71 @@
+{
+  "function": "human-capital",
+  "rows": [
+    {
+      "class": "domain-fact",
+      "level": "decide",
+      "examples": [
+        "Record that a contractor's engagement ends on 30 June",
+        "Record which functions a founder owns"
+      ]
+    },
+    {
+      "class": "ownership-or-control",
+      "level": "escalate",
+      "examples": [
+        "Admit a cofounder",
+        "Grant options to a first hire",
+        "Change a founder's vesting"
+      ]
+    },
+    {
+      "class": "legal-or-terms",
+      "level": "escalate",
+      "examples": [
+        "Sign a contractor agreement with IP assignment",
+        "Send an offer letter",
+        "Classify a contractor as an employee"
+      ]
+    },
+    {
+      "class": "spend-money",
+      "level": "escalate",
+      "examples": [
+        "Hire a contractor at an hourly rate",
+        "Pay for a recruiting tool"
+      ]
+    },
+    {
+      "class": "public-commitment",
+      "level": "escalate",
+      "examples": [
+        "Post a job opening",
+        "Announce a hire"
+      ]
+    },
+    {
+      "class": "strategy-or-constitution",
+      "level": "escalate",
+      "examples": [
+        "Open the venture's first person role",
+        "Change the founder operating model"
+      ]
+    },
+    {
+      "class": "irreversible-data-change",
+      "level": "escalate",
+      "examples": [
+        "Delete a candidate's records after a search"
+      ]
+    },
+    {
+      "class": "set-priorities",
+      "level": "recommend",
+      "approver": "strategy-lead",
+      "examples": [
+        "Which open role to fill first",
+        "Which agent role to add before a person role"
+      ]
+    }
+  ]
+}

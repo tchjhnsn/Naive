@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "function-decisions.schema.json",
+  "title": "Function decision matrix",
+  "description": "One function's decision matrix, at packages/naive/src/functions/<id>/decisions.json: for each decision class (packages/naive/template/governance/decision-rights.json) the function's work raises, whether its agent decides, recommends for an approver, or escalates to a person. It is the RACI/DACI view of the venture-wide decision rights for one function, and never loosens them: a class in delegation.json one_way_doors or never_redelegated is always escalate (packages/naive/src/checks/check-functions.ts). A venture tightens a row in its own governance, never here.",
+  "type": "object",
+  "required": ["function", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "function": { "type": "string", "pattern": "^[a-z][a-z-]*$" },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["class", "level", "examples"],
+        "additionalProperties": false,
+        "properties": {
+          "class": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A decision-rights.json class id." },
+          "level": { "enum": ["decide", "recommend", "escalate"], "description": "decide: the agent decides and records it. recommend: the agent proposes, the approver decides. escalate: a person decides; the agent prepares the decision with evidence." },
+          "approver": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "For recommend: the role that decides (a lead id, chief-of-staff or founder)." },
+          "examples": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "Concrete decisions of this class in this function, as the founder would say them." }
+        }
+      }
+    }
+  }
+}
