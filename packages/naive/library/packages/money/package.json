@@ -34,8 +34,8 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-data-packages.mjs",
-    "packages/naive/src/checks/lint-money.mjs"
+    "packages/naive/src/checks/check-data-packages.ts",
+    "packages/naive/src/checks/lint-money.ts"
   ],
   "skill": {
     "id": "money-function",

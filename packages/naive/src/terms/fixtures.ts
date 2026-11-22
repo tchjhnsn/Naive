@@ -18,7 +18,7 @@ function arrangement(parts: string[], dependsOn: [string, string][], byConcern: 
 const stack = (parts: string[]): [string, string][] => parts.slice(1).map((p, i) => [p, parts[i]]);
 
 /** The layers as built: one part per manifest, and a reader depends on the layer that owns a record type it
- *  reads (the rule packages/naive/src/checks/check-data-model.mjs uses for its layer relationships). */
+ *  reads (the rule packages/naive/src/checks/check-data-model.ts uses for its layer relationships). */
 function manifests(repo: string): Fixture<Arrangement> {
   const read = (f: string) => JSON.parse(readFileSync(join(repo, f), "utf8"));
   const model: { layers: string[]; records: { id: string; layer: string }[] } = recordsIn(repo).readDataModel();

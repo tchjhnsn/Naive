@@ -184,7 +184,7 @@ const lines = readFileSync(join(dir, "knowledge/freshness.jsonl"), "utf8").trim(
 let valid = true;
 for (const l of lines) { const t = join(ws, "line.json"); writeFileSync(t, l); if (spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "freshness-log.schema.json", "--file", t]).status !== 0) valid = false; }
 expect("every freshness log line matches its schema", valid && lines.length >= 8);
-const chain = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.mjs"), dir], { encoding: "utf8" });
+const chain = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.ts"), dir], { encoding: "utf8" });
 expect("every revalidate, verify and phase is in the provenance log, and the chain holds", chain.status === 0 && /every chain holds/.test(chain.stdout), chain.stderr);
 const report = spawnSync("node", [join(repo, "packages/naive/src/engine/freshness.mjs"), dir], { encoding: "utf8" });
 expect("node packages/naive/src/engine/freshness.mjs prints the report", report.status === 0 && /clinic \(validation\)/.test(report.stdout), report.stderr);

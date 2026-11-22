@@ -23,7 +23,7 @@ const expect = (name: string, ok: boolean, detail = "") => {
 const python = (file: string) => spawnSync(process.execPath, [join(root, "packages/naive/src/records/validate.mjs"), "--schema", "operating-rules.schema.json", "--file", file], { encoding: "utf8", cwd: root });
 type GateBody = { disposition?: { retries?: number; escalate_to?: string; retry_by?: string } };
 const gate = (file: string, fn: string, extra: string[] = []) => {
-  const ran = spawnSync(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", fn, ...extra], { encoding: "utf8", cwd: root });
+  const ran = spawnSync(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", fn, ...extra], { encoding: "utf8", cwd: root });
   let body: GateBody | null = null;
   try { body = JSON.parse(ran.stdout) as GateBody; } catch { body = null; }
   return { status: ran.status, stdout: ran.stdout, stderr: ran.stderr, body };

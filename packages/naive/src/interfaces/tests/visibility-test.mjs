@@ -1,13 +1,13 @@
 // Tests for field visibility beyond the leak canaries (packages/naive/src/functions/marketing-and-sales/marketing/leaks-test.mjs): only a person sets public,
 // an agent only proposes, the router's public reader sees only public fields, and the publish check
-// (packages/naive/src/checks/check-visibility.mjs) refuses a page that uses a fact no person approved.
+// (packages/naive/src/checks/check-visibility.ts) refuses a page that uses a fact no person approved.
 
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hash, variantOf, visibilityOf } from "../../engine/visibility.mjs";
-import { refusals } from "../../checks/check-visibility.mjs";
+import { refusals } from "../../checks/check-visibility.ts";
 import { context } from "../../engine/upgrades.mjs";
 import * as telosToGoals from "../../engine/migrations/telos-to-goals.mjs";
 

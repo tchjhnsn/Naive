@@ -106,11 +106,11 @@
     "handoff"
   ],
   "checks": [
-    "packages/naive/src/checks/check-governance.mjs",
+    "packages/naive/src/checks/check-governance.ts",
     "packages/naive/src/engine/payouts.mjs",
-    "packages/naive/src/checks/check-publication.mjs",
+    "packages/naive/src/checks/check-publication.ts",
     "packages/naive/src/engine/decisions.mjs",
-    "packages/naive/src/checks/check-delegation.mjs"
+    "packages/naive/src/checks/check-delegation.ts"
   ],
   "gaps": [
     "Escalations land in handoffs; nothing collects open escalations for the owner",

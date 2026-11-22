@@ -18,7 +18,7 @@ description: >
 
 # Equity and share classes
 
-Governance layer, ownership-and-control kit (EE-022). Keeps `ownership.json`. `check-governance.mjs` checks it; `node packages/naive/src/engine/payouts.mjs <venture>` shows what each class would get in a sale.
+Governance layer, ownership-and-control kit (EE-022). Keeps `ownership.json`. `check-governance.ts` checks it; `node packages/naive/src/engine/payouts.mjs <venture>` shows what each class would get in a sale.
 
 ## 1. The unit follows the legal form
 
@@ -27,7 +27,7 @@ Governance layer, ownership-and-control kit (EE-022). Keeps `ownership.json`. `c
 | none, sole proprietorship | none needed | One owner; no cap table |
 | partnership | percent | The partnership agreement sets the split |
 | LLC | units | Classes of units are possible; profits interests replace options |
-| S corporation | shares | **One class of stock only** (US tax rule; classes may differ in votes alone), at most 100 shareholders, no corporate or foreign shareholders. `check-governance.mjs` refuses a second class. Usually rules out venture capital |
+| S corporation | shares | **One class of stock only** (US tax rule; classes may differ in votes alone), at most 100 shareholders, no corporate or foreign shareholders. `check-governance.ts` refuses a second class. Usually rules out venture capital |
 | C corporation | shares | Any number of classes; the usual form for venture capital in the US |
 
 If the ambition is aggressive growth with outside investors, a C corporation is the common choice. Converting later is possible but costs money and can have tax effects; raise it early with counsel.

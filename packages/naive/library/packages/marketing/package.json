@@ -57,8 +57,8 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-brand.mjs",
-    "packages/naive/src/checks/check-assets.mjs",
+    "packages/naive/src/checks/check-brand.ts",
+    "packages/naive/src/checks/check-assets.ts",
     "packages/naive/src/engine/design-system.mjs"
   ],
   "skill": {

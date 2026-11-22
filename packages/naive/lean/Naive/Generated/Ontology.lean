@@ -209,11 +209,11 @@ def «teamPlan» : Concept Placement := ⟨[
 def «lead» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
-/-- [D] portfolio (proposed). The functions, ids in departments.json, whose cross-function work one lead plans and verifies. The leads' portfolios cover every function exactly once (check-delegation.mjs). Never a venture's set of products, whose places are portfolio roles. Standard: portfolio (PMI, The Standard for Portfolio Management): components managed together to meet strategic objectives. Fields: broader ["relationship"]; handoff_type false. -/
+/-- [D] portfolio (proposed). The functions, ids in departments.json, whose cross-function work one lead plans and verifies. The leads' portfolios cover every function exactly once (check-delegation.ts). Never a venture's set of products, whose places are portfolio roles. Standard: portfolio (PMI, The Standard for Portfolio Management): components managed together to meet strategic objectives. Fields: broader ["relationship"]; handoff_type false. -/
 def «portfolio» : Concept Placement := ⟨[
   ("level governance", fun f => Decidable.decide (f.level = Level.«governance»))]⟩
 
-/-- [D] lead plan (proposed). One lead's plan at operations/leads/<lead>.json (route operations/lead/[id]): its portfolio, the telos measures it is accountable for, its bets in priority order, each citing measure ids and handoff ids, and its review cadence. A lead with no plan binding a measure is refused by check-team.mjs. Standard: portfolio roadmap (PMI); objectives and key results (Doerr 2018) in spirit, with telos measures as the objectives. Fields: broader ["information artifact"]; handoff_type false. -/
+/-- [D] lead plan (proposed). One lead's plan at operations/leads/<lead>.json (route operations/lead/[id]): its portfolio, the telos measures it is accountable for, its bets in priority order, each citing measure ids and handoff ids, and its review cadence. A lead with no plan binding a measure is refused by check-team.ts. Standard: portfolio roadmap (PMI); objectives and key results (Doerr 2018) in spirit, with telos measures as the objectives. Fields: broader ["information artifact"]; handoff_type false. -/
 def «leadPlan» : Concept Placement := ⟨[
   ("level operations", fun f => Decidable.decide (f.level = Level.«operations»))]⟩
 

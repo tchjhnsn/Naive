@@ -1,10 +1,10 @@
 # Investors lint
 
-A TLA+ model of `packages/naive/src/checks/lint-investors.mjs` (route `investors/lint`). An investor update moves from draft to sent. The lint flags the update when a number is not confirmed. TLC found no path that reaches sent with an unconfirmed number and no finding.
+A TLA+ model of `packages/naive/src/checks/lint-investors.ts` (route `investors/lint`). An investor update moves from draft to sent. The lint flags the update when a number is not confirmed. TLC found no path that reaches sent with an unconfirmed number and no finding.
 
 The model is the behavior of one `lint()` run after each change. It is not a second copy of the matcher. What counts as a raise, a conflict, or a confirmed number is the code, replayed by `packages/naive/src/interfaces/tests/lint-investors-test.mjs`.
 
-Confirmed against `packages/naive/src/checks/lint-investors.mjs` at `ef26b886faf13a2a5c78e908c19dd5e589496e0c`. Move that commit forward only after checking that each action in `InvestorLint.tla` still matches `lint()`.
+Confirmed against `packages/naive/src/checks/lint-investors.ts` at `ef26b886faf13a2a5c78e908c19dd5e589496e0c`. Move that commit forward only after checking that each action in `InvestorLint.tla` still matches `lint()`.
 
 ## Regenerate
 
@@ -27,7 +27,7 @@ The view hides 16 steps. They are the violations that start from "Clean venture,
 
 ## What the model leaves out
 
-One violation is loaded at a time, and only one rule is fail-closed at a time. The code checks every record in a single run, and a config may close more than one rule. `records` is one file being missing or malformed, not a mix of good and bad files in one venture. The words that make terms conflict live in `packages/naive/src/checks/lint-investors.mjs`, not in the model.
+One violation is loaded at a time, and only one rule is fail-closed at a time. The code checks every record in a single run, and a config may close more than one rule. `records` is one file being missing or malformed, not a mix of good and bad files in one venture. The words that make terms conflict live in `packages/naive/src/checks/lint-investors.ts`, not in the model.
 
 ## Rules
 
@@ -42,8 +42,8 @@ One violation is loaded at a time, and only one rule is fail-closed at a time. T
 
 No invariant failed, so there was no counterexample to replay. The chart paths above were run on the CLI.
 
-`node packages/naive/src/checks/lint-investors.mjs` on `instance/ventures/everything-ecosystem`, `packages/naive/src/records/examples/workspace/ventures/northstar`, `acme-labs` and `tandem` exits 0 with no findings.
+`node packages/naive/src/checks/lint-investors.ts` on `instance/ventures/everything-ecosystem`, `packages/naive/src/records/examples/workspace/ventures/northstar`, `acme-labs` and `tandem` exits 0 with no findings.
 
 ## Real bug or model error
 
-A rule that breaks in TLC is a real bug only when its replay does the same thing on `node packages/naive/src/checks/lint-investors.mjs`. If the replay does not reproduce it, the model is wrong. Do not weaken an invariant to make it pass.
+A rule that breaks in TLC is a real bug only when its replay does the same thing on `node packages/naive/src/checks/lint-investors.ts`. If the replay does not reproduce it, the model is wrong. Do not weaken an invariant to make it pass.

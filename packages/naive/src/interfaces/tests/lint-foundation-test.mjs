@@ -17,7 +17,7 @@ const expect = (name, ok, detail = "") => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
 };
-const cli = (dir, ...args) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-foundation.mjs"), dir, ...args], { encoding: "utf8" });
+const cli = (dir, ...args) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-foundation.ts"), dir, ...args], { encoding: "utf8" });
 const jsonOf = (r) => { try { return JSON.parse(r.stdout); } catch { return null; } };
 const rulesOf = (r) => new Set((jsonOf(r)?.findings ?? []).map((f) => f.rule));
 
@@ -41,7 +41,7 @@ const icp = (jobs = ["decide the next step"], forms = ["next-step"], extra = {})
   venture: "fixture",
   profiles: [{ id: "early-founders", who: "People starting a company", short: "early founders", primary: true, jobs, problem_forms: forms, ...extra }],
 });
-const alignment = (check = "packages/naive/src/checks/check-nouns.mjs") => ({
+const alignment = (check = "packages/naive/src/checks/check-nouns.ts") => ({
   venture: "fixture",
   principles: [{ id: "sourced", statement: "Every default traces to a source", source: "EE-014", check }],
 });
@@ -132,7 +132,7 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   expect("malformed records are skipped and the run exits 0", malformed.status === 0 && jsonOf(malformed)?.findings?.length === 0, malformed.stdout + malformed.stderr);
   const holes = venture(cleanRecords());
   put(holes, "foundation/icp.json", icp());
-  put(holes, "foundation/alignment.json", { venture: "fixture", principles: [null, { id: "sourced", statement: "Every default traces to a source", source: "EE-014", check: "packages/naive/src/checks/check-nouns.mjs" }] });
+  put(holes, "foundation/alignment.json", { venture: "fixture", principles: [null, { id: "sourced", statement: "Every default traces to a source", source: "EE-014", check: "packages/naive/src/checks/check-nouns.ts" }] });
   put(holes, "foundation/problem.json", problem([
     null,
     { id: "next-step", statement: "Kept." },
@@ -203,7 +203,7 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
 
 // ---- Usage.
 {
-  const none = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-foundation.mjs")], { encoding: "utf8" });
+  const none = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-foundation.ts")], { encoding: "utf8" });
   expect("no venture dir exits 2", none.status === 2 && /usage:/.test(none.stderr), none.stderr);
   const missing = cli(join(root, "nope"));
   expect("a folder with no venture.json exits 2", missing.status === 2, missing.stderr);

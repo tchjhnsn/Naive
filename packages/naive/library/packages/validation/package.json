@@ -72,10 +72,10 @@
     "packages/naive/src/functions/strategy/kits/validation/templates/team.md"
   ],
   "checks": [
-    "packages/naive/src/checks/check-validation.mjs",
+    "packages/naive/src/checks/check-validation.ts",
     "packages/naive/src/engine/assess-problem.mjs",
     "packages/naive/src/engine/bdd.mjs",
-    "packages/naive/src/checks/lint-validation.mjs"
+    "packages/naive/src/checks/lint-validation.ts"
   ],
   "skill": {
     "id": "problem-validation",

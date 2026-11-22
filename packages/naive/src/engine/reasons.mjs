@@ -5,7 +5,7 @@
 // every cited local file, into that version's provenance. When a cited file later changes, the
 // decision is reported, "the reason you decided <id> changed: <ref>", and renders stale.
 //
-// The helpers; node packages/naive/src/checks/check-reasons.mjs is the check.
+// The helpers; node packages/naive/src/checks/check-reasons.ts is the check.
 
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";

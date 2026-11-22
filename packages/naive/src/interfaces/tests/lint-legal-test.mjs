@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { call, routes } from "../../router/router.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
-const bin = join(repo, "packages/naive/src/checks/lint-legal.mjs");
+const bin = join(repo, "packages/naive/src/checks/lint-legal.ts");
 let failed = 0;
 const expect = (name, ok, detail = "") => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
@@ -229,7 +229,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
 // The route is legal/lint, and it runs this script.
 {
   const hit = routes().find((r) => r.route === "legal/lint");
-  expect("legal/lint is a command route", hit?.kind === "command" && hit.script === "packages/naive/src/checks/lint-legal.mjs" && hit.actions.includes("run") && /not legal advice/.test(hit.note), hit);
+  expect("legal/lint is a command route", hit?.kind === "command" && hit.script === "packages/naive/src/checks/lint-legal.ts" && hit.actions.includes("run") && /not legal advice/.test(hit.note), hit);
 
   const ws = mkdtempSync(join(tmpdir(), "legal-lint-ws-"));
   const env = { ...process.env, MENTURA_WORKSPACE: ws };
@@ -250,7 +250,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
   const ws = mkdtempSync(join(tmpdir(), "legal-config-"));
   put(ws, "venture.json", JSON.stringify({ id: "acme", name: "Acme", phase: "discovery" }));
   put(ws, "naive.config.json", JSON.stringify({ legal_lint: { rules: { "unsourced-public-claim": { mode: "fail-closed" } } } }));
-  const r = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-config.mjs"), ws], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-config.ts"), ws], { encoding: "utf8" });
   expect("naive.config.json accepts legal_lint", r.status === 0, r.stdout + r.stderr);
   rmSync(ws, { recursive: true, force: true });
 }
