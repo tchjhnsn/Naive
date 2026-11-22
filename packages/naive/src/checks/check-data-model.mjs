@@ -42,7 +42,9 @@ const files = (dir) => readdirSync(join(root, dir), { withFileTypes: true }).fla
 // The files git would track (so build output and installed packages under .gitignore are left out); a
 // copy outside git, as the tests use, is walked instead.
 const tracked = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" });
-const all = tracked.status === 0 && tracked.stdout.trim() && !process.env.EE_ROOT ? tracked.stdout.trim().split("\n").filter((f) => existsSync(join(root, f))) : files(".").map((f) => relative(".", f));
+const trackedFiles = tracked.status === 0 && tracked.stdout.trim() && !process.env.EE_ROOT ? tracked.stdout.trim().split("\n").filter((f) => existsSync(join(root, f))) : files(".").map((f) => relative(".", f));
+// repos/ is vendored reference source (AGENTS.md, Vendored repositories), not Naive's files.
+const all = trackedFiles.filter((f) => !f.startsWith("repos/"));
 const matches = (g) => all.filter((f) => globRegExp(g).test(f));
 
 // Record types.
