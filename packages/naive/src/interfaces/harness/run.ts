@@ -37,6 +37,7 @@
 //    understanding of the ideas between the graph and the agent's first pass (Understand, EE-069).
 
 import { spawn, spawnSync } from "node:child_process";
+import type { Server } from "node:http";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
@@ -48,16 +49,30 @@ import { GRAPH, build as buildGraph, request as graphRequest } from "../../funct
 import { understood } from "../../functions/strategy/frameworks/idea-map/route.ts";
 import { createHash } from "node:crypto";
 import { agentFromEnv, record as prov } from "../../core/provenance.ts";
-import { evaluate } from "./evals.ts";
+import { evaluate, type Eval } from "./evals.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { HostedRefusal, isHosted } from "../../core/runtime.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
+
+/** A run in the trace (LangSmith's run shape): a step or a tool call, with its children. */
+type Run = { name: string, run_type: string, start: string, end?: string, inputs: unknown, outputs?: { report?: string, [k: string]: unknown }, children?: Run[], metadata?: Record<string, unknown>, error?: string, feedback?: Eval[] };
+/** One content block of the agent's stream-json output: a tool call or its result. */
+type Block = { type: string, name: string, id: string, input?: { route?: string, queries?: unknown, id?: string }, tool_use_id: string, content?: unknown, is_error?: boolean };
+/** The agent's final result event. */
+type Result = { type: "result", result: string, is_error?: boolean, total_cost_usd?: number, num_turns?: number, usage?: unknown };
+/** A docket decision and a listed decision: only the fields the harness reads. */
+type Action = { kind: string, command: string, confirm: string, route: string, statement: string };
+type DocketDecision = { id: string, question: string, value: number, dominant: boolean, why: string[], function: string, action?: Action };
+type Docket = { functions: { function: string, attention: unknown, decisions: DocketDecision[] }[] };
+type Listed = { id: string, question: string, answer?: string, why?: string[], action: Action, status?: string, source?: string, rank?: number | null, provenance?: { approved_by?: string, wording?: string } };
+/** The venture package as venture-package.mjs prints it: only the fields the harness reads. */
+type Pkg = { phase: string, progress: number, core: { id: string, in: string, title: string, state: string, progress: number, moving: unknown, missing: unknown }[], situation: { questions: { id: string, value: unknown }[] } };
 // The harness drives a local claude agent, the app's commands and a local board: a laptop tool.
 if (isHosted()) { console.error(new HostedRefusal("the discovery harness", "it runs the claude agent, NAIVE_*_CMD commands and git on this machine").message); process.exit(2); }
 const argv = process.argv.slice(2);
-const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-const flag = (n) => argv.includes(`--${n}`);
+const opt = (n: string): string | undefined => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+const flag = (n: string): boolean => argv.includes(`--${n}`);
 const phase = argv[0];
 const dumpFile = opt("dump");
 if (phase !== "discovery" || !dumpFile || !existsSync(dumpFile)) {
@@ -76,17 +91,18 @@ const research = Boolean(researchCmd);
 const moneyCmd = judgeCommand(process.env.NAIVE_MONEY_CMD);
 const traceCmd = judgeCommand(process.env.NAIVE_TRACE_CMD);
 /** Runs the app's judge on one request. */
-const judgeRun = (req) => spawnSync(judgeCmd[0], judgeCmd.slice(1), { input: JSON.stringify(req), encoding: "utf8", maxBuffer: 1 << 26 });
+const judgeRun = (req: unknown) => { if (!judgeCmd) throw new Error("no judge: set NAIVE_JUDGE_CMD"); return spawnSync(judgeCmd[0], judgeCmd.slice(1), { input: JSON.stringify(req), encoding: "utf8", maxBuffer: 1 << 26 }); };
 const t0 = Date.now();
-const laps = [];
-const lap = (what) => { const s = (Date.now() - t0) / 1000; laps.push({ at: s, what }); console.log(`\n[${s.toFixed(1)}s] ${what}`); };
-const cli = (...args) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+const laps: { at: number, what: string }[] = [];
+const lap = (what: string): void => { const s = (Date.now() - t0) / 1000; laps.push({ at: s, what }); console.log(`\n[${s.toFixed(1)}s] ${what}`); };
+const cli = (...args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
 
 // The venture, scaffolded by Naive, and the founder's dump, kept as they wrote it.
 if (!existsSync(join(dir, "venture.json"))) {
   const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", phase], { encoding: "utf8" });
   if (p.status !== 0) { console.error(p.stderr || p.stdout); process.exit(1); }
-  if (opt("name")) { const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")); v.name = opt("name"); writeFileSync(join(dir, "venture.json"), JSON.stringify(v, null, 2) + "\n"); }
+  const name = opt("name");
+  if (name) { const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")); v.name = name; writeFileSync(join(dir, "venture.json"), JSON.stringify(v, null, 2) + "\n"); }
 }
 mkdirSync(join(ventureFile(dir, "purpose/ideas")), { recursive: true });
 copyFileSync(dumpFile, ventureFile(dir, DUMP));
@@ -97,8 +113,9 @@ lap(`venture ${id} scaffolded in ${ws}; idea dump saved (${readFileSync(dumpFile
 // the money data package; transactions stay in a sensitive stream that neither the agent nor the trace sees.
 let money = null;
 if (opt("money") && !moneyCmd) console.log("   --money needs NAIVE_MONEY_CMD, the app's money sync; the run goes on without it");
-if (opt("money") && moneyCmd) {
-  const m = opt("money");
+const moneyArg = opt("money");
+if (moneyArg && moneyCmd) {
+  const m = moneyArg;
   const src = m === "live" ? ["--live"] : m === "sandbox" ? [] : ["--fixture", resolve(m)];
   const p = spawnSync(moneyCmd[0], [...moneyCmd.slice(1), "sync", "--venture", dir, ...src], { encoding: "utf8" });
   if (p.status === 0 && existsSync(join(ventureFile(dir, "money/_summary.json")))) {
@@ -108,56 +125,56 @@ if (opt("money") && moneyCmd) {
   } else console.log(`   money sync failed, so the run goes on without it: ${(p.stderr || p.stdout).trim().slice(0, 300)}`);
 }
 
-const servers = { naive: { command: "node", args: [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], env: { MENTURA_WORKSPACE: ws, MENTURA_PERSON: founder } } };
+const servers: Record<string, { command: string, args: string[], env?: Record<string, string> }> = { naive: { command: "node", args: [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], env: { MENTURA_WORKSPACE: ws, MENTURA_PERSON: founder } } };
 if (researchCmd) servers.research = { command: researchCmd[0], args: researchCmd.slice(1) };
 const mcp = join(ws, ".mcp-harness.json");
 writeFileSync(mcp, JSON.stringify({ mcpServers: servers }));
 
-let board = null;
+let board: Server | null = null;
 if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("../demo/board.ts")).serve(4331, id); console.log("Decision board: http://127.0.0.1:4331/   Idea map: http://127.0.0.1:4331/map"); }
 
 // The trace (EE-058): every step and every tool call the agent made, with timings, for an exporter such as LangSmith.
 const iso = () => new Date().toISOString();
-const trace = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, ideas: readFileSync(ventureFile(dir, DUMP), "utf8"), founder, phase }, children: [], metadata: {
+const trace: Run & { children: Run[] } = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, ideas: readFileSync(ventureFile(dir, DUMP), "utf8"), founder, phase }, children: [], metadata: {
   venture: id, venture_id: id, pipeline_step: phase, money: money?.source ?? null,
   // LangSmith groups a founder's runs into one thread by thread_id: one session per venture per day.
   thread_id: process.env.NAIVE_SESSION ?? `${id}-${new Date().toISOString().slice(0, 10)}`,
   harness_version: spawnSync("git", ["rev-parse", "--short", "HEAD"], { cwd: repo, encoding: "utf8" }).stdout.trim() || null,
 } };
-const researched = [];
+const researched: string[] = [];
 if (money) trace.children.push({ name: "money: sync", run_type: "tool", start: iso(), end: iso(), inputs: { source: money.source }, outputs: { summary: money } });
 
 // The agent runs headless and streams what it does; each tool call becomes a child run.
-async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", quiet = false } = {}) {
+async function agent(prompt: string, label: string, { tools = "mcp__naive__*,mcp__research__*", quiet = false }: { tools?: string | null, quiet?: boolean } = {}): Promise<string> {
   lap(`agent: ${label}`);
-  const node = { name: label, run_type: "chain", start: iso(), inputs: { prompt }, children: [] };
+  const node: Run & { children: Run[] } = { name: label, run_type: "chain", start: iso(), inputs: { prompt }, children: [] };
   trace.children.push(node);
   // No built-in tools (no shell, no file access): the agent works only through the MCP servers it is handed.
   const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--tools", "", ...(tools ? ["--mcp-config", mcp, "--strict-mcp-config", "--allowedTools", tools] : ["--strict-mcp-config"])];
   const child = spawn("claude", args, { stdio: ["ignore", "pipe", "inherit"], env: { ...process.env, MENTURA_WORKSPACE: ws } });
-  const open = new Map();
-  /** @type {*} */
-  let result = null;
+  const open = new Map<string, Run>();
+  // Assigned in the stream callback, so its type is declared here, not narrowed from null.
+  let result = null as Result | null;
   let buf = "";
-  child.stdout.on("data", (chunk) => {
+  child.stdout.on("data", (chunk: Buffer) => {
     buf += chunk;
     let nl;
     while ((nl = buf.indexOf("\n")) >= 0) {
       const line = buf.slice(0, nl); buf = buf.slice(nl + 1);
-      let ev; try { ev = JSON.parse(line); } catch { continue; }
+      let ev: { type?: string, message?: { content?: Block[] } }; try { ev = JSON.parse(line); } catch { continue; }
       for (const c of ev.message?.content ?? []) {
         if (c.type === "tool_use") {
-          const t = { name: c.name.replace(/^mcp__/, ""), run_type: "tool", start: iso(), inputs: c.input ?? {}, children: [] };
+          const t: Run = { name: c.name.replace(/^mcp__/, ""), run_type: "tool", start: iso(), inputs: c.input ?? {}, children: [] };
           open.set(c.id, t); node.children.push(t);
           if (!quiet) console.log(`   > ${t.name}${c.input?.route ? ` ${c.input.route}` : c.input?.queries ? ` ${JSON.stringify(c.input.queries)}` : c.input?.id ? ` ${c.input.id}` : ""}`);
         } else if (c.type === "tool_result" && open.has(c.tool_use_id)) {
-          const t = open.get(c.tool_use_id);
-          const text = Array.isArray(c.content) ? c.content.map((x) => x.text ?? "").join("") : String(c.content ?? "");
+          const t = open.get(c.tool_use_id) as Run;
+          const text = Array.isArray(c.content) ? c.content.map((x: { text?: string }) => x.text ?? "").join("") : String(c.content ?? "");
           Object.assign(t, { end: iso(), outputs: { result: text.slice(0, 20000) }, ...(c.is_error ? { error: text.slice(0, 2000) } : {}) });
           if (t.name.startsWith("research__")) for (const m of text.matchAll(/"url":\s*"([^"]+)"/g)) researched.push(m[1]);
         }
       }
-      if (ev.type === "result") result = ev;
+      if (ev.type === "result") result = ev as Result;
     }
   });
   const code = await new Promise((r) => child.on("close", r));
@@ -165,7 +182,7 @@ async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", 
     // Say why: the reason is in the agent's own result (an expired login, a refused tool), not in its exit code.
     const why = (result?.result ?? "").trim();
     node.error = `the agent stopped with status ${code}${why ? `: ${why}` : ""}${/log ?in|\/login|authenticat/i.test(why) ? " (run claude, then /login, and start again)" : ""}`;
-    console.error(node.error); finish(1); if (!board) process.exit(1); await new Promise(() => {});
+    console.error(node.error); finish(1); if (!board) process.exit(1); return await new Promise<never>(() => {});
   }
   Object.assign(node, { end: iso(), outputs: { report: result.result }, metadata: { cost_usd: result.total_cost_usd, turns: result.num_turns, usage: result.usage } });
   if (!quiet) console.log(result.result.trim().split("\n").map((l) => `   ${l}`).join("\n"));
@@ -173,14 +190,14 @@ async function agent(prompt, label, { tools = "mcp__naive__*,mcp__research__*", 
 }
 
 // The run's evals and trace: written beside the workspace, and shipped by NAIVE_TRACE_CMD when it is set.
-function finish(code = 0) {
+function finish(code: number = 0): void {
   trace.end = iso();
   const evals = existsSync(ventureFile(dir, DUMP)) ? evaluate(dir, { researched, settled }) : [];
   trace.feedback = evals;
   // What the run drafted, so a judge reading only the root run (LangSmith's online evaluators, Jev)
   // sees the problem record and the agent's reports beside the founder's dump in the inputs.
   const problem = join(ventureFile(dir, "purpose/validation/problem.json"));
-  const drafted = { problem: existsSync(problem) ? JSON.parse(readFileSync(problem, "utf8")) : null, reports: trace.children.filter((c) => c.outputs?.report).map((c) => ({ pass: c.name, report: c.outputs.report })) };
+  const drafted = { problem: existsSync(problem) ? JSON.parse(readFileSync(problem, "utf8")) : null, reports: trace.children.filter((c) => c.outputs?.report).map((c) => ({ pass: c.name, report: c.outputs?.report })) };
   trace.outputs = { settled, docket: { steps: docketSteps, now: compact(docket(dir)) }, drafted, evals: Object.fromEntries(evals.map((e) => [e.key, e.score])), laps };
   writeFileSync(join(ws, "trace.json"), JSON.stringify(trace, null, 2) + "\n");
   console.log(`\nEvals:\n${evals.map((e) => `   ${e.score === 1 ? "pass" : e.score === 0 ? "FAIL" : "part"}  ${e.key.padEnd(26)} ${e.score}  ${e.comment}`).join("\n")}`);
@@ -190,20 +207,19 @@ function finish(code = 0) {
   }
   // The board keeps serving the finished run, or the stopped one, so the founder can see where it got to.
   if (board) { console.log(`\nThe board keeps serving${code ? " what the run got to" : ""}: http://127.0.0.1:4331/ and /map. Ctrl-C to stop. Workspace: ${ws}`); return; }
-  board?.close();
   process.exit(code);
 }
-const settled = [];
-const docketSteps = [];
-const compact = (k) => ({ leading: k.functions[0]?.function ?? null, functions: k.functions.map((f) => ({ function: f.function, attention: f.attention,
+const settled: string[] = [];
+const docketSteps: Record<string, unknown>[] = [];
+const compact = (k: Docket) => ({ leading: k.functions[0]?.function ?? null, functions: k.functions.map((f) => ({ function: f.function, attention: f.attention,
   decisions: f.decisions.slice(0, 3).map((d) => ({ id: d.id, question: d.question, value: d.value, dominant: d.dominant, why: d.why })) })) });
 
 // 1. The idea map: Jev tags each idea with Naive's conventions; without Jev, the agent does, with the
 //    same vocabulary. Either way the ideas stay verbatim and unknown tags are dropped.
 const ideas = split(readFileSync(ventureFile(dir, DUMP), "utf8"));
 const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
-let tags, tagger;
-const mapNode = { name: "idea map", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
+let tags: unknown, tagger: string;
+const mapNode: Run = { name: "idea map", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
 if (jev) {
   const p = judgeRun(request(ideas, venture));
   if (p.status !== 0) { console.error(p.stderr); process.exit(1); }
@@ -214,7 +230,7 @@ if (jev) {
 } else {
   const text = await agent(`Tag each idea below with Naive's conventions. Answer with JSON only, no prose: {"<idea id>": {"departments": [...], "records": [...], "exists": true|false}}.
 departments (at most ${CONVENTIONS.max.departments}, the ones the idea is mainly about): ${JSON.stringify(CONVENTIONS.departments)}
-records (at most ${CONVENTIONS.max.records}, the ones it mainly feeds): ${JSON.stringify(Object.fromEntries(Object.entries(CONVENTIONS.records).map(([k, v]) => [k, v.about])))}
+records (at most ${CONVENTIONS.max.records}, the ones it mainly feeds): ${JSON.stringify(Object.fromEntries(Object.entries(CONVENTIONS.records as Record<string, { about: string }>).map(([k, v]) => [k, v.about])))}
 exists: true only if ${CONVENTIONS.exists}.
 Ideas: ${JSON.stringify(Object.fromEntries(ideas.map((i) => [i.id, i.section ? `[${i.section}] ${i.text}` : i.text])))}`, "tagging the ideas (no judge command)", { tools: null, quiet: true });
   tags = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
@@ -228,9 +244,9 @@ lap(`idea map: ${sum.ideas} ideas; ${Object.entries(sum.by_pillar).map(([k, v]) 
 
 // 1b. The idea graph: the map's structured form. Jev judges which ideas build on which; without Jev,
 //     Naive's record order does. Signal, lanes and layout follow in code.
-const graphNode = { name: "idea graph", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
+const graphNode: Run = { name: "idea graph", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
 const mapIdeas = parse(readFileSync(ventureFile(dir, MAP), "utf8")).ideas;
-let graphAnswers = null;
+let graphAnswers: Record<string, unknown> | null = null;
 if (jev) {
   const p = judgeRun(graphRequest(mapIdeas, venture));
   if (p.status === 0) { const out = JSON.parse(p.stdout); graphAnswers = out.answers; console.log(`   Jev answered ${Object.keys(out.answers).length} dependency and concreteness questions in ${out.ms} ms`); }
@@ -273,16 +289,17 @@ The founder has just submitted an idea dump. Naive mapped it onto its convention
 //    goes in the trace, so a judge can check that the ranking was the right next step.
 for (let n = 0; n < steps; n++) {
   const r = decisions(dir);
-  const k = docket(dir);
+  const listed: Listed[] = r.decisions;
+  const k: Docket = docket(dir);
   const pick = k.functions.flatMap((f) => f.decisions).find((d) => d.action && ["decide", "accept", "confirm"].includes(d.action.kind) && !settled.includes(d.id));
-  const next = pick && r.decisions.find((d) => d.id === pick.id);
+  const next = pick && listed.find((d) => d.id === pick.id);
   if (!next) break;
   next.why = pick.why;
   docketSteps.push({ step: n + 1, ...compact(k), chose: pick.id });
   trace.children.push({ name: `docket: step ${n + 1}`, run_type: "chain", start: iso(), end: iso(), inputs: { venture: id }, outputs: docketSteps.at(-1) });
   lap(`docket: ${k.functions.map((f) => `${f.function} ${f.attention}`).join(" · ")}; next ${pick.id} (${pick.function}, value ${pick.value}${pick.dominant ? ", outweighs every other function" : ""})`);
   console.log(`\nFOUNDER #${n + 1}: ${next.id}: ${next.question}\n         Why now: ${(next.why ?? []).join("; ")}${next.answer ? `\n         Proposed: ${next.answer}` : ""}\n         ${next.action.command.replace(/^mentura /, `MENTURA_WORKSPACE=${ws} node ${join(repo, "packages/naive/src/interfaces/cli/mentura.ts")} `)}`);
-  const before = JSON.stringify(r.decisions.find((d) => d.id === next.id));
+  const before = JSON.stringify(listed.find((d) => d.id === next.id));
   if (flag("yes")) {
     const a = next.action;
     const p = a.kind === "decide" ? cli("decide", next.id, "--venture", id, "--by", founder, ...(next.answer ? [] : ["--answer", "Not yet: it is still an idea"]), "--confirm", a.confirm)
@@ -290,10 +307,10 @@ for (let n = 0; n < steps; n++) {
     if (p.status !== 0) { console.error(`   could not settle ${next.id}: ${(p.stderr || p.stdout).trim()}`); settled.push(next.id); continue; }
   } else {
     lap(`waiting for the founder to settle ${next.id}`);
-    while (JSON.stringify(decisions(dir).decisions.find((d) => d.id === next.id)) === before) await new Promise((r) => setTimeout(r, 1000));
+    while (JSON.stringify((decisions(dir).decisions as Listed[]).find((d) => d.id === next.id)) === before) await new Promise((r) => setTimeout(r, 1000));
   }
   settled.push(next.id);
-  const now = decisions(dir).decisions.find((d) => d.id === next.id);
+  const now = (decisions(dir).decisions as Listed[]).find((d) => d.id === next.id);
   trace.children.push({ name: `founder: ${next.id}`, run_type: "chain", start: iso(), end: iso(), inputs: { question: next.question, why: next.why, proposed: next.answer ?? null, action: next.action.kind }, outputs: { status: now?.status, provenance: now?.provenance ?? null } });
   lap(`${next.id} settled${now?.provenance?.approved_by ? ` by ${now.provenance.approved_by} (${now.provenance.wording} the wording)` : ""}`);
 }
@@ -306,7 +323,7 @@ The founder settled: ${settled.join(", ")}. mentura_decisions shows what that un
 // 5. The venture package (EE-067, EE-069): the question matrix settles which packages are open (Jev
 //    answers what the records leave open), and the view shows each package's state, what moves now and
 //    what waits. The sitemap is a marketing record: it is planned only once the marketing package is open.
-let pkgArgs = [];
+let pkgArgs: string[] = [];
 if (jev) {
   const rq = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), "request", dir], { encoding: "utf8" });
   const q = rq.status === 0 ? JSON.parse(rq.stdout) : null;
@@ -316,18 +333,19 @@ if (jev) {
   }
 }
 let pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
-if (pk.status === 0 && JSON.parse(pk.stdout).core.some((x) => x.id === "marketing" && x.in === "now")) {
+if (pk.status === 0 && (JSON.parse(pk.stdout) as Pkg).core.some((x) => x.id === "marketing" && x.in === "now")) {
   const sp = spawnSync("node", [join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts"), dir, "--write"], { encoding: "utf8" });
   if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records: the marketing package is open" });
 }
 pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
 if (pk.status === 0) {
-  const r = JSON.parse(pk.stdout);
+  const r = JSON.parse(pk.stdout) as Pkg;
   const open = r.core.filter((x) => x.in === "now");
   trace.children.push({ name: "venture package", run_type: "tool", start: iso(), end: iso(), inputs: { phase: r.phase }, outputs: { progress: r.progress, open: open.map((x) => ({ id: x.id, state: x.state, progress: x.progress, moving: x.moving, missing: x.missing })), questions_open: r.situation.questions.filter((x) => x.value == null).map((x) => x.id) } });
   lap(`venture package: ${Math.round(r.progress * 100)}% across ${open.map((x) => `${x.title} (${x.state}, ${Math.round(x.progress * 100)}%)`).join(", ")}; next phase: ${r.core.filter((x) => x.in === "next").map((x) => x.title).join(", ") || "none"}; view in ${join(dir, "package")}`);
 } else console.log(`   the venture package failed: ${pk.stderr.trim().slice(0, 300)}`);
 
 const end = decisions(dir);
-lap(`done. ${end.decisions.filter((d) => d.source === "file").length} decision records, ${end.decisions.filter((d) => d.rank != null).length} ranked for the founder, ${settled.length} settled; workspace ${ws}`);
+const ended: Listed[] = end.decisions;
+lap(`done. ${ended.filter((d) => d.source === "file").length} decision records, ${ended.filter((d) => d.rank != null).length} ranked for the founder, ${settled.length} settled; workspace ${ws}`);
 finish(0);

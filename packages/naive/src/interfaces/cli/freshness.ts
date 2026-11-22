@@ -19,22 +19,24 @@ import { freeze, freshness, phase, revalidate, verify } from "../../engine/fresh
 
 export const COMMANDS = ["revalidate", "verify", "phase", "freshness"];
 
+/** What every freshness command returns: the fields this CLI prints. */
+type Reply = { ok: boolean, error?: string, suggest?: string[], or?: string, result?: unknown };
+
 /** Runs one freshness command. Returns the exit code. */
-export async function main(cmd, argv, workspace) {
-  const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-  const flag = (n) => argv.includes(`--${n}`);
+export async function main(cmd: string, argv: string[], workspace?: string): Promise<number> {
+  const opt = (n: string): string | undefined => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+  const flag = (n: string): boolean => argv.includes(`--${n}`);
   const target = argv[1] && !argv[1].startsWith("--") ? argv[1] : undefined;
   const venture = opt("venture");
   const dir = venture && ventureDir(venture, workspace);
-  const print = (x) => console.log(typeof x === "string" ? x : JSON.stringify(x, null, 2));
+  const print = (x: unknown): void => console.log(typeof x === "string" ? x : JSON.stringify(x, null, 2));
   if (!dir) { console.error(venture ? `no venture ${venture}` : `usage: mentura ${cmd} ${cmd === "freshness" ? "" : "<target> "}--venture <id>`); return venture ? 1 : 2; }
   const by = agentFromEnv(opt("as") === "person" ? "person" : "agent", "cli");
   const now = opt("now");
-  /** @type {{ ok: boolean, error?: string, suggest?: string[], or?: string, result?: * }} */
-  let r;
+  let r: Reply | undefined;
   if (cmd === "revalidate") {
     if (!target && !flag("pivot")) { console.error("usage: mentura revalidate <tag:route|path:folder|package:name|route> --venture <id>, or --pivot"); return 2; }
-    r = await revalidate(dir, flag("pivot") ? "pivot" : target, { reason: opt("reason"), by, now });
+    r = await revalidate(dir, target && !flag("pivot") ? target : "pivot", { reason: opt("reason"), by, now });
   } else if (cmd === "verify") {
     if (!target) { console.error("usage: mentura verify <route|folder> --venture <id>"); return 2; }
     r = verify(dir, target, { reason: opt("reason"), by, now });
@@ -45,17 +47,19 @@ export async function main(cmd, argv, workspace) {
     // Through the lifecycle gate (packages/naive/src/engine/lifecycle.ts), as naive phase does: exit criteria first.
     r = (await import("../../engine/lifecycle.ts")).advance(dir, target, { reason: opt("reason"), override: opt("override"), by, now });
   } else if (cmd === "freshness") {
-    if (opt("freeze")) r = await freeze(dir, resolve(opt("freeze")), { now });
-    else { const f = await /** @type {(dir: string, o: { now?: string }) => Promise<*>} */ (freshness)(dir, { now }); print(flag("json") ? f : [`${f.venture} (${f.phase}): ${f.summary.fresh} fresh, ${f.summary.stale} stale, ${f.summary.expired} expired, ${f.summary.holes} live ${f.summary.holes === 1 ? "hole" : "holes"}, of ${f.summary.records} records.`,
+    const out = opt("freeze");
+    if (out) r = await freeze(dir, resolve(out), { now });
+    else { const f = await freshness(dir, { now }); print(flag("json") ? f : [`${f.venture} (${f.phase}): ${f.summary.fresh} fresh, ${f.summary.stale} stale, ${f.summary.expired} expired, ${f.summary.holes} live ${f.summary.holes === 1 ? "hole" : "holes"}, of ${f.summary.records} records.`,
       ...f.items.filter((i) => i.state !== "fresh").map((i) => `  ${i.state.padEnd(7)} ${i.route}: ${i.reasons.map((x) => x.note).join("; ")}`),
       ...f.copies.filter((c) => c.state !== "fresh").map((c) => `  ${c.state.padEnd(7)} ${c.path} (copy of ${c.parent}): ${c.note}`),
       ...f.warnings.map((w) => `warning: ${w}`)].join("\n")); return 0; }
   }
+  if (!r) throw new Error(`not a freshness command: ${cmd}`);
   if (!r.ok) {
     console.error(r.error);
     if (r.suggest) console.error(`  ${r.suggest.join("\n  ")}\n  or, for the whole folder: mentura revalidate ${r.or} --venture ${venture}`);
     return 1;
   }
-  print(flag("json") ? r.result : r.result.note ?? r.result);
+  print(flag("json") ? r.result : (r.result as { note?: string }).note ?? r.result);
   return 0;
 }

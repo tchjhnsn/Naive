@@ -11,6 +11,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import type { Server } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
@@ -24,23 +25,25 @@ cpSync(join(repo, "packages/naive/src/records/examples/workspace"), ws, { recurs
 const venture = "tandem", dir = join(ws, "ventures", venture);
 const env = { ...process.env, MENTURA_WORKSPACE: ws };
 const board = process.argv.includes("--board");
-let boardServer = null;
+let boardServer: Server | null = null;
 if (board) { process.env.MENTURA_WORKSPACE = ws; boardServer = (await import("./board.ts")).serve(4331, venture); console.log("Decision board: http://127.0.0.1:4331/"); }
-const say = async (who, text) => {
+const say = async (who: string, text: string): Promise<void> => {
   if (board) await new Promise((r) => setTimeout(r, 2500));
   console.log(`\n${who === "agent" ? "AGENT  " : who === "naive" ? "NAIVE  " : "FOUNDER"} ${text}`);
 };
 
 // The agent's side: an MCP client over stdio.
 const server = spawn("node", [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], { env, stdio: ["pipe", "pipe", "inherit"] });
-const pending = new Map();
+/** A JSON-RPC reply from the MCP server: only the fields this demo reads. */
+type RpcReply = { id: number, result: { isError?: boolean, content: { text: string }[], tools: { name: string }[] } };
+const pending = new Map<number, (m: RpcReply) => void>();
 let next = 1;
-createInterface({ input: server.stdout }).on("line", (l) => { const m = JSON.parse(l); pending.get(m.id)?.(m); pending.delete(m.id); });
-const rpc = (method, params) => new Promise((res) => { const id = next++; pending.set(id, res); server.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n"); });
-const tool = async (name, args) => { const r = (await rpc("tools/call", { name, arguments: args })).result; return { error: r.isError, body: (() => { try { return JSON.parse(r.content[0].text); } catch { return r.content[0].text; } })() }; };
+createInterface({ input: server.stdout }).on("line", (l) => { const m = JSON.parse(l) as RpcReply; pending.get(m.id)?.(m); pending.delete(m.id); });
+const rpc = (method: string, params: unknown): Promise<RpcReply> => new Promise((res) => { const id = next++; pending.set(id, res); server.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n"); });
+const tool = async (name: string, args: unknown) => { const r = (await rpc("tools/call", { name, arguments: args })).result; return { error: r.isError, body: (() => { try { return JSON.parse(r.content[0].text); } catch { return r.content[0].text; } })() }; };
 
 let failed = false;
-const expect = (cond, what) => { if (!cond) { failed = true; console.error(`\nDEMO FAILED: ${what}`); } };
+const expect = (cond: unknown, what: string): void => { if (!cond) { failed = true; console.error(`\nDEMO FAILED: ${what}`); } };
 try {
   await rpc("initialize", { protocolVersion: "2025-06-18", clientInfo: { name: "demo-agent", version: "0.1" } });
   const tools = (await rpc("tools/list", {})).result.tools.map((t) => t.name);

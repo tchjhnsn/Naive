@@ -16,19 +16,19 @@ import { naiveScript } from "../../core/scripts.ts";
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "structure-checks-"));
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `\n      ${detail}`}`); if (!ok) failed++; };
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-const save = (f, x) => writeFileSync(f, JSON.stringify(x, null, 2) + "\n");
-const run = (script, dir) => spawnSync("node", [naiveScript(script), dir], { encoding: "utf8" });
-const copy = (ws, venture) => { const d = join(tmp, ws, "ventures", venture); cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures", venture), d, { recursive: true }); return d; };
-const migrate = (dir, m) => m.apply(dir, context(dir, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }));
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `\n      ${detail}`}`); if (!ok) failed++; };
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+const save = (f: string, x: unknown): void => writeFileSync(f, JSON.stringify(x, null, 2) + "\n");
+const run = (script: string, dir: string) => spawnSync("node", [naiveScript(script), dir], { encoding: "utf8" });
+const copy = (ws: string, venture: string): string => { const d = join(tmp, ws, "ventures", venture); cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures", venture), d, { recursive: true }); return d; };
+const migrate = (dir: string, m: { apply: (dir: string, ctx: ReturnType<typeof context>) => unknown }) => m.apply(dir, context(dir, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }));
 
 const tel = copy("telos", "tandem");
 migrate(tel, telosToGoals);
 const migrated = run("check-telos.ts", tel);
 expect("check-telos checks a migrated venture's canonical records", migrated.status === 0 && /^1 ventures with a telos/m.test(migrated.stdout), migrated.stdout + migrated.stderr);
 const ec = join(tel, "foundation/exit-criteria/validation.json");
-save(ec, { ...load(ec), criteria: load(ec).criteria.map((c, i) => i ? c : { ...c, serves: ["no-such-measure"] }) });
+save(ec, { ...load(ec), criteria: load(ec).criteria.map((c: object, i: number) => i ? c : { ...c, serves: ["no-such-measure"] }) });
 const broken = run("check-telos.ts", tel);
 expect("check-telos fails a migrated exit criterion that serves no known measure", broken.status === 1 && /validation\/\S+ serves unknown measure no-such-measure/.test(broken.stderr), broken.stdout + broken.stderr);
 
@@ -38,7 +38,7 @@ expect("the refused write leaves no second telos record", !existsSync(join(tel, 
 
 // Canonical records with no venture goal are no telos yet: the lifecycle gate asks for exit criteria in Discovery.
 const criteria = { phase: "discovery", criteria: [{ id: "problem-is-real", statement: "Ten people describe the problem unprompted", met: null }] };
-const withCriteria = (ws, phase) => {
+const withCriteria = (ws: string, phase: string): string => {
   const d = copy(ws, "tandem");
   rmSync(join(d, "purpose/telos.json"));
   save(join(d, "venture.json"), { ...load(join(d, "venture.json")), phase });
@@ -57,7 +57,7 @@ save(join(unmigrated, "foundation/exit-criteria/discovery.json"), criteria);
 const kept = run("check-telos.ts", unmigrated);
 expect("a valid unmigrated telos plus one canonical record still checks the telos", kept.status === 0 && /^1 ventures with a telos/m.test(kept.stdout), kept.stdout + kept.stderr);
 const tf = join(unmigrated, "purpose/telos.json");
-save(tf, { ...load(tf), measures: load(tf).measures.map((m) => ({ ...m, primary: false })) });
+save(tf, { ...load(tf), measures: load(tf).measures.map((m: object) => ({ ...m, primary: false })) });
 const keptBroken = run("check-telos.ts", unmigrated);
 expect("that unmigrated telos still fails its own rules", keptBroken.status === 1 && /purpose\/telos.json: exactly one measure is primary/.test(keptBroken.stderr), keptBroken.stdout + keptBroken.stderr);
 
@@ -93,7 +93,7 @@ const missing = run("check-departments.ts", dep);
 expect("check-departments still finds what is wrong in a structured venture", missing.status === 1 && /risk-and-compliance is listed but has no folder/.test(missing.stderr) && !/is not in venture.json departments/.test(missing.stderr), missing.stderr);
 
 const before = readdirSync(dep).sort().join();
-const add = (...args) => spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.ts"), dep, ...args], { encoding: "utf8" });
+const add = (...args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.ts"), dep, ...args], { encoding: "utf8" });
 const added = add("supply-chain"), grouped = add("assets", "--group");
 expect("add-department puts the folder in k-base/ on a structured venture and nothing at the top", added.status === 0 && existsSync(join(dep, "k-base/operations/departments/supply-chain/department.json")) && readdirSync(dep).sort().join() === before, added.stdout + added.stderr);
 expect("add-department --group does the same", grouped.status === 0 && existsSync(join(dep, "k-base/operations/departments/support/assets/department.json")) && readdirSync(dep).sort().join() === before, grouped.stdout + grouped.stderr);

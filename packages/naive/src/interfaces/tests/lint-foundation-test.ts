@@ -13,23 +13,26 @@ import { call } from "../../router/router.mjs";
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const root = mkdtempSync(join(tmpdir(), "lint-foundation-"));
 let failed = 0;
-const expect = (name, ok, detail = "") => {
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
 };
-const cli = (dir, ...args) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-foundation.ts"), dir, ...args], { encoding: "utf8" });
-const jsonOf = (r) => { try { return JSON.parse(r.stdout); } catch { return null; } };
-const rulesOf = (r) => new Set((jsonOf(r)?.findings ?? []).map((f) => f.rule));
+/** The lint's JSON report: only the fields this test reads. */
+type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string, severity?: string };
+type Report = { ok?: boolean, findings: Finding[], rules: { id: string, severity: string, mode: string }[] };
+const cli = (dir: string, ...args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-foundation.ts"), dir, ...args], { encoding: "utf8" });
+const jsonOf = (r: { stdout: string }): Report | null => { try { return JSON.parse(r.stdout) as Report; } catch { return null; } };
+const rulesOf = (r: { stdout: string }): Set<string> => new Set((jsonOf(r)?.findings ?? []).map((f) => f.rule));
 
 let n = 0;
-function venture(extra = {}) {
+function venture(extra: Record<string, unknown> = {}): string {
   const id = `v${n++}`;
   const dir = join(root, id);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id, name: "Fixture", parent: null, phase: "discovery", owner: "self", status: "active", profile: "profile.md", layers: {}, ...extra }, null, 2) + "\n");
   return dir;
 }
-const put = (dir, rel, body) => {
+const put = (dir: string, rel: string, body: unknown): void => {
   mkdirSync(join(dir, rel, ".."), { recursive: true });
   writeFileSync(join(dir, rel), typeof body === "string" ? body : JSON.stringify(body, null, 2) + "\n");
 };
@@ -37,16 +40,15 @@ const put = (dir, rel, body) => {
 const cleanRecords = () => ({
   core: { promise: "We help early founders decide the next step.", promised_to: "early founders", must_not: "Guess.", competence: "Records." },
 });
-const icp = (jobs = ["decide the next step"], forms = ["next-step"], extra = {}) => ({
+const icp = (jobs: string[] = ["decide the next step"], forms: string[] = ["next-step"], extra: Record<string, unknown> = {}) => ({
   venture: "fixture",
   profiles: [{ id: "early-founders", who: "People starting a company", short: "early founders", primary: true, jobs, problem_forms: forms, ...extra }],
 });
-const alignment = (check = "packages/naive/src/checks/check-nouns.ts") => ({
+const alignment = (check: string | null = "packages/naive/src/checks/check-nouns.ts") => ({
   venture: "fixture",
   principles: [{ id: "sourced", statement: "Every default traces to a source", source: "EE-014", check }],
 });
-/** @param {unknown[]} [forms] */
-const problem = (forms = [{ id: "next-step", statement: "The next step is unclear." }]) => ({
+const problem = (forms: unknown[] = [{ id: "next-step", statement: "The next step is unclear." }]) => ({
   venture: "fixture", statement: "The next step is unclear.", segment: "early founders", evidence: [], forms,
 });
 
@@ -58,7 +60,7 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   put(dir, "foundation/problem.json", problem());
   const r = cli(dir, "--json");
   const body = jsonOf(r);
-  expect("a clean venture exits 0 with no findings", r.status === 0 && body?.ok === true && body.findings.length === 0, r.stdout + r.stderr);
+  expect("a clean venture exits 0 with no findings", r.status === 0 && body?.ok === true && body?.findings.length === 0, r.stdout + r.stderr);
   const route = await call({ venture: dir.split("/").at(-1), workspace: root, route: "foundation/lint", action: "run" });
   expect("foundation/lint on a clean venture returns no findings", route.ok && route.result?.findings?.length === 0, JSON.stringify(route));
 }
@@ -79,13 +81,13 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   const body = jsonOf(r);
   const ids = [...rulesOf(r)].sort();
   expect("the fixture exits 0 while every rule fires", r.status === 0 && body?.ok === true && ids.join(",") === "alignment-no-check,icp-no-jobs,mission-names-no-icp,problem-form-no-icp", r.stdout);
-  const by = Object.fromEntries(body.findings.map((f) => [f.rule, f]));
+  const by = Object.fromEntries((body?.findings ?? []).map((f) => [f.rule, f]));
   expect("each finding names its file and the record that broke the rule",
     by["mission-names-no-icp"].file === "venture.json" && /ICP/.test(by["mission-names-no-icp"].message)
     && by["icp-no-jobs"].file === "foundation/icp.json" && /mentors/.test(by["icp-no-jobs"].message)
     && by["alignment-no-check"].file === "foundation/alignment.json" && /sourced/.test(by["alignment-no-check"].message)
     && by["problem-form-no-icp"].file === "foundation/problem.json" && /orphan/.test(by["problem-form-no-icp"].message)
-    && body.findings.every((f) => f.mode === "fail-open" && f.suggestion));
+    && body?.findings.every((f) => f.mode === "fail-open" && f.suggestion));
   const human = cli(dir);
   expect("a fail-open finding is a warning on the console", human.status === 0 && /WARN\s+\[icp-no-jobs\]/.test(human.stdout));
   put(dir, "naive.config.json", { foundation_lint: { rules: { "icp-no-jobs": { mode: "fail-closed" } } } });
@@ -93,8 +95,8 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   const mixedBody = jsonOf(mixed);
   expect("exit 1 when one of several findings is fail-closed, and the others stay warnings",
     mixed.status === 1 && mixedBody?.ok === false
-    && mixedBody.findings.some((f) => f.rule === "icp-no-jobs" && f.mode === "fail-closed")
-    && mixedBody.findings.filter((f) => f.rule !== "icp-no-jobs").every((f) => f.mode === "fail-open"),
+    && mixedBody?.findings.some((f) => f.rule === "icp-no-jobs" && f.mode === "fail-closed")
+    && mixedBody?.findings.filter((f) => f.rule !== "icp-no-jobs").every((f) => f.mode === "fail-open"),
     mixed.stdout);
 }
 
@@ -106,7 +108,7 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   put(dir, "foundation/problem.json", problem());
   put(dir, "naive.config.json", { foundation_lint: { rules: { "alignment-no-check": { mode: "fail-closed" } } } });
   const silent = cli(dir, "--json");
-  expect("a fail-closed rule with no finding still exits 0", silent.status === 0 && jsonOf(silent)?.findings?.length === 1 && jsonOf(silent).findings[0].rule === "mission-names-no-icp", silent.stdout);
+  expect("a fail-closed rule with no finding still exits 0", silent.status === 0 && jsonOf(silent)?.findings?.length === 1 && jsonOf(silent)?.findings[0].rule === "mission-names-no-icp", silent.stdout);
   put(dir, "naive.config.json", { foundation_lint: { rules: { "mission-names-no-icp": { mode: "fail-closed" } } } });
   const closed = cli(dir, "--json");
   const closedBody = jsonOf(closed);
@@ -182,7 +184,7 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   ]));
   const gone = cli(retired, "--json");
   const goneIds = [...rulesOf(gone)];
-  expect("a retired profile is not a current ICP", goneIds.length === 1 && goneIds[0] === "problem-form-no-icp" && /ghost/.test(jsonOf(gone).findings[0].message), gone.stdout);
+  expect("a retired profile is not a current ICP", goneIds.length === 1 && goneIds[0] === "problem-form-no-icp" && /ghost/.test(jsonOf(gone)?.findings[0].message ?? ""), gone.stdout);
 }
 
 // ---- Inputs come through ventureFile: a structured venture reads k-base/ and meta/.
@@ -197,7 +199,7 @@ const problem = (forms = [{ id: "next-step", statement: "The next step is unclea
   const r = cli(dir, "--json");
   const body = jsonOf(r);
   expect("a structured venture reads k-base and meta, not the flat decoy",
-    r.status === 1 && body?.findings?.length === 1 && body.findings[0].rule === "icp-no-jobs" && body.findings[0].file === "foundation/icp.json" && body.findings[0].mode === "fail-closed",
+    r.status === 1 && body?.findings?.length === 1 && body?.findings[0].rule === "icp-no-jobs" && body?.findings[0].file === "foundation/icp.json" && body?.findings[0].mode === "fail-closed",
     r.stdout);
 }
 

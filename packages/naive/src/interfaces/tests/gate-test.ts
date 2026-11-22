@@ -20,26 +20,26 @@ import { entries } from "../../core/provenance.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "gate-test-"));
-const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: ws });
+const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 delete env.MENTURA_ACTOR_ID;
 delete process.env.MENTURA_ACTOR_ID;
-const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
-const node = (script, ...a) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env });
-const json = (o) => JSON.stringify(o, null, 2) + "\n";
-const read = (f) => JSON.parse(readFileSync(f, "utf8"));
+const cli = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
+const node = (script: string, ...a: string[]) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env });
+const json = (o: unknown): string => JSON.stringify(o, null, 2) + "\n";
+const read = (f: string) => JSON.parse(readFileSync(f, "utf8"));
 
 // A venture to work in.
 const init = cli("init", join(ws, "ventures/gt"), "--id", "gt", "--layers", "purpose");
 expect("a venture to test in", init.status === 0, init.stderr);
 const dir = join(ws, "ventures/gt");
 const cfgFile = join(dir, "naive.config.json");
-const setConfig = (c) => writeFileSync(cfgFile, json(c));
-const write = (route, input, extra = {}) => call({ venture: "gt", route, action: "write", input, workspace: ws, ...extra });
-const solution = (statement) => ({ venture: "gt", statement, alternatives: ["a receptionist"], evidence: [] });
-const product = (id, name) => ({ id, name, description: `${name}, for testing the gate` });
-const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const setConfig = (c: unknown): void => writeFileSync(cfgFile, json(c));
+const write = (route: string, input: unknown, extra: Record<string, unknown> = {}) => call({ venture: "gt", route, action: "write", input, workspace: ws, ...extra });
+const solution = (statement: string) => ({ venture: "gt", statement, alternatives: ["a receptionist"], evidence: [] });
+const product = (id: string, name: string) => ({ id, name, description: `${name}, for testing the gate` });
+const validRecord = (file: string, schema: string) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 // P-2: naive.config.json overrides the defaults.
 {
@@ -126,9 +126,9 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
 
 // X-5: one gate per venture, with each package's rules imported from its package definition.
 {
-  const ids = packageRules(DEFAULTS).map((r) => `${r.package}:${r.id}`);
+  const ids = (packageRules(DEFAULTS) as { package: string, id: string }[]).map((r) => `${r.package}:${r.id}`);
   expect("X-5: the gate imports gate_rules from the package definitions", ids.includes("money:money-to-finance") && ids.includes("validation:validation-low-confidence"), ids.join(", "));
-  expect("X-5: naive.config.json can leave one package's rules out, or all of them", !packageRules({ gate: { packages: { money: false } } }).some((r) => r.package === "money") && packageRules({ gate: { packages: false } }).length === 0);
+  expect("X-5: naive.config.json can leave one package's rules out, or all of them", !(packageRules({ gate: { packages: { money: false } } }) as { package: string }[]).some((r) => r.package === "money") && packageRules({ gate: { packages: false } }).length === 0);
   const order = rulesFor({ gate: { fail_closed: ["validation"], rules: [{ id: "x", routes: ["product"], then: "draft" }] } }).map((r) => r.source);
   expect("X-5: one rule list per venture: fail_closed, then the config's rules, then the packages'", order[0] === "naive.config.json" && order[1] === "naive.config.json" && order.slice(2).every((s) => s.startsWith("package ")));
   const money = await write("money/checking", { id: "checking", name: "Checking" });
@@ -161,7 +161,7 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
   expect("X-2: a draft equal to one already held is that draft", again.result.variant === "b" && again.result.variants.length === 2);
   const dec = variantsDecision("product/lamp.json");
   expect("X-2: one open decision asks the founder which draft to accept, and matches its schema", existsSync(join(dir, dec.path)) && validRecord(join(dir, dec.path), "decision-record.schema.json").status === 0 && read(join(dir, dec.path)).options.length === 2);
-  const live = decisions(dir).decisions.find((d) => d.id === dec.id);
+  const live = (decisions(dir).decisions as { id: string, status: string }[]).find((d) => d.id === dec.id);
   expect("X-2: the decision is in the venture's decision matrix", live && live.status === "open", JSON.stringify(live));
   const noPick = cli("accept", "product/lamp", "--venture", "gt");
   expect("X-2: accepting without picking a draft is refused", noPick.status === 1 && /--pick/.test(noPick.stderr), noPick.stderr);
@@ -189,7 +189,7 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
   for (let i = 0; i < 2000; i++) v = evaluate({ config, dir, route: "validation/pricing", table: "validation/pricing", record: "validation-pricing", actor: "agent", confidence: 0.2 });
   const ms = performance.now() - t0;
   globalThis.fetch = realFetch;
-  expect("X-4: 2000 gate decisions take well under a second, with the network unavailable", ms < 1000 && v.then === "owner", `${ms.toFixed(0)} ms`);
+  expect("X-4: 2000 gate decisions take well under a second, with the network unavailable", ms < 1000 && v?.then === "owner", `${ms.toFixed(0)} ms`);
   const noScore = await write("validation/solution", solution("no score"));
   const low = await write("validation/solution", solution("low score"), { provenance: { confidence: 0.4 } });
   const high = await write("validation/solution", solution("high score"), { provenance: { confidence: 0.9 } });
@@ -236,7 +236,7 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
 // M-18: who is acting, and in which role, is carried with every action and re-checked when it changes.
 {
   const plan = join(dir, "people/team-plan.json");
-  const roles = (scoutWrite) => [
+  const roles = (scoutWrite: string[]) => [
     { id: "founder", name: "Founder", occupant: "person", needed_by: "discovery", status: "filled" },
     { id: "scout", name: "Scout", occupant: "agent", needed_by: "discovery", status: "filled", routes: { read: ["**"], write: scoutWrite } }];
   writeFileSync(plan, json({ venture: "gt", updated: "2026-10-29", roles: roles(["product/*"]) }));

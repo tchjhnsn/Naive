@@ -20,7 +20,7 @@ process.env.MENTURA_WORKSPACE = ws;
 process.env.NAIVE_SESSION_DIR = join(tmp, "sessions");
 delete process.env.MENTURA_SESSION; delete process.env.NAIVE_INSTRUMENT;
 const tandem = join(ws, "ventures/tandem");
-const config = (c) => writeFileSync(join(tandem, "naive.config.json"), JSON.stringify(c, null, 2));
+const config = (c: unknown) => writeFileSync(join(tandem, "naive.config.json"), JSON.stringify(c, null, 2));
 config({ instrumentation: { events: true } });
 
 const { call, judge } = await import("../router/router.mjs");
@@ -31,9 +31,15 @@ const { handle } = await import("./mcp/server.ts");
 const { propose, approve } = await import("../engine/decisions.ts");
 
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const nav = async (route, input = {}) => call({ venture: "tandem", route, action: "navigate", input });
-const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: { ...process.env } });
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+/** Prefetch entries, streamed parts, progress and MCP notifications: only the fields this test reads. */
+type Prefetched = { route: string, cost: number, why?: string, state?: string, title?: string, full?: { id?: string }, items?: unknown[], count?: number };
+type Part = { part: string, data: { state?: string, as_of?: string } };
+type Progress = { message: string, progress: number, total?: number };
+type Note = { method: string, params: { progressToken?: unknown, progress: number, message: string } };
+type ToolResult = { isError?: boolean, content: { text: string }[] };
+const nav = async (route: string, input: Record<string, unknown> = {}) => call({ venture: "tandem", route, action: "navigate", input });
+const cli = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: { ...process.env } });
 
 // The fixtures: a second product, part of the first and written by an agent; the first rewritten by a person (confirmed).
 const shop = JSON.parse(readFileSync(join(tandem, "products/shop-app.json"), "utf8"));
@@ -81,7 +87,7 @@ config({ instrumentation: { events: true } });
 
 // N-3, L-12: prefetch the refs, what it reads first, what waits on it and the next step.
 const lt = await nav("product/shop-lite");
-const pf = (r) => Object.fromEntries((r.result.prefetch?.entries ?? []).map((e) => [e.route, e]));
+const pf = (r: { result: { prefetch?: { entries?: Prefetched[] } } }) => Object.fromEntries((r.result.prefetch?.entries ?? []).map((e) => [e.route, e]));
 expect("L-12 a ref (part_of) is prefetched as its item route", pf(lt)["product/shop-app"]?.why === "ref part_of", JSON.stringify(lt.result.prefetch));
 const pr = pf(full);
 expect("N-3 prefetch includes what waits on the record (the after links) and the next step", pr["foundation/telos"]?.why === "waits on this" && pr["validation/solution"]?.why === "waits on this"
@@ -101,14 +107,14 @@ const big = await nav("product/shop-app", { prefetch: ["product"] });
 expect("N-12 a large collection asked for by route comes with its items", pf(big)["product"]?.items?.length === 2);
 const counted = await ctx.prefetch({ r: { kind: "record", record: "anatomy-answers", route: "product/anatomy-answers" }, record: null, template: null, venture: "tandem", dir: tandem, workspace: ws, set: { ...ctx.DEFAULTS, large_collection: 1 } });
 const named = await ctx.prefetch({ r: { kind: "record", record: "anatomy-answers", route: "product/anatomy-answers" }, record: null, template: null, venture: "tandem", dir: tandem, workspace: ws, task: "compare the products", set: { ...ctx.DEFAULTS, large_collection: 1 } });
-const prodOf = (p) => p.entries.find((e) => e.route === "product");
-expect("N-12 a collection over large_collection sends only its count", prodOf(counted)?.count === 2 && prodOf(counted).items === undefined, JSON.stringify(counted));
+const prodOf = (p: { entries: Prefetched[] }) => p.entries.find((e) => e.route === "product");
+expect("N-12 a collection over large_collection sends only its count", prodOf(counted)?.count === 2 && prodOf(counted)?.items === undefined, JSON.stringify(counted));
 expect("N-12 the same collection comes with its items when the task names it", prodOf(named)?.items?.length === 2, JSON.stringify(named));
 
 // C-16: each prefetch costs tokens from its budget.
 config({ instrumentation: { events: true }, context: { prefetch_budget: 25 } });
 const tight = await nav("purpose/validation/problem");
-expect("C-16 prefetch stays within its budget, every entry priced, the rest dropped", tight.result.prefetch.spent <= 25 && tight.result.prefetch.entries.every((e) => e.cost > 0) && tight.result.prefetch.dropped?.length > 0, JSON.stringify(tight.result.prefetch));
+expect("C-16 prefetch stays within its budget, every entry priced, the rest dropped", tight.result.prefetch.spent <= 25 && tight.result.prefetch.entries.every((e: Prefetched) => e.cost > 0) && tight.result.prefetch.dropped?.length > 0, JSON.stringify(tight.result.prefetch));
 
 // N-13: a context budget per route, measured like bundle size.
 config({ instrumentation: { events: true }, context: { routes: { "foundation/**": 300 } } });
@@ -118,7 +124,7 @@ expect("N-13 over budget, prefetch is given back first", over.result.prefetch.en
 const report = spawnSync("node", [join(repo, "packages/naive/src/router/context.mjs"), tandem, "budget", "--check", "--json"], { encoding: "utf8" });
 const rep = JSON.parse(report.stdout);
 expect("N-13 the budget report lists every route, flags the ones over, and --check exits 1", report.status === 1 && rep.over.includes("foundation/problem") && rep.routes.length > 20
-  && rep.routes.find((x) => x.route === "foundation/problem").advice, report.stderr);
+  && rep.routes.find((x: { route: string }) => x.route === "foundation/problem").advice, report.stderr);
 config({ instrumentation: { events: true } });
 const viaRoute = await call({ venture: "tandem", route: "system/context", action: "run" });
 expect("N-13 the report is the route system/context", viaRoute.ok && viaRoute.result.routes.length > 20 && viaRoute.result.over.length === 0, viaRoute.error);
@@ -136,29 +142,29 @@ expect("F-6 the report flags a computed value written into a layout", rules.some
 writeFileSync(join(tandem, "AGENTS.md"), "# Tandem\n\nvoice: plain\n");
 
 // N-9: a computed route answers at once with its state, then the result.
-const parts = [];
-const nn1 = await nav("system/need-now", { onPart: (p) => parts.push(p.part) });
+const parts: string[] = [];
+const nn1 = await nav("system/need-now", { onPart: (p: Part) => parts.push(p.part) });
 expect("N-9 a computed route sends its header (state computing) before its result", nn1.ok && parts[0] === "header" && parts.indexOf("result") > 0 && nn1.result.header.state === "computed" && nn1.result.result.rows?.length > 0, JSON.stringify(parts));
-const parts2 = [];
-const nn2 = await nav("system/need-now", { onPart: (p) => parts2.push(p) });
+const parts2: Part[] = [];
+const nn2 = await nav("system/need-now", { onPart: (p: Part) => parts2.push(p) });
 expect("N-9 the next time, the last result comes at once, marked with its time, before the new one", parts2[0].data.state === "computing" && parts2[1].part === "stale_result" && parts2[1].data.as_of && nn2.result.header.last_at, JSON.stringify(parts2.map((p) => p.part)));
 
 // N-5: long runs and batches report progress; the MCP server sends it as notifications.
-const prog = [];
-const streamed = await ctx.runStreaming({ venture: "tandem", route: "system/need-now", workspace: ws }, (p) => prog.push(p), 20);
-expect("N-5 a long run reports progress while it runs, then its result", streamed.ok && streamed.result.rows?.length > 0 && prog.length >= 3 && /^started/.test(prog[0].message) && /^finished/.test(prog.at(-1).message), JSON.stringify(prog.slice(0, 3)));
-const bprog = [];
-const b = await ctx.batch({ venture: "tandem", calls: [{ route: "purpose/telos", action: "read" }, { route: "product", action: "read" }, { route: "system/time-to-ready", action: "run" }] }, (p) => bprog.push(p));
+const prog: Progress[] = [];
+const streamed = await ctx.runStreaming({ venture: "tandem", route: "system/need-now", workspace: ws }, (p) => { prog.push(p); }, 20);
+expect("N-5 a long run reports progress while it runs, then its result", streamed.ok && streamed.result.rows?.length > 0 && prog.length >= 3 && /^started/.test(prog[0].message) && /^finished/.test(prog.at(-1)?.message ?? ""), JSON.stringify(prog.slice(0, 3)));
+const bprog: Progress[] = [];
+const b = await ctx.batch({ venture: "tandem", calls: [{ route: "purpose/telos", action: "read" }, { route: "product", action: "read" }, { route: "system/time-to-ready", action: "run" }] }, (p) => { bprog.push(p); });
 expect("N-5 a batch reports each call as it finishes", b.ok && bprog.map((p) => `${p.progress}/${p.total}`).join(" ") === "1/3 2/3 3/3");
-const notes = [];
-const mr = await handle({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "mentura_run", arguments: { venture: "tandem", route: "system/need-now" }, _meta: { progressToken: "p1" } } }, (n) => notes.push(n));
-expect("N-5 MCP sends progress notifications for a run that carries a progress token", !mr.result.isError && notes.length >= 2 && notes.every((n) => n.method === "notifications/progress" && n.params.progressToken === "p1")
+const notes: Note[] = [];
+const mr = await handle({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "mentura_run", arguments: { venture: "tandem", route: "system/need-now" }, _meta: { progressToken: "p1" } } }, (n) => notes.push(n as Note));
+expect("N-5 MCP sends progress notifications for a run that carries a progress token", !(mr?.result as ToolResult).isError && notes.length >= 2 && notes.every((n) => n.method === "notifications/progress" && n.params.progressToken === "p1")
   && notes.every((n, i) => i === 0 || n.params.progress > notes[i - 1].params.progress));
-const rnotes = [];
-const rr = await handle({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "mentura_read", arguments: { venture: "tandem", route: "purpose/validation/problem", session: "mcp" }, _meta: { progressToken: 7 } } }, (n) => rnotes.push(n));
-expect("N-5 an MCP read streams its parts, header first", /^header: /.test(rnotes[0]?.params.message) && JSON.parse(rr.result.content[0].text).header.record === "validation-problem");
+const rnotes: Note[] = [];
+const rr = await handle({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "mentura_read", arguments: { venture: "tandem", route: "purpose/validation/problem", session: "mcp" }, _meta: { progressToken: 7 } } }, (n) => rnotes.push(n as Note));
+expect("N-5 an MCP read streams its parts, header first", /^header: /.test(rnotes[0]?.params.message) && JSON.parse((rr?.result as ToolResult).content[0].text).header.record === "validation-problem");
 const hr = await handle({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "mentura_read", arguments: { venture: "tandem", route: "purpose/validation/problem", header_only: true } } });
-expect("O-4 an MCP agent can ask for the header only", JSON.stringify(Object.keys(JSON.parse(hr.result.content[0].text))) === JSON.stringify(["header", "budget"]));
+expect("O-4 an MCP agent can ask for the header only", JSON.stringify(Object.keys(JSON.parse((hr?.result as ToolResult).content[0].text))) === JSON.stringify(["header", "budget"]));
 
 // The CLI: head, navigate with --stream (NDJSON parts, header first), and batch.
 const ch = cli("purpose/validation/problem", "head", "--venture", "tandem");
@@ -171,8 +177,8 @@ const cb = cli("batch", "--venture", "tandem", "--input", join(tmp, "calls.json"
 expect("CLI batch --stream prints progress then the results", cb.status === 0 && JSON.parse(cb.stdout.split("\n")[0]).progress.total === 2, cb.stderr);
 
 // F-4 and P-4: instrumentation.
-const seen = [];
-const off1 = register((e) => seen.push(e));
+const seen: { kind: string }[] = [];
+const off1 = register((e: { kind: string }) => seen.push(e));
 await call({ venture: "tandem", route: "purpose/telos", action: "read" });
 judge(0.4, 0.7, "founder", { dir: tandem, question: "is the problem real?", model: "stand-in" });
 off1();
@@ -198,9 +204,9 @@ config({ instrumentation: { events: true } });
 const v = vitals(tandem);
 const s1 = v.tasks.find((t) => t.session === "s1");
 expect("N-6 vitals count calls per task and tokens per call", s1 && s1.calls >= 4 && s1.tokens_per_call > 0 && s1.max_tokens >= s1.tokens_per_call, JSON.stringify(s1));
-expect("N-6 vitals measure time to a useful answer", typeof s1.time_to_useful_ms === "number" && s1.time_to_useful_ms >= 0);
+expect("N-6 vitals measure time to a useful answer", typeof s1?.time_to_useful_ms === "number" && s1.time_to_useful_ms >= 0);
 expect("N-6 vitals measure time from a decision opening to a person deciding it", v.decisions.some((d) => d.id === "pricing-tier" && !d.open && d.hours >= 0) && v.vitals.decision_hours.n >= 1);
-expect("N-6 each vital is assessed at p75 against its threshold", ["calls_per_task", "tokens_per_call", "time_to_useful_ms", "decision_hours"].every((k) => v.vitals[k].threshold > 0 && "p75" in v.vitals[k] && v.vitals[k].status));
+expect("N-6 each vital is assessed at p75 against its threshold", ["calls_per_task", "tokens_per_call", "time_to_useful_ms", "decision_hours"].every((k) => { const vital = (v.vitals as Record<string, { threshold: number, status?: string }>)[k]; return vital.threshold > 0 && "p75" in vital && vital.status; }));
 
 // C-15: vitals are checked, not only measured.
 const good = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.mjs"), tandem, "--check"], { encoding: "utf8" });
@@ -217,7 +223,7 @@ config({ instrumentation: { events: true } });
 const tr = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.mjs"), tandem, "--trace", "--session", "s1"], { encoding: "utf8" });
 writeFileSync(join(tmp, "trace.json"), tr.stdout);
 const trace = JSON.parse(tr.stdout);
-expect("P-4 the trace has a run per call, nested calls under their parent, and the vitals as feedback", trace.children.length === s1.calls && trace.feedback.length >= 3);
+expect("P-4 the trace has a run per call, nested calls under their parent, and the vitals as feedback", trace.children.length === s1?.calls && trace.feedback.length >= 3);
 expect("nothing was written into the repository", !existsSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem/.naive")) && !existsSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem/naive.config.json")));
 
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }

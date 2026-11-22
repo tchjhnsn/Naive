@@ -80,9 +80,9 @@
 //
 // --venture <dir> names the venture when you are not inside it.
 
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
-import { createServer } from "node:net";
+import { createServer, type AddressInfo } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.ts";
 import { logical } from "../../core/venture-paths.ts";
@@ -91,11 +91,12 @@ import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/wor
 import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
+import type { VentureRole, VentureTypes } from "../../records/types/records.d.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
-const opt = (n) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
-const run = (script, args, opts = {}) => spawnSync("node", [join(repo, script), ...args], { stdio: "inherit", ...opts }).status ?? 1;
+const opt = (n: string): string | undefined => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
+const run = (script: string, args: string[], opts: SpawnSyncOptions = {}): number => spawnSync("node", [join(repo, script), ...args], { stdio: "inherit", ...opts }).status ?? 1;
 const version = () => JSON.parse(readFileSync(join(repo, "package.json"), "utf8")).version;
 
 // The venture: --venture <dir>, else the one this command runs inside.
@@ -110,15 +111,15 @@ function here() {
 }
 
 // A port that is free, starting at the one asked for, the way next dev moves on from 3000.
-const free = (p) => new Promise((ok) => { const s = createServer().once("error", () => ok(free(p + 1))).once("listening", () => { const bound = /** @type {import("node:net").AddressInfo} */ (s.address()).port; s.close(() => ok(bound)); }).listen(p, "127.0.0.1"); });
+const free = (p: number): Promise<number> => new Promise((ok) => { const s = createServer().once("error", () => ok(free(p + 1))).once("listening", () => { const bound = (s.address() as AddressInfo).port; s.close(() => ok(bound)); }).listen(p, "127.0.0.1"); });
 
 // The schema a venture file is checked against, from the route table (records only).
-async function schemaFor(file) {
+async function schemaFor(file: string): Promise<string | null> {
   const { glob, routes } = await import("../../router/router.mjs");
-  return routes().find((r) => r.kind === "record" && r.schema && (r.files ?? []).some((g) => glob(g).test(file)))?.schema ?? null;
+  return routes().find((r: { kind: string, schema?: string, files?: string[] }) => r.kind === "record" && r.schema && (r.files ?? []).some((g) => glob(g).test(file)))?.schema ?? null;
 }
 
-async function dev(dir) {
+async function dev(dir: string): Promise<void> {
   // The root layout is required (I-21): a venture without AGENTS.md gets a stub, as next dev writes a root layout.
   if (!existsSync(join(dir, "AGENTS.md"))) {
     writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${basename(dir)}\n\nThe map of this venture for agents. Read it, then a route's layout, before writing anything here.\n\n## Instructions\n\nphase: ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase}\nprivate: _private/\n`);
@@ -136,14 +137,14 @@ async function dev(dir) {
   const { createServer: http, request } = await import("node:http");
   http(async (req, res) => {
     if (await handle(req, res, dir)) return;
-    const up = request({ host: "127.0.0.1", port: boardPort, path: req.url, method: req.method, headers: req.headers }, (r) => { res.writeHead(r.statusCode, r.headers); r.pipe(res); });
+    const up = request({ host: "127.0.0.1", port: boardPort, path: req.url, method: req.method, headers: req.headers }, (r) => { res.writeHead(r.statusCode ?? 502, r.headers); r.pipe(res); });
     up.on("error", (e) => { res.writeHead(502); res.end(String(e.message)); });
     req.pipe(up);
   }).listen(port, "127.0.0.1");
   const name = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).name ?? venture;
   console.log(`\n  ▲ Naive ${version()}\n  - Venture:  ${name} (${relative(process.cwd(), dir) || "."})\n  - Setup:    http://127.0.0.1:${port}/setup\n  - Board:    http://127.0.0.1:${port}/\n  - Map:      http://127.0.0.1:${port}/map\n\n  Watching for changes. Each saved record is checked against its schema. Ctrl-C to stop.\n`);
   // Live feedback on save (I-24): a record that no longer matches its schema says so at once.
-  const pending = new Map();
+  const pending = new Map<string, NodeJS.Timeout>();
   watch(dir, { recursive: true }, (_, raw) => {
     if (!raw || !raw.endsWith(".json") || raw.startsWith("node_modules") || raw.startsWith(".naive")) return;
     // The record's logical path (packages/naive/src/core/venture-paths.ts): knowledge/foundation/icp.json is foundation/icp.json.
@@ -165,7 +166,7 @@ async function dev(dir) {
 
 // The checks that read a workspace, run on this venture: it and the ventures nested in it, not its neighbours.
 const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used", "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
-function check(dir) {
+function check(dir: string): number {
   let failed = 0;
   for (const c of CHECKS) {
     const r = spawnSync("node", [naiveScript(c), dir], { encoding: "utf8" });
@@ -181,15 +182,16 @@ function check(dir) {
   return failed ? 1 : 0;
 }
 
-function info(dir) {
+function info(dir: string | null): void {
   const v = dir && JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
   // Supported agents (I-6): the MCP clients Naive is tested with, and whether this venture is connected to each.
-  /** @type {[string, string, (j: *) => *][]} */
-  const agents = [
+  /** An MCP client config file: only the servers it names. */
+  type McpConfig = { mcpServers?: Record<string, unknown> } | null;
+  const agents: [string, string, (j: McpConfig) => unknown][] = [
     ["Claude Code", ".mcp.json", (j) => j?.mcpServers?.naive || j?.mcpServers?.mentura],
     ["Cursor", ".cursor/mcp.json", (j) => j?.mcpServers?.naive || j?.mcpServers?.mentura],
   ];
-  const read = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
+  const read = (f: string): McpConfig => { try { return JSON.parse(readFileSync(f, "utf8")) as McpConfig; } catch { return null; } };
   const lines = [
     `Naive        ${version()} (${repo.replace(/\/$/, "")})`,
     `Node         ${process.version}`,
@@ -200,7 +202,7 @@ function info(dir) {
   console.log(lines.join("\n"));
 }
 
-function upgradeFramework(dir) {
+function upgradeFramework(dir: string): number {
   const pkg = join(dir, "package.json");
   const deps = existsSync(pkg) ? { ...JSON.parse(readFileSync(pkg, "utf8")).devDependencies, ...JSON.parse(readFileSync(pkg, "utf8")).dependencies } : {};
   const name = Object.keys(deps).find((d) => d === "naive-framework");
@@ -230,8 +232,8 @@ else if (cmd === "check") process.exit(check(here()));
 else if (cmd === "types") {
   // What create-venture can make, for an agent to offer the founder: each type with its roles, by name.
   const { roles, types } = await import("../../engine/venture-type.ts");
-  const R = new Map(roles().map((r) => [r.id, r.name]));
-  console.log(JSON.stringify(types().map((t) => ({ id: t.id, label: t.label, description: t.description, examples: t.examples, roles: t.roles.map((r) => ({ id: r, name: R.get(r) })), default_role: t.default_role, first_decisions: t.decisions })), null, 2));
+  const R = new Map((roles() as VentureRole["roles"]).map((r) => [r.id, r.name]));
+  console.log(JSON.stringify((types() as VentureTypes["types"]).map((t) => ({ id: t.id, label: t.label, description: t.description, examples: t.examples, roles: t.roles.map((r) => ({ id: r, name: R.get(r) })), default_role: t.default_role, first_decisions: t.decisions })), null, 2));
 }
 else if (cmd === "mcp") {
   // The MCP server, on the venture this runs in: `claude mcp add naive -- npx naive mcp`. Outside a
@@ -242,7 +244,7 @@ else if (cmd === "mcp") {
   if (!env.MENTURA_WORKSPACE) env.MENTURA_WORKSPACE = at ? asRouted(at).workspace : process.cwd();
   process.exit(spawnSync("node", [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], { stdio: "inherit", env }).status ?? 1);
 }
-else if (cmd === "info") info(findVenture() ?? (opt("venture") && existsSync(join(resolve(opt("venture")), "venture.json")) ? resolve(opt("venture")) : null));
+else if (cmd === "info") { const named = opt("venture"); info(findVenture() ?? (named && existsSync(join(resolve(named), "venture.json")) ? resolve(named) : null)); }
 else if (cmd === "build" || cmd === "start") {
   // The release itself is written and served by packages/naive/src/router/orchestration/build-release.mjs and packages/naive/src/engine/start-release.ts.
   const script = cmd === "build" ? "packages/naive/src/router/orchestration/build-release.mjs" : "packages/naive/src/engine/start-release.ts";
@@ -254,13 +256,13 @@ else if (cmd === "build" || cmd === "start") {
   if (dir && rest.includes("--framework") && upgradeFramework(dir) !== 0) process.exit(1);
   // --layout src (EE-118 step 8) or structured (EE-086): move a venture onto that layout. No logical path changes,
   // so routes, citations and the provenance log read the same; --check says what would move.
-  const LAYOUTS = { src: ["../../engine/migrations/src-layout.ts", "src/<function>/ beside public/ (EE-118 step 8)"], structured: ["../../engine/migrations/structured-layout.ts", "k-base/ and meta/ (EE-086)"] };
-  if (dir && opt("layout")) {
-    const layout = opt("layout");
+  const LAYOUTS: Record<string, [string, string]> = { src: ["src-layout", "src/<function>/ beside public/ (EE-118 step 8)"], structured: ["structured-layout", "k-base/ and meta/ (EE-086)"] };
+  const layout = opt("layout");
+  if (dir && layout) {
     if (!LAYOUTS[layout]) { console.error(`unknown layout ${layout}: src or structured`); process.exit(2); }
-    const { apply } = await import(LAYOUTS[layout][0]);
-    const dry = rest.includes("--check"), notes = [], escalated = [];
-    apply(dir, { dry, note: (m) => notes.push(m), escalate: (m) => escalated.push(m) });
+    const { apply } = await import(`../../engine/migrations/${LAYOUTS[layout][0]}.mjs`);
+    const dry = rest.includes("--check"), notes: string[] = [], escalated: string[] = [];
+    apply(dir, { dry, note: (m: string) => notes.push(m), escalate: (m: string) => escalated.push(m) });
     if (!notes.length && !escalated.length) console.log(`this venture is already on the ${layout} layout`);
     for (const n of notes) console.log(`${dry ? "would: " : ""}${n}`);
     for (const e of escalated) console.log(`decide: ${e}`);
@@ -278,7 +280,8 @@ else if (cmd === "build" || cmd === "start") {
   const sub = rest[0];
   if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("packages/naive/src/engine/frames.ts", rest));
   const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
-  process.exit(run("packages/naive/src/engine/frames.ts", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
+  const frame = opt("frame"), lookup = opt("lookup");
+  process.exit(run("packages/naive/src/engine/frames.ts", ["run", here(), ...(frame ? [frame] : []), ...(words ? ["--text", words] : []), ...(lookup ? ["--lookup", lookup] : [])]));
 } else if (cmd === "roadmap") {
   // Decision roadmaps (packages/naive/src/engine/roadmaps.ts): naive roadmap install <id> proposes each step's decisions, open.
   if (rest[0] === "install") process.exit(run("packages/naive/src/engine/roadmaps.ts", ["install", here(), rest[1]]));
@@ -287,8 +290,9 @@ else if (cmd === "build" || cmd === "start") {
   // The venture development lifecycle (packages/naive/src/engine/lifecycle.ts): where the venture is, its gate, and moving on.
   // naive phase | naive phase --meet <criterion> [--evidence <text>] | naive phase <next> [--reason] [--override]
   const target = rest.find((a, i) => !a.startsWith("--") && !["--venture", "--meet", "--evidence", "--reason", "--override", "--by"].includes(rest[i - 1]));
-  const pass = ["evidence", "reason", "override", "by"].flatMap((k) => opt(k) !== undefined ? [`--${k}`, opt(k)] : []);
-  process.exit(run("packages/naive/src/engine/lifecycle.ts", [here(), ...(opt("meet") ? ["meet", opt("meet")] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
+  const pass = ["evidence", "reason", "override", "by"].flatMap((k) => { const v = opt(k); return v !== undefined ? [`--${k}`, v] : []; });
+  const meet = opt("meet");
+  process.exit(run("packages/naive/src/engine/lifecycle.ts", [here(), ...(meet ? ["meet", meet] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("packages/naive/src/router/orchestration/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
@@ -300,7 +304,7 @@ else if (cmd === "build" || cmd === "start") {
     process.exit(run("packages/naive/src/engine/publish-lint.ts", [...args, ...(v ? ["--venture", v] : [])]));
   }
   // The publishing gate (packages/naive/src/engine/publish.ts): build, publish, rollback, status.
-  const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
+  const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() ?? "publish" : "publish";
   process.exit(run("packages/naive/src/engine/publish.ts", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
@@ -340,7 +344,7 @@ else if (cmd === "build" || cmd === "start") {
   const ws = findWorkspace(opt("workspace") ?? process.cwd());
   if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
   // A workspace from before the calendar gets its clock and calendar the first time it asks for them.
-  try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error(e.message); process.exit(1); }
+  try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error((e as Error).message); process.exit(1); }
   const [sub = "list", ...args] = rest[0] && !rest[0].startsWith("--") ? rest : ["list", ...rest];
   process.exit(run("packages/naive/src/engine/calendar.ts", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
 } else if (cmd === "beta" || cmd === "bugs") {
@@ -373,7 +377,7 @@ else if (cmd === "build" || cmd === "start") {
   const out = join(repo, ".naive/types");
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, "tools.json"), JSON.stringify(TOOLS, null, 2) + "\n");
-  writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
+  writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r: { route: string, actions: string[], kind: string }) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
   console.log(`wrote ${out}`);
 } else {
   console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   ")).map((l) => l.slice(5)).join("\n"));

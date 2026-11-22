@@ -13,11 +13,11 @@ import * as telosToGoals from "../../engine/migrations/telos-to-goals.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail?: unknown): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "visibility-"));
 const v = join(ws, "vis");
-const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
-const cli = (args, env = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args, "--venture", "vis"], { env: { ...process.env, MENTURA_WORKSPACE: ws, ...env }, encoding: "utf8" });
+const w = (rel: string, x: unknown): void => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
+const cli = (args: string[], env: NodeJS.ProcessEnv = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args, "--venture", "vis"], { env: { ...process.env, MENTURA_WORKSPACE: ws, ...env }, encoding: "utf8" });
 const STATEMENT = "Building is easy now. Knowing what to decide next is not.";
 
 try {
@@ -73,7 +73,7 @@ try {
 
   const missing = JSON.parse(cli(["customers/nope", "read", "--as", "public", "--json"]).stdout);
   const internalItem = cli(["customers/acme-secret-deal", "read", "--as", "public", "--json"]);
-  const scrub = (a) => JSON.stringify(a).replaceAll("acme-secret-deal", "nope");
+  const scrub = (a: unknown): string => JSON.stringify(a).replaceAll("acme-secret-deal", "nope");
   expect("an item with no public field answers the same as a missing one", scrub(JSON.parse(internalItem.stdout)) === scrub(missing) && missing.not_found, { internal: internalItem.stdout.slice(0, 400), missing });
   w("customers/corrupt-deal.json", "CANARY-CORRUPT-ITEM");
   const corruptItem = cli(["customers/corrupt-deal", "read", "--as", "public", "--json"]);
@@ -81,10 +81,10 @@ try {
   rmSync(join(v, "customers/corrupt-deal.json"));
 
   const INTERNAL_KEYS = ["metadata", "hierarchy", "pending_draft", "stale"];
-  const internalKeys = (a) => INTERNAL_KEYS.filter((k) => k in a);
+  const internalKeys = (a: object): string[] => INTERNAL_KEYS.filter((k) => k in a);
   const direct = await import("../../router/router.mjs");
-  const read = (route, input, actor = "public") => direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws });
-  for (const [route, input] of [["foundation/problem", undefined], ["foundation/problem", { hierarchy: true }], ["evidence", undefined], ["customers/nope", { hierarchy: true }]]) {
+  const read = (route: string, input: unknown, actor: string = "public") => direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws });
+  for (const [route, input] of [["foundation/problem", undefined], ["foundation/problem", { hierarchy: true }], ["evidence", undefined], ["customers/nope", { hierarchy: true }]] as [string, unknown][]) {
     const a = await read(route, input);
     expect(`the public read of ${route}${input ? " with hierarchy" : ""} carries no internal metadata`, a.ok && !internalKeys(a).length && a.not_found?.need_now == null, a);
   }
@@ -103,7 +103,7 @@ try {
     const tandem = join(tws, "ventures/tandem");
     cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem"), tandem, { recursive: true });
     telosToGoals.apply(tandem, context(tandem, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }));
-    const telos = (actor) => direct.call({ venture: "tandem", route: "foundation/telos", action: "read", actor, workspace: tws });
+    const telos = (actor: string) => direct.call({ venture: "tandem", route: "foundation/telos", action: "read", actor, workspace: tws });
     const shown = await telos("public");
     expect("the telos view on a migrated venture gives the public reader nothing", shown.ok && shown.result === null && !shown.view, shown);
     expect("the telos view still renders for an agent", (await telos("agent")).view?.framework === "telos");

@@ -13,24 +13,26 @@ import { join } from "node:path";
 import { actionScope, actionStats, cached, clear, command, configOf, declarationFor, entries, judge, keyOf, LIFE, lifeOf, lookup, memo, prune, stats, versionsOf } from "../../engine/caching.ts";
 import { call } from "../../router/router.mjs";
 import { decisions, holding } from "../../engine/decisions.ts";
-import { route as http } from "../api/server.ts";
+import { route } from "../api/server.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const throws = (f, re) => { try { f(); return false; } catch (e) { return re.test(e.message); } };
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const throws = (f: () => unknown, re: RegExp): boolean => { try { f(); return false; } catch (e) { return re.test((e as Error).message); } };
+type Api = { ok?: boolean, cache?: { status?: string } };
+const http = async (method: string, url: string, body?: unknown): Promise<[number, Api]> => (await route(method, url, body)) as [number, Api];
 
 const ws = mkdtempSync(join(tmpdir(), "caching-test-"));
-const init = (id) => { const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, id), id, "--layers", "purpose"], { encoding: "utf8" }); if (r.status !== 0) throw new Error(r.stderr); return join(ws, id); };
+const init = (id: string): string => { const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, id), id, "--layers", "purpose"], { encoding: "utf8" }); if (r.status !== 0) throw new Error(r.stderr); return join(ws, id); };
 const dir = init("kettle");
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.NAIVE_CACHE;
-const run = (route, extra = {}) => call({ venture: "kettle", route, action: "run", workspace: ws, ...extra });
+const run = (route: string, extra: Record<string, unknown> = {}) => call({ venture: "kettle", route, action: "run", workspace: ws, ...extra });
 
 // C-4: every cached value has a life
 expect("C-4: a cache without a life is refused", throws(() => lifeOf(undefined), /needs a life/));
 expect("C-4: an unknown profile is refused", throws(() => lifeOf("fortnight"), /unknown cache life/));
-expect("C-4: the Next.js cacheLife profiles are there", ["seconds", "minutes", "hours", "days", "weeks", "max", "default"].every((p) => LIFE[p]) && lifeOf("hours").expire === 86400);
+expect("C-4: the Next.js cacheLife profiles are there", ["seconds", "minutes", "hours", "days", "weeks", "max", "default"].every((p) => (LIFE as Record<string, unknown>)[p]) && lifeOf("hours").expire === 86400);
 expect("C-4: a custom life is { revalidate, expire } in seconds", lifeOf({ revalidate: 10, expire: 20 }).name === "custom" && lifeOf({ revalidate: 10, expire: 20 }).expire === 20);
 let n = 0;
 const t0 = Date.parse("2026-10-29T00:00:00Z");
@@ -99,11 +101,11 @@ console.log(JSON.stringify({ model: req.model, answers: Object.fromEntries(Objec
 `);
 const asked = () => existsSync(judgeLog) ? readFileSync(judgeLog, "utf8").trim().split("\n").filter(Boolean) : [];
 const cmd = ["node", judgeScript];
-const q = (text) => ({ type: "noul", instructions: text, criteria: { true: "yes", false: "no" } });
+const q = (text: string) => ({ type: "noul", instructions: text, criteria: { true: "yes", false: "no" } });
 const req = { state: { idea: "a kettle that never boils over" }, model: "jev-latest", questions: { a: q("Is it a product?"), b: q("Is it for cooks?") } };
 const j1 = await judge(dir, req, { cmd });
 const j2 = await judge(dir, req, { cmd });
-expect("S-8: the first judgment asks the judge", j1.cache.status === "miss" && asked().length === 1 && j1.answers.a.noul === 0.9);
+expect("S-8: the first judgment asks the judge", j1.cache.status === "miss" && asked().length === 1 && (j1.answers as Record<string, { noul?: number }>).a.noul === 0.9);
 expect("S-8: the same state and question reuse the answer; the judge is not asked again", j2.cache.status === "hit" && asked().length === 1 && JSON.stringify(j2.answers) === JSON.stringify(j1.answers));
 await judge(dir, { ...req, questions: { ...req.questions, c: q("Is it hardware?") } }, { cmd });
 expect("S-8: only the new question goes to the judge", asked().at(-1) === "c");
@@ -124,7 +126,7 @@ const viaCli = spawnSync("node", [join(repo, "packages/naive/src/engine/caching.
 expect("S-8: node packages/naive/src/engine/caching.ts judge reuses the stored answers", viaCli.status === 0 && JSON.parse(viaCli.stdout).cache.status === "hit", viaCli.stderr);
 
 // C-7: private results are cached per person and never shared
-const priv = (actor_id) => judge(dir, { ...req, state: { mine: "founder notes" } }, { cmd, private: true, actor: "agent", actor_id });
+const priv = (actor_id: string | undefined) => judge(dir, { ...req, state: { mine: "founder notes" } }, { cmd, private: true, actor: "agent", actor_id });
 const p0 = asked().length;
 const pa = await priv("ana"); const pa2 = await priv("ana"); const pb = await priv("ben");
 expect("C-7: a private result is reused for the same person", pa.cache.status === "miss" && pa2.cache.status === "hit");
@@ -145,11 +147,11 @@ writeFileSync(join(dir, "naive.config.json"), "{}\n");
 await run("system/time-to-ready");
 const ans = await call({ venture: "kettle", route: "system/answer", action: "run", workspace: ws,
   input: { routes: ["foundation/problem", "foundation/telos", "system/time-to-ready", "purpose/foundation"], judge: req } });
-const kinds = Object.fromEntries((ans.result?.parts ?? []).map((p) => [p.route, p.kind]));
+const kinds = Object.fromEntries((ans.result?.parts ?? []).map((p: { route: string, kind: string }) => [p.route, p.kind]));
 expect("C-8: a record a person wrote is confirmed", kinds["foundation/problem"] === "confirmed", JSON.stringify(kinds));
 expect("C-8: a record not written yet is missing", kinds["foundation/telos"] === "missing");
 expect("C-8: a cached command result is cached, a new one fresh", kinds["system/time-to-ready"] === "cached" && kinds["purpose/foundation"] === "fresh", JSON.stringify(kinds));
-expect("C-8: a judgment part says it came from the cache", kinds["system/judge"] === "cached" && ans.result.parts.find((p) => p.route === "system/judge").level === "judgment");
+expect("C-8: a judgment part says it came from the cache", kinds["system/judge"] === "cached" && ans.result.parts.find((p: { route: string }) => p.route === "system/judge").level === "judgment");
 expect("C-8: the answer counts its mix", ans.result.mix.confirmed === 1 && ans.result.mix.cached === 2 && ans.result.mix.fresh === 1, JSON.stringify(ans.result?.mix));
 const agentWrite = await call({ venture: "kettle", route: "system/answer", action: "run", workspace: ws, input: { value: "foundation/problem" } });
 expect("C-8: value a,b names the routes too", agentWrite.ok && agentWrite.result.parts.length === 1);
@@ -157,7 +159,7 @@ expect("C-8: value a,b names the routes too", agentWrite.ok && agentWrite.result
 // F-2, F-12, O-5: within one action, reads and computed values are shared
 const st = await actionScope(async () => { const ov = await call({ venture: "kettle", route: "system/overview", action: "run", workspace: ws }); return { ok: ov.ok, ...actionStats() }; });
 const nnKey = Object.keys(st.computed).find((k) => k.startsWith("cmd:packages/naive/src/engine/need-now.ts"));
-expect("O-5: need-now runs once for the overview, shared by the layouts and the command", st.ok && nnKey && st.computed[nnKey] === 1 && (st.shared[nnKey] ?? 0) >= 1, JSON.stringify({ c: st.computed[nnKey], s: st.shared[nnKey] }));
+expect("O-5: need-now runs once for the overview, shared by the layouts and the command", st.ok && nnKey !== undefined && st.computed[nnKey] === 1 && (st.shared[nnKey] ?? 0) >= 1, JSON.stringify({ c: nnKey && st.computed[nnKey], s: nnKey && st.shared[nnKey] }));
 expect("F-12: the route table is built once per action and shared", st.computed.routes === 1 && st.shared.routes >= 5, JSON.stringify(st));
 const dl = await actionScope(async () => { const first = decisions(dir); holding(dir, "foundation/problem.json"); return { same: decisions(dir) === first, ...actionStats() }; });
 expect("F-12: the decision list is computed once per action and shared", dl.same && dl.computed.decisions === 1 && dl.shared.decisions === 2, JSON.stringify(dl));

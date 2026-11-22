@@ -16,16 +16,18 @@ import { call } from "../../router/router.mjs";
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "canonical-"));
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+/** A JSON record read in this test: only the fields it looks at. */
+type Json = Record<string, unknown> & { ambition?: string, phase?: string, value?: unknown, statement?: unknown, maps_to: unknown[], criteria: { met?: { by?: string } }[] };
+const expect = (name: string, ok: unknown, detail: string = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const load = (f: string): Json => JSON.parse(readFileSync(f, "utf8")) as Json;
 const person = { kind: "person", via: "cli", id: "maya" };
-const copy = (ws) => { const d = join(tmp, ws, "ventures", "tandem"); cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem"), d, { recursive: true }); return d; };
-const migrate = (dir) => { const ctx = context(dir, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }); mig.apply(dir, ctx); return ctx; };
+const copy = (ws: string): string => { const d = join(tmp, ws, "ventures", "tandem"); cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem"), d, { recursive: true }); return d; };
+const migrate = (dir: string) => { const ctx = context(dir, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }); mig.apply(dir, ctx); return ctx; };
 
 // Fallback: an unmigrated venture's gate reads its telos.
 const un = copy("unmigrated");
 const l0 = lifecycle(un);
-expect("unmigrated: the lifecycle falls back to the telos's exit criteria", l0.source === "telos" && l0.exit_criteria.map((c) => c.id).join() === "retention,time-saved", JSON.stringify(l0));
+expect("unmigrated: the lifecycle falls back to the telos's exit criteria", l0.source === "telos" && l0.exit_criteria.map((c: { id: string }) => c.id).join() === "retention,time-saved", JSON.stringify(l0));
 const tandemVenture = load(join(un, "venture.json"));
 expect("unmigrated: scale falls back to venture.json's ambition", scale(un) === (tandemVenture.ambition ?? null));
 
@@ -41,7 +43,7 @@ expect("migration writes one exit-criteria record per telos phase", ["validation
 expect("the old telos is archived, never deleted", !existsSync(join(dir, "purpose/telos.json")) && existsSync(join(dir, "_private/archive/telos.json")));
 expect("ambition leaves venture.json and becomes a goal of kind scale", load(join(dir, "venture.json")).ambition === undefined && load(join(dir, "foundation/goals/scale.json")).value === v0.ambition && scale(dir) === v0.ambition);
 const view = telosView(dir);
-const strip = (t) => JSON.stringify({ statement: t.statement, end_state: t.end_state, horizon: t.horizon, measures: t.measures, owner_outcome: t.owner_outcome, phases: t.phases });
+const strip = (t: Record<string, unknown> | null): string => { if (!t) throw new TypeError("no telos to compare"); return JSON.stringify({ statement: t.statement, end_state: t.end_state, horizon: t.horizon, measures: t.measures, owner_outcome: t.owner_outcome, phases: t.phases }); };
 expect("round trip: the telos view rendered from canonical records matches the telos it came from", strip(view) === strip(telosBefore), `${strip(view)}\n${strip(telosBefore)}`);
 expect("a second run finds nothing left to migrate", (() => { const c = migrate(dir); return c.writes.length === 0 && c.escalated.length === 0; })());
 const clash = copy("clash");

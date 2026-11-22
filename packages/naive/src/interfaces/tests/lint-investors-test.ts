@@ -15,40 +15,42 @@ import { lint } from "../../checks/lint-investors.ts";
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const script = new URL("../../checks/lint-investors.ts", import.meta.url).pathname;
 let failed = 0;
-/** @type {(name: string, ok: unknown, detail?: unknown) => void} */
-const expect = (name, ok, detail = "") => {
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
 };
-const dirs = [];
-const venture = (layout) => {
+/** The lint's JSON report: only the fields this test reads. */
+type Finding = { rule: string, mode: string, file?: string, message: string, suggestion?: string };
+type Report = { ok?: boolean, findings: Finding[], rules: { mode: string }[] };
+const dirs: string[] = [];
+const venture = (layout?: string): string => {
   const dir = mkdtempSync(join(tmpdir(), "lint-investors-"));
   dirs.push(dir);
-  const body = { id: "acme", name: "Acme", phase: "validation" };
+  const body: { id: string, name: string, phase: string, layout?: string } = { id: "acme", name: "Acme", phase: "validation" };
   if (layout) body.layout = layout;
   writeFileSync(join(dir, "venture.json"), JSON.stringify(body));
   return dir;
 };
-const put = (dir, rel, body) => {
+const put = (dir: string, rel: string, body: unknown): void => {
   const p = ventureFile(dir, rel);
   mkdirSync(join(p, ".."), { recursive: true });
   writeFileSync(p, typeof body === "string" ? body : `${JSON.stringify(body, null, 2)}\n`);
 };
-const run = (dir, extra = []) => spawnSync(process.execPath, [script, dir, ...extra], { encoding: "utf8" });
-const rulesOf = (body) => (body?.findings ?? []).map((f) => f.rule).sort();
+const run = (dir: string, extra: string[] = []) => spawnSync(process.execPath, [script, dir, ...extra], { encoding: "utf8" });
+const rulesOf = (body: Report | null): string[] => (body?.findings ?? []).map((f) => f.rule).sort();
 
 const alignment = {
   venture: "acme",
   principles: [{ id: "no-full-ratchet", statement: "Never accept a full-ratchet anti-dilution right.", source: "founder, 2026-10-29" }],
 };
-const raise = (answer) => ({
+const raise = (answer: string) => ({
   id: "seed-raise",
   question: "Should we raise a seed round?",
   status: "decided",
   answer,
   provenance: { drafted_by: { kind: "person", id: "Ada" } },
 });
-const investor = (extra) => ({ id: "north", name: "North", ...extra });
+const investor = (extra: Record<string, unknown>) => ({ id: "north", name: "North", ...extra });
 
 // ---- Each rule fires, and a clean venture stays silent.
 {
@@ -60,7 +62,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
     updates: [{ id: "october", status: "sent", numbers: [{ name: "arr", value: 120000, confirmed: false }, { name: "runway", value: "14 months", confirmed: true }] }],
   }));
   const cli = run(bad, ["--json"]);
-  const body = JSON.parse(cli.stdout);
+  const body: Report = JSON.parse(cli.stdout);
   expect("each rule fires on the fixture", rulesOf(body).join() === "raise-no-use-of-funds,terms-conflict-alignment,update-unconfirmed-numbers", rulesOf(body));
   expect("findings carry rule, mode, file, message and suggestion", body.findings.every((f) => f.rule && f.mode === "fail-open" && f.file && f.message && f.suggestion));
   expect("the sent update names the unconfirmed figure", body.findings.some((f) => f.rule === "update-unconfirmed-numbers" && f.file === "investors/north.json" && /october is sent/.test(f.message) && /arr/.test(f.message) && !/runway/.test(f.message)));
@@ -77,7 +79,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
   put(clean, "decisions/funding.decision.json", { id: "funding", question: "How will the venture be funded?", status: "open", answer: "Not decided." });
   put(clean, "fund/decisions/terms.decision.json", { id: "fund-terms", question: "What are the fund's terms: target size, management fee, carry and term?", status: "open", provenance: { drafted_by: { kind: "framework", id: "naive" } } });
   const quiet = run(clean, ["--json"]);
-  expect("a clean venture stays silent", quiet.status === 0 && JSON.parse(quiet.stdout).findings.length === 0, quiet.stdout);
+  expect("a clean venture stays silent", quiet.status === 0 && (JSON.parse(quiet.stdout) as Report).findings.length === 0, quiet.stdout);
 }
 
 // ---- The words that count as a conflict, and the words that do not.
@@ -108,7 +110,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
 // ---- Draft and sent, confirmed and not. No sent update with an unconfirmed number goes unflagged.
 {
   const dir = venture();
-  const update = (status, confirmed) => investor({ updates: [{ id: "october", status, numbers: [{ name: "arr", value: 120000, confirmed }] }] });
+  const update = (status: string, confirmed: boolean) => investor({ updates: [{ id: "october", status, numbers: [{ name: "arr", value: 120000, confirmed }] }] });
   put(dir, "investors/north.json", update("draft", false));
   expect("a draft with an unconfirmed number is flagged", lint(dir).findings.some((f) => /is draft/.test(f.message)));
   put(dir, "investors/north.json", update("draft", true));
@@ -132,10 +134,10 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
     terms: "The round gives North a full-ratchet anti-dilution right.",
     updates: [{ id: "october", status: "sent", numbers: [{ name: "arr", value: 120000, confirmed: false }] }],
   }));
-  const close = (id) => put(dir, "naive.config.json", { investors_lint: { rules: { [id]: { mode: "fail-closed" } } } });
-  const saw = (id) => {
+  const close = (id: string) => put(dir, "naive.config.json", { investors_lint: { rules: { [id]: { mode: "fail-closed" } } } });
+  const saw = (id: string) => {
     const cli = run(dir, ["--json"]);
-    const body = JSON.parse(cli.stdout);
+    const body: Report = JSON.parse(cli.stdout);
     const failClosedHit = body.findings.some((f) => f.mode === "fail-closed");
     return cli.status === (failClosedHit ? 1 : 0) && body.ok === !failClosedHit && body.findings.some((f) => f.rule === id && f.mode === "fail-closed");
   };
@@ -144,19 +146,19 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
   expect("closing the update rule fails the run", (close("update-unconfirmed-numbers"), saw("update-unconfirmed-numbers")));
   put(dir, "naive.config.json", { investors_lint: { rules: { "raise-no-use-of-funds": { mode: "strict" } } } });
   const ignored = run(dir, ["--json"]);
-  expect("a mode that is not fail-open or fail-closed stays fail-open", ignored.status === 0 && JSON.parse(ignored.stdout).rules.every((r) => r.mode === "fail-open"));
+  expect("a mode that is not fail-open or fail-closed stays fail-open", ignored.status === 0 && (JSON.parse(ignored.stdout) as Report).rules.every((r) => r.mode === "fail-open"));
 
   const clean = venture();
   put(clean, "investors/decisions/seed-raise.decision.json", raise("Use of funds: runway."));
   put(clean, "naive.config.json", { investors_lint: { rules: { "update-unconfirmed-numbers": { mode: "fail-closed" }, "raise-no-use-of-funds": { mode: "fail-closed" } } } });
   const closedQuiet = run(clean, ["--json"]);
-  expect("fail-closed with no findings exits 0", closedQuiet.status === 0 && JSON.parse(closedQuiet.stdout).ok === true && JSON.parse(closedQuiet.stdout).findings.length === 0, closedQuiet.stdout);
+  expect("fail-closed with no findings exits 0", closedQuiet.status === 0 && (JSON.parse(closedQuiet.stdout) as Report).ok === true && (JSON.parse(closedQuiet.stdout) as Report).findings.length === 0, closedQuiet.stdout);
 
   const onlyRaise = venture();
   put(onlyRaise, "investors/decisions/seed-raise.decision.json", raise("Yes, we will raise now."));
   put(onlyRaise, "naive.config.json", { investors_lint: { rules: { "terms-conflict-alignment": { mode: "fail-closed" } } } });
   const other = run(onlyRaise, ["--json"]);
-  const otherBody = JSON.parse(other.stdout);
+  const otherBody: Report = JSON.parse(other.stdout);
   expect("a fail-closed rule with no finding does not fail the run", other.status === 0 && otherBody.findings.length === 1 && otherBody.findings[0].mode === "fail-open", other.stdout);
 }
 
@@ -164,10 +166,10 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
 {
   const empty = venture();
   let threw = false;
-  let result;
+  let result: ReturnType<typeof lint> | undefined;
   try { result = lint(empty); } catch { threw = true; }
   const emptyCli = run(empty, ["--json"]);
-  expect("a venture with no investors records does not crash", !threw && emptyCli.status === 0 && result.findings.length === 0, emptyCli.stderr);
+  expect("a venture with no investors records does not crash", !threw && emptyCli.status === 0 && result?.findings.length === 0, emptyCli.stderr);
 
   const dir = venture();
   put(dir, "foundation/alignment.json", "{");
@@ -180,7 +182,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
   threw = false;
   try { result = lint(dir); } catch { threw = true; }
   const badCli = run(dir, ["--json"]);
-  expect("malformed records do not crash and add no finding", !threw && badCli.status === 0 && result.ok && result.findings.length === 0, badCli.stderr + badCli.stdout);
+  expect("malformed records do not crash and add no finding", !threw && badCli.status === 0 && result?.ok && result.findings.length === 0, badCli.stderr + badCli.stdout);
 
   put(dir, "investors/decisions/seed-raise.decision.json", raise("Yes, we will raise now."));
   expect("repairing the raise file brings the finding back", lint(dir).findings.some((f) => f.rule === "raise-no-use-of-funds"));
@@ -207,7 +209,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
   put(dir, "naive.config.json", { investors_lint: { rules: { "update-unconfirmed-numbers": { mode: "fail-closed" } } } });
   writeFileSync(join(dir, "naive.config.json"), JSON.stringify({ investors_lint: { rules: { "update-unconfirmed-numbers": { mode: "fail-open" } } } }));
   const cli = run(dir, ["--json"]);
-  const body = JSON.parse(cli.stdout);
+  const body: Report = JSON.parse(cli.stdout);
   expect("structured records are linted by their logical paths", body.findings.map((f) => f.file).sort().join() === "investors/decisions/seed-raise.decision.json,investors/north.json,investors/north.json", body.findings.map((f) => f.file));
   expect("the mode is read from meta/naive.config.json, not a root decoy", cli.status === 1 && body.findings.some((f) => f.rule === "update-unconfirmed-numbers" && f.mode === "fail-closed"), body);
 
@@ -219,7 +221,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
 
 // ---- The route, and the ventures already in the repo.
 {
-  const listed = routes().find((r) => r.route === "investors/lint");
+  const listed = routes().find((r: { route: string }) => r.route === "investors/lint");
   expect("investors/lint is a command on packages/naive/src/checks/lint-investors.ts", listed?.kind === "command" && listed.script === "packages/naive/src/checks/lint-investors.ts" && listed.actions.includes("run"), listed);
 
   const ws = mkdtempSync(join(tmpdir(), "lint-investors-ws-"));
@@ -232,7 +234,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
   }));
   put(dir, "investors/north.json", investor({ updates: [{ id: "october", status: "sent", numbers: [{ name: "arr", value: 120000, confirmed: false }] }] }));
   const open = await call({ venture: "acme", route: "investors/lint", action: "run", workspace: ws, via: "cli" });
-  expect("the route returns the finding while the rule is fail-open", open.ok && open.result.findings.some((f) => f.rule === "update-unconfirmed-numbers"), open.error ?? open.result);
+  expect("the route returns the finding while the rule is fail-open", open.ok && open.result.findings.some((f: Finding) => f.rule === "update-unconfirmed-numbers"), open.error ?? open.result);
   put(dir, "naive.config.json", { investors_lint: { rules: { "update-unconfirmed-numbers": { mode: "fail-closed" } } } });
   const shut = await call({ venture: "acme", route: "investors/lint", action: "run", workspace: ws, via: "cli" });
   expect("the route fails when a fail-closed rule has a finding", shut.ok === false && /update-unconfirmed-numbers/.test(shut.error ?? ""), shut.error ?? shut);
@@ -240,9 +242,9 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
   for (const rel of ["packages/naive/src/records/examples/software/ventures/relay", "packages/naive/src/records/examples/workspace/ventures/northstar", "packages/naive/src/records/examples/workspace/ventures/acme-labs", "packages/naive/src/records/examples/workspace/ventures/tandem"]) {
     const v = join(repo, rel);
     const cli = run(v, ["--json"]);
-    let body = null;
+    let body: Report | null = null;
     try { body = JSON.parse(cli.stdout); } catch { /* leave null */ }
-    expect(`${rel} lints without crashing`, cli.status === 0 && body?.ok === true && Array.isArray(body.findings), cli.stderr || cli.stdout);
+    expect(`${rel} lints without crashing`, cli.status === 0 && body?.ok === true && Array.isArray(body?.findings), cli.stderr || cli.stdout);
   }
 }
 

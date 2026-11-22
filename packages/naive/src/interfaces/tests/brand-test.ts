@@ -16,40 +16,45 @@ import { addAsset, addRemote } from "../../router/brand.mjs";
 import { entries } from "../../core/provenance.ts";
 import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../engine/assets.ts";
 import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "../../engine/brand.ts";
+import type { Message } from "../mcp/server.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-/** @param {string} name @param {unknown} ok @param {unknown} [detail] */
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`); if (!ok) failed++; };
-const has = (list, re) => list.some((x) => re.test(x));
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const has = (list: string[], re: RegExp) => list.some((x) => re.test(x));
+/** Register entries, voice violations and glossary terms: only the fields this test reads. */
+type Entry = { path: string };
+type Remote = { id: string };
+type Violation = { file: string, rule: string, found: string };
+type Term = { term: string, from?: string };
 
 // ---- Image bytes, built here so the parser is tested against real encodings.
 const CRC = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
-const crc32 = (b) => { let c = 0xffffffff; for (const x of b) c = CRC[(c ^ x) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
-const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type, "latin1"), data]); const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(td)); return Buffer.concat([len, td, crc]); };
-function png(w, h) {
+const crc32 = (b: Buffer) => { let c = 0xffffffff; for (const x of b) c = CRC[(c ^ x) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+const chunk = (type: string, data: Buffer) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type, "latin1"), data]); const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(td)); return Buffer.concat([len, td, crc]); };
+function png(w: number, h: number): Buffer {
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2;
   const raw = Buffer.alloc((w * 3 + 1) * h);
   return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
 }
-const gif = (w, h) => { const b = Buffer.alloc(13); b.write("GIF89a", 0, "latin1"); b.writeUInt16LE(w, 6); b.writeUInt16LE(h, 8); return Buffer.concat([b, Buffer.from([0x3b])]); };
-function jpeg(w, h) {
+const gif = (w: number, h: number) => { const b = Buffer.alloc(13); b.write("GIF89a", 0, "latin1"); b.writeUInt16LE(w, 6); b.writeUInt16LE(h, 8); return Buffer.concat([b, Buffer.from([0x3b])]); };
+function jpeg(w: number, h: number): Buffer {
   const app0 = Buffer.from([0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00]);
   const sof = Buffer.from([0xff, 0xc0, 0x00, 0x11, 0x08, h >> 8, h & 0xff, w >> 8, w & 0xff, 0x03, 0x01, 0x22, 0x00, 0x02, 0x11, 0x01, 0x03, 0x11, 0x01]);
   return Buffer.concat([Buffer.from([0xff, 0xd8]), app0, sof, Buffer.from([0xff, 0xd9])]);
 }
-function webpX(w, h) { const b = Buffer.alloc(30); b.write("RIFF", 0, "latin1"); b.writeUInt32LE(22, 4); b.write("WEBPVP8X", 8, "latin1"); b.writeUInt32LE(10, 16); b.writeUIntLE(w - 1, 24, 3); b.writeUIntLE(h - 1, 27, 3); return b; }
-function webpL(w, h) {
+function webpX(w: number, h: number): Buffer { const b = Buffer.alloc(30); b.write("RIFF", 0, "latin1"); b.writeUInt32LE(22, 4); b.write("WEBPVP8X", 8, "latin1"); b.writeUInt32LE(10, 16); b.writeUIntLE(w - 1, 24, 3); b.writeUIntLE(h - 1, 27, 3); return b; }
+function webpL(w: number, h: number): Buffer {
   const b = Buffer.alloc(26); b.write("RIFF", 0, "latin1"); b.write("WEBPVP8L", 8, "latin1"); b[20] = 0x2f;
   const bits = (w - 1) | ((h - 1) << 14); b.writeUInt32LE(bits >>> 0, 21); return b;
 }
-function ico(sizes) {
+function ico(sizes: number[]): Buffer {
   const head = Buffer.alloc(6 + 16 * sizes.length); head.writeUInt16LE(0, 0); head.writeUInt16LE(1, 2); head.writeUInt16LE(sizes.length, 4);
   sizes.forEach((s, i) => { head[6 + 16 * i] = s >= 256 ? 0 : s; head[7 + 16 * i] = s >= 256 ? 0 : s; });
   return head;
 }
 const woff2 = () => Buffer.concat([Buffer.from("wOF2", "latin1"), Buffer.alloc(44)]);
-const svg = (attrs) => Buffer.from(`<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg" ${attrs}><rect width="10" height="10"/></svg>\n`);
+const svg = (attrs: string) => Buffer.from(`<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg" ${attrs}><rect width="10" height="10"/></svg>\n`);
 
 // ---- J-4: facts are read from bytes.
 {
@@ -61,7 +66,7 @@ const svg = (attrs) => Buffer.from(`<?xml version="1.0"?>\n<svg xmlns="http://ww
   const x = factsOf(webpX(1000, 700)), l = factsOf(webpL(300, 200));
   expect("J-4 facts: WebP extended and lossless", x.type === "webp" && x.width === 1000 && x.height === 700 && l.width === 300 && l.height === 200, [x, l]);
   const i = factsOf(ico([16, 32, 48]));
-  expect("J-4 facts: an ICO's sizes, the largest as its size", i.type === "ico" && i.width === 48 && i.sizes.join(",") === "16x16,32x32,48x48", i);
+  expect("J-4 facts: an ICO's sizes, the largest as its size", i.type === "ico" && i.width === 48 && i.sizes?.join(",") === "16x16,32x32,48x48", i);
   expect("J-4 facts: SVG width and height, else its viewBox", factsOf(svg('width="64px" height="32"')).width === 64 && factsOf(svg('viewBox="0 0 24 12"')).height === 12);
   expect("J-4 facts: fonts and PDFs by signature", factsOf(woff2()).type === "woff2" && factsOf(Buffer.from("%PDF-1.7\n")).type === "pdf" && factsOf(Buffer.from("hello")).type === "unknown");
   expect("J-3 licenses: CC-BY and owned allow a copy; all-rights-reserved and unknown do not", allowsCopy("CC-BY-4.0") && allowsCopy("owned") && !allowsCopy("all-rights-reserved") && !allowsCopy("unknown") && !allowsCopy(undefined));
@@ -71,14 +76,14 @@ const svg = (attrs) => Buffer.from(`<?xml version="1.0"?>\n<svg xmlns="http://ww
 // ---- A workspace with a venture.
 const ws = mkdtempSync(join(tmpdir(), "brand-test-"));
 const W = join(ws, "ventures");
-const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: W });
+const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: W };
 delete env.MENTURA_ACTOR_ID;
-const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
+const mentura = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 const init = mentura("init", join(W, "acme"), "--id", "acme", "--layers", "purpose");
 expect("a venture to brand", init.status === 0, init.stderr);
 const dir = join(W, "acme");
-const put = (rel, buf) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), buf); };
-const R = (route, action, input, extra = {}) => call({ venture: "acme", route, action, input, workspace: W, via: "cli", ...extra });
+const put = (rel: string, buf: Buffer | string) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), buf); };
+const R = (route: string, action: string, input?: unknown, extra: Record<string, unknown> = {}) => call({ venture: "acme", route, action, input, workspace: W, via: "cli", ...extra });
 const reg = () => JSON.parse(readFileSync(join(dir, "public/assets.json"), "utf8"));
 
 // ---- J-2: every file in public/ has a source and license.
@@ -92,9 +97,9 @@ let r = mentura("assets", "add", "public/logo.svg", "--venture", "acme", "--sour
 expect("J-2: mentura assets add registers a file through the router", r.status === 0 && reg().assets[0].path === "public/logo.svg", r.stderr);
 expect("J-4: code filled the facts on add", reg().assets[0].facts.width === 200 && reg().assets[0].facts.type === "svg");
 expect("J-4: the write is in provenance, attributed to an agent", entries(dir).some((e) => e.entity === "public/assets.json" && e.agent.kind === "agent" && e.route === "public/assets"));
-for (const [p, extra] of /** @type {[string, string[]][]} */ ([["public/icon.png", []], ["public/apple-icon.png", []], ["public/favicon.ico", ["--decorative"]], ["public/fonts/inter.woff2", []]]))
+for (const [p, extra] of [["public/icon.png", []], ["public/apple-icon.png", []], ["public/favicon.ico", ["--decorative"]], ["public/fonts/inter.woff2", []]] as [string, string[]][])
   mentura("assets", "add", p, "--venture", "acme", "--source", p.includes("fonts") ? "https://rsms.me/inter/" : "Acme design", "--license", p.includes("fonts") ? "OFL-1.1" : "owned", "--credit", p.includes("fonts") ? "Rasmus Andersson" : "Acme", ...(p.endsWith(".png") ? ["--alt", "Acme mark"] : []), ...extra);
-let a = checkAssets(dir);
+const a = checkAssets(dir);
 expect("J-2: with every file registered the check has no errors", a.ok, a.errors);
 expect("J-4: an agent's alt text is pending until a person confirms it", a.pending.length === 3 && a.pending.every((p) => p.by === "agent"), a.pending);
 r = mentura("assets", "confirm", "public/logo.svg", "--venture", "acme", "--by", "Torian");
@@ -108,13 +113,13 @@ r = mentura("assets", "alt", "public/icon.png", "--text", "Acme mark, square", "
 expect("J-4: alt text a person writes is confirmed as written", r.status === 0 && !checkAssets(dir).pending.some((p) => p.path === "public/icon.png"), r.stderr);
 // An agent claims a person wrote it: provenance does not back the claim.
 {
-  const x = reg(); x.assets.find((y) => y.path === "public/apple-icon.png").alt = { text: "Made up", by: "person" };
+  const x = reg(); x.assets.find((y: Entry) => y.path === "public/apple-icon.png").alt = { text: "Made up", by: "person" };
   const w = await R("public/assets", "write", x);
   expect("J-4: an agent may write the register directly", w.ok, w.error);
   expect("J-4: alt text claiming a person, with no person's confirmation in provenance, fails", has(checkAssets(dir).errors, /apple-icon\.png: alt text says a person wrote it/));
-  x.assets.find((y) => y.path === "public/apple-icon.png").alt = { text: "Acme mark", by: "agent" };
+  x.assets.find((y: Entry) => y.path === "public/apple-icon.png").alt = { text: "Acme mark", by: "agent" };
   // A guessed width.
-  x.assets.find((y) => y.path === "public/icon.png").facts.width = 64;
+  x.assets.find((y: Entry) => y.path === "public/icon.png").facts.width = 64;
   await R("public/assets", "write", x);
   expect("J-4: a guessed width fails: facts are code's", has(checkAssets(dir).errors, /icon\.png: recorded width 64 is not the file's 32/));
   r = mentura("assets", "fill", "--venture", "acme");
@@ -124,8 +129,8 @@ expect("J-4: alt text a person writes is confirmed as written", r.status === 0 &
   mentura("assets", "fill", "--venture", "acme");
   put("public/icon.png", png(32, 32));
   mentura("assets", "fill", "--venture", "acme");
-  const y = reg(); delete y.assets.find((z) => z.path === "public/logo.svg").credit; y.assets.find((z) => z.path === "public/apple-icon.png").license = "unknown";
-  delete y.assets.find((z) => z.path === "public/icon.png").alt;
+  const y = reg(); delete y.assets.find((z: Entry) => z.path === "public/logo.svg").credit; y.assets.find((z: Entry) => z.path === "public/apple-icon.png").license = "unknown";
+  delete y.assets.find((z: Entry) => z.path === "public/icon.png").alt;
   await R("public/assets", "write", y);
   const e = checkAssets(dir).errors;
   expect("J-4: a missing credit fails", has(e, /logo\.svg: no credit/));
@@ -133,15 +138,15 @@ expect("J-4: alt text a person writes is confirmed as written", r.status === 0 &
   expect("J-4: an image with no alt text fails unless decorative", has(e, /icon\.png: an image with no alt text/) && !has(e, /favicon\.ico: an image with no alt/));
   const c = await R("public/assets", "check");
   expect("J-2: the public/assets route's check runs packages/naive/src/checks/check-assets.ts and fails", !c.ok && c.result[0].check === "packages/naive/src/checks/check-assets.ts");
-  y.assets.find((z) => z.path === "public/logo.svg").credit = "Acme"; y.assets.find((z) => z.path === "public/apple-icon.png").license = "owned";
-  y.assets.find((z) => z.path === "public/icon.png").alt = { text: "Acme mark, square", by: "agent" };
+  y.assets.find((z: Entry) => z.path === "public/logo.svg").credit = "Acme"; y.assets.find((z: Entry) => z.path === "public/apple-icon.png").license = "owned";
+  y.assets.find((z: Entry) => z.path === "public/icon.png").alt = { text: "Acme mark, square", by: "agent" };
   await R("public/assets", "write", y);
   expect("J-2: fixed, the route's check passes", (await R("public/assets", "check")).ok);
   put("public/stray.txt", Buffer.from("x"));
   expect("J-2: a stray file fails until registered", has(checkAssets(dir).errors, /stray\.txt: no entry/));
   mentura("assets", "add", "public/stray.txt", "--venture", "acme", "--source", "Acme", "--license", "owned", "--credit", "Acme");
   const f = await R("public/assets/facts", "run");
-  expect("J-4: public/assets/facts gives agents the facts to copy", f.ok && f.result.facts.find((q) => q.path === "public/apple-icon.png").width === 180, f.error);
+  expect("J-4: public/assets/facts gives agents the facts to copy", f.ok && f.result.facts.find((q: Entry) => q.path === "public/apple-icon.png").width === 180, f.error);
 }
 
 // ---- Y-3, T-1, T-2, Y-5, P-24, Y-4: the brand.
@@ -191,11 +196,11 @@ const brand = {
 {
   put("marketing/content/home/hero.mdx", Buffer.from("---\nrecord: venture\naudience: customers\n---\nWe help clinics work together.\n\n```text\nleverage is fine in code\n```\n"));
   put("marketing/content/press/release.mdx", Buffer.from("---\nrecord: venture\n---\nA cheap way to book.\n"));
-  expect("Y-3: content that keeps to the voice passes; frontmatter and code are skipped", !(await R("marketing/voice", "run")).result.violations.some((x) => x.file.includes("hero")));
-  expect("Y-3: a scope's voice rule applies under its prefix only", (await R("marketing/voice", "run")).result.violations.some((x) => x.rule === "press-terms" && x.file.endsWith("press/release.mdx")));
+  expect("Y-3: content that keeps to the voice passes; frontmatter and code are skipped", !(await R("marketing/voice", "run")).result.violations.some((x: Violation) => x.file.includes("hero")));
+  expect("Y-3: a scope's voice rule applies under its prefix only", (await R("marketing/voice", "run")).result.violations.some((x: Violation) => x.rule === "press-terms" && x.file.endsWith("press/release.mdx")));
   put("marketing/content/home/hero.mdx", Buffer.from("---\nrecord: venture\n---\nWe Leverage synergy for clinics.\n"));
   const v = await R("marketing/voice", "run");
-  expect("Y-3: phrases to avoid are found as whole words, ignoring case, with what to use", v.ok && v.result.violations.filter((x) => x.file.endsWith("hero.mdx")).map((x) => x.found).sort().join() === "Leverage,synergy" && v.result.violations[0].use === "work with", v.result);
+  expect("Y-3: phrases to avoid are found as whole words, ignoring case, with what to use", v.ok && v.result.violations.filter((x: Violation) => x.file.endsWith("hero.mdx")).map((x: Violation) => x.found).sort().join() === "Leverage,synergy" && v.result.violations[0].use === "work with", v.result);
   expect("Y-3: content against the voice fails the brand check", has(checkBrand(dir).errors, /hero\.mdx:4: "Leverage" breaks voice rule no-jargon/));
   expect("Y-3: whole words only", voiceCheck("leveraged synergies", brand.voice.rules).length === 0);
   r = mentura("brand", "voice", "--venture", "acme", "--text", "Pure synergy");
@@ -248,25 +253,25 @@ const brand = {
   expect("Y-4: a design system must be a link", has(e, /design system acme-ds: vendor\/bigcorp is not a link/));
   expect("Y-4: a file copied from a design system whose license does not allow it fails", has(e, /public\/ds-button\.svg: a copy from design system acme-ds/) && !has(e, /radix\.svg/));
   await R("marketing/brand", "write", brand, { actor: "person" });
-  const x = reg(); x.assets = x.assets.filter((q) => !["public/ds-button.svg", "public/radix.svg"].includes(q.path)); await R("public/assets", "write", x);
+  const x = reg(); x.assets = x.assets.filter((q: Entry) => !["public/ds-button.svg", "public/radix.svg"].includes(q.path)); await R("public/assets", "write", x);
   rmSync(join(dir, "public/ds-button.svg")); rmSync(join(dir, "public/radix.svg"));
 }
 // Y-2: package glossaries.
 {
-  const g = (pkg, terms) => R(`glossary/${pkg}`, "write", { package: pkg, terms }, { actor: "person" });
-  let w = await g("finance", [{ term: "burn multiple", meaning: "net burn divided by net new ARR" }, { term: "runway", meaning: "months of cash at the current burn", export: true }]);
+  const g = (pkg: string, terms: unknown) => R(`glossary/${pkg}`, "write", { package: pkg, terms }, { actor: "person" });
+  const w = await g("finance", [{ term: "burn multiple", meaning: "net burn divided by net new ARR" }, { term: "runway", meaning: "months of cash at the current burn", export: true }]);
   expect("Y-2: a package glossary is written at glossary/<package>.json", w.ok && w.result.written === "glossary/finance.json", w.error);
   await g("marketing", [{ term: "hero", meaning: "the first section of a page" }, { term: "runway", meaning: "the strip models walk on" }]);
   const m = termsFor(dir, "marketing");
   expect("Y-2: a package sees its own terms and exported ones, not other packages' local terms", m.terms.some((t) => t.term === "hero") && !m.terms.some((t) => t.term === "burn multiple") && m.hidden === 1);
   expect("Y-2: its own term wins over an exported one of the same name", m.terms.find((t) => t.term === "runway").from === "marketing" && m.shadows[0].from === "finance");
   const t = await R("glossary/terms", "run", { value: "investors" });
-  expect("Y-2: glossary/terms shows what another package sees", t.ok && t.result.terms.map((x) => x.term).join() === "runway", t.result);
+  expect("Y-2: glossary/terms shows what another package sees", t.ok && t.result.terms.map((x: Term) => x.term).join() === "runway", t.result);
   await g("investors", [{ term: "pro rata", meaning: "an investor's right to keep their share in the next round" }]);
   const lay = await R("investors", "layout");
-  expect("Y-2: a layout carries the package's own terms", lay.ok && lay.result.brand.terms.some((x) => x.term === "pro rata") && lay.result.brand.terms.some((x) => x.term === "runway" && x.from === "finance"), lay.result?.brand);
+  expect("Y-2: a layout carries the package's own terms", lay.ok && lay.result.brand.terms.some((x: Term) => x.term === "pro rata") && lay.result.brand.terms.some((x: Term) => x.term === "runway" && x.from === "finance"), lay.result?.brand);
   const lay2 = await R("marketing/sitemap", "layout");
-  expect("Y-2: another package's layout does not", !lay2.result.brand.terms.some((x) => x.term === "pro rata" || x.term === "burn multiple"));
+  expect("Y-2: another package's layout does not", !lay2.result.brand.terms.some((x: Term) => x.term === "pro rata" || x.term === "burn multiple"));
   put("marketing/content/home/hero.mdx", Buffer.from("---\nrecord: venture\n---\nOur burn multiple is low.\n"));
   expect("Y-2: public content using another package's local term is flagged", has(checkBrand(dir).warnings, /burn multiple" is a term local to finance/) && checkBrand(dir).ok);
   put("marketing/content/home/hero.mdx", Buffer.from("---\nrecord: venture\n---\nWe help clinics.\n"));
@@ -291,7 +296,7 @@ const brand = {
   put("public/clinic.jpg", jpeg(800, 600));
   mentura("assets", "add", "public/clinic.jpg", "--venture", "acme", "--source", "https://images.example.com/photos/clinic.jpg", "--license", "all-rights-reserved", "--credit", "Ana Photo", "--alt", "A clinic waiting room", "--origin-url", "https://images.example.com/photos/clinic.jpg");
   expect("J-3: a full copy under all-rights-reserved fails the check", has(checkAssets(dir).errors, /public\/clinic\.jpg: a full copy of https:\/\/images\.example\.com\/photos\/clinic\.jpg under license all-rights-reserved/));
-  const x = reg(); x.assets = x.assets.filter((q) => q.path !== "public/clinic.jpg"); await R("public/assets", "write", x);
+  const x = reg(); x.assets = x.assets.filter((q: Entry) => q.path !== "public/clinic.jpg"); await R("public/assets", "write", x);
   rmSync(join(dir, "public/clinic.jpg"));
   expect("J-3: removed, the check passes", checkAssets(dir).ok, checkAssets(dir).errors);
 }
@@ -308,18 +313,18 @@ const brand = {
   const facts = factsOf(photo);
   const fetched = { type: facts.type, width: facts.width, height: facts.height, bytes: facts.bytes, sha256: facts.sha256, filled_at: "2026-11-05T00:00:00.000Z" };
   put("public/photo.png", photo);
-  const a = await addAsset(/** @type {Parameters<typeof addAsset>[0]} */ ({ venture: "acme", workspace: W, path: "public/photo.png", source: `${base}/a.png`, license: "CC-BY-4.0", credit: "Ana Photo", alt: "Clinic front desk", origin_url: `${base}/a.png` }));
+  const a = await addAsset({ venture: "acme", workspace: W, path: "public/photo.png", source: `${base}/a.png`, license: "CC-BY-4.0", credit: "Ana Photo", alt: "Clinic front desk", origin_url: `${base}/a.png` } as Parameters<typeof addAsset>[0]);
   const rem = await addRemote({ venture: "acme", workspace: W, url: `${base}/a.png`, license: "CC-BY-4.0", credit: "Ana Photo", id: "cc-photo", alt: "Clinic front desk", fetched, copy: "public/photo.png" });
-  expect("J-3: a license that allows a copy keeps one in public/, registered with its origin", a.ok && rem.ok && reg().assets.find((q) => q.path === "public/photo.png")?.origin_url === `${base}/a.png` && reg().remote.find((q) => q.id === "cc-photo").copy === "public/photo.png", a.error ?? rem.error);
-  expect("J-4: the fetched image's facts are kept in the register", reg().remote.find((q) => q.id === "cc-photo").fetched.sha256 === factsOf(photo).sha256);
+  expect("J-3: a license that allows a copy keeps one in public/, registered with its origin", a.ok && rem.ok && reg().assets.find((q: Entry) => q.path === "public/photo.png")?.origin_url === `${base}/a.png` && reg().remote.find((q: Remote) => q.id === "cc-photo").copy === "public/photo.png", a.error ?? rem.error);
+  expect("J-4: the fetched image's facts are kept in the register", reg().remote.find((q: Remote) => q.id === "cc-photo").fetched.sha256 === factsOf(photo).sha256);
   const c = checkAssets(dir);
   expect("J-3: the register checks out with fetched and copied images", c.ok, c.errors);
   const y = reg(); y.remote_hosts = []; await R("public/assets", "write", y);
   expect("J-3: a fetched image from a host no longer allowed fails the check", has(checkAssets(dir).errors, /fetched from images\.example\.net, which is not in remote_hosts/));
   y.remote_hosts = [host]; await R("public/assets", "write", y);
-  const z = reg(); z.remote = z.remote.map((q) => q.id === "cc-photo" ? { ...q, license: "all-rights-reserved" } : q); await R("public/assets", "write", z);
+  const z = reg(); z.remote = z.remote.map((q: Remote) => q.id === "cc-photo" ? { ...q, license: "all-rights-reserved" } : q); await R("public/assets", "write", z);
   expect("J-3: a copy under a license that does not allow one fails the check", has(checkAssets(dir).errors, /copied to public\/photo\.png under license all-rights-reserved/));
-  z.remote = z.remote.map((q) => q.id === "cc-photo" ? { ...q, license: "CC-BY-4.0" } : q); await R("public/assets", "write", z);
+  z.remote = z.remote.map((q: Remote) => q.id === "cc-photo" ? { ...q, license: "CC-BY-4.0" } : q); await R("public/assets", "write", z);
 }
 
 // ---- P-26: the sitemap is a marketing record; sitemap.xml comes from it.
@@ -345,13 +350,15 @@ const brand = {
 {
   process.env.MENTURA_WORKSPACE = W;
   const { handle } = await import("../mcp/server.ts");
-  const mcp = async (name, args) => (await handle({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: args } })).result;
+  type ToolResult = { isError?: boolean, content: { text: string }[] };
+  type ToolArgs = NonNullable<Message["params"]>["arguments"];
+  const mcp = async (name: string, args: ToolArgs) => (await handle({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: args } }))?.result as ToolResult;
   const t = await mcp("mentura_run", { venture: "acme", route: "marketing/brand/tokens" });
   expect("Y-3 over MCP: an agent reads the brand tokens", !t.isError && /--color-accent: #1d4e89/.test(JSON.parse(t.content[0].text).css), t.content?.[0]?.text?.slice(0, 200));
   const l = await mcp("mentura_layout", { venture: "acme", route: "marketing/content" });
   expect("Y-3 over MCP: an agent's layout carries the voice rules", !l.isError && JSON.parse(l.content[0].text).brand.voice[0].avoid.includes("synergy"));
   const f = await mcp("mentura_run", { venture: "acme", route: "public/assets/facts" });
-  expect("J-4 over MCP: an agent reads facts from code", !f.isError && JSON.parse(f.content[0].text).facts.some((x) => x.path === "public/photo.png" && x.width === 640));
+  expect("J-4 over MCP: an agent reads facts from code", !f.isError && JSON.parse(f.content[0].text).facts.some((x: Entry & { width: number }) => x.path === "public/photo.png" && x.width === 640));
   delete process.env.MENTURA_WORKSPACE;
 }
 
@@ -362,7 +369,7 @@ const brand = {
   const p = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.ts"), dir], { encoding: "utf8" });
   expect("every write and confirmation kept the provenance chain", p.status === 0, p.stdout + p.stderr);
   for (const f of ["marketing/brand.json", "public/assets.json", "glossary/finance.json", "raw/sources/cc-photo/source.json", "marketing/sitemap.json"]) {
-    const map = { "marketing/brand.json": "marketing-brand.schema.json", "public/assets.json": "public-assets.schema.json", "glossary/finance.json": "glossary.schema.json", "raw/sources/cc-photo/source.json": "raw-source.schema.json", "marketing/sitemap.json": "marketing-sitemap.schema.json" };
+    const map: Record<string, string> = { "marketing/brand.json": "marketing-brand.schema.json", "public/assets.json": "public-assets.schema.json", "glossary/finance.json": "glossary.schema.json", "raw/sources/cc-photo/source.json": "raw-source.schema.json", "marketing/sitemap.json": "marketing-sitemap.schema.json" };
     const v = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", map[f], "--file", join(dir, f)], { encoding: "utf8" });
     expect(`${f} validates against its schema`, v.status === 0, v.stdout + v.stderr);
   }

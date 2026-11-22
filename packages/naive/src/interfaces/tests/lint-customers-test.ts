@@ -12,24 +12,27 @@ import { call, routes } from "../../router/router.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => {
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
 };
-const write = (dir, rel, body) => {
+/** The lint's JSON report: only the fields this test reads. */
+type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string, severity?: string };
+type Report = { ok?: boolean, findings: Finding[], rules: { id: string, severity: string, mode: string }[] };
+const write = (dir: string, rel: string, body: unknown): void => {
   const path = join(dir, rel);
   mkdirSync(join(path, ".."), { recursive: true });
   writeFileSync(path, typeof body === "string" ? body : JSON.stringify(body, null, 2) + "\n");
 };
-const cli = (dir, args = []) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-customers.ts"), dir, ...args], { encoding: "utf8" });
-const run = (dir) => {
+const cli = (dir: string, args: string[] = []) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-customers.ts"), dir, ...args], { encoding: "utf8" });
+const run = (dir: string) => {
   const r = cli(dir, ["--json"]);
-  let body = null;
+  let body: Report | null = null;
   try { body = JSON.parse(r.stdout); } catch { /* stdout is not JSON when the process crashes before printing */ }
   return { status: r.status, stdout: r.stdout, stderr: r.stderr, body };
 };
-const rulesOf = (body, id) => (body?.findings ?? []).filter((x) => x.rule === id);
-const shape = (x) => x && ["rule", "mode", "file", "message", "suggestion"].every((k) => typeof x[k] === "string");
+const rulesOf = (body: Report | null, id: string): Finding[] => (body?.findings ?? []).filter((x) => x.rule === id);
+const shape = (x: Record<string, unknown> | undefined) => x && ["rule", "mode", "file", "message", "suggestion"].every((k) => typeof x[k] === "string");
 
 const icp = { venture: "shop", profiles: [{ id: "shop-owners", who: "Owners of two-to-ten-person shops", primary: true }] };
 const product = { id: "desk", name: "Desk", description: "A booking desk for shops.", job: "Book a table and take next-day pickup", status: "building", offered_to: ["shop-owners"] };
@@ -54,8 +57,8 @@ function venture(layout = "flat") {
   write(v.dir, "product/desk.json", product);
   write(v.dir, "customers/ada.json", cleanCustomer);
   const r = run(v.dir);
-  expect("a clean venture is silent", r.status === 0 && r.body?.ok === true && r.body.findings.length === 0, r.stderr || r.stdout);
-  expect("both rules ship fail-open", r.body?.rules?.every((x) => x.severity === "warn" && x.mode === "fail-open") && r.body.rules.map((x) => x.id).join(",") === "no-icp-match,promise-not-kept");
+  expect("a clean venture is silent", r.status === 0 && r.body?.ok === true && r.body?.findings.length === 0, r.stderr || r.stdout);
+  expect("both rules ship fail-open", r.body?.rules?.every((x) => x.severity === "warn" && x.mode === "fail-open") && r.body?.rules.map((x) => x.id).join(",") === "no-icp-match,promise-not-kept");
   v.drop();
 }
 
@@ -72,7 +75,7 @@ function venture(layout = "flat") {
   const unnamed = run(v.dir);
   expect("no-icp-match fires when no profile is named", unnamed.status === 0 && rulesOf(unnamed.body, "no-icp-match").length === 1 && /no icp profile is named/.test(rulesOf(unnamed.body, "no-icp-match")[0].message));
   write(v.dir, "customers/bev.json", { id: "bev", name: "Bev", icp: "icp:shop-owners" });
-  expect("an icp: prefix still matches the profile", run(v.dir).body.findings.length === 0);
+  expect("an icp: prefix still matches the profile", run(v.dir).body?.findings.length === 0);
   v.drop();
 }
 
@@ -93,7 +96,7 @@ function venture(layout = "flat") {
   write(v.dir, "foundation/icp.json", icp);
   write(v.dir, "product/desk.json", product);
   write(v.dir, "customers/ada.json", cleanCustomer);
-  expect("the promise is quiet while the product keeps it", run(v.dir).body.findings.length === 0);
+  expect("the promise is quiet while the product keeps it", run(v.dir).body?.findings.length === 0);
   write(v.dir, "product/desk.json", { ...product, job: "Book a table", description: "A booking desk for shops." });
   const dropped = run(v.dir);
   expect("after the product drops the words, the next run reports the promise", dropped.status === 0 && rulesOf(dropped.body, "promise-not-kept").length === 1 && /does not keep/.test(rulesOf(dropped.body, "promise-not-kept")[0].message));
@@ -111,9 +114,9 @@ function venture(layout = "flat") {
   expect("a broken product/<id>.json is not hidden by products/<id>.json", /not readable/.test(rulesOf(run(v.dir).body, "promise-not-kept")[0]?.message ?? ""));
   rmSync(join(v.dir, "product/desk.json"));
   const legacy = run(v.dir);
-  expect("products/<id>.json answers the key when product/<id>.json is absent", legacy.status === 0 && legacy.body.findings.length === 0, legacy.stdout);
+  expect("products/<id>.json answers the key when product/<id>.json is absent", legacy.status === 0 && legacy.body?.findings.length === 0, legacy.stdout);
   write(v.dir, "products/desk.json", { ...product, job: "Book a table", description: "Same-day is not here, but NEXT-DAY PICKUP is." });
-  expect("the promise text matches job or description without case", run(v.dir).body.findings.length === 0);
+  expect("the promise text matches job or description without case", run(v.dir).body?.findings.length === 0);
   v.drop();
 }
 
@@ -123,13 +126,13 @@ function venture(layout = "flat") {
   write(v.dir, "product/desk.json", product);
   write(v.dir, "customers/bev.json", { id: "bev", name: "Bev" });
   const open = run(v.dir);
-  expect("fail-open with a finding exits 0", open.status === 0 && open.body.ok === true && open.body.findings[0].mode === "fail-open");
+  expect("fail-open with a finding exits 0", open.status === 0 && open.body?.ok === true && open.body?.findings[0].mode === "fail-open");
   write(v.dir, "naive.config.json", { customers_lint: { rules: { "no-icp-match": { mode: "fail-closed" } } } });
   const closed = run(v.dir);
-  expect("fail-closed with a finding exits 1", closed.status === 1 && closed.body.ok === false && closed.body.findings[0].mode === "fail-closed" && closed.body.findings[0].rule === "no-icp-match");
+  expect("fail-closed with a finding exits 1", closed.status === 1 && closed.body?.ok === false && closed.body?.findings[0].mode === "fail-closed" && closed.body?.findings[0].rule === "no-icp-match");
   write(v.dir, "customers/bev.json", { id: "bev", name: "Bev", icp: "shop-owners" });
   const closedQuiet = run(v.dir);
-  expect("fail-closed with no finding exits 0", closedQuiet.status === 0 && closedQuiet.body.ok === true && closedQuiet.body.findings.length === 0);
+  expect("fail-closed with no finding exits 0", closedQuiet.status === 0 && closedQuiet.body?.ok === true && closedQuiet.body?.findings.length === 0);
   write(v.dir, "customers/ada.json", { id: "ada", name: "Ada", icp: "shop-owners", promises: [{ product: "desk", text: "same-day delivery" }] });
   write(v.dir, "naive.config.json", { customers_lint: { rules: { "promise-not-kept": { mode: "fail-closed" }, "no-icp-match": { mode: "fail-open" } } } });
   const onlyPromise = run(v.dir);
@@ -137,7 +140,7 @@ function venture(layout = "flat") {
   write(v.dir, "customers/bev.json", { id: "bev", name: "Bev", icp: "shop-owners" });
   write(v.dir, "naive.config.json", { customers_lint: { rules: { "no-icp-match": { mode: "fail-closed" }, "promise-not-kept": { mode: "fail-open" } } } });
   const openPromise = run(v.dir);
-  expect("a fail-open finding exits 0 when the fail-closed rule has none", openPromise.status === 0 && openPromise.body.ok === true && rulesOf(openPromise.body, "promise-not-kept").length === 1 && rulesOf(openPromise.body, "no-icp-match").length === 0 && rulesOf(openPromise.body, "promise-not-kept")[0].mode === "fail-open", openPromise.stdout);
+  expect("a fail-open finding exits 0 when the fail-closed rule has none", openPromise.status === 0 && openPromise.body?.ok === true && rulesOf(openPromise.body, "promise-not-kept").length === 1 && rulesOf(openPromise.body, "no-icp-match").length === 0 && rulesOf(openPromise.body, "promise-not-kept")[0].mode === "fail-open", openPromise.stdout);
   write(v.dir, "customers/cy.json", { id: "cy", name: "Cy" });
   write(v.dir, "naive.config.json", { customers_lint: { rules: { "no-icp-match": { mode: "closed" }, "promise-not-kept": { mode: "fail-closed" } } } });
   const badMode = run(v.dir);
@@ -155,9 +158,9 @@ function venture(layout = "flat") {
   write(v.dir, "customers/bad.json", "{");
   write(v.dir, "customers/notes.txt", "not a record");
   const r = run(v.dir);
-  expect("an unreadable customer is skipped and the readable one still lints", r.status === 0 && r.body.findings.length === 0, r.stderr);
+  expect("an unreadable customer is skipped and the readable one still lints", r.status === 0 && r.body?.findings.length === 0, r.stderr);
   write(v.dir, "customers/ada.json", { id: "ada", name: "Ada", icp: "shop-owners", promises: "same-day delivery" });
-  expect("a promise that is not a record is skipped, and the run does not crash", run(v.dir).status === 0 && run(v.dir).body.findings.length === 0);
+  expect("a promise that is not a record is skipped, and the run does not crash", run(v.dir).status === 0 && run(v.dir).body?.findings.length === 0);
   write(v.dir, "customers/ada.json", { id: "ada", name: "Ada", icp: "shop-owners", promises: [{ product: "../etc/passwd", text: "next-day pickup" }] });
   const escaped = run(v.dir);
   expect("a product key that is not an id is a finding and does not escape the venture", escaped.status === 0 && /not a product id/.test(rulesOf(escaped.body, "promise-not-kept")[0]?.message ?? ""), escaped.stderr);
@@ -170,12 +173,12 @@ function venture(layout = "flat") {
   write(v.dir, "foundation/icp.json", icp);
   write(v.dir, "naive.config.json", "{");
   const badCfg = run(v.dir);
-  expect("an unreadable naive.config.json does not crash and stays fail-open", badCfg.status === 0 && badCfg.body?.ok === true && badCfg.body.rules.every((x) => x.mode === "fail-open"), badCfg.stderr);
+  expect("an unreadable naive.config.json does not crash and stays fail-open", badCfg.status === 0 && badCfg.body?.ok === true && badCfg.body?.rules.every((x) => x.mode === "fail-open"), badCfg.stderr);
   write(v.dir, "naive.config.json", { customers_lint: { rules: "nope" } });
-  expect("customers_lint.rules that is not an object keeps the defaults", run(v.dir).status === 0 && run(v.dir).body.rules.every((x) => x.mode === "fail-open"));
+  expect("customers_lint.rules that is not an object keeps the defaults", run(v.dir).status === 0 && run(v.dir).body?.rules.every((x) => x.mode === "fail-open"));
   rmSync(join(v.dir, "customers"), { recursive: true, force: true });
   write(v.dir, "customers", "not a directory");
-  expect("a customers path that is not a directory does not crash", run(v.dir).status === 0 && run(v.dir).body.findings.length === 0);
+  expect("a customers path that is not a directory does not crash", run(v.dir).status === 0 && run(v.dir).body?.findings.length === 0);
   v.drop();
 }
 
@@ -184,13 +187,13 @@ function venture(layout = "flat") {
   write(v.dir, "purpose/icp.json", icp);
   write(v.dir, "product/desk.json", product);
   write(v.dir, "customers/ada.json", cleanCustomer);
-  expect("purpose/icp.json answers when foundation/icp.json is absent", run(v.dir).body.findings.length === 0);
+  expect("purpose/icp.json answers when foundation/icp.json is absent", run(v.dir).body?.findings.length === 0);
   write(v.dir, "foundation/icp.json", { venture: "shop", profiles: [{ id: "shop-owners", who: "Owners", status: "retired" }] });
   expect("a retired profile does not match", rulesOf(run(v.dir).body, "no-icp-match").length === 1);
   rmSync(join(v.dir, "foundation/icp.json"));
   rmSync(join(v.dir, "purpose/icp.json"));
   write(v.dir, "foundation/icp/shop-owners.json", { id: "shop-owners", who: "Owners of two-to-ten-person shops", primary: true });
-  expect("one file per profile in foundation/icp matches", run(v.dir).body.findings.length === 0);
+  expect("one file per profile in foundation/icp matches", run(v.dir).body?.findings.length === 0);
   v.drop();
 }
 
@@ -201,11 +204,11 @@ function venture(layout = "flat") {
   write(v.dir, "k-base/customers/ada.json", cleanCustomer);
   write(v.dir, "customers/ada.json", { id: "ada", name: "Ada", icp: "not-a-profile" });
   const quiet = run(v.dir);
-  expect("a structured venture is read through its logical paths, not a file left at the root", quiet.status === 0 && quiet.body.findings.length === 0, quiet.stdout);
+  expect("a structured venture is read through its logical paths, not a file left at the root", quiet.status === 0 && quiet.body?.findings.length === 0, quiet.stdout);
   write(v.dir, "meta/naive.config.json", { customers_lint: { rules: { "no-icp-match": { mode: "fail-closed" } } } });
   write(v.dir, "k-base/customers/ada.json", { id: "ada", name: "Ada" });
   const closed = run(v.dir);
-  expect("the mode override in a structured venture's meta/naive.config.json exits 1", closed.status === 1 && closed.body.findings[0]?.mode === "fail-closed" && closed.body.findings[0]?.file === "customers/ada.json", closed.stdout);
+  expect("the mode override in a structured venture's meta/naive.config.json exits 1", closed.status === 1 && closed.body?.findings[0]?.mode === "fail-closed" && closed.body?.findings[0]?.file === "customers/ada.json", closed.stdout);
   v.drop();
 }
 
@@ -224,7 +227,7 @@ function venture(layout = "flat") {
   const usage = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-customers.ts")], { encoding: "utf8" });
   const missing = run(join(tmpdir(), "lint-customers-no-such-venture"));
   expect("no venture directory exits 2", usage.status === 2 && missing.status === 2);
-  const table = routes().find((r) => r.route === "customers/lint");
+  const table = (routes() as { route: string, kind: string, script?: string, actions: string[] }[]).find((r) => r.route === "customers/lint");
   expect("customers/lint is a command route on packages/naive/src/checks/lint-customers.ts", table?.kind === "command" && table.script === "packages/naive/src/checks/lint-customers.ts" && table.actions.includes("run"));
 }
 
@@ -234,7 +237,7 @@ function venture(layout = "flat") {
   write(v.dir, "product/desk.json", product);
   write(v.dir, "customers/bev.json", { id: "bev", name: "Bev", icp: "clinics" });
   const answered = await call({ venture: "shop", route: "customers/lint", action: "run", workspace: v.root, via: "cli" });
-  expect("the route runs the lint and returns the finding", answered.ok === true && answered.result.findings.some((x) => x.rule === "no-icp-match" && x.mode === "fail-open"), answered.error ?? answered.result);
+  expect("the route runs the lint and returns the finding", answered.ok === true && answered.result.findings.some((x: Finding) => x.rule === "no-icp-match" && x.mode === "fail-open"), answered.error ?? answered.result);
   v.drop();
 }
 

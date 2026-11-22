@@ -12,32 +12,35 @@ import { call, routes } from "../../router/router.mjs";
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const bin = join(repo, "packages/naive/src/checks/lint-legal.ts");
 let failed = 0;
-const expect = (name, ok, detail = "") => {
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
 };
 
-const put = (dir, rel, body) => {
+/** The lint's JSON report: only the fields this test reads. */
+type Finding = { rule: string, mode: string, file?: string, message: string, suggestion?: string };
+type Report = { ok?: boolean, notice?: string, findings: Finding[] };
+const put = (dir: string, rel: string, body: string): void => {
   mkdirSync(join(dir, rel, ".."), { recursive: true });
   writeFileSync(join(dir, rel), body);
 };
-const venture = (files, ventureJson = { id: "acme", name: "Acme", phase: "discovery" }) => {
+const venture = (files: Record<string, string>, ventureJson: { id: string, name: string, phase: string, layout?: string } = { id: "acme", name: "Acme", phase: "discovery" }): string => {
   const dir = mkdtempSync(join(tmpdir(), "legal-lint-"));
   put(dir, "venture.json", JSON.stringify(ventureJson) + "\n");
   for (const [rel, body] of Object.entries(files)) put(dir, rel, body);
   return dir;
 };
-const run = (dir, args = ["--json"]) => spawnSync(process.execPath, [bin, dir, ...args], { encoding: "utf8" });
-const json = (r) => { try { return JSON.parse(r.stdout); } catch { return null; } };
-const rulesOf = (body) => (body?.findings ?? []).map((f) => f.rule);
+const run = (dir: string, args: string[] = ["--json"]) => spawnSync(process.execPath, [bin, dir, ...args], { encoding: "utf8" });
+const json = (r: { stdout: string }): Report | null => { try { return JSON.parse(r.stdout); } catch { return null; } };
+const rulesOf = (body: Report | null): string[] => (body?.findings ?? []).map((f) => f.rule);
 
-const claim = (text, extra = "") => `---\npublish: true\nclaim: ${text}\nvariant_of: foundation/problem.json\naudience: founders\n${extra}---\n\n${text}\n`;
-const agreement = (holders) => JSON.stringify({
+const claim = (text: string, extra: string = "") => `---\npublish: true\nclaim: ${text}\nvariant_of: foundation/problem.json\naudience: founders\n${extra}---\n\n${text}\n`;
+const agreement = (holders: string[]) => JSON.stringify({
   signed: null,
   document: "governance/founder-agreement.md",
   founders: holders.map((holder) => ({ holder, role: "founder", commitment: "full-time", ip_assigned: true })),
 }, null, 2) + "\n";
-const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: "2026-01-01" }) + "\n";
+const founder = (id: string) => JSON.stringify({ id, name: id, role: "founder", joined: "2026-01-01" }) + "\n";
 
 // One fixture that fails each rule. Modes stay fail-open, so the run exits 0.
 {
@@ -80,8 +83,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
 
 // Counterparty records the agreement may name.
 {
-  /** @type {[string, Record<string, string>][]} */
-  const cases = [
+  const cases: [string, Record<string, string>][] = [
     ["ownership holder", { "governance/ownership.json": JSON.stringify({ holders: [{ id: "ada", name: "Ada", kind: "founder" }] }) }],
     ["founder file", { "people/founders/ada.json": founder("ada") }],
     ["account", { "accounts/ada/account.json": JSON.stringify({ id: "ada", name: "Ada", relationship: "partner", status: "active" }) }],
@@ -102,15 +104,15 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
     "marketing/content/hours.mdx": claim("Customers save 10 hours a week"),
     "governance/founder-agreement.json": agreement(["ghost"]),
   };
-  const withMode = (modes) => venture({
+  const withMode = (modes: Record<string, { mode: string }>) => venture({
     ...files,
     "naive.config.json": JSON.stringify({ legal_lint: { rules: modes } }) + "\n",
   });
-  const closed = (id) => ({ mode: "fail-closed" });
+  const closed = (_id?: string) => ({ mode: "fail-closed" });
   let dir = withMode({ "unsourced-public-claim": closed(), "agreement-no-counterparty": { mode: "fail-open" } });
   let r = run(dir);
   let body = json(r);
-  expect("fail-closed on a rule with findings exits 1", r.status === 1 && body?.ok === false && body.findings.find((f) => f.rule === "unsourced-public-claim").mode === "fail-closed" && body.findings.find((f) => f.rule === "agreement-no-counterparty").mode === "fail-open", r.stdout);
+  expect("fail-closed on a rule with findings exits 1", r.status === 1 && body?.ok === false && body.findings.find((f) => f.rule === "unsourced-public-claim")?.mode === "fail-closed" && body.findings.find((f) => f.rule === "agreement-no-counterparty")?.mode === "fail-open", r.stdout);
   rmSync(dir, { recursive: true, force: true });
 
   dir = withMode({ "agreement-no-counterparty": closed() });
@@ -125,7 +127,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
     "naive.config.json": JSON.stringify({ legal_lint: { rules: { "unsourced-public-claim": closed(), "agreement-no-counterparty": closed() } } }) + "\n",
   });
   r = run(dir);
-  expect("fail-closed with no findings exits 0", r.status === 0 && json(r)?.ok === true && json(r).findings.length === 0, r.stdout);
+  expect("fail-closed with no findings exits 0", r.status === 0 && json(r)?.ok === true && json(r)?.findings.length === 0, r.stdout);
   rmSync(dir, { recursive: true, force: true });
 
   dir = venture({
@@ -198,7 +200,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
   const r = run(dir);
   const body = json(r);
   const text = JSON.stringify(body);
-  expect("structured layout: the real claim is read and the flat decoy is not", r.status === 1 && rulesOf(body).join() === "unsourced-public-claim" && body.findings[0].file === "marketing/content/hours.mdx" && !/flat file/.test(text) && body.findings[0].mode === "fail-closed", r.stdout);
+  expect("structured layout: the real claim is read and the flat decoy is not", r.status === 1 && rulesOf(body).join() === "unsourced-public-claim" && body?.findings[0].file === "marketing/content/hours.mdx" && !/flat file/.test(text) && body?.findings[0].mode === "fail-closed", r.stdout);
   rmSync(dir, { recursive: true, force: true });
 }
 
@@ -228,7 +230,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
 
 // The route is legal/lint, and it runs this script.
 {
-  const hit = routes().find((r) => r.route === "legal/lint");
+  const hit = routes().find((r: { route: string }) => r.route === "legal/lint");
   expect("legal/lint is a command route", hit?.kind === "command" && hit.script === "packages/naive/src/checks/lint-legal.ts" && hit.actions.includes("run") && /not legal advice/.test(hit.note), hit);
 
   const ws = mkdtempSync(join(tmpdir(), "legal-lint-ws-"));
@@ -238,7 +240,7 @@ const founder = (id) => JSON.stringify({ id, name: id, role: "founder", joined: 
   const dir = join(ws, "acme");
   put(dir, "marketing/content/hours.mdx", claim("Customers save 10 hours a week"));
   const open = await call({ venture: "acme", route: "legal/lint", action: "run", workspace: ws, via: "cli" });
-  expect("the route returns the findings when the rule is fail-open", open.ok === true && open.result?.findings?.some((f) => f.rule === "unsourced-public-claim") && open.result.notice === "This is a lint, not legal advice.", open.error ?? open.result);
+  expect("the route returns the findings when the rule is fail-open", open.ok === true && open.result?.findings?.some((f: Finding) => f.rule === "unsourced-public-claim") && open.result.notice === "This is a lint, not legal advice.", open.error ?? open.result);
 
   put(dir, "naive.config.json", JSON.stringify({ legal_lint: { rules: { "unsourced-public-claim": { mode: "fail-closed" } } } }) + "\n");
   const shut = await call({ venture: "acme", route: "legal/lint", action: "run", workspace: ws, via: "cli" });

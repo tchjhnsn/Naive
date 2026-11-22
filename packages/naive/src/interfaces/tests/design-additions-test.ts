@@ -7,8 +7,8 @@ import { hold, packageGates } from "../../engine/gate.ts";
 import { judge } from "../../router/router.mjs";
 
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
+const t = (name: string, fn: () => void): void => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
+const ok = (c: unknown, m?: string): void => { if (!c) throw new Error(m ?? "assertion failed"); };
 
 t("a record downstream of use_model stays agent until a person confirms it or its checks pass", () => {
   ok(provenanceOf({ use_model: ["draft"], confirmed: false, checksPass: false }) === "agent");
@@ -28,7 +28,7 @@ t("the gate holds a fail-closed write as a draft and makes no model or network c
 
 t("a judgment below its threshold is uncertain, not an error and not an answer", () => {
   const u = judge(0.4, 0.7, "founder");
-  ok(u.outcome === "uncertain" && u.owner === "founder" && u.result === null && u.ok !== false, JSON.stringify(u));
+  ok(u.outcome === "uncertain" && u.owner === "founder" && u.result === null && (u as { ok?: boolean }).ok !== false, JSON.stringify(u));
   ok(judge(0.9, 0.7, "founder").outcome === "answer");
 });
 

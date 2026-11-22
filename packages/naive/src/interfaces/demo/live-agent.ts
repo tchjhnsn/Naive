@@ -24,7 +24,7 @@ writeFileSync(mcp, JSON.stringify({ mcpServers: { naive: { command: "node", args
 let board = null;
 if (process.argv.includes("--board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("./board.ts")).serve(4331, venture); console.log("Decision board: http://127.0.0.1:4331/"); }
 
-const agent = (prompt) => {
+const agent = (prompt: string): void => {
   console.log("\nAGENT  working through Naive's MCP server...");
   const p = spawnSync("claude", ["-p", prompt, "--tools", "", "--mcp-config", mcp, "--strict-mcp-config", "--allowedTools", "mcp__naive__*", "--output-format", "text"], { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] });
   if (p.error) { console.error(`could not run claude: ${p.error.message}`); process.exit(1); }

@@ -4,7 +4,7 @@
 import { existsSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 
-export function findVenture(from = process.cwd()) {
+export function findVenture(from: string = process.cwd()): string | null {
   for (let d = resolve(from); ; d = dirname(d)) {
     if (existsSync(join(d, "venture.json"))) return d;
     if (dirname(d) === d) return null;
@@ -12,4 +12,4 @@ export function findVenture(from = process.cwd()) {
 }
 
 /** The router's view of a venture directory: its workspace is the folder that holds it. */
-export const asRouted = (dir) => ({ workspace: dirname(dir), venture: basename(dir) });
+export const asRouted = (dir: string): { workspace: string, venture: string } => ({ workspace: dirname(dir), venture: basename(dir) });

@@ -8,19 +8,20 @@
 //
 //   handle(req, res, dir) -> true when it answered a /setup request
 
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { decide, point, state } from "../../router/orchestration/setup.mjs";
 
-const json = (res, code, body) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
-const body = (req) => new Promise((ok) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch { ok({}); } }); });
+const json = (res: ServerResponse, code: number, body: unknown): void => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
+const body = (req: IncomingMessage): Promise<unknown> => new Promise((ok) => { let b = ""; req.on("data", (c: Buffer) => (b += c)); req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch { ok({}); } }); });
 const GOAL = "discovery-goal";
 
-export async function handle(req, res, dir) {
-  const u = new URL(req.url, "http://x");
+export async function handle(req: IncomingMessage, res: ServerResponse, dir: string): Promise<boolean> {
+  const u = new URL(req.url ?? "", "http://x");
   if (!u.pathname.startsWith("/setup")) return false;
   if (u.pathname === "/setup" || u.pathname === "/setup/") { res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); res.end(PAGE); return true; }
   if (u.pathname === "/setup/state") { json(res, 200, await state(dir)); return true; }
-  if (req.method === "POST" && u.pathname === "/setup/decide") { const r = await decide(dir, await body(req)); json(res, r.ok ? 200 : 400, r); return true; }
-  if (req.method === "POST" && u.pathname === "/setup/point") { const r = await point(dir, await body(req)); json(res, r.ok ? 200 : 400, r); return true; }
+  if (req.method === "POST" && u.pathname === "/setup/decide") { const r = await decide(dir, await body(req) as Parameters<typeof decide>[1]); json(res, r.ok ? 200 : 400, r); return true; }
+  if (req.method === "POST" && u.pathname === "/setup/point") { const r = await point(dir, await body(req) as Parameters<typeof point>[1]); json(res, r.ok ? 200 : 400, r); return true; }
   json(res, 404, { error: "no such setup route" });
   return true;
 }

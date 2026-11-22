@@ -21,16 +21,17 @@
 //
 // <venture> is an id or, for a nested venture, its folder path (studio/print).
 
-import { createServer } from "node:http";
+import { createServer, type IncomingHttpHeaders } from "node:http";
 import { call, groups, resolve, routes, ventureDir, ventures } from "../../router/router.mjs";
 
-const status = (r) => r.ok ? 200 : /^no (route|venture)/.test(r.error ?? "") ? 404 : /has no action/.test(r.error ?? "") ? 405 : / may not /.test(r.error ?? "") ? 403 : 422;
-const VERBS = { check: "POST", run: "POST", view: "GET", layout: "GET" };
+const status = (r: { ok: boolean, error?: string }): number => r.ok ? 200 : /^no (route|venture)/.test(r.error ?? "") ? 404 : /has no action/.test(r.error ?? "") ? 405 : / may not /.test(r.error ?? "") ? 403 : 422;
+const VERBS: Record<string, string> = { check: "POST", run: "POST", view: "GET", layout: "GET" };
 
-export async function route(method, url, body, headers = {}) {
-  const path = decodeURIComponent(new URL(url, "http://x").pathname).replace(/\/+$/, "");
+/** Answers one request: [status code, JSON body]. */
+export async function route(method: string | undefined, url: string | undefined, body?: unknown, headers: IncomingHttpHeaders = {}): Promise<[number, unknown]> {
+  const path = decodeURIComponent(new URL(url ?? "", "http://x").pathname).replace(/\/+$/, "");
   if (method === "GET" && path === "/routes") return [200, routes()];
-  if (method === "GET" && path === "/ventures") return [200, ventures().map(({ id, name, phase }) => ({ id, name, phase }))];
+  if (method === "GET" && path === "/ventures") return [200, ventures().map(({ id, name, phase }: { id: string, name: string, phase: string }) => ({ id, name, phase }))];
   let m = path.match(/^\/templates\/(.+)$/);
   if (method === "GET" && m) { const r = await call({ route: m[1], action: "template" }); return [status(r), r]; }
   if (method === "GET" && path === "/groups") return [200, groups()];
@@ -38,15 +39,15 @@ export async function route(method, url, body, headers = {}) {
   if (!m) return [404, { ok: false, error: `no endpoint ${method} ${path}` }];
   // [...venture]: the longest leading run of segments that names a venture; the rest is the route.
   const parts = m[1].split("/");
-  let venture, rest;
+  let venture: string | undefined, rest: string[] = [];
   for (let i = parts.length; i >= 1; i--) if (ventureDir(parts.slice(0, i).join("/"))) { venture = parts.slice(0, i).join("/"); rest = parts.slice(i); break; }
   if (!venture) return [404, { ok: false, error: `no venture in ${path}` }];
   if (!rest.length) { if (method !== "GET") return [405, { ok: false, error: `${method} is not allowed on ${path}` }]; const r = await call({ venture, route: "system/overview", action: "run", via: "api" }); return [status(r), r]; }
-  let verb = VERBS[rest.at(-1)] && resolve(rest.slice(0, -1).join("/")).r ? rest.pop() : null;
+  const verb = VERBS[rest.at(-1) ?? ""] && resolve(rest.slice(0, -1).join("/")).r ? rest.pop() : null;
   const rt = rest.join("/");
   const action = verb ?? (method === "GET" ? "read" : method === "PUT" ? "write" : null);
   if (!action || (verb && VERBS[verb] !== method)) return [405, { ok: false, error: `${method} is not allowed on ${path}` }];
-  const h = (k) => headers[k] || undefined;
+  const h = (k: string): string | undefined => { const v = headers[k]; return typeof v === "string" && v ? v : undefined; };
   const r = await call({ venture, route: rt, action, input: body, actor: "agent", actor_id: h("x-mentura-actor"), via: "api",
     // Gate group hook (X-4): x-mentura-confidence carries a score computed before the write, for the gate's confidence rules.
     provenance: { derived_from: h("x-mentura-derived-from")?.split(",").map((x) => x.trim()).filter(Boolean), decision: h("x-mentura-decision"), confidence: h("x-mentura-confidence"),
@@ -59,9 +60,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const port = i >= 0 ? Number(process.argv[i + 1]) : 4330;
   createServer((req, res) => {
     let raw = "";
-    req.on("data", (c) => { raw += c; if (raw.length > 1e6) req.destroy(); });
+    req.on("data", (c: Buffer) => { raw += c; if (raw.length > 1e6) req.destroy(); });
     req.on("end", async () => {
-      let body;
+      let body: unknown;
       try { body = raw ? JSON.parse(raw) : undefined; } catch { res.writeHead(400, { "content-type": "application/json" }); res.end(JSON.stringify({ ok: false, error: "body is not JSON" })); return; }
       const [code, out] = await route(req.method, req.url, body, req.headers);
       res.writeHead(code, { "content-type": "application/json" });

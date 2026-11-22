@@ -18,22 +18,22 @@ import { check } from "../../checks/check-validation-study.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "validation-study-test-"));
-const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, MENTURA_WORKSPACE: ws });
+const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 delete env.MENTURA_ACTOR_ID; delete env.TYPESAFE_API_KEY;
 delete process.env.MENTURA_ACTOR_ID;
-const cli = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
-const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), ...a], { encoding: "utf8", env: { ...env, NAIVE_BETA_TESTER: "t1" } });
+const cli = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
+const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), ...a], { encoding: "utf8", env: { ...env, NAIVE_BETA_TESTER: "t1" } });
 const routesMd = () => readFileSync(join(repo, "docs/reference/ROUTES.md"), "utf8");
-const json = (o) => JSON.stringify(o, null, 2) + "\n";
-const put = (f, o) => { mkdirSync(join(f, ".."), { recursive: true }); writeFileSync(f, json(o)); };
-const valid = (schema, o) => { const f = join(ws, `v-${Math.random().toString(36).slice(2)}.json`); writeFileSync(f, JSON.stringify(o)); const r = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", f], { encoding: "utf8" }); rmSync(f); return r.status === 0; };
+const json = (o: unknown) => JSON.stringify(o, null, 2) + "\n";
+const put = (f: string, o: unknown) => { mkdirSync(join(f, ".."), { recursive: true }); writeFileSync(f, json(o)); };
+const valid = (schema: string, o: unknown) => { const f = join(ws, `v-${Math.random().toString(36).slice(2)}.json`); writeFileSync(f, JSON.stringify(o)); const r = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", f], { encoding: "utf8" }); rmSync(f); return r.status === 0; };
 
 const init = cli("init", join(ws, "ventures/vs"), "--id", "vs", "--layers", "purpose");
 expect("a venture to test in", init.status === 0, init.stderr);
 const dir = join(ws, "ventures/vs");
-const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
+const cfg = (c: unknown) => writeFileSync(join(dir, "naive.config.json"), json(c));
 
 // Records.
 {
@@ -76,8 +76,8 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("an event is valid against telemetry.schema.json", valid("telemetry.schema.json", events(dir)[0]));
   expect("telemetry refuses record contents", !record(dir, { ...e, input: { statement: "secret plan" } }).written);
   expect("telemetry refuses a _private path", !record(dir, { ...e, name: "route.read", capability: "foundation", session: "_private/x" }).written && !valid("telemetry.schema.json", { ...events(dir)[0], path: "_private/people.json" }));
-  let sent = [];
-  const send = async (b) => { sent = sent.concat(b); };
+  let sent: unknown[] = [];
+  const send = async (b: unknown[]) => { sent = sent.concat(b); };
   expect("nothing is sent while telemetry.send is off", (await flush(dir, { send })).sent === 0 && sent.length === 0);
   cfg({ telemetry: { enabled: true, send: true } });
   expect("send without a person who set it sends nothing", (await flush(dir, { send })).sent === 0 && sent.length === 0);
@@ -103,7 +103,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
 // The beta gate.
 {
   const m = manifest();
-  expect("the manifest: core is venture, docket and foundation, in order", m.capabilities.filter((c) => c.core).map((c) => c.id).join() === "venture,docket,foundation" && m.capabilities.findIndex((c) => !c.core) === 3);
+  expect("the manifest: core is venture, docket and foundation, in order", m.capabilities.filter((c: { core?: boolean }) => c.core).map((c: { id: string }) => c.id).join() === "venture,docket,foundation" && m.capabilities.findIndex((c: { core?: boolean }) => !c.core) === 3);
   expect("the gate is off by default: a non-core route is not blocked", blocked(dir, "validation/solution", { tester: "t1" }) === null);
   const off = await call({ venture: "vs", route: "ideas/map", action: "read", workspace: ws });
   expect("off, the router behaves as before", !off.beta_locked, JSON.stringify(off).slice(0, 200));
@@ -117,17 +117,17 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("the router refuses a locked capability's route, naming the feedback to give", !refused.ok && refused.beta_locked === "ideas" && /feedback on foundation/.test(refused.error), JSON.stringify(refused).slice(0, 300));
   expect("unlock before the feedback is refused", !unlock(dir, "t1").ok);
   const missing = await giveFeedback(dir, "foundation", { wrong: "the ICP" }, { tester: "t1", routing: { env: {} } });
-  expect("feedback missing a required answer is refused, naming the question", !missing.ok && /sounds_like_you/.test(missing.error));
+  expect("feedback missing a required answer is refused, naming the question", !missing.ok && /sounds_like_you/.test(missing.error ?? ""));
   expect("feedback on a locked capability is refused", !(await giveFeedback(dir, "validation", { next_test: "yes", trust: 3 }, { tester: "t1", routing: { env: {} } })).ok);
   const given = await giveFeedback(dir, "foundation", { sounds_like_you: "4", wrong: "the ICP is too broad" }, { tester: "t1", routing: { env: {} } });
-  expect("checkpoint feedback is recorded as validation/feedback/<id>.json with its routing", given.ok && existsSync(given.written) && given.record.routing.fallback === true && given.next.ready, JSON.stringify(given));
+  expect("checkpoint feedback is recorded as validation/feedback/<id>.json with its routing", given.ok && given.written !== undefined && existsSync(given.written) && given.record?.routing.fallback === true && given.next?.ready, JSON.stringify(given));
   expect("the feedback record is valid", valid("validation-feedback.schema.json", given.record));
   expect("another tester's feedback does not unlock for t2", !unlock(dir, "t2").ok);
   const u = unlock(dir, "t1");
   expect("unlock opens the next capability for that tester, kept in .naive/beta.json", u.ok && u.unlocked === "ideas" && JSON.parse(readFileSync(join(dir, ".naive/beta.json"), "utf8")).testers.t1.unlocked.includes("ideas"));
   expect("the unlocked route is open; the one after stays locked", blocked(dir, "ideas/map", { tester: "t1" }) === null && blocked(dir, "validation/solution", { tester: "t1" })?.needs.capability === "ideas");
   const st = status(dir, "t1");
-  expect("status lists each capability, open or locked, and the next step", st.enabled && st.capabilities.find((c) => c.id === "ideas").unlocked && st.next.capability === "validation" && !st.next.ready);
+  expect("status lists each capability, open or locked, and the next step", st.enabled && st.capabilities.find((c: { id: string }) => c.id === "ideas").unlocked && st.next?.capability === "validation" && !st.next.ready);
   const cliStatus = naive("beta", "status", "--venture", dir);
   expect("naive beta status", cliStatus.status === 0 && /next: validation/.test(cliStatus.stdout), cliStatus.stdout + cliStatus.stderr);
   const form = naive("beta", "feedback", "ideas", "--venture", dir);
@@ -148,14 +148,14 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
 
   // A tester is an anonymous id, refused before anything is written.
   const q = manifest().capabilities[0];
-  const answers = Object.fromEntries(q.checkpoint.questions.filter((x) => x.required).map((x) => [x.id, x.kind === "scale-1-5" ? "4" : x.kind === "yes-no" ? "yes" : "fine"]));
+  const answers = Object.fromEntries(q.checkpoint.questions.filter((x: { required?: boolean }) => x.required).map((x: { id: string, kind: string }) => [x.id, x.kind === "scale-1-5" ? "4" : x.kind === "yes-no" ? "yes" : "fine"]));
   for (const bad of ["jane@example.com", "Jane Doe", "../../etc/x", "a/b", "__proto__", "Jane", "-x", "a".repeat(65)]) {
     const before = readdirSync(join(dir, "validation/feedback")).length;
     const r = await giveFeedback(dir, q.id, answers, { tester: bad, routing: { env: {} } });
-    expect(`feedback refuses the tester ${bad.slice(0, 20)}`, !r.ok && /tester/.test(r.error) && readdirSync(join(dir, "validation/feedback")).length === before, JSON.stringify(r));
+    expect(`feedback refuses the tester ${bad.slice(0, 20)}`, !r.ok && /tester/.test(r.error ?? "") && readdirSync(join(dir, "validation/feedback")).length === before, JSON.stringify(r));
     expect(`unlock refuses the tester ${bad.slice(0, 20)}`, !unlock(dir, bad).ok);
   }
-  const rec = (tester) => ({ id: "f-2", at: "2026-10-30T10:00:00Z", tester, capability: "venture", checkpoint: "c", answers: {} });
+  const rec = (tester: string) => ({ id: "f-2", at: "2026-10-30T10:00:00Z", tester, capability: "venture", checkpoint: "c", answers: {} });
   expect("the schema takes an id and refuses an email as a tester", valid("validation-feedback.schema.json", rec("t-1")) && !valid("validation-feedback.schema.json", rec("jane@example.com")));
 
   // A key is not consent: feedback goes to Jev only with beta.jev.send and a named person.
@@ -172,7 +172,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("send without a named person sends nothing", sent === 0, String(sent));
   put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true, set_by: { person: "torian", at: "2026-10-30T10:00:00Z" } } } });
   const consented = await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key } });
-  expect("send with a named person routes through Jev", sent === 1 && consented.record.routing.model === "jev", JSON.stringify(consented));
+  expect("send with a named person routes through Jev", sent === 1 && consented.record?.routing.model === "jev", JSON.stringify(consented));
   for (const person of [{ x: 1 }, 1, true, "", "  "]) {
     put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true, set_by: { person, at: "2026-10-30T10:00:00Z" } } } });
     sent = 0;
@@ -185,7 +185,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   const ev = { name: "route.write", capability: "core", session: "abcd-1234", outcome: "ok" };
   const at = "2026-10-30T10:00:00Z";
   const venture = "0123456789abcdef";
-  const bounded = (o) => refuse({ ...ev, at, venture, ...o });
+  const bounded = (o: Record<string, unknown>) => refuse({ ...ev, at, venture, ...o });
   expect("telemetry takes a slug at the bound", !bounded({ name: `a${"b".repeat(31)}`, capability: `a${"b".repeat(31)}` }));
   for (const o of [{ name: "jane-doe-at-x-com-said-pricing-is-too-high" }, { capability: "jane-doe-at-x-com-said-pricing-is-too-high" }, { session: "a".repeat(65) }, { session: "abc" }]) {
     expect(`telemetry refuses ${Object.keys(o)[0]} ${Object.values(o)[0].slice(0, 12)}`, !!bounded(o) && !valid("telemetry.schema.json", { ...ev, at, venture, ...o }));
@@ -199,9 +199,9 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   const tf = join(dir, ".naive/telemetry.jsonl");
   const good = JSON.stringify({ ...ev, at, venture });
   writeFileSync(tf, readFileSync(tf, "utf8") + [JSON.stringify({ ...ev, at, venture, note: "SECRET" }), JSON.stringify({ ...ev, at, venture: "SECRET" }), "not json", good].join("\n") + "\n");
-  const flushed = [];
+  const flushed: unknown[] = [];
   const fl = await flush(dir, { send: (b) => flushed.push(...b) });
-  expect("flush skips bad lines and sends the good one", fl.sent === 1 && /** @type {*} */ (fl).skipped === 3 && JSON.stringify(flushed) === `[${good}]`, JSON.stringify(fl));
+  expect("flush skips bad lines and sends the good one", fl.sent === 1 && "skipped" in fl && fl.skipped === 3 && JSON.stringify(flushed) === `[${good}]`, JSON.stringify(fl));
   expect("flush does not retry skipped lines", (await flush(dir, { send: () => { throw new Error("resent"); } })).sent === 0);
   put(join(dir, "naive.config.json"), conf);
 
@@ -209,7 +209,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   {
     const name = "rel";
     const rd = join(ws, "ventures", name);
-    const r = (...a) => cli(...a);
+    const r = (...a: string[]) => cli(...a);
     expect("release venture created", r("init", rd, "--id", name, "--layers", "purpose").status === 0);
     const fb = { id: "f-9", at, tester: "t1", capability: "venture", checkpoint: "venture-created", answers: { ease: 4, confusing: "SECRET-FEEDBACK" } };
     const iv = { id: "i-01", person: "p-01", icp: "solo-founder", consent: { given: true, at, method: "verbal-recorded" }, transcript: { source: "raw/sources/i-01" }, bottlenecks: ["SECRET-INTERVIEW"], current_solutions: [{ for: "x", what_it_does: "a", what_it_doesnt: "b" }], chosen_problem: "x", prediction: { with_naive: "a", status_quo: "b" }, follow_up: { date: "2026-11-13", outcome_vs_prediction: "matched", evidence: ["e-1"] } };
@@ -217,9 +217,9 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
     const wi = await call({ venture: name, route: "validation/interviews/i-01", action: "write", input: iv, actor: "person", workspace: ws });
     expect("a person writes an interview", wi.ok, JSON.stringify(wi).slice(0, 300));
     const build = () => spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/build-release.mjs"), rd, "--now", "2026-10-30T00:00:00Z"], { encoding: "utf8", env });
-    const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
-    const leaks = (d) => walk(d).filter((f) => readFileSync(f, "utf8").includes("SECRET-"));
-    const left = () => JSON.parse(readFileSync(join(rd, ".release/release.json"), "utf8")).left_out.map((x) => x.file);
+    const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
+    const leaks = (d: string) => walk(d).filter((f) => readFileSync(f, "utf8").includes("SECRET-"));
+    const left = () => JSON.parse(readFileSync(join(rd, ".release/release.json"), "utf8")).left_out.map((x: { file: string }) => x.file);
     const study = ["validation/feedback/f-9.json", "validation/interviews/i-01.json"];
     const b1 = build();
     expect("a person's feedback and interview stay out of the release", b1.status === 0 && !leaks(join(rd, ".release")).length && study.every((f) => left().includes(f)), b1.stderr + leaks(join(rd, ".release")));
@@ -232,7 +232,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   }
 
   // .naive/ is never routed: telemetry stays on this machine.
-  expect("system/telemetry is not a route", await call({ venture: "vs", route: "system/telemetry", action: "read", workspace: ws, actor: "person" }).then((r) => !r.ok));
+  expect("system/telemetry is not a route", await call({ venture: "vs", route: "system/telemetry", action: "read", workspace: ws, actor: "person" }).then((r: { ok: boolean }) => !r.ok));
   expect("the route table has no route into .naive/", !routesMd().includes("`.naive/"));
   delete process.env.NAIVE_BETA_TESTER;
 }

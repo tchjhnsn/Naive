@@ -17,20 +17,20 @@ import { checkKit, wrap } from "../../router/kit-boundary.mjs";
 import { approve } from "../../engine/decisions.ts";
 import {
   KINDS, Uncaught, answersModel, assertJson, checkRequest, checkStep, checkSteps, commandModel, confirm, expectDeterministic,
-  keepComputed, outcomeOf, payload, provenanceOf, run, settle, stepsOf, typed, waterfall, waves,
+  keepComputed, outcomeOf, payload, provenanceOf, run as runSteps, settle, stepsOf, typed, waterfall, waves,
 } from "../../router/orchestration/model-steps.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const sha = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
-const mentura = (args, env = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { encoding: "utf8", env: { ...process.env, ...env } });
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+const sha = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
+const mentura = (args: string[], env: Record<string, string> = {}) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { encoding: "utf8", env: { ...process.env, ...env } });
 
 // A workspace with one venture per scenario, each with two customers a person wrote.
 const ws = mkdtempSync(join(tmpdir(), "model-steps-test-"));
-const venture = async (id, extra = {}) => {
+const venture = async (id: string, extra: { ada?: Record<string, unknown>, bo?: Record<string, unknown> } = {}): Promise<string> => {
   const r = mentura(["init", join(ws, id), "--id", id, "--layers", "purpose"]);
   if (r.status !== 0) throw new Error(r.stderr);
   for (const c of [
@@ -42,6 +42,12 @@ const venture = async (id, extra = {}) => {
   }
   return join(ws, id);
 };
+/** What a run reports: only the fields this test reads. */
+type Judged = { key: string, outcome?: string, answer?: unknown, why?: string, error?: string };
+type RunOut = { judgments: Judged[], reused: Judged[], uncertain: Judged[], discarded: Judged[], skipped: Judged[], waiting: Judged[], withheld: Judged[], errors: Judged[], uncaught: Judged[], ms?: number };
+const run = async (...a: Parameters<typeof runSteps>): Promise<RunOut> => (await runSteps(...a)) as RunOut;
+const must = <T>(x: T | undefined): T => { if (x === undefined) throw new Error("not found"); return x; };
+type Step = { step: string, kind: string };
 const customers = stepsOf({ packages: ["customers"] });
 const goodAnswers = {
   "customers/stage/ada": { value: "paying", confidence: 0.92 },
@@ -49,11 +55,13 @@ const goodAnswers = {
   "customers/summary/ada": { value: "Ada Clinic pays for {{seats}} seats and just added two rooms." },
   "customers/summary/bo": { value: "Bo Physio is trying it on {{seats}} seats and has gone quiet." },
 };
-/** @param {*} answers @param {{ delay?: number, fail?: (key: string) => boolean }} [opts] */
-const recorder = (answers, { delay = 0, fail } = {}) => {
-  const calls = [];
-  const ask = async (req) => {
-    const c = { keys: Object.keys(req.questions), req, start: Date.now() };
+type Req = { questions: Record<string, unknown>, state: Record<string, { steps: Record<string, unknown> }> };
+type Call = { keys: string[], req: Req, start: number, end: number };
+const recorder = (answers: Record<string, unknown>, { delay = 0, fail }: { delay?: number, fail?: (key: string) => boolean } = {}) => {
+  const calls: Call[] = [];
+  const ask = async (req: Req) => {
+    // end is NaN until the call returns, so comparisons with it stay false, as they were with undefined.
+    const c: Call = { keys: Object.keys(req.questions), req, start: Date.now(), end: NaN };
     calls.push(c);
     await sleep(delay);
     c.end = Date.now();
@@ -72,7 +80,7 @@ const recorder = (answers, { delay = 0, fail } = {}) => {
   expect("S-2 an unknown kind is refused", checkStep({ ...base, kind: "chat" }).some((e) => /kind is one of/.test(e)));
   expect("S-2 each kind's answer is typed", typed({ kind: "noul" }, { value: "yes", confidence: 0.9 }).value === true && typed({ kind: "score", scale: [1, 5] }, { value: "4", confidence: 0.9 }).value === 4
     && typed({ kind: "classify", options: ["a", "b"] }, { value: "b", confidence: 1 }).ok && typed({ kind: "draft" }, { value: "text" }).ok);
-  expect("S-2 the customers package declares its model steps", customers.map((s) => `${s.step}:${s.kind}`).join(",") === "stage:choice,summary:draft");
+  expect("S-2 the customers package declares its model steps", customers.map((s: Step) => `${s.step}:${s.kind}`).join(",") === "stage:choice,summary:draft");
 }
 
 // S-6, S-4, S-12: the payload, decomposed, in plain JSON; no model is asked and nothing is written.
@@ -82,10 +90,10 @@ const v1 = await venture("payload-venture");
   const stage = p.pending.find((x) => x.placeholder === "customers/stage/ada");
   const summary = p.pending.find((x) => x.placeholder === "customers/summary/ada");
   expect("S-6 the payload has what code computed, a placeholder per judgment and the state each receives",
-    p.computed["customers/summary/ada"]?.seats === 12 && p.pending.length === 4 && stage && summary?.state.steps.stage.pending === "customers/stage/ada", JSON.stringify(p).slice(0, 300));
-  expect("S-4 a model gets only the fields its question needs", JSON.stringify(stage.state) === JSON.stringify({ item: { notes: "Signed the annual plan last week and added two more rooms." } }) && !JSON.stringify(p.pending).includes("Ada Clinic"));
+    (p.computed as Record<string, { seats?: number } | undefined>)["customers/summary/ada"]?.seats === 12 && p.pending.length === 4 && stage && summary?.state.steps.stage.pending === "customers/stage/ada", JSON.stringify(p).slice(0, 300));
+  expect("S-4 a model gets only the fields its question needs", JSON.stringify(stage?.state) === JSON.stringify({ item: { notes: "Signed the annual plan last week and added two more rooms." } }) && !JSON.stringify(p.pending).includes("Ada Clinic"));
   expect("S-6 the payload asks no model and writes nothing", !existsSync(join(v1, "knowledge/judgments")));
-  expect("S-12 the question points at a path in the state", stage.question.includes('`state["customers/stage/ada"].item.notes`'));
+  expect("S-12 the question points at a path in the state", stage?.question.includes('`state["customers/stage/ada"].item.notes`'));
   const r = mentura(["system/steps", "run", "--venture", "payload-venture", "--json"], { MENTURA_WORKSPACE: ws });
   expect("S-6 system/steps run is the payload through the router", r.status === 0 && JSON.parse(r.stdout).result.pending.length === 4, r.stderr);
 }
@@ -106,11 +114,11 @@ const v2 = await venture("run-venture");
 {
   const before = sha(join(v2, "customers/ada.json"));
   const { ask, calls } = recorder(goodAnswers, { delay: 30 });
-  const events = [];
+  const events: { event: string }[] = [];
   const r = await run(v2, customers, { ask, onEvent: (e) => events.push(e) });
   expect("S-5 one request per package per wave, asking every item at once", calls.length === 2 && calls[0].keys.length === 2 && calls[1].keys.length === 2, JSON.stringify(calls.map((c) => c.keys)));
   expect("F-10 a step waits on the step it reads first: summary after stage", calls[0].keys.every((k) => k.includes("/stage/")) && calls[1].keys.every((k) => k.includes("/summary/")) && calls[1].start >= calls[0].end);
-  expect("S-7 code's results come first, judgments as they arrive, done last", events[0].event === "computed" && events.at(-1).event === "done" && events.filter((e) => e.event === "judgment").length === 4, events.map((e) => e.event).join(","));
+  expect("S-7 code's results come first, judgments as they arrive, done last", events[0].event === "computed" && events.at(-1)?.event === "done" && events.filter((e) => e.event === "judgment").length === 4, events.map((e) => e.event).join(","));
   const j = load(join(v2, "knowledge/judgments/customers-summary-ada.json"));
   expect("S-13 a draft written around a computed count carries it unchanged", j.answer === "Ada Clinic pays for 12 seats and just added two rooms." && j.kept.seats === 12 && j.outcome === "answer");
   expect("S-13 the later step was given the earlier answer", calls[1].req.state["customers/summary/ada"].steps.stage === "paying" && j.reads.includes("knowledge/judgments/customers-stage-ada.json#answer"));
@@ -152,7 +160,7 @@ const v2 = await venture("run-venture");
   const v = await venture("budget-venture", { ada: { notes: "x".repeat(3000) } });
   const { ask, calls } = recorder({ "p/s/bo": { value: true, confidence: 0.9 } });
   const r = await run(v, [{ package: "p", step: "s", kind: "noul", for_each: "customers", question: "Is {item.notes} upbeat?", inputs: ["item.notes"], budget: 500 }], { ask });
-  expect("S-11 a state over its context budget is not sent", r.errors.some((e) => e.key === "p/s/ada" && /context budget/.test(e.error)) && calls[0].keys.join() === "p/s/bo", JSON.stringify(r.errors));
+  expect("S-11 a state over its context budget is not sent", r.errors.some((e) => e.key === "p/s/ada" && /context budget/.test(e.error ?? "")) && calls[0].keys.join() === "p/s/bo", JSON.stringify(r.errors));
 }
 
 // S-13 and E-9: a draft that changes a computed value, a malformed answer, a low confidence, and code winning.
@@ -160,11 +168,11 @@ const v3 = await venture("failure-venture");
 {
   const { ask } = recorder({ ...goodAnswers, "customers/stage/bo": { value: "maybe", confidence: 0.9 }, "customers/summary/ada": { value: "Ada Clinic pays for 10 seats." } });
   const r = await run(v3, customers, { ask });
-  const ada = r.judgments.find((j) => j.key === "customers/summary/ada");
-  expect("S-13 a draft that changed the computed seats does not come back; the code's value stands", ada.outcome === "uncertain" && ada.answer === null && /did not come through unchanged/.test(ada.why), JSON.stringify(ada));
-  const bo = r.judgments.find((j) => j.key === "customers/stage/bo");
-  expect("E-9 a malformed answer cannot come back: it is uncertain", bo.outcome === "uncertain" && bo.answer === null && /malformed/.test(bo.why), JSON.stringify(bo));
-  expect("F-10 a step whose earlier step is uncertain waits", r.skipped.some((s) => s.key === "customers/summary/bo" && /waits on customers\/stage\/bo/.test(s.why)));
+  const ada = must(r.judgments.find((j) => j.key === "customers/summary/ada"));
+  expect("S-13 a draft that changed the computed seats does not come back; the code's value stands", ada.outcome === "uncertain" && ada.answer === null && /did not come through unchanged/.test(ada.why ?? ""), JSON.stringify(ada));
+  const bo = must(r.judgments.find((j) => j.key === "customers/stage/bo"));
+  expect("E-9 a malformed answer cannot come back: it is uncertain", bo.outcome === "uncertain" && bo.answer === null && /malformed/.test(bo.why ?? ""), JSON.stringify(bo));
+  expect("F-10 a step whose earlier step is uncertain waits", r.skipped.some((s) => s.key === "customers/summary/bo" && /waits on customers\/stage\/bo/.test(s.why ?? "")));
   expect("E-9 a low-confidence answer is uncertain", settle({ kind: "choice", options: ["a", "b"] }, { value: "a", confidence: 0.4 }).outcome === "uncertain");
   const code = settle({ kind: "choice", options: ["paying", "trying"], check: { equals: "stage" } }, { value: "trying", confidence: 0.95 }, { stage: "paying" });
   expect("E-9 when a judgment and a code check disagree, the code wins", code.outcome === "overruled" && code.answer === "paying" && code.overruled.judgment === "trying", JSON.stringify(code));
@@ -172,7 +180,7 @@ const v3 = await venture("failure-venture");
   expect("E-1 uncertain judgments go to the founder as open decisions", existsSync(join(v3, "knowledge/decisions/judge-customers-stage-bo.decision.json"))
     && load(join(v3, "knowledge/decisions/judge-customers-stage-bo.decision.json")).status === "open" && r.uncertain.length === 2);
   // The founder answers; the next run writes their answer as the judgment and moves on.
-  const a = approve(v3, "judge-customers-stage-bo", /** @type {Parameters<typeof approve>[2]} */ ({ by: "Ana", answer: "trying" }));
+  const a = approve(v3, "judge-customers-stage-bo", { by: "Ana", answer: "trying" } as Parameters<typeof approve>[2]);
   const next = recorder(goodAnswers);
   const r2 = await run(v3, customers, { ask: next.ask });
   const jb = load(join(v3, "knowledge/judgments/customers-stage-bo.json"));
@@ -183,8 +191,8 @@ const v3 = await venture("failure-venture");
 // S-17: drafting is model-only.
 {
   let threw = false;
-  try { expectDeterministic(customers.find((s) => s.kind === "draft")); } catch (e) { threw = e instanceof Uncaught; }
-  expect("S-17 code cannot expect a deterministic answer from a draft", threw && expectDeterministic(customers.find((s) => s.kind === "choice")));
+  try { expectDeterministic(customers.find((s: Step) => s.kind === "draft")); } catch (e) { threw = e instanceof Uncaught; }
+  expect("S-17 code cannot expect a deterministic answer from a draft", threw && expectDeterministic(customers.find((s: Step) => s.kind === "choice")));
   const d = { package: "p", step: "d", kind: "draft", for_each: "customers", question: "Write about {item.notes}", inputs: ["item.notes"] };
   expect("S-17 a draft has no threshold and no code check", checkStep({ ...d, threshold: 0.5 }).some((e) => /no threshold/.test(e)) && checkStep({ ...d, computed: { s: { item: "seats" } }, check: { equals: "s" } }).some((e) => /model-only/.test(e)));
   const p = await payload(v1, customers);
@@ -201,9 +209,9 @@ const v4 = await venture("outcome-venture");
   expect("E-1 an invalid write is expected", outcomeOf(invalid).outcome === "expected" && outcomeOf(invalid).kind === "invalid write", JSON.stringify(outcomeOf(invalid)));
   expect("E-1 a missing record is expected", outcomeOf(missing).outcome === "expected" && outcomeOf(missing).kind === "missing record");
   expect("E-1 a gate that holds is expected", outcomeOf(held).outcome === "expected" && outcomeOf(held).kind === "gate holds", JSON.stringify(held));
-  let cyc = null;
-  try { waves([{ package: "p", step: "a", after: ["b"] }, { package: "p", step: "b", after: ["a"] }]); } catch (e) { cyc = e; }
-  expect("E-1 a cycle in the step order is uncaught", outcomeOf(cyc).outcome === "uncaught" && /cycle in the step order: p\/a -> p\/b -> p\/a/.test(cyc.message), cyc?.message);
+  let cyc: Error | null = null;
+  try { waves([{ package: "p", step: "a", after: ["b"] }, { package: "p", step: "b", after: ["a"] }]); } catch (e) { cyc = e as Error; }
+  expect("E-1 a cycle in the step order is uncaught", outcomeOf(cyc).outcome === "uncaught" && /cycle in the step order: p\/a -> p\/b -> p\/a/.test(cyc?.message ?? ""), cyc?.message);
   expect("E-1 a judgment below threshold is uncertain", outcomeOf(settle({ kind: "noul" }, { value: true, confidence: 0.2 })).outcome === "uncertain");
   const kit = join(ws, "cycle-kit.json");
   writeFileSync(kit, JSON.stringify({ name: "cyc", package: "customers", boundary: { reads: ["customers"], writes: ["knowledge/judgment/**"], use_model: [
@@ -219,11 +227,12 @@ const v4 = await venture("outcome-venture");
 // F-10: the venture's real order.
 {
   const w = await waterfall(v1);
-  const wave = (t) => w.records.find((r) => r.record === t).wave;
+  const wave = (t: string) => must(w.records.find((r) => r.record === t)).wave;
   expect("F-10 a record waits on the records it reads first", wave("telos") > wave("validation-problem") && wave("validation-go-to-market") > wave("validation-pricing")
-    && w.records.find((r) => r.record === "telos").waits_on.includes("validation-problem"), JSON.stringify(w.order));
-  let cyc = null;
-  try { await waterfall(null, { graph: { a: ["b"], b: ["c"], c: ["a"] } }); } catch (e) { cyc = e; }
+    && must(w.records.find((r) => r.record === "telos")).waits_on.includes("validation-problem"), JSON.stringify(w.order));
+  let cyc: Error | null = null;
+  // The graph replaces the venture's packages, so the folder is never read.
+  try { await waterfall(v1, { graph: { a: ["b"], b: ["c"], c: ["a"] } }); } catch (e) { cyc = e as Error; }
   expect("F-10 a cycle in the record order is uncaught", cyc instanceof Uncaught && /a -> b -> c -> a/.test(cyc.message), cyc?.message);
 }
 
@@ -232,7 +241,7 @@ const v5 = await venture("parallel-venture");
 {
   const steps = ["pa", "pb", "pc"].map((p) => ({ package: p, step: "upbeat", kind: "noul", for_each: "customers", question: "Are the notes {item.notes} upbeat?", inputs: ["item.notes"] }));
   const ans = { "pb/upbeat/ada": { value: true, confidence: 0.9 }, "pb/upbeat/bo": { value: false, confidence: 0.3 }, "pc/upbeat/ada": { value: true, confidence: 0.95 }, "pc/upbeat/bo": { value: false, confidence: 0.9 } };
-  const { ask, calls } = recorder(ans, { delay: 80, fail: (k) => k.startsWith("pa/") });
+  const { ask, calls } = recorder(ans, { delay: 80, fail: (k: string) => k.startsWith("pa/") });
   const r = await run(v5, steps, { ask });
   expect("F-11 packages are asked in parallel", calls.length === 3 && Math.max(...calls.map((c) => c.start)) < Math.min(...calls.map((c) => c.end)));
   expect("F-11 one failed request does not sink the rest", r.errors.filter((e) => e.key.startsWith("pa/")).length === 2 && r.uncaught.length === 0 && existsSync(join(v5, "knowledge/judgments/pc-upbeat-bo.json")), JSON.stringify(r.errors));
@@ -248,7 +257,7 @@ const v6 = await venture("speculate-venture");
   const ans = { "spec/more-seats/ada": { value: true, confidence: 0.9 }, "spec/more-seats/bo": { value: false, confidence: 0.9 } };
   // When code finished computing, so speculation is judged by order, not by a wall-clock bound a loaded machine misses.
   let computed = 0;
-  const slow = { compute: async (f) => { await sleep(300); computed = Date.now(); return f(); } };
+  const slow = { compute: async (f: () => unknown) => { await sleep(300); computed = Date.now(); return f(); } };
   const a = recorder(ans, { delay: 300 });
   const plain = await run(v6, [step], { ask: a.ask, hooks: slow, write: false });
   const plainComputed = computed;
@@ -277,7 +286,7 @@ const v7 = await venture("kit-venture", { bo: { private_fields: ["notes"] } });
   const r = await run(v7, stepsOf({ kit }), { ask, call: guarded });
   const e = entries(v7).filter((x) => x.entity === "knowledge/judgments/follow-up-call-ada.json").at(-1);
   expect("S-15 the kit's workflow runs inside its boundary as the kit's agent", r.judgments.length === 1 && e.agent.kind === "agent" && e.agent.id === "kit-follow-up", JSON.stringify(e?.agent));
-  expect("private fields never reach a model: withheld at run time", r.withheld.some((w) => w.key === "follow-up/call/bo" && /private field/.test(w.why)));
+  expect("private fields never reach a model: withheld at run time", r.withheld.some((w) => w.key === "follow-up/call/bo" && /private field/.test(w.why ?? "")));
   const c = await checkSteps(stepsOf({ kit }), { dir: v7 });
   expect("private fields never reach a model: the check names them", c.some((x) => /input item.notes of bo is a private field/.test(x)), c.join("; "));
   writeFileSync(join(ws, "follow-up.kit.json"), JSON.stringify(kit));

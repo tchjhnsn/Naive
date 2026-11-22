@@ -9,7 +9,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { call, capture, groups, judge, routes } from "../router/router.mjs";
 import { handle, TOOLS } from "./mcp/server.ts";
-import { route as http } from "./api/server.ts";
+import { route } from "./api/server.ts";
+import type { Message } from "./mcp/server.ts";
+import type { IncomingHttpHeaders } from "node:http";
 import { entries } from "../core/provenance.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
@@ -18,11 +20,20 @@ cpSync(join(root, "packages/naive/src/records/examples/workspace"), ws, { recurs
 process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 let failed = 0;
-const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown): void => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
+/** Routes, MCP replies and API bodies: only the fields this test reads. */
+type Route = { route: string, actions: string[], decision_class?: string, template?: string, files?: string[] };
+type Slot = { slot: string, data?: { assumptions?: string }, error?: string };
+type RpcResult = { serverInfo: { name: string }, capabilities: { tools?: unknown }, tools: unknown[], contents: { text: string }[], isError?: boolean, content: { text: string }[] };
+type RpcReply = { result: RpcResult, error: { code: number } };
+const rpc = async (m: Message): Promise<RpcReply> => { const r = await handle(m); if (r === null) throw new Error("no reply"); return r as RpcReply; };
+type ApiBody = { result?: { evidence?: unknown[], draft?: boolean, slots?: unknown[], stack: unknown[], name?: string } };
+const http = async (method: string, url: string, body?: unknown, headers?: IncomingHttpHeaders): Promise<[number, ApiBody]> => (await route(method, url, body, headers)) as [number, ApiBody];
+const must = <T>(x: T | undefined): T => { if (x === undefined) throw new Error("not found"); return x; };
 const own = JSON.parse(readFileSync(join(tandem, "governance/ownership.json"), "utf8"));
 
 // Router.
-const table = routes();
+const table: Route[] = routes();
 const problem = table.find((r) => r.route === "foundation/problem");
 expect("a kit record gets a nested route with all four actions", problem && ["read", "write", "check", "template"].every((a) => problem.actions.includes(a)));
 expect("ownership's decision class comes from the data model", table.find((r) => r.route === "governance/ownership")?.decision_class === "ownership-or-control");
@@ -55,7 +66,7 @@ const coreRead = await call({ venture: "tandem", route: "foundation/core", actio
 expect("foundation/core writes its field and reads only its view", coreWritten.ok && coreRead.result.tagline === "Ride together" && !("id" in coreRead.result) && !("phase" in coreRead.result));
 const envAgent = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), "foundation/core", "write", "--as", "person", "--venture", "tandem", "--input", '{"tagline":"Signed by a model"}'], { env: { ...process.env, MENTURA_WORKSPACE: process.env.MENTURA_WORKSPACE, MENTURA_ACTOR: "agent", MENTURA_MODEL: "m" }, encoding: "utf8" });
 expect("a declared agent saying --as person cannot write foundation/core", envAgent.status !== 0 && !readFileSync(join(tandem, "venture.json"), "utf8").includes("Signed by a model"));
-expect("no route claims venture.json as its file", !routes().some((r) => r.files?.includes("venture.json")));
+expect("no route claims venture.json as its file", !routes().some((r: Route) => r.files?.includes("venture.json")));
 writeFileSync(join(tandem, "_drafts/venture.json.draft"), '{"tagline":"planted"}');
 const plantedAccept = spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), "accept", "foundation/core", "--venture", "tandem"], { env: process.env, encoding: "utf8" });
 expect("foundation/core takes no accept, so a planted draft signs nothing", plantedAccept.status !== 0 && readFileSync(join(tandem, "venture.json"), "utf8").includes('"id"'));
@@ -88,12 +99,12 @@ expect("[id]: an id with a path in it is refused", !(await call({ venture: "tand
 expect("[...venture]: a nested venture is reached by its folder path", (await call({ venture: "studio/print", route: "system/need-now", action: "run" })).ok
   && !(await call({ venture: "studio/nothing", route: "system/need-now", action: "run" })).ok);
 const lay = (await call({ venture: "tandem", route: "purpose/validation/problem", action: "layout" })).result;
-expect("layout: the system layer, the record's layer and its package, in that order", lay.stack.map((k) => k.name).join() === "system,purpose,validation" && lay.stack[2].skills.length > 0);
+expect("layout: the system layer, the record's layer and its package, in that order", lay.stack.map((k: { name: string }) => k.name).join() === "system,purpose,validation" && lay.stack[2].skills.length > 0);
 writeFileSync(join(tandem, "AGENTS.md"), "tone: plain\n");
 mkdirSync(join(tandem, "foundation"), { recursive: true });
 writeFileSync(join(tandem, "foundation/AGENTS.md"), "tone: warm\n");
 const nested = (await call({ venture: "tandem", route: "foundation/problem", action: "layout" })).result;
-expect("layout: AGENTS.md chain, nearest last, and the nearer file wins", nested.chain.map((f) => f.path).join() === "AGENTS.md,foundation/AGENTS.md" && nested.instructions.tone === "warm" && nested.package.gates.length > 0);
+expect("layout: AGENTS.md chain, nearest last, and the nearer file wins", nested.chain.map((f: { path: string }) => f.path).join() === "AGENTS.md,foundation/AGENTS.md" && nested.instructions.tone === "warm" && nested.package.gates.length > 0);
 expect("three outcomes: expected error, uncaught error, uncertain", (await call({ route: "no/such", action: "read" })).outcome === "error" && capture(() => { throw new Error("boom"); }).outcome === "uncaught" && judge(0.2, 0.7, "founder").outcome === "uncertain" && judge(0.2, 0.7, "founder").result === null);
 expect("layout: names the template and need-now status", lay.template === "packages/naive/src/functions/strategy/kits/validation/templates/problem.md" && lay.need_now?.status === "held");
 expect("layout: works without a venture", (await call({ route: "governance/ownership", action: "layout" })).result.gate.class === "ownership-or-control");
@@ -103,16 +114,16 @@ expect("error: a failed check answers with the kit's skills and the template", !
 expect("error: a write that does not match answers with how to fix it", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "write", input: { nope: 1 } })).fix?.schema === "packages/naive/src/records/validation-problem.schema.json");
 expect("view: a record renders as a Markdown page", /^# foundation\/problem\n/.test((await call({ venture: "tandem", route: "purpose/validation/problem", action: "view" })).result));
 const ov = (await call({ venture: "tandem", route: "system/overview", action: "run" })).result;
-expect("@slot: the overview has its eight slots", ov.slots.map((x) => x.slot).join() === "@venture,@telos,@validation,@need-now,@ready,@team,@packages,@provenance"); // @packages: P-17 (wf/writes)
+expect("@slot: the overview has its eight slots", ov.slots.map((x: Slot) => x.slot).join() === "@venture,@telos,@validation,@need-now,@ready,@team,@packages,@provenance"); // @packages: P-17 (wf/writes)
 const woodOk = (await call({ venture: "woodworking", route: "system/overview", action: "run" })).result;
-expect("@validation: a venture with no problem record shows every assumption unknown, not an error (EE-050)", /exists: unknown/.test(woodOk.slots.find((x) => x.slot === "@validation").data?.assumptions ?? ""));
+expect("@validation: a venture with no problem record shows every assumption unknown, not an error (EE-050)", /exists: unknown/.test(woodOk.slots.find((x: Slot) => x.slot === "@validation").data?.assumptions ?? ""));
 const woodProblem = join(ws, "ventures/woodworking/purpose/validation/problem.json");
 mkdirSync(dirname(woodProblem), { recursive: true }); writeFileSync(woodProblem, "not json");
 const wood = (await call({ venture: "woodworking", route: "system/overview", action: "run" })).result;
 rmSync(dirname(woodProblem), { recursive: true });
-expect("@slot: a slot that cannot render shows its error and the rest still render", wood.slots.find((x) => x.slot === "@validation").error && wood.slots.find((x) => x.slot === "@need-now").data);
-expect("(group): each phase groups the routes need-now suggests in it", groups().find((g) => g.group === "(discovery)").routes.includes("foundation/problem")
-  && !groups().find((g) => g.group === "(discovery)").routes.includes("governance/ownership"));
+expect("@slot: a slot that cannot render shows its error and the rest still render", wood.slots.find((x: Slot) => x.slot === "@validation").error && wood.slots.find((x: Slot) => x.slot === "@need-now").data);
+expect("(group): each phase groups the routes need-now suggests in it", must(groups().find((g) => g.group === "(discovery)")).routes.includes("foundation/problem")
+  && !must(groups().find((g) => g.group === "(discovery)")).routes.includes("governance/ownership"));
 const planPath = join(tandem, "operations/team-plan.json");
 mkdirSync(dirname(planPath), { recursive: true });
 writeFileSync(planPath, JSON.stringify({ venture: "tandem", updated: "2026-10-27", roles: [{ id: "scout", name: "Scout", occupant: "agent", needed_by: "validation", status: "filled", routes: { read: ["purpose/**"], write: ["purpose/validation/*"] } }] }));
@@ -128,45 +139,45 @@ process.env.MENTURA_ROUTE_ALIASES = aliasFile;
 const aliased = (await call({ venture: "tandem", route: "purpose/problem", action: "read" }));
 expect("aliases: an old route reads the new one and says it moved", aliased.ok && aliased.result?.evidence && /is now foundation\/problem/.test(aliased.deprecated));
 delete process.env.MENTURA_ROUTE_ALIASES;
-expect("aliases: every alias in the repository points at a route that exists", JSON.parse(readFileSync(join(root, "packages/naive/src/router/route-aliases.json"), "utf8")).aliases.every((a) => table.some((r) => r.route === a.to)));
+expect("aliases: every alias in the repository points at a route that exists", JSON.parse(readFileSync(join(root, "packages/naive/src/router/route-aliases.json"), "utf8")).aliases.every((a: { to: string }) => table.some((r) => r.route === a.to)));
 expect("gates: a venture's decision rights decide; ownership drafts under the template", (await call({ venture: "tandem", route: "governance/ownership", action: "layout" })).result.gate.drafts === true);
 
 // MCP server.
-const init = (await handle({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }));
+const init = (await rpc({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }));
 expect("MCP initialize names the server and its tools capability", init.result.serverInfo.name === "mentura" && init.result.capabilities.tools);
-expect("MCP lists its seventeen tools, three of them for setup, one for the decision library and two for the agents", (await handle({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 17 && ["mentura_setup", "mentura_setup_answer", "mentura_setup_point", "mentura_frame", "mentura_agent_brief", "mentura_route_task"].every((n) => TOOLS.some((t) => t.name === n)));
-const mcp = async (name, args) => (await handle({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name, arguments: args } })).result;
+expect("MCP lists its seventeen tools, three of them for setup, one for the decision library and two for the agents", (await rpc({ jsonrpc: "2.0", id: 2, method: "tools/list" })).result.tools.length === TOOLS.length && TOOLS.length === 17 && ["mentura_setup", "mentura_setup_answer", "mentura_setup_point", "mentura_frame", "mentura_agent_brief", "mentura_route_task"].every((n) => TOOLS.some((t) => t.name === n)));
+const mcp = async (name: string, args: NonNullable<Message["params"]>["arguments"]) => (await rpc({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name, arguments: args } })).result;
 const pd = await mcp("mentura_propose_decision", { venture: "tandem", decision: { id: "mcp-demo", question: "Demo?", answer: "Yes", at: "operations" }, agent_id: "builder" });
 expect("MCP: an agent proposes a decision and it awaits approval (EE-058)", !pd.isError && /"awaiting": "approval"/.test(pd.content[0].text));
 const pdd = await mcp("mentura_propose_decision", { venture: "tandem", decision: { id: "mcp-demo-2", question: "Demo?", status: "decided" } });
 expect("MCP: an agent cannot propose a decision as decided", pdd.isError);
 const dl = await mcp("mentura_decisions", { venture: "tandem", render: ["now"] });
-expect("MCP: the decisions tool lists what renders now", !dl.isError && JSON.parse(dl.content[0].text).decisions.some((d) => d.id === "mcp-demo"));
-const w = (await handle({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "governance/ownership", record: own } } }));
+expect("MCP: the decisions tool lists what renders now", !dl.isError && JSON.parse(dl.content[0].text).decisions.some((d: { id: string }) => d.id === "mcp-demo"));
+const w = (await rpc({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "governance/ownership", record: own } } }));
 expect("MCP writes are always an agent's, so a gated record becomes a draft", !w.result.isError && /"draft": true/.test(w.result.content[0].text));
-expect("MCP tool errors come back as isError", (await handle({ jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "mentura_read", arguments: { venture: "nobody", route: "purpose/telos" } } })).result.isError);
-expect("MCP reads a record as a resource", JSON.parse((await handle({ jsonrpc: "2.0", id: 5, method: "resources/read", params: { uri: "mentura://tandem/purpose/validation/problem" } })).result.contents[0].text).evidence.length > 0);
+expect("MCP tool errors come back as isError", (await rpc({ jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "mentura_read", arguments: { venture: "nobody", route: "purpose/telos" } } })).result.isError);
+expect("MCP reads a record as a resource", JSON.parse((await rpc({ jsonrpc: "2.0", id: 5, method: "resources/read", params: { uri: "mentura://tandem/purpose/validation/problem" } })).result.contents[0].text).evidence.length > 0);
 expect("MCP ignores notifications", (await handle({ jsonrpc: "2.0", method: "notifications/initialized" })) === null);
-expect("MCP refuses an unknown method", (await handle({ jsonrpc: "2.0", id: 6, method: "nope" })).error.code === -32601);
+expect("MCP refuses an unknown method", (await rpc({ jsonrpc: "2.0", id: 6, method: "nope" })).error.code === -32601);
 const stdio = spawnSync("node", [join(root, "packages/naive/src/interfaces/mcp/server.ts")], { input: '{"jsonrpc":"2.0","id":1,"method":"ping"}\nnot json\n', encoding: "utf8", env: process.env });
 const lines = stdio.stdout.trim().split("\n").map((l) => JSON.parse(l));
 expect("MCP over stdio answers each line, and a parse error as -32700", lines[0].id === 1 && lines[1].error?.code === -32700);
 
 // HTTP API.
 expect("API GET /routes", (await http("GET", "/routes"))[0] === 200);
-expect("API GET a record", (await http("GET", "/ventures/tandem/purpose/validation/problem"))[1].result?.evidence?.length > 0);
+expect("API GET a record", ((await http("GET", "/ventures/tandem/purpose/validation/problem"))[1].result?.evidence?.length ?? 0) > 0);
 expect("API 404 for an unknown venture", (await http("GET", "/ventures/nobody/purpose/telos"))[0] === 404);
 expect("API PUT to a gated record is a draft", (await http("PUT", "/ventures/tandem/governance/ownership", own))[1].result?.draft === true);
 expect("API 422 for a record that does not match", (await http("PUT", "/ventures/tandem/governance/ownership", { nope: 1 }))[0] === 422);
 expect("API POST run", (await http("POST", "/ventures/tandem/system/need-now/run"))[0] === 200);
 expect("API GET a venture is its overview", (await http("GET", "/ventures/tandem"))[1].result?.slots?.length === 8); // @packages added (wf/writes)
 expect("API reaches a nested venture by its path", (await http("GET", "/ventures/studio/print/system/robots"))[0] === 405 && (await http("POST", "/ventures/studio/print/system/robots/run"))[0] === 200);
-expect("API GET view and layout", typeof (await http("GET", "/ventures/tandem/purpose/validation/problem/view"))[1].result === "string" && (await http("GET", "/ventures/tandem/purpose/validation/problem/layout"))[1].result.stack.length === 3);
+expect("API GET view and layout", typeof (await http("GET", "/ventures/tandem/purpose/validation/problem/view"))[1].result === "string" && (await http("GET", "/ventures/tandem/purpose/validation/problem/layout"))[1].result?.stack.length === 3);
 expect("API GET a collection item", (await http("GET", "/ventures/tandem/purpose/product/kettle"))[1].result?.name === "Kettle");
 expect("API 405 for GET on run", (await http("GET", "/ventures/tandem/system/need-now/run"))[0] === 405);
 
 // CLI.
-const cli = (...a) => spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: process.env });
+const cli = (...a: string[]) => spawnSync("node", [join(root, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: process.env });
 expect("CLI lists ventures", /tandem/.test(cli("ventures").stdout));
 expect("CLI reads a record", (({ result, ...r }) => (result ?? r).evidence.length > 0)(JSON.parse(cli("purpose/validation/problem", "read", "--venture", "tandem").stdout)));
 expect("CLI fails with a message for an unknown route", cli("nope/nope", "read", "--venture", "tandem").status === 1);
@@ -176,16 +187,16 @@ expect("CLI accept without a draft fails", cli("accept", "governance/ownership",
 const fresh = join(ws, "ventures/fresh");
 expect("CLI init with --layers turns on only those layers", cli("init", fresh, "--id", "fresh", "--layers", "purpose").status === 0
   && JSON.parse(readFileSync(join(fresh, "venture.json"), "utf8")).layers.governance === false);
-expect("a part-adopted venture's need-now marks other layers off", (await call({ venture: "fresh", route: "system/need-now", action: "run" })).result.rows.find((r) => r.type === "ownership").status === "layer off");
+expect("a part-adopted venture's need-now marks other layers off", (await call({ venture: "fresh", route: "system/need-now", action: "run" })).result.rows.find((r: { type: string }) => r.type === "ownership").status === "layer off");
 
 // Provenance (EE-031).
 const log = entries(tandem);
-const by = (pred) => log.filter(pred).at(-1);
+const by = (pred: (e: ReturnType<typeof entries>[number]) => boolean) => log.filter(pred).at(-1);
 expect("the log route reads and checks the log, and has no write", !table.find((r) => r.route === "system/provenance")?.actions.includes("write")
   && Array.isArray((await call({ venture: "tandem", route: "system/provenance", action: "read" })).result));
 expect("a router write is logged with its gate as the decision", by((e) => e.activity === "draft" && e.agent.via === "router" && /ownership/.test(e.entity))?.decision === "ownership-or-control");
 expect("an MCP write logs the harness that connected", (await handle({ jsonrpc: "2.0", id: 9, method: "initialize", params: { clientInfo: { name: "test-harness", version: "1" } } }))
-  && !(await handle({ jsonrpc: "2.0", id: 10, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "purpose/validation/problem",
+  && !(await rpc({ jsonrpc: "2.0", id: 10, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "purpose/validation/problem",
     record: (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result, derived_from: ["purpose/validation/problem.json"], decision: "EE-026", model: "m" } } })).result.isError
   && (() => { const e = entries(tandem).at(-1); return e.agent.harness === "test-harness 1" && e.agent.model === "m" && e.decision === "EE-026" && e.derived_from[0] === "purpose/validation/problem.json"; })());
 (await http("PUT", "/ventures/tandem/purpose/validation/problem", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result, { "x-mentura-derived-from": "https://example.com/a, EE-026" }));

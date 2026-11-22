@@ -32,7 +32,7 @@ const tandem = join(ws, "ventures/tandem");
 const shared = join(ws, "shared");
 const { call } = await import("../../router/router.mjs");
 const { entries } = await import("../../core/provenance.ts");
-const kettle = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0], id: "kettle", name: "Kettle (in the shared folder)" };
+const kettle: Record<string, unknown> = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0] as Record<string, unknown>, id: "kettle", name: "Kettle (in the shared folder)" };
 write(shared, { "products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" });
 const map = { sources: [{ id: "shared", connector: "filesystem", root: "../../shared" }], records: { product: "shared" } };
 write(tandem, { "knowledge/sources.json": JSON.stringify(map, null, 2) + "\n" });
@@ -56,7 +56,7 @@ const { readAsOf } = await import("../../store/as-of.ts");
 expect("router: a write to another source keeps its bytes in the venture's blob store, so an as-of read by address returns them",
   readAsOf(tandem, "shared://products/teapot.json", e.at)?.content === readFileSync(join(shared, "products/teapot.json"), "utf8"));
 const prov = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.ts"), ws], { encoding: "utf8" });
-const srcCheck = (d) => spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.ts"), d], { encoding: "utf8" });
+const srcCheck = (d: string) => spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.ts"), d], { encoding: "utf8" });
 expect("router: check-provenance accepts entries for records in another source", prov.status === 0, prov.stderr);
 expect("router: check-sources accepts the map", srcCheck(ws).status === 0, srcCheck(ws).stderr);
 const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
@@ -75,13 +75,13 @@ write(tandem, { "knowledge/sources.json": JSON.stringify(map, null, 2) + "\n" })
 console.log("\n# catalog");
 const { stats } = await build(tandem);
 const cat = load(tandem);
-expect("catalog: indexes every item in both sources", cat.items.some((x) => x.source === "shared" && x.path === "notes/launch.md") && cat.items.some((x) => x.source === "venture" && x.path === "purpose/validation/problem.json") && stats.errors.length === 0, JSON.stringify(stats));
-expect("catalog: every item has an address and its version", cat.items.every((x) => x.address === `${x.source}://${x.path}` && /^[0-9a-f]{40}$/.test(x.version)));
-expect("catalog: records are tied to their routes, wherever they live", cat.items.find((x) => x.address === "shared://products/kettle.json")?.route === "product/kettle" && cat.items.find((x) => x.path === "purpose/validation/problem.json")?.route === "foundation/problem");
+expect("catalog: indexes every item in both sources", cat?.items.some((x) => x.source === "shared" && x.path === "notes/launch.md") && cat?.items.some((x) => x.source === "venture" && x.path === "purpose/validation/problem.json") && stats.errors.length === 0, JSON.stringify(stats));
+expect("catalog: every item has an address and its version", cat?.items.every((x) => x.address === `${x.source}://${x.path}` && /^[0-9a-f]{40}$/.test(x.version)));
+expect("catalog: records are tied to their routes, wherever they live", cat?.items.find((x) => x.address === "shared://products/kettle.json")?.route === "product/kettle" && cat?.items.find((x) => x.path === "purpose/validation/problem.json")?.route === "foundation/problem");
 const s1 = search(cat, "kettle subscription spring");
 expect("catalog: search finds an item in the mapped source", s1[0]?.address === "shared://notes/launch.md" && s1[0].title === "Launch plan", JSON.stringify(s1.slice(0, 2)));
 const research = readFileSync(join(tandem, "knowledge/research/pilot-2026-10.md"), "utf8");
-expect("catalog: search finds an item in the venture folder", search(cat, "pilot").some((x) => x.address === "venture://knowledge/research/pilot-2026-10.md"));
+expect("catalog: search finds an item in the venture folder", search(cat, "pilot").some((x: { address: string }) => x.address === "venture://knowledge/research/pilot-2026-10.md"));
 const raw = readFileSync(join(tandem, FILE), "utf8");
 const phrase = research.split("\n").find((l) => l.split(" ").length > 6)?.slice(0, 40);
 expect("catalog: keeps no content (no sentence of an item appears in it)", phrase && !raw.includes(phrase) && !raw.includes("Ship the kettle subscription"), phrase);
@@ -89,25 +89,25 @@ const again = (await build(tandem)).stats;
 expect("catalog: a rebuild with nothing changed reads nothing", again.read === 0 && again.reused === stats.items, JSON.stringify(again));
 write(shared, { "notes/later.md": "# Later\n\nAdded after the first build.\n" });
 const changed = (await build(tandem)).stats;
-expect("catalog: after a change, a rebuild reads only the new item", changed.read === 1 && load(tandem).items.some((x) => x.address === "shared://notes/later.md"), JSON.stringify(changed));
+expect("catalog: after a change, a rebuild reads only the new item", changed.read === 1 && load(tandem)?.items.some((x) => x.address === "shared://notes/later.md"), JSON.stringify(changed));
 
 // ---- Matrix (EE-042) ------------------------------------------------------------------------------
 console.log("\n# source-of-truth matrix");
 const { resolve: resolveRule } = await import("../../store/connectors/resolve.ts");
 const { sourceFor } = await import("../../store/connectors/index.ts");
-const rule = (o) => ({ record: "product", attribute: "*", phase: "*", product: "*", account: "*", actor: "*", owner: "founder", ...o });
+const rule = (o: Record<string, unknown>) => ({ record: "product", attribute: "*", phase: "*", product: "*", account: "*", actor: "*", owner: "founder", ...o });
 const matrix = { sources: map.sources, records: {}, rules: [
   rule({ system_of_record: "venture" }),
   rule({ phase: "validation", system_of_record: "shared" }),
   rule({ product: "kettle", phase: "validation", system_of_record: "venture", note: "the kettle stays in the folder" }),
   rule({ attribute: "price", system_of_record: "shared" }),
 ] };
-expect("matrix: the most specific rule wins", resolveRule(matrix, { record: "product", phase: "validation", product: "kettle" }).rule.note === "the kettle stays in the folder");
-expect("matrix: a rule narrowed to a phase holds only in that phase", resolveRule(matrix, { record: "product", phase: "validation" }).rule.system_of_record === "shared" && resolveRule(matrix, { record: "product", phase: "scale" }).rule.system_of_record === "venture");
-expect("matrix: a field the query leaves out matches only \"*\"", resolveRule(matrix, { record: "product" }).rule.system_of_record === "venture");
-expect("matrix: an attribute rule answers for that attribute, not for whole-record reads", resolveRule(matrix, { record: "product", attribute: "price" }).rule.attribute === "price" && resolveRule(matrix, { record: "product" }).rule.attribute === "*");
-expect("matrix: a record type no rule names falls back to the records shorthand, then to nothing", resolveRule({ records: { account: "shared" } }, { record: "account" }).rule.system_of_record === "shared" && resolveRule(matrix, { record: "telos" }) === null);
-expect("matrix: two rules that hold at once at the same specificity tie", resolveRule({ rules: [rule({ phase: "validation", system_of_record: "a" }), rule({ actor: "agent", system_of_record: "b" })] }, { record: "product", phase: "validation", actor: "agent" }).ties.length === 2);
+expect("matrix: the most specific rule wins", resolveRule(matrix, { record: "product", phase: "validation", product: "kettle" })?.rule.note === "the kettle stays in the folder");
+expect("matrix: a rule narrowed to a phase holds only in that phase", resolveRule(matrix, { record: "product", phase: "validation" })?.rule.system_of_record === "shared" && resolveRule(matrix, { record: "product", phase: "scale" })?.rule.system_of_record === "venture");
+expect("matrix: a field the query leaves out matches only \"*\"", resolveRule(matrix, { record: "product" })?.rule.system_of_record === "venture");
+expect("matrix: an attribute rule answers for that attribute, not for whole-record reads", resolveRule(matrix, { record: "product", attribute: "price" })?.rule.attribute === "price" && resolveRule(matrix, { record: "product" })?.rule.attribute === "*");
+expect("matrix: a record type no rule names falls back to the records shorthand, then to nothing", resolveRule({ records: { account: "shared" } }, { record: "account" })?.rule.system_of_record === "shared" && resolveRule(matrix, { record: "telos" }) === null);
+expect("matrix: two rules that hold at once at the same specificity tie", resolveRule({ rules: [rule({ phase: "validation", system_of_record: "a" }), rule({ actor: "agent", system_of_record: "b" })] }, { record: "product", phase: "validation", actor: "agent" })?.ties.length === 2);
 write(tandem, { "knowledge/sources.json": JSON.stringify(matrix, null, 2) + "\n" });
 expect("matrix: sourceFor reads the venture's phase from venture.json (tandem is in validation)", sourceFor(tandem, "product").id === "shared" && sourceFor(tandem, "product", { product: "kettle" }).id === "venture");
 const viaRouter = await call({ venture: "tandem", route: "purpose/product/teapot", action: "read" });

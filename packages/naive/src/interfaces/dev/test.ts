@@ -4,6 +4,7 @@
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { handle } from "./setup.ts";
@@ -14,21 +15,30 @@ const repo = new URL("../../../../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "setup-test-"));
 const dir = join(base, "acme");
 let failed = 0;
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
-/** @type {NodeJS.ProcessEnv} */
+const ok = (c: unknown, m?: string): void => { if (!c) throw new Error(m ?? "assertion failed"); };
 // finance=rho syncs through the app's command (packages/naive/src/core/sync.ts); the test names a stand-in.
-const env = { ...process.env, HOME: base, NAIVE_SYNC_RHO: `node ${join(repo, "packages/naive/src/records/examples/money-sync/sync.ts")}` };
+const env: NodeJS.ProcessEnv = { ...process.env, HOME: base, NAIVE_SYNC_RHO: `node ${join(repo, "packages/naive/src/records/examples/money-sync/sync.ts")}` };
 delete env.MENTURA_WORKSPACE;
 const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
 if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); process.exit(1); }
 
 const server = createServer(async (req, res) => { if (!(await handle(req, res, dir))) { res.writeHead(404); res.end(); } }).listen(0, "127.0.0.1");
 await new Promise((r) => server.once("listening", r));
-const at = `http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}`;
-/** @param {string} p @returns {Promise<*>} */
-const get = (p) => fetch(at + p).then((r) => r.json());
-const post = (p, b) => fetch(at + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(async (r) => ({ status: r.status, .../** @type {*} */ (await r.json()) }));
-const t = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
+/** The setup state the page reads (router/orchestration/setup.mjs state()): only the fields this test looks at. */
+type Decision = { id: string, status: string, question: string, options: string[] };
+type State = {
+  steps: { people: boolean, truth: boolean, docket: boolean },
+  done: boolean,
+  functions: Record<string, { systems: { status: string, fixture?: boolean }[] }>,
+  docket: Decision[],
+  counts: { settled: number, of: number },
+  goal: { status: string } | null,
+};
+type Reply = { status: number, ok?: boolean, error?: string, result?: { status?: string } };
+const at = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+const get = (p: string): Promise<State> => fetch(at + p).then((r) => r.json() as Promise<State>);
+const post = (p: string, b: unknown): Promise<Reply> => fetch(at + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(async (r) => ({ status: r.status, ...(await r.json() as Omit<Reply, "status">) }));
+const t = async (name: string, fn: () => Promise<void>): Promise<void> => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
 
 await t("the page and its state answer; people and the Rho source of truth from create-venture are there", async () => {
   ok((await fetch(at + "/setup")).status === 200);
@@ -40,7 +50,7 @@ await t("the page and its state answer; people and the Rho source of truth from 
 
 await t("pointing a function at a system writes knowledge/sources.json through the router, with provenance", async () => {
   const r = await post("/setup/point", { fn: "legal", system: "local-folder", address: "~/acme-legal" });
-  ok(r.ok && r.result.status === "pointed", JSON.stringify(r));
+  ok(r.ok && r.result?.status === "pointed", JSON.stringify(r));
   ok(JSON.parse(readFileSync(ventureFile(dir, "knowledge/sources.json"), "utf8")).functions.legal.systems[0].address === "~/acme-legal");
   ok(readFileSync(ventureFile(dir, "provenance.jsonl"), "utf8").includes("legal: local-folder"));
   ok((await post("/setup/point", { fn: "legal", system: "stripe" })).status === 400, "a system not offered for the function is refused");
@@ -62,7 +72,7 @@ await t("answering every first decision and the discovery goal establishes the s
   ok((await post("/setup/decide", { id: "discovery-goal", answer: "" })).status === 400, "an empty answer is refused");
   ok((await post("/setup/decide", { id: "discovery-goal", answer: "Ten cafe owners confirm the problem by December." })).ok);
   s = await get("/setup/state");
-  ok(s.done && s.goal.status === "decided", JSON.stringify(s.steps));
+  ok(s.done && s.goal?.status === "decided", JSON.stringify(s.steps));
   const decided = JSON.parse(readFileSync(ventureFile(dir, "decisions/statement-problem.decision.json"), "utf8"));
   ok(decided.status === "decided" && decided.statement === "problem" && decided.provenance.approved_by === "Pat Doe", JSON.stringify(decided));
 });

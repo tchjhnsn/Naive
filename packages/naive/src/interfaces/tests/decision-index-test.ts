@@ -12,13 +12,17 @@ import { record } from "../../core/provenance.ts";
 import { call } from "../../router/router.mjs";
 
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail?: unknown): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "dindex-"));
 const v = join(ws, "idx");
-const put = (rel, o) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), JSON.stringify(o, null, 2) + "\n"); };
+const put = (rel: string, o: unknown): void => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), JSON.stringify(o, null, 2) + "\n"); };
 const agent = { kind: "person", id: "Founder", via: "cli" };
-const entryOf = (idx, id) => idx.entries.find((e) => e.id === id);
+/** An index entry and a listed decision: only the fields this test reads. */
+type Entry = { id: string, score: number, render: string, rank: number, docket_rank: number, impact: { records: string[], functions: string[], decisions: { id: string }[] }, weight: { phase: number, lifted_by: string | null }, flags: { requirement: string, holds_in: string }[] };
+type Listed = { id: string, rank: number };
+const listed = (dir: string): Listed[] => decisions(dir).decisions;
+const entryOf = (idx: { entries: Entry[] }, id: string): Entry => { const e = idx.entries.find((x) => x.id === id); if (!e) throw new Error(`no index entry ${id}`); return e; };
 
 put("venture.json", { id: "idx", name: "Idx", type: "software-startup", parent: null, phase: "discovery", owner: "self", status: "active", layers: { purpose: true, knowledge: true, operations: false, evidence: false, governance: true, interface: false } });
 put("product/shop.json", { id: "shop", name: "Shop" });
@@ -27,8 +31,8 @@ put("people/team-plan.json", { roles: ["engineer"] });
 put("marketing/notes.json", { unrelated: true });
 
 try {
-  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: f, route: "x", activity: "write", agent }));
-  record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] }));
+  for (const f of ["product/shop.json", "accounts/acme/account.json", "marketing/notes.json"]) record(v, { entity: f, route: "x", activity: "write", agent } as Parameters<typeof record>[1]);
+  record(v, { entity: "people/team-plan.json", route: "x", activity: "write", agent, derived_from: ["product/shop.json"] } as Parameters<typeof record>[1]);
 
   propose(v, { at: "product", id: "shop-price", question: "What does Shop cost?", applies_to: [{ file: "product/shop.json", field: "price" }] }, { agentId: "cos" });
   propose(v, { at: "product", id: "shop-billing", question: "Monthly or yearly?", parent: "shop-price", applies_to: [{ file: "product/shop.json", field: "billing" }] }, { agentId: "cos" });
@@ -41,9 +45,9 @@ try {
   const price = entryOf(idx, "shop-price");
   expect("an open decision has structural impact: records that read or refer to what it changes", price.impact.records.join() === "accounts/acme/account.json,people/team-plan.json", price.impact);
   expect("its functions span the venture", ["product", "customers", "people"].every((f) => price.impact.functions.includes(f)), price.impact.functions);
-  expect("linked decisions are listed (child, shared record)", price.impact.decisions.some((d) => d.id === "shop-billing"), price.impact.decisions);
-  expect("nothing is marked stale or proposed for an open decision", !decisions(v).decisions.some((d) => d.id.startsWith("revise-")));
-  expect("the docket's rank is kept and wrapped", price.docket_rank === decisions(v).decisions.find((d) => d.id === "shop-price").rank, price);
+  expect("linked decisions are listed (child, shared record)", price.impact.decisions.some((d: { id: string }) => d.id === "shop-billing"), price.impact.decisions);
+  expect("nothing is marked stale or proposed for an open decision", !listed(v).some((d) => d.id.startsWith("revise-")));
+  expect("the docket's rank is kept and wrapped", price.docket_rank === listed(v).find((d) => d.id === "shop-price")?.rank, price);
   expect("the index lives in .naive/ as a cache", JSON.parse(readFileSync(join(v, ".naive/decision-index.json"), "utf8")).entries.length === idx.entries.length);
 
   // (c) phase weight
@@ -65,25 +69,25 @@ try {
   rebuild(v, { now: Date.parse("2099-11-01T00:00:00Z") });
   idx = update(v, { now: Date.parse("2099-11-06T00:00:00Z") });
   const ld = entryOf(idx, "launch-date");
-  expect("a decision whose due time passed is overdue and ranks first after an update", ld.render === "overdue" && idx.entries[0].id === "launch-date", idx.entries.map((e) => [e.id, e.score, e.render]));
+  expect("a decision whose due time passed is overdue and ranks first after an update", ld.render === "overdue" && idx.entries[0].id === "launch-date", idx.entries.map((e: Entry) => [e.id, e.score, e.render]));
   const fresh = rebuild(v, { now: Date.parse("2099-11-06T00:00:00Z") });
-  expect("update and rebuild give the same ranking", JSON.stringify(idx.entries.map((e) => [e.id, e.score])) === JSON.stringify(fresh.entries.map((e) => [e.id, e.score])));
+  expect("update and rebuild give the same ranking", JSON.stringify(idx.entries.map((e: Entry) => [e.id, e.score])) === JSON.stringify(fresh.entries.map((e: Entry) => [e.id, e.score])));
   expect("history records the move", rankHistory(v, "launch-date").some((r) => r.cause === "rank moved" && r.rank === 1));
   expect("an agent may not withdraw a decision", propose(v, { at: "marketing", id: "launch-date", question: "When do we launch?", status: "withdrawn" }, { agentId: "cos" }).ok === false);
   const ldFile = join(v, "marketing/decisions/launch-date.decision.json");
   writeFileSync(ldFile, JSON.stringify({ ...JSON.parse(readFileSync(ldFile, "utf8")), status: "withdrawn" }, null, 2) + "\n");
   idx = rebuild(v);
-  expect("a person's withdrawal takes the decision out of the ranking", !idx.entries.some((e) => e.id === "launch-date"), idx.entries.map((e) => e.id));
+  expect("a person's withdrawal takes the decision out of the ranking", !idx.entries.some((e: Entry) => e.id === "launch-date"), idx.entries.map((e: Entry) => e.id));
 
   // (c) requirements: a heavy one lifts a later decision into this phase; a violation is flagged now
   put("foundation/requirements/scale-to-millions.json", { id: "scale-to-millions", statement: "Serve hundreds of millions of users", derives_from: { ambition: "platform" }, phase: "scale", functions: ["product"], verified_by: "load test evidence", weight: 0.9, check: { answer_must_not_match: "sqlite" } });
-  record(v, /** @type {Parameters<typeof record>[1]} */ ({ entity: "foundation/requirements/scale-to-millions.json", route: "x", activity: "write", agent }));
+  record(v, { entity: "foundation/requirements/scale-to-millions.json", route: "x", activity: "write", agent } as Parameters<typeof record>[1]);
   propose(v, { at: "product", id: "shop-scale", question: "Which database?", needed_in: "scale", answer: "a single SQLite file", requirements: [{ id: "scale-to-millions", relation: "constrains" }], applies_to: [{ file: "product/shop.json", field: "store" }] }, { agentId: "cos" });
   idx = update(v);
   const sc = entryOf(idx, "shop-scale");
   expect("a heavy requirement lifts a later-phase decision into the current phase", sc.weight.phase === 1 && sc.weight.lifted_by === "scale-to-millions", sc.weight);
   expect("an answer that breaks a later requirement is flagged now", sc.flags.length === 1 && sc.flags[0].requirement === "scale-to-millions" && sc.flags[0].holds_in === "scale", sc.flags);
-  expect("the lifted, flagged decision now ranks first", idx.entries[0].id === "shop-scale", idx.entries.map((e) => e.id));
+  expect("the lifted, flagged decision now ranks first", idx.entries[0].id === "shop-scale", idx.entries.map((e: Entry) => e.id));
   const s = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", "decision-record.schema.json", "--file", join(v, "product/decisions/shop-scale.decision.json")], { encoding: "utf8" });
   expect("the requirements field matches the decision-record schema", s.status === 0, s.stdout + s.stderr);
 
@@ -104,7 +108,7 @@ try {
 // naive#72: a fail-closed decision due in five days scores above zero, and more than one due in fourteen.
 {
   const now = Date.parse("2026-11-20T00:00:00Z");
-  const at = (days) => new Date(now + days * 864e5).toISOString();
+  const at = (days: number): string => new Date(now + days * 864e5).toISOString();
   const five = ownScore({ id: "a", status: "open", boundary: "fail-closed", due: at(5) }, "discovery", now);
   const far = ownScore({ id: "b", status: "open", boundary: "fail-closed", due: at(14) }, "discovery", now);
   const open = ownScore({ id: "c", status: "open", boundary: "fail-open", due: at(5) }, "discovery", now);

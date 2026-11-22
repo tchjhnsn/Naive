@@ -22,14 +22,20 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { adapt, adapters, byName, refresh, skillsFor } from "../engine/adapters.ts";
+import type { Adapter } from "../records/types/records.d.ts";
 
 export { adapt, adapters, refresh, skillsFor, STATE } from "../engine/adapters.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
+/** An adapter as adapters() lists it: the record, where it was read from, and a platform adapter's folder. */
+type Listed = Adapter & { path: string, dir?: string };
+/** One test of an adapter suite. */
+type Result = { test: string, passed: boolean, detail: string };
+
 // The framework's tests for a harness adapter, run on a new venture in a temporary folder.
-async function harnessSuite(a) {
-  const results = [];
-  const t = (test, passed, detail = "") => results.push({ test, passed: !!passed, detail });
+async function harnessSuite(a: Listed): Promise<Result[]> {
+  const results: Result[] = [];
+  const t = (test: string, passed: unknown, detail: string = "") => results.push({ test, passed: !!passed, detail });
   const ws = mkdtempSync(join(tmpdir(), `naive-adapter-${a.name}-`));
   try {
     const dir = join(ws, "adapted");
@@ -43,13 +49,14 @@ async function harnessSuite(a) {
     const { call } = await import("../router/router.mjs");
     const lay = await call({ venture: "adapted", workspace: ws, route: "foundation/problem", action: "layout" });
     t("the layout an agent gets starts with the venture's AGENTS.md and its instructions", lay.ok && lay.result.chain[0]?.path === "AGENTS.md" && lay.result.instructions.private === "_private/", lay.error ?? "");
-    if (a.skills) {
+    const skills = a.skills;
+    if (skills) {
       const want = await skillsFor(dir);
       t("the venture has packages open now with skills to copy", want.length > 0, "no open package has a skill");
-      t("each open package's skill is copied byte for byte where the harness loads skills", want.every((s) => existsSync(join(dir, a.skills, s.id, "SKILL.md")) && readFileSync(join(dir, a.skills, s.id, "SKILL.md"), "utf8") === readFileSync(join(repo, s.path), "utf8")), JSON.stringify(want.map((s) => s.id)));
-      rmSync(join(dir, a.skills, want[0].id, "SKILL.md"));
+      t("each open package's skill is copied byte for byte where the harness loads skills", want.every((s) => existsSync(join(dir, skills, s.id, "SKILL.md")) && readFileSync(join(dir, skills, s.id, "SKILL.md"), "utf8") === readFileSync(join(repo, s.path), "utf8")), JSON.stringify(want.map((s) => s.id)));
+      rmSync(join(dir, skills, want[0].id, "SKILL.md"));
       const back = await refresh(dir);
-      t("a refresh (as after an upgrade) puts a missing skill copy back", back[0]?.written?.includes(`${a.skills}/${want[0].id}/SKILL.md`), JSON.stringify(back));
+      t("a refresh (as after an upgrade) puts a missing skill copy back", back[0]?.written?.includes(`${skills}/${want[0].id}/SKILL.md`), JSON.stringify(back));
     }
     const again = await adapt(dir, a.name);
     t("adapting again changes nothing", again.written.length === 0 && again.kept.length === 0, JSON.stringify(again));
@@ -66,7 +73,7 @@ async function harnessSuite(a) {
       const theirs = await adapt(other, a.name);
       t("a file that was there before the adapter is kept", theirs.kept.some((k) => k.path === a.files[0].path) && readFileSync(join(other, a.files[0].path), "utf8") === "the founder's own file\n", JSON.stringify(theirs));
     }
-  } catch (e) { t("the suite ran to the end", false, String(e.stack ?? e)); }
+  } catch (e) { t("the suite ran to the end", false, String((e as Error).stack ?? e)); }
   finally { rmSync(ws, { recursive: true, force: true }); }
   return results;
 }
@@ -74,7 +81,7 @@ async function harnessSuite(a) {
 // A platform adapter runs the framework itself; it is verified by the test programs it names: an absolute path,
 // a path relative to the adapter file's folder (the app's own test of the hooks it implements, run from that
 // folder), or a path in this repository (a framework test).
-function platformSuite(a) {
+function platformSuite(a: Listed): Result[] {
   if (!a.verify?.length) return [{ test: "names the framework tests it must pass", passed: false, detail: "verify is empty" }];
   return a.verify.map((p) => {
     const app = !isAbsolute(p) && a.dir ? join(a.dir, p) : null;
@@ -87,8 +94,8 @@ function platformSuite(a) {
 }
 
 /** Runs the framework's tests for one adapter: { adapter, kind, verified, results }. */
-export async function verify(name) {
-  const a = byName(name);
+export async function verify(name: string): Promise<{ adapter: string, kind: Adapter["kind"], verified: boolean, results: Result[] }> {
+  const a: Listed = byName(name);
   const results = a.kind === "harness" ? await harnessSuite(a) : platformSuite(a);
   return { adapter: a.name, kind: a.kind, verified: results.every((r) => r.passed), results };
 }
@@ -117,5 +124,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       }
       process.exit(rs.every((r) => r.verified) ? 0 : 1);
     } else throw new Error("usage: node packages/naive/src/interfaces/adapters.ts [adapt <adapter> <venture dir> | verify [<adapter>]] [--json]");
-  } catch (e) { console.error(e.message); process.exit(1); }
+  } catch (e) { console.error((e as Error).message); process.exit(1); }
 }

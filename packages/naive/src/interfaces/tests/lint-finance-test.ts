@@ -15,27 +15,25 @@ const root = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "lint-finance-"));
 const script = join(root, "packages/naive/src/checks/lint-finance.ts");
 let failed = 0;
-const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown): void => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
 
-const run = (dir, extra = []) => spawnSync("node", [script, dir, ...extra], { encoding: "utf8" });
-const json = (dir) => { const r = run(dir, ["--json"]); let body = null; try { body = JSON.parse(r.stdout); } catch { body = null; } return { ...r, body }; };
-const ids = (r) => (r.body?.findings ?? []).map((f) => f.rule);
+/** The lint's JSON report: only the fields this test reads. */
+type Finding = { rule: string, mode: string, file?: string, message?: string, suggestion?: string };
+type Report = { ok?: boolean, phase?: string | null, findings: Finding[] };
+const run = (dir: string, extra: string[] = []) => spawnSync("node", [script, dir, ...extra], { encoding: "utf8" });
+const json = (dir: string) => { const r = run(dir, ["--json"]); let body: Report | null = null; try { body = JSON.parse(r.stdout); } catch { body = null; } return { ...r, body }; };
+const ids = (r: { body: Report | null }): string[] => (r.body?.findings ?? []).map((f) => f.rule);
 
-function write(dir, rel, body) {
+function write(dir: string, rel: string, body: unknown): void {
   const p = join(dir, rel);
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, typeof body === "string" ? body : JSON.stringify(body, null, 2));
 }
 
-/**
- * @param {string} name
- * @param {Record<string, unknown>} files
- * @param {{ phase?: string, layout?: string, config?: object, configAt?: string }} [options]
- */
-function venture(name, files, { phase = "validation", layout, config, configAt } = {}) {
+function venture(name: string, files: Record<string, unknown>, { phase = "validation", layout, config, configAt }: { phase?: string, layout?: string, config?: object, configAt?: string } = {}): string {
   const dir = join(tmp, name);
   mkdirSync(dir, { recursive: true });
-  const v = { id: name, name, phase };
+  const v: { id: string, name: string, phase: string, layout?: string } = { id: name, name, phase };
   if (layout) v.layout = layout;
   write(dir, "venture.json", v);
   if (config) write(dir, configAt ?? "naive.config.json", config);
@@ -44,8 +42,8 @@ function venture(name, files, { phase = "validation", layout, config, configAt }
 }
 
 const spend = (extra = {}) => ({ id: "spend-ads", question: "Spend 5000 on ads this month?", status: "open", ...extra });
-const price = (amount, cost, extra = {}) => ({ venture: "v", product: "app", model: "subscription", buyer: "the buyer", evidence: [], points: [{ name: "Pro", amount, currency: "USD", ...(cost == null ? {} : { cost }), ...extra }] });
-const metric = (targets) => ({ metrics: [{ id: "gross-margin", targets }] });
+const price = (amount: number, cost?: number | null, extra: Record<string, unknown> = {}) => ({ venture: "v", product: "app", model: "subscription", buyer: "the buyer", evidence: [], points: [{ name: "Pro", amount, currency: "USD", ...(cost == null ? {} : { cost }), ...extra }] });
+const metric = (targets: unknown) => ({ metrics: [{ id: "gross-margin", targets }] });
 
 // The one fixture that must fail each rule.
 const broke = venture("broke", {
@@ -56,7 +54,7 @@ const broke = venture("broke", {
 const brokeRun = json(broke);
 expect("one fixture fails each rule", brokeRun.status === 0 && brokeRun.body?.ok === true
   && ["spend-no-runway", "price-below-cost", "metric-no-target"].every((id) => ids(brokeRun).includes(id))
-  && brokeRun.body.findings.every((f) => f.mode === "fail-open" && f.file && f.message && f.suggestion));
+  && brokeRun.body?.findings.every((f) => f.mode === "fail-open" && f.file && f.message && f.suggestion));
 
 const clean = venture("clean", {
   "decisions/spend-ads.decision.json": spend({ answer: "Yes. Runway goes from 14 months to 11 (money/_summary.json)." }),
@@ -74,7 +72,7 @@ expect("a metric with a target for the current phase stays silent", json(phased)
 for (const phase of ["discovery", "beachhead", "scale", "platform"]) {
   write(phased, "venture.json", { id: "phased", name: "phased", phase });
   const r = json(phased);
-  expect(`phase ${phase} with no target fires metric-no-target`, r.status === 0 && ids(r).includes("metric-no-target") && r.body.phase === phase);
+  expect(`phase ${phase} with no target fires metric-no-target`, r.status === 0 && ids(r).includes("metric-no-target") && r.body?.phase === phase);
 }
 write(phased, "venture.json", { id: "phased", name: "phased", phase: "validation" });
 expect("moving back to a phase that has a target clears the finding", !ids(json(phased)).includes("metric-no-target"));
@@ -156,9 +154,9 @@ const structured = venture("structured", {
 }, { layout: "structured", phase: "beachhead" });
 const structuredRun = json(structured);
 expect("structured layout reads pricing and decisions through ventureFile", structuredRun.status === 0 && !ids(structuredRun).includes("price-below-cost") && !ids(structuredRun).includes("spend-no-runway"));
-expect("structured layout reads the metric and its phase through ventureFile", ids(structuredRun).includes("metric-no-target") && structuredRun.body.phase === "beachhead");
+expect("structured layout reads the metric and its phase through ventureFile", ids(structuredRun).includes("metric-no-target") && structuredRun.body?.phase === "beachhead");
 write(structured, "k-base/validation/pricing.json", price(1, 100));
-expect("structured layout reads finance_lint mode through ventureFile", json(structured).status === 1 && json(structured).body.findings.some((f) => f.rule === "price-below-cost" && f.mode === "fail-closed"));
+expect("structured layout reads finance_lint mode through ventureFile", json(structured).status === 1 && json(structured).body?.findings.some((f) => f.rule === "price-below-cost" && f.mode === "fail-closed"));
 
 expect("usage without a venture exits 2", run(join(tmp, "missing")).status === 2);
 const cfgDir = venture("cfg", {}, { config: { finance_lint: { rules: { "spend-no-runway": { mode: "fail-closed" } } } } });
@@ -172,11 +170,11 @@ write(ws, "ventures/kettle/venture.json", {
 });
 write(ws, "ventures/kettle/validation/pricing.json", price(40, 55));
 const routed = await call({ venture: "kettle", route: "finance/lint", action: "run", workspace: ws });
-expect("route finance/lint returns the findings", routed.ok && routed.result?.findings?.some((f) => f.rule === "price-below-cost"));
+expect("route finance/lint returns the findings", routed.ok && routed.result?.findings?.some((f: Finding) => f.rule === "price-below-cost"));
 
-function venturesUnder(dir) {
-  const out = [];
-  const walkDir = (d) => {
+function venturesUnder(dir: string): string[] {
+  const out: string[] = [];
+  const walkDir = (d: string): void => {
     let entries;
     try { entries = readdirSync(d, { withFileTypes: true }); } catch { return; }
     if (entries.some((e) => e.name === "venture.json")) out.push(d);

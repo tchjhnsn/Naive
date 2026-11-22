@@ -88,10 +88,23 @@ import { pick as pickDraft, settle as settleDraft } from "../../engine/gate-draf
 import { asRouted, findVenture } from "./find-venture.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { setPublic, visibilityOf } from "../../engine/visibility.ts";
+import type { StrategicFoundation } from "../../records/types/records.d.ts";
+
+/** A foundation statement in the strategic foundation frame. */
+type Statement = StrategicFoundation["questions"][number]["statements"][number];
+const frame = FRAME as StrategicFoundation;
+/** A route in the route table: only the fields this CLI reads. */
+type Route = { route: string, actions: string[], groups: string[], kind: string, record?: string, collection?: string, form?: string, files: string[], view_of?: string };
+const table = (): Route[] => routes();
+/** A decision as decisions() lists it: only the fields this CLI reads. */
+type Listed = { id: string, source: string, version?: number, question?: string, answer?: string, applies_to?: { file: string, field: string }[], rank?: number | null, render: string, why?: string[], reasons_changed?: unknown[] };
+const listed = (dir: string): Listed[] => decisions(dir).decisions;
+/** The value at a dotted path of a record; "." is the record itself. A missing path throws, as it did before the types. */
+const get = (o: unknown, p: string | null | undefined): unknown => { if (p == null) throw new TypeError("a statement with no attribute path"); return p === "." ? o : p.split(".").reduce<unknown>((x, k) => (x == null ? undefined : (x as Record<string, unknown>)[k]), o); };
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
-async function typed(name, what, why = "This is a foundation statement: changing it changes the venture.") {
+async function typed(name: string, what: string, why: string = "This is a foundation statement: changing it changes the venture."): Promise<boolean> {
   if (opt("confirm") !== undefined) return opt("confirm") === name;
   console.log(`${what}\n${why} Type ${name} to confirm.`);
   if (!process.stdin.isTTY) { console.log(`(not at a terminal: pass --confirm ${name})`); return false; }
@@ -101,19 +114,20 @@ async function typed(name, what, why = "This is a foundation statement: changing
   rl.close();
   return a === name;
 }
-const foundationOf = (recordType) => FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record === recordType);
+const foundationOf = (recordType: string | undefined): Statement[] => frame.questions.flatMap((q) => q.statements).filter((s) => s.record === recordType);
 
 const argv = process.argv.slice(2);
 // Inside a venture, --venture and the workspace default to it (I-2): `cd my-venture && mentura system/overview view`.
 const here = !argv.includes("--venture") && !argv.includes("--workspace") ? findVenture() : null;
 if (here) { argv.push("--venture", asRouted(here).venture, "--workspace", asRouted(here).workspace); process.env.MENTURA_WORKSPACE = asRouted(here).workspace; }
-const opt = (name) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : undefined; };
-const flag = (name) => argv.includes(`--${name}`);
+const opt = (name: string): string | undefined => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : undefined; };
+const flag = (name: string): boolean => argv.includes(`--${name}`);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["json", "hierarchy"].includes(argv[i - 1].slice(2))));
-const workspace = opt("workspace") ? resolve(opt("workspace")) : undefined;
-const out = (x) => console.log(typeof x === "string" ? x : JSON.stringify(x, null, 2));
+const workspaceArg = opt("workspace");
+const workspace = workspaceArg ? resolve(workspaceArg) : undefined;
+const out = (x: unknown): void => console.log(typeof x === "string" ? x : JSON.stringify(x, null, 2));
 
-function usage(code = 2) {
+function usage(code: number = 2): never {
   console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   ")).map((l) => l.slice(5)).join("\n"));
   process.exit(code);
 }
@@ -123,7 +137,7 @@ if (!cmd || cmd === "help" || flag("help")) usage(cmd ? 0 : 2);
 
 if (cmd === "routes") {
   const g = opt("group")?.replace(/^\(|\)$/g, "");
-  const rs = g ? routes().filter((r) => r.groups.includes(`(${g})`)) : routes();
+  const rs = g ? table().filter((r) => r.groups.includes(`(${g})`)) : table();
   out(flag("json") || g ? (flag("json") ? rs : rs.map((r) => `${r.route.padEnd(44)} ${r.actions.join(", ")}`).join("\n")) : routesMd());
   process.exit(0);
 }
@@ -132,7 +146,7 @@ if (cmd === "groups") { out(flag("json") ? groups() : groups().map((g) => `${g.g
 
 if (cmd === "ventures") {
   const vs = ventures(workspace);
-  out(flag("json") ? vs : vs.map((v) => `${v.id.padEnd(24)} ${String(v.phase).padEnd(12)} ${v.path}`).join("\n") || "no ventures");
+  out(flag("json") ? vs : vs.map((v: { id: string, phase: unknown, path: string }) => `${v.id.padEnd(24)} ${String(v.phase).padEnd(12)} ${v.path}`).join("\n") || "no ventures");
   process.exit(0);
 }
 
@@ -161,9 +175,10 @@ if (cmd === "typegen") {
 //   mentura adapt <adapter> --venture <id>          write a harness's entry files into the venture (claude-code, codex, cursor)
 //   mentura adapters [verify [<adapter>]] [--json]  the adapters, or run the framework's tests an adapter must pass
 if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
-  const d = ["triggers", "stale", "notify", "adapt"].includes(cmd) ? (opt("venture") ? ventureDir(opt("venture"), workspace) : null) : null;
-  if (cmd !== "adapters" && !d) { console.error(opt("venture") ? `no venture ${opt("venture")}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
-  const pass = (...names) => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
+  const v = opt("venture");
+  const d = ["triggers", "stale", "notify", "adapt"].includes(cmd) ? (v ? ventureDir(v, workspace) : null) : null;
+  if (cmd !== "adapters" && !d) { console.error(v ? `no venture ${v}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
+  const pass = (...names: string[]): string[] => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
   const args = cmd === "triggers" ? ["packages/naive/src/router/orchestration/triggers.mjs", d, ...pass("fire", "json")]
     : cmd === "stale" ? ["packages/naive/src/engine/stale.ts", d, ...pass("json")]
     : cmd === "notify" ? ["packages/naive/src/engine/stale.ts", d, "--notify", ...pass("source", "path", "version", "json")]
@@ -178,7 +193,8 @@ if (cmd === "migrate" && (opt("from") || flag("apply"))) {
   const v = opt("venture");
   const d = v && (existsSync(join(resolve(v), "venture.json")) ? resolve(v) : ventureDir(v, workspace));
   if (!d) usage();
-  const p = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/migrate-venture.mjs"), "--venture", d, ...(opt("from") ? ["--from", opt("from")] : ["--apply"])], { stdio: "inherit" });
+  const from = opt("from");
+  const p = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/migrate-venture.mjs"), "--venture", d, ...(from ? ["--from", from] : ["--apply"])], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -206,13 +222,13 @@ if (cmd === "init") {
   // The venture scaffold lives in packages/naive/src/engine/init-venture.ts; this passes the options through.
   const id = opt("id");
   if (!action || !id) usage();
-  const pass = ["phase", "parent", "legal-form", "layers"].flatMap((k) => opt(k) !== undefined ? [`--${k}`, opt(k)] : []);
+  const pass = ["phase", "parent", "legal-form", "layers"].flatMap((k) => { const v = opt(k); return v !== undefined ? [`--${k}`, v] : []; });
   const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), resolve(action), id, ...pass], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
 if (cmd === "accept") {
-  if (routes().find((r) => r.route === action)?.view_of) { console.error("not accepted: this route takes no drafts; a person writes it directly"); process.exit(1); }
+  if (table().find((r) => r.route === action)?.view_of) { console.error("not accepted: this route takes no drafts; a person writes it directly"); process.exit(1); }
   // The person at the keyboard accepts a draft: it is checked again and moved into place. The CLI
   // cannot tell a person from an agent running it, so the repository's review (a pull request a
   // person merges) remains the gate that holds; this makes the person's step explicit.
@@ -232,14 +248,13 @@ if (cmd === "accept") {
   const draft = ventureFile(d.dir, d.draft);
   if (!existsSync(draft)) { console.error(`no draft of ${d.route} in ${venture}`); process.exit(1); }
   // Gate group hook (X-2): drafts kept side by side are accepted one at a time with --pick <letter>.
-  let chosen;
-  try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error(e.message); process.exit(1); }
+  let chosen: string;
+  try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error((e as Error).message); process.exit(1); }
   const chosenFile = ventureFile(d.dir, chosen);
-  const recType = routes().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
-  const touched = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !s.derived_from).map((s) => ({ ...s, ...statementFiles(d.dir, s) })).filter((s) => s.files.includes(d.file) || (s.id === "exit-criteria" && d.file.startsWith("foundation/exit-criteria/")));
+  const recType = table().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
+  const touched: { id: string, attribute?: string | null }[] = frame.questions.flatMap((q) => q.statements).filter((s) => s.record && !s.derived_from).map((s) => ({ ...s, ...statementFiles(d.dir, s) as { files: string[], attribute: string | null } })).filter((s) => s.files.includes(d.file) || (s.id === "exit-criteria" && d.file.startsWith("foundation/exit-criteria/")));
   touched.push(...foundationOf(recType).filter((s) => !touched.some((t) => t.id === s.id)));
   if (touched.length) {
-    const get = (o, p) => p === "." ? o : p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
     const now = existsSync(ventureFile(d.dir, d.file)) ? JSON.parse(readFileSync(ventureFile(d.dir, d.file), "utf8")) : {};
     const next = JSON.parse(readFileSync(chosenFile, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
@@ -287,14 +302,14 @@ if (cmd === "merge") {
   const venture = opt("venture"), id = action;
   const dir = venture && ventureDir(venture, workspace);
   if (!dir || !id) usage();
-  const d = decisions(dir).decisions.find((x) => x.id === id);
+  const d = listed(dir).find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Merging ${id} version ${d.version ?? 1}: ${d.answer ?? "(no answer)"}\n  into: ${(d.applies_to ?? []).map((t) => `${t.file} ${t.field}`).join(", ") || "(nothing)"}`, "This writes the decided answer into the records it decides."))) { console.error("not merged: the confirmation did not match"); process.exit(1); }
   // --role merges as a role under a delegation grant that names may_merge (an agent with no --by merges as its role).
   const by = opt("by") ?? (opt("role") ? undefined : process.env.MENTURA_PERSON);
   const r = merge(dir, id, { by, role: opt("role") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
-  out(r.result);
+  out((r as { result?: unknown }).result);
   process.exit(0);
 }
 
@@ -305,7 +320,10 @@ if (cmd === "index") {
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
   const { rebuild, update } = await import("../../engine/decision-index.ts");
-  const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
+  /** The decision index: only the fields this command prints. */
+  type Entry = { id: string, rank: number, score: number, weight: { total: number }, why: unknown, flags: { why: string }[] };
+  type Index = { venture: string, phase: string, last_update: { mode: string, events: unknown, touched: { id: string }[] }, entries: Entry[], queue?: unknown[] };
+  const idx: Index = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
   out({ venture: idx.venture, phase: idx.phase, update: { mode: idx.last_update.mode, events: idx.last_update.events, rescored: idx.last_update.touched.map((t) => t.id) },
     flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),
     ranked: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, why: e.why })), queue: idx.queue ?? [] });
@@ -329,30 +347,32 @@ if (cmd === "decisions") {
   const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
   const r = decisions(dir);
+  const ds: Listed[] = r.decisions;
   const id = opt("why");
   if (id) {
     const f = decisionFile(dir, id);
     if (!f) { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
     const d = JSON.parse(readFileSync(ventureFile(dir, f), "utf8"));
-    const live = r.decisions.find((x) => x.id === id);
+    const live = ds.find((x) => x.id === id);
     out(flag("json") ? { id, reasons: d.reasons ?? [], approved_on: d.provenance?.reasons ?? [], changed: live?.reasons_changed ?? [], render: live?.render } : whyLines(dir, d).join("\n"));
-  } else out(flag("json") ? r : r.decisions.filter((d) => d.rank !== null && d.rank !== undefined).map((d) => `${String(d.rank).padStart(4)} ${d.render.padEnd(8)} ${d.id}${d.why?.length ? `\n       why: ${d.why.join("; ")}` : ""}`).join("\n") || "nothing to decide now");
+  } else out(flag("json") ? r : ds.filter((d) => d.rank !== null && d.rank !== undefined).map((d) => `${String(d.rank).padStart(4)} ${d.render.padEnd(8)} ${d.id}${d.why?.length ? `\n       why: ${d.why.join("; ")}` : ""}`).join("\n") || "nothing to decide now");
   process.exit(0);
 }
 
 if (cmd === "decide") {
-  let givenReasons = [];
-  try { givenReasons = reasonsFromArgs(argv); } catch (e) { console.error(e.message); process.exit(2); }
+  let givenReasons: ReturnType<typeof reasonsFromArgs> = [];
+  try { givenReasons = reasonsFromArgs(argv); } catch (e) { console.error((e as Error).message); process.exit(2); }
   // A person makes a decision (EE-058): approves the drafted wording, or gives their own with
   // --answer. Typing the decision's id confirms it. Provenance records who, when and in which phase.
   const venture = opt("venture"), id = action;
   const dir = venture && ventureDir(venture, workspace);
   if (!dir || !id) usage();
-  const d = decisions(dir).decisions.find((x) => x.id === id);
+  const d = listed(dir).find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
   if (!(await typed(id, `Deciding ${id}: ${d.question}\n  ${opt("answer") ? "your answer" : "drafted wording"}: ${opt("answer") ?? d.answer ?? "(none)"}`, "This is a decision: it unlocks what waits on it."))) { console.error("not decided: the confirmation did not match"); process.exit(1); }
-  const r = opt("rollback") !== undefined
-    ? rollback(dir, id, opt("rollback"), { by: opt("by") ?? process.env.MENTURA_PERSON })
+  const back = opt("rollback");
+  const r = back !== undefined
+    ? rollback(dir, id, back, { by: opt("by") ?? process.env.MENTURA_PERSON })
     : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note"), reasons: givenReasons.length ? givenReasons : undefined });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
@@ -362,8 +382,9 @@ if (cmd === "decide") {
 if (cmd === "propose") {
   // An agent proposes a decision from a JSON file; it stays open until a person decides it.
   const venture = opt("venture"), dir = venture && ventureDir(venture, workspace);
-  if (!dir || !opt("input")) usage();
-  const r = propose(dir, JSON.parse(readFileSync(resolve(opt("input")), "utf8")), { agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID, via: "cli" });
+  const inputFile = opt("input");
+  if (!dir || !inputFile) usage();
+  const r = propose(dir, JSON.parse(readFileSync(resolve(inputFile), "utf8")), { agentId: opt("as") ?? process.env.MENTURA_ACTOR_ID, via: "cli" });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
@@ -387,13 +408,12 @@ if (cmd === "confirm") {
   const venture = opt("venture"), id = action;
   const dir = venture && ventureDir(venture, workspace);
   if (!dir || !id) usage();
-  const s = FRAME.questions.flatMap((q) => q.statements).find((x) => x.id === id);
+  const s = frame.questions.flatMap((q) => q.statements).find((x) => x.id === id);
   if (!s?.record) { console.error(`${id} is not a foundation statement with a record (see mentura purpose/foundation run)`); process.exit(1); }
-  const rt = routes().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
+  const rt = table().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
   const { files: home, attribute } = statementFiles(dir, s);
   const hits = home.filter((f) => existsSync(ventureFile(dir, f)));
   if (!hits.length) { console.error(`${venture} has no ${s.record} record to confirm`); process.exit(1); }
-  const get = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
   const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), attribute) ?? null)}`).join("\n");
   if (!(await typed(id, `Confirming ${id} as yours:\n${shown}`))) { console.error("not confirmed: the confirmation did not match"); process.exit(1); }
   for (const f of hits) record(dir, { entity: f, route: rt, activity: "confirm", statement: id, agent: agentFromEnv("person", "cli"), note: opt("note") });
@@ -408,10 +428,10 @@ if (cmd === "baseline") {
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
   const logged = new Set(entries(dir).map((e) => e.entity));
-  const globs = routes().filter((r) => r.kind === "record" && r.form === "json" && r.collection !== "list").flatMap((r) => r.files.map((g) => [r.route, g]));
-  const routeOf = (rt, g, f) => rt.endsWith("/[id]") ? rt.replace("[id]", f.match(new RegExp("^" + g.split("*").map((x) => x.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$"))[1]) : rt;
+  const globs = table().filter((r) => r.kind === "record" && r.form === "json" && r.collection !== "list").flatMap((r) => r.files.map((g): [string, string] => [r.route, g]));
+  const routeOf = (rt: string, g: string, f: string): string => rt.endsWith("/[id]") ? rt.replace("[id]", (f.match(new RegExp("^" + g.split("*").map((x) => x.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$")) as RegExpMatchArray)[1]) : rt;
   let n = 0;
-  for (const f of files(dir).filter((f) => !f.startsWith("_drafts/"))) {
+  for (const f of (files(dir) as string[]).filter((f) => !f.startsWith("_drafts/"))) {
     const hit = globs.find(([, g]) => glob(g).test(f));
     if (!hit || logged.has(f)) continue;
     record(dir, { entity: f, route: routeOf(hit[0], hit[1], f), activity: "baseline", agent: agentFromEnv(opt("as") === "person" ? "person" : "agent", "cli"), note: "existed before the provenance log; its history before this is in git" });
@@ -431,32 +451,36 @@ if (["navigate", "head"].includes(action) || cmd === "batch") { const { cli } = 
 if (!action) usage();
 const venture = opt("venture");
 if (!venture && !["template", "layout"].includes(action)) usage();
-let input;
+let input: Record<string, unknown> | undefined;
 const src = opt("input");
 if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
-if (opt("value")) input = { ...(input ?? {}), value: Number.isNaN(Number(opt("value"))) ? opt("value") : Number(opt("value")) };
+const value = opt("value");
+if (value) input = { ...(input ?? {}), value: Number.isNaN(Number(value)) ? value : Number(value) };
 if (flag("as-is")) input = { ...(input ?? {}), as_is: true };
 // wf/writes hook: --where k=v[,k=v] filters a read (L-10); --hierarchy returns its resolution levels (P-28).
-if (["read", "view"].includes(action) && opt("where")) input = { ...(input ?? {}), where: Object.fromEntries(opt("where").split(",").map((kv) => kv.split("=")).map(([k, ...v]) => [k, v.join("=").includes("|") ? v.join("=").split("|") : v.join("=")])) };
+const where = opt("where");
+if (["read", "view"].includes(action) && where) input = { ...(input ?? {}), where: Object.fromEntries(where.split(",").map((kv) => kv.split("=")).map(([k, ...v]) => [k, v.join("=").includes("|") ? v.join("=").split("|") : v.join("=")])) };
 if (["read", "view"].includes(action) && flag("hierarchy")) input = { ...(input ?? {}), hierarchy: true };
-const provenance = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
+const provenance: { derived_from?: string[], decision?: string, note?: string, confidence?: number, activity?: string } = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
 // Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
 if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
 // Detection ledger hook: --revert marks a person's write as restoring the version before (activity rollback), which
 // resolves the gate's no call on the write it reverts as a miss when the venture keeps the gate detector.
 if (flag("revert")) provenance.activity = "rollback";
-let r = await call({ venture, route: cmd, action, input, actor: ["person", "public"].includes(opt("as")) ? opt("as") : "agent", workspace, via: "cli", provenance });
+const as = opt("as");
+const actor = as === "person" || as === "public" ? as : "agent";
+let r = await call({ venture, route: cmd, action, input, actor, workspace, via: "cli", provenance });
 // Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
 if (r.ok && r.needs_input && !flag("json")) {
   const n = r.needs_input;
-  console.log(`${n.ask}\n${n.missing.map((m) => `  - ${m.field}${m.items ? ` (${m.items.join(", ")})` : ""}: ${m.why}. As is: ${m.as_is}`).join("\n")}`);
+  console.log(`${n.ask}\n${n.missing.map((m: { field: string, items?: string[], why: string, as_is: string }) => `  - ${m.field}${m.items ? ` (${m.items.join(", ")})` : ""}: ${m.why}. As is: ${m.as_is}`).join("\n")}`);
   if (!process.stdin.isTTY) { console.log(`Fill in: ${n.options[0].how}\nRun as is: ${n.options[1].how}`); process.exit(0); }
   const { createInterface } = await import("node:readline/promises");
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   const a = (await rl.question("Fill in (f) or run as is (r)? ")).trim().toLowerCase();
   rl.close();
   if (!a.startsWith("r")) { console.log(`Fill in: ${n.options[0].how}`); process.exit(0); }
-  r = await call({ venture, route: cmd, action, input: { ...(input ?? {}), as_is: true }, actor: ["person", "public"].includes(opt("as")) ? opt("as") : "agent", workspace, via: "cli", provenance });
+  r = await call({ venture, route: cmd, action, input: { ...(input ?? {}), as_is: true }, actor, workspace, via: "cli", provenance });
 }
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);

@@ -12,18 +12,18 @@ import { ventureFile } from "../../core/venture-paths.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`); if (!ok) failed++; };
 
 const JOB = "Run the shop without a back office";
 const icp = () => ({ venture: "acme", profiles: [{ id: "shop-owners", who: "Owners of small shops", primary: true, jobs: [JOB] }] });
 const pricing = (product = "shop") => ({ venture: "acme", product, model: "subscription", buyer: "The shop owner", evidence: [] });
 const card = (over = {}) => ({ id: "shop", name: "Shop", description: "Bookings for a small shop", offered_to: ["shop-owners"], features: [{ id: "bookings", name: "Bookings", job: JOB }], business_model: ["subscription"], ...over });
 
-function venture(layout) {
+function venture(layout?: string): { root: string, dir: string } {
   const root = mkdtempSync(join(tmpdir(), "lint-product-"));
   const dir = join(root, "acme");
   mkdirSync(dir, { recursive: true });
-  const body = {
+  const body: Record<string, unknown> = {
     id: "acme", name: "Acme", parent: null, phase: "validation", owner: "self", status: "active",
     layers: { purpose: false, knowledge: false, operations: false, evidence: false, governance: false, interface: false },
   };
@@ -31,15 +31,18 @@ function venture(layout) {
   writeFileSync(join(dir, "venture.json"), JSON.stringify(body, null, 2) + "\n");
   return { root, dir };
 }
-const put = (dir, rel, obj) => {
+const put = (dir: string, rel: string, obj: unknown): string => {
   const f = ventureFile(dir, rel);
   mkdirSync(join(f, ".."), { recursive: true });
   writeFileSync(f, typeof obj === "string" ? obj : JSON.stringify(obj, null, 2) + "\n");
   return f;
 };
-const run = (dir, ...extra) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-product.ts"), dir, ...extra], { encoding: "utf8" });
-const json = (r) => { try { return JSON.parse(r.stdout); } catch { return null; } };
-const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
+const run = (dir: string, ...extra: string[]) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-product.ts"), dir, ...extra], { encoding: "utf8" });
+/** The lint's JSON report: only the fields this test reads. */
+type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string, severity?: string };
+type Report = { ok?: boolean, findings: Finding[], rules: { id: string, severity: string, mode: string }[] };
+const json = (r: { stdout: string }): Report | null => { try { return JSON.parse(r.stdout) as Report; } catch { return null; } };
+const rules = (r: { stdout: string }): Set<string> => new Set((json(r)?.findings ?? []).map((x) => x.rule));
 
 // One fixture: one product that breaks every rule. Fail-open, so the run exits 0.
 {
@@ -48,7 +51,7 @@ const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
   const r = run(dir, "--json");
   const got = rules(r);
   expect("one fixture fires each rule", r.status === 0 && got.size === 3 && ["product-no-icp", "feature-no-job", "business-model-no-pricing"].every((id) => got.has(id)), r.stdout + r.stderr);
-  expect("findings name the file, the mode and a suggestion", json(r).findings.every((x) => x.file === "product/shop.json" && x.mode === "fail-open" && x.message && x.suggestion), json(r));
+  expect("findings name the file, the mode and a suggestion", json(r)?.findings.every((x) => x.file === "product/shop.json" && x.mode === "fail-open" && x.message && x.suggestion), json(r));
 }
 
 // A clean venture: the ICP job is read by key, the feature serves it, and pricing names the product.
@@ -59,7 +62,7 @@ const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
   put(dir, "foundation/icp.json", icp());
   put(dir, "validation/pricing.json", pricing());
   const r = run(dir, "--json");
-  expect("a clean venture is silent", r.status === 0 && json(r).findings.length === 0 && json(r).ok === true, r.stdout + r.stderr);
+  expect("a clean venture is silent", r.status === 0 && json(r)?.findings.length === 0 && json(r)?.ok === true, r.stdout + r.stderr);
   expect("lint does not copy foundation records onto the product", readFileSync(file, "utf8") === before);
   put(dir, "foundation/icp.json", { venture: "acme", profiles: [{ id: "shop-owners", who: "Owners of small shops", primary: true, jobs: ["A different job"] }] });
   const again = run(dir, "--json");
@@ -75,22 +78,22 @@ const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
   put(dir, "validation/pricing.json", pricing());
   put(dir, "naive.config.json", { product_lint: { rules: { "product-no-icp": { mode: "fail-closed" }, "feature-no-job": { mode: "fail-open" } } } });
   const open = run(dir, "--json");
-  expect("a fail-closed rule with no finding stays exit 0", open.status === 0 && json(open).ok && [...rules(open)].join() === "feature-no-job", open.stdout + open.stderr);
+  expect("a fail-closed rule with no finding stays exit 0", open.status === 0 && json(open)?.ok && [...rules(open)].join() === "feature-no-job", open.stdout + open.stderr);
   put(dir, "naive.config.json", { product_lint: { rules: { "feature-no-job": { mode: "fail-closed" } } } });
   const shut = run(dir, "--json");
-  expect("exit 1 only when a fail-closed rule has a finding", shut.status === 1 && json(shut).ok === false && json(shut).findings[0].mode === "fail-closed", shut.stdout + shut.stderr);
+  expect("exit 1 only when a fail-closed rule has a finding", shut.status === 1 && json(shut)?.ok === false && json(shut)?.findings[0].mode === "fail-closed", shut.stdout + shut.stderr);
   const schema = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", "naive-config.schema.json", "--file", ventureFile(dir, "naive.config.json")], { encoding: "utf8" });
   expect("product_lint.rules is a valid naive.config.json key", schema.status === 0, schema.stdout + schema.stderr);
   put(dir, "naive.config.json", { product_lint: { rules: { "feature-no-job": { mode: "strict" } } } });
   const ignored = run(dir, "--json");
-  expect("a mode other than fail-open or fail-closed keeps the default", ignored.status === 0 && json(ignored).findings[0].mode === "fail-open", ignored.stdout);
+  expect("a mode other than fail-open or fail-closed keeps the default", ignored.status === 0 && json(ignored)?.findings[0].mode === "fail-open", ignored.stdout);
 }
 
 // Missing and malformed records never crash, and a sibling card is still judged.
 {
   const { dir } = venture();
   const empty = run(dir, "--json");
-  expect("a venture with no product records is silent", empty.status === 0 && json(empty).findings.length === 0, empty.stdout + empty.stderr);
+  expect("a venture with no product records is silent", empty.status === 0 && json(empty)?.findings.length === 0, empty.stdout + empty.stderr);
   put(dir, "product/broken.json", "{");
   put(dir, "foundation/icp.json", "{");
   put(dir, "validation/pricing.json", "[");
@@ -108,7 +111,7 @@ const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
   put(dir, "products/shop.json", card({ business_model: ["subscription", "add-on"] }));
   put(dir, "purpose/validation/pricing.json", pricing());
   const r = run(dir, "--json");
-  expect("a structured venture is read through ventureFile and stays silent", r.status === 0 && json(r).findings.length === 0, r.stdout + r.stderr);
+  expect("a structured venture is read through ventureFile and stays silent", r.status === 0 && json(r)?.findings.length === 0, r.stdout + r.stderr);
   put(dir, "foundation/icp/shop-owners.json", { id: "shop-owners", who: "Owners of small shops", jobs: [JOB], status: "retired" });
   const retired = run(dir, "--json");
   expect("a product offered only to a retired ICP has no ICP", [...rules(retired)].includes("product-no-icp"), retired.stdout);

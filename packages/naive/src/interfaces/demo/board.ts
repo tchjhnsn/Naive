@@ -9,7 +9,7 @@
 //
 //   node packages/naive/src/interfaces/demo/board.ts [--venture <id>] [--port 4331]
 
-import { createServer } from "node:http";
+import { createServer, type Server } from "node:http";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -26,18 +26,20 @@ import { write as writePackage, OUT as PACKAGE } from "../../engine/packages.ts"
 import { venturePackage } from "../../router/orchestration/venture-package.mjs";
 import { ventureFile } from "../../core/venture-paths.ts";
 
-const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
+const arg = <T>(n: string, d: T): string | T => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };
 const port = Number(arg("port", 4331));
-const venture = arg("venture", ventures()[0]?.id);
+const venture: string | undefined = arg("venture", (ventures() as { id: string }[])[0]?.id);
 
-function state(id) {
+function state(id: string | undefined) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
   const log = existsSync(join(ventureFile(dir, "provenance.jsonl"))) ? readFileSync(join(ventureFile(dir, "provenance.jsonl")), "utf8").trim().split("\n").filter(Boolean).slice(-8).map((l) => JSON.parse(l)).reverse() : [];
   // The kit for now (EE-028): what need-now says this venture needs in its phase, and which kit holds it.
   const nn = spawnSync("node", [new URL("../../engine/need-now.ts", import.meta.url).pathname, dir, "--json"], { encoding: "utf8" });
-  const kitOf = new Map(routes().filter((r) => r.record).map((r) => [r.record, { kit: r.kit, route: r.route.replace(/\/\[id\]$/, "") }]));
-  const rows = nn.status === 0 ? JSON.parse(nn.stdout).rows : [];
+  const kitOf = new Map((routes() as { record?: string, kit?: string, route: string }[]).filter((r) => r.record).map((r) => [r.record, { kit: r.kit, route: r.route.replace(/\/\[id\]$/, "") }]));
+  /** A need-now row: only the fields the board shows. */
+  type Row = { type: string, status: string, now: number, next: unknown, why: unknown };
+  const rows: Row[] = nn.status === 0 ? JSON.parse(nn.stdout).rows : [];
   const kit = rows.filter((r) => r.now >= 0.5 || r.status === "coming soon").map((r) => ({ type: r.type, status: r.status, now: r.now, next: r.next, why: r.why, ...(kitOf.get(r.type) ?? {}) }));
   // Money (EE-070): only the summary, never the transactions stream; the source stays the system of record.
   const money = existsSync(join(ventureFile(dir, "money/_summary.json"))) ? JSON.parse(readFileSync(join(ventureFile(dir, "money/_summary.json")), "utf8")) : null;
@@ -45,7 +47,7 @@ function state(id) {
 }
 
 // The idea map (EE-059): the founder's ideas on one canvas, by pillar and department.
-function ideas(id) {
+function ideas(id: string | undefined) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
   if (!existsSync(ventureFile(dir, MAP))) return { venture: id, waiting: "no idea dump yet" };
@@ -131,7 +133,7 @@ ReactDOM.createRoot(document.getElementById("flow")).render(h(App));
 
 // The idea graph (EE-060): the structured form of the map, left to right by dependency, lanes and
 // ideas top down by signal.
-function graph(id) {
+function graph(id: string | undefined) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
   if (!existsSync(ventureFile(dir, GRAPH))) return { venture: id, waiting: "no idea graph yet" };
@@ -239,7 +241,7 @@ tick();setInterval(tick,1500);
 
 // The routes (EE-061): where each idea went in the framework, and the decision docket, as two Kanban
 // boards. Plain columns, not React Flow: a board is a list per stage, and the canvas is for structure.
-function routesOf(id) {
+function routesOf(id: string | undefined) {
   const dir = ventureDir(id);
   if (!dir) return { error: `no venture ${id}` };
   return route(dir);
@@ -481,13 +483,13 @@ document.getElementById("f").onsubmit=async(e)=>{e.preventDefault();const b=docu
   ["raising","hiring","contributors"].forEach((k)=>{if(document.getElementById(k).checked)q.set(k,"1");});
   try{show(await (await fetch("site/scan?"+q,{method:"POST"})).json());}catch(err){show({error:"The scan failed: "+err.message});}b.disabled=false;b.textContent="Read my site";};
 fetch("site.json"+location.search).then((r)=>r.json()).then((r)=>{if(r&&r.site&&r.sitemap){document.getElementById("url").value=r.site;["raising","hiring","contributors"].forEach((k)=>{document.getElementById(k).checked=!!(r.facts||{})[k];});setTimeout(()=>show(r),50);}}).catch(()=>{});
-</script></body></html>`.replace("__LABELS__", JSON.stringify(Object.fromEntries(Object.entries(MATRIX.audiences).map(([k, v]) => [k, v.label]))));
+</script></body></html>`.replace("__LABELS__", JSON.stringify(Object.fromEntries(Object.entries(MATRIX.audiences as Record<string, { label: string }>).map(([k, v]) => [k, v.label]))));
 
 // The map's three libraries, pinned, fetched from unpkg once and kept on disk, so the canvas works
 // offline after its first load. Only these paths are served.
 const VENDOR = new Set(["react@18.3.1/umd/react.production.min.js", "react-dom@18.3.1/umd/react-dom.production.min.js", "reactflow@11.11.4/dist/umd/index.js", "reactflow@11.11.4/dist/style.css"]);
 const cache = join(homedir(), ".cache", "naive-board");
-async function vendor(path) {
+async function vendor(path: string): Promise<Buffer> {
   const f = join(cache, path.replace(/\//g, "__"));
   if (existsSync(f)) return readFileSync(f);
   const r = await fetch(`https://unpkg.com/${path}`);
@@ -499,18 +501,20 @@ async function vendor(path) {
 }
 
 // The venture package (EE-067), with the pipeline that led to it: each step's state, from the dump on.
-function packageOf(dir, writeIt = false) {
+function packageOf(dir: string, writeIt: boolean = false) {
   const r = venturePackage(dir);
   if (writeIt) writePackage(dir, r);
-  const has = (f) => existsSync(ventureFile(dir, f));
+  const has = (f: string): boolean => existsSync(ventureFile(dir, f));
   let rt = null; try { rt = route(dir); } catch {}
-  const d = decisions(dir).decisions;
+  const d: { status: string, rank?: number | null }[] = decisions(dir).decisions;
   const settled = d.filter((x) => ["decided", "accepted"].includes(x.status)).length;
   const open = r.core.filter((p) => p.in === "now");
-  const recs = [...new Map(open.flatMap((p) => p.records.filter((x) => x.role !== "optional")).map((x) => [x.record, x])).values()];
+  /** A record an open package needs: only the fields the pipeline counts. */
+  type Rec = { record: string, role: string, status: string };
+  const recs = [...new Map(open.flatMap((p) => (p.records as Rec[]).filter((x) => x.role !== "optional")).map((x) => [x.record, x])).values()];
   const written = has(join(PACKAGE, "venture-package.json")) ? open.filter((p) => has(join(PACKAGE, `${p.id}.md`))).map((p) => p.id) : null;
   const manifest = has(join(PACKAGE, "venture-package.json")) ? JSON.parse(readFileSync(join(dir, PACKAGE, "venture-package.json"), "utf8")) : null;
-  const n = (f) => recs.filter(f).length;
+  const n = (f: (x: Rec) => boolean): number => recs.filter(f).length;
   const routedTo = rt?.destinations ? new Set(rt.destinations.filter((x) => x.ideas.length && x.package).map((x) => x.package)) : new Set();
   // The founder's pipeline (EE-069): seven stages by what the founder does, not by the files they produce.
   const pipeline = [
@@ -522,15 +526,15 @@ function packageOf(dir, writeIt = false) {
     { label: "Confirm", state: recs.length && n((x) => x.status === "confirmed") === recs.length ? "done" : n((x) => x.status === "confirmed") ? "part" : "", detail: `${n((x) => x.status === "confirmed")} of ${recs.length} confirmed` },
     { label: "Package", state: open.length && r.complete.length >= open.length ? "done" : r.complete.length ? "part" : "", detail: `${r.complete.length} of ${open.length} open packages complete` },
   ];
-  return { ...r, versions: writeIt ? r.versions : manifest?.versions ?? [], pipeline, written };
+  return { ...r, versions: writeIt ? (r as { versions?: unknown }).versions : manifest?.versions ?? [], pipeline, written };
 }
 
-export function serve(p = port, id = venture) {
+export function serve(p: number = port, id: string | undefined = venture): Server {
   const server = createServer(async (req, res) => {
-    const u = new URL(req.url, "http://x");
+    const u = new URL(req.url ?? "", "http://x");
     if (u.pathname.startsWith("/vendor/") && VENDOR.has(u.pathname.slice(8))) {
       try { const b = await vendor(u.pathname.slice(8)); res.writeHead(200, { "content-type": u.pathname.endsWith(".css") ? "text/css" : "text/javascript", "cache-control": "max-age=86400" }); res.end(b); }
-      catch (e) { res.writeHead(502); res.end(String(e.message)); }
+      catch (e) { res.writeHead(502); res.end(String((e as Error).message)); }
       return;
     }
     if (u.pathname === "/state.json") { res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(state(u.searchParams.get("venture") ?? id))); return; }
@@ -544,21 +548,21 @@ export function serve(p = port, id = venture) {
     }
     if (u.pathname === "/site/plan.json") {
       const dir = ventureDir(u.searchParams.get("venture") ?? id);
-      let body;
-      try { body = dir ? plan(dir, { flags: Object.fromEntries(["raising", "hiring", "contributors"].map((k) => [k, u.searchParams.get(k) === "1"])) }) : { error: `no venture ${id}` }; } catch (e) { body = { error: e.message }; }
+      let body: unknown;
+      try { body = dir ? plan(dir, { flags: Object.fromEntries(["raising", "hiring", "contributors"].map((k) => [k, u.searchParams.get(k) === "1"])) }) : { error: `no venture ${id}` }; } catch (e) { body = { error: (e as Error).message }; }
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(body)); return;
     }
     if (u.pathname === "/site/scan" && req.method === "POST") {
       const dir = ventureDir(u.searchParams.get("venture") ?? id);
       const flags = Object.fromEntries(["raising", "hiring", "contributors"].map((k) => [k, u.searchParams.get(k) === "1"]));
-      let body;
-      try { body = await scan(u.searchParams.get("url") ?? "", { venture: dir, flags }); } catch (e) { body = { error: e.message }; }
+      let body: unknown;
+      try { body = await scan(u.searchParams.get("url") ?? "", { venture: dir, flags }); } catch (e) { body = { error: (e as Error).message }; }
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(body)); return;
     }
     if (u.pathname === "/package.json" || (u.pathname === "/package/write" && req.method === "POST")) {
       const dir = ventureDir(u.searchParams.get("venture") ?? id);
-      let body;
-      try { body = dir ? packageOf(dir, u.pathname === "/package/write") : { error: `no venture ${id}` }; } catch (e) { body = { error: e.message }; }
+      let body: unknown;
+      try { body = dir ? packageOf(dir, u.pathname === "/package/write") : { error: `no venture ${id}` }; } catch (e) { body = { error: (e as Error).message }; }
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }); res.end(JSON.stringify(body)); return;
     }
     if (/^\/package\/[a-z-]+\.md$/.test(u.pathname)) {

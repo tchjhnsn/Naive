@@ -71,14 +71,33 @@ export const TOOLS = [
     classes: { type: "array", items: { type: "string" }, description: "The decision classes the task needs, such as spend-money" }, venture }, required: ["functions"] } },
 ];
 
-let client = null; // the harness, as it named itself at initialize
+let client: string | null = null; // the harness, as it named itself at initialize
+
+/** A tool call's arguments as the client sent them. The router and the engine check each one. */
+type Args = {
+  group?: string, venture?: string, route?: string, agent_id?: string, where?: Record<string, unknown>, session?: string, task?: string,
+  prefetch?: boolean | string[], header_only?: boolean, record?: unknown, derived_from?: string[], decision?: unknown, note?: string,
+  confidence?: number, model?: string, id?: string, answer?: string, function?: string, system?: string, address?: string, frame?: string,
+  text?: string, lookup?: unknown, render?: string[], value?: number | string, as_is?: boolean, role?: string, functions?: unknown,
+  measure?: string, classes?: string[],
+};
+/** A JSON-RPC 2.0 message from the client: only the fields this server reads. */
+export type Message = {
+  jsonrpc?: string, id?: number | string | null, method?: string,
+  params?: { clientInfo?: { name?: string, version?: string }, arguments?: Args, _meta?: { progressToken?: number | string }, name?: string, uri?: string },
+};
+/** What a tool call returns before it is sent back: the router's answer or one made here. */
+type Reply = { ok: boolean, result?: unknown, error?: string, fix?: unknown, needs_input?: { ask: string }, [k: string]: unknown };
+type Progress = (p: { progress?: number, total?: number, message: string }) => void;
 
 // notify sends a notification to the client; progress for a call that carries _meta.progressToken (N-5).
-/** @param {*} msg @param {(m: *) => void} [notify] */
-export async function handle(msg, notify = () => {}) {
+/** The server's answer to one message: a result or an error, or null for a notification. */
+export type Answer = { jsonrpc: "2.0", id: Message["id"], result?: unknown, error?: { code: number, message: string | undefined } } | null;
+
+export async function handle(msg: Message, notify: (m: unknown) => void = () => {}): Promise<Answer> {
   const { id, method, params = {} } = msg;
-  const reply = (result) => ({ jsonrpc: "2.0", id, result });
-  const fail = (code, message) => ({ jsonrpc: "2.0", id, error: { code, message } });
+  const reply = (result: unknown): Answer => ({ jsonrpc: "2.0", id, result });
+  const fail = (code: number, message: string | undefined): Answer => ({ jsonrpc: "2.0", id, error: { code, message } });
   switch (method) {
     case "initialize":
       client = params.clientInfo ? [params.clientInfo.name, params.clientInfo.version].filter(Boolean).join(" ") : null;
@@ -91,38 +110,38 @@ export async function handle(msg, notify = () => {}) {
       const a = params.arguments ?? {};
       const token = params._meta?.progressToken;
       let step = 0;
-      const progress = token === undefined ? null : /** @type {(p: { progress?: number, total?: number, message: string }) => void} */ (({ progress: p, total, message }) => notify({ jsonrpc: "2.0", method: "notifications/progress", params: { progressToken: token, progress: Math.max(p ?? 0, ++step), ...(total ? { total } : {}), message } }));
-      let r;
+      const progress: Progress | null = token === undefined ? null : (({ progress: p, total, message }) => notify({ jsonrpc: "2.0", method: "notifications/progress", params: { progressToken: token, progress: Math.max(p ?? 0, ++step), ...(total ? { total } : {}), message } }));
+      let r: Reply;
       switch (params.name) {
-        case "mentura_routes": r = { ok: true, result: a.group ? routes().filter((x) => x.groups.includes(`(${a.group})`)) : routes() }; break;
-        case "mentura_ventures": r = { ok: true, result: ventures().map(({ id, name, phase, path }) => ({ id, name, phase, path })) }; break;
+        case "mentura_routes": r = { ok: true, result: a.group ? routes().filter((x: { groups: string[] }) => x.groups.includes(`(${a.group})`)) : routes() }; break;
+        case "mentura_ventures": r = { ok: true, result: ventures().map(({ id, name, phase, path }: { id: string, name: string, phase: string, path: string }) => ({ id, name, phase, path })) }; break;
         case "mentura_layout": r = await call({ venture: a.venture, route: a.route, action: "layout" }); break;
         case "mentura_view": r = await call({ venture: a.venture, route: a.route, action: "view" }); break;
         // Context hook (packages/naive/src/router/context.mjs): a read is a navigation, header first, its parts streamed as progress.
         // A filtered list (where) is a plain read (packages/naive/src/router/writes.mjs); anything else is a navigation.
         case "mentura_read": r = a.where ? await call({ venture: a.venture, route: a.route, action: "read", actor_id: a.agent_id, via: "mcp", input: { where: a.where } }) : await call({ venture: a.venture, route: a.route, action: "navigate", actor_id: a.agent_id, via: "mcp",
-          input: { session: a.session, task: a.task, prefetch: a.prefetch, header_only: a.header_only, ...(progress ? { onPart: ({ part, data }) => progress({ message: `${part}: ${JSON.stringify(data)}` }) } : {}) } }); break;
+          input: { session: a.session, task: a.task, prefetch: a.prefetch, header_only: a.header_only, ...(progress ? { onPart: ({ part, data }: { part: string, data: unknown }) => progress({ message: `${part}: ${JSON.stringify(data)}` }) } : {}) } }); break;
         case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, confidence: a.confidence, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
         // Setup (EE-083): packages/naive/src/router/orchestration/setup.mjs holds the questions; answers are proposals the founder confirms.
         case "mentura_setup": { const m = await import("../../router/orchestration/setup.mjs"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
         case "mentura_setup_answer": r = await (await import("../../router/orchestration/setup.mjs")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
-        case "mentura_setup_point": r = await (await import("../../router/orchestration/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id }); break;
-        case "mentura_frame": r = await (await import("../../engine/frames.ts")).run(ventureDir(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client, model: a.model }); break;
+        case "mentura_setup_point": r = await (await import("../../router/orchestration/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id } as Parameters<typeof import("../../router/orchestration/setup.mjs").point>[1]); break;
+        case "mentura_frame": r = await (await import("../../engine/frames.ts")).run(ventureDir(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client ?? undefined, model: a.model }); break;
         case "mentura_decisions": {
           r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
-          if (r.ok && a.render?.length) r.result = { ...r.result, decisions: r.result.decisions.filter((d) => a.render.includes(d.render)) };
+          if (r.ok && a.render?.length) { const render = a.render, res = r.result as { decisions: { render: string }[] }; r.result = { ...res, decisions: res.decisions.filter((d) => render.includes(d.render)) }; }
           break;
         }
         case "mentura_propose_decision": {
           const dir = ventureDir(a.venture);
-          r = dir ? propose(dir, a.decision, { agentId: a.agent_id, via: "mcp", harness: client, model: a.model }) : { ok: false, error: `no venture ${a.venture}` };
+          r = dir ? propose(dir, a.decision, { agentId: a.agent_id, via: "mcp", harness: client ?? undefined, model: a.model }) : { ok: false, error: `no venture ${a.venture}` };
           break;
         }
         case "mentura_check": r = await call({ venture: a.venture, route: a.route, action: "check" }); break;
         case "mentura_template": r = await call({ route: a.route, action: "template" }); break;
         case "mentura_run": r = progress && a.route !== "system/overview" && a.route !== "system/robots"
-          ? await runStreaming({ venture: a.venture, route: a.route, input: { value: a.value, as_is: a.as_is }, actor_id: a.agent_id }, progress)
+          ? await runStreaming({ venture: a.venture, route: a.route, input: { value: a.value, as_is: a.as_is }, actor_id: a.agent_id } as Parameters<typeof runStreaming>[0], progress)
           : await call({ venture: a.venture, route: a.route, action: "run", actor_id: a.agent_id, input: a.value !== undefined || a.as_is ? { ...(a.value !== undefined ? { value: a.value } : {}), ...(a.as_is ? { as_is: true } : {}) } : undefined }); break;
         // The agent specs are TypeScript; Node strips their types here as it does for the router's recipes.ts.
         case "mentura_agent_brief": {
@@ -149,8 +168,8 @@ export async function handle(msg, notify = () => {}) {
     case "resources/list":
       return reply({ resources: [
         { uri: "mentura://routes", name: "Route table", mimeType: "text/markdown" },
-        ...ventures().map((v) => ({ uri: `mentura://${v.id}`, name: `${v.id}: overview`, mimeType: "text/markdown" })),
-        ...ventures().flatMap((v) => routes().filter((x) => x.kind === "record" && !x.route.endsWith("]")).map((x) => ({ uri: `mentura://${v.id}/${x.route}`, name: `${v.id}: ${x.route}`, mimeType: "application/json" }))),
+        ...ventures().map((v: { id: string }) => ({ uri: `mentura://${v.id}`, name: `${v.id}: overview`, mimeType: "text/markdown" })),
+        ...ventures().flatMap((v: { id: string }) => routes().filter((x: { kind: string, route: string }) => x.kind === "record" && !x.route.endsWith("]")).map((x: { route: string }) => ({ uri: `mentura://${v.id}/${x.route}`, name: `${v.id}: ${x.route}`, mimeType: "application/json" }))),
       ] });
     case "resources/read": {
       const uri = params.uri ?? "";
@@ -175,10 +194,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   rl.on("line", (line) => {
     if (!line.trim()) return;
     queue = queue.then(async () => {
-      let msg;
-      try { msg = JSON.parse(line); } catch { process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } }) + "\n"); return; }
-      let res;
-      try { res = await handle(msg, (n) => process.stdout.write(JSON.stringify(n) + "\n")); } catch (e) { res = { jsonrpc: "2.0", id: msg.id ?? null, error: { code: -32603, message: String(e.message ?? e) } }; }
+      let msg: Message;
+      try { msg = JSON.parse(line) as Message; } catch { process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } }) + "\n"); return; }
+      let res: unknown;
+      try { res = await handle(msg, (n: unknown) => process.stdout.write(JSON.stringify(n) + "\n")); } catch (e) { res = { jsonrpc: "2.0", id: msg.id ?? null, error: { code: -32603, message: String((e as Error).message ?? e) } }; }
       if (res) process.stdout.write(JSON.stringify(res) + "\n");
     });
   });
