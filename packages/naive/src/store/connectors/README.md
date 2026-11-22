@@ -24,6 +24,25 @@ The knowledge layer is where every record is stored and found. It does not copy 
 | Catalog | `catalog.mjs` | One index over every source: address, version, route, title and words. No content. Routes `knowledge/catalog` and `knowledge/search`. |
 | Evals | `suite.mjs`, `eval.mjs` | `suite.mjs` is the contract suite every connector passes, Naive's or an app's. `eval.mjs` runs it on the filesystem connector and checks that an app's connector registers and connects. The evals that run routes (the router over a mapped folder, the catalog, the source-of-truth matrix and attributes) are [`packages/naive/src/interfaces/tests/connectors-router-test.mjs`](../../interfaces/tests/connectors-router-test.mjs), because they import the router. An app runs the suite on its own connectors. |
 
+## Written in Effect
+
+The connectors are written as Effects (EE-125): they reach files through `VentureFs` and fail with Naive's tagged errors (`packages/naive/src/core/effect/errors.mjs`). The plain exports keep their old names and shapes, so the router, the checks and an app's `registerConnector` calls do not change. The naming is fixed once:
+
+- Every exported function `name` that reads files or can fail has an Effect version `nameEffect` with the same arguments, which succeeds with what `name` returns or resolves to: `sourcesOfEffect`, `sourceForEffect`, `attributeSourcesEffect`, `registryEffect`, `registerConnectorEffect`, `connectEffect` and `connectAllEffect` in `index.mjs`; `safePathEffect` and `checkWriteEffect` in `contract.mjs`; `loadEffect`, `buildEffect` and `searchLiveEffect` in `catalog.mjs`. `name` runs it with `runSync` or `runPromise`.
+- A connector's own methods are the one exception, because the contract is an object: `connectEffects(options)` in `filesystem.mjs` gives the filesystem connector whose five methods return Effects, and `connect(options)` gives the same connector with each method run as a Promise.
+- Pure functions stay plain: `resolve.mjs` whole, `search`, `blobSha`, `address`, `words`, `matches`, `isText` and `conformance`.
+
+```mermaid
+flowchart LR
+  R["router, checks, apps"] -->|"connect, sourceFor, build ..."| P["plain exports"]
+  P -->|runSync / runPromise| E["nameEffect, connectEffects"]
+  M["code moved to Effect"] -->|yield*| E
+  E -->|yield* VentureFs| FS{{VentureFs}}
+  E -->|fails with| T["Refused, CannotRun, VersionConflict,<br/>IoError, NotFound, ParseError"]
+```
+
+The errors a plain export throws are the tagged errors themselves, each an `Error` with the message it had before: a path outside the source, a read-only source, a held lock and a bad append are `Refused`; an unknown connector, a module that breaks the contract and a source map whose rules tie or name a missing source are `CannotRun`; a stale base is `VersionConflict`, which keeps `code` (`version-conflict`), `current` and its `(path, base, current)` constructor, so an app's connector builds it as before. A connector the registry names is still the contract's object with Promise methods, whichever module made it, so `connectEffect` gives that object and code calling its methods wraps them with `Effect.tryPromise`.
+
 ## A source map
 
 ```json
@@ -58,4 +77,5 @@ A write without either option replaces the item, as it always has. `checkWrite` 
 ```sh
 node packages/naive/src/store/connectors/eval.mjs                 # the contract, and an app's connector registered
 node packages/naive/src/interfaces/tests/connectors-router-test.mjs    # through the router
+node packages/naive/src/store/connectors/effects-test.ts               # the Effect versions on an in-memory VentureFs
 ```

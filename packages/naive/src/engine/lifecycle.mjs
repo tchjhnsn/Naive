@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The venture development lifecycle (VDL): where a venture is, what its phase's gate asks, and whether
-// it may move on. Phases and gates are defined once in packages/naive/src/functions/products/frameworks/product-anatomy/phases.json;
+// it may move on. Phases and gates are defined once, in the phase modules (packages/naive/src/phases/<id>/phase.json, EE-126);
 // each venture states its own exit criteria per phase (foundation/exit-criteria/<phase>.json, or its telos before migration). A criterion is met when a person
 // says so, with evidence; a phase change is a person's decision, and the gate refuses it while the
 // current phase has unmet criteria, unless the person overrides it with a reason (logged).
@@ -27,10 +27,12 @@ import { phase as changePhase } from "./freshness.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { exitCriteria } from "./canonical.mjs";
 import { validateFile } from "../records/validate.mjs";
+import { runSync } from "../core/effect/run.mjs";
+import { loadPhases } from "../phases/phases.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-export const PHASES = load(join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json")).phases.map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate, binding_constraint }));
+export const PHASES = runSync(loadPhases()).map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate: gate.name, binding_constraint }));
 export const DEFAULT_PLAYBOOK = "product-first";
 const playbookDir = join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/playbooks");
 export const playbooks = () => existsSync(playbookDir) ? readdirSync(playbookDir).filter((f) => f.endsWith(".json")).map((f) => load(join(playbookDir, f))) : [];

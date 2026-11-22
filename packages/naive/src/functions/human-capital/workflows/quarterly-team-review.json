@@ -16,11 +16,8 @@
   "steps": [
     {
       "id": "recheck-roles",
-      "do": "For each role, check again whether an agent can now do the work, using the capability register's dated entries.",
-      "skill": "team-design",
-      "writes": [
-        "people/team-plan"
-      ]
+      "do": "For each role, check again whether an agent can now do the work, using the capability register's dated entries, as a proposed decision for the founder: only a person writes the team plan, because it sets every agent's reach.",
+      "skill": "team-design"
     },
     {
       "id": "recheck-contractors",

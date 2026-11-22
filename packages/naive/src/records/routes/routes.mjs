@@ -21,7 +21,12 @@ export const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 export const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 // The workspace is MENTURA_WORKSPACE, else the current directory: a framework never defaults to a folder of its own.
 export const defaultWorkspace = () => process.env.MENTURA_WORKSPACE ?? process.cwd();
-export const PHASES = load(join(repo, "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json")).phases;
+// The phases, read from the phase modules (packages/naive/src/phases/<id>/phase.json, EE-126) in lifecycle order. Read
+// here as data rather than through packages/naive/src/phases/phases.mjs, because the phases unit comes after records.
+const phasesDir = join(repo, "packages/naive/src/phases");
+export const PHASES = (existsSync(phasesDir) ? readdirSync(phasesDir) : []).filter((d) => existsSync(join(phasesDir, d, "phase.json")))
+  .map((d) => load(join(phasesDir, d, "phase.json"))).sort((a, b) => a.step - b.step)
+  .map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate: gate.name, binding_constraint }));
 
 export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
 // A venture's files, stopping at a nested venture (which has its own records) and skipping dot and private folders.
@@ -144,7 +149,7 @@ function buildRoutes() {
     cmd("knowledge/catalog", "packages/naive/src/store/connectors/catalog.mjs", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "packages/naive/src/store/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
     // The live decision index: packages/naive/src/engine/decision-index.mjs, a cache in .naive/ updated from provenance.
-    cmd("system/decision-index", "packages/naive/src/engine/decision-index.mjs", "The live decision index: every open decision scored by the docket, its structural impact (functions, records, linked decisions), its phase weight and requirement lift, and requirement violations flagged now; each run re-scores every active decision, so an update equals a rebuild, and appends rank history for what moved. Input value update (default), rebuild or read", { venture_arg: "id" }),
+    cmd("system/decision-index", "packages/naive/src/engine/decision-index.mjs", "The live decision index: every open decision scored by the docket, its structural impact (functions, records, linked decisions), its phase weight and requirement lift, and requirement violations flagged now; each run re-scores every active decision, so an update equals a rebuild, and appends rank history for what moved; adds the decision queue across functions (by_function, themes, queue: the score weighted by the function's weight in the phase, one item per theme, with its lead). Input value update (default), rebuild or read", { venture_arg: "id" }),
     // Freshness (Revalidating, V-1 to V-8): packages/naive/src/engine/freshness.mjs.
     cmd("system/freshness", "packages/naive/src/engine/freshness.mjs", "What is fresh, stale or expired, and which records are live holes: by time (freshness profiles, per phase too) and on demand (a dependency changed, a where-used parent drifted, a tag, path or package was revalidated)"),
     // The signal pull (signal library design, build item 5): packages/naive/src/router/orchestration/signals.ts commits, as the

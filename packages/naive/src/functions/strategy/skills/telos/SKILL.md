@@ -37,7 +37,7 @@ The default is `packages/naive/src/functions/strategy/templates/telos-based-smar
 2. **End state.** What is true in the world when the end is reached. Concrete enough that two people would agree whether it is true.
 3. **Measures.** Two to five, one primary. Each has a kind (revenue, usage or adoption, cost or time saved, compliance met, learning, flow and lead time, impact) and a target. The primary measure becomes MAD's success measure.
 4. **Owner outcome.** What the owners intend once the end is reached: hold, acquisition, IPO, secondary sale, merger, management buyout, or wind-down, and why. Check it fits the ambition and the ownership: investors who bought preferred shares expect an exit. `governance/exit.json` must prefer this path and may not rule it out.
-5. **Exit criteria per phase.** For the current phase and the next, what must be true to leave it. Start from the phase's generic gate in `packages/naive/src/functions/products/frameworks/product-anatomy/phases.json` (Validation: product-market fit, retention holds) and make it this venture's. Every criterion names the measures it serves, so each phase's exit traces back to the end.
+5. **Exit criteria per phase.** For the current phase and the next, what must be true to leave it. Start from the phase's generic gate in its phase module, `packages/naive/src/phases/<phase>/phase.json` (Validation: product-market fit, retention holds) and make it this venture's. Every criterion names the measures it serves, so each phase's exit traces back to the end.
 
 ## Who decides
 
