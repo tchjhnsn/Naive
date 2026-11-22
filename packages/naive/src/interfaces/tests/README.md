@@ -62,3 +62,5 @@ Tests that check a record against its schema run `node packages/naive/src/record
 `recipe-search-test.ts` also kills a durable search right after its first experiment write lands and checks that the next run resumes, writes no step twice and ends at the plain search's tip (EE-161).
 
 `durable-triggers-test.ts` kills the trigger runner right after a trigger's route call lands and before the run is saved, and checks that the next run finds the call in provenance by its key (trigger and event), records the run as ran without calling the route again, and that the chain holds (EE-161, phase 12d).
+
+`durable-signals-test.ts` kills a durable signal pull right after its first record write lands and checks that the next run resumes, writes each projected record once with one provenance line, keeps the chain, moves the cursor, and that a pull after it writes nothing (EE-161).
