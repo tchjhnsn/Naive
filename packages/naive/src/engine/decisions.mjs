@@ -216,7 +216,14 @@ export function ownScore(d, phase, now = Date.now()) {
   let s = 0;
   if (d.render === "overdue") { s += 100; why.push("past its due time"); }
   // Cost of delay grows as the deadline nears: 40 at three days, 60 at two, 120 at one, up to 300.
-  else if (d.due) { const h = (Date.parse(d.due) - now) / 36e5; if (h <= 72) { s += Math.min(300, Math.round((60 * 48) / Math.max(h, 1))); why.push(`due in ${Math.max(0, Math.round(h))}h`); } }
+  // Further out, up to two weeks, a due date still counts, less the further it is (naive#72): 24 at five days, 9 at fourteen.
+  else if (d.due) {
+    const h = (Date.parse(d.due) - now) / 36e5;
+    if (h <= 72) { s += Math.min(300, Math.round((60 * 48) / Math.max(h, 1))); why.push(`due in ${Math.max(0, Math.round(h))}h`); }
+    else if (h <= 336) { s += Math.round((40 * 72) / h); why.push(`due in ${Math.round(h / 24)} days`); }
+  }
+  // An open fail-closed decision stops the work behind it until a person decides it (naive#72).
+  if (d.status === "open" && d.boundary === "fail-closed") { s += 15; why.push("fails closed: the work behind it waits"); }
   // A why entry may carry cites (the refs a reason supplies); why stays a list of strings, and
   // why_cites pairs each cited entry with its refs (backward compatible).
   const cites = [];
