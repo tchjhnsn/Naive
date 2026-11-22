@@ -65,6 +65,7 @@ const steps = [
   ["src layout: naive upgrade --layout src and init-venture --layout src (EE-118 step 8)", "node", ["packages/naive/src/engine/src-layout-test.mjs"]],
   ["relation names in kebab-case: rename-relations renames old idea relation names and nothing else", "node", ["packages/naive/src/engine/rename-relations-test.ts"]],
   ["traces: spans in traces/, chained and linked from provenance, naive trace, check-traces (EE-121)", "node", ["packages/naive/src/checks/traces-test.ts"]],
+  ["function agent reach: <function>-agent writes only decisions/* and its function's record routes (finance-agent writing a customer is refused before the schema and nothing lands; its decision and a person's customer are not refused)", "node", ["packages/naive/src/interfaces/tests/agent-reach-test.ts"]],
   ["agent files: ls, read, write, edit, glob and grep over the router, drafts for gated writes, tool spans (EE-122)", "node", ["packages/naive/src/interfaces/tests/agent-files-test.ts"]],
   ["hosted mode: each feature that reaches outside the tenant refuses and says why, host hooks stand in, the laptop path is unchanged", "node", ["packages/naive/src/interfaces/tests/hosted-runtime-test.ts"]],
   ["naive upgrade --layout structured: a flat venture moves onto k-base/ and meta/", "node", ["packages/naive/src/engine/structured-layout-test.mjs"]],
